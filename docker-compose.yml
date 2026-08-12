@@ -1,0 +1,25 @@
+services:
+  postgres:
+    # immagine con pgvector già installato: l'estensione va abilitata sul server,
+    # non è una dipendenza npm. Serve dallo step 7, ma partire con l'immagine
+    # giusta costa zero.
+    image: pgvector/pgvector:pg17
+    container_name: ludex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ludex
+      POSTGRES_PASSWORD: ludex
+      POSTGRES_DB: ludex
+    # 5433 sull'host: la 5432 è occupata da un altro progetto.
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ludex -d ludex"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:
