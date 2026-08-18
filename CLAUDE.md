@@ -235,15 +235,26 @@ e le opzioni → attendere la decisione → solo a quel punto implementare.
 
 ### Test
 
-Introdotti **prima dello step 4**, perché l'import Steam è la prima cosa che non
-si verifica guardando il DB a mano: deduplica fra utenti, idempotenza del
-reimport e risoluzione appid → IGDB non si controllano rilanciando l'import
-contro IGDB vero, si brucia solo rate limit.
+`pnpm test` (turbo) oppure `pnpm --filter api test`. Vitest, e **contro un Postgres
+vero**: la logica che conta è fatta di upsert, vincoli unique e predicati con
+LEFT JOIN, quindi mockare il DB testerebbe il mock. Le fonti esterne si stubbano
+invece al confine del modulo di servizio — non su `fetch`, o ci si porta dietro il
+rate limiter e il token in cache del client vero.
 
-Vitest, e **contro un Postgres vero** (`ludex_test` nello stesso container, le
-stesse migration): la logica che conta è tutta fatta di upsert e vincoli unique,
-quindi mockare il DB testerebbe il mock. Le fonti esterne invece si stubbano al
-confine `fetch` — nei test non si esce in rete.
+Il database è `ludex_test` (`TEST_DATABASE_URL`), nello stesso container. Lo crea
+e lo migra il global setup, non serve prepararlo a mano; `test/env.ts` si rifiuta
+di partire se punta allo stesso database dello sviluppo.
+
+Tre cose del setup che non si indovinano rileggendolo:
+
+- `DATABASE_URL` viene dirottata nel **config** di vitest, non in un setup file:
+  `@repo/db` apre la connessione al momento dell'import, e qualunque altro punto
+  sarebbe una corsa con gli import dei file di test.
+- `platforms` è esclusa dal troncamento fra un caso e l'altro: è dato di
+  riferimento seedato da una migration, e troncarlo lascerebbe un database rotto,
+  non pulito. Ogni nuova tabella seedata va aggiunta a quella lista.
+- `fileParallelism` è spento: i file condividono un database solo e si
+  troncherebbero le tabelle a vicenda.
 
 Niente inseguimento della copertura: si testano le scritture idempotenti e la
 risoluzione dell'identità dei giochi, che sono le cose che rompendosi corrompono
@@ -273,6 +284,7 @@ altro progetto).
 |---|---|
 | `pnpm dev` | avvia tutto (turbo) |
 | `pnpm lint` / `pnpm check-types` | lint e typecheck sul monorepo |
+| `pnpm test` | vitest sul monorepo (serve Postgres su) |
 | `pnpm db:up` / `pnpm db:down` | Postgres in Docker |
 | `pnpm db:generate` | genera la migration dal diff dello schema |
 | `pnpm db:migrate` | applica le migration |
