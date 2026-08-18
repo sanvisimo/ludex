@@ -13,7 +13,7 @@ import { fetchIgdbGameMetadata, type IgdbAttribute } from "../external/igdb";
  * - **idempotente**: rieseguirlo porta allo stesso stato, non ne accumula. Gli
  *   attributi si riscrivono in blocco, i campi si sovrascrivono.
  *
- * Non e' un job monolitico proprio perche' le fonti arrivano in step diversi e
+ * Non è un job monolitico proprio perché le fonti arrivano in step diversi e
  * vanno riaggiornate a ritmi diversi.
  */
 
@@ -29,7 +29,7 @@ async function markSource(
       gameId,
       source: "igdb",
       status,
-      // `syncedAt` si muove solo sul successo: e' il campo su cui si decide
+      // `syncedAt` si muove solo sul successo: è il campo su cui si decide
       // cosa riaccodare, e un fallimento non deve far sembrare fresco un dato.
       syncedAt: status === "ok" ? now : null,
       attemptedAt: now,
@@ -53,7 +53,9 @@ async function upsertAttributes(attributes: IgdbAttribute[]) {
 
   const rows = await db
     .insert(schema.igdbAttributes)
-    .values(attributes.map((a) => ({ kind: a.kind, igdbId: a.igdbId, name: a.name })))
+    .values(
+      attributes.map((a) => ({ kind: a.kind, igdbId: a.igdbId, name: a.name })),
+    )
     // Il nome su IGDB puo' cambiare: si aggiorna invece di ignorare il conflitto,
     // cosi' il vocabolario resta allineato senza righe duplicate.
     .onConflictDoUpdate({
@@ -70,7 +72,9 @@ export type EnrichmentOutcome =
   | { status: "skipped"; reason: string }
   | { status: "not_found" };
 
-export async function enrichGameFromIgdb(gameId: string): Promise<EnrichmentOutcome> {
+export async function enrichGameFromIgdb(
+  gameId: string,
+): Promise<EnrichmentOutcome> {
   const game = await db.query.games.findFirst({
     columns: { id: true, igdbId: true },
     where: eq(schema.games.id, gameId),
@@ -78,7 +82,7 @@ export async function enrichGameFromIgdb(gameId: string): Promise<EnrichmentOutc
 
   if (!game) return { status: "skipped", reason: "gioco inesistente" };
 
-  // Un gioco inserito a mano non ha `igdbId`: non e' un errore, e' un gioco non
+  // Un gioco inserito a mano non ha `igdbId`: non è un errore, è un gioco non
   // ancora risolto. Si annota e si esce senza segnare un fallimento, che
   // farebbe riprovare all'infinito qualcosa che non puo' riuscire.
   if (game.igdbId === null) {
@@ -89,7 +93,11 @@ export async function enrichGameFromIgdb(gameId: string): Promise<EnrichmentOutc
     const metadata = await fetchIgdbGameMetadata(game.igdbId);
 
     if (!metadata) {
-      await markSource(gameId, "failed", `IGDB non conosce l'id ${game.igdbId}`);
+      await markSource(
+        gameId,
+        "failed",
+        `IGDB non conosce l'id ${game.igdbId}`,
+      );
       return { status: "not_found" };
     }
 
@@ -110,9 +118,11 @@ export async function enrichGameFromIgdb(gameId: string): Promise<EnrichmentOutc
         })
         .where(eq(schema.games.id, gameId));
 
-      // Riscrittura in blocco invece di un diff: e' cio' che rende la funzione
+      // Riscrittura in blocco invece di un diff: è cio' che rende la funzione
       // idempotente, e gestisce da solo gli attributi tolti da IGDB.
-      await tx.delete(schema.gameAttributes).where(eq(schema.gameAttributes.gameId, gameId));
+      await tx
+        .delete(schema.gameAttributes)
+        .where(eq(schema.gameAttributes.gameId, gameId));
 
       if (attributeIds.length > 0) {
         await tx
@@ -122,11 +132,15 @@ export async function enrichGameFromIgdb(gameId: string): Promise<EnrichmentOutc
     });
 
     await markSource(gameId, "ok", null);
-    return { status: "ok", name: metadata.name, attributes: attributeIds.length };
+    return {
+      status: "ok",
+      name: metadata.name,
+      attributes: attributeIds.length,
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await markSource(gameId, "failed", message.slice(0, 500));
-    // Rilanciato: e' BullMQ a decidere se e quando riprovare.
+    // Rilanciato: è BullMQ a decidere se e quando riprovare.
     throw error;
   }
 }
@@ -143,6 +157,8 @@ export function findGamesNeedingIgdb(limit = 100) {
         eq(schema.gameSources.source, "igdb"),
       ),
     )
-    .where(sql`${schema.games.igdbId} is not null and ${schema.gameSources.syncedAt} is null`)
+    .where(
+      sql`${schema.games.igdbId} is not null and ${schema.gameSources.syncedAt} is null`,
+    )
     .limit(limit);
 }

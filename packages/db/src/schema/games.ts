@@ -47,7 +47,7 @@ export const games = pgTable(
     coverImageId: text("cover_image_id"),
     coverWidth: integer("cover_width"),
     coverHeight: integer("cover_height"),
-    // Voto della critica aggregato da IGDB. Allo step 3 e' l'unico che abbiamo;
+    // Voto della critica aggregato da IGDB. Allo step 3 è l'unico che abbiamo;
     // OpenCritic arrivera dopo come fonte separata, senza sovrascrivere questo.
     aggregatedRating: real("aggregated_rating"),
     aggregatedRatingCount: integer("aggregated_rating_count"),
@@ -73,7 +73,10 @@ export const externalIds = pgTable(
   },
   (table) => [
     // Lo stesso id su Steam non può puntare a due giochi diversi.
-    uniqueIndex("external_ids_source_external_id_idx").on(table.source, table.externalId),
+    uniqueIndex("external_ids_source_external_id_idx").on(
+      table.source,
+      table.externalId,
+    ),
     index("external_ids_game_id_idx").on(table.gameId),
   ],
 );

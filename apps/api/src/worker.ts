@@ -20,7 +20,7 @@ const worker = new Worker<EnrichmentJob>(
   },
   {
     connection: redisConnection,
-    // Basso di proposito: il collo di bottiglia e' il rate limit di IGDB (4
+    // Basso di proposito: il collo di bottiglia è il rate limit di IGDB (4
     // richieste al secondo), che il client gia' rispetta serializzando. Alzare
     // qui non farebbe andare piu' veloce, farebbe solo accumulare attese.
     concurrency: 2,

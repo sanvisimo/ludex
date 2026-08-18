@@ -7,7 +7,12 @@ import { enqueueIgdbEnrichment } from "../queue/enrichment";
 // Le colonne che compongono GameSchema nel contratto. Tenerle esplicite evita
 // che una colonna aggiunta allo step 3 finisca per sbaglio in una risposta
 // pubblica.
-const gameColumns = { id: true, igdbId: true, name: true, createdAt: true } as const;
+const gameColumns = {
+  id: true,
+  igdbId: true,
+  name: true,
+  createdAt: true,
+} as const;
 
 /** Catalogo pubblico: gli ultimi giochi che Ludex ha conosciuto. */
 export function listLatestGames(limit: number) {
@@ -30,15 +35,12 @@ export function findGameById(id: string) {
  * passa l'enrichment dello step 3.
  */
 export async function createGame(name: string) {
-  const [row] = await db
-    .insert(schema.games)
-    .values({ name })
-    .returning({
-      id: schema.games.id,
-      igdbId: schema.games.igdbId,
-      name: schema.games.name,
-      createdAt: schema.games.createdAt,
-    });
+  const [row] = await db.insert(schema.games).values({ name }).returning({
+    id: schema.games.id,
+    igdbId: schema.games.igdbId,
+    name: schema.games.name,
+    createdAt: schema.games.createdAt,
+  });
   return row;
 }
 
@@ -78,9 +80,9 @@ export async function resolveGameFromIgdb(igdbId: number) {
       createdAt: schema.games.createdAt,
     });
 
-  // Solo chi ha davvero creato la riga accoda: se la corsa e' stata persa, il
+  // Solo chi ha davvero creato la riga accoda: se la corsa è stata persa, il
   // job lo ha gia' messo in coda l'altro. E l'accodamento sta qui, non nella
-  // procedura oRPC, perche' vale per qualunque strada porti a un gioco nuovo —
+  // procedura oRPC, perché vale per qualunque strada porti a un gioco nuovo —
   // compreso l'import Steam dello step 4.
   if (inserted) {
     await enqueueIgdbEnrichment(inserted.id);
