@@ -11,6 +11,8 @@ const gameColumns = {
   id: true,
   igdbId: true,
   name: true,
+  coverImageId: true,
+  firstReleaseDate: true,
   createdAt: true,
 } as const;
 
@@ -31,6 +33,44 @@ export function findGameById(id: string) {
 }
 
 /**
+ * Scheda completa: i campi dell'enrichment piu gli attributi.
+ *
+ * Restituisce anche `igdbSyncedAt` da `game_sources`, cosi la UI puo distinguere
+ * "questo gioco non ha generi" da "l'enrichment non e ancora passato" — che
+ * senza questo campo sarebbero indistinguibili.
+ */
+export async function findGameDetailById(id: string) {
+  const game = await db.query.games.findFirst({
+    columns: {
+      ...gameColumns,
+      summary: true,
+      coverWidth: true,
+      coverHeight: true,
+      aggregatedRating: true,
+      aggregatedRatingCount: true,
+    },
+    where: eq(schema.games.id, id),
+    with: {
+      attributes: {
+        columns: {},
+        with: { attribute: { columns: { kind: true, igdbId: true, name: true } } },
+      },
+      sources: { columns: { source: true, syncedAt: true } },
+    },
+  });
+
+  if (!game) return null;
+
+  const { attributes, sources, ...rest } = game;
+
+  return {
+    ...rest,
+    attributes: attributes.map((row) => row.attribute),
+    igdbSyncedAt: sources.find((row) => row.source === "igdb")?.syncedAt ?? null,
+  };
+}
+
+/**
  * Crea un gioco non risolto, con il solo titolo: `igdbId` resta null finché non
  * passa l'enrichment dello step 3.
  */
@@ -39,6 +79,8 @@ export async function createGame(name: string) {
     id: schema.games.id,
     igdbId: schema.games.igdbId,
     name: schema.games.name,
+    coverImageId: schema.games.coverImageId,
+    firstReleaseDate: schema.games.firstReleaseDate,
     createdAt: schema.games.createdAt,
   });
   return row;
@@ -77,6 +119,8 @@ export async function resolveGameFromIgdb(igdbId: number) {
       id: schema.games.id,
       igdbId: schema.games.igdbId,
       name: schema.games.name,
+      coverImageId: schema.games.coverImageId,
+      firstReleaseDate: schema.games.firstReleaseDate,
       createdAt: schema.games.createdAt,
     });
 

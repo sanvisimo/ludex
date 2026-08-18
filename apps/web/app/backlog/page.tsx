@@ -6,6 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { AddGameDialog } from "@/components/add-game-dialog";
+import { GameCover } from "@/components/game-cover";
 import { OwnershipBadges } from "@/components/ownership-badges";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -82,14 +83,24 @@ export default function BacklogPage() {
             <li key={entry.id}>
               <Card>
                 <CardContent className="grid gap-3">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <Link
-                      href={`/games/${entry.game.id}`}
-                      className="font-medium underline-offset-4 hover:underline"
-                    >
-                      {entry.game.name}
-                    </Link>
-                    <OwnershipBadges ownerships={entry.ownerships} />
+                  <div className="flex items-start gap-3">
+                    <GameCover imageId={entry.game.coverImageId} name={entry.game.name} />
+                    <div className="flex flex-1 flex-wrap items-start justify-between gap-3">
+                      <div className="grid gap-0.5">
+                        <Link
+                          href={`/games/${entry.game.id}`}
+                          className="font-medium underline-offset-4 hover:underline"
+                        >
+                          {entry.game.name}
+                        </Link>
+                        {entry.game.firstReleaseDate && (
+                          <span className="text-muted-foreground">
+                            {entry.game.firstReleaseDate.getFullYear()}
+                          </span>
+                        )}
+                      </div>
+                      <OwnershipBadges ownerships={entry.ownerships} />
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">

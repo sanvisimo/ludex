@@ -11,6 +11,7 @@ import {
 import {
   createGame,
   findGameById,
+  findGameDetailById,
   listLatestGames,
   resolveGameFromIgdb,
   searchGames,
@@ -27,7 +28,7 @@ export const router = os.router({
     latest: os.games.latest.handler(({ input }) => listLatestGames(input.limit)),
 
     byId: os.games.byId.use(maybeAuthed).handler(async ({ input, context }) => {
-      const game = await findGameById(input.id);
+      const game = await findGameDetailById(input.id);
       if (!game) throw new ORPCError("NOT_FOUND", { message: "Gioco inesistente" });
 
       // Da sloggati la scheda esiste comunque, semplicemente senza stato personale.

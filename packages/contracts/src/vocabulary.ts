@@ -28,5 +28,14 @@ export const storeValues = [
   "nintendo",
 ] as const;
 
+// Tipi di attributo IGDB: generi, temi, modalita di gioco, prospettive.
+export const attributeKindValues = [
+  "genre",
+  "theme",
+  "game_mode",
+  "player_perspective",
+] as const;
+
 export type BacklogStatus = (typeof backlogStatusValues)[number];
+export type AttributeKind = (typeof attributeKindValues)[number];
 export type Store = (typeof storeValues)[number];

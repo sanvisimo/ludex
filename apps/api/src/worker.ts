@@ -3,8 +3,13 @@ import "./env";
 import { Worker } from "bullmq";
 
 import { redisConnection } from "./queue/connection";
-import { ENRICHMENT_QUEUE, type EnrichmentJob } from "./queue/enrichment";
-import { enrichGameFromIgdb } from "./services/enrichment";
+import {
+  ENRICHMENT_QUEUE,
+  enqueueIgdbEnrichment,
+  scheduleIgdbSweep,
+  type EnrichmentJob,
+} from "./queue/enrichment";
+import { enrichGameFromIgdb, findGamesNeedingIgdb } from "./services/enrichment";
 
 // Secondo entrypoint di apps/api. Stesso codebase e stessi servizi di server.ts,
 // ma qui non si espone HTTP: i job non devono girare nel processo che serve le
@@ -14,6 +19,15 @@ import { enrichGameFromIgdb } from "./services/enrichment";
 const worker = new Worker<EnrichmentJob>(
   ENRICHMENT_QUEUE,
   async (job) => {
+    if (job.data.type === "sweep") {
+      // La spazzata non arricchisce: accoda. Il lavoro vero resta un job per
+      // gioco, con i suoi tentativi e il suo stato.
+      const games = await findGamesNeedingIgdb();
+      for (const game of games) await enqueueIgdbEnrichment(game.id);
+      console.log(`[enrichment] spazzata: ${games.length} giochi accodati`);
+      return { enqueued: games.length };
+    }
+
     const outcome = await enrichGameFromIgdb(job.data.gameId);
     console.log(`[enrichment] ${job.data.gameId} -> ${outcome.status}`);
     return outcome;
@@ -30,6 +44,8 @@ const worker = new Worker<EnrichmentJob>(
 worker.on("failed", (job, error) => {
   console.error(`[enrichment] job ${job?.id} fallito:`, error.message);
 });
+
+await scheduleIgdbSweep();
 
 console.log("worker in ascolto sulla coda enrichment");
 

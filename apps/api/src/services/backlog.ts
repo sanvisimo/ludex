@@ -6,7 +6,16 @@ import { and, desc, eq } from "@repo/db/orm";
 const entryQuery = {
   columns: { id: true, status: true, createdAt: true },
   with: {
-    game: { columns: { id: true, igdbId: true, name: true, createdAt: true } },
+    game: {
+      columns: {
+        id: true,
+        igdbId: true,
+        name: true,
+        coverImageId: true,
+        firstReleaseDate: true,
+        createdAt: true,
+      },
+    },
     ownerships: { columns: { id: true, platformSlug: true, store: true } },
   },
 } as const;

@@ -1,8 +1,9 @@
 import { z } from "zod";
 
-import { backlogStatusValues, storeValues } from "./vocabulary";
+import { attributeKindValues, backlogStatusValues, storeValues } from "./vocabulary";
 
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
+export const AttributeKindSchema = z.enum(attributeKindValues);
 export const StoreSchema = z.enum(storeValues);
 
 export const PlatformSchema = z.object({
@@ -19,7 +20,30 @@ export const GameSchema = z.object({
   // per scontato che i metadata siano popolati.
   igdbId: z.number().int().nullable(),
   name: z.string(),
+  // Identificativo dell'immagine su IGDB, non un URL: la dimensione si sceglie
+  // al momento di mostrarla. Nullo finché l'enrichment non è passato.
+  coverImageId: z.string().nullable(),
+  firstReleaseDate: z.date().nullable(),
   createdAt: z.date(),
+});
+
+export const GameAttributeSchema = z.object({
+  kind: AttributeKindSchema,
+  igdbId: z.number().int(),
+  name: z.string(),
+});
+
+// Scheda completa: quello che la lista non porta perché sarebbe peso inutile.
+export const GameDetailSchema = GameSchema.extend({
+  summary: z.string().nullable(),
+  coverWidth: z.number().int().nullable(),
+  coverHeight: z.number().int().nullable(),
+  aggregatedRating: z.number().nullable(),
+  aggregatedRatingCount: z.number().int().nullable(),
+  attributes: z.array(GameAttributeSchema),
+  // Quando IGDB è stato sincronizzato con successo. Nullo = mai, e la scheda
+  // può dirlo invece di mostrare campi vuoti senza spiegazione.
+  igdbSyncedAt: z.date().nullable(),
 });
 
 // Risultato di ricerca su IGDB: NON è una riga `games`, è un candidato da cui
@@ -57,6 +81,8 @@ export const BacklogEntrySchema = z.object({
 
 export type Platform = z.infer<typeof PlatformSchema>;
 export type Game = z.infer<typeof GameSchema>;
+export type GameDetail = z.infer<typeof GameDetailSchema>;
+export type GameAttribute = z.infer<typeof GameAttributeSchema>;
 export type IgdbSearchHit = z.infer<typeof IgdbSearchHitSchema>;
 export type Ownership = z.infer<typeof OwnershipSchema>;
 export type BacklogEntry = z.infer<typeof BacklogEntrySchema>;

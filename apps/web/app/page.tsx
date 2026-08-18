@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
+import { GameCover } from "@/components/game-cover";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/orpc";
@@ -39,11 +40,19 @@ export default function CatalogPage() {
             <li key={game.id}>
               <Link href={`/games/${game.id}`} className="block">
                 <Card className="transition-colors hover:bg-muted/50">
-                  <CardContent className="flex items-baseline justify-between gap-4">
-                    <span className="font-medium">{game.name}</span>
-                    {game.igdbId === null && (
-                      <span className="shrink-0 text-muted-foreground">non risolto</span>
-                    )}
+                  <CardContent className="flex items-center gap-4">
+                    <GameCover imageId={game.coverImageId} name={game.name} />
+                    <div className="grid gap-0.5">
+                      <span className="font-medium">{game.name}</span>
+                      {game.firstReleaseDate && (
+                        <span className="text-muted-foreground">
+                          {game.firstReleaseDate.getFullYear()}
+                        </span>
+                      )}
+                      {game.igdbId === null && (
+                        <span className="text-muted-foreground">non risolto</span>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </Link>

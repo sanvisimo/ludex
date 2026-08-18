@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   BacklogEntrySchema,
   BacklogStatusSchema,
+  GameDetailSchema,
   GameSchema,
   IgdbSearchHitSchema,
   OwnershipInputSchema,
@@ -32,7 +33,7 @@ export const contract = {
     // guarda è autenticato e ha quel gioco nel backlog. È la pagina auth/no-auth.
     byId: oc
       .input(z.object({ id: z.uuid() }))
-      .output(z.object({ game: GameSchema, entry: BacklogEntrySchema.nullable() })),
+      .output(z.object({ game: GameDetailSchema, entry: BacklogEntrySchema.nullable() })),
 
     // Inserimento di un gioco non risolto, con il solo titolo. Via di scampo
     // quando IGDB non conosce il gioco: l'`igdbId` resta null e l'enrichment
