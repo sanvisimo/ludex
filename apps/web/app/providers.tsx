@@ -1,6 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -19,5 +20,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
       }),
   );
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    // `attribute="class"` perché globals.css definisce lo scuro come
+    // `@custom-variant dark (&:is(.dark *))`: serve la classe, non un data-attr.
+    // `disableTransitionOnChange` evita che al cambio tema ogni transizione CSS
+    // della pagina parta insieme, con l'effetto di una dissolvenza generale.
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </ThemeProvider>
+  );
 }

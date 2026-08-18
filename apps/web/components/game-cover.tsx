@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 
 import { igdbCoverUrl, type CoverSize } from "@/lib/igdb-image";
@@ -26,6 +29,7 @@ export function GameCover({
   size?: CoverSize;
   className?: string;
 }) {
+  const t = useTranslations("game");
   const { width, height } = DIMENSIONS[size];
 
   if (!imageId) {
@@ -46,7 +50,7 @@ export function GameCover({
   return (
     <Image
       src={igdbCoverUrl(imageId, size)}
-      alt={`Copertina di ${name}`}
+      alt={t("coverAlt", { name })}
       width={width}
       height={height}
       className={cn("shrink-0 rounded-md object-cover", className)}

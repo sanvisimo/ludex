@@ -5,6 +5,11 @@ allowBuilds:
   # esbuild scarica il binario per la piattaforma nel postinstall: senza build
   # script drizzle-kit e tsx non partono.
   esbuild: true
+  # Entrambi arrivano da next-intl e pubblicano i binari come dipendenze
+  # opzionali per piattaforma: il build script non serve. @swc/core lo usa solo
+  # l'estrattore di messaggi, @parcel/watcher solo il ricarico dei messaggi in dev.
+  '@swc/core': false
+  '@parcel/watcher': false
   # acceleratore nativo opzionale di msgpackr (BullMQ): senza, si usa il
   # fallback in JS. Nessuna perdita funzionale, un binario in meno da compilare.
   msgpackr-extract: false

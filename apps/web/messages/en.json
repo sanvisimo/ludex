@@ -1,0 +1,149 @@
+{
+  "app": {
+    "title": "Ludex",
+    "description": "What should I play now"
+  },
+  "nav": {
+    "backlog": "My backlog",
+    "signOut": "Sign out",
+    "signIn": "Sign in",
+    "signUp": "Sign up"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "locale": {
+    "label": "Language",
+    "it": "Italiano",
+    "en": "English"
+  },
+  "catalog": {
+    "title": "Recently added games",
+    "subtitle": "The catalogue Ludex knows so far.",
+    "error": "I can't load the catalogue.",
+    "empty": "No games yet. The catalogue fills up as games get added.",
+    "unresolved": "unresolved"
+  },
+  "backlog": {
+    "title": "My backlog",
+    "count": "{count, plural, one {# game} other {# games}}",
+    "error": "I can't load the backlog.",
+    "emptyTitle": "Your backlog is empty.",
+    "emptyHint": "Add your first game: search the title, pick the platform you own it on, and it shows up here.",
+    "remove": "Remove",
+    "removed": "Removed from the backlog",
+    "removeFailed": "I couldn't remove the game",
+    "statusFailed": "I couldn't change the status"
+  },
+  "addGame": {
+    "trigger": "Add game",
+    "title": "Add a game",
+    "description": "Type the title. If you want, search IGDB to link it to the metadata.",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Game title",
+    "search": "Search IGDB",
+    "unlink": "Unlink",
+    "noLinkHint": "Without a link the game stays unresolved: no metadata.",
+    "searchFailed": "Search failed. Try again.",
+    "noResults": "No results for “{query}”. You can still add it by hand.",
+    "ownershipLabel": "Where you own it",
+    "noStore": "No store",
+    "removeRow": "Remove row {number}",
+    "addPlatform": "Add platform",
+    "ownershipHint": "On PC the same game can live on Steam <em>and</em> GOG: that's two rows.",
+    "statusLabel": "Status",
+    "submit": "Add to backlog",
+    "submitting": "Adding…",
+    "added": "{name} added to the backlog",
+    "duplicate": "This game is already in your backlog",
+    "failed": "I couldn't add the game"
+  },
+  "game": {
+    "notFoundTitle": "Game not found",
+    "notFoundHint": "This game doesn't exist, or it was removed from the catalogue.",
+    "backToCatalog": "Back to the catalogue",
+    "criticRating": " / 100 from critics",
+    "reviewCount": "{count, plural, one { · # review} other { · # reviews}}",
+    "notLinked": "Game not linked to IGDB: no metadata to fetch.",
+    "notEnriched": "Metadata not fetched yet. Coming shortly.",
+    "inBacklog": "In your backlog",
+    "notInBacklog": "You don't own it",
+    "statusLine": "Status: <value>{status}</value>",
+    "goToBacklog": "Go to the backlog",
+    "notInBacklogHint": "This game isn't in your backlog. You can add it from the backlog page.",
+    "coverAlt": "{name} cover"
+  },
+  "attributeKind": {
+    "genre": "Genres",
+    "theme": "Themes",
+    "game_mode": "Modes",
+    "player_perspective": "Perspective"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Welcome back to Ludex.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "pending": "Hold on…",
+    "failed": "Sign in failed",
+    "loading": "Loading…",
+    "noAccount": "No account yet? <link>Sign up</link>"
+  },
+  "register": {
+    "title": "Sign up",
+    "subtitle": "Create your Ludex account.",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "submit": "Create account",
+    "pending": "Hold on…",
+    "failed": "Sign up failed",
+    "hasAccount": "Already have an account? <link>Sign in</link>"
+  },
+  "platform": {
+    "placeholder": "Pick a platform",
+    "empty": "No platform found."
+  },
+  "status": {
+    "backlog": "Backlog",
+    "playing": "Playing",
+    "played": "Played",
+    "dropped": "Dropped",
+    "excluded": "Not interested"
+  },
+  "store": {
+    "steam": "Steam",
+    "gog": "GOG",
+    "epic": "Epic",
+    "ea": "EA",
+    "battlenet": "Battle.net",
+    "amazon": "Amazon",
+    "psn": "PlayStation Store",
+    "xbox": "Xbox",
+    "nintendo": "Nintendo eShop"
+  },
+  "errors": {
+    "UNAUTHORIZED": "Your session expired: sign in again.",
+    "FORBIDDEN": "You don't have permission for this.",
+    "NOT_FOUND": "I can't find this any more: it may have been removed.",
+    "CONFLICT": "This already exists.",
+    "TOO_MANY_REQUESTS": "Too many requests in a row. Try again shortly.",
+    "INTERNAL_SERVER_ERROR": "Something went wrong on the server side."
+  },
+  "authErrors": {
+    "INVALID_EMAIL_OR_PASSWORD": "Wrong email or password.",
+    "INVALID_EMAIL": "This email address isn't valid.",
+    "USER_ALREADY_EXISTS": "An account with this email already exists.",
+    "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL": "An account with this email already exists: use another one.",
+    "USER_NOT_FOUND": "No account with this email.",
+    "PASSWORD_TOO_SHORT": "That password is too short.",
+    "PASSWORD_TOO_LONG": "That password is too long.",
+    "EMAIL_NOT_VERIFIED": "You need to verify your email address first.",
+    "FAILED_TO_CREATE_USER": "I couldn't create the account."
+  }
+}

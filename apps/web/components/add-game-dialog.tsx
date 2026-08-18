@@ -1,8 +1,10 @@
 "use client";
 
 import type { BacklogStatus, IgdbSearchHit, Store } from "@repo/contracts";
+import { backlogStatusValues, storeValues } from "@repo/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -28,7 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { statusItems, statusOptions, storeItems, storeOptions } from "@/lib/labels";
+import { useApiErrorMessage } from "@/lib/api-error";
+import { useStatusLabels, useStoreLabels } from "@/lib/labels";
 import { api, client } from "@/lib/orpc";
 
 const NO_STORE = "__nessuno__";
@@ -43,6 +46,11 @@ const emptyRow = (): OwnershipRow => ({
 });
 
 export function AddGameDialog() {
+  const t = useTranslations("addGame");
+  const statusLabels = useStatusLabels();
+  const storeLabels = useStoreLabels();
+  const errorMessage = useApiErrorMessage();
+
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
@@ -115,12 +123,14 @@ export function AddGameDialog() {
     onSuccess: async (entry) => {
       await queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
       await queryClient.invalidateQueries({ queryKey: api.games.latest.key() });
-      toast.success(`${entry.game.name} aggiunto al backlog`);
+      toast.success(t("added", { name: entry.game.name }));
       setOpen(false);
       reset();
     },
     onError: (error) => {
-      toast.error(error.message || "Non sono riuscito ad aggiungere il gioco");
+      // `CONFLICT` qui ha un significato preciso che vale la pena dire: il
+      // gioco c'è già, non è un errore da riprovare.
+      toast.error(errorMessage(error, { fallback: t("failed"), CONFLICT: t("duplicate") }));
     },
   });
 
@@ -132,25 +142,23 @@ export function AddGameDialog() {
         if (!next) reset();
       }}
     >
-      <DialogTrigger render={<Button>Aggiungi gioco</Button>} />
+      <DialogTrigger render={<Button>{t("trigger")}</Button>} />
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Aggiungi un gioco</DialogTitle>
-          <DialogDescription>
-            Scrivi il titolo. Se vuoi, cercalo su IGDB per collegarlo ai metadati.
-          </DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
         <div className="grid max-h-[60vh] gap-4 overflow-y-auto pr-1">
           <div className="grid gap-2">
-            <Label htmlFor="titolo">Titolo</Label>
+            <Label htmlFor="titolo">{t("titleLabel")}</Label>
             <div className="flex gap-2">
               <Input
                 id="titolo"
                 value={title}
                 onChange={(event) => editTitle(event.target.value)}
-                placeholder="Titolo del gioco"
+                placeholder={t("titlePlaceholder")}
                 autoFocus
               />
               <Button
@@ -163,7 +171,7 @@ export function AddGameDialog() {
                   setSubmitted(title);
                 }}
               >
-                Cerca su IGDB
+                {t("search")}
               </Button>
             </div>
 
@@ -175,13 +183,11 @@ export function AddGameDialog() {
                   {linked.developer ? ` · ${linked.developer}` : ""}
                 </Badge>
                 <Button type="button" variant="ghost" size="sm" onClick={() => setLinked(null)}>
-                  Scollega
+                  {t("unlink")}
                 </Button>
               </div>
             ) : (
-              <p className="text-muted-foreground">
-                Senza collegamento il gioco resta non risolto: niente metadati.
-              </p>
+              <p className="text-muted-foreground">{t("noLinkHint")}</p>
             )}
 
             {searchOpen && (
@@ -193,10 +199,10 @@ export function AddGameDialog() {
                     ))}
                   </div>
                 ) : search.error ? (
-                  <p className="p-3 text-destructive">Ricerca fallita. Riprova.</p>
+                  <p className="p-3 text-destructive">{t("searchFailed")}</p>
                 ) : search.data?.length === 0 ? (
                   <p className="p-3 text-muted-foreground">
-                    Nessun risultato per «{submitted}». Puoi aggiungerlo lo stesso a mano.
+                    {t("noResults", { query: submitted ?? "" })}
                   </p>
                 ) : (
                   <ul className="grid gap-0.5 p-1">
@@ -224,7 +230,7 @@ export function AddGameDialog() {
           </div>
 
           <div className="grid gap-2">
-            <Label>Dove ce l&apos;hai</Label>
+            <Label>{t("ownershipLabel")}</Label>
             {platforms.isPending ? (
               <Skeleton className="h-9 w-full rounded-lg" />
             ) : (
@@ -245,7 +251,7 @@ export function AddGameDialog() {
                       />
                     </div>
                     <Select
-                      items={storeItems(NO_STORE, "Nessuno store")}
+                      items={{ [NO_STORE]: t("noStore"), ...storeLabels }}
                       value={row.store}
                       onValueChange={(next) =>
                         setRows((current) =>
@@ -259,10 +265,10 @@ export function AddGameDialog() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={NO_STORE}>Nessuno store</SelectItem>
-                        {storeOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                        <SelectItem value={NO_STORE}>{t("noStore")}</SelectItem>
+                        {storeValues.map((value) => (
+                          <SelectItem key={value} value={value}>
+                            {storeLabels[value]}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -272,7 +278,7 @@ export function AddGameDialog() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        aria-label={`Togli la riga ${index + 1}`}
+                        aria-label={t("removeRow", { number: index + 1 })}
                         onClick={() =>
                           setRows((current) => current.filter((item) => item.key !== row.key))
                         }
@@ -288,19 +294,19 @@ export function AddGameDialog() {
                   className="w-fit"
                   onClick={() => setRows((current) => [...current, emptyRow()])}
                 >
-                  Aggiungi piattaforma
+                  {t("addPlatform")}
                 </Button>
               </div>
             )}
             <p className="text-muted-foreground">
-              Su PC lo stesso gioco può stare su Steam <em>e</em> GOG: sono due righe.
+              {t.rich("ownershipHint", { em: (chunks) => <em>{chunks}</em> })}
             </p>
           </div>
 
           <div className="grid gap-2">
-            <Label>Stato</Label>
+            <Label>{t("statusLabel")}</Label>
             <Select
-              items={statusItems}
+              items={statusLabels}
               value={status}
               onValueChange={(next) => setStatus(next as BacklogStatus)}
             >
@@ -308,9 +314,9 @@ export function AddGameDialog() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {statusOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                {backlogStatusValues.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {statusLabels[value]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -320,7 +326,7 @@ export function AddGameDialog() {
 
         <DialogFooter>
           <Button onClick={() => add.mutate()} disabled={!canSubmit || add.isPending}>
-            {add.isPending ? "Aggiungo…" : "Aggiungi al backlog"}
+            {add.isPending ? t("submitting") : t("submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

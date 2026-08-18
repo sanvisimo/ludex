@@ -1,0 +1,149 @@
+{
+  "app": {
+    "title": "Ludex",
+    "description": "Cosa gioco adesso"
+  },
+  "nav": {
+    "backlog": "Il mio backlog",
+    "signOut": "Esci",
+    "signIn": "Accedi",
+    "signUp": "Registrati"
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "system": "Sistema"
+  },
+  "locale": {
+    "label": "Lingua",
+    "it": "Italiano",
+    "en": "English"
+  },
+  "catalog": {
+    "title": "Ultimi giochi inseriti",
+    "subtitle": "Il catalogo che Ludex conosce finora.",
+    "error": "Non riesco a caricare il catalogo.",
+    "empty": "Ancora nessun gioco. Il catalogo si riempie man mano che vengono aggiunti.",
+    "unresolved": "non risolto"
+  },
+  "backlog": {
+    "title": "Il mio backlog",
+    "count": "{count, plural, one {# gioco} other {# giochi}}",
+    "error": "Non riesco a caricare il backlog.",
+    "emptyTitle": "Il backlog è vuoto.",
+    "emptyHint": "Aggiungi il primo gioco: cerca il titolo, scegli su che piattaforma ce l'hai, e comparirà qui.",
+    "remove": "Rimuovi",
+    "removed": "Rimosso dal backlog",
+    "removeFailed": "Non sono riuscito a rimuovere il gioco",
+    "statusFailed": "Non sono riuscito a cambiare lo stato"
+  },
+  "addGame": {
+    "trigger": "Aggiungi gioco",
+    "title": "Aggiungi un gioco",
+    "description": "Scrivi il titolo. Se vuoi, cercalo su IGDB per collegarlo ai metadati.",
+    "titleLabel": "Titolo",
+    "titlePlaceholder": "Titolo del gioco",
+    "search": "Cerca su IGDB",
+    "unlink": "Scollega",
+    "noLinkHint": "Senza collegamento il gioco resta non risolto: niente metadati.",
+    "searchFailed": "Ricerca fallita. Riprova.",
+    "noResults": "Nessun risultato per «{query}». Puoi aggiungerlo lo stesso a mano.",
+    "ownershipLabel": "Dove ce l'hai",
+    "noStore": "Nessuno store",
+    "removeRow": "Togli la riga {number}",
+    "addPlatform": "Aggiungi piattaforma",
+    "ownershipHint": "Su PC lo stesso gioco può stare su Steam <em>e</em> GOG: sono due righe.",
+    "statusLabel": "Stato",
+    "submit": "Aggiungi al backlog",
+    "submitting": "Aggiungo…",
+    "added": "{name} aggiunto al backlog",
+    "duplicate": "Questo gioco è già nel tuo backlog",
+    "failed": "Non sono riuscito ad aggiungere il gioco"
+  },
+  "game": {
+    "notFoundTitle": "Gioco non trovato",
+    "notFoundHint": "Questo gioco non esiste, o è stato rimosso dal catalogo.",
+    "backToCatalog": "Torna al catalogo",
+    "criticRating": " / 100 dalla critica",
+    "reviewCount": "{count, plural, one { · # recensione} other { · # recensioni}}",
+    "notLinked": "Gioco non collegato a IGDB: nessun metadato da recuperare.",
+    "notEnriched": "Metadati non ancora recuperati. Arrivano a breve.",
+    "inBacklog": "Nel tuo backlog",
+    "notInBacklog": "Non ce l'hai",
+    "statusLine": "Stato: <value>{status}</value>",
+    "goToBacklog": "Vai al backlog",
+    "notInBacklogHint": "Questo gioco non è nel tuo backlog. Puoi aggiungerlo dalla pagina del backlog.",
+    "coverAlt": "Copertina di {name}"
+  },
+  "attributeKind": {
+    "genre": "Generi",
+    "theme": "Temi",
+    "game_mode": "Modalità",
+    "player_perspective": "Prospettiva"
+  },
+  "login": {
+    "title": "Accedi",
+    "subtitle": "Bentornato su Ludex.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Accedi",
+    "pending": "Attendi…",
+    "failed": "Accesso fallito",
+    "loading": "Caricamento…",
+    "noAccount": "Non hai un account? <link>Registrati</link>"
+  },
+  "register": {
+    "title": "Registrati",
+    "subtitle": "Crea il tuo account Ludex.",
+    "name": "Nome",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "Almeno 8 caratteri.",
+    "submit": "Crea account",
+    "pending": "Attendi…",
+    "failed": "Registrazione fallita",
+    "hasAccount": "Hai già un account? <link>Accedi</link>"
+  },
+  "platform": {
+    "placeholder": "Scegli una piattaforma",
+    "empty": "Nessuna piattaforma trovata."
+  },
+  "status": {
+    "backlog": "Da giocare",
+    "playing": "In corso",
+    "played": "Finito",
+    "dropped": "Abbandonato",
+    "excluded": "Non mi interessa"
+  },
+  "store": {
+    "steam": "Steam",
+    "gog": "GOG",
+    "epic": "Epic",
+    "ea": "EA",
+    "battlenet": "Battle.net",
+    "amazon": "Amazon",
+    "psn": "PlayStation Store",
+    "xbox": "Xbox",
+    "nintendo": "Nintendo eShop"
+  },
+  "errors": {
+    "UNAUTHORIZED": "La sessione è scaduta: accedi di nuovo.",
+    "FORBIDDEN": "Non hai i permessi per questa operazione.",
+    "NOT_FOUND": "Non trovo più questo elemento: forse è stato rimosso.",
+    "CONFLICT": "Questo elemento esiste già.",
+    "TOO_MANY_REQUESTS": "Troppe richieste di fila. Riprova fra poco.",
+    "INTERNAL_SERVER_ERROR": "Qualcosa è andato storto dalla parte del server."
+  },
+  "authErrors": {
+    "INVALID_EMAIL_OR_PASSWORD": "Email o password non corretti.",
+    "INVALID_EMAIL": "Questo indirizzo email non è valido.",
+    "USER_ALREADY_EXISTS": "Esiste già un account con questa email.",
+    "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL": "Esiste già un account con questa email: usane un'altra.",
+    "USER_NOT_FOUND": "Nessun account con questa email.",
+    "PASSWORD_TOO_SHORT": "La password è troppo corta.",
+    "PASSWORD_TOO_LONG": "La password è troppo lunga.",
+    "EMAIL_NOT_VERIFIED": "Devi prima verificare l'indirizzo email.",
+    "FAILED_TO_CREATE_USER": "Non sono riuscito a creare l'account."
+  }
+}

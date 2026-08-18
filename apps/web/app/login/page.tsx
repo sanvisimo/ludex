@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn } from "@repo/auth/client";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuthErrorMessage } from "@/lib/auth-error";
 
 /**
  * `next` arriva dall'URL, quindi è input non fidato: si accettano solo percorsi
@@ -23,6 +25,8 @@ function safeNext(value: string | null) {
 }
 
 function LoginForm() {
+  const t = useTranslations("login");
+  const authErrorMessage = useAuthErrorMessage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +45,7 @@ function LoginForm() {
 
     setPending(false);
     if (error) {
-      setError(error.message ?? "Accesso fallito");
+      setError(authErrorMessage(error, t("failed")));
       return;
     }
 
@@ -53,11 +57,11 @@ function LoginForm() {
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
       <div className="grid gap-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("email")}</Label>
         <Input id="email" name="email" type="email" required autoComplete="email" />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t("password")}</Label>
         <Input
           id="password"
           name="password"
@@ -74,31 +78,36 @@ function LoginForm() {
       )}
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Attendi…" : "Accedi"}
+        {pending ? t("pending") : t("submit")}
       </Button>
 
       <p className="text-center text-muted-foreground">
-        Non hai un account?{" "}
-        <Link href="/register" className="text-foreground underline underline-offset-4">
-          Registrati
-        </Link>
+        {t.rich("noAccount", {
+          link: (chunks) => (
+            <Link href="/register" className="text-foreground underline underline-offset-4">
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
     </form>
   );
 }
 
 export default function LoginPage() {
+  const t = useTranslations("login");
+
   return (
     <main className="flex min-h-svh items-center justify-center p-6">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-lg">Accedi</CardTitle>
-          <CardDescription>Bentornato su Ludex.</CardDescription>
+          <CardTitle className="text-lg">{t("title")}</CardTitle>
+          <CardDescription>{t("subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* useSearchParams richiede un confine di Suspense, o la pagina non
               può restare prerenderizzata staticamente. */}
-          <Suspense fallback={<p className="text-muted-foreground">Caricamento…</p>}>
+          <Suspense fallback={<p className="text-muted-foreground">{t("loading")}</p>}>
             <LoginForm />
           </Suspense>
         </CardContent>

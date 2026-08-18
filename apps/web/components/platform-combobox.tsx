@@ -1,6 +1,7 @@
 "use client";
 
 import type { Platform } from "@repo/contracts";
+import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 
 import {
@@ -25,6 +26,7 @@ export function PlatformCombobox({
   value: string | null;
   onValueChange: (value: string | null) => void;
 }) {
+  const t = useTranslations("platform");
   const slugs = useMemo(() => platforms.map((platform) => platform.slug), [platforms]);
   const nameBySlug = useMemo(
     () => new Map(platforms.map((platform) => [platform.slug, platform.name])),
@@ -42,9 +44,9 @@ export function PlatformCombobox({
     >
       {/* ComboboxInput È il campo: contiene già input e chevron. Non va dentro
           il popup, altrimenti il posizionamento perde l'ancora. */}
-      <ComboboxInput placeholder="Scegli una piattaforma" className="w-full" />
+      <ComboboxInput placeholder={t("placeholder")} className="w-full" />
       <ComboboxContent>
-        <ComboboxEmpty>Nessuna piattaforma trovata.</ComboboxEmpty>
+        <ComboboxEmpty>{t("empty")}</ComboboxEmpty>
         <ComboboxList>
           {(slug: string) => (
             <ComboboxItem key={slug} value={slug}>

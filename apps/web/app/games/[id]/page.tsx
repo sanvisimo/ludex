@@ -2,6 +2,7 @@
 
 import type { GameAttribute } from "@repo/contracts";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { use } from "react";
 
@@ -11,15 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { statusLabels } from "@/lib/labels";
+import { useStatusLabels } from "@/lib/labels";
 import { api } from "@/lib/orpc";
-
-const KIND_LABELS: Record<GameAttribute["kind"], string> = {
-  genre: "Generi",
-  theme: "Temi",
-  game_mode: "Modalità",
-  player_perspective: "Prospettiva",
-};
 
 const KIND_ORDER: GameAttribute["kind"][] = [
   "genre",
@@ -29,6 +23,8 @@ const KIND_ORDER: GameAttribute["kind"][] = [
 ];
 
 function AttributeGroups({ attributes }: { attributes: GameAttribute[] }) {
+  const t = useTranslations("attributeKind");
+
   return (
     <div className="grid gap-3">
       {KIND_ORDER.map((kind) => {
@@ -36,7 +32,7 @@ function AttributeGroups({ attributes }: { attributes: GameAttribute[] }) {
         if (items.length === 0) return null;
         return (
           <div key={kind} className="grid gap-1">
-            <span className="text-muted-foreground">{KIND_LABELS[kind]}</span>
+            <span className="text-muted-foreground">{t(kind)}</span>
             <div className="flex flex-wrap gap-1">
               {items.map((item) => (
                 <Badge key={`${item.kind}-${item.igdbId}`} variant="secondary">
@@ -54,6 +50,9 @@ function AttributeGroups({ attributes }: { attributes: GameAttribute[] }) {
 // Pagina auth/no-auth: il gioco si vede sempre, `entry` arriva popolata solo se
 // chi guarda è autenticato e ce l'ha nel backlog.
 export default function GamePage({ params }: { params: Promise<{ id: string }> }) {
+  const t = useTranslations("game");
+  const statusLabels = useStatusLabels();
+
   const { id } = use(params);
   const { data, isPending, error } = useQuery(api.games.byId.queryOptions({ input: { id } }));
 
@@ -69,12 +68,10 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
   if (error) {
     return (
       <main className="mx-auto grid max-w-3xl gap-4 p-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Gioco non trovato</h1>
-        <p className="text-muted-foreground">
-          Questo gioco non esiste, o è stato rimosso dal catalogo.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("notFoundTitle")}</h1>
+        <p className="text-muted-foreground">{t("notFoundHint")}</p>
         <Button variant="outline" className="w-fit" nativeButton={false} render={<Link href="/" />}>
-          Torna al catalogo
+          {t("backToCatalog")}
         </Button>
       </main>
     );
@@ -98,9 +95,10 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
             <p>
               <span className="font-medium">{Math.round(game.aggregatedRating)}</span>
               <span className="text-muted-foreground">
-                {" "}
-                / 100 dalla critica
-                {game.aggregatedRatingCount ? ` · ${game.aggregatedRatingCount} recensioni` : ""}
+                {t("criticRating")}
+                {game.aggregatedRatingCount
+                  ? t("reviewCount", { count: game.aggregatedRatingCount })
+                  : ""}
               </span>
             </p>
           )}
@@ -111,9 +109,7 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
               una scheda vuota sembrerebbe un gioco senza metadati. */}
           {game.igdbSyncedAt === null && (
             <p className="text-muted-foreground">
-              {game.igdbId === null
-                ? "Gioco non collegato a IGDB: nessun metadato da recuperare."
-                : "Metadati non ancora recuperati. Arrivano a breve."}
+              {game.igdbId === null ? t("notLinked") : t("notEnriched")}
             </p>
           )}
         </div>
@@ -129,13 +125,16 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
       <Card>
         <CardHeader>
-          <CardTitle>{entry ? "Nel tuo backlog" : "Non ce l'hai"}</CardTitle>
+          <CardTitle>{entry ? t("inBacklog") : t("notInBacklog")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
           {entry ? (
             <>
               <p>
-                Stato: <span className="font-medium">{statusLabels[entry.status]}</span>
+                {t.rich("statusLine", {
+                  status: statusLabels[entry.status],
+                  value: (chunks) => <span className="font-medium">{chunks}</span>,
+                })}
               </p>
               <OwnershipBadges ownerships={entry.ownerships} />
               <Button
@@ -144,13 +143,11 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
                 nativeButton={false}
                 render={<Link href="/backlog" />}
               >
-                Vai al backlog
+                {t("goToBacklog")}
               </Button>
             </>
           ) : (
-            <p className="text-muted-foreground">
-              Questo gioco non è nel tuo backlog. Puoi aggiungerlo dalla pagina del backlog.
-            </p>
+            <p className="text-muted-foreground">{t("notInBacklogHint")}</p>
           )}
         </CardContent>
       </Card>

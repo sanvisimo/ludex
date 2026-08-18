@@ -1,7 +1,9 @@
 "use client";
 
 import type { BacklogStatus } from "@repo/contracts";
+import { backlogStatusValues } from "@repo/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -18,10 +20,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { statusItems, statusOptions } from "@/lib/labels";
+import { useApiErrorMessage } from "@/lib/api-error";
+import { useStatusLabels } from "@/lib/labels";
 import { api, client } from "@/lib/orpc";
 
 export default function BacklogPage() {
+  const t = useTranslations("backlog");
+  const statusLabels = useStatusLabels();
+  const errorMessage = useApiErrorMessage();
+
   const queryClient = useQueryClient();
   const backlog = useQuery(api.backlog.list.queryOptions());
 
@@ -33,34 +40,32 @@ export default function BacklogPage() {
     mutationFn: (input: { id: string; status: BacklogStatus }) =>
       client.backlog.setStatus(input),
     onSuccess: refresh,
-    onError: () => toast.error("Non sono riuscito a cambiare lo stato"),
+    onError: (error) => toast.error(errorMessage(error, { fallback: t("statusFailed") })),
   });
 
   const remove = useMutation({
     mutationFn: (id: string) => client.backlog.remove({ id }),
     onSuccess: async () => {
       await refresh();
-      toast.success("Rimosso dal backlog");
+      toast.success(t("removed"));
     },
-    onError: () => toast.error("Non sono riuscito a rimuovere il gioco"),
+    onError: (error) => toast.error(errorMessage(error, { fallback: t("removeFailed") })),
   });
 
   return (
     <main className="mx-auto grid max-w-4xl gap-6 p-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="grid gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Il mio backlog</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">
-            {backlog.data
-              ? `${backlog.data.length} ${backlog.data.length === 1 ? "gioco" : "giochi"}`
-              : " "}
+            {backlog.data ? t("count", { count: backlog.data.length }) : " "}
           </p>
         </div>
         <AddGameDialog />
       </header>
 
       {backlog.error ? (
-        <p className="text-destructive">Non riesco a caricare il backlog.</p>
+        <p className="text-destructive">{t("error")}</p>
       ) : backlog.isPending ? (
         <div className="grid gap-2">
           {Array.from({ length: 3 }).map((_, index) => (
@@ -70,11 +75,8 @@ export default function BacklogPage() {
       ) : backlog.data.length === 0 ? (
         <Card>
           <CardContent className="grid gap-2">
-            <p className="font-medium">Il backlog è vuoto.</p>
-            <p className="text-muted-foreground">
-              Aggiungi il primo gioco: cerca il titolo, scegli su che piattaforma ce
-              l&apos;hai, e comparirà qui.
-            </p>
+            <p className="font-medium">{t("emptyTitle")}</p>
+            <p className="text-muted-foreground">{t("emptyHint")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -105,7 +107,7 @@ export default function BacklogPage() {
 
                   <div className="flex flex-wrap items-center gap-2">
                     <Select
-                      items={statusItems}
+                      items={statusLabels}
                       value={entry.status}
                       onValueChange={(next) =>
                         setStatus.mutate({ id: entry.id, status: next as BacklogStatus })
@@ -115,9 +117,9 @@ export default function BacklogPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {statusOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                        {backlogStatusValues.map((value) => (
+                          <SelectItem key={value} value={value}>
+                            {statusLabels[value]}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -130,7 +132,7 @@ export default function BacklogPage() {
                       onClick={() => remove.mutate(entry.id)}
                       disabled={remove.isPending}
                     >
-                      Rimuovi
+                      {t("remove")}
                     </Button>
                   </div>
                 </CardContent>
