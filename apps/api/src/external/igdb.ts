@@ -290,3 +290,59 @@ export async function fetchIgdbGameMetadata(igdbId: number): Promise<IgdbGameMet
     ],
   };
 }
+
+// --- Piattaforme: arnese di riconciliazione, non codice di runtime ---
+//
+// La nostra tabella `platforms` è seedata da Playnite e la colonna `igdb_id`
+// arriva dallo stesso file, presa sulla fiducia: mai verificata contro IGDB, con
+// almeno un id duplicato fra due righe. Questo serve allo script di audit che
+// mette le due liste a confronto. Non lo chiama nessun servizio.
+
+export type IgdbPlatform = {
+  igdbId: number;
+  name: string;
+  slug: string;
+  alternativeName: string | null;
+  abbreviation: string | null;
+  generation: number | null;
+};
+
+type IgdbPlatformRow = {
+  id: number;
+  name: string;
+  slug: string;
+  alternative_name?: string;
+  abbreviation?: string;
+  generation?: number;
+};
+
+const PLATFORM_FIELDS = "fields name, slug, alternative_name, abbreviation, generation;";
+
+// 500 è il massimo che IGDB accetta. Le piattaforme sono un paio di centinaio,
+// quindi in pratica basta un giro: si scorre comunque, per non dipendere da un
+// conteggio che può crescere.
+const PLATFORM_PAGE = 500;
+
+export async function fetchIgdbPlatforms(): Promise<IgdbPlatform[]> {
+  const collected: IgdbPlatform[] = [];
+
+  for (let offset = 0; ; offset += PLATFORM_PAGE) {
+    const page = await query<IgdbPlatformRow[]>(
+      "platforms",
+      `${PLATFORM_FIELDS} sort id asc; limit ${PLATFORM_PAGE}; offset ${offset};`,
+    );
+
+    collected.push(
+      ...page.map((row) => ({
+        igdbId: row.id,
+        name: row.name,
+        slug: row.slug,
+        alternativeName: row.alternative_name ?? null,
+        abbreviation: row.abbreviation ?? null,
+        generation: row.generation ?? null,
+      })),
+    );
+
+    if (page.length < PLATFORM_PAGE) return collected;
+  }
+}

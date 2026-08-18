@@ -88,7 +88,9 @@ residui dello scaffold `create-turbo`.
 ## Fonti dati esterne
 
 - **IGDB** — metadata primario
-- **STEAMGRIDDB** - metadata immagini
+- **STEAMGRIDDB** — copertine alternative, per sostituire quella di IGDB. Arriva
+  allo **step 5**, con la modifica del gioco: non serve prima, perché prima non
+  c'è nessun posto da cui scegliere.
 - **OpenCritic** — punteggi critica
 - **HowLongToBeat** — nessuna API ufficiale: scraping server-side (stesso approccio
   del plugin Playnite), risultati **sempre cachati in DB**. Mai scraping a runtime
@@ -118,6 +120,14 @@ SQL può fare in modo deterministico.
   fonti arrivano in step diversi (IGDB allo step 3, HLTB allo step 6) e i dati
   vanno riaggiornati nel tempo. Quando una fonte nuova popola un gioco già
   presente, **l'embedding va rigenerato**.
+- «Da riarricchire» non vuol dire solo «mai arricchito»: la spazzata periodica
+  deve pescare anche i giochi con `synced_at` più vecchio di una soglia **per
+  fonte** (IGDB cambia spesso, HLTB pochissimo). Senza soglia la coda va in
+  quiescenza appena tutto è sincronizzato una volta, e i dati invecchiano zitti.
+- Un fallimento **definitivo** va distinto da uno temporaneo. Un `igdbId` che
+  IGDB non conosce non riuscirà mai: la spazzata deve avere un tetto ai
+  tentativi, o riaccoda per sempre lo stesso gioco irrisolvibile. I tentativi
+  dentro un singolo job li governa BullMQ; questo è il livello sopra.
 - A runtime si embedda **solo la query dell'utente** (stringa breve) per la
   similarity search.
 
@@ -161,7 +171,7 @@ possesso. Conseguenze:
 - **la wishlist è una tabella separata**, non giochi "non posseduti" dentro
   `backlog`. Così ogni query su `backlog` resta semplice. Comprato il gioco, la
   riga migra. Anche i giochi in wishlist puntano a `games` e vanno arricchiti:
-  durata e voti servono *prima* dell'acquisto.
+  durata e voti servono *prima* dell'acquisto. È lo **step 8**.
 - **stato**: `backlog` / `playing` / `played` / `dropped` / `excluded`. `excluded`
   ("non voglio giocarlo") è uno stato, non una tabella: è un segnale negativo
   esplicito e allo step 7 vale più di molte valutazioni positive.
@@ -183,11 +193,22 @@ possesso. Conseguenze:
 3. **Recupero dati esterni** — l'**enrichment** vero e proprio: una fonte alla
    volta, IGDB per prima. Introduce la pipeline BullMQ e il worker.
 4. **Import libreria Steam** — la prima libreria automatica. Riusa la pipeline
-   dello step 3, che deve già esistere e reggere il volume.
-5. **Campi personali** — voto, tag e categorie dell'utente. Insieme **chiuso** di
-   campi strutturati, non campi arbitrari definiti dall'utente: niente JSONB o EAV.
+   dello step 3, che deve già esistere e reggere il volume. Porta con sé la
+   scrittura idempotente dei possessi (`ensureOwnership`): un gioco già nel
+   backlog, aggiunto a mano su un'altra piattaforma, deve prendersi il possesso
+   `(pc, steam)` senza duplicare la riga di backlog né toccarne lo stato.
+5. **Modifica del gioco** — tre cose che hanno senso solo insieme, perché sono la
+   stessa schermata:
+   - **campi personali**: voto, tag e categorie. Insieme **chiuso** di campi
+     strutturati, non campi arbitrari definiti dall'utente: niente JSONB o EAV.
+   - **possessi**: le mutazioni oRPC che espongono la scrittura già scritta allo
+     step 4. Fino a qui l'unico modo di aggiungere una piattaforma è cancellare
+     la riga e rifarla.
+   - **copertina**: scelta da SteamGridDB, per non subire quella di IGDB.
 6. **Recupero HLTB**
 7. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding.
+8. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
+   posseduti.
 
 Ricerca ed enrichment sono due usi distinti di IGDB e non vanno confusi: lo step 2
 cerca e salva id e titolo, in modo sincrono e senza coda; lo step 3 scarica i
@@ -211,6 +232,22 @@ banali: se non è stata analizzata, non si scrive.
 
 In pratica: leggere il codice e il contesto esistente → esporre cosa si è trovato
 e le opzioni → attendere la decisione → solo a quel punto implementare.
+
+### Test
+
+Introdotti **prima dello step 4**, perché l'import Steam è la prima cosa che non
+si verifica guardando il DB a mano: deduplica fra utenti, idempotenza del
+reimport e risoluzione appid → IGDB non si controllano rilanciando l'import
+contro IGDB vero, si brucia solo rate limit.
+
+Vitest, e **contro un Postgres vero** (`ludex_test` nello stesso container, le
+stesse migration): la logica che conta è tutta fatta di upsert e vincoli unique,
+quindi mockare il DB testerebbe il mock. Le fonti esterne invece si stubbano al
+confine `fetch` — nei test non si esce in rete.
+
+Niente inseguimento della copertura: si testano le scritture idempotenti e la
+risoluzione dell'identità dei giochi, che sono le cose che rompendosi corrompono
+dati condivisi fra tutti gli utenti.
 
 ### Ambiente
 

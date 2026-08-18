@@ -10,7 +10,8 @@
     "dev:worker": "tsx watch src/worker.ts",
     "start": "tsx src/server.ts",
     "start:worker": "tsx src/worker.ts",
-    "backfill": "tsx src/scripts/backfill.ts"
+    "backfill": "tsx src/scripts/backfill.ts",
+    "platforms:audit": "tsx src/scripts/platforms-audit.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.0",

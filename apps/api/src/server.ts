@@ -59,12 +59,6 @@ app.use("/rpc/*", async (c, next) => {
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-app.get("/me", async (c) => {
-  const session = await auth.api.getSession({ headers: c.req.raw.headers });
-  if (!session) return c.json({ error: "non autenticato" }, 401);
-  return c.json({ user: session.user });
-});
-
 serve({ fetch: app.fetch, port }, ({ port }) => {
   console.log(`api in ascolto su http://localhost:${port}`);
 });
