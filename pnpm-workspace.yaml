@@ -5,6 +5,9 @@ allowBuilds:
   # esbuild scarica il binario per la piattaforma nel postinstall: senza build
   # script drizzle-kit e tsx non partono.
   esbuild: true
+  # acceleratore nativo opzionale di msgpackr (BullMQ): senza, si usa il
+  # fallback in JS. Nessuna perdita funzionale, un binario in meno da compilare.
+  msgpackr-extract: false
 minimumReleaseAgeExclude:
   - '@better-auth/core@1.6.27'
   - '@better-auth/drizzle-adapter@1.6.27'

@@ -2,6 +2,7 @@ import { db, schema } from "@repo/db";
 import { desc, eq } from "@repo/db/orm";
 
 import { findIgdbGameById, searchIgdbGames } from "../external/igdb";
+import { enqueueIgdbEnrichment } from "../queue/enrichment";
 
 // Le colonne che compongono GameSchema nel contratto. Tenerle esplicite evita
 // che una colonna aggiunta allo step 3 finisca per sbaglio in una risposta
@@ -77,5 +78,14 @@ export async function resolveGameFromIgdb(igdbId: number) {
       createdAt: schema.games.createdAt,
     });
 
-  return inserted ?? ((await findGameByIgdbId(igdbId)) ?? null);
+  // Solo chi ha davvero creato la riga accoda: se la corsa e' stata persa, il
+  // job lo ha gia' messo in coda l'altro. E l'accodamento sta qui, non nella
+  // procedura oRPC, perche' vale per qualunque strada porti a un gioco nuovo —
+  // compreso l'import Steam dello step 4.
+  if (inserted) {
+    await enqueueIgdbEnrichment(inserted.id);
+    return inserted;
+  }
+
+  return (await findGameByIgdbId(igdbId)) ?? null;
 }

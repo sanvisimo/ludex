@@ -204,3 +204,89 @@ export async function findIgdbGameById(igdbId: number): Promise<IgdbSearchHit | 
   const game = games[0];
   return game ? toHit(game) : null;
 }
+
+// --- Enrichment (step 3): metadati completi, non la ricerca ---
+
+const DETAIL_FIELDS = [
+  "fields name, summary, first_release_date, aggregated_rating, aggregated_rating_count,",
+  "cover.image_id, cover.width, cover.height,",
+  "genres.id, genres.name, themes.id, themes.name,",
+  "game_modes.id, game_modes.name, player_perspectives.id, player_perspectives.name;",
+].join(" ");
+
+type IgdbNamed = { id: number; name: string };
+
+type IgdbGameDetail = {
+  id: number;
+  name: string;
+  summary?: string;
+  first_release_date?: number;
+  aggregated_rating?: number;
+  aggregated_rating_count?: number;
+  cover?: { image_id?: string; width?: number; height?: number };
+  genres?: IgdbNamed[];
+  themes?: IgdbNamed[];
+  game_modes?: IgdbNamed[];
+  player_perspectives?: IgdbNamed[];
+};
+
+export type IgdbAttribute = {
+  kind: "genre" | "theme" | "game_mode" | "player_perspective";
+  igdbId: number;
+  name: string;
+};
+
+export type IgdbGameMetadata = {
+  igdbId: number;
+  name: string;
+  summary: string | null;
+  firstReleaseDate: Date | null;
+  coverImageId: string | null;
+  coverWidth: number | null;
+  coverHeight: number | null;
+  aggregatedRating: number | null;
+  aggregatedRatingCount: number | null;
+  attributes: IgdbAttribute[];
+};
+
+function collect(
+  kind: IgdbAttribute["kind"],
+  entries: IgdbNamed[] | undefined,
+): IgdbAttribute[] {
+  return (entries ?? []).map((entry) => ({ kind, igdbId: entry.id, name: entry.name }));
+}
+
+/**
+ * Metadati completi per l'enrichment. Separato da `findIgdbGameById`, che serve
+ * alla risoluzione sincrona dello step 2 e chiede molti meno campi: sono due usi
+ * distinti di IGDB e vanno tenuti distinti.
+ */
+export async function fetchIgdbGameMetadata(igdbId: number): Promise<IgdbGameMetadata | null> {
+  const games = await query<IgdbGameDetail[]>(
+    "games",
+    `where id = ${Math.trunc(igdbId)}; ${DETAIL_FIELDS} limit 1;`,
+  );
+
+  const game = games[0];
+  if (!game) return null;
+
+  return {
+    igdbId: game.id,
+    name: game.name,
+    summary: game.summary ?? null,
+    firstReleaseDate: game.first_release_date
+      ? new Date(game.first_release_date * 1000)
+      : null,
+    coverImageId: game.cover?.image_id ?? null,
+    coverWidth: game.cover?.width ?? null,
+    coverHeight: game.cover?.height ?? null,
+    aggregatedRating: game.aggregated_rating ?? null,
+    aggregatedRatingCount: game.aggregated_rating_count ?? null,
+    attributes: [
+      ...collect("genre", game.genres),
+      ...collect("theme", game.themes),
+      ...collect("game_mode", game.game_modes),
+      ...collect("player_perspective", game.player_perspectives),
+    ],
+  };
+}

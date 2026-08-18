@@ -8,6 +8,7 @@
     "WEB_URL",
     "API_PORT",
     "NEXT_PUBLIC_API_URL",
+    "REDIS_URL",
     "IGDB_CLIENT_ID",
     "IGDB_CLIENT_SECRET",
     "STEAMGRIDDB_API_KEY"

@@ -1,5 +1,15 @@
 import { storeValues } from "@repo/contracts/vocabulary";
-import { index, integer, pgEnum, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  real,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 import { timestamps } from "./timestamps";
 
@@ -25,6 +35,23 @@ export const games = pgTable(
     // scontato che i metadata siano popolati.
     igdbId: integer("igdb_id").unique(),
     name: text("name").notNull(),
+
+    // --- metadati, popolati dall'enrichment dello step 3 ---
+    // Tutti nullable: un gioco esiste prima di essere arricchito, e le fonti
+    // arrivano in momenti diversi. Che cosa sia gia stato preso lo dice
+    // `game_sources`, non il fatto che una colonna sia piena.
+    summary: text("summary"),
+    firstReleaseDate: timestamp("first_release_date"),
+    // IGDB restituisce un `image_id`: l'URL si compone al momento di mostrarlo,
+    // scegliendo la dimensione. Salvare l'URL gia fatto vincolerebbe al formato.
+    coverImageId: text("cover_image_id"),
+    coverWidth: integer("cover_width"),
+    coverHeight: integer("cover_height"),
+    // Voto della critica aggregato da IGDB. Allo step 3 e' l'unico che abbiamo;
+    // OpenCritic arrivera dopo come fonte separata, senza sovrascrivere questo.
+    aggregatedRating: real("aggregated_rating"),
+    aggregatedRatingCount: integer("aggregated_rating_count"),
+
     ...timestamps,
   },
   // Ordinamento del catalogo pubblico: ultimi giochi conosciuti da Ludex.

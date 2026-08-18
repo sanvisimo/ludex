@@ -6,4 +6,6 @@ export * from "./auth";
 export * from "./platforms";
 export * from "./games";
 export * from "./backlog";
+export * from "./attributes";
+export * from "./sources";
 export * from "./relations";

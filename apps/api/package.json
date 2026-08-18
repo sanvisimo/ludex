@@ -4,9 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "concurrently -n server,worker -c blue,magenta \"tsx watch src/server.ts\" \"tsx watch src/worker.ts\"",
     "lint": "eslint . --max-warnings 0",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "dev:worker": "tsx watch src/worker.ts",
+    "start": "tsx src/server.ts",
+    "start:worker": "tsx src/worker.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.0",
@@ -14,13 +17,16 @@
     "@repo/auth": "workspace:*",
     "@repo/contracts": "workspace:*",
     "@repo/db": "workspace:*",
+    "bullmq": "^6.1.2",
     "dotenv": "^17.4.2",
-    "hono": "^4.13.1"
+    "hono": "^4.13.1",
+    "ioredis": "^6.0.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
+    "concurrently": "^10.0.5",
     "eslint": "^9.39.1",
     "tsx": "^4.23.12",
     "typescript": "5.9.2"

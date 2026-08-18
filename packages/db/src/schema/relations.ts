@@ -1,8 +1,10 @@
 import { relations } from "drizzle-orm";
 
+import { gameAttributes, igdbAttributes } from "./attributes";
 import { backlog, ownerships } from "./backlog";
 import { externalIds, games } from "./games";
 import { platforms } from "./platforms";
+import { gameSources } from "./sources";
 import { user } from "./auth";
 
 // Le relations stanno in un file a parte per non far importare backlog.ts a
@@ -14,6 +16,24 @@ import { user } from "./auth";
 export const gamesRelations = relations(games, ({ many }) => ({
   externalIds: many(externalIds),
   backlogEntries: many(backlog),
+  attributes: many(gameAttributes),
+  sources: many(gameSources),
+}));
+
+export const igdbAttributesRelations = relations(igdbAttributes, ({ many }) => ({
+  games: many(gameAttributes),
+}));
+
+export const gameAttributesRelations = relations(gameAttributes, ({ one }) => ({
+  game: one(games, { fields: [gameAttributes.gameId], references: [games.id] }),
+  attribute: one(igdbAttributes, {
+    fields: [gameAttributes.attributeId],
+    references: [igdbAttributes.id],
+  }),
+}));
+
+export const gameSourcesRelations = relations(gameSources, ({ one }) => ({
+  game: one(games, { fields: [gameSources.gameId], references: [games.id] }),
 }));
 
 export const externalIdsRelations = relations(externalIds, ({ one }) => ({
