@@ -28,10 +28,10 @@ export const enrichmentQueue = new Queue<EnrichmentJob>(ENRICHMENT_QUEUE, {
  * stesso momento, BullMQ scarta i doppioni invece di chiamare IGDB tre volte.
  * (Niente `:` nell'id: BullMQ lo rifiuta, lo usa come separatore nelle chiavi.)
  *
- * Non solleva mai. L'accodamento e' un effetto collaterale della creazione di un
- * gioco: se Redis e' giu', il gioco deve nascere lo stesso e l'utente non deve
+ * Non solleva mai. L'accodamento è un effetto collaterale della creazione di un
+ * gioco: se Redis è giu', il gioco deve nascere lo stesso e l'utente non deve
  * vedere un errore. Il lavoro non si perde — `findGamesNeedingIgdb` ritrova i
- * giochi senza `synced_at`, che e' proprio a cosa serve `game_sources`.
+ * giochi senza `synced_at`, che è proprio a cosa serve `game_sources`.
  */
 export async function enqueueIgdbEnrichment(gameId: string) {
   try {
