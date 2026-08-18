@@ -8,6 +8,20 @@
       "when": 1786532858193,
       "tag": "0000_cold_santa_claus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787048331459,
+      "tag": "0001_icy_longshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787048345803,
+      "tag": "0002_seed_platforms",
+      "breakpoints": true
     }
   ]
 }

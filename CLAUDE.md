@@ -88,10 +88,11 @@ residui dello scaffold `create-turbo`.
 ## Fonti dati esterne
 
 - **IGDB** — metadata primario
+- **STEAMGRIDDB** - metadata immagini
 - **OpenCritic** — punteggi critica
 - **HowLongToBeat** — nessuna API ufficiale: scraping server-side (stesso approccio
   del plugin Playnite), risultati **sempre cachati in DB**. Mai scraping a runtime
-  su richiesta utente.
+  su richiesta utente. (ROMM gestisce le [API HLTB](https://github.com/rommapp/romm/blob/master/backend/handler/metadata/hltb_handler.py))
 
 ## Architettura del layer di raccomandazione
 

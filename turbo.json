@@ -7,7 +7,10 @@
     "BETTER_AUTH_URL",
     "WEB_URL",
     "API_PORT",
-    "NEXT_PUBLIC_API_URL"
+    "NEXT_PUBLIC_API_URL",
+    "IGDB_CLIENT_ID",
+    "IGDB_CLIENT_SECRET",
+    "STEAMGRIDDB_API_KEY"
   ],
   "globalDependencies": [".env"],
   "tasks": {
