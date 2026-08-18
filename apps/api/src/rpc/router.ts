@@ -8,7 +8,13 @@ import {
   removeFromBacklog,
   setBacklogStatus,
 } from "../services/backlog";
-import { createGame, findGameById, listLatestGames } from "../services/games";
+import {
+  createGame,
+  findGameById,
+  listLatestGames,
+  resolveGameFromIgdb,
+  searchGames,
+} from "../services/games";
 import { findExistingPlatformSlugs, listPlatforms } from "../services/platforms";
 import { authed, maybeAuthed, os } from "./context";
 
@@ -33,6 +39,14 @@ export const router = os.router({
     create: os.games.create.use(authed).handler(async ({ input }) => {
       const game = await createGame(input.name);
       if (!game) throw new ORPCError("INTERNAL_SERVER_ERROR");
+      return game;
+    }),
+
+    search: os.games.search.use(authed).handler(({ input }) => searchGames(input.query)),
+
+    fromIgdb: os.games.fromIgdb.use(authed).handler(async ({ input }) => {
+      const game = await resolveGameFromIgdb(input.igdbId);
+      if (!game) throw new ORPCError("NOT_FOUND", { message: "IGDB non conosce questo id" });
       return game;
     }),
   },

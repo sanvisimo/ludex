@@ -1,5 +1,6 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
+import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import type { ApiClient } from "@repo/contracts";
 
 const link = new RPCLink({
@@ -11,4 +12,9 @@ const link = new RPCLink({
 
 // Tipizzato dal contratto: se cambia un input in packages/contracts, qui il
 // compilatore se ne accorge senza generare niente.
-export const api: ApiClient = createORPCClient(link);
+export const client: ApiClient = createORPCClient(link);
+
+// `api.games.latest.queryOptions()` e `api.backlog.add.mutationOptions()`:
+// le chiavi di cache le costruisce l'integrazione, quindi l'invalidazione dopo
+// una mutazione non dipende da stringhe scritte a mano.
+export const api = createTanstackQueryUtils(client);

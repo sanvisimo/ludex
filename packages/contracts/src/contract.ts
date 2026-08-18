@@ -5,6 +5,7 @@ import {
   BacklogEntrySchema,
   BacklogStatusSchema,
   GameSchema,
+  IgdbSearchHitSchema,
   OwnershipInputSchema,
   PlatformSchema,
 } from "./schemas";
@@ -33,10 +34,22 @@ export const contract = {
       .input(z.object({ id: z.uuid() }))
       .output(z.object({ game: GameSchema, entry: BacklogEntrySchema.nullable() })),
 
-    // Inserimento di un gioco non risolto, con il solo titolo. Serve a poter
-    // usare l'app prima che la ricerca IGDB esista; l'`igdbId` resta null e
-    // l'enrichment dello step 3 lo riempirà.
+    // Inserimento di un gioco non risolto, con il solo titolo. Via di scampo
+    // quando IGDB non conosce il gioco: l'`igdbId` resta null e l'enrichment
+    // dello step 3 non avrà nulla su cui lavorare finché non viene risolto.
     create: oc.input(z.object({ name: z.string().trim().min(1).max(200) })).output(GameSchema),
+
+    // Cerca su IGDB. Sincrona e senza coda: è il passo 2 del flusso di
+    // risoluzione, distinto dall'enrichment asincrono dello step 3.
+    // Autenticata perché consuma il rate limit delle nostre credenziali.
+    search: oc
+      .input(z.object({ query: z.string().trim().min(2).max(100) }))
+      .output(z.array(IgdbSearchHitSchema)),
+
+    // Scelto un candidato, crea la riga `games` **o riusa quella già presente**
+    // se un altro utente aveva già importato lo stesso gioco. È qui che vive la
+    // regola "l'enrichment si paga una volta sola".
+    fromIgdb: oc.input(z.object({ igdbId: z.number().int().positive() })).output(GameSchema),
   },
 
   backlog: {

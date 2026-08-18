@@ -1,8 +1,21 @@
 "use client";
 
 import { signUp } from "@repo/auth/client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,17 +40,54 @@ export default function RegisterPage() {
   }
 
   return (
-    <main style={{ padding: 32 }}>
-      <h1>Registrati</h1>
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 8, maxWidth: 320 }}>
-        <input name="name" placeholder="Nome" required />
-        <input name="email" type="email" placeholder="Email" required />
-        <input name="password" type="password" placeholder="Password" required minLength={8} />
-        <button type="submit" disabled={pending}>
-          {pending ? "Attendi…" : "Crea account"}
-        </button>
-        {error && <p style={{ color: "crimson" }}>{error}</p>}
-      </form>
+    <main className="flex min-h-svh items-center justify-center p-6">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-lg">Registrati</CardTitle>
+          <CardDescription>Crea il tuo account Ludex.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={onSubmit} className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Nome</Label>
+              <Input id="name" name="name" required autoComplete="name" />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" name="email" type="email" required autoComplete="email" />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+                minLength={8}
+                autoComplete="new-password"
+              />
+              <p className="text-muted-foreground">Almeno 8 caratteri.</p>
+            </div>
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button type="submit" disabled={pending}>
+              {pending ? "Attendi…" : "Crea account"}
+            </Button>
+
+            <p className="text-center text-muted-foreground">
+              Hai già un account?{" "}
+              <Link href="/login" className="text-foreground underline underline-offset-4">
+                Accedi
+              </Link>
+            </p>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }
