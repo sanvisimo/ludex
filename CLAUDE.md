@@ -91,7 +91,21 @@ residui dello scaffold `create-turbo`.
 - **STEAMGRIDDB** — copertine alternative, per sostituire quella di IGDB. Arriva
   allo **step 5**, con la modifica del gioco: non serve prima, perché prima non
   c'è nessun posto da cui scegliere.
-- **OpenCritic** — punteggi critica
+- **OpenCritic** — punteggi critica. Niente più accesso anonimo: si passa da
+  RapidAPI, e il piano gratuito dà **200 richieste e 25 ricerche al giorno**,
+  dichiarate negli header di ogni risposta. Le ricerche sono la risorsa scarsa,
+  e per questo l'identità dei giochi **non si cerca**: vedi Wikidata.
+- **Metacritic** — punteggi critica, **per piattaforma**. Nessuna API pubblica:
+  stesso trattamento di HLTB, l'endpoint che usa il loro sito e il risultato
+  sempre in DB. Lo slug si prende, quando c'è, dal link che la scheda Steam
+  dichiara — ma va verificato come un candidato qualunque, perché mente
+  (BioShock Remastered punta alla raccolta, Kingdom: Classic a un altro gioco).
+- **Wikidata** — non è una fonte di dati, è un'**anagrafe di identificativi**:
+  tiene sullo stesso item lo slug IGDB (P5794) e l'id OpenCritic (P2864). Una
+  query SPARQL aggancia centinaia di giochi senza spendere una ricerca: sulla
+  libreria di prova 262 su 446, e 180 su 228 fra i giochi dal 2016 in poi. Si
+  interroga **in blocco e di rado**, mai dentro un job per gioco: il servizio è
+  gratuito e ogni tanto è in affanno.
 - **HowLongToBeat** — nessuna API ufficiale: scraping server-side (stesso approccio
   del plugin Playnite), risultati **sempre cachati in DB**. Mai scraping a runtime
   su richiesta utente. (ROMM gestisce le [API HLTB](https://github.com/rommapp/romm/blob/master/backend/handler/metadata/hltb_handler.py))
@@ -208,6 +222,36 @@ resto, in blocchi — su 452 giochi sono quattro richieste. Risoluzione ed
 enrichment restano due cose distinte: la prima è sincrona e in blocco, il secondo
 è un job per gioco.
 
+#### I voti della critica stanno in `game_scores`, non su `games`
+
+Sono tre numeri diversi — IGDB, OpenCritic, Metacritic — e uno di loro **dipende
+dalla piattaforma**. Il numero che Metacritic pubblica come voto del gioco è
+quello della piattaforma capofila, non una media:
+
+    mafia   titolo 66   PC 88 (27 rec.)   Xbox 66 (33 rec., capofila)
+
+Il gioco che uno ha su PC vale 88 e il numero di testa dice 66. Una colonna su
+`games` — che è condivisa fra tutti gli utenti e non sa su cosa si gioca —
+avrebbe dovuto scegliere quale delle due bugie raccontare.
+
+Quindi: una riga per `(gioco, fonte, piattaforma)`, con **`platform_slug` nullo
+a significare il voto complessivo** — l'unico che IGDB e OpenCritic danno. Le
+colonne sono l'**unione** di ciò che le fonti danno, non l'intersezione: `tier`
+e `percentRecommended` esistono solo su OpenCritic, i conteggi
+positivi/neutri/negativi solo su Metacritic. "Il 97% dei critici lo consiglia"
+dice una cosa che "vale 89" non dice, e allo step 12 pesa.
+
+Su `games` resta il **denormalizzato**: `critic_score` e `critic_score_source`,
+ricalcolati **nella stessa transazione** di ogni scrittura di `game_scores`
+secondo una precedenza scritta in un punto solo — OpenCritic → Metacritic →
+IGDB, che è un ordine di trasparenza su come i voti sono aggregati, non di
+qualità. Serve allo step 7: il filtro "sopra 80" resta un confronto su una
+colonna indicizzabile invece di tre sottoquery correlate nella query di ricerca.
+
+Il voto **non si traduce e non si media fra fonti**: OpenCritic pesa i critici
+di punta e sta sistematicamente qualche punto sotto Metacritic. La scheda del
+gioco li mostra tutti, con la fonte accanto.
+
 #### Due tassonomie separate, da non fondere
 
 - **generi e temi IGDB**: attributi del gioco, stanno su `games`, alimentano filtri
@@ -278,7 +322,9 @@ enrichment restano due cose distinte: la prima è sincrona e in blocco, il secon
 6. **Recupero HLTB**
 7. **Filtraggio** — ricerca e filtraggio dei giochi, con possibilità di
    salvataggi.
-8. **OpenCritic** — recupero dei punteggi di OpenCritic. 
+8. **OpenCritic** — i voti della critica, e con loro **Metacritic**: sono la
+   stessa schermata e lo stesso modello, e separarli avrebbe voluto dire
+   scrivere due volte la stessa tabella. Porta `game_scores` (vedi sotto).
 9.  **Altre librerie** — gestione delle librerie di altri provider.
 10. **Admin** — gestione degli utenti, dei giochi non collegati. 
 11. **Ui** — layout e design dell'applicazione. 
@@ -375,6 +421,8 @@ di turbo, perché non fanno parte di nessuna pipeline:
 | `pnpm --filter api platforms:audit [--all]` | confronta la tabella `platforms` con l'elenco vero di IGDB. Segnala, non scrive: le correzioni vanno in una migration                                         |
 | `pnpm --filter api steam:probe [steamid64]` | giro a vuoto dell'import Steam: legge la libreria e prova a risolverla senza toccare il DB                                                                    |
 | `pnpm --filter api hltb:probe [n\|titolo]`  | giro a vuoto del match HLTB: cerca e punteggia senza scrivere. La riga che conta è quella dei "da sistemare"                                                  |
+| `pnpm --filter api opencritic:resolve [n]`  | aggancia in blocco gli id OpenCritic chiedendoli a Wikidata. Non chiama OpenCritic e non spende budget: scrive solo dove guardare                             |
+| `pnpm --filter api metacritic:probe [n\|titolo]` | giro a vuoto del match Metacritic. Mostra anche se il link della scheda Steam regge e quali piattaforme non sappiamo tradurre                            |
 | `pnpm --filter api backfill [n]`            | accoda l'enrichment di ciò che è dovuto. Non forza: rispetta le soglie di freschezza                                                                          |
 | `pnpm --filter api queues`                  | dashboard Bull Board sulle code, su `localhost:3002`. Ascolta solo su localhost: non c'è ruolo admin e non lo si inventa qui, da remoto si passa da un tunnel |
 
