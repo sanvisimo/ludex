@@ -12,7 +12,11 @@ import { and, eq, isNotNull, isNull, lt, ne, or, sql } from '@repo/db/orm';
  * stesso ritmo e le farebbe cadere insieme.
  */
 
-export type EnrichmentSource = 'igdb' | 'hltb' | 'opencritic';
+export type EnrichmentSource =
+  | 'igdb'
+  | 'hltb'
+  | 'opencritic'
+  | 'metacritic';
 
 /** Il `tx` che Drizzle passa dentro `db.transaction`, senza doverlo nominare. */
 type Transaction = Parameters<Parameters<Db['transaction']>[0]>[0];
@@ -36,6 +40,18 @@ export const ENRICHMENT_SOURCES = {
     // Come HLTB: serve il titolo canonico, e serve l'anno per verificare il
     // match. In più serve lo slug, che è quello che l'enrichment IGDB salva e
     // da cui passa l'aggancio via Wikidata.
+    requires: 'igdbOk',
+  },
+  metacritic: {
+    // Come OpenCritic: un voto della critica si assesta nelle settimane dopo
+    // l'uscita e poi non si muove più. Qui però non c'è un budget giornaliero
+    // da difendere, solo la buona educazione verso un endpoint che non è
+    // un'API pubblica.
+    staleAfterDays: 90,
+    retryAfterHours: 24,
+    // Serve il titolo canonico e l'anno: sono le due cose con cui si sceglie
+    // fra i due "Resident Evil 4", che qui esistono davvero entrambi —
+    // `resident-evil-4` è il remake del 2023, `resident-evil-4-2005` no.
     requires: 'igdbOk',
   },
   hltb: {

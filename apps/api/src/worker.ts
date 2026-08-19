@@ -20,6 +20,7 @@ import {
 } from './services/enrichment';
 import { enrichGameFromHltb } from './services/hltb-enrichment';
 import { enrichGameFromIgdb } from './services/igdb-enrichment';
+import { enrichGameFromMetacritic } from './services/metacritic-enrichment';
 import { enrichGameFromOpenCritic } from './services/opencritic-enrichment';
 import { resolveOpenCriticIds } from './services/opencritic-resolve';
 import { importSteamLibrary } from './services/steam-import';
@@ -35,6 +36,7 @@ const enrichers = {
   igdb: enrichGameFromIgdb,
   hltb: enrichGameFromHltb,
   opencritic: enrichGameFromOpenCritic,
+  metacritic: enrichGameFromMetacritic,
 };
 
 /**

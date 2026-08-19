@@ -17,6 +17,7 @@
     "STEAM_TEST_USER_ID",
     "HLTB_API_PATH",
     "OPENCRITIC_API_KEY",
+    "METACRITIC_API_KEY",
     "BULL_BOARD_PORT"
   ],
   "globalDependencies": [".env"],

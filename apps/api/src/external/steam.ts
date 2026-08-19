@@ -157,3 +157,60 @@ export async function resolveSteamId(input: string): Promise<string> {
   // Né URL né id: l'ultima possibilità sensata è che sia il nome scelto.
   return resolveVanity(trimmed);
 }
+
+// --- Store: lo slug Metacritic dichiarato dalla scheda del negozio ---
+//
+// Un endpoint diverso da quello sopra: `store.steampowered.com/api/appdetails`
+// non è la Web API, non vuole chiave, e il ritmo che tollera è più stretto
+// (circa 200 richieste ogni cinque minuti per indirizzo). Sta qui lo stesso
+// perché è Steam, e chi lo chiama è l'enrichment Metacritic dello step 8.
+//
+// Serve a una cosa sola: la scheda del negozio, per i giochi che ce l'hanno,
+// dichiara il link alla pagina Metacritic. Quel link porta lo slug, ed è un
+// aggancio per identità che costa una richiesta e non una ricerca per nome.
+//
+// **È un indizio, non una prova**, e va verificato da chi lo usa: su 17 giochi
+// veri due mentivano — BioShock Remastered punta a `bioshock-the-collection`,
+// che è la raccolta, e Kingdom: Classic a `kingdom`, che è un altro gioco.
+
+const APP_DETAILS_URL = 'https://store.steampowered.com/api/appdetails';
+
+type AppDetailsResponse = Record<
+  string,
+  { success?: boolean; data?: { metacritic?: { url?: string; score?: number } } }
+>;
+
+/**
+ * Lo slug Metacritic dichiarato dalla scheda Steam di un gioco, se c'è.
+ *
+ * Steam scrive l'URL nella forma vecchia con la piattaforma dentro
+ * (`/game/pc/hollow-knight`), mentre le pagine di oggi stanno su `/game/{slug}`:
+ * lo slug è l'ultimo pezzo del percorso, e si prende quello.
+ *
+ * Null quando il gioco non ha un punteggio collegato — succede spesso, circa
+ * quattro giochi su dieci — o quando Steam non risponde per quell'appid.
+ * Nessuno dei due casi è un errore: sono i casi in cui si cerca per nome.
+ */
+export async function fetchSteamMetacriticSlug(
+  appId: string,
+): Promise<string | null> {
+  const url = new URL(APP_DETAILS_URL);
+  url.searchParams.set('appids', appId);
+  // Il filtro riduce la risposta da qualche decina di kB a poche righe. Un solo
+  // appid per richiesta: con più di uno e un filtro, Steam risponde `null`.
+  url.searchParams.set('filters', 'metacritic');
+
+  const response = await fetch(url, { headers: { 'User-Agent': 'Ludex/0.1' } });
+  if (!response.ok) return null;
+
+  const body = (await response.json()) as AppDetailsResponse | null;
+  const entry = body?.[appId];
+  if (!entry?.success) return null;
+
+  const link = entry.data?.metacritic?.url;
+  if (!link) return null;
+
+  const path = link.split('?')[0]?.replace(/\/+$/, '') ?? '';
+  const slug = path.split('/').pop();
+  return slug || null;
+}

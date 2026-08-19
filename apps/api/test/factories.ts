@@ -1,5 +1,6 @@
 import type { HltbGameDetail, HltbSearchHit } from '../src/external/hltb';
 import type { IgdbGameMetadata } from '../src/external/igdb';
+import type { MetacriticGame } from '../src/external/metacritic';
 import type { OpenCriticGame } from '../src/external/opencritic';
 import type { SteamLibraryEntry } from '../src/external/steam';
 import { db, schema } from '@repo/db';
@@ -63,7 +64,7 @@ export async function createGame(
  */
 export function setSource(values: {
   gameId: string;
-  source?: 'igdb' | 'hltb' | 'opencritic';
+  source?: 'igdb' | 'hltb' | 'opencritic' | 'metacritic';
   status: 'pending' | 'ok' | 'failed' | 'not_found';
   syncedAt?: Date | null;
   attemptedAt?: Date | null;
@@ -121,6 +122,55 @@ export function openCriticGame(
     numReviews: 74,
     tier: 'Mighty',
     releaseYear: 2017,
+    ...over,
+  };
+}
+
+/**
+ * Scheda Metacritic di default, con la forma che conta: un voto complessivo
+ * più i voti per piattaforma, di cui uno che noi non sappiamo tradurre.
+ */
+export function metacriticGame(
+  over: Partial<MetacriticGame> = {},
+): MetacriticGame {
+  return {
+    slug: 'hollow-knight',
+    name: 'Hollow Knight',
+    releaseYear: 2017,
+    overall: {
+      score: 90,
+      reviewCount: 30,
+      positiveCount: 28,
+      neutralCount: 0,
+      negativeCount: 0,
+      sentiment: 'Universal acclaim',
+    },
+    platforms: [
+      {
+        slug: 'pc',
+        name: 'PC',
+        score: {
+          score: 87,
+          reviewCount: 27,
+          positiveCount: 26,
+          neutralCount: 1,
+          negativeCount: 0,
+          sentiment: 'Generally favorable',
+        },
+      },
+      {
+        slug: 'ios-iphoneipad',
+        name: 'iOS (iPhone/iPad)',
+        score: {
+          score: 80,
+          reviewCount: 4,
+          positiveCount: 3,
+          neutralCount: 1,
+          negativeCount: 0,
+          sentiment: 'Generally favorable',
+        },
+      },
+    ],
     ...over,
   };
 }
