@@ -1,6 +1,11 @@
 "use client";
 
-import type { BacklogEntry, BacklogStatus, Store, UserTagKind } from "@repo/contracts";
+import type {
+  BacklogEntry,
+  BacklogStatus,
+  Store,
+  UserTagKind,
+} from "@repo/contracts";
 import { backlogStatusValues, storeValues } from "@repo/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
@@ -36,7 +41,9 @@ import { api, client } from "@/lib/orpc";
 const NO_STORE = "__nessuno__";
 
 function namesOf(entry: BacklogEntry | null, kind: UserTagKind) {
-  return (entry?.tags ?? []).filter((tag) => tag.kind === kind).map((tag) => tag.name);
+  return (entry?.tags ?? [])
+    .filter((tag) => tag.kind === kind)
+    .map((tag) => tag.name);
 }
 
 /**
@@ -67,7 +74,9 @@ export function EditEntryDialog({
   const [notes, setNotes] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [pending, setPending] = useState<{ platformSlug: string; store: string }[]>([]);
+  const [pending, setPending] = useState<
+    { platformSlug: string; store: string }[]
+  >([]);
   const [platformSlug, setPlatformSlug] = useState<string | null>(null);
   const [store, setStore] = useState<string>(NO_STORE);
 
@@ -133,11 +142,14 @@ export function EditEntryDialog({
       toast.success(t("saved"));
       onOpenChange(false);
     },
-    onError: (error) => toast.error(errorMessage(error, { fallback: t("saveFailed") })),
+    onError: (error) =>
+      toast.error(errorMessage(error, { fallback: t("saveFailed") })),
   });
 
   const alreadyOwned = new Set(
-    (entry?.ownerships ?? []).map((row) => `${row.platformSlug}|${row.store ?? ""}`),
+    (entry?.ownerships ?? []).map(
+      (row) => `${row.platformSlug}|${row.store ?? ""}`,
+    ),
   );
 
   function addPending() {
@@ -145,7 +157,14 @@ export function EditEntryDialog({
     const key = `${platformSlug}|${store === NO_STORE ? "" : store}`;
     // Aggiungere un possesso che c'è già è innocuo lato server — la scrittura è
     // idempotente — ma mostrarlo due volte nell'elenco sarebbe una bugia.
-    if (alreadyOwned.has(key) || pending.some((row) => `${row.platformSlug}|${row.store === NO_STORE ? "" : row.store}` === key)) {
+    if (
+      alreadyOwned.has(key) ||
+      pending.some(
+        (row) =>
+          `${row.platformSlug}|${row.store === NO_STORE ? "" : row.store}` ===
+          key,
+      )
+    ) {
       return;
     }
     setPending((current) => [...current, { platformSlug, store }]);
@@ -224,7 +243,8 @@ export function EditEntryDialog({
 
             {pending.length > 0 && (
               <p className="text-muted-foreground">
-                {t("pendingOwnerships", { count: pending.length })}
+                {t("pendingOwnerships", { count: pending.length })} -{" "}
+                {JSON.stringify(pending)}
               </p>
             )}
 
