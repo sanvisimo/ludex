@@ -2,21 +2,26 @@ import './env';
 
 import { Worker } from 'bullmq';
 
+import { openCriticQuota } from './external/opencritic';
 import { redisConnection } from './queue/connection';
 import {
   ENRICHMENT_QUEUE,
   enqueueEnrichment,
   enrichmentQueue,
   scheduleEnrichmentSweep,
+  scheduleOpenCriticResolve,
   type EnrichmentJob,
 } from './queue/enrichment';
 import { IMPORTS_QUEUE, type ImportJob } from './queue/imports';
 import {
   ENRICHMENT_SOURCE_NAMES,
   findGamesNeedingSource,
+  type EnrichmentSource,
 } from './services/enrichment';
 import { enrichGameFromHltb } from './services/hltb-enrichment';
 import { enrichGameFromIgdb } from './services/igdb-enrichment';
+import { enrichGameFromOpenCritic } from './services/opencritic-enrichment';
+import { resolveOpenCriticIds } from './services/opencritic-resolve';
 import { importSteamLibrary } from './services/steam-import';
 
 // Secondo entrypoint di apps/api. Stesso codebase e stessi servizi di server.ts,
@@ -29,17 +34,55 @@ import { importSteamLibrary } from './services/steam-import';
 const enrichers = {
   igdb: enrichGameFromIgdb,
   hltb: enrichGameFromHltb,
+  opencritic: enrichGameFromOpenCritic,
 };
+
+/**
+ * Quanti giochi accodare per una fonte a ogni spazzata.
+ *
+ * Cento per le fonti che hanno un limite al secondo: quello lo rispettano già i
+ * client, serializzando, e accodarne di più vuol dire solo aspettare di più.
+ *
+ * OpenCritic no: il suo limite è **al giorno**, e la coda non lo conosce.
+ * Accodarne cento con un budget di venti significherebbe ottanta job che si
+ * svegliano, scoprono il muro e tornano a dormire — rumore nei log e nella
+ * dashboard, per giunta indistinguibile da un guasto vero. Si accoda quello
+ * che si può spendere, e il resto lo prende la spazzata di stanotte.
+ *
+ * `null` vuol dire che il budget non lo sappiamo ancora — nessuna risposta è
+ * ancora arrivata da quando il worker è partito — e lì si prova: la prima
+ * risposta ce lo dirà.
+ */
+function sweepLimit(source: EnrichmentSource) {
+  if (source !== 'opencritic') return 100;
+  const { requests } = openCriticQuota();
+  return requests === null ? 100 : Math.max(0, Math.min(100, requests));
+}
 
 const worker = new Worker<EnrichmentJob>(
   ENRICHMENT_QUEUE,
   async (job) => {
+    if (job.data.type === 'resolve') {
+      // Non arricchisce e non parla con le fonti: chiede a Wikidata gli id
+      // OpenCritic dei giochi che non ne hanno uno e li scrive. È quello che
+      // evita di spendere le 25 ricerche al giorno per l'identità dei giochi.
+      const report = await resolveOpenCriticIds();
+      console.log(
+        `[enrichment] aggancio opencritic: ${report.candidati} da agganciare, ` +
+          `${report.conMappa} noti a Wikidata, ${report.agganciati} scritti` +
+          (report.conflitti > 0 ? `, ${report.conflitti} in conflitto` : ''),
+      );
+      return report;
+    }
+
     if (job.data.type === 'sweep') {
       // La spazzata non arricchisce: accoda. Il lavoro vero resta un job per
       // gioco e per fonte, con i suoi tentativi e il suo stato.
       let enqueued = 0;
       for (const source of ENRICHMENT_SOURCE_NAMES) {
-        const games = await findGamesNeedingSource(source);
+        const limit = sweepLimit(source);
+        const games =
+          limit > 0 ? await findGamesNeedingSource(source, limit) : [];
         for (const game of games) await enqueueEnrichment(source, game.id);
         console.log(
           `[enrichment] spazzata ${source}: ${games.length} giochi accodati`,
@@ -98,6 +141,7 @@ importsWorker.on('failed', (job, error) => {
 // accanto al nuovo: si toglie qui, non serve ricordarsene a mano.
 await enrichmentQueue.removeJobScheduler('igdb-sweep');
 await scheduleEnrichmentSweep();
+await scheduleOpenCriticResolve();
 
 console.log('worker in ascolto sulle code enrichment e imports');
 

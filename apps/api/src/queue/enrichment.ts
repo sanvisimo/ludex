@@ -6,13 +6,15 @@ import { redisConnection } from './connection';
 export const ENRICHMENT_QUEUE = 'enrichment';
 
 /**
- * Due tipi di job sulla stessa coda:
+ * Tre tipi di job sulla stessa coda:
  *
  * - `enrich`: arricchisce un gioco preciso da una fonte precisa
  * - `sweep`: passa in rassegna i giochi da (ri)arricchire e accoda i primi
+ * - `resolve`: aggancia in blocco gli id OpenCritic da Wikidata
  *
- * Il secondo non fa lavoro pesante: accoda soltanto, cosi' il rate limit resta
- * governato da un punto solo.
+ * Solo il primo fa lavoro pesante. La spazzata accoda e basta, cosi' il rate
+ * limit resta governato da un punto solo; l'aggancio parla con Wikidata, non
+ * con le fonti, e quindi non consuma nessuno dei budget che contano.
  *
  * La fonte sta **dentro il job** e non in code separate: ogni fonte ha il suo
  * rate limit da rispettare, ma il lavoro è lo stesso e le code separate
@@ -20,7 +22,8 @@ export const ENRICHMENT_QUEUE = 'enrichment';
  */
 export type EnrichmentJob =
   | { type: 'enrich'; source: EnrichmentSource; gameId: string }
-  | { type: 'sweep' };
+  | { type: 'sweep' }
+  | { type: 'resolve' };
 
 export const enrichmentQueue = new Queue<EnrichmentJob>(ENRICHMENT_QUEUE, {
   connection: redisConnection,
@@ -77,6 +80,14 @@ export async function enqueueEnrichment(
 const SWEEP_SCHEDULER_ID = 'enrichment-sweep';
 const SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
 
+const RESOLVE_SCHEDULER_ID = 'opencritic-resolve';
+// Una volta a settimana. La mappa di Wikidata si muove al ritmo di chi la cura,
+// non a quello del nostro catalogo, e il servizio è gratuito e ogni tanto in
+// affanno: chiedergliela ogni sei ore sarebbe scortese e inutile. I giochi
+// nuovi nel frattempo non restano fermi — semplicemente passano dalla ricerca,
+// che è la strada che c'era prima.
+const RESOLVE_EVERY_MS = 7 * 24 * 60 * 60 * 1000;
+
 /**
  * Registra la spazzata periodica.
  *
@@ -90,5 +101,14 @@ export async function scheduleEnrichmentSweep() {
     SWEEP_SCHEDULER_ID,
     { every: SWEEP_EVERY_MS },
     { name: 'sweep', data: { type: 'sweep' } },
+  );
+}
+
+/** Registra l'aggancio periodico degli id OpenCritic. Vedi sopra per il ritmo. */
+export async function scheduleOpenCriticResolve() {
+  await enrichmentQueue.upsertJobScheduler(
+    RESOLVE_SCHEDULER_ID,
+    { every: RESOLVE_EVERY_MS },
+    { name: 'resolve', data: { type: 'resolve' } },
   );
 }

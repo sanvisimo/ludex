@@ -1,5 +1,6 @@
 import type { HltbGameDetail, HltbSearchHit } from '../src/external/hltb';
 import type { IgdbGameMetadata } from '../src/external/igdb';
+import type { OpenCriticGame } from '../src/external/opencritic';
 import type { SteamLibraryEntry } from '../src/external/steam';
 import { db, schema } from '@repo/db';
 
@@ -62,7 +63,7 @@ export async function createGame(
  */
 export function setSource(values: {
   gameId: string;
-  source?: 'igdb' | 'hltb';
+  source?: 'igdb' | 'hltb' | 'opencritic';
   status: 'pending' | 'ok' | 'failed' | 'not_found';
   syncedAt?: Date | null;
   attemptedAt?: Date | null;
@@ -103,6 +104,23 @@ export function igdbMetadata(
     aggregatedRating: null,
     aggregatedRatingCount: null,
     attributes: [],
+    ...over,
+  };
+}
+
+/** Scheda OpenCritic di default: i test dichiarano solo il campo che li riguarda. */
+export function openCriticGame(
+  over: Partial<OpenCriticGame> = {},
+): OpenCriticGame {
+  return {
+    id: 4002,
+    name: 'Hollow Knight',
+    topCriticScore: 89.5,
+    medianScore: 90,
+    percentRecommended: 97.2,
+    numReviews: 74,
+    tier: 'Mighty',
+    releaseYear: 2017,
     ...over,
   };
 }

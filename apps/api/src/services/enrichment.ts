@@ -12,7 +12,7 @@ import { and, eq, isNotNull, isNull, lt, ne, or, sql } from '@repo/db/orm';
  * stesso ritmo e le farebbe cadere insieme.
  */
 
-export type EnrichmentSource = 'igdb' | 'hltb';
+export type EnrichmentSource = 'igdb' | 'hltb' | 'opencritic';
 
 /** Il `tx` che Drizzle passa dentro `db.transaction`, senza doverlo nominare. */
 type Transaction = Parameters<Parameters<Db['transaction']>[0]>[0];
@@ -25,6 +25,18 @@ export const ENRICHMENT_SOURCES = {
     retryAfterHours: 24,
     // Un gioco senza `igdbId` non è risolto: non c'è niente da chiedere.
     requires: 'igdbId',
+  },
+  opencritic: {
+    // Tre mesi. Un voto della critica si muove nelle settimane dopo l'uscita,
+    // mentre arrivano le recensioni, e poi si ferma per sempre: riprenderlo
+    // più spesso vorrebbe dire spendere il budget giornaliero per riscrivere
+    // lo stesso numero.
+    staleAfterDays: 90,
+    retryAfterHours: 24,
+    // Come HLTB: serve il titolo canonico, e serve l'anno per verificare il
+    // match. In più serve lo slug, che è quello che l'enrichment IGDB salva e
+    // da cui passa l'aggancio via Wikidata.
+    requires: 'igdbOk',
   },
   hltb: {
     // Sei mesi. I tempi di HLTB si muovono molto più piano dei dati IGDB: sono

@@ -15,6 +15,7 @@
     "platforms:audit": "tsx src/scripts/platforms-audit.ts",
     "steam:probe": "tsx src/scripts/steam-probe.ts",
     "hltb:probe": "tsx src/scripts/hltb-probe.ts",
+    "opencritic:resolve": "tsx src/scripts/opencritic-resolve.ts",
     "queues": "tsx src/queues-dashboard.ts"
   },
   "dependencies": {

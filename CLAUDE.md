@@ -279,9 +279,9 @@ enrichment restano due cose distinte: la prima è sincrona e in blocco, il secon
 7. **Filtraggio** — ricerca e filtraggio dei giochi, con possibilità di
    salvataggi.
 8. **OpenCritic** — recupero dei punteggi di OpenCritic. 
-9. **Ui** — layout e design dell'applicazione. 
-10. **Altre librerie** — gestione delle librerie di altri provider. 
-11. **Admin** — gestione degli utenti, dei giochi non collegati. 
+9.  **Altre librerie** — gestione delle librerie di altri provider.
+10. **Admin** — gestione degli utenti, dei giochi non collegati. 
+11. **Ui** — layout e design dell'applicazione. 
 12. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding. 
 13. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
     posseduti.

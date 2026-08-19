@@ -7,6 +7,7 @@ import {
   type HltbGameDetail,
   type HltbSearchHit,
 } from '../external/hltb';
+import { isUniqueViolation } from '../lib/pg-error';
 import { findSourceExternalId, markSource } from './enrichment';
 import {
   normalizeTitle,
@@ -95,24 +96,6 @@ async function saveDetail(gameId: string, detail: HltbGameDetail) {
       })
       .where(eq(schema.games.id, gameId));
   });
-}
-
-/**
- * Postgres 23505: quell'id HLTB è già di un altro nostro gioco.
- *
- * Si scorre la catena delle cause perché Drizzle non rilancia l'errore di
- * postgres-js: lo avvolge in un "Failed query" con la query e i parametri, e il
- * codice resta un livello più sotto.
- */
-function isUniqueViolation(error: unknown) {
-  for (
-    let current: unknown = error;
-    current instanceof Error;
-    current = current.cause
-  ) {
-    if ('code' in current && current.code === '23505') return true;
-  }
-  return false;
 }
 
 /**
