@@ -279,8 +279,9 @@ enrichment restano due cose distinte: la prima è sincrona e in blocco, il secon
 7. **Filtraggio** — ricerca e filtraggio dei giochi, con possibilità di
    salvataggi.
 8. **Ui** — layout e design dell'applicazione.
-9. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding.
-10. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
+9. **Admin** — gestione degli utenti, dei provider LLM e dei tag.
+10. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding.
+11. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
    posseduti.
 
 Ricerca ed enrichment sono due usi distinti di IGDB e non vanno confusi: lo step 2
@@ -371,6 +372,7 @@ di turbo, perché non fanno parte di nessuna pipeline:
 |---|---|
 | `pnpm --filter api platforms:audit [--all]` | confronta la tabella `platforms` con l'elenco vero di IGDB. Segnala, non scrive: le correzioni vanno in una migration |
 | `pnpm --filter api steam:probe [steamid64]` | giro a vuoto dell'import Steam: legge la libreria e prova a risolverla senza toccare il DB |
+| `pnpm --filter api hltb:probe [n\|titolo]` | giro a vuoto del match HLTB: cerca e punteggia senza scrivere. La riga che conta è quella dei "da sistemare" |
 | `pnpm --filter api backfill [n]` | accoda l'enrichment di ciò che è dovuto. Non forza: rispetta le soglie di freschezza |
 | `pnpm --filter api queues` | dashboard Bull Board sulle code, su `localhost:3002`. Ascolta solo su localhost: non c'è ruolo admin e non lo si inventa qui, da remoto si passa da un tunnel |
 

@@ -1,36 +1,9 @@
-import { db, schema } from "@repo/db";
-import { and, eq } from "@repo/db/orm";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { ago, createGame, igdbMetadata, setSource } from "../../test/factories";
-import { fetchIgdbGameMetadata } from "../external/igdb";
-import { enrichGameFromIgdb, findGamesNeedingIgdb } from "./enrichment";
+import { ago, createGame, setSource } from "../../test/factories";
+import { findGamesNeedingSource } from "./enrichment";
 
-// Stubbato al confine del servizio esterno e non su `fetch`: il client vero
-// serializza le chiamate a 250ms l'una e si porta dietro un token in cache, due
-// cose che in un test sono solo attesa e stato condiviso fra casi.
-vi.mock("../external/igdb", () => ({ fetchIgdbGameMetadata: vi.fn() }));
-
-const mockedFetch = vi.mocked(fetchIgdbGameMetadata);
-
-function sourceRow(gameId: string) {
-  return db.query.gameSources.findFirst({
-    where: and(eq(schema.gameSources.gameId, gameId), eq(schema.gameSources.source, "igdb")),
-  });
-}
-
-function attributeNames(gameId: string) {
-  return db
-    .select({ name: schema.igdbAttributes.name })
-    .from(schema.gameAttributes)
-    .innerJoin(
-      schema.igdbAttributes,
-      eq(schema.igdbAttributes.id, schema.gameAttributes.attributeId),
-    )
-    .where(eq(schema.gameAttributes.gameId, gameId));
-}
-
-describe("findGamesNeedingIgdb", () => {
+describe("findGamesNeedingSource", () => {
   // I casi che decidono cosa la spazzata riaccoda. Il predicato è l'unico punto
   // in cui "il dato è vecchio" e "il tentativo è fallito" si incontrano, e
   // sbagliarlo non rompe niente in modo visibile: la coda resta solo zitta.
@@ -68,16 +41,11 @@ describe("findGamesNeedingIgdb", () => {
       const game = await createGame();
       if (caso.source) await setSource({ gameId: game.id, ...caso.source });
 
-      const trovati = await findGamesNeedingIgdb();
+      const trovati = await findGamesNeedingSource("igdb");
 
       expect(trovati.map((row) => row.id)).toEqual(caso.atteso ? [game.id] : []);
     });
   }
-
-  it("salta un gioco non risolto, che non ha nulla da chiedere a IGDB", async () => {
-    await createGame({ igdbId: null });
-    await expect(findGamesNeedingIgdb()).resolves.toEqual([]);
-  });
 
   it("mette davanti i mai sincronizzati, poi dal più vecchio", async () => {
     const recente = await createGame();
@@ -86,7 +54,7 @@ describe("findGamesNeedingIgdb", () => {
     await setSource({ gameId: vecchio.id, status: "ok", syncedAt: ago.days(90) });
     const mai = await createGame();
 
-    const trovati = await findGamesNeedingIgdb();
+    const trovati = await findGamesNeedingSource("igdb");
 
     // Senza ordinamento, con più candidati del limite le stesse righe possono
     // ripresentarsi a ogni giro e lasciarne altre a digiuno per sempre.
@@ -96,134 +64,58 @@ describe("findGamesNeedingIgdb", () => {
   it("rispetta il limite", async () => {
     await createGame();
     await createGame();
-    await expect(findGamesNeedingIgdb(1)).resolves.toHaveLength(1);
+    await expect(findGamesNeedingSource("igdb", 1)).resolves.toHaveLength(1);
+  });
+
+  it("salta un gioco non risolto, che non ha nulla da chiedere a IGDB", async () => {
+    await createGame({ igdbId: null });
+    await expect(findGamesNeedingSource("igdb")).resolves.toEqual([]);
   });
 });
 
-describe("enrichGameFromIgdb", () => {
-  it("scrive i metadati, gli attributi e segna la fonte sincronizzata", async () => {
+describe("findGamesNeedingSource, dipendenze fra fonti", () => {
+  // HLTB si aggancia per nome e anno, e li ha solo dopo IGDB. Se il predicato
+  // lasciasse passare un gioco non ancora arricchito, il match partirebbe dal
+  // titolo digitato dall'utente e senza anno: esattamente le condizioni in cui
+  // sbaglia.
+  it("non prende per HLTB un gioco che IGDB non ha ancora arricchito", async () => {
     const game = await createGame();
-    mockedFetch.mockResolvedValue(
-      igdbMetadata({
-        name: "Pikmin 4",
-        summary: "Un sommario",
-        aggregatedRating: 87.5,
-        attributes: [
-          { kind: "genre", igdbId: 13, name: "Strategia" },
-          { kind: "theme", igdbId: 17, name: "Fantasy" },
-        ],
-      }),
-    );
+    await expect(findGamesNeedingSource("hltb")).resolves.toEqual([]);
 
-    const esito = await enrichGameFromIgdb(game.id);
+    await setSource({ gameId: game.id, status: "ok", syncedAt: new Date() });
 
-    expect(esito).toEqual({ status: "ok", name: "Pikmin 4", attributes: 2 });
-    const salvato = await db.query.games.findFirst({ where: eq(schema.games.id, game.id) });
-    expect(salvato).toMatchObject({ name: "Pikmin 4", summary: "Un sommario", aggregatedRating: 87.5 });
-    expect(await sourceRow(game.id)).toMatchObject({ status: "ok" });
-    expect((await sourceRow(game.id))?.syncedAt).toBeInstanceOf(Date);
+    await expect(findGamesNeedingSource("hltb")).resolves.toEqual([{ id: game.id }]);
   });
 
-  it("rieseguito porta allo stesso stato invece di accumularlo", async () => {
+  it("non prende per HLTB un gioco su cui IGDB è fallito", async () => {
     const game = await createGame();
-    mockedFetch.mockResolvedValue(
-      igdbMetadata({ attributes: [{ kind: "genre", igdbId: 13, name: "Strategia" }] }),
-    );
+    await setSource({ gameId: game.id, status: "failed", attemptedAt: new Date() });
 
-    await enrichGameFromIgdb(game.id);
-    await enrichGameFromIgdb(game.id);
-
-    // È la proprietà che il CLAUDE.md impone all'enrichment: le fonti si
-    // riaggiornano nel tempo, e un secondo giro non deve duplicare nulla.
-    expect(await attributeNames(game.id)).toEqual([{ name: "Strategia" }]);
+    await expect(findGamesNeedingSource("hltb")).resolves.toEqual([]);
   });
 
-  it("toglie gli attributi che IGDB non riporta più", async () => {
+  it("rispetta la soglia di freschezza di HLTB, che non è quella di IGDB", async () => {
     const game = await createGame();
-    mockedFetch.mockResolvedValue(
-      igdbMetadata({
-        attributes: [
-          { kind: "genre", igdbId: 13, name: "Strategia" },
-          { kind: "theme", igdbId: 17, name: "Fantasy" },
-        ],
-      }),
-    );
-    await enrichGameFromIgdb(game.id);
-
-    mockedFetch.mockResolvedValue(
-      igdbMetadata({ attributes: [{ kind: "genre", igdbId: 13, name: "Strategia" }] }),
-    );
-    await enrichGameFromIgdb(game.id);
-
-    expect(await attributeNames(game.id)).toEqual([{ name: "Strategia" }]);
-  });
-
-  it("aggiorna il nome di un attributo rinominato su IGDB", async () => {
-    const primo = await createGame();
-    mockedFetch.mockResolvedValue(
-      igdbMetadata({ attributes: [{ kind: "genre", igdbId: 13, name: "Strategy" }] }),
-    );
-    await enrichGameFromIgdb(primo.id);
-
-    const secondo = await createGame();
-    mockedFetch.mockResolvedValue(
-      igdbMetadata({ attributes: [{ kind: "genre", igdbId: 13, name: "Strategia" }] }),
-    );
-    await enrichGameFromIgdb(secondo.id);
-
-    // Un solo vocabolo, col nome nuovo: il conflitto su (kind, igdbId) aggiorna
-    // invece di ignorare, o resterebbero due righe per lo stesso genere.
-    expect(await attributeNames(primo.id)).toEqual([{ name: "Strategia" }]);
-  });
-
-  it("segna not_found quando IGDB non conosce l'id, senza sollevare", async () => {
-    const game = await createGame();
-    mockedFetch.mockResolvedValue(null);
-
-    const esito = await enrichGameFromIgdb(game.id);
-
-    // Non `failed`: riprovarlo non lo farebbe comparire, e la spazzata deve
-    // poterlo lasciare in pace.
-    expect(esito).toEqual({ status: "not_found" });
-    expect(await sourceRow(game.id)).toMatchObject({ status: "not_found", syncedAt: null });
-  });
-
-  it("su un errore temporaneo segna failed, rilancia, e non tocca synced_at", async () => {
-    const game = await createGame();
-    const sincronizzato = ago.days(2);
+    await setSource({ gameId: game.id, status: "ok", syncedAt: new Date() });
+    // Oltre i trenta giorni di IGDB, ben dentro i centottanta di HLTB.
     await setSource({
       gameId: game.id,
+      source: "hltb",
       status: "ok",
-      syncedAt: sincronizzato,
-      attemptedAt: sincronizzato,
+      syncedAt: ago.days(60),
+      attemptedAt: ago.days(60),
     });
-    mockedFetch.mockRejectedValue(new Error("IGDB games: 503"));
 
-    // Rilanciato di proposito: è BullMQ a decidere se e quando riprovare.
-    await expect(enrichGameFromIgdb(game.id)).rejects.toThrow("503");
+    await expect(findGamesNeedingSource("hltb")).resolves.toEqual([]);
 
-    const riga = await sourceRow(game.id);
-    expect(riga).toMatchObject({ status: "failed", error: "IGDB games: 503" });
-    // Un fallimento non deve far sembrare fresco un dato vecchio, né vecchio un
-    // dato fresco: `synced_at` resta dov'era.
-    expect(riga?.syncedAt?.getTime()).toBe(sincronizzato.getTime());
-    expect(riga?.attemptedAt?.getTime()).toBeGreaterThan(sincronizzato.getTime());
-  });
+    await setSource({
+      gameId: game.id,
+      source: "hltb",
+      status: "ok",
+      syncedAt: ago.days(200),
+      attemptedAt: ago.days(200),
+    });
 
-  it("salta un gioco non risolto senza scrivere la fonte", async () => {
-    const game = await createGame({ igdbId: null });
-
-    const esito = await enrichGameFromIgdb(game.id);
-
-    expect(esito).toMatchObject({ status: "skipped" });
-    // Nessuna riga: segnarlo fallito lo farebbe riprovare in eterno, segnarlo
-    // sincronizzato sarebbe una bugia.
-    expect(await sourceRow(game.id)).toBeUndefined();
-    expect(mockedFetch).not.toHaveBeenCalled();
-  });
-
-  it("salta un gioco inesistente", async () => {
-    const esito = await enrichGameFromIgdb("00000000-0000-0000-0000-000000000000");
-    expect(esito).toMatchObject({ status: "skipped" });
+    await expect(findGamesNeedingSource("hltb")).resolves.toEqual([{ id: game.id }]);
   });
 });

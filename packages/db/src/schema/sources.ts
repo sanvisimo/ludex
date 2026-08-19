@@ -1,4 +1,13 @@
-import { pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import {
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 import { games } from "./games";
 import { timestamps } from "./timestamps";
@@ -37,6 +46,11 @@ export const sourceStatus = pgEnum("source_status", [
  *
  * Tiene anche l'esito dell'ultimo tentativo: senza, un job fallito diventa
  * indistinguibile da uno mai partito.
+ *
+ * E tiene l'id del gioco **su quella fonte**. `games.igdbId` resta dov'è perché
+ * ha un altro ruolo — è la chiave d'identità del gioco, quella su cui l'import
+ * riconosce che due utenti hanno lo stesso gioco. Gli altri sono solo indirizzi
+ * per tornare a prendere il dato, e stanno accanto allo stato che li riguarda.
  */
 export const gameSources = pgTable(
   "game_sources",
@@ -52,7 +66,28 @@ export const gameSources = pgTable(
     // Ultimo tentativo, riuscito o no.
     attemptedAt: timestamp("attempted_at"),
     error: text("error"),
+    /**
+     * L'id del gioco sulla fonte: il 26286 di Hollow Knight su HLTB.
+     *
+     * Serve a ripassare fra sei mesi senza rifare la ricerca per nome — che è
+     * la parte cara e l'unica che può sbagliare. Nullo finché la fonte non è
+     * stata agganciata, e resta nullo su IGDB, che l'id ce l'ha già su `games`.
+     */
+    externalId: text("external_id"),
     ...timestamps,
   },
-  (table) => [primaryKey({ columns: [table.gameId, table.source] })],
+  (table) => [
+    primaryKey({ columns: [table.gameId, table.source] }),
+    // Due nostri giochi non possono essere la stessa voce sulla fonte. Non è
+    // prudenza: HLTB ha due "Resident Evil 4" con lo stesso identico nome, e un
+    // match per nome li assegnerebbe volentieri entrambi allo stesso id. Il
+    // conflitto in scrittura è il segnale che il match è sbagliato.
+    //
+    // Parziale, perché i NULL qui sono la norma: senza il `where`, Postgres li
+    // considererebbe comunque tutti distinti, ma l'indice si porterebbe dietro
+    // una riga per ogni fonte mai tentata.
+    uniqueIndex("game_sources_source_external_id_idx")
+      .on(table.source, table.externalId)
+      .where(sql`${table.externalId} is not null`),
+  ],
 );

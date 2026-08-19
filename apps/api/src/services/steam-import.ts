@@ -4,7 +4,7 @@ import { and, eq, inArray, sql } from "@repo/db/orm";
 import { findIgdbGamesBySteamAppIds } from "../external/igdb";
 import { fetchSteamLibrary, type SteamLibraryEntry } from "../external/steam";
 import { chunk } from "../lib/chunk";
-import { enqueueIgdbEnrichment } from "../queue/enrichment";
+import { enqueueEnrichment } from "../queue/enrichment";
 import { ensureBacklogEntries, ensureOwnerships } from "./backlog";
 import { findGameIdsByExternalIds, linkExternalGames } from "./games";
 
@@ -159,7 +159,7 @@ export async function importSteamLibrary(
 
   // Solo i giochi nati adesso: gli altri l'enrichment ce l'hanno già, o ce
   // l'hanno vecchio e ci pensa la spazzata.
-  for (const gameId of createdGameIds) await enqueueIgdbEnrichment(gameId);
+  for (const gameId of createdGameIds) await enqueueEnrichment("igdb", gameId);
 
   await db
     .update(schema.storeAccounts)

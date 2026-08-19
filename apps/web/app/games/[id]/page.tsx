@@ -9,6 +9,7 @@ import { use, useState } from "react";
 import { EditEntryDialog } from "@/components/edit-entry-dialog";
 import { EntryTags } from "@/components/entry-tags";
 import { GameCover } from "@/components/game-cover";
+import { HltbTimes } from "@/components/hltb-times";
 import { OwnershipBadges } from "@/components/ownership-badges";
 import { RatingValue } from "@/components/rating-value";
 import { Badge } from "@/components/ui/badge";
@@ -129,6 +130,8 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
           </CardContent>
         </Card>
       )}
+
+      <HltbTimes game={game} />
 
       <Card>
         <CardHeader>

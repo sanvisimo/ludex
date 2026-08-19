@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 import { GameCover } from "@/components/game-cover";
+import { GameDuration } from "@/components/game-duration";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/orpc";
@@ -49,6 +50,7 @@ export default function CatalogPage() {
                           {game.firstReleaseDate.getFullYear()}
                         </span>
                       )}
+                      <GameDuration game={game} />
                       {game.igdbId === null && (
                         <span className="text-muted-foreground">{t("unresolved")}</span>
                       )}

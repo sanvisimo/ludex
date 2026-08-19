@@ -1,54 +1,84 @@
-import { db, schema } from "@repo/db";
-import { and, eq, isNull, lt, ne, or, sql } from "@repo/db/orm";
-
-import { fetchIgdbGameMetadata, type IgdbAttribute } from "../external/igdb";
+import { db, schema, type Db } from "@repo/db";
+import { and, eq, isNotNull, isNull, lt, ne, or, sql } from "@repo/db/orm";
 
 /**
- * Enrichment IGDB di un singolo gioco.
+ * La pipeline di enrichment, per la parte che è uguale a tutte le fonti: quali
+ * giochi sono dovuti, e come si annota l'esito di un tentativo.
  *
- * Due proprieta' che il CLAUDE.md impone e che vanno lette insieme:
- *
- * - **per singola fonte**: questo tocca solo IGDB e solo la riga `game_sources`
- *   di IGDB. HLTB e OpenCritic avranno funzioni proprie e non si intralceranno.
- * - **idempotente**: rieseguirlo porta allo stesso stato, non ne accumula. Gli
- *   attributi si riscrivono in blocco, i campi si sovrascrivono.
- *
- * Non è un job monolitico proprio perché le fonti arrivano in step diversi e
- * vanno riaggiornate a ritmi diversi.
+ * Ciò che invece **non** è uguale sta in un file per fonte (`igdb-enrichment`,
+ * `hltb-enrichment`): è la regola del CLAUDE.md, e non è formale. Le fonti
+ * arrivano in step diversi, si aggiornano a ritmi diversi e falliscono in modi
+ * diversi; un job monolitico che le tocca tutte insieme le costringerebbe allo
+ * stesso ritmo e le farebbe cadere insieme.
  */
+
+export type EnrichmentSource = "igdb" | "hltb";
+
+/** Il `tx` che Drizzle passa dentro `db.transaction`, senza doverlo nominare. */
+type Transaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
+
+export const ENRICHMENT_SOURCES = {
+  igdb: {
+    // Voti, copertine e sommari si muovono, ma piano: sotto il mese si
+    // spenderebbero chiamate per riscrivere le stesse righe.
+    staleAfterDays: 30,
+    retryAfterHours: 24,
+    // Un gioco senza `igdbId` non è risolto: non c'è niente da chiedere.
+    requires: "igdbId",
+  },
+  hltb: {
+    // Sei mesi. I tempi di HLTB si muovono molto più piano dei dati IGDB: sono
+    // medie su migliaia di segnalazioni, e mille in più non le spostano.
+    staleAfterDays: 180,
+    retryAfterHours: 24,
+    // HLTB parte solo su un gioco che IGDB ha già arricchito, perché il match si
+    // fa sul titolo canonico e sull'anno di uscita: senza quei due, scegliere
+    // fra i due "Resident Evil 4" è un lancio di moneta. Costo accettato: un
+    // gioco che IGDB non conosce non avrà mai una durata.
+    requires: "igdbOk",
+  },
+} as const satisfies Record<EnrichmentSource, { staleAfterDays: number; retryAfterHours: number; requires: string }>;
+
+export const ENRICHMENT_SOURCE_NAMES = Object.keys(ENRICHMENT_SOURCES) as EnrichmentSource[];
 
 /**
- * Dopo quanto un dato IGDB già preso va ripreso. Voti, copertine e sommari si
- * muovono, ma piano: sotto il mese si spenderebbero chiamate per riscrivere le
- * stesse righe. HLTB allo step 6 avrà la sua soglia, nel suo modulo — le fonti
- * non invecchiano allo stesso ritmo.
+ * Annota l'esito di un tentativo su una fonte.
+ *
+ * `externalId` ha tre stati e non due: assente vuol dire "non toccarlo" — un
+ * fallimento temporaneo non deve far dimenticare l'aggancio già trovato — null
+ * vuol dire "scollegalo", e una stringa lo scrive.
+ *
+ * Accetta un `executor` perché la fonte va segnata **nella stessa transazione**
+ * in cui si scrivono i dati che ha portato: separarle lascerebbe la porta a un
+ * gioco marcato sincronizzato e vuoto, che nessuna spazzata riproverebbe.
  */
-const IGDB_STALE_AFTER_DAYS = 30;
-
-/**
- * Quanto aspettare prima di ritentare un fallimento temporaneo. La spazzata gira
- * ogni sei ore: senza questa attesa riaccoderebbe lo stesso gioco rotto a ogni
- * giro. Sotto le sei ore il valore non cambierebbe nulla.
- */
-const IGDB_RETRY_AFTER_HOURS = 24;
-
-async function markSource(
-  gameId: string,
-  status: "ok" | "failed" | "not_found",
-  error: string | null,
+export async function markSource(
+  values: {
+    gameId: string;
+    source: EnrichmentSource;
+    status: "ok" | "failed" | "not_found";
+    error?: string | null;
+    externalId?: string | null;
+  },
+  executor: Db | Transaction = db,
 ) {
   const now = new Date();
-  await db
+  const { gameId, source, status } = values;
+  const error = values.error ?? null;
+  const touchesExternalId = values.externalId !== undefined;
+
+  await executor
     .insert(schema.gameSources)
     .values({
       gameId,
-      source: "igdb",
+      source,
       status,
       // `syncedAt` si muove solo sul successo: è il campo su cui si decide
       // cosa riaccodare, e un fallimento non deve far sembrare fresco un dato.
       syncedAt: status === "ok" ? now : null,
       attemptedAt: now,
       error,
+      externalId: values.externalId ?? null,
     })
     .onConflictDoUpdate({
       target: [schema.gameSources.gameId, schema.gameSources.source],
@@ -58,110 +88,37 @@ async function markSource(
         error,
         updatedAt: now,
         ...(status === "ok" ? { syncedAt: now } : {}),
+        ...(touchesExternalId ? { externalId: values.externalId ?? null } : {}),
       },
     });
 }
 
-/** Inserisce gli attributi mancanti nel vocabolario e restituisce i loro id. */
-async function upsertAttributes(attributes: IgdbAttribute[]) {
-  if (attributes.length === 0) return [] as number[];
-
-  const rows = await db
-    .insert(schema.igdbAttributes)
-    .values(
-      attributes.map((a) => ({ kind: a.kind, igdbId: a.igdbId, name: a.name })),
-    )
-    // Il nome su IGDB puo' cambiare: si aggiorna invece di ignorare il conflitto,
-    // cosi' il vocabolario resta allineato senza righe duplicate.
-    .onConflictDoUpdate({
-      target: [schema.igdbAttributes.kind, schema.igdbAttributes.igdbId],
-      set: { name: sql`excluded.name`, updatedAt: new Date() },
-    })
-    .returning({ id: schema.igdbAttributes.id });
-
-  return rows.map((row) => row.id);
-}
-
-export type EnrichmentOutcome =
-  | { status: "ok"; name: string; attributes: number }
-  | { status: "skipped"; reason: string }
-  | { status: "not_found" };
-
-export async function enrichGameFromIgdb(
-  gameId: string,
-): Promise<EnrichmentOutcome> {
-  const game = await db.query.games.findFirst({
-    columns: { id: true, igdbId: true },
-    where: eq(schema.games.id, gameId),
+/** L'id del gioco sulla fonte, se l'abbiamo già trovato una volta. */
+export async function findSourceExternalId(gameId: string, source: EnrichmentSource) {
+  const row = await db.query.gameSources.findFirst({
+    columns: { externalId: true },
+    where: and(eq(schema.gameSources.gameId, gameId), eq(schema.gameSources.source, source)),
   });
-
-  if (!game) return { status: "skipped", reason: "gioco inesistente" };
-
-  // Un gioco inserito a mano non ha `igdbId`: non è un errore, è un gioco non
-  // ancora risolto. Si annota e si esce senza segnare un fallimento, che
-  // farebbe riprovare all'infinito qualcosa che non puo' riuscire.
-  if (game.igdbId === null) {
-    return { status: "skipped", reason: "gioco senza igdbId, non risolto" };
-  }
-
-  try {
-    const metadata = await fetchIgdbGameMetadata(game.igdbId);
-
-    if (!metadata) {
-      // Non `failed`: riprovarlo non lo farà comparire. Si riapre per evento,
-      // quando l'`igdbId` del gioco cambia — cosa che oggi non può ancora
-      // succedere: il ri-collegamento a IGDB è rimasto fuori dallo step 5,
-      // perché fondere due righe `games` non è una modifica personale.
-      await markSource(gameId, "not_found", `IGDB non conosce l'id ${game.igdbId}`);
-      return { status: "not_found" };
-    }
-
-    const attributeIds = await upsertAttributes(metadata.attributes);
-
-    await db.transaction(async (tx) => {
-      await tx
-        .update(schema.games)
-        .set({
-          name: metadata.name,
-          summary: metadata.summary,
-          firstReleaseDate: metadata.firstReleaseDate,
-          coverImageId: metadata.coverImageId,
-          coverWidth: metadata.coverWidth,
-          coverHeight: metadata.coverHeight,
-          aggregatedRating: metadata.aggregatedRating,
-          aggregatedRatingCount: metadata.aggregatedRatingCount,
-        })
-        .where(eq(schema.games.id, gameId));
-
-      // Riscrittura in blocco invece di un diff: è cio' che rende la funzione
-      // idempotente, e gestisce da solo gli attributi tolti da IGDB.
-      await tx
-        .delete(schema.gameAttributes)
-        .where(eq(schema.gameAttributes.gameId, gameId));
-
-      if (attributeIds.length > 0) {
-        await tx
-          .insert(schema.gameAttributes)
-          .values(attributeIds.map((attributeId) => ({ gameId, attributeId })));
-      }
-    });
-
-    await markSource(gameId, "ok", null);
-    return {
-      status: "ok",
-      name: metadata.name,
-      attributes: attributeIds.length,
-    };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    await markSource(gameId, "failed", message.slice(0, 500));
-    // Rilanciato: è BullMQ a decidere se e quando riprovare.
-    throw error;
-  }
+  return row?.externalId ?? null;
 }
 
 /**
- * Giochi risolti da (ri)arricchire con IGDB.
+ * Quello che una fonte pretende da un gioco prima ancora di provarci.
+ *
+ * `igdbOk` è una EXISTS e non una JOIN in più perché la JOIN che c'è già è sulla
+ * fonte corrente: quando la fonte corrente *è* IGDB le due si sovrapporrebbero,
+ * e servirebbe un alias per una condizione che qui si legge in una riga.
+ */
+function requirement(requires: "igdbId" | "igdbOk") {
+  if (requires === "igdbId") return isNotNull(schema.games.igdbId);
+  return sql`exists (
+    select 1 from game_sources igdb
+    where igdb.game_id = ${schema.games.id} and igdb.source = 'igdb' and igdb.status = 'ok'
+  )`;
+}
+
+/**
+ * Giochi da (ri)arricchire con una fonte.
  *
  * «Da riarricchire» non è «mai arricchito»: un gioco sincronizzato mesi fa è un
  * candidato quanto uno mai visto, altrimenti la coda va in quiescenza appena il
@@ -180,7 +137,9 @@ export async function enrichGameFromIgdb(
  *   ORDER BY Postgres può restituire le stesse righe a ogni giro e lasciarne
  *   altre a digiuno per sempre. `nulls first` mette davanti i mai sincronizzati.
  */
-export function findGamesNeedingIgdb(limit = 100) {
+export function findGamesNeedingSource(source: EnrichmentSource, limit = 100) {
+  const config = ENRICHMENT_SOURCES[source];
+
   return db
     .select({ id: schema.games.id })
     .from(schema.games)
@@ -188,13 +147,12 @@ export function findGamesNeedingIgdb(limit = 100) {
       schema.gameSources,
       and(
         eq(schema.gameSources.gameId, schema.games.id),
-        eq(schema.gameSources.source, "igdb"),
+        eq(schema.gameSources.source, source),
       ),
     )
     .where(
       and(
-        // Un gioco non risolto non ha nulla da chiedere a IGDB.
-        sql`${schema.games.igdbId} is not null`,
+        requirement(config.requires),
         or(
           isNull(schema.gameSources.gameId),
           and(
@@ -203,14 +161,14 @@ export function findGamesNeedingIgdb(limit = 100) {
               isNull(schema.gameSources.syncedAt),
               lt(
                 schema.gameSources.syncedAt,
-                sql`now() - ${IGDB_STALE_AFTER_DAYS} * interval '1 day'`,
+                sql`now() - ${config.staleAfterDays} * interval '1 day'`,
               ),
             ),
             or(
               isNull(schema.gameSources.attemptedAt),
               lt(
                 schema.gameSources.attemptedAt,
-                sql`now() - ${IGDB_RETRY_AFTER_HOURS} * interval '1 hour'`,
+                sql`now() - ${config.retryAfterHours} * interval '1 hour'`,
               ),
             ),
           ),

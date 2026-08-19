@@ -79,6 +79,21 @@
     "coverAlt": "Copertina di {name}",
     "edit": "Modifica"
   },
+  "hltb": {
+    "title": "Quanto dura",
+    "main": "Storia principale",
+    "plus": "Storia + extra",
+    "completionist": "Completista",
+    "allStyles": "Tutti gli stili",
+    "cardMain": "{duration} di storia",
+    "hours": "{value} h",
+    "minutes": "{value} min",
+    "reports": "{count, plural, one {# segnalazione} other {# segnalazioni}}",
+    "fewReports": "poche segnalazioni",
+    "noEnding": "Gioco senza una fine: questi sono tempi giocati, non una durata.",
+    "noTimes": "HowLongToBeat non ha durate per questo gioco.",
+    "notFetched": "Durate non ancora recuperate. Arrivano a breve."
+  },
   "editEntry": {
     "title": "Modifica",
     "statusLabel": "Stato",

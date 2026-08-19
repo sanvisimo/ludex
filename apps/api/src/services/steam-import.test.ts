@@ -5,16 +5,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createGame, createUser, linkSteamAccount, steamEntry } from "../../test/factories";
 import { findIgdbGamesBySteamAppIds } from "../external/igdb";
 import { fetchSteamLibrary } from "../external/steam";
-import { enqueueIgdbEnrichment } from "../queue/enrichment";
+import { enqueueEnrichment } from "../queue/enrichment";
 import { importSteamLibrary } from "./steam-import";
 
 vi.mock("../external/steam", () => ({ fetchSteamLibrary: vi.fn() }));
 vi.mock("../external/igdb", () => ({ findIgdbGamesBySteamAppIds: vi.fn() }));
-vi.mock("../queue/enrichment", () => ({ enqueueIgdbEnrichment: vi.fn() }));
+vi.mock("../queue/enrichment", () => ({ enqueueEnrichment: vi.fn() }));
 
 const mockedLibrary = vi.mocked(fetchSteamLibrary);
 const mockedResolve = vi.mocked(findIgdbGamesBySteamAppIds);
-const mockedEnqueue = vi.mocked(enqueueIgdbEnrichment);
+const mockedEnqueue = vi.mocked(enqueueEnrichment);
 
 /** Fa finta che IGDB conosca questi appid, con un igdbId derivato dall'appid. */
 function igdbKnows(entries: { appId: string; igdbId: number; name?: string }[]) {

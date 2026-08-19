@@ -79,6 +79,21 @@
     "coverAlt": "{name} cover",
     "edit": "Edit"
   },
+  "hltb": {
+    "title": "How long it takes",
+    "main": "Main story",
+    "plus": "Main + extras",
+    "completionist": "Completionist",
+    "allStyles": "All styles",
+    "cardMain": "{duration} main story",
+    "hours": "{value} h",
+    "minutes": "{value} min",
+    "reports": "{count, plural, one {# report} other {# reports}}",
+    "fewReports": "few reports",
+    "noEnding": "This game has no ending: these are hours played, not a length.",
+    "noTimes": "HowLongToBeat has no times for this game.",
+    "notFetched": "Times not fetched yet. Coming shortly."
+  },
   "editEntry": {
     "title": "Edit",
     "statusLabel": "Status",

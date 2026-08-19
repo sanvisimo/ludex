@@ -57,6 +57,13 @@
       "when": 1787124800948,
       "tag": "0007_unknown_luckman",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787146890126,
+      "tag": "0008_sweet_mandroid",
+      "breakpoints": true
     }
   ]
 }

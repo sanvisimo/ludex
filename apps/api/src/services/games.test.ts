@@ -4,16 +4,16 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createGame } from "../../test/factories";
 import { findIgdbGameById } from "../external/igdb";
-import { enqueueIgdbEnrichment } from "../queue/enrichment";
+import { enqueueEnrichment } from "../queue/enrichment";
 import { resolveGameFromIgdb } from "./games";
 
 vi.mock("../external/igdb", () => ({ findIgdbGameById: vi.fn(), searchIgdbGames: vi.fn() }));
 // Stubbata per non aprire Redis nei test: qui interessa *se* si accoda, non che
 // BullMQ funzioni — quello è già suo.
-vi.mock("../queue/enrichment", () => ({ enqueueIgdbEnrichment: vi.fn() }));
+vi.mock("../queue/enrichment", () => ({ enqueueEnrichment: vi.fn() }));
 
 const mockedFindById = vi.mocked(findIgdbGameById);
-const mockedEnqueue = vi.mocked(enqueueIgdbEnrichment);
+const mockedEnqueue = vi.mocked(enqueueEnrichment);
 
 const hit = (igdbId: number, name: string) => ({
   igdbId,
@@ -47,7 +47,7 @@ describe("resolveGameFromIgdb", () => {
     expect(risolto).toMatchObject({ igdbId: 777, name: "Celeste" });
     // L'accodamento sta nel servizio e non nella procedura oRPC perché vale per
     // qualunque strada porti a un gioco nuovo, import Steam compreso.
-    expect(mockedEnqueue).toHaveBeenCalledWith(risolto!.id);
+    expect(mockedEnqueue).toHaveBeenCalledWith("igdb", risolto!.id);
   });
 
   it("restituisce null se IGDB non conosce l'id", async () => {

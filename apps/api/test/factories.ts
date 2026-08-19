@@ -1,3 +1,4 @@
+import type { HltbGameDetail, HltbSearchHit } from "../src/external/hltb";
 import type { IgdbGameMetadata } from "../src/external/igdb";
 import type { SteamLibraryEntry } from "../src/external/steam";
 import { db, schema } from "@repo/db";
@@ -17,7 +18,9 @@ export async function createUser() {
   return row!.id;
 }
 
-export async function createGame(values: { igdbId?: number | null; name?: string } = {}) {
+export async function createGame(
+  values: { igdbId?: number | null; name?: string; firstReleaseDate?: Date | null } = {},
+) {
   const n = unique();
   const [row] = await db
     .insert(schema.games)
@@ -26,25 +29,42 @@ export async function createGame(values: { igdbId?: number | null; name?: string
       // `undefined` vuol dire "dammene uno qualunque", `null` vuol dire
       // "non risolto": sono due casi diversi e i test usano entrambi.
       igdbId: values.igdbId === undefined ? 100_000 + n : values.igdbId,
+      firstReleaseDate: values.firstReleaseDate ?? null,
     })
     .returning({ id: schema.games.id, igdbId: schema.games.igdbId });
   return row!;
 }
 
-/** Scrive a mano lo stato di una fonte, per costruire i casi della spazzata. */
+/**
+ * Scrive a mano lo stato di una fonte, per costruire i casi della spazzata.
+ * Upsert e non insert: i casi che intrecciano due fonti riscrivono la stessa
+ * riga più volte.
+ */
 export function setSource(values: {
   gameId: string;
+  source?: "igdb" | "hltb";
   status: "pending" | "ok" | "failed" | "not_found";
   syncedAt?: Date | null;
   attemptedAt?: Date | null;
+  externalId?: string | null;
 }) {
-  return db.insert(schema.gameSources).values({
+  const source = values.source ?? "igdb";
+  const row = {
     gameId: values.gameId,
-    source: "igdb",
+    source,
     status: values.status,
     syncedAt: values.syncedAt ?? null,
     attemptedAt: values.attemptedAt ?? null,
-  });
+    externalId: values.externalId ?? null,
+  };
+
+  return db
+    .insert(schema.gameSources)
+    .values(row)
+    .onConflictDoUpdate({
+      target: [schema.gameSources.gameId, schema.gameSources.source],
+      set: row,
+    });
 }
 
 /** Metadati IGDB completi di default, così ogni test dichiara solo ciò che conta. */
@@ -60,6 +80,45 @@ export function igdbMetadata(over: Partial<IgdbGameMetadata> = {}): IgdbGameMeta
     aggregatedRating: null,
     aggregatedRatingCount: null,
     attributes: [],
+    ...over,
+  };
+}
+
+/** Un possesso Steam, che è ciò che dà al gioco un appid con cui verificarsi. */
+export async function linkSteamAppId(gameId: string, appId: string) {
+  await db.insert(schema.externalIds).values({ gameId, source: "steam", externalId: appId });
+  return appId;
+}
+
+/** Una voce della ricerca HLTB, di cui ogni test dichiara solo ciò che conta. */
+export function hltbHit(over: Partial<HltbSearchHit> = {}): HltbSearchHit {
+  return {
+    hltbId: 26286,
+    name: "Hollow Knight",
+    alias: null,
+    type: "game",
+    releaseYear: 2017,
+    ...over,
+  };
+}
+
+/** La pagina di un gioco su HLTB, con i tempi. */
+export function hltbDetail(over: Partial<HltbGameDetail> = {}): HltbGameDetail {
+  return {
+    hltbId: 26286,
+    name: "Hollow Knight",
+    mainMinutes: 1621,
+    plusMinutes: 2495,
+    completionistMinutes: 3936,
+    allStylesMinutes: 2509,
+    mainCount: 2739,
+    plusCount: 4659,
+    completionistCount: 2020,
+    allStylesCount: 9418,
+    hasSolo: true,
+    hasCoop: false,
+    hasVersus: false,
+    steamAppIds: [],
     ...over,
   };
 }

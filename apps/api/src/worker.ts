@@ -5,12 +5,15 @@ import { Worker } from "bullmq";
 import { redisConnection } from "./queue/connection";
 import {
   ENRICHMENT_QUEUE,
-  enqueueIgdbEnrichment,
-  scheduleIgdbSweep,
+  enqueueEnrichment,
+  enrichmentQueue,
+  scheduleEnrichmentSweep,
   type EnrichmentJob,
 } from "./queue/enrichment";
 import { IMPORTS_QUEUE, type ImportJob } from "./queue/imports";
-import { enrichGameFromIgdb, findGamesNeedingIgdb } from "./services/enrichment";
+import { ENRICHMENT_SOURCE_NAMES, findGamesNeedingSource } from "./services/enrichment";
+import { enrichGameFromHltb } from "./services/hltb-enrichment";
+import { enrichGameFromIgdb } from "./services/igdb-enrichment";
 import { importSteamLibrary } from "./services/steam-import";
 
 // Secondo entrypoint di apps/api. Stesso codebase e stessi servizi di server.ts,
@@ -18,27 +21,40 @@ import { importSteamLibrary } from "./services/steam-import";
 // richieste, o uno scrape pesante degraderebbe le API. In sviluppo partono
 // insieme, in produzione si scalano e si deployano separatamente.
 
+// L'unico punto in cui una fonte diventa una funzione. Tutto il resto della
+// pipeline — predicato, accodamento, spazzata — non sa che fonti esistono.
+const enrichers = {
+  igdb: enrichGameFromIgdb,
+  hltb: enrichGameFromHltb,
+};
+
 const worker = new Worker<EnrichmentJob>(
   ENRICHMENT_QUEUE,
   async (job) => {
     if (job.data.type === "sweep") {
       // La spazzata non arricchisce: accoda. Il lavoro vero resta un job per
-      // gioco, con i suoi tentativi e il suo stato.
-      const games = await findGamesNeedingIgdb();
-      for (const game of games) await enqueueIgdbEnrichment(game.id);
-      console.log(`[enrichment] spazzata: ${games.length} giochi accodati`);
-      return { enqueued: games.length };
+      // gioco e per fonte, con i suoi tentativi e il suo stato.
+      let enqueued = 0;
+      for (const source of ENRICHMENT_SOURCE_NAMES) {
+        const games = await findGamesNeedingSource(source);
+        for (const game of games) await enqueueEnrichment(source, game.id);
+        console.log(`[enrichment] spazzata ${source}: ${games.length} giochi accodati`);
+        enqueued += games.length;
+      }
+      return { enqueued };
     }
 
-    const outcome = await enrichGameFromIgdb(job.data.gameId);
-    console.log(`[enrichment] ${job.data.gameId} -> ${outcome.status}`);
+    const { source, gameId } = job.data;
+    const outcome = await enrichers[source](gameId);
+    console.log(`[enrichment] ${source} ${gameId} -> ${outcome.status}`);
     return outcome;
   },
   {
     connection: redisConnection,
-    // Basso di proposito: il collo di bottiglia è il rate limit di IGDB (4
-    // richieste al secondo), che il client gia' rispetta serializzando. Alzare
-    // qui non farebbe andare piu' veloce, farebbe solo accumulare attese.
+    // Basso di proposito: il collo di bottiglia è il rate limit delle fonti —
+    // 4 richieste al secondo su IGDB, 3 su HLTB — che i client gia' rispettano
+    // serializzando. Alzare qui non farebbe andare piu' veloce, farebbe solo
+    // accumulare attese.
     concurrency: 2,
   },
 );
@@ -72,7 +88,11 @@ importsWorker.on("failed", (job, error) => {
   console.error(`[import] job ${job?.id} fallito:`, error.message);
 });
 
-await scheduleIgdbSweep();
+// La spazzata era registrata come `igdb-sweep` quando IGDB era l'unica fonte.
+// Lo scheduler vecchio vive in Redis e continuerebbe a sparare per conto suo
+// accanto al nuovo: si toglie qui, non serve ricordarsene a mano.
+await enrichmentQueue.removeJobScheduler("igdb-sweep");
+await scheduleEnrichmentSweep();
 
 console.log("worker in ascolto sulle code enrichment e imports");
 

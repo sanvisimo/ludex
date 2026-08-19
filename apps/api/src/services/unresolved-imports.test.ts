@@ -11,7 +11,7 @@ import {
 } from "./unresolved-imports";
 
 vi.mock("../external/igdb", () => ({ findIgdbGameById: vi.fn(), searchIgdbGames: vi.fn() }));
-vi.mock("../queue/enrichment", () => ({ enqueueIgdbEnrichment: vi.fn() }));
+vi.mock("../queue/enrichment", () => ({ enqueueEnrichment: vi.fn() }));
 
 const mockedFindById = vi.mocked(findIgdbGameById);
 

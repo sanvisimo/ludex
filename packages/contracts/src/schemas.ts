@@ -55,6 +55,14 @@ export const GameSchema = z.object({
   // al momento di mostrarla. Nullo finché l'enrichment non è passato.
   coverImageId: z.string().nullable(),
   firstReleaseDate: z.date().nullable(),
+  // La durata della storia principale, in minuti. È l'unico campo HLTB che sta
+  // anche nelle liste: è la domanda a cui serve rispondere a colpo d'occhio
+  // ("quanto mi ci vuole"), il resto è roba da scheda.
+  hltbMainMinutes: z.number().int().nullable(),
+  // Viaggia insieme alla durata perché senza si mostrerebbe una bugia: un gioco
+  // senza campagna ha comunque un `hltbMainMinutes` — le 143 ore di
+  // Counter-Strike 2 — che però è tempo investito, non una durata.
+  hltbHasSolo: z.boolean().nullable(),
   createdAt: z.date(),
 });
 
@@ -62,6 +70,27 @@ export const GameAttributeSchema = z.object({
   kind: AttributeKindSchema,
   igdbId: z.number().int(),
   name: z.string(),
+});
+
+// Le durate di HowLongToBeat, in minuti. Sono la ragione dello step 6 e la
+// materia prima del filtro "stasera ho due ore" dello step 7.
+//
+// I conteggi viaggiano insieme alle durate perché una media su tre segnalazioni
+// e una su tremila non valgono uguale, e chi legge deve poterlo sapere. I flag
+// dicono che tipo di tempi quel gioco abbia: senza, "non ha una fine" e "durata
+// non ancora presa" sarebbero lo stesso campo vuoto.
+export const HltbTimesSchema = z.object({
+  hltbMainMinutes: z.number().int().nullable(),
+  hltbPlusMinutes: z.number().int().nullable(),
+  hltbCompletionistMinutes: z.number().int().nullable(),
+  hltbAllStylesMinutes: z.number().int().nullable(),
+  hltbMainCount: z.number().int().nullable(),
+  hltbPlusCount: z.number().int().nullable(),
+  hltbCompletionistCount: z.number().int().nullable(),
+  hltbAllStylesCount: z.number().int().nullable(),
+  hltbHasSolo: z.boolean().nullable(),
+  hltbHasCoop: z.boolean().nullable(),
+  hltbHasVersus: z.boolean().nullable(),
 });
 
 // Scheda completa: quello che la lista non porta perché sarebbe peso inutile.
@@ -72,9 +101,13 @@ export const GameDetailSchema = GameSchema.extend({
   aggregatedRating: z.number().nullable(),
   aggregatedRatingCount: z.number().int().nullable(),
   attributes: z.array(GameAttributeSchema),
-  // Quando IGDB è stato sincronizzato con successo. Nullo = mai, e la scheda
-  // può dirlo invece di mostrare campi vuoti senza spiegazione.
+  ...HltbTimesSchema.shape,
+  // Quando ciascuna fonte è stata sincronizzata con successo. Nullo = mai, e la
+  // scheda può dirlo invece di mostrare campi vuoti senza spiegazione. Sono due
+  // campi e non uno perché le fonti arrivano in momenti diversi: un gioco può
+  // avere i metadati IGDB e non ancora le durate.
   igdbSyncedAt: z.date().nullable(),
+  hltbSyncedAt: z.date().nullable(),
 });
 
 // Risultato di ricerca su IGDB: NON è una riga `games`, è un candidato da cui
@@ -146,6 +179,7 @@ export const UnresolvedImportSchema = z.object({
 export type Platform = z.infer<typeof PlatformSchema>;
 export type Game = z.infer<typeof GameSchema>;
 export type GameDetail = z.infer<typeof GameDetailSchema>;
+export type HltbTimes = z.infer<typeof HltbTimesSchema>;
 export type GameAttribute = z.infer<typeof GameAttributeSchema>;
 export type IgdbSearchHit = z.infer<typeof IgdbSearchHitSchema>;
 export type Ownership = z.infer<typeof OwnershipSchema>;

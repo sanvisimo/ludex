@@ -12,6 +12,7 @@ import { AddGameDialog } from "@/components/add-game-dialog";
 import { EditEntryDialog } from "@/components/edit-entry-dialog";
 import { EntryTags } from "@/components/entry-tags";
 import { GameCover } from "@/components/game-cover";
+import { GameDuration } from "@/components/game-duration";
 import { OwnershipBadges } from "@/components/ownership-badges";
 import { RatingValue } from "@/components/rating-value";
 import { Button } from "@/components/ui/button";
@@ -111,6 +112,7 @@ export default function BacklogPage() {
                             {entry.game.firstReleaseDate.getFullYear()}
                           </span>
                         )}
+                        <GameDuration game={entry.game} />
                         <RatingValue value={entry.rating} />
                       </div>
                       <OwnershipBadges ownerships={entry.ownerships} />

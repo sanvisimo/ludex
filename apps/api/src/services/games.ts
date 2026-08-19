@@ -4,24 +4,40 @@ import { and, desc, eq, inArray } from "@repo/db/orm";
 
 import { findIgdbGameById, searchIgdbGames } from "../external/igdb";
 import { chunk } from "../lib/chunk";
-import { enqueueIgdbEnrichment } from "../queue/enrichment";
+import { enqueueEnrichment } from "../queue/enrichment";
 
 // Postgres regge 65535 parametri per istruzione: con librerie da qualche
 // migliaio di voci un colpo solo li sfonderebbe.
 const READ_CHUNK = 1000;
 const WRITE_CHUNK = 500;
 
-// Le colonne che compongono GameSchema nel contratto. Tenerle esplicite evita
-// che una colonna aggiunta allo step 3 finisca per sbaglio in una risposta
-// pubblica.
-const gameColumns = {
+/**
+ * Le colonne che compongono GameSchema nel contratto. Tenerle esplicite evita
+ * che una colonna aggiunta dall'enrichment finisca per sbaglio in una risposta
+ * pubblica.
+ *
+ * Esportata perché la stessa forma serve anche a `backlog.ts`, che annida un
+ * gioco in ogni riga: erano due elenchi gemelli, e una colonna aggiunta a uno
+ * solo si scopriva a runtime, quando il contratto rifiutava la risposta.
+ */
+export const gameColumns = {
   id: true,
   igdbId: true,
   name: true,
   coverImageId: true,
   firstReleaseDate: true,
+  hltbMainMinutes: true,
+  hltbHasSolo: true,
   createdAt: true,
 } as const;
+
+// Le stesse colonne nella forma che vuole `.returning()`. Derivata da
+// `gameColumns` e non riscritta a mano: erano due elenchi gemelli in tre punti,
+// e una colonna aggiunta a uno solo sarebbe passata inosservata fino a un errore
+// di validazione del contratto.
+const gameReturning = Object.fromEntries(
+  Object.keys(gameColumns).map((name) => [name, schema.games[name as keyof typeof gameColumns]]),
+) as { [K in keyof typeof gameColumns]: (typeof schema.games)[K] };
 
 /** Catalogo pubblico: gli ultimi giochi che Ludex ha conosciuto. */
 export function listLatestGames(limit: number) {
@@ -42,9 +58,11 @@ export function findGameById(id: string) {
 /**
  * Scheda completa: i campi dell'enrichment piu gli attributi.
  *
- * Restituisce anche `igdbSyncedAt` da `game_sources`, cosi la UI puo distinguere
- * "questo gioco non ha generi" da "l'enrichment non e ancora passato" — che
- * senza questo campo sarebbero indistinguibili.
+ * Restituisce anche quando ciascuna fonte e' stata sincronizzata, cosi la UI puo
+ * distinguere "questo gioco non ha generi" da "l'enrichment non e ancora
+ * passato" — che senza sarebbero indistinguibili. Sono due campi e non uno
+ * perche' le fonti arrivano in momenti diversi: un gioco puo' avere i metadati
+ * IGDB e non ancora le durate.
  */
 export async function findGameDetailById(id: string) {
   const game = await db.query.games.findFirst({
@@ -55,6 +73,17 @@ export async function findGameDetailById(id: string) {
       coverHeight: true,
       aggregatedRating: true,
       aggregatedRatingCount: true,
+      hltbMainMinutes: true,
+      hltbPlusMinutes: true,
+      hltbCompletionistMinutes: true,
+      hltbAllStylesMinutes: true,
+      hltbMainCount: true,
+      hltbPlusCount: true,
+      hltbCompletionistCount: true,
+      hltbAllStylesCount: true,
+      hltbHasSolo: true,
+      hltbHasCoop: true,
+      hltbHasVersus: true,
     },
     where: eq(schema.games.id, id),
     with: {
@@ -74,6 +103,7 @@ export async function findGameDetailById(id: string) {
     ...rest,
     attributes: attributes.map((row) => row.attribute),
     igdbSyncedAt: sources.find((row) => row.source === "igdb")?.syncedAt ?? null,
+    hltbSyncedAt: sources.find((row) => row.source === "hltb")?.syncedAt ?? null,
   };
 }
 
@@ -82,14 +112,7 @@ export async function findGameDetailById(id: string) {
  * passa l'enrichment dello step 3.
  */
 export async function createGame(name: string) {
-  const [row] = await db.insert(schema.games).values({ name }).returning({
-    id: schema.games.id,
-    igdbId: schema.games.igdbId,
-    name: schema.games.name,
-    coverImageId: schema.games.coverImageId,
-    firstReleaseDate: schema.games.firstReleaseDate,
-    createdAt: schema.games.createdAt,
-  });
+  const [row] = await db.insert(schema.games).values({ name }).returning(gameReturning);
   return row;
 }
 
@@ -122,21 +145,14 @@ export async function resolveGameFromIgdb(igdbId: number) {
     .insert(schema.games)
     .values({ igdbId: hit.igdbId, name: hit.name })
     .onConflictDoNothing({ target: schema.games.igdbId })
-    .returning({
-      id: schema.games.id,
-      igdbId: schema.games.igdbId,
-      name: schema.games.name,
-      coverImageId: schema.games.coverImageId,
-      firstReleaseDate: schema.games.firstReleaseDate,
-      createdAt: schema.games.createdAt,
-    });
+    .returning(gameReturning);
 
   // Solo chi ha davvero creato la riga accoda: se la corsa è stata persa, il
   // job lo ha gia' messo in coda l'altro. E l'accodamento sta qui, non nella
   // procedura oRPC, perché vale per qualunque strada porti a un gioco nuovo —
   // compreso l'import Steam dello step 4.
   if (inserted) {
-    await enqueueIgdbEnrichment(inserted.id);
+    await enqueueEnrichment("igdb", inserted.id);
     return inserted;
   }
 

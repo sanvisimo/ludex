@@ -2,6 +2,7 @@ import type { UserTag, UserTagInput } from "@repo/contracts";
 import type { BacklogStatus, Store } from "@repo/contracts/vocabulary";
 
 import { chunk } from "../lib/chunk";
+import { gameColumns } from "./games";
 import { ensureUserTags } from "./tags";
 import { db, schema } from "@repo/db";
 import { and, desc, eq, inArray, sql } from "@repo/db/orm";
@@ -10,16 +11,7 @@ import { and, desc, eq, inArray, sql } from "@repo/db/orm";
 const entryQuery = {
   columns: { id: true, status: true, rating: true, notes: true, createdAt: true },
   with: {
-    game: {
-      columns: {
-        id: true,
-        igdbId: true,
-        name: true,
-        coverImageId: true,
-        firstReleaseDate: true,
-        createdAt: true,
-      },
-    },
+    game: { columns: gameColumns },
     ownerships: {
       columns: {
         id: true,

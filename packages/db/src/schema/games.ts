@@ -1,5 +1,6 @@
 import { storeValues } from "@repo/contracts/vocabulary";
 import {
+  boolean,
   index,
   integer,
   pgEnum,
@@ -51,6 +52,37 @@ export const games = pgTable(
     // OpenCritic arrivera dopo come fonte separata, senza sovrascrivere questo.
     aggregatedRating: real("aggregated_rating"),
     aggregatedRatingCount: integer("aggregated_rating_count"),
+
+    // --- durate HowLongToBeat, popolate dall'enrichment dello step 6 ---
+    //
+    // In minuti e non in secondi, che è come li dà HLTB: la precisione al
+    // secondo su una media di migliaia di segnalazioni è finta, e
+    // `ownerships.playtimeMinutes` è già in minuti — allo step 7 il filtro
+    // "stasera ho due ore" confronta le stesse unità senza conversioni.
+    hltbMainMinutes: integer("hltb_main_minutes"),
+    hltbPlusMinutes: integer("hltb_plus_minutes"),
+    hltbCompletionistMinutes: integer("hltb_completionist_minutes"),
+    hltbAllStylesMinutes: integer("hltb_all_styles_minutes"),
+
+    // Quante segnalazioni stanno dietro ciascuna media. Non è statistica per la
+    // statistica: una durata con tre segnalazioni è rumore e una con tremila no,
+    // e allo step 7 le due cose non possono pesare uguale. I quattro conteggi
+    // divergono parecchio sullo stesso gioco (Hollow Knight: 2739 sulla storia
+    // principale, 9418 sul totale), quindi non se ne può tenere uno solo.
+    hltbMainCount: integer("hltb_main_count"),
+    hltbPlusCount: integer("hltb_plus_count"),
+    hltbCompletionistCount: integer("hltb_completionist_count"),
+    hltbAllStylesCount: integer("hltb_all_styles_count"),
+
+    // Che tipo di tempi ha senso leggere su questo gioco. Servono a distinguere
+    // "non ha una fine" da "durata non ancora presa", che senza sarebbero la
+    // stessa colonna vuota — e soprattutto a non leggere come durata un numero
+    // che durata non è: Counter-Strike 2 riporta 143 ore di "storia
+    // principale", che sono tempo investito. Come trattarli lo decide lo step 7;
+    // qui si salva il dato grezzo e ciò che serve a interpretarlo.
+    hltbHasSolo: boolean("hltb_has_solo"),
+    hltbHasCoop: boolean("hltb_has_coop"),
+    hltbHasVersus: boolean("hltb_has_versus"),
 
     ...timestamps,
   },
