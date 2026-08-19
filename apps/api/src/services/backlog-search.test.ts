@@ -251,8 +251,10 @@ describe('ricerca testuale', () => {
     await aggiungi(userId, { name: 'Qualunque cosa' });
 
     expect(await nomi(userId, { q: '50%' })).toEqual(['Sconto 50% Edition']);
-    // Senza fuga, `%` sarebbe "qualunque cosa" e prenderebbe tutto.
-    expect(await nomi(userId, { q: '%' })).toEqual([]);
+    // Cercare "%" trova i titoli che un `%` ce l'hanno davvero, e **solo**
+    // quelli: senza la fuga sarebbe il jolly di LIKE e li prenderebbe tutti,
+    // "Qualunque cosa" compreso.
+    expect(await nomi(userId, { q: '%' })).toEqual(['Sconto 50% Edition']);
   });
 
   it('non guarda nelle note, che sono testo libero per scelta', async () => {
