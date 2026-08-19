@@ -45,6 +45,21 @@ export const attributeKindValues = [
 // dove filtrare per categoria e filtrare per tag sono due gesti diversi.
 export const userTagKindValues = ['tag', 'category'] as const;
 
+// Le chiavi di ordinamento del backlog (step 7). Stanno nel vocabolario e non
+// solo nello schema Zod perché il client deve poterle enumerare per costruire la
+// tendina, e perché i parser dell'URL vogliono la lista, non il tipo.
+export const backlogSortValues = [
+  'addedAt',
+  'name',
+  'released',
+  'duration',
+  'rating',
+  'criticRating',
+  'lastPlayed',
+] as const;
+
+export const sortDirectionValues = ['asc', 'desc'] as const;
+
 export type BacklogStatus = (typeof backlogStatusValues)[number];
 export type UserTagKind = (typeof userTagKindValues)[number];
 export type AttributeKind = (typeof attributeKindValues)[number];

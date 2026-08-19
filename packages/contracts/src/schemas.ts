@@ -2,7 +2,9 @@ import { z } from 'zod';
 
 import {
   attributeKindValues,
+  backlogSortValues,
   backlogStatusValues,
+  sortDirectionValues,
   storeValues,
   userTagKindValues,
 } from './vocabulary';
@@ -176,6 +178,98 @@ export const UnresolvedImportSchema = z.object({
   lastPlayedAt: z.date().nullable(),
 });
 
+// --- Filtraggio (step 7) ---
+
+/**
+ * I criteri con cui si interroga il proprio backlog.
+ *
+ * Tre regole valgono per tutto lo schema e spiegano quasi ogni scelta qui sotto:
+ *
+ * - **assente = non filtrare**. Nessun criterio ha un default che restringe: una
+ *   richiesta vuota rende il backlog intero. I default che l'utente vede
+ *   (nascondere `excluded`) li mette il client, che è l'unico posto dove può
+ *   anche mostrarli spuntati.
+ * - **i multi-valore sono in AND**: un gioco deve avere *tutti* i valori
+ *   selezionati. In SQL è un `EXISTS` correlato per valore, tutti in AND, senza
+ *   casi speciali. L'eccezione è `status`, che non è un insieme: una riga ha
+ *   esattamente uno stato, quindi lì l'AND darebbe sempre zero ed è un `IN`.
+ * - **un criterio attivo esclude i NULL**. Un gioco senza durata non è un gioco
+ *   corto, e un gioco non votato non è un gioco votato male. Il client deve
+ *   dirlo, o l'utente crede di aver perso metà libreria.
+ */
+export const BacklogFilterSchema = z.object({
+  // Solo il nome del gioco. Le note sono testo libero per scelta, e per la
+  // stessa scelta non sono un campo su cui si cerca.
+  q: z.string().trim().min(1).max(100).optional(),
+  // In OR fra loro: è l'unico criterio a valore singolo per riga. Vedi sopra.
+  status: z.array(BacklogStatusSchema).max(10).optional(),
+  platforms: z.array(z.string().min(1)).max(20).optional(),
+  stores: z.array(StoreSchema).max(20).optional(),
+  // Gli id di `igdb_attributes`, non le coppie (kind, igdbId): sono la chiave
+  // che `game_attributes` referenzia davvero, e il client li riceve da
+  // `backlog.filterOptions` senza doverli comporre.
+  attributes: z.array(z.number().int().positive()).max(20).optional(),
+  // Per id e non per nome, al contrario della scrittura: là l'utente scrive una
+  // parola e non deve sapere se esiste, qui la spunta da una lista che esiste.
+  tags: z.array(z.uuid()).max(20).optional(),
+  // Minuti, come la colonna: "stasera ho due ore" senza conversioni. Confronta
+  // la storia principale, ed è vincolato ai giochi che una fine ce l'hanno —
+  // le 143 ore di Counter-Strike 2 sono tempo investito, non una durata.
+  durationMin: z.number().int().min(0).max(600_000).optional(),
+  durationMax: z.number().int().min(0).max(600_000).optional(),
+  ratingMin: RatingSchema.optional(),
+  ratingMax: RatingSchema.optional(),
+  criticMin: z.number().min(0).max(100).optional(),
+  // Anni interi, non date: nessuno filtra la propria libreria per giorno.
+  releasedFrom: z.number().int().min(1950).max(2100).optional(),
+  releasedTo: z.number().int().min(1950).max(2100).optional(),
+  // Nessun possesso con ore giocate. Attenzione a cosa vuol dire: sugli
+  // inserimenti manuali `playtimeMinutes` è NULL — "non lo so", non "zero" —
+  // e quei giochi rientrano qui, perché nessuno ha mai detto il contrario.
+  neverPlayed: z.boolean().optional(),
+});
+
+// I NULL vanno in fondo su ogni chiave: ordinando per durata, senza, la prima
+// schermata sarebbe tutta di giochi non ancora arricchiti.
+export const BacklogSortSchema = z.enum(backlogSortValues);
+
+export const SortDirectionSchema = z.enum(sortDirectionValues);
+
+export const BacklogQuerySchema = BacklogFilterSchema.extend({
+  sort: BacklogSortSchema.default('addedAt'),
+  direction: SortDirectionSchema.default('desc'),
+  limit: z.number().int().min(1).max(200).default(50),
+  offset: z.number().int().min(0).default(0),
+});
+
+// `total` è il conteggio **prima** di limit/offset: serve a dire "128 giochi" e
+// a sapere se c'è dell'altro da caricare, e non si ricava contando `entries`.
+export const BacklogListSchema = z.object({
+  entries: z.array(BacklogEntrySchema),
+  total: z.number().int(),
+});
+
+/**
+ * Di che cosa si compone il pannello dei filtri per *questo* utente.
+ *
+ * Solo i valori presenti nel suo backlog, non gli elenchi completi: una tendina
+ * con 96 piattaforme di cui ne possiedi tre, o con 23 generi di cui ne usi otto,
+ * è rumore che nasconde le voci che contano. I tag personali non sono qui perché
+ * `tags.list` li dà già, ed è giusto che li dia tutti: il vocabolario è chiuso e
+ * corto per costruzione.
+ */
+export const FilterAttributeSchema = z.object({
+  id: z.number().int(),
+  kind: AttributeKindSchema,
+  name: z.string(),
+});
+
+export const BacklogFilterOptionsSchema = z.object({
+  platforms: z.array(PlatformSchema),
+  stores: z.array(StoreSchema),
+  attributes: z.array(FilterAttributeSchema),
+});
+
 export type Platform = z.infer<typeof PlatformSchema>;
 export type Game = z.infer<typeof GameSchema>;
 export type GameDetail = z.infer<typeof GameDetailSchema>;
@@ -189,3 +283,13 @@ export type UserTagInput = z.infer<typeof UserTagInputSchema>;
 export type BacklogEntry = z.infer<typeof BacklogEntrySchema>;
 export type StoreAccount = z.infer<typeof StoreAccountSchema>;
 export type UnresolvedImport = z.infer<typeof UnresolvedImportSchema>;
+export type BacklogFilter = z.infer<typeof BacklogFilterSchema>;
+export type BacklogSort = z.infer<typeof BacklogSortSchema>;
+export type SortDirection = z.infer<typeof SortDirectionSchema>;
+// L'input **dopo** il parse: `sort`, `direction`, `limit` e `offset` hanno un
+// default, quindi il servizio li riceve sempre valorizzati. È il tipo che serve
+// a `apps/api`; il client ne manda una versione con quei quattro opzionali.
+export type BacklogQuery = z.infer<typeof BacklogQuerySchema>;
+export type BacklogQueryInput = z.input<typeof BacklogQuerySchema>;
+export type BacklogFilterOptions = z.infer<typeof BacklogFilterOptionsSchema>;
+export type FilterAttribute = z.infer<typeof FilterAttributeSchema>;

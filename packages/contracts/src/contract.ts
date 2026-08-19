@@ -3,6 +3,9 @@ import { z } from 'zod';
 
 import {
   BacklogEntrySchema,
+  BacklogFilterOptionsSchema,
+  BacklogListSchema,
+  BacklogQuerySchema,
   BacklogStatusSchema,
   GameDetailSchema,
   GameSchema,
@@ -111,7 +114,15 @@ export const contract = {
   },
 
   backlog: {
-    list: oc.output(z.array(BacklogEntrySchema)),
+    // Il filtraggio dello step 7 sta qui dentro e non in una `search` gemella:
+    // la forma di una riga di backlog è definita in un posto solo, e due
+    // procedure che rendono la stessa cosa divergerebbero al primo campo nuovo.
+    // Senza criteri è la lista di prima.
+    list: oc.input(BacklogQuerySchema).output(BacklogListSchema),
+
+    // Di che cosa si compone il pannello dei filtri: solo i valori che compaiono
+    // davvero nel backlog di chi guarda.
+    filterOptions: oc.output(BacklogFilterOptionsSchema),
 
     // Almeno un possesso è obbligatorio: la piattaforma è il filtro hard del
     // motore decisionale, e una riga senza piattaforma sarebbe invisibile a
