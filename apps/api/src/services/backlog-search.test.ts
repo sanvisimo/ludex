@@ -180,6 +180,27 @@ describe('i NULL non sono zeri', () => {
   });
 });
 
+describe('voto della critica', () => {
+  let userId: string;
+
+  beforeEach(async () => {
+    userId = await createUser();
+  });
+
+  it('filtra e ordina sul voto scelto, non su una fonte in particolare', async () => {
+    await aggiungi(userId, { name: 'Acclamato', criticScore: 92 });
+    await aggiungi(userId, { name: 'Mediocre', criticScore: 61 });
+    // Non arricchito: `critic_score` è nullo, e un voto che non c'è non è uno
+    // zero — deve restare fuori dal filtro senza sparire dalla lista.
+    await aggiungi(userId, { name: 'Senza voto' });
+
+    expect(await nomi(userId, { criticMin: 80 })).toEqual(['Acclamato']);
+    expect(
+      await nomi(userId, { sort: 'criticRating', direction: 'desc' }),
+    ).toEqual(['Acclamato', 'Mediocre', 'Senza voto']);
+  });
+});
+
 describe('ordinamento e paginazione', () => {
   let userId: string;
 

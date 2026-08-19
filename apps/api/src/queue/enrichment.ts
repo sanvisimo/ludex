@@ -109,6 +109,16 @@ export async function scheduleOpenCriticResolve() {
   await enrichmentQueue.upsertJobScheduler(
     RESOLVE_SCHEDULER_ID,
     { every: RESOLVE_EVERY_MS },
-    { name: 'resolve', data: { type: 'resolve' } },
+    {
+      name: 'resolve',
+      data: { type: 'resolve' },
+      // Tentativi diradati sull'ora, invece dei cinque secondi che valgono per
+      // tutti gli altri job. Non è prudenza generica: WDQS ha risposto 502 al
+      // primo giro vero, e per un lavoro che torna **fra una settimana** tre
+      // tentativi in quindici secondi vogliono dire che un pomeriggio storto
+      // costa sette giorni di ritardo. Un'ora abbondante di pazienza copre le
+      // interruzioni che quel servizio ha davvero.
+      opts: { attempts: 5, backoff: { type: 'exponential', delay: 60_000 } },
+    },
   );
 }
