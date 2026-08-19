@@ -7,7 +7,8 @@
     "backlog": "Il mio backlog",
     "signOut": "Esci",
     "signIn": "Accedi",
-    "signUp": "Registrati"
+    "signUp": "Registrati",
+    "account": "Account"
   },
   "theme": {
     "label": "Tema",
@@ -145,5 +146,45 @@
     "PASSWORD_TOO_LONG": "La password è troppo lunga.",
     "EMAIL_NOT_VERIFIED": "Devi prima verificare l'indirizzo email.",
     "FAILED_TO_CREATE_USER": "Non sono riuscito a creare l'account."
+  },
+  "account": {
+    "title": "Account",
+    "profile": {
+      "title": "I tuoi dati"
+    },
+    "steam": {
+      "title": "Steam",
+      "profileLabel": "Profilo Steam",
+      "hint": "Incolla l'indirizzo del tuo profilo Steam, il tuo SteamID64 o il nome scelto. Il profilo deve essere pubblico, altrimenti Steam non ci lascia leggere la libreria.",
+      "link": "Collega",
+      "linked": "Account collegato: importazione avviata",
+      "linkFailed": "Non ho trovato questo profilo Steam",
+      "unlink": "Scollega",
+      "unlinked": "Account scollegato. I giochi importati restano nel backlog.",
+      "sync": "Reimporta",
+      "syncStarted": "Importazione avviata",
+      "syncing": "importazione in corso…",
+      "lastSync": "importata {when}",
+      "neverSynced": "mai importata",
+      "unlinkFailed": "Non sono riuscito a scollegare l'account",
+      "syncFailed": "Non sono riuscito ad avviare l'importazione",
+      "alreadySyncing": "C'è già un'importazione in corso"
+    },
+    "unresolved": {
+      "title": "Da sistemare ({count})",
+      "description": "Queste voci della libreria non sono state riconosciute. Di solito sono client beta o contenuti che non sono giochi: puoi collegarle al gioco giusto o toglierle dalla lista.",
+      "hours": "{hours}h",
+      "resolve": "Collega",
+      "dismiss": "Non è un gioco",
+      "resolveTitle": "Collega al gioco giusto",
+      "resolveDescription": "Cerca su IGDB il gioco che corrisponde a «{name}».",
+      "searchLabel": "Cerca",
+      "search": "Cerca",
+      "searchFailed": "Ricerca non riuscita",
+      "noResults": "Nessun risultato",
+      "resolved": "{name} aggiunto al backlog",
+      "resolveFailed": "Non sono riuscito a collegare questa voce",
+      "dismissFailed": "Non sono riuscito a togliere questa voce"
+    }
   }
 }

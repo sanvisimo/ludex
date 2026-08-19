@@ -33,6 +33,9 @@ export function SiteNav() {
               <Button variant="ghost" nativeButton={false} render={<Link href="/backlog" />}>
                 {t("backlog")}
               </Button>
+              <Button variant="ghost" nativeButton={false} render={<Link href="/account" />}>
+                {t("account")}
+              </Button>
               <Button
                 variant="outline"
                 onClick={async () => {
