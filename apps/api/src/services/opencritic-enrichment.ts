@@ -43,6 +43,12 @@ export type OpenCriticOutcome =
  */
 const YEAR_TOLERANCE = 1;
 
+/**
+ * L'anno in cui OpenCritic ha aperto. Sotto questo non si spende una ricerca:
+ * vedi il commento dove viene usato, che è dove sta la ragione.
+ */
+const OPENCRITIC_FIRST_YEAR = 2015;
+
 /** Scrive voto e aggancio insieme: o valgono entrambi, o non vale nessuno dei due. */
 async function saveGame(gameId: string, game: OpenCriticGame) {
   await db.transaction(async (tx) => {
@@ -154,6 +160,32 @@ async function resolveAndSave(game: GameRow): Promise<OpenCriticOutcome> {
   }
 
   const nostroAnno = game.firstReleaseDate?.getUTCFullYear() ?? null;
+
+  // Un gioco uscito prima che OpenCritic esistesse non si cerca.
+  //
+  // Non è pessimismo, è aritmetica: al primo giro vero le 25 ricerche del
+  // giorno se le sono prese Half-Life, Portal e Quake III, che nessuna
+  // ricerca troverà mai — e i candidati che tornavano erano "Harvest Life" e
+  // "Portal Dogs". Il matcher li ha rifiutati tutti, ma la ricerca era già
+  // stata spesa.
+  //
+  // I giochi vecchi che OpenCritic **sì** ha (ce ne sono: il catalogo
+  // all'indietro non è vuoto) restano raggiungibili, perché arrivano da
+  // Wikidata con l'id già in mano e questa strada non la percorrono. Quello
+  // che si perde è solo il caso di un gioco pre-2015 che OpenCritic ha e che
+  // Wikidata non collega — e per quello c'è il ri-aggancio, non una ricerca
+  // a tentoni.
+  if (nostroAnno !== null && nostroAnno < OPENCRITIC_FIRST_YEAR) {
+    await markSource({
+      gameId: game.id,
+      source: 'opencritic',
+      status: 'not_found',
+      error: `uscito nel ${nostroAnno}: OpenCritic nasce nel ${OPENCRITIC_FIRST_YEAR} e non lo cerchiamo`,
+      externalId: null,
+    });
+    return { status: 'not_found', reason: 'troppo vecchio per essere cercato' };
+  }
+
   const hits = await searchOpenCriticGames(normalizeTitle(game.name));
 
   if (hits.length === 0) {

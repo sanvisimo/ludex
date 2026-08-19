@@ -1,5 +1,5 @@
 import { db, schema } from '@repo/db';
-import { and, eq, isNotNull, isNull, ne, or, sql } from '@repo/db/orm';
+import { and, eq, isNotNull, isNull, sql } from '@repo/db/orm';
 
 import { fetchOpenCriticIdsBySlug } from '../external/wikidata';
 import { isUniqueViolation } from '../lib/pg-error';
@@ -32,9 +32,17 @@ export type ResolveReport = {
 /**
  * I giochi che uno slug ce l'hanno e un id OpenCritic no.
  *
- * `not_found` resta fuori: se OpenCritic quel gioco non ce l'ha, riprovare a
- * dargli un indirizzo ogni settimana è lavoro buttato. Si riapre per evento,
- * come per le altre fonti.
+ * I `not_found` **ci sono**, al contrario di quanto fa la spazzata
+ * dell'enrichment, e la differenza è nel costo: lì riprovare vuol dire spendere
+ * una ricerca su un gioco che ha già detto di no, qui vuol dire un valore in
+ * più in una VALUES che si manda comunque. E c'è un caso vero che quel valore
+ * lo ripaga: un gioco pre-2015 che non cerchiamo apposta, o uno che nessuno
+ * aveva ancora collegato su Wikidata, il giorno che lì compare l'id.
+ *
+ * Perché quel recupero funzioni, però, scrivere l'indirizzo deve **riaprire**
+ * la fonte: è la regola del CLAUDE.md — un `not_found` si riapre per evento,
+ * quando cambia l'identificativo del gioco su quella fonte — e questo è
+ * esattamente quell'evento.
  */
 function findGamesNeedingOpenCriticId(limit: number) {
   return db
@@ -51,13 +59,6 @@ function findGamesNeedingOpenCriticId(limit: number) {
       and(
         isNotNull(schema.games.igdbSlug),
         isNull(schema.gameSources.externalId),
-        // Il ramo sul NULL è obbligatorio: con la LEFT JOIN, su un gioco mai
-        // tentato `status <> 'not_found'` vale NULL, e senza questo sparirebbero
-        // proprio i giochi nuovi.
-        or(
-          isNull(schema.gameSources.gameId),
-          ne(schema.gameSources.status, 'not_found'),
-        ),
       ),
     )
     .orderBy(sql`${schema.games.createdAt} asc`)
@@ -103,9 +104,18 @@ export async function resolveOpenCriticIds(
         })
         .onConflictDoUpdate({
           target: [schema.gameSources.gameId, schema.gameSources.source],
-          // Solo l'indirizzo: stato, tentativi e sincronizzazioni sono di chi
-          // arricchisce, e riscriverli qui cancellerebbe la storia della fonte.
-          set: { externalId: String(openCriticId), updatedAt: new Date() },
+          set: {
+            externalId: String(openCriticId),
+            // Riaprire è il punto: un gioco chiuso come `not_found` — perché la
+            // ricerca non aveva trovato niente, o perché era troppo vecchio per
+            // cercarlo — ora un indirizzo ce l'ha, e va riprovato.
+            status: 'pending',
+            error: null,
+            // Azzerato perché è il freno dei ritentativi: il tentativo che
+            // l'aveva mosso riguardava una domanda che adesso non si fa più.
+            attemptedAt: null,
+            updatedAt: new Date(),
+          },
         });
       report.agganciati += 1;
     } catch (error) {

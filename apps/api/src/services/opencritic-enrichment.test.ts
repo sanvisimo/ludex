@@ -107,13 +107,16 @@ describe('enrichGameFromOpenCritic', () => {
   });
 
   it("rifiuta il candidato quando l'anno della scheda non torna", async () => {
+    // Il remake e il suo originale hanno lo stesso titolo, e sul nome nessuno
+    // dei due perde. A separarli è l'anno, che nella ricerca non c'è: arriva
+    // solo con la scheda, ed è lì che si controlla.
     const game = await createGame({
-      name: 'Resident Evil 4',
-      firstReleaseDate: anno(2005),
+      name: 'Dead Space',
+      firstReleaseDate: anno(2023),
     });
-    mockedSearch.mockResolvedValue([{ id: 13724, name: 'Resident Evil 4' }]);
+    mockedSearch.mockResolvedValue([{ id: 555, name: 'Dead Space' }]);
     mockedDetail.mockResolvedValue(
-      openCriticGame({ id: 13724, name: 'Resident Evil 4', releaseYear: 2023 }),
+      openCriticGame({ id: 555, name: 'Dead Space', releaseYear: 2008 }),
     );
 
     const esito = await enrichGameFromOpenCritic(game.id);
@@ -121,7 +124,7 @@ describe('enrichGameFromOpenCritic', () => {
     expect(esito).toMatchObject({ status: 'not_found' });
     const riga = await sourceRow(game.id);
     expect(riga).toMatchObject({ status: 'not_found', externalId: null });
-    expect(riga?.error).toContain('2023');
+    expect(riga?.error).toContain('2008');
     expect(await scoreRows(game.id)).toEqual([]);
   });
 
@@ -199,5 +202,34 @@ describe('enrichGameFromOpenCritic', () => {
     });
     // E il gioco che l'aveva per primo non è stato toccato.
     expect(await sourceRow(primo.id)).toMatchObject({ externalId: '4002' });
+  });
+});
+
+describe('enrichGameFromOpenCritic, sui giochi vecchi', () => {
+  it('non spende una ricerca per un gioco uscito prima di OpenCritic', async () => {
+    const game = await createGame({
+      name: 'Half-Life',
+      firstReleaseDate: new Date(Date.UTC(1998, 10, 8)),
+    });
+
+    const esito = await enrichGameFromOpenCritic(game.id);
+
+    expect(esito).toMatchObject({ status: 'not_found' });
+    // È il punto: al primo giro vero le 25 ricerche del giorno se le sono prese
+    // Half-Life, Portal e Quake III, e i candidati erano "Harvest Life" e
+    // "Portal Dogs".
+    expect(mockedSearch).not.toHaveBeenCalled();
+    expect((await sourceRow(game.id))?.error).toContain('1998');
+  });
+
+  it('cerca comunque quando l\'anno non lo sappiamo', async () => {
+    const game = await createGame({ name: 'Gioco Senza Data' });
+    mockedSearch.mockResolvedValue([]);
+
+    await enrichGameFromOpenCritic(game.id);
+
+    // "Non lo so" non è "è vecchio": tagliare fuori anche questi vorrebbe dire
+    // non arricchire mai i giochi che IGDB non data.
+    expect(mockedSearch).toHaveBeenCalled();
   });
 });

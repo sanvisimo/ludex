@@ -60,19 +60,30 @@ describe('resolveOpenCriticIds', () => {
     expect(mockedWikidata).not.toHaveBeenCalled();
   });
 
-  it('non ritorna sui giochi che OpenCritic non ha', async () => {
-    const game = await createGame({ name: 'Gioco Ignoto' });
-    await withSlug(game.id, 'gioco-ignoto');
+  it('riapre un gioco chiuso, il giorno che Wikidata gli dà un indirizzo', async () => {
+    const game = await createGame({ name: 'Half-Life' });
+    await withSlug(game.id, 'half-life');
+    // Chiuso perché la ricerca non aveva trovato niente — o, per un gioco del
+    // 1998, perché non lo si cerca affatto.
     await setSource({
       gameId: game.id,
       source: 'opencritic',
       status: 'not_found',
+      attemptedAt: new Date(),
     });
-    mockedWikidata.mockResolvedValue(new Map());
+    mockedWikidata.mockResolvedValue(new Map([['half-life', 1234]]));
 
     const report = await resolveOpenCriticIds();
 
-    expect(report.candidati).toBe(0);
+    expect(report).toMatchObject({ candidati: 1, agganciati: 1 });
+    // Avere un indirizzo è l'evento che riapre la fonte: senza questo, il
+    // recupero non servirebbe a niente perché la spazzata salta i `not_found`.
+    expect(await sourceRow(game.id)).toMatchObject({
+      status: 'pending',
+      externalId: '1234',
+      error: null,
+      attemptedAt: null,
+    });
   });
 
   it('non tocca chi un indirizzo ce l\'ha già', async () => {
