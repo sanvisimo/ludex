@@ -27,6 +27,12 @@ export async function createGame(
     igdbId?: number | null;
     name?: string;
     firstReleaseDate?: Date | null;
+    // Campi dell'enrichment, per i casi del filtraggio. Restano nulli di
+    // default: un gioco appena creato non è arricchito, ed è proprio il caso
+    // che i filtri devono trattare bene.
+    hltbMainMinutes?: number | null;
+    hltbHasSolo?: boolean | null;
+    aggregatedRating?: number | null;
   } = {},
 ) {
   const n = unique();
@@ -38,6 +44,9 @@ export async function createGame(
       // "non risolto": sono due casi diversi e i test usano entrambi.
       igdbId: values.igdbId === undefined ? 100_000 + n : values.igdbId,
       firstReleaseDate: values.firstReleaseDate ?? null,
+      hltbMainMinutes: values.hltbMainMinutes ?? null,
+      hltbHasSolo: values.hltbHasSolo ?? null,
+      aggregatedRating: values.aggregatedRating ?? null,
     })
     .returning({ id: schema.games.id, igdbId: schema.games.igdbId });
   return row!;

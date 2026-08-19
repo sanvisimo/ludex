@@ -5,11 +5,14 @@ import {
   addToBacklog,
   findEntryByGame,
   findEntryById,
-  listBacklog,
   removeFromBacklog,
   setBacklogStatus,
   updateBacklogEntry,
 } from '../services/backlog';
+import {
+  listBacklogFilterOptions,
+  searchBacklog,
+} from '../services/backlog-search';
 import {
   createGame,
   findGameById,
@@ -180,7 +183,11 @@ export const router = os.router({
   backlog: {
     list: os.backlog.list
       .use(authed)
-      .handler(({ context }) => listBacklog(context.user.id)),
+      .handler(({ input, context }) => searchBacklog(context.user.id, input)),
+
+    filterOptions: os.backlog.filterOptions
+      .use(authed)
+      .handler(({ context }) => listBacklogFilterOptions(context.user.id)),
 
     add: os.backlog.add.use(authed).handler(async ({ input, context }) => {
       const game = await findGameById(input.gameId);

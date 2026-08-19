@@ -5,10 +5,14 @@ import { chunk } from '../lib/chunk';
 import { gameColumns } from './games';
 import { ensureUserTags } from './tags';
 import { db, schema } from '@repo/db';
-import { and, desc, eq, inArray, sql } from '@repo/db/orm';
+import { and, eq, inArray, sql } from '@repo/db/orm';
 
 // Forma di BacklogEntrySchema: la riga, il gioco, i possessi, i tag.
-const entryQuery = {
+//
+// Esportata perché il filtraggio dello step 7 (`backlog-search.ts`) idrata le
+// righe con questa e non con una copia: due definizioni della stessa forma
+// divergerebbero al primo campo aggiunto a una sola delle due.
+export const entryQuery = {
   columns: {
     id: true,
     status: true,
@@ -41,7 +45,7 @@ const entryQuery = {
  * `tags: [{...}]`. Passa da qui **ogni** funzione che restituisce una riga di
  * backlog, così la forma è una sola e nessun chiamante deve ricordarsene.
  */
-function toEntry<T extends { tags: { tag: UserTag }[] }>(entry: T) {
+export function toEntry<T extends { tags: { tag: UserTag }[] }>(entry: T) {
   const { tags, ...rest } = entry;
   return { ...rest, tags: tags.map((row) => row.tag) };
 }
@@ -51,16 +55,6 @@ export type OwnershipInput = { platformSlug: string; store?: Store | null };
 // Quante righe per INSERT. Postgres regge 65535 parametri per istruzione: con
 // una libreria da qualche migliaio di giochi un colpo solo li sfonderebbe.
 const WRITE_CHUNK = 500;
-
-/** Tutte le query partono dallo userId: è la JOIN backlog → games. */
-export async function listBacklog(userId: string) {
-  const rows = await db.query.backlog.findMany({
-    ...entryQuery,
-    where: eq(schema.backlog.userId, userId),
-    orderBy: desc(schema.backlog.createdAt),
-  });
-  return rows.map(toEntry);
-}
 
 export async function findEntryById(userId: string, id: string) {
   const row = await db.query.backlog.findFirst({

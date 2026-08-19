@@ -278,10 +278,12 @@ enrichment restano due cose distinte: la prima è sincrona e in blocco, il secon
 6. **Recupero HLTB**
 7. **Filtraggio** — ricerca e filtraggio dei giochi, con possibilità di
    salvataggi.
-8. **Ui** — layout e design dell'applicazione.
-9. **Admin** — gestione degli utenti, dei provider LLM e dei tag.
-10. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding.
-11. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
+8. **OpenCritic** — recupero dei punteggi di OpenCritic. 
+9. **Ui** — layout e design dell'applicazione. 
+10. **Altre librerie** — gestione delle librerie di altri provider. 
+11. **Admin** — gestione degli utenti, dei giochi non collegati. 
+12. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding. 
+13. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
     posseduti.
 
 Ricerca ed enrichment sono due usi distinti di IGDB e non vanno confusi: lo step 2

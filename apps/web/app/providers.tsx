@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { useState } from 'react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -31,7 +32,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
       enableSystem
       disableTransitionOnChange
     >
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        {/* nuqs tiene lo stato dei filtri (step 7) nella query string. L'adapter
+            è ciò che lo lega al router di Next: senza, gli hook non sanno come
+            scrivere nell'URL. Sta qui e non nel layout perché quello è un
+            componente server. */}
+        <NuqsAdapter>{children}</NuqsAdapter>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }
