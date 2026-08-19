@@ -109,8 +109,9 @@ export async function enrichGameFromIgdb(
 
     if (!metadata) {
       // Non `failed`: riprovarlo non lo farà comparire. Si riapre per evento,
-      // quando l'`igdbId` del gioco cambia — cosa che diventa possibile allo
-      // step 5, con la modifica del gioco.
+      // quando l'`igdbId` del gioco cambia — cosa che oggi non può ancora
+      // succedere: il ri-collegamento a IGDB è rimasto fuori dallo step 5,
+      // perché fondere due righe `games` non è una modifica personale.
       await markSource(gameId, "not_found", `IGDB non conosce l'id ${game.igdbId}`);
       return { status: "not_found" };
     }

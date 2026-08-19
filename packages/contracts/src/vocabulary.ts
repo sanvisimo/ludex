@@ -36,6 +36,16 @@ export const attributeKindValues = [
   "player_perspective",
 ] as const;
 
+// Tag e categorie personali dell'utente. Sono due tipi della stessa cosa — una
+// parola che l'utente attacca a un gioco suo — e per questo stanno in una
+// tabella sola distinta da `kind`, come `igdb_attributes` fa con generi e temi.
+//
+// La distinzione è d'uso, non di forma: la categoria raggruppa ("GDR lunghi"),
+// il tag qualifica ("quando sono stanco"). Tenerle separate serve allo step 7,
+// dove filtrare per categoria e filtrare per tag sono due gesti diversi.
+export const userTagKindValues = ["tag", "category"] as const;
+
 export type BacklogStatus = (typeof backlogStatusValues)[number];
+export type UserTagKind = (typeof userTagKindValues)[number];
 export type AttributeKind = (typeof attributeKindValues)[number];
 export type Store = (typeof storeValues)[number];

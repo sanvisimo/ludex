@@ -7,10 +7,14 @@ import {
   GameDetailSchema,
   GameSchema,
   IgdbSearchHitSchema,
+  NotesSchema,
   OwnershipInputSchema,
   PlatformSchema,
+  RatingSchema,
   StoreAccountSchema,
   UnresolvedImportSchema,
+  UserTagInputSchema,
+  UserTagSchema,
 } from "./schemas";
 
 // Contratto oRPC: sola descrizione di input e output, nessuna implementazione.
@@ -88,6 +92,12 @@ export const contract = {
     dismiss: oc.input(z.object({ id: z.uuid() })).output(z.void()),
   },
 
+  tags: {
+    // Il vocabolario personale, per suggerire mentre si scrive invece di
+    // costringere a ricordarsi come si era chiamato un tag il mese scorso.
+    list: oc.output(z.array(UserTagSchema)),
+  },
+
   backlog: {
     list: oc.output(z.array(BacklogEntrySchema)),
 
@@ -106,6 +116,33 @@ export const contract = {
 
     setStatus: oc
       .input(z.object({ id: z.uuid(), status: BacklogStatusSchema }))
+      .output(BacklogEntrySchema),
+
+    // I campi personali dello step 5. Ogni campo è **opzionale e distingue
+    // assente da null**: assente vuol dire "non toccare", `null` vuol dire
+    // "togli". Senza questa distinzione un form che manda solo il voto
+    // cancellerebbe le note.
+    //
+    // I tag si mandano interi, non a differenza: il server riscrive l'insieme,
+    // come fa l'enrichment con gli attributi IGDB. È ciò che rende la
+    // mutazione idempotente e toglie di mezzo un endpoint "stacca tag".
+    update: oc
+      .input(
+        z.object({
+          id: z.uuid(),
+          status: BacklogStatusSchema.optional(),
+          rating: RatingSchema.nullish(),
+          notes: NotesSchema.nullish(),
+          tags: z.array(UserTagInputSchema).max(50).optional(),
+        }),
+      )
+      .output(BacklogEntrySchema),
+
+    // Aggiunge una piattaforma a un gioco già nel backlog: fino a qui l'unico
+    // modo era cancellare la riga e rifarla. Idempotente — riaggiungere lo
+    // stesso possesso non è un errore e non duplica nulla.
+    addOwnership: oc
+      .input(z.object({ id: z.uuid(), ownership: OwnershipInputSchema }))
       .output(BacklogEntrySchema),
 
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),

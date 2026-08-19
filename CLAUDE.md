@@ -229,14 +229,32 @@ enrichment restano due cose distinte: la prima è sincrona e in blocco, il secon
    scrittura idempotente dei possessi (`ensureOwnership`): un gioco già nel
    backlog, aggiunto a mano su un'altra piattaforma, deve prendersi il possesso
    `(pc, steam)` senza duplicare la riga di backlog né toccarne lo stato.
-5. **Modifica del gioco** — tre cose che hanno senso solo insieme, perché sono la
+5. **Modifica del gioco** — le cose che hanno senso solo insieme, perché sono la
    stessa schermata:
-   - **campi personali**: voto, tag e categorie. Insieme **chiuso** di campi
-     strutturati, non campi arbitrari definiti dall'utente: niente JSONB o EAV.
+   - **campi personali**: voto, note, tag e categorie. Il voto è da mezza stella
+     a cinque, nullo finché non si vota — "non votato" non è "votato male". Le
+     note sono l'unico testo libero ammesso, e proprio perché sono testo non
+     diventano un campo su cui filtrare. Insieme **chiuso** di campi
+     strutturati: l'utente non aggiunge un campo suo, i valori dei tag sì.
    - **possessi**: le mutazioni oRPC che espongono la scrittura già scritta allo
-     step 4. Fino a qui l'unico modo di aggiungere una piattaforma è cancellare
-     la riga e rifarla.
-   - **copertina**: scelta da SteamGridDB, per non subire quella di IGDB.
+     step 4. Fino a qui l'unico modo di aggiungere una piattaforma era cancellare
+     la riga e rifarla. **Solo aggiunta**: togliere un possesso non basta a farlo
+     sparire, perché il prossimo import lo ricrea — prima serve una logica di
+     scarto/nascondi, che è ancora da pensare.
+
+   Due cose che si erano immaginate qui e stanno **fuori**, ciascuna perché è uno
+   step suo e non un campo in più nel form:
+
+   - **copertina da SteamGridDB**, per non subire quella di IGDB. Va deciso anche
+     di chi è la scelta: `games` è condivisa fra tutti gli utenti, quindi o è un
+     override per utente su `backlog`, o il primo che sceglie decide per tutti.
+   - **ri-collegamento a IGDB**: correggere l'`igdbId` di un gioco risolto male, o
+     collegarne uno inserito a mano che senza `igdbId` non verrà mai arricchito.
+     Non è una modifica personale ed è più di una UPDATE: `games.igdbId` è unique,
+     quindi se l'id di destinazione esiste già bisogna **fondere due righe
+     `games`** — con i loro backlog, possessi ed `external_ids` — e le due righe
+     di backlog dello stesso utente, decidendo quale stato, quale voto e quali tag
+     sopravvivono. È anche l'evento che riapre un `game_sources` in `not_found`.
 6. **Recupero HLTB**
 7. **Filtraggio** — ricerca e filtraggio dei giochi, con possibilità di
    salvataggi.

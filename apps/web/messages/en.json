@@ -37,7 +37,8 @@
     "remove": "Remove",
     "removed": "Removed from the backlog",
     "removeFailed": "I couldn't remove the game",
-    "statusFailed": "I couldn't change the status"
+    "statusFailed": "I couldn't change the status",
+    "edit": "Edit"
   },
   "addGame": {
     "trigger": "Add game",
@@ -75,7 +76,33 @@
     "statusLine": "Status: <value>{status}</value>",
     "goToBacklog": "Go to the backlog",
     "notInBacklogHint": "This game isn't in your backlog. You can add it from the backlog page.",
-    "coverAlt": "{name} cover"
+    "coverAlt": "{name} cover",
+    "edit": "Edit"
+  },
+  "editEntry": {
+    "title": "Edit",
+    "statusLabel": "Status",
+    "ratingLabel": "Rating",
+    "noRating": "not rated",
+    "ratingOf": "{value} out of 5",
+    "ratingValue": "Rate {value} out of 5",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Your own notes on this game",
+    "categoriesLabel": "Categories",
+    "categoryPlaceholder": "e.g. Long RPGs",
+    "tagsLabel": "Tags",
+    "tagPlaceholder": "e.g. when I'm tired",
+    "addTag": "Add",
+    "removeTag": "Remove {name}",
+    "ownershipLabel": "Platforms",
+    "noStore": "No store",
+    "addPlatform": "Add",
+    "pendingOwnerships": "{count, plural, one {# platform to save} other {# platforms to save}}",
+    "ownershipHint": "Platforms can only be added for now: to drop one, remove the game and add it again.",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Changes saved",
+    "saveFailed": "Could not save"
   },
   "attributeKind": {
     "genre": "Genres",

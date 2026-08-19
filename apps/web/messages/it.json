@@ -37,7 +37,8 @@
     "remove": "Rimuovi",
     "removed": "Rimosso dal backlog",
     "removeFailed": "Non sono riuscito a rimuovere il gioco",
-    "statusFailed": "Non sono riuscito a cambiare lo stato"
+    "statusFailed": "Non sono riuscito a cambiare lo stato",
+    "edit": "Modifica"
   },
   "addGame": {
     "trigger": "Aggiungi gioco",
@@ -75,7 +76,33 @@
     "statusLine": "Stato: <value>{status}</value>",
     "goToBacklog": "Vai al backlog",
     "notInBacklogHint": "Questo gioco non è nel tuo backlog. Puoi aggiungerlo dalla pagina del backlog.",
-    "coverAlt": "Copertina di {name}"
+    "coverAlt": "Copertina di {name}",
+    "edit": "Modifica"
+  },
+  "editEntry": {
+    "title": "Modifica",
+    "statusLabel": "Stato",
+    "ratingLabel": "Voto",
+    "noRating": "non votato",
+    "ratingOf": "{value} su 5",
+    "ratingValue": "Vota {value} su 5",
+    "notesLabel": "Note",
+    "notesPlaceholder": "Appunti tuoi su questo gioco",
+    "categoriesLabel": "Categorie",
+    "categoryPlaceholder": "Es. GDR lunghi",
+    "tagsLabel": "Tag",
+    "tagPlaceholder": "Es. quando sono stanco",
+    "addTag": "Aggiungi",
+    "removeTag": "Togli {name}",
+    "ownershipLabel": "Piattaforme",
+    "noStore": "Nessuno store",
+    "addPlatform": "Aggiungi",
+    "pendingOwnerships": "{count, plural, one {# piattaforma da salvare} other {# piattaforme da salvare}}",
+    "ownershipHint": "Le piattaforme si aggiungono soltanto: per toglierne una, per ora, va rimosso e rifatto il gioco.",
+    "save": "Salva",
+    "saving": "Salvataggio…",
+    "saved": "Modifiche salvate",
+    "saveFailed": "Non è stato possibile salvare"
   },
   "attributeKind": {
     "genre": "Generi",

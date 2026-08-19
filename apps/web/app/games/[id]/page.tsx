@@ -4,10 +4,13 @@ import type { GameAttribute } from "@repo/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { use } from "react";
+import { use, useState } from "react";
 
+import { EditEntryDialog } from "@/components/edit-entry-dialog";
+import { EntryTags } from "@/components/entry-tags";
 import { GameCover } from "@/components/game-cover";
 import { OwnershipBadges } from "@/components/ownership-badges";
+import { RatingValue } from "@/components/rating-value";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,6 +58,10 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
   const { id } = use(params);
   const { data, isPending, error } = useQuery(api.games.byId.queryOptions({ input: { id } }));
+
+  // Solo un interruttore: la riga da passare al dialog è sempre quella fresca
+  // della query, non una copia congelata al momento del click.
+  const [editing, setEditing] = useState(false);
 
   if (isPending) {
     return (
@@ -136,21 +143,31 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
                   value: (chunks) => <span className="font-medium">{chunks}</span>,
                 })}
               </p>
+              <RatingValue value={entry.rating} />
+              {entry.notes && <p className="whitespace-pre-line">{entry.notes}</p>}
+              <EntryTags tags={entry.tags} />
               <OwnershipBadges ownerships={entry.ownerships} />
-              <Button
-                variant="outline"
-                className="w-fit"
-                nativeButton={false}
-                render={<Link href="/backlog" />}
-              >
-                {t("goToBacklog")}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" className="w-fit" onClick={() => setEditing(true)}>
+                  {t("edit")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-fit"
+                  nativeButton={false}
+                  render={<Link href="/backlog" />}
+                >
+                  {t("goToBacklog")}
+                </Button>
+              </div>
             </>
           ) : (
             <p className="text-muted-foreground">{t("notInBacklogHint")}</p>
           )}
         </CardContent>
       </Card>
+
+      <EditEntryDialog entry={editing ? entry : null} onOpenChange={setEditing} />
     </main>
   );
 }

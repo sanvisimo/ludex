@@ -19,9 +19,9 @@ import { timestamps } from "./timestamps";
 // Stanno quindi in una tabella sola distinta da `kind`, invece che in quattro
 // tabelle gemelle più quattro di raccordo.
 //
-// Da non confondere con i tag e le categorie personali dello step 5: quelli sono
-// scoped per utente e vivono lato `backlog`. Questi sono attributi del gioco,
-// uguali per tutti, e alimentano i filtri e (allo step 7) l'embedding.
+// Da non confondere con `user_tags`: quelli hanno la stessa forma ma sono scoped
+// per utente e vivono lato `backlog`. Questi sono attributi del gioco, uguali per
+// tutti, e alimentano i filtri e (allo step 7) l'embedding.
 export const attributeKind = pgEnum("attribute_kind", attributeKindValues);
 
 // Gli id IGDB sono unici solo dentro il proprio tipo — il genere 8 e il tema 8

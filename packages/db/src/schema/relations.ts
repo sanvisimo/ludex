@@ -6,6 +6,7 @@ import { externalIds, games } from "./games";
 import { platforms } from "./platforms";
 import { storeAccounts, unresolvedImports } from "./imports";
 import { gameSources } from "./sources";
+import { backlogTags, userTags } from "./tags";
 import { user } from "./auth";
 
 // Le relations stanno in un file a parte per non far importare backlog.ts a
@@ -45,6 +46,17 @@ export const backlogRelations = relations(backlog, ({ one, many }) => ({
   user: one(user, { fields: [backlog.userId], references: [user.id] }),
   game: one(games, { fields: [backlog.gameId], references: [games.id] }),
   ownerships: many(ownerships),
+  tags: many(backlogTags),
+}));
+
+export const userTagsRelations = relations(userTags, ({ one, many }) => ({
+  user: one(user, { fields: [userTags.userId], references: [user.id] }),
+  entries: many(backlogTags),
+}));
+
+export const backlogTagsRelations = relations(backlogTags, ({ one }) => ({
+  entry: one(backlog, { fields: [backlogTags.backlogId], references: [backlog.id] }),
+  tag: one(userTags, { fields: [backlogTags.tagId], references: [userTags.id] }),
 }));
 
 export const ownershipsRelations = relations(ownerships, ({ one }) => ({

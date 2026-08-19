@@ -1,14 +1,17 @@
 import { backlogStatusValues } from "@repo/contracts/vocabulary";
 import {
+  check,
   index,
   integer,
   pgEnum,
   pgTable,
+  real,
   text,
   timestamp,
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 import { user } from "./auth";
 import { games, store } from "./games";
@@ -22,7 +25,6 @@ export const backlogStatus = pgEnum("backlog_status", backlogStatusValues);
 
 // L'esistenza della riga È il possesso: nessun flag "posseduto". La wishlist è
 // una tabella separata, così ogni query qui resta semplice.
-// Voto, tag e categorie personali arrivano allo step 5.
 export const backlog = pgTable(
   "backlog",
   {
@@ -35,13 +37,33 @@ export const backlog = pgTable(
       .notNull()
       .references(() => games.id, { onDelete: "cascade" }),
     status: backlogStatus("status").notNull().default("backlog"),
+
+    // --- campi personali (step 5) ---
+    // Stanno qui e non su `ownerships` perché sono un giudizio sul gioco, non
+    // sulla copia: la stessa recensione non cambia se ce l'hai anche su GOG.
+    //
+    // Da 0.5 a 5 a mezze stelle: dieci valori. `real` e non un intero in mezzi
+    // punti perché 0.5 è esattamente rappresentabile in virgola mobile, quindi i
+    // confronti del filtraggio (step 7) restano esatti senza dover tradurre la
+    // scala a ogni lettura. Nullo = non votato, che è diverso da votato male.
+    rating: real("rating"),
+    // Testo libero. È l'unico campo non strutturato ammesso, e proprio perché è
+    // testo per l'utente non diventa un campo su cui filtrare o ragionare.
+    notes: text("notes"),
+
     ...timestamps,
   },
   (table) => [
-    // Una riga per gioco/utente: stato e (dallo step 5) voto non si duplicano.
+    // Una riga per gioco/utente: stato, voto e note non si duplicano.
     unique("backlog_user_id_game_id_key").on(table.userId, table.gameId),
     // Il filtro per utente è una JOIN backlog → games, parte sempre da qui.
     index("backlog_user_id_idx").on(table.userId),
+    // Il vincolo sta nel database e non solo in Zod: `rating` lo scrivono anche
+    // i test e gli script, che non passano dal contratto.
+    check(
+      "backlog_rating_scale",
+      sql`${table.rating} is null or (${table.rating} >= 0.5 and ${table.rating} <= 5 and (${table.rating} * 2) = floor(${table.rating} * 2))`,
+    ),
   ],
 );
 

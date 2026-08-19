@@ -1,12 +1,14 @@
+import type { UserTag, UserTagInput } from "@repo/contracts";
 import type { BacklogStatus, Store } from "@repo/contracts/vocabulary";
 
 import { chunk } from "../lib/chunk";
+import { ensureUserTags } from "./tags";
 import { db, schema } from "@repo/db";
 import { and, desc, eq, inArray, sql } from "@repo/db/orm";
 
-// Forma di BacklogEntrySchema: la riga, il gioco, i possessi.
+// Forma di BacklogEntrySchema: la riga, il gioco, i possessi, i tag.
 const entryQuery = {
-  columns: { id: true, status: true, createdAt: true },
+  columns: { id: true, status: true, rating: true, notes: true, createdAt: true },
   with: {
     game: {
       columns: {
@@ -27,8 +29,24 @@ const entryQuery = {
         lastPlayedAt: true,
       },
     },
+    tags: {
+      columns: {},
+      with: { tag: { columns: { id: true, kind: true, name: true } } },
+    },
   },
 } as const;
+
+/**
+ * Appiattisce la tabella di raccordo dei tag.
+ *
+ * La query relazionale rende `tags: [{ tag: {...} }]`, il contratto vuole
+ * `tags: [{...}]`. Passa da qui **ogni** funzione che restituisce una riga di
+ * backlog, così la forma è una sola e nessun chiamante deve ricordarsene.
+ */
+function toEntry<T extends { tags: { tag: UserTag }[] }>(entry: T) {
+  const { tags, ...rest } = entry;
+  return { ...rest, tags: tags.map((row) => row.tag) };
+}
 
 export type OwnershipInput = { platformSlug: string; store?: Store | null };
 
@@ -37,28 +55,31 @@ export type OwnershipInput = { platformSlug: string; store?: Store | null };
 const WRITE_CHUNK = 500;
 
 /** Tutte le query partono dallo userId: è la JOIN backlog → games. */
-export function listBacklog(userId: string) {
-  return db.query.backlog.findMany({
+export async function listBacklog(userId: string) {
+  const rows = await db.query.backlog.findMany({
     ...entryQuery,
     where: eq(schema.backlog.userId, userId),
     orderBy: desc(schema.backlog.createdAt),
   });
+  return rows.map(toEntry);
 }
 
-export function findEntryById(userId: string, id: string) {
-  return db.query.backlog.findFirst({
+export async function findEntryById(userId: string, id: string) {
+  const row = await db.query.backlog.findFirst({
     ...entryQuery,
     // Sempre in AND con lo userId: senza, un id indovinato leggerebbe la riga
     // di un altro utente.
     where: and(eq(schema.backlog.id, id), eq(schema.backlog.userId, userId)),
   });
+  return row ? toEntry(row) : undefined;
 }
 
-export function findEntryByGame(userId: string, gameId: string) {
-  return db.query.backlog.findFirst({
+export async function findEntryByGame(userId: string, gameId: string) {
+  const row = await db.query.backlog.findFirst({
     ...entryQuery,
     where: and(eq(schema.backlog.userId, userId), eq(schema.backlog.gameId, gameId)),
   });
+  return row ? toEntry(row) : undefined;
 }
 
 /**
@@ -98,6 +119,106 @@ export async function setBacklogStatus(userId: string, id: string, status: Backl
     .where(and(eq(schema.backlog.id, id), eq(schema.backlog.userId, userId)))
     .returning({ id: schema.backlog.id });
   return row;
+}
+
+/**
+ * I campi personali dello step 5, in una sola scrittura.
+ *
+ * Due proprietà da leggere insieme:
+ *
+ * - **assente ≠ null**. `undefined` vuol dire "non toccare", `null` vuol dire
+ *   "togli". Senza la distinzione un form che manda solo il voto cancellerebbe
+ *   le note, e un `set` costruito a partire dalle chiavi presenti è l'unico modo
+ *   di rispettarla.
+ * - **i tag si riscrivono in blocco**, come fa l'enrichment con gli attributi
+ *   IGDB: si cancella il raccordo e si riscrive. È ciò che rende la mutazione
+ *   idempotente e gestisce da solo i tag tolti, senza un endpoint apposta.
+ *
+ * Restituisce `null` se la riga non è dell'utente: la proprietà si verifica qui,
+ * prima di toccare i tag, perché la scrittura sul raccordo passa dal `backlogId`
+ * e non avrebbe più modo di sapere di chi è.
+ */
+export async function updateBacklogEntry(
+  userId: string,
+  input: {
+    id: string;
+    status?: BacklogStatus;
+    rating?: number | null;
+    notes?: string | null;
+    tags?: UserTagInput[];
+  },
+) {
+  const owned = await db.query.backlog.findFirst({
+    columns: { id: true },
+    where: and(eq(schema.backlog.id, input.id), eq(schema.backlog.userId, userId)),
+  });
+  if (!owned) return null;
+
+  // I tag si risolvono **fuori** dalla transazione e sempre partendo dallo
+  // userId: è qui che si impedisce a un utente di attaccarsi il tag di un altro.
+  // Un id arrivato dal client non basterebbe, perché non dice di chi è.
+  const tagIds =
+    input.tags === undefined
+      ? null
+      : (await ensureUserTags(userId, input.tags)).map((tag) => tag.id);
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(schema.backlog)
+      .set({
+        // `updatedAt` c'è sempre, e non solo per correttezza: senza, una
+        // modifica dei soli tag lascerebbe `set` vuoto e Drizzle rifiuterebbe
+        // la query.
+        updatedAt: new Date(),
+        ...(input.status !== undefined ? { status: input.status } : {}),
+        ...(input.rating !== undefined ? { rating: input.rating } : {}),
+        // Il campo svuotato dalla UI arriva come stringa vuota: vale "nessuna
+        // nota", non "una nota vuota".
+        ...(input.notes !== undefined ? { notes: input.notes || null } : {}),
+      })
+      .where(eq(schema.backlog.id, input.id));
+
+    if (tagIds === null) return;
+
+    await tx.delete(schema.backlogTags).where(eq(schema.backlogTags.backlogId, input.id));
+
+    if (tagIds.length > 0) {
+      await tx
+        .insert(schema.backlogTags)
+        .values(tagIds.map((tagId) => ({ backlogId: input.id, tagId })));
+    }
+  });
+
+  return owned;
+}
+
+/**
+ * Aggiunge una piattaforma a un gioco già nel backlog.
+ *
+ * Non riscrive niente da sé: appoggia su `ensureOwnerships`, la stessa scrittura
+ * idempotente che usa l'import Steam. Riaggiungere un possesso che c'è già non è
+ * un errore e non duplica la riga — è il vincolo `(backlog, piattaforma, store)`
+ * con `NULLS NOT DISTINCT` a garantirlo — e il COALESCE lascia intatte le ore
+ * che l'import aveva scritto.
+ */
+export async function addOwnershipToEntry(
+  userId: string,
+  id: string,
+  ownership: OwnershipInput,
+) {
+  const owned = await db.query.backlog.findFirst({
+    columns: { id: true },
+    // I possessi si raggiungono dal `backlogId`, che da solo non dice di chi è
+    // la riga: la proprietà va verificata prima di scrivere.
+    where: and(eq(schema.backlog.id, id), eq(schema.backlog.userId, userId)),
+  });
+  if (!owned) return null;
+
+  await ensureOwnerships([
+    { backlogId: id, platformSlug: ownership.platformSlug, store: ownership.store ?? null },
+  ]);
+
+  return owned;
 }
 
 export async function removeFromBacklog(userId: string, id: string) {

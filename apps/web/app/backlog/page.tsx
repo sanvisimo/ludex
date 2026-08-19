@@ -1,15 +1,19 @@
 "use client";
 
-import type { BacklogStatus } from "@repo/contracts";
+import type { BacklogEntry, BacklogStatus } from "@repo/contracts";
 import { backlogStatusValues } from "@repo/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { AddGameDialog } from "@/components/add-game-dialog";
+import { EditEntryDialog } from "@/components/edit-entry-dialog";
+import { EntryTags } from "@/components/entry-tags";
 import { GameCover } from "@/components/game-cover";
 import { OwnershipBadges } from "@/components/ownership-badges";
+import { RatingValue } from "@/components/rating-value";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -31,6 +35,13 @@ export default function BacklogPage() {
 
   const queryClient = useQueryClient();
   const backlog = useQuery(api.backlog.list.queryOptions());
+
+  const [editing, setEditing] = useState<BacklogEntry | null>(null);
+
+  // La riga in modifica si ripesca dalla lista fresca: dopo il salvataggio
+  // `editing` sarebbe la copia vecchia, con i tag di prima.
+  const editingEntry =
+    editing === null ? null : (backlog.data?.find((row) => row.id === editing.id) ?? editing);
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
@@ -100,10 +111,13 @@ export default function BacklogPage() {
                             {entry.game.firstReleaseDate.getFullYear()}
                           </span>
                         )}
+                        <RatingValue value={entry.rating} />
                       </div>
                       <OwnershipBadges ownerships={entry.ownerships} />
                     </div>
                   </div>
+
+                  <EntryTags tags={entry.tags} />
 
                   <div className="flex flex-wrap items-center gap-2">
                     <Select
@@ -126,9 +140,17 @@ export default function BacklogPage() {
                     </Select>
 
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       className="ml-auto"
+                      onClick={() => setEditing(entry)}
+                    >
+                      {t("edit")}
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => remove.mutate(entry.id)}
                       disabled={remove.isPending}
                     >
@@ -141,6 +163,13 @@ export default function BacklogPage() {
           ))}
         </ul>
       )}
+
+      <EditEntryDialog
+        entry={editingEntry}
+        onOpenChange={(open) => {
+          if (!open) setEditing(null);
+        }}
+      />
     </main>
   );
 }

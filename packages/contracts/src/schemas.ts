@@ -1,10 +1,41 @@
 import { z } from "zod";
 
-import { attributeKindValues, backlogStatusValues, storeValues } from "./vocabulary";
+import {
+  attributeKindValues,
+  backlogStatusValues,
+  storeValues,
+  userTagKindValues,
+} from "./vocabulary";
 
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
 export const AttributeKindSchema = z.enum(attributeKindValues);
 export const StoreSchema = z.enum(storeValues);
+export const UserTagKindSchema = z.enum(userTagKindValues);
+
+// Cinque stelle a mezze stelle: dieci valori da 0.5 a 5. Il `multipleOf` è la
+// parte che conta — senza, un client potrebbe mandare 3.7 e il CHECK del
+// database risponderebbe con un errore Postgres invece che con un messaggio.
+export const RatingSchema = z.number().min(0.5).max(5).multipleOf(0.5);
+
+// Le note sono l'unico campo di testo libero. Il tetto non è arbitrario: serve a
+// impedire che una riga di backlog diventi un posto dove archiviare megabyte.
+export const NotesSchema = z.string().trim().max(2000);
+
+// Tag e categoria personali. Il `kind` viaggia insieme al nome perché lo stesso
+// nome può esistere come tag e come categoria: sono due vocabolari distinti.
+export const UserTagSchema = z.object({
+  id: z.uuid(),
+  kind: UserTagKindSchema,
+  name: z.string(),
+});
+
+// In scrittura si mandano nome e tipo, non l'id: l'utente scrive una parola e
+// non sa (né deve sapere) se quel tag esiste già. È il server a risolverla nel
+// suo vocabolario, creandola se serve.
+export const UserTagInputSchema = z.object({
+  kind: UserTagKindSchema,
+  name: z.string().trim().min(1).max(50),
+});
 
 export const PlatformSchema = z.object({
   slug: z.string(),
@@ -78,6 +109,10 @@ export const OwnershipInputSchema = z.object({
 export const BacklogEntrySchema = z.object({
   id: z.uuid(),
   status: BacklogStatusSchema,
+  // Nullo = non votato, che non è la stessa cosa di votato male.
+  rating: z.number().nullable(),
+  notes: z.string().nullable(),
+  tags: z.array(UserTagSchema),
   game: GameSchema,
   ownerships: z.array(OwnershipSchema),
   createdAt: z.date(),
@@ -114,6 +149,8 @@ export type GameDetail = z.infer<typeof GameDetailSchema>;
 export type GameAttribute = z.infer<typeof GameAttributeSchema>;
 export type IgdbSearchHit = z.infer<typeof IgdbSearchHitSchema>;
 export type Ownership = z.infer<typeof OwnershipSchema>;
+export type UserTag = z.infer<typeof UserTagSchema>;
+export type UserTagInput = z.infer<typeof UserTagInputSchema>;
 export type BacklogEntry = z.infer<typeof BacklogEntrySchema>;
 export type StoreAccount = z.infer<typeof StoreAccountSchema>;
 export type UnresolvedImport = z.infer<typeof UnresolvedImportSchema>;

@@ -9,4 +9,5 @@ export * from "./backlog";
 export * from "./attributes";
 export * from "./sources";
 export * from "./imports";
+export * from "./tags";
 export * from "./relations";

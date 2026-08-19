@@ -1,12 +1,14 @@
 import { ORPCError } from "@orpc/server";
 
 import {
+  addOwnershipToEntry,
   addToBacklog,
   findEntryByGame,
   findEntryById,
   listBacklog,
   removeFromBacklog,
   setBacklogStatus,
+  updateBacklogEntry,
 } from "../services/backlog";
 import {
   createGame,
@@ -17,6 +19,7 @@ import {
   searchGames,
 } from "../services/games";
 import { findExistingPlatformSlugs, listPlatforms } from "../services/platforms";
+import { listUserTags } from "../services/tags";
 import {
   findSteamAccount,
   linkSteamAccount,
@@ -121,6 +124,10 @@ export const router = os.router({
     }),
   },
 
+  tags: {
+    list: os.tags.list.use(authed).handler(({ context }) => listUserTags(context.user.id)),
+  },
+
   backlog: {
     list: os.backlog.list.use(authed).handler(({ context }) => listBacklog(context.user.id)),
 
@@ -159,6 +166,33 @@ export const router = os.router({
     setStatus: os.backlog.setStatus.use(authed).handler(async ({ input, context }) => {
       const updated = await setBacklogStatus(context.user.id, input.id, input.status);
       if (!updated) throw new ORPCError("NOT_FOUND", { message: "Riga inesistente" });
+
+      const entry = await findEntryById(context.user.id, input.id);
+      if (!entry) throw new ORPCError("INTERNAL_SERVER_ERROR");
+      return entry;
+    }),
+
+    update: os.backlog.update.use(authed).handler(async ({ input, context }) => {
+      const updated = await updateBacklogEntry(context.user.id, input);
+      if (!updated) throw new ORPCError("NOT_FOUND", { message: "Riga inesistente" });
+
+      const entry = await findEntryById(context.user.id, input.id);
+      if (!entry) throw new ORPCError("INTERNAL_SERVER_ERROR");
+      return entry;
+    }),
+
+    addOwnership: os.backlog.addOwnership.use(authed).handler(async ({ input, context }) => {
+      // Validata qui e non lasciata alla foreign key, come in `add`: un errore
+      // Postgres grezzo non è un messaggio da mostrare a nessuno.
+      const known = await findExistingPlatformSlugs([input.ownership.platformSlug]);
+      if (!known.has(input.ownership.platformSlug)) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: `Piattaforme sconosciute: ${input.ownership.platformSlug}`,
+        });
+      }
+
+      const added = await addOwnershipToEntry(context.user.id, input.id, input.ownership);
+      if (!added) throw new ORPCError("NOT_FOUND", { message: "Riga inesistente" });
 
       const entry = await findEntryById(context.user.id, input.id);
       if (!entry) throw new ORPCError("INTERNAL_SERVER_ERROR");
