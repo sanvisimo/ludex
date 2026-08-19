@@ -107,8 +107,6 @@
     "notFoundTitle": "Game not found",
     "notFoundHint": "This game doesn't exist, or it was removed from the catalogue.",
     "backToCatalog": "Back to the catalogue",
-    "criticRating": " / 100 from critics",
-    "reviewCount": "{count, plural, one { · # review} other { · # reviews}}",
     "notLinked": "Game not linked to IGDB: no metadata to fetch.",
     "notEnriched": "Metadata not fetched yet. Coming shortly.",
     "inBacklog": "In your backlog",
@@ -276,5 +274,15 @@
       "resolveFailed": "I couldn't link this entry",
       "dismissFailed": "I couldn't drop this entry"
     }
+  },
+  "critic": {
+    "title": "Critic scores",
+    "none": "No critic score for this game.",
+    "byPlatform": "By platform",
+    "reviews": "{count, plural, one {# review} other {# reviews}}",
+    "recommended": "{percent}% recommend it",
+    "opencritic": "OpenCritic",
+    "metacritic": "Metacritic",
+    "igdb": "IGDB"
   }
 }

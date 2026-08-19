@@ -107,8 +107,6 @@
     "notFoundTitle": "Gioco non trovato",
     "notFoundHint": "Questo gioco non esiste, o è stato rimosso dal catalogo.",
     "backToCatalog": "Torna al catalogo",
-    "criticRating": " / 100 dalla critica",
-    "reviewCount": "{count, plural, one { · # recensione} other { · # recensioni}}",
     "notLinked": "Gioco non collegato a IGDB: nessun metadato da recuperare.",
     "notEnriched": "Metadati non ancora recuperati. Arrivano a breve.",
     "inBacklog": "Nel tuo backlog",
@@ -276,5 +274,15 @@
       "resolveFailed": "Non sono riuscito a collegare questa voce",
       "dismissFailed": "Non sono riuscito a togliere questa voce"
     }
+  },
+  "critic": {
+    "title": "Voti della critica",
+    "none": "Nessun voto della critica per questo gioco.",
+    "byPlatform": "Per piattaforma",
+    "reviews": "{count, plural, one {# recensione} other {# recensioni}}",
+    "recommended": "{percent}% lo consiglia",
+    "opencritic": "OpenCritic",
+    "metacritic": "Metacritic",
+    "igdb": "IGDB"
   }
 }

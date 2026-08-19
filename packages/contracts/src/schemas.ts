@@ -118,6 +118,8 @@ export const GameScoreSchema = z.object({
   sentiment: z.string().nullable(),
 });
 
+export type GameScore = z.infer<typeof GameScoreSchema>;
+
 // Scheda completa: quello che la lista non porta perché sarebbe peso inutile.
 export const GameDetailSchema = GameSchema.extend({
   summary: z.string().nullable(),
