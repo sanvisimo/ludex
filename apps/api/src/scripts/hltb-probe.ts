@@ -5,7 +5,7 @@ import { and, eq, isNotNull, sql } from '@repo/db/orm';
 
 import { fetchHltbGameDetail } from '../external/hltb';
 import { findHltbCandidates } from '../services/hltb-enrichment';
-import { pickByName } from '../services/hltb-match';
+import { pickByName } from '../services/title-match';
 
 // Giro a vuoto del match HLTB: cerca, punteggia, **non scrive niente**.
 //

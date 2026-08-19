@@ -1,27 +1,41 @@
-import type { HltbSearchHit } from '../external/hltb';
-
 /**
- * Scelta della voce HLTB che corrisponde a un nostro gioco.
+ * Scelta della voce di una fonte esterna che corrisponde a un nostro gioco.
  *
- * È la parte difficile dello step 6, e sta in un file suo perché è **pura**: la
- * si prova senza database e senza rete, con i payload veri.
+ * Sta in un file suo perché è **pura**: la si prova senza database e senza
+ * rete, con i payload veri. Ed è generica perché lo stesso problema si ripete
+ * identico su ogni fonte che non condivide un id con IGDB — HLTB allo step 6,
+ * Metacritic allo step 8 — mentre le fonti che un id lo hanno (OpenCritic via
+ * Wikidata) da qui non passano affatto.
  *
- * Il problema: IGDB e HLTB non hanno nessun id in comune — IGDB non elenca HLTB
- * fra le sue sorgenti esterne — quindi l'unica strada è cercare per nome e
- * decidere quale risultato è il nostro. E cercare per nome sbaglia:
+ * Il problema: senza id in comune l'unica strada è cercare per nome e decidere
+ * quale risultato è il nostro. E cercare per nome sbaglia:
  *
  *     "Resident Evil 4"  →  108881 | 2023 | 16.2h
  *                        →  7720   | 2005 | 15.6h
  *
  * Due voci, nome identico, durate diverse. Chi confronta solo i nomi prende
- * quella che capita. Noi abbiamo due cose in più: l'**anno** da IGDB, che qui
- * decide da solo, e per la libreria importata l'**appid Steam**, che la pagina
- * HLTB espone e che rende il match verificabile invece che probabile. L'appid
- * non passa da qui: sta al servizio, perché costa una richiesta.
+ * quella che capita. Noi abbiamo una cosa in più: l'**anno** da IGDB, che qui
+ * decide da solo. Le prove d'identità che costano una richiesta — l'appid Steam
+ * dichiarato dalla pagina HLTB, il link Metacritic sulla scheda Steam — non
+ * passano da qui: stanno al servizio, che è chi può permettersi di chiamare.
  */
 
+/**
+ * Quello che una voce esterna deve esporre per essere giudicata. Nient'altro:
+ * l'id non serve a scegliere, serve solo a chi poi ci farà qualcosa — e infatti
+ * viene portato attraverso i generici, senza che questo file lo veda mai.
+ */
+export type Matchable = {
+  name: string;
+  /** Titolo alternativo, quando la fonte ne tiene uno. */
+  alias?: string | null;
+  /** "game", "dlc"…: se la fonte lo dice, i DLC si buttano. */
+  type?: string | null;
+  releaseYear?: number | null;
+};
+
 /** Il gioco da agganciare, ridotto a ciò che serve per scegliere. */
-export type HltbQuery = {
+export type TitleQuery = {
   name: string;
   releaseYear: number | null;
   /**
@@ -43,8 +57,8 @@ export type HltbQuery = {
   searchedAs?: string | null;
 };
 
-export type RankedHit = {
-  hit: HltbSearchHit;
+export type Ranked<T> = {
+  hit: T;
   score: number;
   /** Il titolo normalizzato coincide, non «somiglia molto». Vedi `pickByName`. */
   exact: boolean;
@@ -155,13 +169,15 @@ export function titleSimilarity(a: string, b: string) {
  * I candidati ordinati dal più probabile, DLC esclusi.
  *
  * I DLC si buttano perché ogni ricerca ne è piena — "The Witcher 3" ne
- * restituisce tre nei primi cinque risultati — e nessuno di loro è mai il gioco
- * che abbiamo in libreria: quello lo importiamo come gioco a sé.
+ * restituisce tre nei primi cinque risultati su HLTB — e nessuno di loro è mai
+ * il gioco che abbiamo in libreria: quello lo importiamo come gioco a sé. Le
+ * fonti che non dichiarano il tipo lasciano il campo nullo e non perdono
+ * niente.
  */
-export function rankHltbCandidates(
-  query: HltbQuery,
-  hits: HltbSearchHit[],
-): RankedHit[] {
+export function rankCandidates<T extends Matchable>(
+  query: TitleQuery,
+  hits: T[],
+): Ranked<T>[] {
   // Il nostro titolo in tutte le forme che ha preso: quello vero e, se la
   // ricerca è passata da un accorciamento, anche quello. Si prende il massimo,
   // simmetricamente a quello che si fa già sul loro lato fra nome e alias —
@@ -177,8 +193,8 @@ export function rankHltbCandidates(
     .filter((hit) => hit.type !== 'dlc')
     .map((hit) => {
       // Anche l'alias conta: HLTB tiene il titolo principale in `game_name` e
-      // l'edizione o il nome alternativo in `game_alias`, e a volte è il secondo
-      // a coincidere col nostro.
+      // l'edizione o il nome alternativo in `game_alias`, e a volte è il
+      // secondo a coincidere col nostro. Vale per ogni fonte che ne tenga uno.
       const loro = [normalizeTitle(hit.name)];
       if (hit.alias) loro.push(normalizeTitle(hit.alias));
 
@@ -191,7 +207,11 @@ export function rankHltbCandidates(
         }
       }
 
-      if (query.releaseYear !== null && hit.releaseYear !== null) {
+      if (
+        query.releaseYear !== null &&
+        hit.releaseYear !== null &&
+        hit.releaseYear !== undefined
+      ) {
         const distance = Math.abs(query.releaseYear - hit.releaseYear);
         score += distance <= YEAR_TOLERANCE ? YEAR_BONUS : -YEAR_PENALTY;
       }
@@ -210,7 +230,7 @@ export function rankHltbCandidates(
  * diverso — perché la seconda è quella che un umano può sistemare guardando la
  * lista dei candidati scartati.
  */
-export function pickByName(ranked: RankedHit[]): RankedHit | null {
+export function pickByName<T>(ranked: Ranked<T>[]): Ranked<T> | null {
   // Un titolo *identico* è un'altra cosa da un titolo che somiglia tanto, e il
   // punteggio da solo non lo sa dire: "Orcs Must Die!" prende 1.00 e "Orcs Must
   // Die! 2" prende 0.97, appaiati abbastanza da far rinunciare — con l'esatto

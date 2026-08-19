@@ -4,10 +4,10 @@ import type { HltbSearchHit } from '../external/hltb';
 import {
   normalizeTitle,
   pickByName,
-  rankHltbCandidates,
+  rankCandidates,
   shortenTitle,
   titleSimilarity,
-} from './hltb-match';
+} from './title-match';
 
 // Test puri: niente database, niente rete. I candidati qui sotto non sono
 // inventati, sono le risposte vere di HLTB alle rispettive ricerche — è l'unico
@@ -84,11 +84,11 @@ describe('titleSimilarity', () => {
 
 describe('rankHltbCandidates', () => {
   it("sceglie fra due omonimi guardando l'anno", () => {
-    const originale = rankHltbCandidates(
+    const originale = rankCandidates(
       { name: 'Resident Evil 4', releaseYear: 2005 },
       residentEvil4,
     );
-    const remake = rankHltbCandidates(
+    const remake = rankCandidates(
       { name: 'Resident Evil 4', releaseYear: 2023 },
       residentEvil4,
     );
@@ -98,7 +98,7 @@ describe('rankHltbCandidates', () => {
   });
 
   it("non sceglie fra due omonimi quando l'anno non lo sappiamo", () => {
-    const ranked = rankHltbCandidates(
+    const ranked = rankCandidates(
       { name: 'Resident Evil 4', releaseYear: null },
       residentEvil4,
     );
@@ -109,7 +109,7 @@ describe('rankHltbCandidates', () => {
   });
 
   it('butta i DLC, che affollano ogni ricerca', () => {
-    const ranked = rankHltbCandidates(
+    const ranked = rankCandidates(
       { name: 'The Witcher 3: Wild Hunt', releaseYear: 2015 },
       witcher3,
     );
@@ -119,7 +119,7 @@ describe('rankHltbCandidates', () => {
   });
 
   it('preferisce il gioco base alla sua edizione speciale', () => {
-    const ranked = rankHltbCandidates(
+    const ranked = rankCandidates(
       { name: 'The Witcher 3: Wild Hunt', releaseYear: 2015 },
       witcher3,
     );
@@ -128,7 +128,7 @@ describe('rankHltbCandidates', () => {
   });
 
   it("guarda anche l'alias, non solo il nome principale", () => {
-    const ranked = rankHltbCandidates(
+    const ranked = rankCandidates(
       { name: 'Hollow Knight: Voidheart Edition', releaseYear: 2017 },
       [
         hit({
@@ -149,7 +149,7 @@ describe('pickByName', () => {
     // Caso vero, pescato provando il matcher su una libreria: senza questa
     // regola il gioco giusto veniva scartato perché il suo seguito gli stava
     // troppo vicino di punteggio.
-    const ranked = rankHltbCandidates(
+    const ranked = rankCandidates(
       { name: 'Orcs Must Die!', releaseYear: 2011 },
       [
         hit({ hltbId: 6795, name: 'Orcs Must Die!', releaseYear: 2011 }),
@@ -164,7 +164,7 @@ describe('pickByName', () => {
     // "7 Days to Die": IGDB lo data alla 1.0, HLTB all'accesso anticipato.
     // Undici anni di scarto hanno la stessa forma dei due "Resident Evil 4", e
     // lì il nome non può decidere: decide l'appid, o non decide nessuno.
-    const ranked = rankHltbCandidates(
+    const ranked = rankCandidates(
       { name: '7 Days to Die', releaseYear: 2024 },
       [hit({ hltbId: 13500, name: '7 Days to Die', releaseYear: 2013 })],
     );
@@ -173,7 +173,7 @@ describe('pickByName', () => {
   });
 
   it('non aggancia niente quando nessuno somiglia abbastanza', () => {
-    const ranked = rankHltbCandidates(
+    const ranked = rankCandidates(
       { name: 'Un Gioco Che Non Esiste', releaseYear: 2020 },
       witcher3,
     );
@@ -200,7 +200,7 @@ describe('rankHltbCandidates, con searchedAs', () => {
   const nostro = 'Gabriel Knight 3: Blood of the Sacred, Blood of the Damned';
 
   it('giudica sul titolo intero anche quando la ricerca è passata dalla coda', () => {
-    const ranked = rankHltbCandidates(
+    const ranked = rankCandidates(
       {
         name: nostro,
         searchedAs: 'Blood of the Sacred, Blood of the Damned',
@@ -216,11 +216,11 @@ describe('rankHltbCandidates, con searchedAs', () => {
     // Senza `searchedAs` il punteggio è già buono: la coda serviva a *trovare*
     // il candidato, non a riconoscerlo. Il massimo fra le due forme non può
     // quindi far perdere niente a chi già passava.
-    const senza = rankHltbCandidates(
+    const senza = rankCandidates(
       { name: nostro, releaseYear: 1999 },
       gabrielKnight,
     );
-    const con = rankHltbCandidates(
+    const con = rankCandidates(
       {
         name: nostro,
         searchedAs: 'Blood of the Sacred, Blood of the Damned',

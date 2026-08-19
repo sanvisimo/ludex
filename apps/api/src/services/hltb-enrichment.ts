@@ -5,15 +5,16 @@ import {
   fetchHltbGameDetail,
   searchHltbGames,
   type HltbGameDetail,
+  type HltbSearchHit,
 } from '../external/hltb';
 import { findSourceExternalId, markSource } from './enrichment';
 import {
   normalizeTitle,
   pickByName,
-  rankHltbCandidates,
+  rankCandidates,
   shortenTitle,
-  type RankedHit,
-} from './hltb-match';
+  type Ranked,
+} from './title-match';
 
 /**
  * Enrichment HowLongToBeat di un singolo gioco: le durate.
@@ -126,7 +127,7 @@ function isUniqueViolation(error: unknown) {
  *     "Gabriel Knight 3: Blood of the Sacred, …"      → "Blood of the Sacred, …"
  *
  * I tentativi cambiano solo la **domanda**, mai il giudizio: il punteggio
- * guarda comunque anche il titolo intero (vedi `searchedAs` in `hltb-match`).
+ * guarda comunque anche il titolo intero (vedi `searchedAs` in `title-match`).
  * Il secondo caso lo mostra bene — cercato per coda, viene poi riconosciuto per
  * il titolo intero, che somiglia allo 0.95 nonostante il "3" contro "III".
  *
@@ -151,7 +152,7 @@ export async function findHltbCandidates(
   const hits = await searchHltbGames(normalizeTitle(name));
   if (hits.length > 0) {
     return {
-      ranked: rankHltbCandidates({ name, releaseYear }, hits),
+      ranked: rankCandidates({ name, releaseYear }, hits),
       searchedAs: null,
       tried: [] as string[],
     };
@@ -159,7 +160,7 @@ export async function findHltbCandidates(
 
   const tried: string[] = [];
   if (releaseYear === null)
-    return { ranked: [] as RankedHit[], searchedAs: null, tried };
+    return { ranked: [] as Ranked<HltbSearchHit>[], searchedAs: null, tried };
 
   // Testa e coda, in quest'ordine: la testa è il titolo vero privato
   // dell'edizione, la coda è un pezzo di sottotitolo e apre molto di più, quindi
@@ -172,16 +173,16 @@ export async function findHltbCandidates(
     if (altri.length === 0) continue;
 
     return {
-      ranked: rankHltbCandidates({ name, searchedAs, releaseYear }, altri),
+      ranked: rankCandidates({ name, searchedAs, releaseYear }, altri),
       searchedAs,
       tried,
     };
   }
 
-  return { ranked: [] as RankedHit[], searchedAs: null, tried };
+  return { ranked: [] as Ranked<HltbSearchHit>[], searchedAs: null, tried };
 }
 
-function describe(ranked: RankedHit[]) {
+function describe(ranked: Ranked<HltbSearchHit>[]) {
   return ranked
     .slice(0, 3)
     .map(
