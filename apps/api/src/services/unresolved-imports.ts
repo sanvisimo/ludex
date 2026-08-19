@@ -42,6 +42,14 @@ export async function resolveUnresolvedImport(userId: string, id: string, igdbId
   const pending = await findOwn(userId, id);
   if (!pending) return { status: "not_found" as const };
 
+  // Oggi solo Steam produce scarti, e per Steam la piattaforma è PC. Il giorno
+  // che arriva un negozio di console indovinarla sarebbe scrivere dati sbagliati
+  // in silenzio — PSN è PS4 o PS5? — e non è una domanda da risolvere qui:
+  // meglio fermarsi e costringere chi aggiunge il negozio a decidere.
+  if (pending.store !== "steam") {
+    throw new Error(`Nessuna piattaforma definita per il negozio ${pending.store}`);
+  }
+
   const game = await resolveGameFromIgdb(igdbId);
   if (!game) return { status: "unknown_igdb_id" as const };
 

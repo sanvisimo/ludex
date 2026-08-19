@@ -16,12 +16,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApiErrorMessage } from "@/lib/api-error";
+import { useStoreLabels } from "@/lib/labels";
 import { api, client } from "@/lib/orpc";
 
 export default function AccountPage() {
   const t = useTranslations("account");
   const format = useFormatter();
   const errorMessage = useApiErrorMessage();
+  const storeLabels = useStoreLabels();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -196,7 +198,7 @@ export default function AccountPage() {
                   <div className="grid flex-1 gap-0.5">
                     <span className="font-medium">{entry.name}</span>
                     <span className="text-muted-foreground">
-                      {entry.store} · {entry.externalId}
+                      {storeLabels[entry.store]} · {entry.externalId}
                       {entry.playtimeMinutes
                         ? ` · ${t("unresolved.hours", {
                             hours: Math.round(entry.playtimeMinutes / 60),

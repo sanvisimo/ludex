@@ -196,6 +196,12 @@ Le librerie importate aggiungono tre cose al modello, decise allo step 4:
   beta e "Friend's Pass", e riversarli nel catalogo di tutti per un problema di
   uno è sbagliato. L'utente le vede e le risolve a mano.
 
+Lato web tutto questo vive in **`/account`**: il collegamento (si incolla l'URL
+del profilo, lo SteamID64 o il nome scelto — lo SteamID su Steam non è in vista
+da nessuna parte), lo stato dell'import mentre gira, e la lista degli scarti da
+sistemare o scartare. Che un import sia in corso si legge **dalla coda** e non da
+`last_sync_at`, che al primo giro è ancora nullo e non avrebbe niente da dire.
+
 L'ordine dei passi dell'import è esso stesso una regola: **prima il nostro DB**
 (gli appid già in `external_ids` non costano niente), **poi IGDB** e solo per il
 resto, in blocchi — su 452 giochi sono quattro richieste. Risoluzione ed
@@ -232,8 +238,11 @@ enrichment restano due cose distinte: la prima è sincrona e in blocco, il secon
      la riga e rifarla.
    - **copertina**: scelta da SteamGridDB, per non subire quella di IGDB.
 6. **Recupero HLTB**
-7. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding.
-8. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
+7. **Filtraggio** — ricerca e filtraggio dei giochi, con possibilità di
+   salvataggi.
+8. **Ui** — layout e design dell'applicazione.
+9. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding.
+10. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
    posseduti.
 
 Ricerca ed enrichment sono due usi distinti di IGDB e non vanno confusi: lo step 2
@@ -316,6 +325,15 @@ altro progetto).
 | `pnpm db:migrate` | applica le migration |
 | `pnpm db:studio` | Drizzle Studio |
 | `pnpm auth:generate` | rigenera lo schema Better Auth |
+
+Tre arnesi che si lanciano a mano dal workspace `api` e non stanno fra i comandi
+di turbo, perché non fanno parte di nessuna pipeline:
+
+| Comando | Cosa fa |
+|---|---|
+| `pnpm --filter api platforms:audit [--all]` | confronta la tabella `platforms` con l'elenco vero di IGDB. Segnala, non scrive: le correzioni vanno in una migration |
+| `pnpm --filter api steam:probe [steamid64]` | giro a vuoto dell'import Steam: legge la libreria e prova a risolverla senza toccare il DB |
+| `pnpm --filter api backfill [n]` | accoda l'enrichment di ciò che è dovuto. Non forza: rispetta le soglie di freschezza |
 
 Le variabili d'ambiente nuove vanno dichiarate anche in `globalEnv` dentro
 `turbo.json`, altrimenti il lint fallisce e la cache di turbo non le considera.

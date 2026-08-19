@@ -96,6 +96,17 @@ describe("unresolved imports", () => {
     expect(await listUnresolvedImports(userId)).toHaveLength(1);
   });
 
+  it("si rifiuta di risolvere lo scarto di un negozio senza piattaforma nota", async () => {
+    const [row] = await db
+      .insert(schema.unresolvedImports)
+      .values({ userId, store: "gog", externalId: "1", name: "Qualcosa" })
+      .returning({ id: schema.unresolvedImports.id });
+
+    // Meglio fermarsi che archiviare un gioco GOG come se fosse su PC per
+    // default: sarebbe un dato sbagliato scritto senza che nessuno se ne accorga.
+    await expect(resolveUnresolvedImport(userId, row!.id, 555)).rejects.toThrow("gog");
+  });
+
   it("scartata, la voce sparisce senza entrare nel backlog", async () => {
     const id = await pending(userId);
 
