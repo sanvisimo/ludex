@@ -1,8 +1,15 @@
+import type { Store } from "@repo/contracts/vocabulary";
 import { db, schema } from "@repo/db";
-import { desc, eq } from "@repo/db/orm";
+import { and, desc, eq, inArray } from "@repo/db/orm";
 
 import { findIgdbGameById, searchIgdbGames } from "../external/igdb";
+import { chunk } from "../lib/chunk";
 import { enqueueIgdbEnrichment } from "../queue/enrichment";
+
+// Postgres regge 65535 parametri per istruzione: con librerie da qualche
+// migliaio di voci un colpo solo li sfonderebbe.
+const READ_CHUNK = 1000;
+const WRITE_CHUNK = 500;
 
 // Le colonne che compongono GameSchema nel contratto. Tenerle esplicite evita
 // che una colonna aggiunta allo step 3 finisca per sbaglio in una risposta
@@ -134,4 +141,122 @@ export async function resolveGameFromIgdb(igdbId: number) {
   }
 
   return (await findGameByIgdbId(igdbId)) ?? null;
+}
+
+// --- Risoluzione per id esterno (step 4): import di librerie ---
+
+/**
+ * appid → gameId per i giochi che Ludex conosce già.
+ *
+ * È il **primo** passo dell'import, prima di IGDB: `games` è condivisa fra tutti
+ * gli utenti, quindi il secondo che importa la stessa libreria non paga né la
+ * risoluzione né l'enrichment. Su una collezione popolare il risparmio è quasi
+ * tutto il lavoro.
+ */
+export async function findGameIdsByExternalIds(source: Store, externalIds: string[]) {
+  const byExternalId = new Map<string, string>();
+  if (externalIds.length === 0) return byExternalId;
+
+  for (const page of chunk(externalIds, READ_CHUNK)) {
+    const rows = await db
+      .select({
+        externalId: schema.externalIds.externalId,
+        gameId: schema.externalIds.gameId,
+      })
+      .from(schema.externalIds)
+      .where(
+        and(
+          eq(schema.externalIds.source, source),
+          inArray(schema.externalIds.externalId, page),
+        ),
+      );
+
+    for (const row of rows) byExternalId.set(row.externalId, row.gameId);
+  }
+
+  return byExternalId;
+}
+
+export type ExternalGameLink = { externalId: string; igdbId: number; name: string };
+
+/**
+ * Registra su `games` i giochi risolti da una sorgente esterna e li mappa in
+ * `external_ids`.
+ *
+ * Due cose che l'import dà per scontate e che devono valere qui:
+ *
+ * - **riusa la riga esistente**: se un altro utente aveva già importato quel
+ *   gioco, non se ne crea una seconda. È la regola che fa pagare l'enrichment
+ *   una volta sola.
+ * - **più appid possono puntare allo stesso gioco**: su una libreria vera capita
+ *   (445 giochi IGDB distinti per 447 appid). Le righe `external_ids` sono due,
+ *   la riga `games` una.
+ *
+ * Restituisce anche i giochi appena nati: sono gli unici per cui vale la pena
+ * accodare l'enrichment.
+ */
+export async function linkExternalGames(source: Store, links: ExternalGameLink[]) {
+  const byExternalId = new Map<string, string>();
+  const createdGameIds: string[] = [];
+  if (links.length === 0) return { byExternalId, createdGameIds };
+
+  // Dedotto per igdbId: senza, lo stesso gioco verrebbe proposto due volte nella
+  // stessa INSERT.
+  const perIgdbId = new Map<number, ExternalGameLink>();
+  for (const link of links) if (!perIgdbId.has(link.igdbId)) perIgdbId.set(link.igdbId, link);
+
+  const gameIdByIgdbId = new Map<number, string>();
+
+  for (const page of chunk([...perIgdbId.values()], WRITE_CHUNK)) {
+    const inserted = await db
+      .insert(schema.games)
+      .values(page.map((link) => ({ igdbId: link.igdbId, name: link.name })))
+      .onConflictDoNothing({ target: schema.games.igdbId })
+      .returning({ id: schema.games.id, igdbId: schema.games.igdbId });
+
+    for (const row of inserted) {
+      if (row.igdbId === null) continue;
+      gameIdByIgdbId.set(row.igdbId, row.id);
+      createdGameIds.push(row.id);
+    }
+
+    // Quelle che c'erano già non tornano dal RETURNING.
+    const mancanti = page
+      .map((link) => link.igdbId)
+      .filter((igdbId) => !gameIdByIgdbId.has(igdbId));
+    if (mancanti.length === 0) continue;
+
+    const esistenti = await db
+      .select({ id: schema.games.id, igdbId: schema.games.igdbId })
+      .from(schema.games)
+      .where(inArray(schema.games.igdbId, mancanti));
+
+    for (const row of esistenti) {
+      if (row.igdbId !== null) gameIdByIgdbId.set(row.igdbId, row.id);
+    }
+  }
+
+  const mappature = links
+    .map((link) => ({ link, gameId: gameIdByIgdbId.get(link.igdbId) }))
+    .filter((row): row is { link: ExternalGameLink; gameId: string } => row.gameId !== undefined);
+
+  for (const page of chunk(mappature, WRITE_CHUNK)) {
+    await db
+      .insert(schema.externalIds)
+      .values(
+        page.map(({ link, gameId }) => ({
+          gameId,
+          source,
+          externalId: link.externalId,
+        })),
+      )
+      // Reimportare non deve rompersi sulle mappature già scritte.
+      .onConflictDoNothing({
+        target: [schema.externalIds.source, schema.externalIds.externalId],
+      });
+  }
+
+  for (const { link, gameId } of mappature) byExternalId.set(link.externalId, gameId);
+
+  return { byExternalId, createdGameIds };
 }

@@ -4,6 +4,7 @@ import { gameAttributes, igdbAttributes } from "./attributes";
 import { backlog, ownerships } from "./backlog";
 import { externalIds, games } from "./games";
 import { platforms } from "./platforms";
+import { storeAccounts, unresolvedImports } from "./imports";
 import { gameSources } from "./sources";
 import { user } from "./auth";
 
@@ -53,4 +54,12 @@ export const ownershipsRelations = relations(ownerships, ({ one }) => ({
 
 export const platformsRelations = relations(platforms, ({ many }) => ({
   ownerships: many(ownerships),
+}));
+
+export const storeAccountsRelations = relations(storeAccounts, ({ one }) => ({
+  user: one(user, { fields: [storeAccounts.userId], references: [user.id] }),
+}));
+
+export const unresolvedImportsRelations = relations(unresolvedImports, ({ one }) => ({
+  user: one(user, { fields: [unresolvedImports.userId], references: [user.id] }),
 }));

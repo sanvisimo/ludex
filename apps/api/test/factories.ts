@@ -1,4 +1,5 @@
 import type { IgdbGameMetadata } from "../src/external/igdb";
+import type { SteamLibraryEntry } from "../src/external/steam";
 import { db, schema } from "@repo/db";
 
 // Fixture minime: scrivono la riga e restituiscono l'id. Niente builder
@@ -67,3 +68,24 @@ export const ago = {
   hours: (n: number) => new Date(Date.now() - n * 3_600_000),
   days: (n: number) => new Date(Date.now() - n * 86_400_000),
 };
+
+export async function linkSteamAccount(userId: string, steamId = "76561190000000000") {
+  await db.insert(schema.storeAccounts).values({
+    userId,
+    store: "steam",
+    externalAccountId: steamId,
+  });
+  return steamId;
+}
+
+/** Una voce di libreria Steam come la restituisce il client. */
+export function steamEntry(over: Partial<SteamLibraryEntry> = {}): SteamLibraryEntry {
+  const n = unique();
+  return {
+    appId: String(200_000 + n),
+    name: `Gioco Steam ${n}`,
+    playtimeMinutes: 0,
+    lastPlayedAt: null,
+    ...over,
+  };
+}

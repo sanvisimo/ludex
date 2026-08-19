@@ -9,7 +9,9 @@ import {
   scheduleIgdbSweep,
   type EnrichmentJob,
 } from "./queue/enrichment";
+import { IMPORTS_QUEUE, type ImportJob } from "./queue/imports";
 import { enrichGameFromIgdb, findGamesNeedingIgdb } from "./services/enrichment";
+import { importSteamLibrary } from "./services/steam-import";
 
 // Secondo entrypoint di apps/api. Stesso codebase e stessi servizi di server.ts,
 // ma qui non si espone HTTP: i job non devono girare nel processo che serve le
@@ -45,15 +47,40 @@ worker.on("failed", (job, error) => {
   console.error(`[enrichment] job ${job?.id} fallito:`, error.message);
 });
 
+// Coda a parte: un import genera centinaia di job di enrichment, e sulla stessa
+// coda finirebbe in fila dietro il lavoro che ha appena prodotto.
+const importsWorker = new Worker<ImportJob>(
+  IMPORTS_QUEUE,
+  async (job) => {
+    const report = await importSteamLibrary(job.data.userId, job.data.steamId);
+    console.log(
+      `[import] steam ${job.data.userId}: ${report.total} in libreria, ` +
+        `${report.resolved} risolti (${report.newGames} giochi nuovi, ` +
+        `${report.newEntries} aggiunti al backlog), ${report.unresolved} da sistemare`,
+    );
+    return report;
+  },
+  {
+    connection: redisConnection,
+    // Uno alla volta: il grosso del lavoro è scritture in blocco sul DB, e due
+    // import in parallelo si contenderebbero le stesse righe `games`.
+    concurrency: 1,
+  },
+);
+
+importsWorker.on("failed", (job, error) => {
+  console.error(`[import] job ${job?.id} fallito:`, error.message);
+});
+
 await scheduleIgdbSweep();
 
-console.log("worker in ascolto sulla coda enrichment");
+console.log("worker in ascolto sulle code enrichment e imports");
 
 // Senza chiusura pulita i job in corso verrebbero persi e riprovati inutilmente.
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.on(signal, async () => {
-    console.log(`\n${signal}: chiudo il worker…`);
-    await worker.close();
+    console.log(`\n${signal}: chiudo i worker…`);
+    await Promise.all([worker.close(), importsWorker.close()]);
     process.exit(0);
   });
 }

@@ -1,3 +1,5 @@
+import { chunk } from "../lib/chunk";
+
 // Client IGDB. Sta fuori da `services/` perché è l'accesso a un servizio
 // esterno, non logica di dominio: i servizi lo usano, non lo sono.
 //
@@ -345,4 +347,64 @@ export async function fetchIgdbPlatforms(): Promise<IgdbPlatform[]> {
 
     if (page.length < PLATFORM_PAGE) return collected;
   }
+}
+
+// --- Risoluzione per id esterno (step 4): da un appid Steam al gioco IGDB ---
+
+/**
+ * L'id della sorgente su IGDB, da GET /v4/external_game_sources. Steam è 1.
+ *
+ * Il filtro sulla sorgente non è prudenziale, è obbligatorio: gli `uid` sono
+ * unici solo dentro la propria sorgente, e "220" è Half-Life 2 su Steam ma anche
+ * altre due cose su GiantBomb e Twitch.
+ */
+const IGDB_SOURCE_STEAM = 1;
+
+// IGDB accetta al massimo 500 risultati per richiesta. Su una libreria vera di
+// 452 giochi bastano quattro richieste: la risoluzione non è il collo di
+// bottiglia dell'import, e non va confusa con l'enrichment, che resta un job per
+// gioco.
+const EXTERNAL_PAGE = 500;
+
+export type IgdbExternalMatch = { igdbId: number; name: string };
+
+type IgdbExternalGame = {
+  uid: string;
+  // Espanso: una richiesta sola dà l'id **e** il nome vero del gioco, invece di
+  // quello che gli dà il negozio.
+  game?: { id: number; name: string };
+};
+
+/**
+ * Mappa appid Steam → gioco IGDB, in blocco.
+ *
+ * Gli appid che IGDB non conosce semplicemente non compaiono nella mappa: sta al
+ * chiamante decidere cosa farne. Su una libreria vera sono l'1%, e sono client
+ * beta e "Friend's Pass" più che giochi.
+ */
+export async function findIgdbGamesBySteamAppIds(
+  appIds: string[],
+): Promise<Map<string, IgdbExternalMatch>> {
+  const matches = new Map<string, IgdbExternalMatch>();
+  if (appIds.length === 0) return matches;
+
+  for (const page of chunk(appIds, EXTERNAL_PAGE)) {
+    // Gli appid arrivano da Steam e sono numerici, ma finiscono dentro una
+    // stringa apicalypse: si passano dallo stesso filtro delle ricerche.
+    const uids = page.map((appId) => `"${escapeSearchTerm(appId)}"`).join(",");
+
+    const rows = await query<IgdbExternalGame[]>(
+      "external_games",
+      `fields uid, game, game.name;` +
+        ` where external_game_source = ${IGDB_SOURCE_STEAM} & uid = (${uids});` +
+        ` limit ${EXTERNAL_PAGE};`,
+    );
+
+    for (const row of rows) {
+      if (!row.game) continue;
+      matches.set(row.uid, { igdbId: row.game.id, name: row.game.name });
+    }
+  }
+
+  return matches;
 }

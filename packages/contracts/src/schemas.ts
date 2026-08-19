@@ -64,6 +64,10 @@ export const OwnershipSchema = z.object({
   platformSlug: z.string(),
   // Vuoto sugli inserimenti manuali: la piattaforma si sa sempre, il negozio no.
   store: StoreSchema.nullable(),
+  // Come le riporta il negozio da cui viene l'import; nulle sugli inserimenti
+  // manuali. Non dicono lo stato: sono un'informazione a sé.
+  playtimeMinutes: z.number().int().nullable(),
+  lastPlayedAt: z.date().nullable(),
 });
 
 export const OwnershipInputSchema = z.object({
@@ -79,6 +83,31 @@ export const BacklogEntrySchema = z.object({
   createdAt: z.date(),
 });
 
+// --- Import di librerie (step 4) ---
+
+export const StoreAccountSchema = z.object({
+  store: StoreSchema,
+  // Lo SteamID64 per Steam. Si mostra all'utente: è la prova che ha collegato
+  // il profilo giusto.
+  externalAccountId: z.string(),
+  // Null = collegato ma mai importato.
+  lastSyncAt: z.date().nullable(),
+  // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
+  // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
+  syncing: z.boolean(),
+});
+
+// Una voce di libreria che l'import non ha saputo legare a un gioco. Il nome è
+// quello del negozio: è tutto ciò che si può mostrare per farla riconoscere.
+export const UnresolvedImportSchema = z.object({
+  id: z.uuid(),
+  store: StoreSchema,
+  externalId: z.string(),
+  name: z.string(),
+  playtimeMinutes: z.number().int().nullable(),
+  lastPlayedAt: z.date().nullable(),
+});
+
 export type Platform = z.infer<typeof PlatformSchema>;
 export type Game = z.infer<typeof GameSchema>;
 export type GameDetail = z.infer<typeof GameDetailSchema>;
@@ -86,3 +115,5 @@ export type GameAttribute = z.infer<typeof GameAttributeSchema>;
 export type IgdbSearchHit = z.infer<typeof IgdbSearchHitSchema>;
 export type Ownership = z.infer<typeof OwnershipSchema>;
 export type BacklogEntry = z.infer<typeof BacklogEntrySchema>;
+export type StoreAccount = z.infer<typeof StoreAccountSchema>;
+export type UnresolvedImport = z.infer<typeof UnresolvedImportSchema>;

@@ -8,4 +8,5 @@ export * from "./games";
 export * from "./backlog";
 export * from "./attributes";
 export * from "./sources";
+export * from "./imports";
 export * from "./relations";

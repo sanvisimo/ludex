@@ -17,6 +17,18 @@ import {
   searchGames,
 } from "../services/games";
 import { findExistingPlatformSlugs, listPlatforms } from "../services/platforms";
+import {
+  findSteamAccount,
+  linkSteamAccount,
+  listStoreAccounts,
+  unlinkSteamAccount,
+} from "../services/store-accounts";
+import {
+  dismissUnresolvedImport,
+  listUnresolvedImports,
+  resolveUnresolvedImport,
+} from "../services/unresolved-imports";
+import { enqueueSteamImport, isSteamImportRunning } from "../queue/imports";
 import { authed, maybeAuthed, os } from "./context";
 
 export const router = os.router({
@@ -49,6 +61,63 @@ export const router = os.router({
       const game = await resolveGameFromIgdb(input.igdbId);
       if (!game) throw new ORPCError("NOT_FOUND", { message: "IGDB non conosce questo id" });
       return game;
+    }),
+  },
+
+  accounts: {
+    list: os.accounts.list.use(authed).handler(({ context }) => listStoreAccounts(context.user.id)),
+
+    linkSteam: os.accounts.linkSteam.use(authed).handler(async ({ input, context }) => {
+      const account = await linkSteamAccount(context.user.id, input.profile);
+
+      // Collegare e importare sono la stessa azione per l'utente: non ha senso
+      // fargli premere un secondo bottone per avere i suoi giochi.
+      await enqueueSteamImport(context.user.id, account.externalAccountId);
+
+      return { ...account, syncing: true };
+    }),
+
+    unlinkSteam: os.accounts.unlinkSteam.use(authed).handler(async ({ context }) => {
+      const removed = await unlinkSteamAccount(context.user.id);
+      if (!removed) throw new ORPCError("NOT_FOUND", { message: "Nessun account Steam collegato" });
+    }),
+
+    syncSteam: os.accounts.syncSteam.use(authed).handler(async ({ context }) => {
+      const account = await findSteamAccount(context.user.id);
+      if (!account) throw new ORPCError("NOT_FOUND", { message: "Nessun account Steam collegato" });
+
+      // La coda deduplica per utente, quindi due click non fanno due import; il
+      // controllo qui serve solo a dirlo, invece di far finta di aver accodato.
+      if (await isSteamImportRunning(context.user.id)) {
+        throw new ORPCError("CONFLICT", { message: "Import già in corso" });
+      }
+
+      await enqueueSteamImport(context.user.id, account.externalAccountId);
+    }),
+  },
+
+  imports: {
+    unresolved: os.imports.unresolved
+      .use(authed)
+      .handler(({ context }) => listUnresolvedImports(context.user.id)),
+
+    resolve: os.imports.resolve.use(authed).handler(async ({ input, context }) => {
+      const esito = await resolveUnresolvedImport(context.user.id, input.id, input.igdbId);
+
+      if (esito.status === "not_found") {
+        throw new ORPCError("NOT_FOUND", { message: "Voce inesistente" });
+      }
+      if (esito.status === "unknown_igdb_id") {
+        throw new ORPCError("NOT_FOUND", { message: "IGDB non conosce questo id" });
+      }
+      if (!esito.entry) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+      return esito.entry;
+    }),
+
+    dismiss: os.imports.dismiss.use(authed).handler(async ({ input, context }) => {
+      const removed = await dismissUnresolvedImport(context.user.id, input.id);
+      if (!removed) throw new ORPCError("NOT_FOUND", { message: "Voce inesistente" });
     }),
   },
 

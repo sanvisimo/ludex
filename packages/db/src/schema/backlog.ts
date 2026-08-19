@@ -1,5 +1,14 @@
 import { backlogStatusValues } from "@repo/contracts/vocabulary";
-import { index, pgEnum, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
+import {
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
 import { games, store } from "./games";
@@ -53,6 +62,16 @@ export const ownerships = pgTable(
     // Vuoto sugli inserimenti manuali: si sa su che console ci giochi, non
     // necessariamente da dove viene la copia.
     store: store("store"),
+    // Ore giocate e ultima partita, come le riporta il negozio da cui viene
+    // l'import. Stanno qui e non su `backlog` perche' sono una proprieta' di
+    // *questa copia*: lo stesso gioco su GOG avrebbe le sue.
+    //
+    // Sono dato oggettivo del negozio, non un campo personale dello step 5, e
+    // restano nulli sugli inserimenti manuali. Non si usano per indovinare lo
+    // stato: due ore su un GDR da sessanta non vogliono dire "giocato", e
+    // `played` allo step 7 pesa.
+    playtimeMinutes: integer("playtime_minutes"),
+    lastPlayedAt: timestamp("last_played_at"),
     ...timestamps,
   },
   (table) => [

@@ -176,6 +176,32 @@ possesso. Conseguenze:
   ("non voglio giocarlo") è uno stato, non una tabella: è un segnale negativo
   esplicito e allo step 7 vale più di molte valutazioni positive.
 
+#### Import di librerie
+
+Le librerie importate aggiungono tre cose al modello, decise allo step 4:
+
+- **`store_accounts`**: l'account dell'utente su un negozio, uno per `(utente,
+  negozio)`. Non è una colonna su `user` perché `auth.ts` è generato e viene
+  riscritto. Tiene solo l'identità pubblica dell'account: i negozi che vorranno
+  un token OAuth per utente avranno bisogno di cifratura a riposo e di rinnovo,
+  che si decidono quando si arriva a quelli.
+- **ore giocate su `ownerships`**, non su `backlog`: sono una proprietà di
+  *quella copia*, e lo stesso gioco su GOG avrebbe le sue. Sono dato oggettivo
+  del negozio, non un campo personale dello step 5. **Non si usano per indovinare
+  lo stato**: due ore su un GDR da sessanta non vogliono dire "giocato", e
+  `played` allo step 7 pesa.
+- **`unresolved_imports`**: le voci che l'import non ha saputo legare a un gioco.
+  Stanno lì e **non in `games` come righe non risolte**, perché `games` è
+  condivisa fra tutti gli utenti: su una libreria vera gli scarti sono client
+  beta e "Friend's Pass", e riversarli nel catalogo di tutti per un problema di
+  uno è sbagliato. L'utente le vede e le risolve a mano.
+
+L'ordine dei passi dell'import è esso stesso una regola: **prima il nostro DB**
+(gli appid già in `external_ids` non costano niente), **poi IGDB** e solo per il
+resto, in blocchi — su 452 giochi sono quattro richieste. Risoluzione ed
+enrichment restano due cose distinte: la prima è sincrona e in blocco, il secondo
+è un job per gioco.
+
 #### Due tassonomie separate, da non fondere
 
 - **generi e temi IGDB**: attributi del gioco, stanno su `games`, alimentano filtri

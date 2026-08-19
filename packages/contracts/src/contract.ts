@@ -9,6 +9,8 @@ import {
   IgdbSearchHitSchema,
   OwnershipInputSchema,
   PlatformSchema,
+  StoreAccountSchema,
+  UnresolvedImportSchema,
 } from "./schemas";
 
 // Contratto oRPC: sola descrizione di input e output, nessuna implementazione.
@@ -51,6 +53,39 @@ export const contract = {
     // se un altro utente aveva già importato lo stesso gioco. È qui che vive la
     // regola "l'enrichment si paga una volta sola".
     fromIgdb: oc.input(z.object({ igdbId: z.number().int().positive() })).output(GameSchema),
+  },
+
+  accounts: {
+    // Gli account di negozio collegati. Oggi solo Steam, ma la forma è quella
+    // che serviranno anche GOG ed Epic.
+    list: oc.output(z.array(StoreAccountSchema)),
+
+    // Accetta l'URL del profilo, lo SteamID64 o il solo nome scelto: sono le
+    // tre cose che un utente ha davvero sotto mano. Collegare fa partire subito
+    // il primo import.
+    linkSteam: oc
+      .input(z.object({ profile: z.string().trim().min(1).max(200) }))
+      .output(StoreAccountSchema),
+
+    unlinkSteam: oc.output(z.void()),
+
+    // Rilancia l'import di una libreria già collegata.
+    syncSteam: oc.output(z.void()),
+  },
+
+  imports: {
+    // Le voci che l'import non ha saputo legare a un gioco.
+    unresolved: oc.output(z.array(UnresolvedImportSchema)),
+
+    // L'utente sceglie il gioco giusto su IGDB: la voce diventa un gioco nel
+    // backlog, col possesso del negozio da cui veniva, e sparisce dalla lista.
+    resolve: oc
+      .input(z.object({ id: z.uuid(), igdbId: z.number().int().positive() }))
+      .output(BacklogEntrySchema),
+
+    // "Non è un gioco": i client beta e i Friend's Pass non si risolveranno mai,
+    // e senza una via d'uscita resterebbero nella lista per sempre.
+    dismiss: oc.input(z.object({ id: z.uuid() })).output(z.void()),
   },
 
   backlog: {
