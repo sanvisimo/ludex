@@ -1,0 +1,1 @@
+ALTER TYPE "public"."source_status" ADD VALUE 'not_found';

@@ -4,8 +4,12 @@ import { enqueueIgdbEnrichment } from "../queue/enrichment";
 import { findGamesNeedingIgdb } from "../services/enrichment";
 
 // Accoda l'enrichment per i giochi che non ce l'hanno mai avuto o che ce l'hanno
-// vecchio. Serve per i giochi entrati prima che la pipeline esistesse, e come
-// arnese da mano quando si vuole forzare un giro.
+// vecchio. Serve per i giochi entrati prima che la pipeline esistesse, e per non
+// aspettare la spazzata quando si sa che c'e' lavoro da fare.
+//
+// Non forza: usa lo stesso predicato della spazzata, quindi rispetta le soglie di
+// freschezza e non ripesca i `not_found`. Rilanciarlo due volte di fila non
+// raddoppia niente.
 //
 //   pnpm --filter api backfill
 //

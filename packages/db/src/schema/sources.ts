@@ -12,7 +12,20 @@ export const dataSource = pgEnum("data_source", [
   "steamgriddb",
 ]);
 
-export const sourceStatus = pgEnum("source_status", ["pending", "ok", "failed"]);
+// `failed` e `not_found` sono due cose diverse e tenerle separate è ciò che
+// permette alla spazzata di smettere di riprovare.
+//
+// - `failed`: l'ultimo tentativo è andato male per una ragione che può passare —
+//   rete, 500, credenziali scadute. Si riprova, diradando.
+// - `not_found`: la fonte non ha questo gioco. Non passerà da sé: riprovare ogni
+//   sei ore per sempre è lavoro buttato. Si riapre per evento, quando cambia
+//   l'identificativo del gioco su quella fonte, non per scadenza.
+export const sourceStatus = pgEnum("source_status", [
+  "pending",
+  "ok",
+  "failed",
+  "not_found",
+]);
 
 /**
  * Stato dell'enrichment, una riga per (gioco, fonte).

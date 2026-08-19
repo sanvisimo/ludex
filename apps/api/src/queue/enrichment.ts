@@ -29,9 +29,17 @@ export const enrichmentQueue = new Queue<EnrichmentJob>(ENRICHMENT_QUEUE, {
 /**
  * Accoda l'enrichment di un gioco.
  *
- * `jobId` deterministico: se lo stesso gioco viene importato da tre utenti nello
+ * Deduplicato per gioco: se lo stesso gioco viene importato da tre utenti nello
  * stesso momento, BullMQ scarta i doppioni invece di chiamare IGDB tre volte.
- * (Niente `:` nell'id: BullMQ lo rifiuta, lo usa come separatore nelle chiavi.)
+ *
+ * Si usa `deduplication` e **non `jobId`**, che sarebbe la strada ovvia. Con un
+ * jobId fisso un secondo accodamento non viene aggiunto finché quell'id esiste in
+ * Redis — e i job completati restano, per via di `removeOnComplete`. Il riaccodo
+ * di un gioco già arricchito (cioè tutto il senso della spazzata: riprendere i
+ * dati stantii) verrebbe quindi ingoiato in silenzio, e `add` restituirebbe
+ * comunque un Job che sembra valido. Senza `ttl` la chiave di deduplicazione vive
+ * quanto il job — collassa gli accodamenti concorrenti — e si libera quando
+ * finisce, che è esattamente il comportamento che serve.
  *
  * Non solleva mai. L'accodamento e' un effetto collaterale della creazione di un
  * gioco: se Redis e' giu', il gioco deve nascere lo stesso e l'utente non deve
@@ -43,7 +51,7 @@ export async function enqueueIgdbEnrichment(gameId: string) {
     await enrichmentQueue.add(
       "igdb",
       { type: "igdb", gameId },
-      { jobId: `igdb-${gameId}` },
+      { deduplication: { id: `igdb-${gameId}` } },
     );
   } catch (error) {
     console.error(

@@ -1,5 +1,5 @@
 import { db, schema } from "@repo/db";
-import { and, eq, sql } from "@repo/db/orm";
+import { and, eq, isNull, lt, ne, or, sql } from "@repo/db/orm";
 
 import { fetchIgdbGameMetadata, type IgdbAttribute } from "../external/igdb";
 
@@ -17,9 +17,24 @@ import { fetchIgdbGameMetadata, type IgdbAttribute } from "../external/igdb";
  * vanno riaggiornate a ritmi diversi.
  */
 
+/**
+ * Dopo quanto un dato IGDB già preso va ripreso. Voti, copertine e sommari si
+ * muovono, ma piano: sotto il mese si spenderebbero chiamate per riscrivere le
+ * stesse righe. HLTB allo step 6 avrà la sua soglia, nel suo modulo — le fonti
+ * non invecchiano allo stesso ritmo.
+ */
+const IGDB_STALE_AFTER_DAYS = 30;
+
+/**
+ * Quanto aspettare prima di ritentare un fallimento temporaneo. La spazzata gira
+ * ogni sei ore: senza questa attesa riaccoderebbe lo stesso gioco rotto a ogni
+ * giro. Sotto le sei ore il valore non cambierebbe nulla.
+ */
+const IGDB_RETRY_AFTER_HOURS = 24;
+
 async function markSource(
   gameId: string,
-  status: "ok" | "failed",
+  status: "ok" | "failed" | "not_found",
   error: string | null,
 ) {
   const now = new Date();
@@ -93,11 +108,10 @@ export async function enrichGameFromIgdb(
     const metadata = await fetchIgdbGameMetadata(game.igdbId);
 
     if (!metadata) {
-      await markSource(
-        gameId,
-        "failed",
-        `IGDB non conosce l'id ${game.igdbId}`,
-      );
+      // Non `failed`: riprovarlo non lo farà comparire. Si riapre per evento,
+      // quando l'`igdbId` del gioco cambia — cosa che diventa possibile allo
+      // step 5, con la modifica del gioco.
+      await markSource(gameId, "not_found", `IGDB non conosce l'id ${game.igdbId}`);
       return { status: "not_found" };
     }
 
@@ -145,7 +159,26 @@ export async function enrichGameFromIgdb(
   }
 }
 
-/** Giochi risolti che IGDB non ha mai arricchito con successo. */
+/**
+ * Giochi risolti da (ri)arricchire con IGDB.
+ *
+ * «Da riarricchire» non è «mai arricchito»: un gioco sincronizzato mesi fa è un
+ * candidato quanto uno mai visto, altrimenti la coda va in quiescenza appena il
+ * primo giro finisce e i dati invecchiano senza che nessuno lo dica.
+ *
+ * Tre cose del predicato che non sono ovvie rileggendolo:
+ *
+ * - il ramo `game_sources.game_id IS NULL` è obbligatorio, non difensivo. Con la
+ *   LEFT JOIN, su un gioco mai tentato tutte le colonne di `game_sources` sono
+ *   NULL, e `status <> 'not_found'` vale NULL: senza questo ramo i giochi nuovi —
+ *   quelli che servono di più — spariscono dal risultato.
+ * - `attempted_at` governa i fallimenti temporanei. `synced_at` da solo non basta:
+ *   su un gioco che fallisce resta indietro, e la spazzata lo riaccoderebbe ogni
+ *   sei ore.
+ * - l'ordinamento non è cosmetico. Se i candidati sono più del limite, senza
+ *   ORDER BY Postgres può restituire le stesse righe a ogni giro e lasciarne
+ *   altre a digiuno per sempre. `nulls first` mette davanti i mai sincronizzati.
+ */
 export function findGamesNeedingIgdb(limit = 100) {
   return db
     .select({ id: schema.games.id })
@@ -158,7 +191,33 @@ export function findGamesNeedingIgdb(limit = 100) {
       ),
     )
     .where(
-      sql`${schema.games.igdbId} is not null and ${schema.gameSources.syncedAt} is null`,
+      and(
+        // Un gioco non risolto non ha nulla da chiedere a IGDB.
+        sql`${schema.games.igdbId} is not null`,
+        or(
+          isNull(schema.gameSources.gameId),
+          and(
+            ne(schema.gameSources.status, "not_found"),
+            or(
+              isNull(schema.gameSources.syncedAt),
+              lt(
+                schema.gameSources.syncedAt,
+                sql`now() - ${IGDB_STALE_AFTER_DAYS} * interval '1 day'`,
+              ),
+            ),
+            or(
+              isNull(schema.gameSources.attemptedAt),
+              lt(
+                schema.gameSources.attemptedAt,
+                sql`now() - ${IGDB_RETRY_AFTER_HOURS} * interval '1 hour'`,
+              ),
+            ),
+          ),
+        ),
+      ),
     )
+    // `sql` grezzo e non `asc()`: quello avvolge l'espressione e produrrebbe
+    // `synced_at nulls first asc`, che Postgres rifiuta.
+    .orderBy(sql`${schema.gameSources.syncedAt} asc nulls first`)
     .limit(limit);
 }
