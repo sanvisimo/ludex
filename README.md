@@ -1,159 +1,127 @@
-# Turborepo starter
+# Ludex
 
-This Turborepo starter is maintained by the Turborepo core team.
+Gestore di libreria giochi multi-piattaforma. **Non è un tracker**: il cuore è un
+motore decisionale che risponde a «cosa gioco adesso» in base al tempo che hai,
+alla piattaforma che hai accesa e all'umore.
 
-## Using this example
+Nasce dall'assenza di un equivalente mobile di Playnite.
 
-Run the following command:
+Le decisioni di progetto — perché Hono e non NestJS, perché Drizzle e non
+Prisma, come è fatto il modello dati e perché — stanno in [CLAUDE.md](CLAUDE.md).
+Questo file serve a metterlo in piedi.
 
-```sh
-npx create-turbo@latest
+## A che punto è
+
+Fatti: registrazione e login, inserimento manuale con ricerca IGDB, enrichment
+IGDB su coda, import della libreria Steam, modifica del gioco (voto, note, tag,
+possessi), durate HowLongToBeat, ricerca e filtraggio del backlog, voti della
+critica da OpenCritic e Metacritic.
+
+Prossimi: layout e design (step 9), le altre librerie importabili, l'admin, il
+layer di raccomandazione. Il mobile non è ancora iniziato.
+
+## Stack
+
+Tutto TypeScript. **Hono** + **Drizzle** + **PostgreSQL** sul backend, **oRPC**
+per la tipizzazione end-to-end senza codegen, **Better Auth** con gli utenti nel
+nostro Postgres, **BullMQ** + Redis per i job, **Next.js** sul web. Monorepo
+pnpm + Turborepo.
+
+| Workspace            | Contenuto                                       |
+| -------------------- | ----------------------------------------------- |
+| `apps/api`           | Hono. Due entrypoint: `server.ts` e `worker.ts` |
+| `apps/web`           | Next.js                                         |
+| `packages/db`        | schema Drizzle e client, unica fonte di verità  |
+| `packages/auth`      | istanza Better Auth e client                    |
+| `packages/contracts` | router oRPC e schemi Zod condivisi              |
+
+I job **non girano nel processo che serve le richieste HTTP**: stesso codebase,
+due processi, così uno scrape pesante non degrada le API. In sviluppo `pnpm dev`
+li lancia insieme.
+
+## Primo avvio
+
+Servono Node ≥ 24, pnpm 11 e Docker.
+
+```bash
+cp .env.example .env   # e genera BETTER_AUTH_SECRET con: openssl rand -base64 32
+pnpm install
+pnpm db:up             # Postgres e Redis in Docker
+pnpm db:migrate
+pnpm dev
 ```
 
-## What's inside?
+Il `.env` sta **alla radice del repo** e lo leggono tutti i workspace.
 
-This Turborepo includes the following packages/apps:
+Porte: web `3000`, api `3001`, dashboard delle code `3002`, Postgres `5433`
+(la 5432 è occupata da un altro progetto), Redis `6379`.
 
-### Apps and Packages
+### Chiavi
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+Per accendere l'applicazione bastano `DATABASE_URL` e `BETTER_AUTH_SECRET`. Il
+resto abilita una funzione per volta, e senza quella chiave la funzione
+semplicemente non parte:
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+| Variabile                               | Serve a                                              |
+| --------------------------------------- | ---------------------------------------------------- |
+| `IGDB_CLIENT_ID` / `IGDB_CLIENT_SECRET` | cercare i giochi e arricchirli. È la fonte primaria  |
+| `STEAM_API_KEY`                         | importare la libreria Steam                          |
+| `OPENCRITIC_API_KEY`                    | i voti OpenCritic (chiave RapidAPI, piano gratuito)  |
+| `METACRITIC_API_KEY`                    | facoltativa: solo se ruotano la loro chiave pubblica |
+| `HLTB_API_PATH`                         | facoltativa: solo se HLTB sposta il suo endpoint     |
 
-### Utilities
+Una variabile nuova va dichiarata **anche in `globalEnv` dentro `turbo.json`**,
+o il lint fallisce.
 
-This Turborepo has some additional tools already setup for you:
+## Comandi
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+| Comando                          | Cosa fa                                   |
+| -------------------------------- | ----------------------------------------- |
+| `pnpm dev`                       | avvia tutto                               |
+| `pnpm lint` / `pnpm check-types` | lint e typecheck sul monorepo             |
+| `pnpm test`                      | vitest (serve Postgres acceso)            |
+| `pnpm db:up` / `pnpm db:down`    | Postgres e Redis in Docker                |
+| `pnpm db:generate`               | genera la migration dal diff dello schema |
+| `pnpm db:migrate`                | applica le migration                      |
+| `pnpm db:studio`                 | Drizzle Studio                            |
+| `pnpm auth:generate`             | rigenera lo schema Better Auth            |
 
-### Build
+Poi ci sono gli arnesi da operatore, che si lanciano a mano dal workspace `api`
+e non stanno in nessuna pipeline:
 
-To build all apps and packages, run the following command:
+| Comando                                          | Cosa fa                                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------------------ |
+| `pnpm --filter api backfill [n]`                 | accoda l'enrichment di ciò che è dovuto, rispettando le scadenze         |
+| `pnpm --filter api opencritic:resolve [n]`       | aggancia gli id OpenCritic chiedendoli a Wikidata, senza spendere budget |
+| `pnpm --filter api queues`                       | dashboard Bull Board sulle code, solo su localhost                       |
+| `pnpm --filter api steam:probe [steamid64]`      | giro a vuoto dell'import Steam, senza scrivere                           |
+| `pnpm --filter api hltb:probe [n\|titolo]`       | giro a vuoto del match HLTB                                              |
+| `pnpm --filter api metacritic:probe [n\|titolo]` | giro a vuoto del match Metacritic                                        |
+| `pnpm --filter api platforms:audit [--all]`      | confronta la tabella `platforms` con l'elenco vero di IGDB               |
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+I `probe` cercano e punteggiano **senza scrivere niente**: la riga che conta è
+quella dei «da sistemare», perché è la lista di ciò che il job scarterebbe.
 
-```sh
-cd my-turborepo
-turbo build
+## Fonti dati
+
+**IGDB** è il metadato primario e la chiave d'identità dei giochi. **Steam** dà
+la libreria posseduta. **HowLongToBeat** dà le durate, **OpenCritic** e
+**Metacritic** i voti della critica; **Wikidata** non porta dati, porta
+identificativi — è da lì che si prende l'id OpenCritic di un gioco senza bruciare
+le 25 ricerche al giorno del piano gratuito.
+
+Nessuna di queste viene interrogata mentre un utente aspetta: si arricchisce su
+coda e **il risultato finisce sempre in DB**.
+
+## Test
+
+```bash
+pnpm test                 # tutto
+pnpm --filter api test    # solo l'api
 ```
 
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Vitest, e **contro un Postgres vero**: la logica che conta è fatta di upsert,
+vincoli unique e predicati con LEFT JOIN, quindi mockare il database
+testerebbe il mock. Le fonti esterne si stubbano al confine del modulo di
+servizio. Il database dei test è `ludex_test`, nello stesso container: lo crea e
+lo migra il setup di vitest, non serve prepararlo a mano.
