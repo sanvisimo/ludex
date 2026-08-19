@@ -9,9 +9,9 @@ import { useDuration } from '@/lib/duration';
 /**
  * Le durate di HowLongToBeat sulla scheda del gioco.
  *
- * Lo step 6 si ferma qui: mostrare il dato. Il filtro "stasera ho due ore" è lo
- * step 7 e non va anticipato — questa è la schermata che dice se il dato c'è e
- * se ci si può fidare.
+ * Lo step 6 si ferma qui: mostrare il dato. Filtrare per durata è lo step 7 e
+ * vive sul backlog — questa resta la schermata che dice se il dato c'è e se ci
+ * si può fidare.
  */
 
 type Riga = {

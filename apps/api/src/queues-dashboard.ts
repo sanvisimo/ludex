@@ -16,7 +16,7 @@ import { importsQueue } from './queue/imports';
 //
 // Processo suo e porta sua, non montato su server.ts: è una superficie da
 // operatore, e l'API pubblica non deve averla addosso. Non c'è ancora un ruolo
-// admin (è lo step 9) e non lo si inventa qui: la protezione è che ascolta
+// admin (è lo step 11) e non lo si inventa qui: la protezione è che ascolta
 // **solo su localhost**. Da remoto ci si arriva con un tunnel SSH, non
 // esponendo la porta.
 const port = Number(process.env.BULL_BOARD_PORT ?? 3002);

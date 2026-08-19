@@ -21,7 +21,7 @@ Nasce dall'assenza di un equivalente mobile di Playnite.
 - **Mobile**: Expo + React Native
 - **Monorepo**: pnpm + Turborepo
 - **LLM**: nessun provider vincolato (Anthropic, OpenAI, llama locale o altro). Il
-  provider sta dietro un'interfaccia interna stretta, la scelta si fa allo step 7.
+  provider sta dietro un'interfaccia interna stretta, la scelta si fa allo step 12.
 
 I due usi dell'LLM **non sono sostituibili allo stesso modo**:
 
@@ -54,7 +54,7 @@ Tutto TypeScript/Node. Non introdurre altri linguaggi nello stack.
   qui non verrebbe usato — gli embedding sono chiamate HTTP, la similarity search
   la esegue pgvector nel DB, il ragionamento è un'altra chiamata HTTP. In cambio si
   perderebbero i tipi condivisi con il frontend, che è vincolato a TypeScript.
-  Eccezione ammessa: un microservizio Python isolato allo step 7 _solo_ se servissero
+  Eccezione ammessa: un microservizio Python isolato allo step 12 _solo_ se servissero
   modelli di embedding locali.
 
 ## Struttura del monorepo
@@ -171,10 +171,10 @@ possesso. Conseguenze:
 - **la wishlist è una tabella separata**, non giochi "non posseduti" dentro
   `backlog`. Così ogni query su `backlog` resta semplice. Comprato il gioco, la
   riga migra. Anche i giochi in wishlist puntano a `games` e vanno arricchiti:
-  durata e voti servono _prima_ dell'acquisto. È lo **step 8**.
+  durata e voti servono _prima_ dell'acquisto. È lo **step 13**.
 - **stato**: `backlog` / `playing` / `played` / `dropped` / `excluded`. `excluded`
   ("non voglio giocarlo") è uno stato, non una tabella: è un segnale negativo
-  esplicito e allo step 7 vale più di molte valutazioni positive.
+  esplicito e allo step 12 vale più di molte valutazioni positive.
 
 #### Import di librerie
 
@@ -189,7 +189,7 @@ negozio)`. Non è una colonna su `user` perché `auth.ts` è generato e viene
   _quella copia_, e lo stesso gioco su GOG avrebbe le sue. Sono dato oggettivo
   del negozio, non un campo personale dello step 5. **Non si usano per indovinare
   lo stato**: due ore su un GDR da sessanta non vogliono dire "giocato", e
-  `played` allo step 7 pesa.
+  `played` allo step 12 pesa.
 - **`unresolved_imports`**: le voci che l'import non ha saputo legare a un gioco.
   Stanno lì e **non in `games` come righe non risolte**, perché `games` è
   condivisa fra tutti gli utenti: su una libreria vera gli scarti sono client
@@ -293,7 +293,7 @@ metadata completi in job asincroni.
 Poi: mobile, e le altre librerie importabili (GOG, Epic, EA, Battle.net, Amazon,
 PSN, Xbox, Switch) sul modello dello step 4.
 
-Non anticipare step successivi: se una feature appartiene allo step 7, non
+Non anticipare step successivi: se una feature appartiene allo step 12, non
 implementarla mentre si lavora sull'1.
 
 ## Note operative
