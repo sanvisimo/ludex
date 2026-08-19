@@ -372,6 +372,7 @@ di turbo, perché non fanno parte di nessuna pipeline:
 | `pnpm --filter api platforms:audit [--all]` | confronta la tabella `platforms` con l'elenco vero di IGDB. Segnala, non scrive: le correzioni vanno in una migration |
 | `pnpm --filter api steam:probe [steamid64]` | giro a vuoto dell'import Steam: legge la libreria e prova a risolverla senza toccare il DB |
 | `pnpm --filter api backfill [n]` | accoda l'enrichment di ciò che è dovuto. Non forza: rispetta le soglie di freschezza |
+| `pnpm --filter api queues` | dashboard Bull Board sulle code, su `localhost:3002`. Ascolta solo su localhost: non c'è ruolo admin e non lo si inventa qui, da remoto si passa da un tunnel |
 
 Le variabili d'ambiente nuove vanno dichiarate anche in `globalEnv` dentro
 `turbo.json`, altrimenti il lint fallisce e la cache di turbo non le considera.

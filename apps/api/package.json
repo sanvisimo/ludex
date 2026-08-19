@@ -13,9 +13,13 @@
     "start:worker": "tsx src/worker.ts",
     "backfill": "tsx src/scripts/backfill.ts",
     "platforms:audit": "tsx src/scripts/platforms-audit.ts",
-    "steam:probe": "tsx src/scripts/steam-probe.ts"
+    "steam:probe": "tsx src/scripts/steam-probe.ts",
+    "queues": "tsx src/queues-dashboard.ts"
   },
   "dependencies": {
+    "@bull-board/api": "^9.2.0",
+    "@bull-board/hono": "^9.2.0",
+    "@bull-board/ui": "^9.2.0",
     "@hono/node-server": "^2.1.0",
     "@orpc/server": "^1.15.0",
     "@repo/auth": "workspace:*",

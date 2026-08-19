@@ -14,7 +14,8 @@
     "IGDB_CLIENT_SECRET",
     "STEAMGRIDDB_API_KEY",
     "STEAM_API_KEY",
-    "STEAM_TEST_USER_ID"
+    "STEAM_TEST_USER_ID",
+    "BULL_BOARD_PORT"
   ],
   "globalDependencies": [".env"],
   "tasks": {
