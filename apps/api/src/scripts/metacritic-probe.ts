@@ -100,6 +100,9 @@ for (const gioco of giochi) {
         name: gioco.name,
         searchedAs: indice > 0 ? titolo : null,
         releaseYear: anno,
+        // Come il job: Metacritic data la piattaforma capofila, non la prima
+        // uscita.
+        yearTolerance: 3,
       },
       hits,
     );

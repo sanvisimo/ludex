@@ -144,6 +144,28 @@ describe('rankHltbCandidates', () => {
   });
 });
 
+describe('tolleranza sull\'anno', () => {
+  it('si può allargare per le fonti che datano la piattaforma capofila', async () => {
+    // Mafia: IGDB la data 2002 (il PC), Metacritic 2004 (il port Xbox, che è
+    // la loro riga principale). Con la tolleranza stretta il gioco giusto
+    // affonda; con tre anni passa, e i remake — che distano decenni — restano
+    // comunque fuori.
+    const candidati = [{ name: 'Mafia', releaseYear: 2004 }];
+
+    const stretta = rankCandidates(
+      { name: 'Mafia', releaseYear: 2002 },
+      candidati,
+    );
+    expect(pickByName(stretta)).toBeNull();
+
+    const larga = rankCandidates(
+      { name: 'Mafia', releaseYear: 2002, yearTolerance: 3 },
+      candidati,
+    );
+    expect(pickByName(larga)?.hit.name).toBe('Mafia');
+  });
+});
+
 describe('pickByName', () => {
   it('preferisce il titolo identico a quello che gli somiglia tantissimo', () => {
     // Caso vero, pescato provando il matcher su una libreria: senza questa

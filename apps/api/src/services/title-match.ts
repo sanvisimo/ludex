@@ -55,6 +55,22 @@ export type TitleQuery = {
    * problema di punteggio, solo di ricerca.
    */
   searchedAs?: string | null;
+  /**
+   * Di quanti anni possono discostarsi il nostro anno e il loro prima che il
+   * candidato venga affondato. Uno di default.
+   *
+   * Si allarga quando la fonte **data un'altra cosa**. Metacritic mette in
+   * scheda l'uscita della piattaforma capofila, non la prima in assoluto:
+   * Mafia per IGDB è del 2002 (il PC), per loro del 2004 (il port Xbox, che è
+   * la loro riga principale). Con la tolleranza stretta quel gioco veniva
+   * bocciato pur essendo lo stesso, e con lui tutti i multipiattaforma il cui
+   * port è arrivato più tardi.
+   *
+   * Restare larghi non riapre la porta ai remake, che è ciò da cui l'anno
+   * protegge: quelli distano decenni, non anni — Resident Evil 4 diciotto,
+   * Dead Space quindici.
+   */
+  yearTolerance?: number;
 };
 
 export type Ranked<T> = {
@@ -84,8 +100,9 @@ const YEAR_BONUS = 0.05;
 const YEAR_PENALTY = 0.35;
 // Le uscite scivolano fra i mercati e le due fonti datano cose diverse (IGDB la
 // prima uscita mondiale, HLTB quella che ha in scheda): un anno di scarto non
-// significa niente.
-const YEAR_TOLERANCE = 1;
+// significa niente. È il default, e le fonti che datano peggio lo allargano —
+// vedi `yearTolerance`.
+const DEFAULT_YEAR_TOLERANCE = 1;
 
 /**
  * Riduce un titolo a ciò che è confrontabile: minuscole, niente accenti, niente
@@ -213,7 +230,8 @@ export function rankCandidates<T extends Matchable>(
         hit.releaseYear !== undefined
       ) {
         const distance = Math.abs(query.releaseYear - hit.releaseYear);
-        score += distance <= YEAR_TOLERANCE ? YEAR_BONUS : -YEAR_PENALTY;
+        const tolerance = query.yearTolerance ?? DEFAULT_YEAR_TOLERANCE;
+        score += distance <= tolerance ? YEAR_BONUS : -YEAR_PENALTY;
       }
 
       return { hit, score: Math.min(1, Math.max(0, score)), exact };

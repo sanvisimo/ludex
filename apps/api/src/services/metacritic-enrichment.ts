@@ -39,6 +39,13 @@ import {
  *    l'anno bisogna andarselo a prendere.
  */
 
+/**
+ * Tre anni invece di uno, perché Metacritic data la piattaforma capofila e non
+ * la prima uscita: Mafia per IGDB è del 2002, per loro del 2004. Vedi
+ * `yearTolerance` in `title-match`.
+ */
+const METACRITIC_YEAR_TOLERANCE = 3;
+
 export type MetacriticOutcome =
   | {
       status: 'ok';
@@ -129,9 +136,14 @@ function convince(
   nostroAnno: number | null,
 ) {
   const picked = pickByName(
-    rankCandidates({ name: nostroNome, releaseYear: nostroAnno }, [
-      { name: game.name, releaseYear: game.releaseYear },
-    ]),
+    rankCandidates(
+      {
+        name: nostroNome,
+        releaseYear: nostroAnno,
+        yearTolerance: METACRITIC_YEAR_TOLERANCE,
+      },
+      [{ name: game.name, releaseYear: game.releaseYear }],
+    ),
   );
   return picked !== null;
 }
@@ -245,6 +257,7 @@ async function resolveAndSave(game: GameRow): Promise<MetacriticOutcome> {
           name: game.name,
           searchedAs: indice > 0 ? titolo : null,
           releaseYear: anno,
+          yearTolerance: METACRITIC_YEAR_TOLERANCE,
         },
         hits,
       ),
