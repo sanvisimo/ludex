@@ -82,6 +82,7 @@ export async function enrichGameFromIgdb(
         .update(schema.games)
         .set({
           name: metadata.name,
+          igdbSlug: metadata.slug,
           summary: metadata.summary,
           firstReleaseDate: metadata.firstReleaseDate,
           coverImageId: metadata.coverImageId,

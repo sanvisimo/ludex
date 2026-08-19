@@ -64,6 +64,13 @@
       "when": 1787146890126,
       "tag": "0008_sweet_mandroid",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787166633393,
+      "tag": "0009_rare_scream",
+      "breakpoints": true
     }
   ]
 }

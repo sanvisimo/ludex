@@ -223,7 +223,7 @@ export async function findIgdbGameById(
 // --- Enrichment (step 3): metadati completi, non la ricerca ---
 
 const DETAIL_FIELDS = [
-  'fields name, summary, first_release_date, aggregated_rating, aggregated_rating_count,',
+  'fields name, slug, summary, first_release_date, aggregated_rating, aggregated_rating_count,',
   'cover.image_id, cover.width, cover.height,',
   'genres.id, genres.name, themes.id, themes.name,',
   'game_modes.id, game_modes.name, player_perspectives.id, player_perspectives.name;',
@@ -234,6 +234,7 @@ type IgdbNamed = { id: number; name: string };
 type IgdbGameDetail = {
   id: number;
   name: string;
+  slug?: string;
   summary?: string;
   first_release_date?: number;
   aggregated_rating?: number;
@@ -254,6 +255,8 @@ export type IgdbAttribute = {
 export type IgdbGameMetadata = {
   igdbId: number;
   name: string;
+  /** Lo slug IGDB: l'aggancio a Wikidata, e da lì a OpenCritic. */
+  slug: string | null;
   summary: string | null;
   firstReleaseDate: Date | null;
   coverImageId: string | null;
@@ -294,6 +297,7 @@ export async function fetchIgdbGameMetadata(
   return {
     igdbId: game.id,
     name: game.name,
+    slug: game.slug ?? null,
     summary: game.summary ?? null,
     firstReleaseDate: game.first_release_date
       ? new Date(game.first_release_date * 1000)

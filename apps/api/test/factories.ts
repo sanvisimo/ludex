@@ -96,6 +96,7 @@ export function igdbMetadata(
     coverImageId: null,
     coverWidth: null,
     coverHeight: null,
+    slug: null,
     aggregatedRating: null,
     aggregatedRatingCount: null,
     attributes: [],

@@ -35,6 +35,16 @@ export const games = pgTable(
     // ancora risolto su IGDB è legittimo. Nessuna query può quindi dare per
     // scontato che i metadata siano popolati.
     igdbId: integer('igdb_id').unique(),
+    // Lo slug IGDB ("hollow-knight"). È l'indirizzo con cui Wikidata riconosce
+    // un gioco, e da lì arriva l'id OpenCritic senza spendere una ricerca — la
+    // risorsa scarsa dello step 8. Vale per ogni negozio, al contrario
+    // dell'appid Steam: un gioco comprato su Epic si aggancia allo stesso modo.
+    //
+    // **Non è unique**, al contrario di `igdbId`: IGDB riscrive lo slug quando
+    // rinomina un gioco, e il vecchio può finire a un altro. Un vincolo qui
+    // trasformerebbe quel giorno in un enrichment che fallisce per sempre su un
+    // gioco valido. L'identità resta l'id numerico; questo è solo un indirizzo.
+    igdbSlug: text('igdb_slug'),
     name: text('name').notNull(),
 
     // --- metadati, popolati dall'enrichment dello step 3 ---
