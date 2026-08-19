@@ -1,4 +1,4 @@
-import { userTagKindValues } from "@repo/contracts/vocabulary";
+import { userTagKindValues } from '@repo/contracts/vocabulary';
 import {
   index,
   pgEnum,
@@ -7,16 +7,16 @@ import {
   text,
   uniqueIndex,
   uuid,
-} from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+} from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
-import { user } from "./auth";
-import { backlog } from "./backlog";
-import { timestamps } from "./timestamps";
+import { user } from './auth';
+import { backlog } from './backlog';
+import { timestamps } from './timestamps';
 
 // Valori da @repo/contracts, come gli altri enum: web e mobile devono conoscerli
 // senza poter importare questo package.
-export const userTagKind = pgEnum("user_tag_kind", userTagKindValues);
+export const userTagKind = pgEnum('user_tag_kind', userTagKindValues);
 
 /**
  * Tag e categorie personali: il vocabolario che l'utente si costruisce da sé.
@@ -32,15 +32,15 @@ export const userTagKind = pgEnum("user_tag_kind", userTagKindValues);
  * sceglie lui. Sono righe di una tabella normale, con una foreign key.
  */
 export const userTags = pgTable(
-  "user_tags",
+  'user_tags',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid('id').primaryKey().defaultRandom(),
     // text e non uuid: gli id di Better Auth sono stringhe.
-    userId: text("user_id")
+    userId: text('user_id')
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    kind: userTagKind("kind").notNull(),
-    name: text("name").notNull(),
+      .references(() => user.id, { onDelete: 'cascade' }),
+    kind: userTagKind('kind').notNull(),
+    name: text('name').notNull(),
     ...timestamps,
   },
   (table) => [
@@ -48,12 +48,12 @@ export const userTags = pgTable(
     // poi "da rigiocare" intende la stessa cosa, e con due righe si ritroverebbe
     // il backlog spaccato in due mucchi che sembrano uno. Il nome si conserva
     // come l'ha scritto la prima volta.
-    uniqueIndex("user_tags_user_kind_name_idx").on(
+    uniqueIndex('user_tags_user_kind_name_idx').on(
       table.userId,
       table.kind,
       sql`lower(${table.name})`,
     ),
-    index("user_tags_user_id_idx").on(table.userId),
+    index('user_tags_user_id_idx').on(table.userId),
   ],
 );
 
@@ -65,20 +65,20 @@ export const userTags = pgTable(
  * un utente di attaccarsi il tag di un altro, ed è quello che i test verificano.
  */
 export const backlogTags = pgTable(
-  "backlog_tags",
+  'backlog_tags',
   {
-    backlogId: uuid("backlog_id")
+    backlogId: uuid('backlog_id')
       .notNull()
-      .references(() => backlog.id, { onDelete: "cascade" }),
-    tagId: uuid("tag_id")
+      .references(() => backlog.id, { onDelete: 'cascade' }),
+    tagId: uuid('tag_id')
       .notNull()
-      .references(() => userTags.id, { onDelete: "cascade" }),
+      .references(() => userTags.id, { onDelete: 'cascade' }),
   },
   (table) => [
     primaryKey({ columns: [table.backlogId, table.tagId] }),
     // La primary key indicizza (backlogId, tagId): partire dal tag — "tutti i
     // giochi che ho segnato «quando sono stanco»", il filtro dello step 7 —
     // richiede un indice proprio.
-    index("backlog_tags_tag_id_idx").on(table.tagId),
+    index('backlog_tags_tag_id_idx').on(table.tagId),
   ],
 );

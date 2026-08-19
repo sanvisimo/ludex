@@ -1,26 +1,28 @@
-"use client";
+'use client';
 
-import { ORPCError } from "@orpc/client";
-import { useTranslations } from "next-intl";
+import { ORPCError } from '@orpc/client';
+import { useTranslations } from 'next-intl';
 
 // I messaggi che l'API mette in `ORPCError` sono testo per chi sviluppa, non
 // interfaccia: non sono tradotti e non vanno mostrati così come sono. Qui si
 // traduce il *codice*, che è la parte del contratto pensata per essere letta da
 // un programma.
 const codes = [
-  "UNAUTHORIZED",
-  "FORBIDDEN",
-  "NOT_FOUND",
-  "CONFLICT",
-  "TOO_MANY_REQUESTS",
-  "INTERNAL_SERVER_ERROR",
+  'UNAUTHORIZED',
+  'FORBIDDEN',
+  'NOT_FOUND',
+  'CONFLICT',
+  'TOO_MANY_REQUESTS',
+  'INTERNAL_SERVER_ERROR',
 ] as const;
 
 type ErrorCode = (typeof codes)[number];
 
 function codeOf(error: unknown): ErrorCode | null {
   if (!(error instanceof ORPCError)) return null;
-  return (codes as readonly string[]).includes(error.code) ? (error.code as ErrorCode) : null;
+  return (codes as readonly string[]).includes(error.code)
+    ? (error.code as ErrorCode)
+    : null;
 }
 
 /**
@@ -33,7 +35,7 @@ function codeOf(error: unknown): ErrorCode | null {
  * significa "ce l'hai già", non "esiste già".
  */
 export function useApiErrorMessage() {
-  const t = useTranslations("errors");
+  const t = useTranslations('errors');
 
   return function message(
     error: unknown,

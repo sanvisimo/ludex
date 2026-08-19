@@ -1,15 +1,19 @@
-import { db, schema } from "@repo/db";
-import { and, eq } from "@repo/db/orm";
+import { db, schema } from '@repo/db';
+import { and, eq } from '@repo/db/orm';
 
-import { fetchHltbGameDetail, searchHltbGames, type HltbGameDetail } from "../external/hltb";
-import { findSourceExternalId, markSource } from "./enrichment";
+import {
+  fetchHltbGameDetail,
+  searchHltbGames,
+  type HltbGameDetail,
+} from '../external/hltb';
+import { findSourceExternalId, markSource } from './enrichment';
 import {
   normalizeTitle,
   pickByName,
   rankHltbCandidates,
   shortenTitle,
   type RankedHit,
-} from "./hltb-match";
+} from './hltb-match';
 
 /**
  * Enrichment HowLongToBeat di un singolo gioco: le durate.
@@ -34,9 +38,14 @@ import {
 const VERIFY_DEPTH = 3;
 
 export type HltbOutcome =
-  | { status: "ok"; hltbId: number; name: string; via: "id" | "steam" | "nome" | "titolo-corto" }
-  | { status: "skipped"; reason: string }
-  | { status: "not_found"; reason: string };
+  | {
+      status: 'ok';
+      hltbId: number;
+      name: string;
+      via: 'id' | 'steam' | 'nome' | 'titolo-corto';
+    }
+  | { status: 'skipped'; reason: string }
+  | { status: 'not_found'; reason: string };
 
 /** Gli appid Steam del gioco: la prova d'identità, quando c'è. */
 async function steamAppIds(gameId: string) {
@@ -44,7 +53,10 @@ async function steamAppIds(gameId: string) {
     .select({ externalId: schema.externalIds.externalId })
     .from(schema.externalIds)
     .where(
-      and(eq(schema.externalIds.gameId, gameId), eq(schema.externalIds.source, "steam")),
+      and(
+        eq(schema.externalIds.gameId, gameId),
+        eq(schema.externalIds.source, 'steam'),
+      ),
     );
   return new Set(rows.map((row) => row.externalId));
 }
@@ -55,7 +67,13 @@ async function saveDetail(gameId: string, detail: HltbGameDetail) {
     // Prima la fonte: è qui che l'unique su (source, external_id) può rifiutare
     // il match. Se salta, i tempi sbagliati non sono ancora stati scritti.
     await markSource(
-      { gameId, source: "hltb", status: "ok", error: null, externalId: String(detail.hltbId) },
+      {
+        gameId,
+        source: 'hltb',
+        status: 'ok',
+        error: null,
+        externalId: String(detail.hltbId),
+      },
       tx,
     );
 
@@ -86,52 +104,90 @@ async function saveDetail(gameId: string, detail: HltbGameDetail) {
  * codice resta un livello più sotto.
  */
 function isUniqueViolation(error: unknown) {
-  for (let current: unknown = error; current instanceof Error; current = current.cause) {
-    if ("code" in current && current.code === "23505") return true;
+  for (
+    let current: unknown = error;
+    current instanceof Error;
+    current = current.cause
+  ) {
+    if ('code' in current && current.code === '23505') return true;
   }
   return false;
 }
 
 /**
- * I candidati per un gioco, con il secondo tentativo sul titolo accorciato.
+ * I candidati per un gioco, con i tentativi sul titolo accorciato.
  *
- * Il secondo giro parte a due condizioni, e sono la parte che conta:
+ * Si chiede prima il titolo intero. Se HLTB non restituisce niente — e capita,
+ * perché cerca in **AND** su tutti i termini, quindi basta una parola scritta
+ * diversamente per non trovare nulla — si riprova con le sue parti: prima la
+ * testa prima dei due punti, poi la coda dopo. Due casi veri, uno per parte:
  *
- * - **la prima ricerca ha restituito zero**, non "niente di convincente". Zero
- *   risultati è un problema della domanda — HLTB cerca in AND su tutti i
- *   termini — e riformularla è legittimo. "Nessuno convince" è invece un
- *   giudizio che abbiamo già dato, e rifare la domanda più larga per ottenere
- *   candidati più molli sarebbe cambiare le carte in tavola.
- * - **l'anno lo sappiamo**. Il titolo accorciato si confronta con sé stesso e
- *   non con l'originale (o "The Witcher" contro "The Witcher: Enhanced Edition
- *   Director's Cut" resterebbe sotto soglia comunque), quindi il confronto è
- *   più lasco per costruzione e a reggere il peso resta l'anno. Senza, sarebbe
- *   un tiro a indovinare senza niente che lo verifichi.
+ *     "The Witcher: Enhanced Edition Director's Cut"  → "The Witcher"
+ *     "Gabriel Knight 3: Blood of the Sacred, …"      → "Blood of the Sacred, …"
+ *
+ * I tentativi cambiano solo la **domanda**, mai il giudizio: il punteggio
+ * guarda comunque anche il titolo intero (vedi `searchedAs` in `hltb-match`).
+ * Il secondo caso lo mostra bene — cercato per coda, viene poi riconosciuto per
+ * il titolo intero, che somiglia allo 0.95 nonostante il "3" contro "III".
+ *
+ * Partono a due condizioni, ed è la parte che conta:
+ *
+ * - **la ricerca precedente ha restituito zero**, non "niente di convincente".
+ *   Zero risultati è un problema della domanda, e riformularla è legittimo.
+ *   "Nessuno convince" è invece un giudizio che abbiamo già dato, e rifare la
+ *   domanda più larga per ottenere candidati più molli sarebbe cambiare le
+ *   carte in tavola.
+ * - **l'anno lo sappiamo**. Un titolo accorciato apre a candidati che col nome
+ *   intero non sarebbero mai comparsi, e l'anno è l'unica cosa che resta a
+ *   verificarli.
  *
  * Esportata perché la usa anche `hltb:probe`: l'arnese deve provare la stessa
  * strada del job, o mostrerebbe scarti che il job non farebbe.
  */
-export async function findHltbCandidates(name: string, releaseYear: number | null) {
+export async function findHltbCandidates(
+  name: string,
+  releaseYear: number | null,
+) {
   const hits = await searchHltbGames(normalizeTitle(name));
   if (hits.length > 0) {
-    return { ranked: rankHltbCandidates({ name, releaseYear }, hits), shortened: null };
+    return {
+      ranked: rankHltbCandidates({ name, releaseYear }, hits),
+      searchedAs: null,
+      tried: [] as string[],
+    };
   }
 
-  const shortened = releaseYear === null ? null : shortenTitle(name);
-  if (!shortened) return { ranked: [] as RankedHit[], shortened: null };
+  const tried: string[] = [];
+  if (releaseYear === null)
+    return { ranked: [] as RankedHit[], searchedAs: null, tried };
 
-  const altri = await searchHltbGames(normalizeTitle(shortened));
-  return {
-    ranked: rankHltbCandidates({ name: shortened, releaseYear }, altri),
-    shortened,
-  };
+  // Testa e coda, in quest'ordine: la testa è il titolo vero privato
+  // dell'edizione, la coda è un pezzo di sottotitolo e apre molto di più, quindi
+  // è l'ultima spiaggia e non la prima.
+  for (const searchedAs of [shortenTitle(name), shortenTitle(name, true)]) {
+    if (!searchedAs || tried.includes(searchedAs)) continue;
+    tried.push(searchedAs);
+
+    const altri = await searchHltbGames(normalizeTitle(searchedAs));
+    if (altri.length === 0) continue;
+
+    return {
+      ranked: rankHltbCandidates({ name, searchedAs, releaseYear }, altri),
+      searchedAs,
+      tried,
+    };
+  }
+
+  return { ranked: [] as RankedHit[], searchedAs: null, tried };
 }
 
 function describe(ranked: RankedHit[]) {
   return ranked
     .slice(0, 3)
-    .map((row) => `${row.hit.name} (${row.hit.hltbId}, ${row.score.toFixed(2)})`)
-    .join("; ");
+    .map(
+      (row) => `${row.hit.name} (${row.hit.hltbId}, ${row.score.toFixed(2)})`,
+    )
+    .join('; ');
 }
 
 export async function enrichGameFromHltb(gameId: string): Promise<HltbOutcome> {
@@ -140,7 +196,7 @@ export async function enrichGameFromHltb(gameId: string): Promise<HltbOutcome> {
     where: eq(schema.games.id, gameId),
   });
 
-  if (!game) return { status: "skipped", reason: "gioco inesistente" };
+  if (!game) return { status: 'skipped', reason: 'gioco inesistente' };
 
   try {
     return await resolveAndSave(game);
@@ -152,18 +208,26 @@ export async function enrichGameFromHltb(gameId: string): Promise<HltbOutcome> {
       // la spazzata non ci ritorna sopra ogni giorno con lo stesso esito.
       await markSource({
         gameId,
-        source: "hltb",
-        status: "not_found",
-        error: "la voce HLTB scelta è già agganciata a un altro gioco",
+        source: 'hltb',
+        status: 'not_found',
+        error: 'la voce HLTB scelta è già agganciata a un altro gioco',
         externalId: null,
       });
-      return { status: "not_found", reason: "voce già agganciata a un altro gioco" };
+      return {
+        status: 'not_found',
+        reason: 'voce già agganciata a un altro gioco',
+      };
     }
 
     const message = error instanceof Error ? error.message : String(error);
     // `externalId` non si tocca: un timeout non deve far dimenticare un
     // aggancio che era stato trovato.
-    await markSource({ gameId, source: "hltb", status: "failed", error: message.slice(0, 500) });
+    await markSource({
+      gameId,
+      source: 'hltb',
+      status: 'failed',
+      error: message.slice(0, 500),
+    });
     // Rilanciato: è BullMQ a decidere se e quando riprovare.
     throw error;
   }
@@ -173,18 +237,23 @@ type GameRow = { id: string; name: string; firstReleaseDate: Date | null };
 
 async function resolveAndSave(game: GameRow): Promise<HltbOutcome> {
   // Già agganciato: si va dritti alla pagina, senza ricerca e senza match.
-  const known = await findSourceExternalId(game.id, "hltb");
+  const known = await findSourceExternalId(game.id, 'hltb');
   if (known) {
     const detail = await fetchHltbGameDetail(Number(known));
     if (detail) {
       await saveDetail(game.id, detail);
-      return { status: "ok", hltbId: detail.hltbId, name: detail.name, via: "id" };
+      return {
+        status: 'ok',
+        hltbId: detail.hltbId,
+        name: detail.name,
+        via: 'id',
+      };
     }
     // La voce non c'è più: HLTB fonde i doppioni ogni tanto. Si stacca
     // l'aggancio e si ricerca subito, invece di aspettare la prossima spazzata.
   }
 
-  const { ranked, shortened } = await findHltbCandidates(
+  const { ranked, searchedAs, tried } = await findHltbCandidates(
     game.name,
     game.firstReleaseDate?.getUTCFullYear() ?? null,
   );
@@ -192,14 +261,18 @@ async function resolveAndSave(game: GameRow): Promise<HltbOutcome> {
   if (ranked.length === 0) {
     await markSource({
       gameId: game.id,
-      source: "hltb",
-      status: "not_found",
-      // Si dice anche il titolo accorciato: senza, dalla admin sembrerebbe che
-      // il secondo tentativo non sia stato fatto.
-      error: `HLTB non ha nulla per "${game.name}"${shortened ? ` né per "${shortened}"` : ""}`,
+      source: 'hltb',
+      status: 'not_found',
+      // Si dicono anche i titoli accorciati provati: senza, dalla admin
+      // sembrerebbe che i tentativi successivi non siano stati fatti.
+      error:
+        `HLTB non ha nulla per "${game.name}"` +
+        (tried.length > 0
+          ? ` né per ${tried.map((q) => `"${q}"`).join(' o ')}`
+          : ''),
       externalId: null,
     });
-    return { status: "not_found", reason: "nessun risultato" };
+    return { status: 'not_found', reason: 'nessun risultato' };
   }
 
   const appIds = await steamAppIds(game.id);
@@ -221,7 +294,12 @@ async function resolveAndSave(game: GameRow): Promise<HltbOutcome> {
 
       if (detail?.steamAppIds.some((appId) => appIds.has(appId))) {
         await saveDetail(game.id, detail);
-        return { status: "ok", hltbId: detail.hltbId, name: detail.name, via: "steam" };
+        return {
+          status: 'ok',
+          hltbId: detail.hltbId,
+          name: detail.name,
+          via: 'steam',
+        };
       }
     }
   }
@@ -235,35 +313,36 @@ async function resolveAndSave(game: GameRow): Promise<HltbOutcome> {
     // candidati scartati e il loro punteggio.
     await markSource({
       gameId: game.id,
-      source: "hltb",
-      status: "not_found",
+      source: 'hltb',
+      status: 'not_found',
       error: `nessun candidato convincente per "${game.name}": ${describe(ranked)}`,
       externalId: null,
     });
-    return { status: "not_found", reason: "candidati non convincenti" };
+    return { status: 'not_found', reason: 'candidati non convincenti' };
   }
 
   const detail =
-    details.get(picked.hit.hltbId) ?? (await fetchHltbGameDetail(picked.hit.hltbId));
+    details.get(picked.hit.hltbId) ??
+    (await fetchHltbGameDetail(picked.hit.hltbId));
 
   if (!detail) {
     await markSource({
       gameId: game.id,
-      source: "hltb",
-      status: "not_found",
+      source: 'hltb',
+      status: 'not_found',
       error: `la pagina HLTB ${picked.hit.hltbId} non esiste più`,
       externalId: null,
     });
-    return { status: "not_found", reason: "pagina inesistente" };
+    return { status: 'not_found', reason: 'pagina inesistente' };
   }
 
   await saveDetail(game.id, detail);
   // Distinto da "nome": è un match su un titolo troncato, ed è utile che il log
   // lo dica invece di farlo sembrare sicuro quanto gli altri.
   return {
-    status: "ok",
+    status: 'ok',
     hltbId: detail.hltbId,
     name: detail.name,
-    via: shortened ? "titolo-corto" : "nome",
+    via: searchedAs ? 'titolo-corto' : 'nome',
   };
 }

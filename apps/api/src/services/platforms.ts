@@ -1,5 +1,5 @@
-import { db, schema } from "@repo/db";
-import { asc, inArray } from "@repo/db/orm";
+import { db, schema } from '@repo/db';
+import { asc, inArray } from '@repo/db/orm';
 
 // I servizi contengono la logica e non sanno nulla di HTTP: sono le funzioni che
 // server.ts e worker.ts importano entrambi.

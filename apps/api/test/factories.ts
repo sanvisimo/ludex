@@ -1,7 +1,7 @@
-import type { HltbGameDetail, HltbSearchHit } from "../src/external/hltb";
-import type { IgdbGameMetadata } from "../src/external/igdb";
-import type { SteamLibraryEntry } from "../src/external/steam";
-import { db, schema } from "@repo/db";
+import type { HltbGameDetail, HltbSearchHit } from '../src/external/hltb';
+import type { IgdbGameMetadata } from '../src/external/igdb';
+import type { SteamLibraryEntry } from '../src/external/steam';
+import { db, schema } from '@repo/db';
 
 // Fixture minime: scrivono la riga e restituiscono l'id. Niente builder
 // generalizzati — quando serviranno più campi si allargano queste.
@@ -13,13 +13,21 @@ export async function createUser() {
   const n = unique();
   const [row] = await db
     .insert(schema.user)
-    .values({ id: `user-${n}`, name: `Utente ${n}`, email: `utente${n}@esempio.test` })
+    .values({
+      id: `user-${n}`,
+      name: `Utente ${n}`,
+      email: `utente${n}@esempio.test`,
+    })
     .returning({ id: schema.user.id });
   return row!.id;
 }
 
 export async function createGame(
-  values: { igdbId?: number | null; name?: string; firstReleaseDate?: Date | null } = {},
+  values: {
+    igdbId?: number | null;
+    name?: string;
+    firstReleaseDate?: Date | null;
+  } = {},
 ) {
   const n = unique();
   const [row] = await db
@@ -42,13 +50,13 @@ export async function createGame(
  */
 export function setSource(values: {
   gameId: string;
-  source?: "igdb" | "hltb";
-  status: "pending" | "ok" | "failed" | "not_found";
+  source?: 'igdb' | 'hltb';
+  status: 'pending' | 'ok' | 'failed' | 'not_found';
   syncedAt?: Date | null;
   attemptedAt?: Date | null;
   externalId?: string | null;
 }) {
-  const source = values.source ?? "igdb";
+  const source = values.source ?? 'igdb';
   const row = {
     gameId: values.gameId,
     source,
@@ -68,10 +76,12 @@ export function setSource(values: {
 }
 
 /** Metadati IGDB completi di default, così ogni test dichiara solo ciò che conta. */
-export function igdbMetadata(over: Partial<IgdbGameMetadata> = {}): IgdbGameMetadata {
+export function igdbMetadata(
+  over: Partial<IgdbGameMetadata> = {},
+): IgdbGameMetadata {
   return {
     igdbId: 100_001,
-    name: "Nome da IGDB",
+    name: 'Nome da IGDB',
     summary: null,
     firstReleaseDate: null,
     coverImageId: null,
@@ -86,7 +96,9 @@ export function igdbMetadata(over: Partial<IgdbGameMetadata> = {}): IgdbGameMeta
 
 /** Un possesso Steam, che è ciò che dà al gioco un appid con cui verificarsi. */
 export async function linkSteamAppId(gameId: string, appId: string) {
-  await db.insert(schema.externalIds).values({ gameId, source: "steam", externalId: appId });
+  await db
+    .insert(schema.externalIds)
+    .values({ gameId, source: 'steam', externalId: appId });
   return appId;
 }
 
@@ -94,9 +106,9 @@ export async function linkSteamAppId(gameId: string, appId: string) {
 export function hltbHit(over: Partial<HltbSearchHit> = {}): HltbSearchHit {
   return {
     hltbId: 26286,
-    name: "Hollow Knight",
+    name: 'Hollow Knight',
     alias: null,
-    type: "game",
+    type: 'game',
     releaseYear: 2017,
     ...over,
   };
@@ -106,7 +118,7 @@ export function hltbHit(over: Partial<HltbSearchHit> = {}): HltbSearchHit {
 export function hltbDetail(over: Partial<HltbGameDetail> = {}): HltbGameDetail {
   return {
     hltbId: 26286,
-    name: "Hollow Knight",
+    name: 'Hollow Knight',
     mainMinutes: 1621,
     plusMinutes: 2495,
     completionistMinutes: 3936,
@@ -128,17 +140,22 @@ export const ago = {
   days: (n: number) => new Date(Date.now() - n * 86_400_000),
 };
 
-export async function linkSteamAccount(userId: string, steamId = "76561190000000000") {
+export async function linkSteamAccount(
+  userId: string,
+  steamId = '76561190000000000',
+) {
   await db.insert(schema.storeAccounts).values({
     userId,
-    store: "steam",
+    store: 'steam',
     externalAccountId: steamId,
   });
   return steamId;
 }
 
 /** Una voce di libreria Steam come la restituisce il client. */
-export function steamEntry(over: Partial<SteamLibraryEntry> = {}): SteamLibraryEntry {
+export function steamEntry(
+  over: Partial<SteamLibraryEntry> = {},
+): SteamLibraryEntry {
   const n = unique();
   return {
     appId: String(200_000 + n),

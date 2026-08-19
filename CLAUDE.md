@@ -28,7 +28,7 @@ I due usi dell'LLM **non sono sostituibili allo stesso modo**:
 - **Ragionamento**: provider intercambiabile a costo quasi nullo.
 - **Embedding**: cambiarlo significa cambiare la dimensione della colonna vettoriale
   e **rigenerare gli embedding di tutta la tabella `games`**. Va quindi salvato
-  accanto al vettore *quale modello l'ha prodotto*, così la migrazione resta
+  accanto al vettore _quale modello l'ha prodotto_, così la migrazione resta
   gestibile. Nota: Anthropic non espone un endpoint di embeddings.
 
 Tutto TypeScript/Node. Non introdurre altri linguaggi nello stack.
@@ -47,26 +47,26 @@ Tutto TypeScript/Node. Non introdurre altri linguaggi nello stack.
 - **Fine-tuning per le raccomandazioni**: scartato in favore di RAG (vedi sotto).
 - **Prisma al posto di Drizzle**: scartato. Prisma non ha un tipo scalare `vector`
   (solo `Unsupported`, escluso dal client tipizzato) e costringe a `$queryRaw` per
-  la similarity search. La query di raccomandazione compone filtri hard *dinamici*
-  + JOIN + ranking vettoriale: con Drizzle resta una singola query tipizzata, con
-  Prisma diventa SQL costruito a stringhe. Non riproporlo.
+  la similarity search. La query di raccomandazione compone filtri hard _dinamici_
+  - JOIN + ranking vettoriale: con Drizzle resta una singola query tipizzata, con
+    Prisma diventa SQL costruito a stringhe. Non riproporlo.
 - **Backend in Python** (FastAPI/SQLAlchemy): scartato. L'ecosistema ML di Python
   qui non verrebbe usato — gli embedding sono chiamate HTTP, la similarity search
   la esegue pgvector nel DB, il ragionamento è un'altra chiamata HTTP. In cambio si
   perderebbero i tipi condivisi con il frontend, che è vincolato a TypeScript.
-  Eccezione ammessa: un microservizio Python isolato allo step 7 *solo* se servissero
+  Eccezione ammessa: un microservizio Python isolato allo step 7 _solo_ se servissero
   modelli di embedding locali.
 
 ## Struttura del monorepo
 
-| Workspace | Contenuto |
-|---|---|
-| `apps/api` | Hono. Contiene **due entrypoint**: server HTTP e worker BullMQ |
-| `apps/web` | Next.js, applicazione web |
-| `apps/mobile` | Expo / React Native |
-| `packages/db` | schema Drizzle + client, **unica fonte di verità**. Dipendenze Node |
-| `packages/auth` | istanza Better Auth (server) + `authClient` per web e mobile |
-| `packages/contracts` | router oRPC + schemi Zod condivisi |
+| Workspace            | Contenuto                                                           |
+| -------------------- | ------------------------------------------------------------------- |
+| `apps/api`           | Hono. Contiene **due entrypoint**: server HTTP e worker BullMQ      |
+| `apps/web`           | Next.js, applicazione web                                           |
+| `apps/mobile`        | Expo / React Native                                                 |
+| `packages/db`        | schema Drizzle + client, **unica fonte di verità**. Dipendenze Node |
+| `packages/auth`      | istanza Better Auth (server) + `authClient` per web e mobile        |
+| `packages/contracts` | router oRPC + schemi Zod condivisi                                  |
 
 Regole di confine:
 
@@ -103,11 +103,11 @@ RAG, non fine-tuning. Il prompt si costruisce a runtime interrogando il DB
 
 Divisione delle responsabilità — è la regola più importante del progetto:
 
-| Livello | Responsabilità |
-|---|---|
-| SQL | filtri hard (`userId`, stato backlog, piattaforma, durata) |
-| Vector search | ranking semantico sui candidati |
-| LLM | ragionamento contestuale sul set risultante |
+| Livello       | Responsabilità                                             |
+| ------------- | ---------------------------------------------------------- |
+| SQL           | filtri hard (`userId`, stato backlog, piattaforma, durata) |
+| Vector search | ranking semantico sui candidati                            |
+| LLM           | ragionamento contestuale sul set risultante                |
 
 Non spostare i filtri hard nel vector search e non delegare all'LLM lavoro che
 SQL può fare in modo deterministico.
@@ -165,13 +165,13 @@ possesso. Conseguenze:
 - **una riga per gioco/utente**, con stato e valutazione. I possessi stanno in una
   **tabella a parte** collegata a `backlog`, così stato e voto non si duplicano.
   Ogni riga è `(backlog, piattaforma, store)`: **piattaforma e store sono campi
-  distinti** — su PC lo stesso gioco può stare su Steam *e* GOG. La piattaforma è
+  distinti** — su PC lo stesso gioco può stare su Steam _e_ GOG. La piattaforma è
   il filtro hard ("stasera ho la Switch accesa"), lo store dice da dove lanciarlo
   e da quale import proviene, e può restare vuoto sugli inserimenti manuali.
 - **la wishlist è una tabella separata**, non giochi "non posseduti" dentro
   `backlog`. Così ogni query su `backlog` resta semplice. Comprato il gioco, la
   riga migra. Anche i giochi in wishlist puntano a `games` e vanno arricchiti:
-  durata e voti servono *prima* dell'acquisto. È lo **step 8**.
+  durata e voti servono _prima_ dell'acquisto. È lo **step 8**.
 - **stato**: `backlog` / `playing` / `played` / `dropped` / `excluded`. `excluded`
   ("non voglio giocarlo") è uno stato, non una tabella: è un segnale negativo
   esplicito e allo step 7 vale più di molte valutazioni positive.
@@ -181,12 +181,12 @@ possesso. Conseguenze:
 Le librerie importate aggiungono tre cose al modello, decise allo step 4:
 
 - **`store_accounts`**: l'account dell'utente su un negozio, uno per `(utente,
-  negozio)`. Non è una colonna su `user` perché `auth.ts` è generato e viene
+negozio)`. Non è una colonna su `user` perché `auth.ts` è generato e viene
   riscritto. Tiene solo l'identità pubblica dell'account: i negozi che vorranno
   un token OAuth per utente avranno bisogno di cifratura a riposo e di rinnovo,
   che si decidono quando si arriva a quelli.
 - **ore giocate su `ownerships`**, non su `backlog`: sono una proprietà di
-  *quella copia*, e lo stesso gioco su GOG avrebbe le sue. Sono dato oggettivo
+  _quella copia_, e lo stesso gioco su GOG avrebbe le sue. Sono dato oggettivo
   del negozio, non un campo personale dello step 5. **Non si usano per indovinare
   lo stato**: due ore su un GDR da sessanta non vogliono dire "giocato", e
   `played` allo step 7 pesa.
@@ -264,7 +264,6 @@ enrichment restano due cose distinte: la prima è sincrona e in blocco, il secon
 
    Due cose che si erano immaginate qui e stanno **fuori**, ciascuna perché è uno
    step suo e non un campo in più nel form:
-
    - **copertina da SteamGridDB**, per non subire quella di IGDB. Va deciso anche
      di chi è la scelta: `games` è condivisa fra tutti gli utenti, quindi o è un
      override per utente su `backlog`, o il primo che sceglie decide per tutti.
@@ -275,6 +274,7 @@ enrichment restano due cose distinte: la prima è sincrona e in blocco, il secon
      `games`** — con i loro backlog, possessi ed `external_ids` — e le due righe
      di backlog dello stesso utente, decidendo quale stato, quale voto e quali tag
      sopravvivono. È anche l'evento che riapre un `game_sources` in `not_found`.
+
 6. **Recupero HLTB**
 7. **Filtraggio** — ricerca e filtraggio dei giochi, con possibilità di
    salvataggi.
@@ -282,7 +282,7 @@ enrichment restano due cose distinte: la prima è sincrona e in blocco, il secon
 9. **Admin** — gestione degli utenti, dei provider LLM e dei tag.
 10. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding.
 11. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
-   posseduti.
+    posseduti.
 
 Ricerca ed enrichment sono due usi distinti di IGDB e non vanno confusi: lo step 2
 cerca e salva id e titolo, in modo sincrono e senza coda; lo step 3 scarica i
@@ -354,27 +354,27 @@ altro progetto).
 
 ### Comandi
 
-| Comando | Cosa fa |
-|---|---|
-| `pnpm dev` | avvia tutto (turbo) |
-| `pnpm lint` / `pnpm check-types` | lint e typecheck sul monorepo |
-| `pnpm test` | vitest sul monorepo (serve Postgres su) |
-| `pnpm db:up` / `pnpm db:down` | Postgres in Docker |
-| `pnpm db:generate` | genera la migration dal diff dello schema |
-| `pnpm db:migrate` | applica le migration |
-| `pnpm db:studio` | Drizzle Studio |
-| `pnpm auth:generate` | rigenera lo schema Better Auth |
+| Comando                          | Cosa fa                                   |
+| -------------------------------- | ----------------------------------------- |
+| `pnpm dev`                       | avvia tutto (turbo)                       |
+| `pnpm lint` / `pnpm check-types` | lint e typecheck sul monorepo             |
+| `pnpm test`                      | vitest sul monorepo (serve Postgres su)   |
+| `pnpm db:up` / `pnpm db:down`    | Postgres in Docker                        |
+| `pnpm db:generate`               | genera la migration dal diff dello schema |
+| `pnpm db:migrate`                | applica le migration                      |
+| `pnpm db:studio`                 | Drizzle Studio                            |
+| `pnpm auth:generate`             | rigenera lo schema Better Auth            |
 
 Tre arnesi che si lanciano a mano dal workspace `api` e non stanno fra i comandi
 di turbo, perché non fanno parte di nessuna pipeline:
 
-| Comando | Cosa fa |
-|---|---|
-| `pnpm --filter api platforms:audit [--all]` | confronta la tabella `platforms` con l'elenco vero di IGDB. Segnala, non scrive: le correzioni vanno in una migration |
-| `pnpm --filter api steam:probe [steamid64]` | giro a vuoto dell'import Steam: legge la libreria e prova a risolverla senza toccare il DB |
-| `pnpm --filter api hltb:probe [n\|titolo]` | giro a vuoto del match HLTB: cerca e punteggia senza scrivere. La riga che conta è quella dei "da sistemare" |
-| `pnpm --filter api backfill [n]` | accoda l'enrichment di ciò che è dovuto. Non forza: rispetta le soglie di freschezza |
-| `pnpm --filter api queues` | dashboard Bull Board sulle code, su `localhost:3002`. Ascolta solo su localhost: non c'è ruolo admin e non lo si inventa qui, da remoto si passa da un tunnel |
+| Comando                                     | Cosa fa                                                                                                                                                       |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm --filter api platforms:audit [--all]` | confronta la tabella `platforms` con l'elenco vero di IGDB. Segnala, non scrive: le correzioni vanno in una migration                                         |
+| `pnpm --filter api steam:probe [steamid64]` | giro a vuoto dell'import Steam: legge la libreria e prova a risolverla senza toccare il DB                                                                    |
+| `pnpm --filter api hltb:probe [n\|titolo]`  | giro a vuoto del match HLTB: cerca e punteggia senza scrivere. La riga che conta è quella dei "da sistemare"                                                  |
+| `pnpm --filter api backfill [n]`            | accoda l'enrichment di ciò che è dovuto. Non forza: rispetta le soglie di freschezza                                                                          |
+| `pnpm --filter api queues`                  | dashboard Bull Board sulle code, su `localhost:3002`. Ascolta solo su localhost: non c'è ruolo admin e non lo si inventa qui, da remoto si passa da un tunnel |
 
 Le variabili d'ambiente nuove vanno dichiarate anche in `globalEnv` dentro
 `turbo.json`, altrimenti il lint fallisce e la cache di turbo non le considera.

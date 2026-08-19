@@ -7,7 +7,7 @@
 // la libreria altrui basta che il profilo sia pubblico.
 
 const OWNED_GAMES_URL =
-  "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/";
+  'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/';
 
 export type SteamLibraryEntry = {
   /** L'appid, come stringa: è la forma in cui vive in `external_ids`. */
@@ -32,7 +32,7 @@ export class SteamLibraryNotVisibleError extends Error {
     super(
       `Steam non espone la libreria di ${steamId}: profilo privato, dettagli dei giochi nascosti, o SteamID inesistente`,
     );
-    this.name = "SteamLibraryNotVisibleError";
+    this.name = 'SteamLibraryNotVisibleError';
   }
 }
 
@@ -50,25 +50,29 @@ type OwnedGamesResponse = {
 
 function apiKey() {
   const key = process.env.STEAM_API_KEY;
-  if (!key) throw new Error("STEAM_API_KEY non impostata nel .env");
+  if (!key) throw new Error('STEAM_API_KEY non impostata nel .env');
   return key;
 }
 
-export async function fetchSteamLibrary(steamId: string): Promise<SteamLibraryEntry[]> {
+export async function fetchSteamLibrary(
+  steamId: string,
+): Promise<SteamLibraryEntry[]> {
   const url = new URL(OWNED_GAMES_URL);
-  url.searchParams.set("key", apiKey());
-  url.searchParams.set("steamid", steamId);
+  url.searchParams.set('key', apiKey());
+  url.searchParams.set('steamid', steamId);
   // Senza `include_appinfo` tornano solo gli appid, e i nomi servono: sono
   // l'unica cosa mostrabile per le voci che non si risolvono.
-  url.searchParams.set("include_appinfo", "1");
+  url.searchParams.set('include_appinfo', '1');
   // I free-to-play giocati fanno parte della libreria a tutti gli effetti.
-  url.searchParams.set("include_played_free_games", "1");
+  url.searchParams.set('include_played_free_games', '1');
 
   const response = await fetch(url);
   if (!response.ok) {
     // 403 = chiave sbagliata o revocata. Non è colpa dell'utente e non va
     // confuso con un profilo privato.
-    throw new Error(`Steam GetOwnedGames: ${response.status} ${await response.text()}`);
+    throw new Error(
+      `Steam GetOwnedGames: ${response.status} ${await response.text()}`,
+    );
   }
 
   const body = (await response.json()) as OwnedGamesResponse;
@@ -82,11 +86,14 @@ export async function fetchSteamLibrary(steamId: string): Promise<SteamLibraryEn
     // l'identità, quindi la voce non si butta.
     name: game.name?.trim() || `App ${game.appid}`,
     playtimeMinutes: game.playtime_forever ?? 0,
-    lastPlayedAt: game.rtime_last_played ? new Date(game.rtime_last_played * 1000) : null,
+    lastPlayedAt: game.rtime_last_played
+      ? new Date(game.rtime_last_played * 1000)
+      : null,
   }));
 }
 
-const RESOLVE_VANITY_URL = "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/";
+const RESOLVE_VANITY_URL =
+  'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/';
 
 // Uno SteamID64 è sempre 17 cifre e comincia per 7656119.
 const STEAM_ID_64 = /^\d{17}$/;
@@ -96,21 +103,25 @@ const PROFILE_URL = /steamcommunity\.com\/(profiles|id)\/([^/?#]+)/i;
 export class SteamProfileNotFoundError extends Error {
   constructor(input: string) {
     super(`Nessun profilo Steam per "${input}"`);
-    this.name = "SteamProfileNotFoundError";
+    this.name = 'SteamProfileNotFoundError';
   }
 }
 
 async function resolveVanity(vanity: string) {
   const url = new URL(RESOLVE_VANITY_URL);
-  url.searchParams.set("key", apiKey());
-  url.searchParams.set("vanityurl", vanity);
+  url.searchParams.set('key', apiKey());
+  url.searchParams.set('vanityurl', vanity);
 
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Steam ResolveVanityURL: ${response.status} ${await response.text()}`);
+    throw new Error(
+      `Steam ResolveVanityURL: ${response.status} ${await response.text()}`,
+    );
   }
 
-  const body = (await response.json()) as { response?: { success?: number; steamid?: string } };
+  const body = (await response.json()) as {
+    response?: { success?: number; steamid?: string };
+  };
   // success 1 = trovato, 42 = nessuna corrispondenza. Non è un errore HTTP.
   if (body.response?.success !== 1 || !body.response.steamid) {
     throw new SteamProfileNotFoundError(vanity);
@@ -135,8 +146,9 @@ export async function resolveSteamId(input: string): Promise<string> {
   const fromUrl = PROFILE_URL.exec(trimmed);
   if (fromUrl) {
     const [, kind, value] = fromUrl;
-    if (kind === "profiles") {
-      if (!STEAM_ID_64.test(value!)) throw new SteamProfileNotFoundError(trimmed);
+    if (kind === 'profiles') {
+      if (!STEAM_ID_64.test(value!))
+        throw new SteamProfileNotFoundError(trimmed);
       return value!;
     }
     return resolveVanity(value!);

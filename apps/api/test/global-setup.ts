@@ -1,6 +1,6 @@
-import postgres from "postgres";
+import postgres from 'postgres';
 
-import { testDatabaseUrl } from "./env";
+import { testDatabaseUrl } from './env';
 
 // Gira una volta prima di tutti i file di test, in un processo suo: quello che
 // scrive in `process.env` non arriva ai worker, e per questo `DATABASE_URL` la
@@ -13,11 +13,12 @@ async function ensureDatabase() {
 
   // Un CREATE DATABASE non si può eseguire dal database che si sta creando: si
   // passa da `postgres`, che esiste sempre.
-  url.pathname = "/postgres";
+  url.pathname = '/postgres';
   const admin = postgres(url.toString(), { max: 1 });
 
   try {
-    const [existing] = await admin`select 1 from pg_database where datname = ${name}`;
+    const [existing] =
+      await admin`select 1 from pg_database where datname = ${name}`;
     if (!existing) await admin.unsafe(`create database "${name}"`);
   } finally {
     await admin.end();
@@ -31,7 +32,7 @@ export async function setup() {
   // @repo/db apre la connessione al momento dell'import, quindi importarla prima
   // la aprirebbe verso il database sbagliato — o verso uno che non esiste ancora.
   process.env.DATABASE_URL = testDatabaseUrl;
-  const { runMigrations } = await import("@repo/db/migrate");
+  const { runMigrations } = await import('@repo/db/migrate');
   await runMigrations();
 }
 
@@ -39,6 +40,6 @@ export async function setup() {
 // che non è quello dei test: senza chiuderlo vitest resta appeso dieci secondi a
 // fine corsa e stampa un avviso.
 export async function teardown() {
-  const { db } = await import("@repo/db");
+  const { db } = await import('@repo/db');
   await db.$client.end();
 }

@@ -1,8 +1,8 @@
-import { Queue } from "bullmq";
+import { Queue } from 'bullmq';
 
-import { redisConnection } from "./connection";
+import { redisConnection } from './connection';
 
-export const IMPORTS_QUEUE = "imports";
+export const IMPORTS_QUEUE = 'imports';
 
 /**
  * Coda separata da `enrichment`, non per gusto di simmetria.
@@ -12,13 +12,13 @@ export const IMPORTS_QUEUE = "imports";
  * utente aspetterebbe il primo. E i due lavori hanno ritmi diversi — l'import è
  * una manciata di richieste, l'enrichment è vincolato al rate limit di IGDB.
  */
-export type ImportJob = { type: "steam"; userId: string; steamId: string };
+export type ImportJob = { type: 'steam'; userId: string; steamId: string };
 
 export const importsQueue = new Queue<ImportJob>(IMPORTS_QUEUE, {
   connection: redisConnection,
   defaultJobOptions: {
     attempts: 3,
-    backoff: { type: "exponential", delay: 10_000 },
+    backoff: { type: 'exponential', delay: 10_000 },
     // Tenuti più a lungo dei job di enrichment: sono pochi e l'utente vuole
     // sapere com'è andata l'ultima importazione.
     removeOnComplete: { count: 50 },
@@ -35,8 +35,8 @@ export const importsQueue = new Queue<ImportJob>(IMPORTS_QUEUE, {
  */
 export async function enqueueSteamImport(userId: string, steamId: string) {
   return importsQueue.add(
-    "steam",
-    { type: "steam", userId, steamId },
+    'steam',
+    { type: 'steam', userId, steamId },
     { deduplication: { id: `steam-${userId}` } },
   );
 }

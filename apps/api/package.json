@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n server,worker -c blue,magenta \"tsx watch src/server.ts\" \"tsx watch src/worker.ts\"",
+    "dev": "concurrently -n server,worker -c blue,magenta \"tsx watch src/server.ts\" \"tsx watch src/worker.ts\" \"tsx src/queues-dashboard.ts\"",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
     "test": "vitest run",

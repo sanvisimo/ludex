@@ -1,6 +1,6 @@
-import type { UserTagInput } from "@repo/contracts";
-import { db, schema } from "@repo/db";
-import { and, asc, eq, or, sql } from "@repo/db/orm";
+import type { UserTagInput } from '@repo/contracts';
+import { db, schema } from '@repo/db';
+import { and, asc, eq, or, sql } from '@repo/db/orm';
 
 /**
  * Il vocabolario personale dell'utente: i suoi tag e le sue categorie.
@@ -19,7 +19,10 @@ export function listUserTags(userId: string) {
     })
     .from(schema.userTags)
     .where(eq(schema.userTags.userId, userId))
-    .orderBy(asc(schema.userTags.kind), asc(sql`lower(${schema.userTags.name})`));
+    .orderBy(
+      asc(schema.userTags.kind),
+      asc(sql`lower(${schema.userTags.name})`),
+    );
 }
 
 /**
@@ -35,7 +38,8 @@ export function listUserTags(userId: string) {
  * idempotente: chiamarla due volte con gli stessi nomi rende gli stessi id.
  */
 export async function ensureUserTags(userId: string, inputs: UserTagInput[]) {
-  if (inputs.length === 0) return [] as { id: string; kind: UserTagInput["kind"]; name: string }[];
+  if (inputs.length === 0)
+    return [] as { id: string; kind: UserTagInput['kind']; name: string }[];
 
   // Deduplica per (tipo, nome minuscolo) conservando la prima grafia: è quella
   // che finirà scritta se il tag è nuovo.

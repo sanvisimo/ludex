@@ -1,8 +1,8 @@
-import "../env";
+import '../env';
 
-import { findIgdbGamesBySteamAppIds } from "../external/igdb";
-import { fetchSteamLibrary } from "../external/steam";
-import { findGameIdsByExternalIds } from "../services/games";
+import { findIgdbGamesBySteamAppIds } from '../external/igdb';
+import { fetchSteamLibrary } from '../external/steam';
+import { findGameIdsByExternalIds } from '../services/games';
 
 // Giro a vuoto dell'import: legge Steam, prova a risolvere, **non scrive niente**.
 //
@@ -13,14 +13,21 @@ import { findGameIdsByExternalIds } from "../services/games";
 
 const steamId = process.argv[2] ?? process.env.STEAM_TEST_USER_ID;
 if (!steamId) {
-  console.error("manca lo SteamID64: passalo come argomento o metti STEAM_TEST_USER_ID nel .env");
+  console.error(
+    'manca lo SteamID64: passalo come argomento o metti STEAM_TEST_USER_ID nel .env',
+  );
   process.exit(1);
 }
 
 const library = await fetchSteamLibrary(steamId);
-const known = await findGameIdsByExternalIds("steam", library.map((entry) => entry.appId));
+const known = await findGameIdsByExternalIds(
+  'steam',
+  library.map((entry) => entry.appId),
+);
 const missing = library.filter((entry) => !known.has(entry.appId));
-const matches = await findIgdbGamesBySteamAppIds(missing.map((entry) => entry.appId));
+const matches = await findIgdbGamesBySteamAppIds(
+  missing.map((entry) => entry.appId),
+);
 const unresolved = missing.filter((entry) => !matches.has(entry.appId));
 
 const giocati = library.filter((entry) => entry.playtimeMinutes > 0);
@@ -33,9 +40,12 @@ console.log(`  irrisolte:            ${unresolved.length}`);
 console.log(`  con ore addosso:      ${giocati.length}`);
 
 if (unresolved.length > 0) {
-  console.log("\n  da sistemare a mano:");
+  console.log('\n  da sistemare a mano:');
   for (const entry of unresolved) {
-    const ore = entry.playtimeMinutes > 0 ? ` (${Math.round(entry.playtimeMinutes / 60)}h)` : "";
+    const ore =
+      entry.playtimeMinutes > 0
+        ? ` (${Math.round(entry.playtimeMinutes / 60)}h)`
+        : '';
     console.log(`    ${entry.appId.padEnd(9)} ${entry.name}${ore}`);
   }
 }

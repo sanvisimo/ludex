@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import type { UserTag } from "@repo/contracts";
+import type { UserTag } from '@repo/contracts';
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 
 /**
  * Categorie e tag personali di una riga di backlog.
@@ -13,8 +13,8 @@ import { Badge } from "@/components/ui/badge";
 export function EntryTags({ tags }: { tags: UserTag[] }) {
   if (tags.length === 0) return null;
 
-  const categories = tags.filter((tag) => tag.kind === "category");
-  const plain = tags.filter((tag) => tag.kind === "tag");
+  const categories = tags.filter((tag) => tag.kind === 'category');
+  const plain = tags.filter((tag) => tag.kind === 'tag');
 
   return (
     <div className="flex flex-wrap gap-1">

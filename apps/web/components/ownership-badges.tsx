@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import type { Store } from "@repo/contracts";
-import { useQuery } from "@tanstack/react-query";
-import { XIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import type { Store } from '@repo/contracts';
+import { useQuery } from '@tanstack/react-query';
+import { XIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import { Badge } from "@/components/ui/badge";
-import { useStoreLabels } from "@/lib/labels";
-import { api } from "@/lib/orpc";
+import { Badge } from '@/components/ui/badge';
+import { useStoreLabels } from '@/lib/labels';
+import { api } from '@/lib/orpc';
 
 // Di un possesso qui servono solo piattaforma e negozio: né l'id né le ore
 // finiscono a schermo. Tenere il tipo su questo minimo permette di mostrare con
@@ -21,7 +21,7 @@ export type DisplayedOwnership = {
 
 /** Chiave stabile per un possesso, salvato o no: è la stessa del vincolo unique. */
 export function ownershipKey(ownership: DisplayedOwnership) {
-  return `${ownership.platformSlug}|${ownership.store ?? ""}`;
+  return `${ownership.platformSlug}|${ownership.store ?? ''}`;
 }
 
 // Le righe di possesso portano lo slug della piattaforma, non il nome: il nome
@@ -39,7 +39,7 @@ export function OwnershipBadges({
   ownerships: DisplayedOwnership[];
   onRemove?: (ownership: DisplayedOwnership) => void;
 }) {
-  const t = useTranslations("editEntry");
+  const t = useTranslations('editEntry');
   const storeLabels = useStoreLabels();
   const { data: platforms } = useQuery({
     ...api.platforms.list.queryOptions(),
@@ -53,7 +53,7 @@ export function OwnershipBadges({
       {ownerships.map((ownership) => {
         const label =
           (nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug) +
-          (ownership.store ? ` · ${storeLabels[ownership.store]}` : "");
+          (ownership.store ? ` · ${storeLabels[ownership.store]}` : '');
 
         return (
           <Badge
@@ -61,13 +61,13 @@ export function OwnershipBadges({
             // lista non ci sono due possessi con la stessa piattaforma e store.
             key={ownership.id ?? ownershipKey(ownership)}
             variant="secondary"
-            className={onRemove ? "gap-1 pr-1" : undefined}
+            className={onRemove ? 'gap-1 pr-1' : undefined}
           >
             {label}
             {onRemove && (
               <button
                 type="button"
-                aria-label={t("removePlatform", { name: label })}
+                aria-label={t('removePlatform', { name: label })}
                 onClick={() => onRemove(ownership)}
                 className="opacity-50 hover:opacity-100"
               >

@@ -1,14 +1,14 @@
-import "./env";
+import './env';
 
-import { createBullBoard } from "@bull-board/api";
-import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
-import { HonoAdapter } from "@bull-board/hono";
-import { serve } from "@hono/node-server";
-import { serveStatic } from "@hono/node-server/serve-static";
-import { Hono } from "hono";
+import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { HonoAdapter } from '@bull-board/hono';
+import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
+import { Hono } from 'hono';
 
-import { enrichmentQueue } from "./queue/enrichment";
-import { importsQueue } from "./queue/imports";
+import { enrichmentQueue } from './queue/enrichment';
+import { importsQueue } from './queue/imports';
 
 // Arnese, non pipeline: si accende quando qualcosa nelle code non torna — un
 // enrichment fermo, un import fallito, la spazzata che non è ripartita — e si
@@ -30,11 +30,11 @@ createBullBoard({
   serverAdapter,
 });
 
-serverAdapter.setBasePath("/");
+serverAdapter.setBasePath('/');
 
 const app = new Hono();
-app.route("/", serverAdapter.registerPlugin());
+app.route('/', serverAdapter.registerPlugin());
 
-serve({ fetch: app.fetch, port, hostname: "127.0.0.1" }, ({ port }) => {
+serve({ fetch: app.fetch, port, hostname: '127.0.0.1' }, ({ port }) => {
   console.log(`dashboard code su http://localhost:${port}`);
 });

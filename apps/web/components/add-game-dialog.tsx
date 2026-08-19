@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import type { BacklogStatus, IgdbSearchHit, Store } from "@repo/contracts";
-import { backlogStatusValues, storeValues } from "@repo/contracts";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { XIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import type { BacklogStatus, IgdbSearchHit, Store } from '@repo/contracts';
+import { backlogStatusValues, storeValues } from '@repo/contracts';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { XIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { PlatformCombobox } from "@/components/platform-combobox";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { PlatformCombobox } from '@/components/platform-combobox';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -19,22 +19,22 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useApiErrorMessage } from "@/lib/api-error";
-import { useStatusLabels, useStoreLabels } from "@/lib/labels";
-import { api, client } from "@/lib/orpc";
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useApiErrorMessage } from '@/lib/api-error';
+import { useStatusLabels, useStoreLabels } from '@/lib/labels';
+import { api, client } from '@/lib/orpc';
 
-const NO_STORE = "__nessuno__";
+const NO_STORE = '__nessuno__';
 
 type OwnershipRow = { key: number; platformSlug: string | null; store: string };
 
@@ -46,7 +46,7 @@ const emptyRow = (): OwnershipRow => ({
 });
 
 export function AddGameDialog() {
-  const t = useTranslations("addGame");
+  const t = useTranslations('addGame');
   const statusLabels = useStatusLabels();
   const storeLabels = useStoreLabels();
   const errorMessage = useApiErrorMessage();
@@ -57,14 +57,14 @@ export function AddGameDialog() {
 
   // Il titolo è sempre modificabile a mano: IGDB è un aiuto facoltativo, non un
   // passaggio obbligato. Un gioco che IGDB non conosce si inserisce lo stesso.
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState('');
   const [linked, setLinked] = useState<IgdbSearchHit | null>(null);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
 
   const [rows, setRows] = useState<OwnershipRow[]>([emptyRow()]);
-  const [status, setStatus] = useState<BacklogStatus>("backlog");
+  const [status, setStatus] = useState<BacklogStatus>('backlog');
 
   const platforms = useQuery({
     ...api.platforms.list.queryOptions(),
@@ -72,17 +72,17 @@ export function AddGameDialog() {
   });
 
   const search = useQuery({
-    ...api.games.search.queryOptions({ input: { query: submitted ?? "" } }),
+    ...api.games.search.queryOptions({ input: { query: submitted ?? '' } }),
     enabled: submitted !== null && submitted.trim().length >= 2,
   });
 
   function reset() {
-    setTitle("");
+    setTitle('');
     setLinked(null);
     setSearchOpen(false);
     setSubmitted(null);
     setRows([emptyRow()]);
-    setStatus("backlog");
+    setStatus('backlog');
   }
 
   // Modificare il titolo scollega il risultato IGDB: il collegamento vale per
@@ -123,14 +123,19 @@ export function AddGameDialog() {
     onSuccess: async (entry) => {
       await queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
       await queryClient.invalidateQueries({ queryKey: api.games.latest.key() });
-      toast.success(t("added", { name: entry.game.name }));
+      toast.success(t('added', { name: entry.game.name }));
       setOpen(false);
       reset();
     },
     onError: (error) => {
       // `CONFLICT` qui ha un significato preciso che vale la pena dire: il
       // gioco c'è già, non è un errore da riprovare.
-      toast.error(errorMessage(error, { fallback: t("failed"), CONFLICT: t("duplicate") }));
+      toast.error(
+        errorMessage(error, {
+          fallback: t('failed'),
+          CONFLICT: t('duplicate'),
+        }),
+      );
     },
   });
 
@@ -142,23 +147,23 @@ export function AddGameDialog() {
         if (!next) reset();
       }}
     >
-      <DialogTrigger render={<Button>{t("trigger")}</Button>} />
+      <DialogTrigger render={<Button>{t('trigger')}</Button>} />
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid max-h-[60vh] gap-4 overflow-y-auto pr-1">
           <div className="grid gap-2">
-            <Label htmlFor="titolo">{t("titleLabel")}</Label>
+            <Label htmlFor="titolo">{t('titleLabel')}</Label>
             <div className="flex gap-2">
               <Input
                 id="titolo"
                 value={title}
                 onChange={(event) => editTitle(event.target.value)}
-                placeholder={t("titlePlaceholder")}
+                placeholder={t('titlePlaceholder')}
                 autoFocus
               />
               <Button
@@ -171,7 +176,7 @@ export function AddGameDialog() {
                   setSubmitted(title);
                 }}
               >
-                {t("search")}
+                {t('search')}
               </Button>
             </div>
 
@@ -179,15 +184,20 @@ export function AddGameDialog() {
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">
                   IGDB {linked.igdbId}
-                  {linked.releaseYear ? ` · ${linked.releaseYear}` : ""}
-                  {linked.developer ? ` · ${linked.developer}` : ""}
+                  {linked.releaseYear ? ` · ${linked.releaseYear}` : ''}
+                  {linked.developer ? ` · ${linked.developer}` : ''}
                 </Badge>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setLinked(null)}>
-                  {t("unlink")}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLinked(null)}
+                >
+                  {t('unlink')}
                 </Button>
               </div>
             ) : (
-              <p className="text-muted-foreground">{t("noLinkHint")}</p>
+              <p className="text-muted-foreground">{t('noLinkHint')}</p>
             )}
 
             {searchOpen && (
@@ -195,14 +205,17 @@ export function AddGameDialog() {
                 {search.isFetching ? (
                   <div className="grid gap-2 p-2">
                     {Array.from({ length: 3 }).map((_, index) => (
-                      <Skeleton key={index} className="h-10 w-full rounded-md" />
+                      <Skeleton
+                        key={index}
+                        className="h-10 w-full rounded-md"
+                      />
                     ))}
                   </div>
                 ) : search.error ? (
-                  <p className="p-3 text-destructive">{t("searchFailed")}</p>
+                  <p className="p-3 text-destructive">{t('searchFailed')}</p>
                 ) : search.data?.length === 0 ? (
                   <p className="p-3 text-muted-foreground">
-                    {t("noResults", { query: submitted ?? "" })}
+                    {t('noResults', { query: submitted ?? '' })}
                   </p>
                 ) : (
                   <ul className="grid gap-0.5 p-1">
@@ -215,10 +228,12 @@ export function AddGameDialog() {
                         >
                           <span className="font-medium">
                             {hit.name}
-                            {hit.releaseYear ? ` (${hit.releaseYear})` : ""}
+                            {hit.releaseYear ? ` (${hit.releaseYear})` : ''}
                           </span>
                           <span className="block text-muted-foreground">
-                            {[hit.gameType, hit.developer].filter(Boolean).join(" · ") || "—"}
+                            {[hit.gameType, hit.developer]
+                              .filter(Boolean)
+                              .join(' · ') || '—'}
                           </span>
                         </button>
                       </li>
@@ -230,7 +245,7 @@ export function AddGameDialog() {
           </div>
 
           <div className="grid gap-2">
-            <Label>{t("ownershipLabel")}</Label>
+            <Label>{t('ownershipLabel')}</Label>
             {platforms.isPending ? (
               <Skeleton className="h-9 w-full rounded-lg" />
             ) : (
@@ -244,19 +259,23 @@ export function AddGameDialog() {
                         onValueChange={(next) =>
                           setRows((current) =>
                             current.map((item) =>
-                              item.key === row.key ? { ...item, platformSlug: next } : item,
+                              item.key === row.key
+                                ? { ...item, platformSlug: next }
+                                : item,
                             ),
                           )
                         }
                       />
                     </div>
                     <Select
-                      items={{ [NO_STORE]: t("noStore"), ...storeLabels }}
+                      items={{ [NO_STORE]: t('noStore'), ...storeLabels }}
                       value={row.store}
                       onValueChange={(next) =>
                         setRows((current) =>
                           current.map((item) =>
-                            item.key === row.key ? { ...item, store: next as string } : item,
+                            item.key === row.key
+                              ? { ...item, store: next as string }
+                              : item,
                           ),
                         )
                       }
@@ -265,7 +284,7 @@ export function AddGameDialog() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={NO_STORE}>{t("noStore")}</SelectItem>
+                        <SelectItem value={NO_STORE}>{t('noStore')}</SelectItem>
                         {storeValues.map((value) => (
                           <SelectItem key={value} value={value}>
                             {storeLabels[value]}
@@ -278,9 +297,11 @@ export function AddGameDialog() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        aria-label={t("removeRow", { number: index + 1 })}
+                        aria-label={t('removeRow', { number: index + 1 })}
                         onClick={() =>
-                          setRows((current) => current.filter((item) => item.key !== row.key))
+                          setRows((current) =>
+                            current.filter((item) => item.key !== row.key),
+                          )
                         }
                       >
                         <XIcon />
@@ -294,17 +315,17 @@ export function AddGameDialog() {
                   className="w-fit"
                   onClick={() => setRows((current) => [...current, emptyRow()])}
                 >
-                  {t("addPlatform")}
+                  {t('addPlatform')}
                 </Button>
               </div>
             )}
             <p className="text-muted-foreground">
-              {t.rich("ownershipHint", { em: (chunks) => <em>{chunks}</em> })}
+              {t.rich('ownershipHint', { em: (chunks) => <em>{chunks}</em> })}
             </p>
           </div>
 
           <div className="grid gap-2">
-            <Label>{t("statusLabel")}</Label>
+            <Label>{t('statusLabel')}</Label>
             <Select
               items={statusLabels}
               value={status}
@@ -325,8 +346,11 @@ export function AddGameDialog() {
         </div>
 
         <DialogFooter>
-          <Button onClick={() => add.mutate()} disabled={!canSubmit || add.isPending}>
-            {add.isPending ? t("submitting") : t("submit")}
+          <Button
+            onClick={() => add.mutate()}
+            disabled={!canSubmit || add.isPending}
+          >
+            {add.isPending ? t('submitting') : t('submit')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,4 +1,4 @@
-import { timestamp } from "drizzle-orm/pg-core";
+import { timestamp } from 'drizzle-orm/pg-core';
 
 // Colonne di servizio da spargere su tutte le tabelle di dominio, con lo stesso
 // pattern che @better-auth/cli genera in auth.ts.
@@ -8,8 +8,8 @@ import { timestamp } from "drizzle-orm/pg-core";
 // (SQL a mano, Drizzle Studio, una ON CONFLICT DO UPDATE grezza) lasciano
 // `updatedAt` fermo. Vale soprattutto per i worker BullMQ dello step 3.
 export const timestamps = {
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at')
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),

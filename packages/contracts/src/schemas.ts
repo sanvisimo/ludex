@@ -1,11 +1,11 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 import {
   attributeKindValues,
   backlogStatusValues,
   storeValues,
   userTagKindValues,
-} from "./vocabulary";
+} from './vocabulary';
 
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
 export const AttributeKindSchema = z.enum(attributeKindValues);

@@ -1,9 +1,9 @@
-import { db, schema } from "@repo/db";
-import { eq, sql } from "@repo/db/orm";
+import { db, schema } from '@repo/db';
+import { eq, sql } from '@repo/db/orm';
 
-import { fetchIgdbGameMetadata, type IgdbAttribute } from "../external/igdb";
-import { enqueueEnrichment } from "../queue/enrichment";
-import { markSource } from "./enrichment";
+import { fetchIgdbGameMetadata, type IgdbAttribute } from '../external/igdb';
+import { enqueueEnrichment } from '../queue/enrichment';
+import { markSource } from './enrichment';
 
 /**
  * Enrichment IGDB di un singolo gioco.
@@ -37,9 +37,9 @@ async function upsertAttributes(attributes: IgdbAttribute[]) {
 }
 
 export type EnrichmentOutcome =
-  | { status: "ok"; name: string; attributes: number }
-  | { status: "skipped"; reason: string }
-  | { status: "not_found" };
+  | { status: 'ok'; name: string; attributes: number }
+  | { status: 'skipped'; reason: string }
+  | { status: 'not_found' };
 
 export async function enrichGameFromIgdb(
   gameId: string,
@@ -49,13 +49,13 @@ export async function enrichGameFromIgdb(
     where: eq(schema.games.id, gameId),
   });
 
-  if (!game) return { status: "skipped", reason: "gioco inesistente" };
+  if (!game) return { status: 'skipped', reason: 'gioco inesistente' };
 
   // Un gioco inserito a mano non ha `igdbId`: non è un errore, è un gioco non
   // ancora risolto. Si annota e si esce senza segnare un fallimento, che
   // farebbe riprovare all'infinito qualcosa che non puo' riuscire.
   if (game.igdbId === null) {
-    return { status: "skipped", reason: "gioco senza igdbId, non risolto" };
+    return { status: 'skipped', reason: 'gioco senza igdbId, non risolto' };
   }
 
   try {
@@ -68,11 +68,11 @@ export async function enrichGameFromIgdb(
       // perché fondere due righe `games` non è una modifica personale.
       await markSource({
         gameId,
-        source: "igdb",
-        status: "not_found",
+        source: 'igdb',
+        status: 'not_found',
         error: `IGDB non conosce l'id ${game.igdbId}`,
       });
-      return { status: "not_found" };
+      return { status: 'not_found' };
     }
 
     const attributeIds = await upsertAttributes(metadata.attributes);
@@ -105,16 +105,16 @@ export async function enrichGameFromIgdb(
       }
     });
 
-    await markSource({ gameId, source: "igdb", status: "ok" });
+    await markSource({ gameId, source: 'igdb', status: 'ok' });
 
     // HLTB aspetta questo momento: prima di adesso il gioco non aveva né il
     // titolo canonico né l'anno, e senza quei due il match sbaglia. Accodare
     // qui vuol dire che un gioco nuovo prende la sua durata in minuti, non alla
     // prossima spazzata.
-    await enqueueEnrichment("hltb", gameId);
+    await enqueueEnrichment('hltb', gameId);
 
     return {
-      status: "ok",
+      status: 'ok',
       name: metadata.name,
       attributes: attributeIds.length,
     };
@@ -122,8 +122,8 @@ export async function enrichGameFromIgdb(
     const message = error instanceof Error ? error.message : String(error);
     await markSource({
       gameId,
-      source: "igdb",
-      status: "failed",
+      source: 'igdb',
+      status: 'failed',
       error: message.slice(0, 500),
     });
     // Rilanciato: è BullMQ a decidere se e quando riprovare.

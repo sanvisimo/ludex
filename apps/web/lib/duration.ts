@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
+import { useTranslations } from 'next-intl';
 
 /**
  * Minuti in una durata leggibile.
@@ -13,11 +13,13 @@ import { useTranslations } from "next-intl";
  * scheda del gioco e nelle liste, e due formattatori diversi si vedrebbero.
  */
 export function useDuration() {
-  const t = useTranslations("hltb");
+  const t = useTranslations('hltb');
 
   return (minuti: number) => {
-    if (minuti < 60) return t("minutes", { value: minuti });
+    if (minuti < 60) return t('minutes', { value: minuti });
     const ore = minuti / 60;
-    return t("hours", { value: ore < 10 ? Math.round(ore * 10) / 10 : Math.round(ore) });
+    return t('hours', {
+      value: ore < 10 ? Math.round(ore * 10) / 10 : Math.round(ore),
+    });
   };
 }

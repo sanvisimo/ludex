@@ -19,7 +19,7 @@
 //   flag su che modalità il gioco abbia, e l'appid Steam — che è ciò che
 //   permette di *verificare* un match invece di sperarci.
 
-const BASE_URL = "https://howlongtobeat.com";
+const BASE_URL = 'https://howlongtobeat.com';
 
 /**
  * HLTB ruota il path dell'endpoint di ricerca ogni tanto (era `/api/find`, oggi
@@ -28,12 +28,12 @@ const BASE_URL = "https://howlongtobeat.com";
  * scritto perché i job falliscono.
  */
 function searchUrl() {
-  return `${BASE_URL}${process.env.HLTB_API_PATH ?? "/api/bleed"}`;
+  return `${BASE_URL}${process.env.HLTB_API_PATH ?? '/api/bleed'}`;
 }
 
 // Dichiararsi è la cosa corretta da fare e funziona: la sessione la si ottiene
 // lo stesso, non serve fingersi un browser.
-const USER_AGENT = "Ludex/0.1";
+const USER_AGENT = 'Ludex/0.1';
 
 // HLTB non pubblica un limite. Tre richieste al secondo è la stima prudente che
 // usa anche RomM, e sopra non ci si va: il lavoro qui non ha fretta.
@@ -67,7 +67,7 @@ function acquire(): Promise<void> {
 }
 
 function baseHeaders() {
-  return { Referer: BASE_URL, "User-Agent": USER_AGENT };
+  return { Referer: BASE_URL, 'User-Agent': USER_AGENT };
 }
 
 /**
@@ -82,14 +82,14 @@ function baseHeaders() {
 function sessionFailure(status: number) {
   if (status === 404) {
     return (
-      `l'endpoint di ricerca non esiste più (${process.env.HLTB_API_PATH ?? "/api/bleed"}): ` +
-      "HLTB lo ha ruotato, va rimesso il path nuovo in HLTB_API_PATH"
+      `l'endpoint di ricerca non esiste più (${process.env.HLTB_API_PATH ?? '/api/bleed'}): ` +
+      'HLTB lo ha ruotato, va rimesso il path nuovo in HLTB_API_PATH'
     );
   }
   if (status === 403) {
     return "sessione rifiutata: è scaduta, o è cambiato l'IP pubblico del server a cui era legata";
   }
-  if (status === 429) return "troppe richieste: HLTB sta limitando";
+  if (status === 429) return 'troppe richieste: HLTB sta limitando';
   return `risposta inattesa da /init (${status})`;
 }
 
@@ -113,7 +113,7 @@ async function fetchSession(): Promise<Session> {
   }>;
 
   if (!body.token || !body.hpKey || !body.hpVal) {
-    throw new Error("HLTB: risposta di /init senza token");
+    throw new Error('HLTB: risposta di /init senza token');
   }
 
   session = { token: body.token, hpKey: body.hpKey, hpVal: body.hpVal };
@@ -126,13 +126,13 @@ function getSession() {
 
 function send(payload: Record<string, unknown>, current: Session) {
   return fetch(searchUrl(), {
-    method: "POST",
+    method: 'POST',
     headers: {
       ...baseHeaders(),
-      "Content-Type": "application/json",
-      "x-auth-token": current.token,
-      "x-hp-key": current.hpKey,
-      "x-hp-val": current.hpVal,
+      'Content-Type': 'application/json',
+      'x-auth-token': current.token,
+      'x-hp-key': current.hpKey,
+      'x-hp-val': current.hpVal,
     },
     // La coppia va anche nel corpo, non solo negli header. Si ricompone a ogni
     // invio invece di accumularla nel payload: la chiave cambia col rinnovo.
@@ -155,7 +155,9 @@ async function post<T>(payload: Record<string, unknown>): Promise<T> {
   }
 
   if (!response.ok) {
-    throw new Error(`HLTB ricerca: ${response.status} ${await response.text()}`);
+    throw new Error(
+      `HLTB ricerca: ${response.status} ${await response.text()}`,
+    );
   }
 
   return (await response.json()) as T;
@@ -188,11 +190,14 @@ export type HltbSearchHit = {
   releaseYear: number | null;
 };
 
-export async function searchHltbGames(term: string, size = 20): Promise<HltbSearchHit[]> {
+export async function searchHltbGames(
+  term: string,
+  size = 20,
+): Promise<HltbSearchHit[]> {
   const body = await post<{ data?: HltbSearchRow[] }>({
-    searchType: "games",
+    searchType: 'games',
     // HLTB vuole i termini già spezzati, non la stringa intera.
-    searchTerms: term.split(" ").filter(Boolean),
+    searchTerms: term.split(' ').filter(Boolean),
     searchPage: 1,
     size,
     searchOptions: {
@@ -202,17 +207,17 @@ export async function searchHltbGames(term: string, size = 20): Promise<HltbSear
         // `games` è condivisa fra tutti gli utenti: filtrare sulla piattaforma
         // di *uno* sarebbe sbagliato per tutti gli altri, e comunque una voce
         // HLTB copre già tutte le piattaforme su cui il gioco esiste.
-        platform: "",
-        sortCategory: "popular",
-        rangeCategory: "main",
+        platform: '',
+        sortCategory: 'popular',
+        rangeCategory: 'main',
         rangeTime: { min: null, max: null },
-        gameplay: { perspective: "", flow: "", genre: "", difficulty: "" },
-        rangeYear: { min: "", max: "" },
-        modifier: "",
+        gameplay: { perspective: '', flow: '', genre: '', difficulty: '' },
+        rangeYear: { min: '', max: '' },
+        modifier: '',
       },
-      users: { sortCategory: "postcount" },
-      lists: { sortCategory: "follows" },
-      filter: "",
+      users: { sortCategory: 'postcount' },
+      lists: { sortCategory: 'follows' },
+      filter: '',
       sort: 0,
       randomizer: 0,
     },
@@ -285,7 +290,8 @@ function count(value: number | undefined) {
   return value ? value : null;
 }
 
-const NEXT_DATA = /<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s;
+const NEXT_DATA =
+  /<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s;
 
 /**
  * I dati di un gioco preciso, letti dalla sua pagina.
@@ -295,7 +301,9 @@ const NEXT_DATA = /<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/s
  * restituisca. Restituisce null se la pagina non esiste più — capita, HLTB
  * fonde le voci doppie.
  */
-export async function fetchHltbGameDetail(hltbId: number): Promise<HltbGameDetail | null> {
+export async function fetchHltbGameDetail(
+  hltbId: number,
+): Promise<HltbGameDetail | null> {
   await acquire();
   const response = await fetch(`${BASE_URL}/game/${Math.trunc(hltbId)}`, {
     headers: baseHeaders(),

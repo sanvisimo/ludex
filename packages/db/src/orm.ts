@@ -7,4 +7,4 @@
 //
 // Subpath separato da "." per non mescolare gli operatori con i nomi delle
 // tabelle nello stesso namespace.
-export * from "drizzle-orm";
+export * from 'drizzle-orm';

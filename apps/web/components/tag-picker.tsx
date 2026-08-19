@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import type { UserTag, UserTagKind } from "@repo/contracts";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { PlusIcon, Trash2Icon } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import type { UserTag, UserTagKind } from '@repo/contracts';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { PlusIcon, Trash2Icon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useApiErrorMessage } from "@/lib/api-error";
-import { api, client } from "@/lib/orpc";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useApiErrorMessage } from '@/lib/api-error';
+import { api, client } from '@/lib/orpc';
 
 // Una riga della lista. `id` è nullo per le parole scritte in questa sessione e
 // non ancora salvate: esistono solo qui, quindi non c'è niente da cancellare.
@@ -41,11 +41,11 @@ export function TagPicker({
   suggestions: UserTag[];
   onChange: (value: string[]) => void;
 }) {
-  const t = useTranslations("editEntry");
+  const t = useTranslations('editEntry');
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
 
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState('');
   // Quale riga sta chiedendo conferma per la cancellazione. Due passi in linea
   // invece di un dialog dentro il dialog: la domanda è piccola e la risposta
   // deve stare accanto a ciò che sparisce.
@@ -57,11 +57,19 @@ export function TagPicker({
   // Le parole scelte che nel vocabolario non ci sono ancora: sono state scritte
   // adesso e vanno mostrate spuntate, o sembrerebbero perse.
   const unsaved: Row[] = value
-    .filter((name) => !vocabulary.some((tag) => tag.name.toLowerCase() === name.toLowerCase()))
+    .filter(
+      (name) =>
+        !vocabulary.some(
+          (tag) => tag.name.toLowerCase() === name.toLowerCase(),
+        ),
+    )
     .map((name) => ({ id: null, name }));
 
   const needle = filter.trim().toLowerCase();
-  const rows = [...vocabulary.map((tag) => ({ id: tag.id, name: tag.name })), ...unsaved]
+  const rows = [
+    ...vocabulary.map((tag) => ({ id: tag.id, name: tag.name })),
+    ...unsaved,
+  ]
     .filter((row) => row.name.toLowerCase().includes(needle))
     .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -70,7 +78,9 @@ export function TagPicker({
   // inventare una parola che è lì sotto, nella lista.
   const canCreate =
     draft.length > 0 &&
-    ![...vocabulary, ...unsaved].some((row) => row.name.toLowerCase() === draft.toLowerCase());
+    ![...vocabulary, ...unsaved].some(
+      (row) => row.name.toLowerCase() === draft.toLowerCase(),
+    );
 
   function toggle(name: string, checked: boolean) {
     if (checked) {
@@ -84,7 +94,7 @@ export function TagPicker({
   function create() {
     if (!canCreate) return;
     onChange([...value, draft]);
-    setFilter("");
+    setFilter('');
   }
 
   const remove = useMutation({
@@ -98,10 +108,13 @@ export function TagPicker({
         queryClient.invalidateQueries({ queryKey: api.games.byId.key() }),
       ]);
       // Anche dalla scelta in corso, che altrimenti lo ricreerebbe al salvataggio.
-      onChange(value.filter((item) => item.toLowerCase() !== row.name.toLowerCase()));
+      onChange(
+        value.filter((item) => item.toLowerCase() !== row.name.toLowerCase()),
+      );
       setConfirming(null);
     },
-    onError: (error) => toast.error(errorMessage(error, { fallback: t("deleteTagFailed") })),
+    onError: (error) =>
+      toast.error(errorMessage(error, { fallback: t('deleteTagFailed') })),
   });
 
   return (
@@ -111,12 +124,14 @@ export function TagPicker({
           value={filter}
           onChange={(event) => setFilter(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key !== "Enter") return;
+            if (event.key !== 'Enter') return;
             // Senza questo l'Invio invierebbe il form e chiuderebbe il dialog.
             event.preventDefault();
             create();
           }}
-          placeholder={t(kind === "tag" ? "tagPlaceholder" : "categoryPlaceholder")}
+          placeholder={t(
+            kind === 'tag' ? 'tagPlaceholder' : 'categoryPlaceholder',
+          )}
           maxLength={50}
         />
         <Button
@@ -127,18 +142,23 @@ export function TagPicker({
           onClick={create}
         >
           <PlusIcon />
-          {t("addTag")}
+          {t('addTag')}
         </Button>
       </div>
 
       {rows.length === 0 ? (
         <p className="text-muted-foreground">
-          {draft.length > 0 ? t("noTagMatch", { query: draft }) : t("noTagsYet")}
+          {draft.length > 0
+            ? t('noTagMatch', { query: draft })
+            : t('noTagsYet')}
         </p>
       ) : (
         <ul className="max-h-40 overflow-y-auto rounded-lg ring-1 ring-foreground/10">
           {rows.map((row) => (
-            <li key={row.id ?? `nuovo-${row.name}`} className="flex items-center gap-2 px-2 py-1">
+            <li
+              key={row.id ?? `nuovo-${row.name}`}
+              className="flex items-center gap-2 px-2 py-1"
+            >
               <label className="flex flex-1 items-center gap-2">
                 <input
                   type="checkbox"
@@ -148,7 +168,9 @@ export function TagPicker({
                 />
                 <span>{row.name}</span>
                 {row.id === null && (
-                  <span className="text-muted-foreground">{t("tagUnsaved")}</span>
+                  <span className="text-muted-foreground">
+                    {t('tagUnsaved')}
+                  </span>
                 )}
               </label>
 
@@ -157,7 +179,9 @@ export function TagPicker({
               {row.id !== null &&
                 (confirming === row.id ? (
                   <span className="flex items-center gap-1">
-                    <span className="text-muted-foreground">{t("deleteTagConfirm")}</span>
+                    <span className="text-muted-foreground">
+                      {t('deleteTagConfirm')}
+                    </span>
                     <Button
                       type="button"
                       size="sm"
@@ -165,7 +189,7 @@ export function TagPicker({
                       disabled={remove.isPending}
                       onClick={() => remove.mutate(row)}
                     >
-                      {t("deleteTagYes")}
+                      {t('deleteTagYes')}
                     </Button>
                     <Button
                       type="button"
@@ -173,7 +197,7 @@ export function TagPicker({
                       variant="ghost"
                       onClick={() => setConfirming(null)}
                     >
-                      {t("deleteTagNo")}
+                      {t('deleteTagNo')}
                     </Button>
                   </span>
                 ) : (
@@ -181,7 +205,7 @@ export function TagPicker({
                     type="button"
                     size="icon"
                     variant="ghost"
-                    aria-label={t("deleteTag", { name: row.name })}
+                    aria-label={t('deleteTag', { name: row.name })}
                     onClick={() => setConfirming(row.id)}
                   >
                     <Trash2Icon />

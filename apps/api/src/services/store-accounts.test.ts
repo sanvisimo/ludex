@@ -1,23 +1,27 @@
-import { db, schema } from "@repo/db";
-import { eq } from "@repo/db/orm";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { db, schema } from '@repo/db';
+import { eq } from '@repo/db/orm';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createGame, createUser, linkSteamAccount as seedAccount } from "../../test/factories";
-import { resolveSteamId } from "../external/steam";
-import { isSteamImportRunning } from "../queue/imports";
+import {
+  createGame,
+  createUser,
+  linkSteamAccount as seedAccount,
+} from '../../test/factories';
+import { resolveSteamId } from '../external/steam';
+import { isSteamImportRunning } from '../queue/imports';
 import {
   linkSteamAccount,
   listStoreAccounts,
   unlinkSteamAccount,
-} from "./store-accounts";
+} from './store-accounts';
 
-vi.mock("../external/steam", () => ({ resolveSteamId: vi.fn() }));
-vi.mock("../queue/imports", () => ({ isSteamImportRunning: vi.fn() }));
+vi.mock('../external/steam', () => ({ resolveSteamId: vi.fn() }));
+vi.mock('../queue/imports', () => ({ isSteamImportRunning: vi.fn() }));
 
 const mockedResolve = vi.mocked(resolveSteamId);
 const mockedRunning = vi.mocked(isSteamImportRunning);
 
-describe("account di negozio", () => {
+describe('account di negozio', () => {
   let userId: string;
 
   beforeEach(async () => {
@@ -26,39 +30,48 @@ describe("account di negozio", () => {
   });
 
   it("collega risolvendo quello che l'utente ha incollato", async () => {
-    mockedResolve.mockResolvedValue("76561198015402862");
+    mockedResolve.mockResolvedValue('76561198015402862');
 
-    const account = await linkSteamAccount(userId, "https://steamcommunity.com/id/pippo");
+    const account = await linkSteamAccount(
+      userId,
+      'https://steamcommunity.com/id/pippo',
+    );
 
-    expect(account).toMatchObject({ store: "steam", externalAccountId: "76561198015402862" });
+    expect(account).toMatchObject({
+      store: 'steam',
+      externalAccountId: '76561198015402862',
+    });
   });
 
   it("ricollegando sovrascrive e dimentica l'ultima importazione", async () => {
-    mockedResolve.mockResolvedValue("76561190000000001");
-    await linkSteamAccount(userId, "primo");
+    mockedResolve.mockResolvedValue('76561190000000001');
+    await linkSteamAccount(userId, 'primo');
     await db
       .update(schema.storeAccounts)
       .set({ lastSyncAt: new Date() })
       .where(eq(schema.storeAccounts.userId, userId));
 
-    mockedResolve.mockResolvedValue("76561190000000002");
-    const account = await linkSteamAccount(userId, "secondo");
+    mockedResolve.mockResolvedValue('76561190000000002');
+    const account = await linkSteamAccount(userId, 'secondo');
 
     // Un utente che si accorge di aver messo il profilo sbagliato deve poter
     // correggere senza scollegare prima; e la libreria di prima non è questa.
-    expect(account).toMatchObject({ externalAccountId: "76561190000000002", lastSyncAt: null });
+    expect(account).toMatchObject({
+      externalAccountId: '76561190000000002',
+      lastSyncAt: null,
+    });
     expect(await db.select().from(schema.storeAccounts)).toHaveLength(1);
   });
 
-  it("scollegando lascia i giochi nel backlog e toglie gli scarti", async () => {
+  it('scollegando lascia i giochi nel backlog e toglie gli scarti', async () => {
     await seedAccount(userId);
     const game = await createGame();
     await db.insert(schema.backlog).values({ userId, gameId: game.id });
     await db.insert(schema.unresolvedImports).values({
       userId,
-      store: "steam",
-      externalId: "931180",
-      name: "Conan Exiles - Public Beta Client",
+      store: 'steam',
+      externalId: '931180',
+      name: 'Conan Exiles - Public Beta Client',
     });
 
     await unlinkSteamAccount(userId);
@@ -74,10 +87,12 @@ describe("account di negozio", () => {
     await seedAccount(userId);
     mockedRunning.mockResolvedValue(true);
 
-    await expect(listStoreAccounts(userId)).resolves.toMatchObject([{ syncing: true }]);
+    await expect(listStoreAccounts(userId)).resolves.toMatchObject([
+      { syncing: true },
+    ]);
   });
 
-  it("non mostra gli account di altri utenti", async () => {
+  it('non mostra gli account di altri utenti', async () => {
     await seedAccount(await createUser());
     await expect(listStoreAccounts(userId)).resolves.toEqual([]);
   });

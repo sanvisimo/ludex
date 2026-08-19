@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import { cookies } from "next/headers";
+import { cookies } from 'next/headers';
 
-import { isLocale, localeCookie } from "./config";
+import { isLocale, localeCookie } from './config';
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
@@ -14,8 +14,8 @@ export async function setLocale(locale: string) {
   if (!isLocale(locale)) return;
 
   (await cookies()).set(localeCookie, locale, {
-    path: "/",
+    path: '/',
     maxAge: ONE_YEAR,
-    sameSite: "lax",
+    sameSite: 'lax',
   });
 }

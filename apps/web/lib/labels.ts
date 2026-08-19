@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import type { BacklogStatus, Store } from "@repo/contracts";
-import { backlogStatusValues, storeValues } from "@repo/contracts";
-import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import type { BacklogStatus, Store } from '@repo/contracts';
+import { backlogStatusValues, storeValues } from '@repo/contracts';
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
 // Etichette del vocabolario condiviso. Stanno nel web e non in
 // packages/contracts perché sono testo di interfaccia: il mobile avrà le sue, e
@@ -14,22 +14,23 @@ import { useMemo } from "react";
 // senza, il trigger mostra il valore grezzo ("backlog" invece di "Da giocare").
 
 export function useStatusLabels(): Record<BacklogStatus, string> {
-  const t = useTranslations("status");
+  const t = useTranslations('status');
   return useMemo(
     () =>
-      Object.fromEntries(backlogStatusValues.map((value) => [value, t(value)])) as Record<
-        BacklogStatus,
-        string
-      >,
+      Object.fromEntries(
+        backlogStatusValues.map((value) => [value, t(value)]),
+      ) as Record<BacklogStatus, string>,
     [t],
   );
 }
 
 export function useStoreLabels(): Record<Store, string> {
-  const t = useTranslations("store");
+  const t = useTranslations('store');
   return useMemo(
     () =>
-      Object.fromEntries(storeValues.map((value) => [value, t(value)])) as Record<Store, string>,
+      Object.fromEntries(
+        storeValues.map((value) => [value, t(value)]),
+      ) as Record<Store, string>,
     [t],
   );
 }

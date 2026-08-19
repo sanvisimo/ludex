@@ -1,26 +1,26 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getTranslations } from "next-intl/server";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getTranslations } from 'next-intl/server';
 
-import { SiteNav } from "@/components/site-nav";
-import { Toaster } from "@/components/ui/sonner";
-import { cn } from "@/lib/utils";
+import { SiteNav } from '@/components/site-nav';
+import { Toaster } from '@/components/ui/sonner';
+import { cn } from '@/lib/utils';
 
-import { Providers } from "./providers";
-import "./globals.css";
+import { Providers } from './providers';
+import './globals.css';
 
 // Il preset Nova di shadcn si aspetta Geist su `--font-sans`. I .woff locali
 // dello scaffold create-turbo sono stati rimossi: erano la stessa famiglia,
 // caricata in un secondo modo.
-const geistSans = Geist({ subsets: ["latin"], variable: "--font-sans" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const geistSans = Geist({ subsets: ['latin'], variable: '--font-sans' });
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("app");
+  const t = await getTranslations('app');
   return {
-    title: t("title"),
-    description: t("description"),
+    title: t('title'),
+    description: t('description'),
   };
 }
 

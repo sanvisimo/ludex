@@ -1,10 +1,10 @@
-import type { Store } from "@repo/contracts/vocabulary";
-import { db, schema } from "@repo/db";
-import { and, desc, eq, inArray } from "@repo/db/orm";
+import type { Store } from '@repo/contracts/vocabulary';
+import { db, schema } from '@repo/db';
+import { and, desc, eq, inArray } from '@repo/db/orm';
 
-import { findIgdbGameById, searchIgdbGames } from "../external/igdb";
-import { chunk } from "../lib/chunk";
-import { enqueueEnrichment } from "../queue/enrichment";
+import { findIgdbGameById, searchIgdbGames } from '../external/igdb';
+import { chunk } from '../lib/chunk';
+import { enqueueEnrichment } from '../queue/enrichment';
 
 // Postgres regge 65535 parametri per istruzione: con librerie da qualche
 // migliaio di voci un colpo solo li sfonderebbe.
@@ -36,7 +36,10 @@ export const gameColumns = {
 // e una colonna aggiunta a uno solo sarebbe passata inosservata fino a un errore
 // di validazione del contratto.
 const gameReturning = Object.fromEntries(
-  Object.keys(gameColumns).map((name) => [name, schema.games[name as keyof typeof gameColumns]]),
+  Object.keys(gameColumns).map((name) => [
+    name,
+    schema.games[name as keyof typeof gameColumns],
+  ]),
 ) as { [K in keyof typeof gameColumns]: (typeof schema.games)[K] };
 
 /** Catalogo pubblico: gli ultimi giochi che Ludex ha conosciuto. */
@@ -89,7 +92,9 @@ export async function findGameDetailById(id: string) {
     with: {
       attributes: {
         columns: {},
-        with: { attribute: { columns: { kind: true, igdbId: true, name: true } } },
+        with: {
+          attribute: { columns: { kind: true, igdbId: true, name: true } },
+        },
       },
       sources: { columns: { source: true, syncedAt: true } },
     },
@@ -102,8 +107,10 @@ export async function findGameDetailById(id: string) {
   return {
     ...rest,
     attributes: attributes.map((row) => row.attribute),
-    igdbSyncedAt: sources.find((row) => row.source === "igdb")?.syncedAt ?? null,
-    hltbSyncedAt: sources.find((row) => row.source === "hltb")?.syncedAt ?? null,
+    igdbSyncedAt:
+      sources.find((row) => row.source === 'igdb')?.syncedAt ?? null,
+    hltbSyncedAt:
+      sources.find((row) => row.source === 'hltb')?.syncedAt ?? null,
   };
 }
 
@@ -112,7 +119,10 @@ export async function findGameDetailById(id: string) {
  * passa l'enrichment dello step 3.
  */
 export async function createGame(name: string) {
-  const [row] = await db.insert(schema.games).values({ name }).returning(gameReturning);
+  const [row] = await db
+    .insert(schema.games)
+    .values({ name })
+    .returning(gameReturning);
   return row;
 }
 
@@ -152,7 +162,7 @@ export async function resolveGameFromIgdb(igdbId: number) {
   // procedura oRPC, perché vale per qualunque strada porti a un gioco nuovo —
   // compreso l'import Steam dello step 4.
   if (inserted) {
-    await enqueueEnrichment("igdb", inserted.id);
+    await enqueueEnrichment('igdb', inserted.id);
     return inserted;
   }
 
@@ -169,7 +179,10 @@ export async function resolveGameFromIgdb(igdbId: number) {
  * risoluzione né l'enrichment. Su una collezione popolare il risparmio è quasi
  * tutto il lavoro.
  */
-export async function findGameIdsByExternalIds(source: Store, externalIds: string[]) {
+export async function findGameIdsByExternalIds(
+  source: Store,
+  externalIds: string[],
+) {
   const byExternalId = new Map<string, string>();
   if (externalIds.length === 0) return byExternalId;
 
@@ -193,7 +206,11 @@ export async function findGameIdsByExternalIds(source: Store, externalIds: strin
   return byExternalId;
 }
 
-export type ExternalGameLink = { externalId: string; igdbId: number; name: string };
+export type ExternalGameLink = {
+  externalId: string;
+  igdbId: number;
+  name: string;
+};
 
 /**
  * Registra su `games` i giochi risolti da una sorgente esterna e li mappa in
@@ -211,7 +228,10 @@ export type ExternalGameLink = { externalId: string; igdbId: number; name: strin
  * Restituisce anche i giochi appena nati: sono gli unici per cui vale la pena
  * accodare l'enrichment.
  */
-export async function linkExternalGames(source: Store, links: ExternalGameLink[]) {
+export async function linkExternalGames(
+  source: Store,
+  links: ExternalGameLink[],
+) {
   const byExternalId = new Map<string, string>();
   const createdGameIds: string[] = [];
   if (links.length === 0) return { byExternalId, createdGameIds };
@@ -219,7 +239,8 @@ export async function linkExternalGames(source: Store, links: ExternalGameLink[]
   // Dedotto per igdbId: senza, lo stesso gioco verrebbe proposto due volte nella
   // stessa INSERT.
   const perIgdbId = new Map<number, ExternalGameLink>();
-  for (const link of links) if (!perIgdbId.has(link.igdbId)) perIgdbId.set(link.igdbId, link);
+  for (const link of links)
+    if (!perIgdbId.has(link.igdbId)) perIgdbId.set(link.igdbId, link);
 
   const gameIdByIgdbId = new Map<number, string>();
 
@@ -254,7 +275,10 @@ export async function linkExternalGames(source: Store, links: ExternalGameLink[]
 
   const mappature = links
     .map((link) => ({ link, gameId: gameIdByIgdbId.get(link.igdbId) }))
-    .filter((row): row is { link: ExternalGameLink; gameId: string } => row.gameId !== undefined);
+    .filter(
+      (row): row is { link: ExternalGameLink; gameId: string } =>
+        row.gameId !== undefined,
+    );
 
   for (const page of chunk(mappature, WRITE_CHUNK)) {
     await db
@@ -272,7 +296,8 @@ export async function linkExternalGames(source: Store, links: ExternalGameLink[]
       });
   }
 
-  for (const { link, gameId } of mappature) byExternalId.set(link.externalId, gameId);
+  for (const { link, gameId } of mappature)
+    byExternalId.set(link.externalId, gameId);
 
   return { byExternalId, createdGameIds };
 }

@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import Image from "next/image";
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
-import { igdbCoverUrl, type CoverSize } from "@/lib/igdb-image";
-import { cn } from "@/lib/utils";
+import { igdbCoverUrl, type CoverSize } from '@/lib/igdb-image';
+import { cn } from '@/lib/utils';
 
 const DIMENSIONS: Record<CoverSize, { width: number; height: number }> = {
   cover_small: { width: 90, height: 128 },
   cover_big: { width: 264, height: 374 },
-  "720p": { width: 1280, height: 720 },
+  '720p': { width: 1280, height: 720 },
 };
 
 /**
@@ -21,7 +21,7 @@ const DIMENSIONS: Record<CoverSize, { width: number; height: number }> = {
 export function GameCover({
   imageId,
   name,
-  size = "cover_small",
+  size = 'cover_small',
   className,
 }: {
   imageId: string | null;
@@ -29,14 +29,14 @@ export function GameCover({
   size?: CoverSize;
   className?: string;
 }) {
-  const t = useTranslations("game");
+  const t = useTranslations('game');
   const { width, height } = DIMENSIONS[size];
 
   if (!imageId) {
     return (
       <div
         className={cn(
-          "flex shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground",
+          'flex shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground',
           className,
         )}
         style={{ width, height }}
@@ -50,10 +50,10 @@ export function GameCover({
   return (
     <Image
       src={igdbCoverUrl(imageId, size)}
-      alt={t("coverAlt", { name })}
+      alt={t('coverAlt', { name })}
       width={width}
       height={height}
-      className={cn("shrink-0 rounded-md object-cover", className)}
+      className={cn('shrink-0 rounded-md object-cover', className)}
     />
   );
 }

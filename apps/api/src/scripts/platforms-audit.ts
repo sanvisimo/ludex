@@ -1,9 +1,9 @@
-import "../env";
+import '../env';
 
-import { db, schema } from "@repo/db";
-import { asc } from "@repo/db/orm";
+import { db, schema } from '@repo/db';
+import { asc } from '@repo/db/orm';
 
-import { fetchIgdbPlatforms, type IgdbPlatform } from "../external/igdb";
+import { fetchIgdbPlatforms, type IgdbPlatform } from '../external/igdb';
 
 // Confronta la nostra tabella `platforms` (seedata da Playnite) con l'elenco vero
 // di IGDB.
@@ -20,19 +20,19 @@ import { fetchIgdbPlatforms, type IgdbPlatform } from "../external/igdb";
 // contro "Intellivision") sbaglia più di quanto azzecchi, e sbaglia in silenzio.
 // Qui si calcola solo una somiglianza per ordinare i candidati: chi decide legge.
 
-const showAll = process.argv.includes("--all");
+const showAll = process.argv.includes('--all');
 
 function tokens(value: string) {
   return value
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/[^a-z0-9]+/g, ' ')
     .trim()
-    .split(" ")
+    .split(' ')
     .filter(Boolean);
 }
 
 function normal(value: string) {
-  return tokens(value).join(" ");
+  return tokens(value).join(' ');
 }
 
 /**
@@ -42,12 +42,12 @@ function normal(value: string) {
  * - `~` uno contiene l'altro: è il caso del prefisso del produttore, benigno
  * - `?` non si assomigliano: da guardare a mano, può essere un id sbagliato
  */
-function verdict(ourName: string, igdbName: string): "=" | "~" | "?" {
+function verdict(ourName: string, igdbName: string): '=' | '~' | '?' {
   const a = normal(ourName);
   const b = normal(igdbName);
-  if (a === b) return "=";
-  if (a.includes(b) || b.includes(a)) return "~";
-  return "?";
+  if (a === b) return '=';
+  if (a.includes(b) || b.includes(a)) return '~';
+  return '?';
 }
 
 /** Quanti token in comune, sul totale di quelli del nome più corto. */
@@ -58,7 +58,7 @@ function similarity(ourName: string, candidate: IgdbPlatform) {
   const theirs = tokens(
     [candidate.name, candidate.alternativeName, candidate.abbreviation]
       .filter(Boolean)
-      .join(" "),
+      .join(' '),
   );
 
   const shared = ours.filter((token) => theirs.includes(token)).length;
@@ -96,13 +96,15 @@ const duplicates = [...usage.entries()].filter(([, slugs]) => slugs.length > 1);
 const unknownIds = mapped.filter((row) => !igdbById.has(row.igdbId!));
 const suspect = mapped.filter((row) => {
   const platform = igdbById.get(row.igdbId!);
-  return platform && verdict(row.name, platform.name) === "?";
+  return platform && verdict(row.name, platform.name) === '?';
 });
 
 const line = (parts: string[], widths: number[]) =>
-  parts.map((part, index) => part.padEnd(widths[index] ?? 0)).join("  ");
+  parts.map((part, index) => part.padEnd(widths[index] ?? 0)).join('  ');
 
-console.log(`\nIGDB conosce ${igdb.length} piattaforme. Noi ne abbiamo ${ours.length}.`);
+console.log(
+  `\nIGDB conosce ${igdb.length} piattaforme. Noi ne abbiamo ${ours.length}.`,
+);
 console.log(`  mappate:               ${mapped.length}`);
 console.log(`  senza igdb_id:         ${holes.length}`);
 console.log(`  id duplicati fra noi:  ${duplicates.length}`);
@@ -110,10 +112,10 @@ console.log(`  id inesistenti su IGDB:${unknownIds.length}`);
 console.log(`  nomi che non tornano:  ${suspect.length}`);
 
 if (duplicates.length > 0) {
-  console.log("\n=== id IGDB usato da più righe nostre ===");
+  console.log('\n=== id IGDB usato da più righe nostre ===');
   for (const [igdbId, slugs] of duplicates) {
     const platform = igdbById.get(igdbId);
-    console.log(`  ${igdbId} = ${platform?.name ?? "(non esiste su IGDB)"}`);
+    console.log(`  ${igdbId} = ${platform?.name ?? '(non esiste su IGDB)'}`);
     for (const slug of slugs) {
       const row = ours.find((candidate) => candidate.slug === slug)!;
       console.log(`      ${slug.padEnd(24)} ${row.name}`);
@@ -122,22 +124,27 @@ if (duplicates.length > 0) {
 }
 
 if (unknownIds.length > 0) {
-  console.log("\n=== id che IGDB non conosce ===");
+  console.log('\n=== id che IGDB non conosce ===');
   for (const row of unknownIds) {
     console.log(line([row.slug, row.name, `-> ${row.igdbId}`], [24, 34]));
   }
 }
 
 if (suspect.length > 0) {
-  console.log("\n=== nomi che non si assomigliano: id da verificare ===");
+  console.log('\n=== nomi che non si assomigliano: id da verificare ===');
   for (const row of suspect) {
     const platform = igdbById.get(row.igdbId!)!;
-    console.log(line([row.slug, row.name, `-> ${row.igdbId}`, platform.name], [24, 34, 8]));
+    console.log(
+      line(
+        [row.slug, row.name, `-> ${row.igdbId}`, platform.name],
+        [24, 34, 8],
+      ),
+    );
   }
 }
 
 if (holes.length > 0) {
-  console.log("\n=== senza igdb_id: candidati per somiglianza ===");
+  console.log('\n=== senza igdb_id: candidati per somiglianza ===');
   for (const row of holes) {
     console.log(`\n  ${row.slug}  (${row.name})`);
 
@@ -148,12 +155,14 @@ if (holes.length > 0) {
       .slice(0, 3);
 
     if (candidates.length === 0) {
-      console.log("      nessun candidato: probabilmente IGDB non la ha");
+      console.log('      nessun candidato: probabilmente IGDB non la ha');
       continue;
     }
 
     for (const { platform, score } of candidates) {
-      const alias = platform.alternativeName ? ` (alias: ${platform.alternativeName})` : "";
+      const alias = platform.alternativeName
+        ? ` (alias: ${platform.alternativeName})`
+        : '';
       console.log(
         `      ${score.toFixed(2)}  ${String(platform.igdbId).padEnd(5)} ${platform.name}${alias}`,
       );
@@ -162,17 +171,17 @@ if (holes.length > 0) {
 }
 
 if (showAll) {
-  console.log("\n=== tutte le mappature ===");
+  console.log('\n=== tutte le mappature ===');
   for (const row of mapped) {
     const platform = igdbById.get(row.igdbId!);
     console.log(
       line(
         [
-          platform ? verdict(row.name, platform.name) : "!",
+          platform ? verdict(row.name, platform.name) : '!',
           row.slug,
           row.name,
           `-> ${row.igdbId}`,
-          platform?.name ?? "(inesistente)",
+          platform?.name ?? '(inesistente)',
         ],
         [1, 24, 34, 8],
       ),
@@ -183,7 +192,9 @@ if (showAll) {
   const unused = igdb.filter((platform) => !used.has(platform.igdbId));
   console.log(`\n=== piattaforme IGDB che non usiamo (${unused.length}) ===`);
   for (const platform of unused) {
-    console.log(line([String(platform.igdbId), platform.name, platform.slug], [6, 40]));
+    console.log(
+      line([String(platform.igdbId), platform.name, platform.slug], [6, 40]),
+    );
   }
 }
 

@@ -1,8 +1,8 @@
-import { db, schema } from "@repo/db";
-import { and, eq } from "@repo/db/orm";
+import { db, schema } from '@repo/db';
+import { and, eq } from '@repo/db/orm';
 
-import { resolveSteamId } from "../external/steam";
-import { isSteamImportRunning } from "../queue/imports";
+import { resolveSteamId } from '../external/steam';
+import { isSteamImportRunning } from '../queue/imports';
 
 /**
  * Gli account di negozio collegati dall'utente.
@@ -24,14 +24,18 @@ export async function listStoreAccounts(userId: string) {
   return Promise.all(
     rows.map(async (row) => ({
       ...row,
-      syncing: row.store === "steam" ? await isSteamImportRunning(userId) : false,
+      syncing:
+        row.store === 'steam' ? await isSteamImportRunning(userId) : false,
     })),
   );
 }
 
 export function findSteamAccount(userId: string) {
   return db.query.storeAccounts.findFirst({
-    where: and(eq(schema.storeAccounts.userId, userId), eq(schema.storeAccounts.store, "steam")),
+    where: and(
+      eq(schema.storeAccounts.userId, userId),
+      eq(schema.storeAccounts.store, 'steam'),
+    ),
   });
 }
 
@@ -47,10 +51,14 @@ export async function linkSteamAccount(userId: string, profile: string) {
 
   const [row] = await db
     .insert(schema.storeAccounts)
-    .values({ userId, store: "steam", externalAccountId: steamId })
+    .values({ userId, store: 'steam', externalAccountId: steamId })
     .onConflictDoUpdate({
       target: [schema.storeAccounts.userId, schema.storeAccounts.store],
-      set: { externalAccountId: steamId, lastSyncAt: null, updatedAt: new Date() },
+      set: {
+        externalAccountId: steamId,
+        lastSyncAt: null,
+        updatedAt: new Date(),
+      },
     })
     .returning({
       store: schema.storeAccounts.store,
@@ -74,13 +82,18 @@ export async function unlinkSteamAccount(userId: string) {
     .where(
       and(
         eq(schema.unresolvedImports.userId, userId),
-        eq(schema.unresolvedImports.store, "steam"),
+        eq(schema.unresolvedImports.store, 'steam'),
       ),
     );
 
   const [row] = await db
     .delete(schema.storeAccounts)
-    .where(and(eq(schema.storeAccounts.userId, userId), eq(schema.storeAccounts.store, "steam")))
+    .where(
+      and(
+        eq(schema.storeAccounts.userId, userId),
+        eq(schema.storeAccounts.store, 'steam'),
+      ),
+    )
     .returning({ id: schema.storeAccounts.id });
 
   return row;

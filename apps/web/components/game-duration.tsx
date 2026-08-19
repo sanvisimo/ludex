@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import type { Game } from "@repo/contracts";
-import { useTranslations } from "next-intl";
+import type { Game } from '@repo/contracts';
+import { useTranslations } from 'next-intl';
 
-import { useDuration } from "@/lib/duration";
+import { useDuration } from '@/lib/duration';
 
 /**
  * La durata della storia principale, per le liste.
@@ -20,15 +20,19 @@ import { useDuration } from "@/lib/duration";
  *   "storia principale". Su una card non c'è spazio per spiegarlo, e mostrarlo
  *   senza spiegazione sarebbe peggio che tacere. La scheda del gioco lo dice.
  */
-export function GameDuration({ game }: { game: Pick<Game, "hltbMainMinutes" | "hltbHasSolo"> }) {
-  const t = useTranslations("hltb");
+export function GameDuration({
+  game,
+}: {
+  game: Pick<Game, 'hltbMainMinutes' | 'hltbHasSolo'>;
+}) {
+  const t = useTranslations('hltb');
   const duration = useDuration();
 
   if (game.hltbMainMinutes === null || game.hltbHasSolo === false) return null;
 
   return (
     <span className="text-muted-foreground">
-      {t("cardMain", { duration: duration(game.hltbMainMinutes) })}
+      {t('cardMain', { duration: duration(game.hltbMainMinutes) })}
     </span>
   );
 }

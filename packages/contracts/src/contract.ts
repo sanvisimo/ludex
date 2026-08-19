@@ -1,5 +1,5 @@
-import { oc } from "@orpc/contract";
-import { z } from "zod";
+import { oc } from '@orpc/contract';
+import { z } from 'zod';
 
 import {
   BacklogEntrySchema,
@@ -15,7 +15,7 @@ import {
   UnresolvedImportSchema,
   UserTagInputSchema,
   UserTagSchema,
-} from "./schemas";
+} from './schemas';
 
 // Contratto oRPC: sola descrizione di input e output, nessuna implementazione.
 // È la ragione per cui questo package non dipende da `packages/db` — web e
@@ -37,14 +37,19 @@ export const contract = {
 
     // Scheda gioco. Il gioco si vede sempre; `entry` è popolato solo se chi
     // guarda è autenticato e ha quel gioco nel backlog. È la pagina auth/no-auth.
-    byId: oc
-      .input(z.object({ id: z.uuid() }))
-      .output(z.object({ game: GameDetailSchema, entry: BacklogEntrySchema.nullable() })),
+    byId: oc.input(z.object({ id: z.uuid() })).output(
+      z.object({
+        game: GameDetailSchema,
+        entry: BacklogEntrySchema.nullable(),
+      }),
+    ),
 
     // Inserimento di un gioco non risolto, con il solo titolo. Via di scampo
     // quando IGDB non conosce il gioco: l'`igdbId` resta null e l'enrichment
     // dello step 3 non avrà nulla su cui lavorare finché non viene risolto.
-    create: oc.input(z.object({ name: z.string().trim().min(1).max(200) })).output(GameSchema),
+    create: oc
+      .input(z.object({ name: z.string().trim().min(1).max(200) }))
+      .output(GameSchema),
 
     // Cerca su IGDB. Sincrona e senza coda: è il passo 2 del flusso di
     // risoluzione, distinto dall'enrichment asincrono dello step 3.
@@ -56,7 +61,9 @@ export const contract = {
     // Scelto un candidato, crea la riga `games` **o riusa quella già presente**
     // se un altro utente aveva già importato lo stesso gioco. È qui che vive la
     // regola "l'enrichment si paga una volta sola".
-    fromIgdb: oc.input(z.object({ igdbId: z.number().int().positive() })).output(GameSchema),
+    fromIgdb: oc
+      .input(z.object({ igdbId: z.number().int().positive() }))
+      .output(GameSchema),
   },
 
   accounts: {
@@ -113,7 +120,7 @@ export const contract = {
       .input(
         z.object({
           gameId: z.uuid(),
-          status: BacklogStatusSchema.default("backlog"),
+          status: BacklogStatusSchema.default('backlog'),
           ownerships: z.array(OwnershipInputSchema).min(1),
         }),
       )

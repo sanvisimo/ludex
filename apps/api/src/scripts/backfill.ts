@@ -1,7 +1,10 @@
-import "../env";
+import '../env';
 
-import { enqueueEnrichment } from "../queue/enrichment";
-import { ENRICHMENT_SOURCE_NAMES, findGamesNeedingSource } from "../services/enrichment";
+import { enqueueEnrichment } from '../queue/enrichment';
+import {
+  ENRICHMENT_SOURCE_NAMES,
+  findGamesNeedingSource,
+} from '../services/enrichment';
 
 // Accoda l'enrichment per i giochi che non ce l'hanno mai avuto o che ce l'hanno
 // vecchio, una fonte alla volta. Serve per i giochi entrati prima che la
@@ -30,6 +33,6 @@ for (const source of ENRICHMENT_SOURCE_NAMES) {
 // database appena popolato la sua quota e' zero, e si riempira' da sola man mano
 // che i giochi vengono arricchiti. Non e' un errore, e rilanciare lo script dopo
 // il primo giro la trova piena.
-if (total === 0) console.log("niente da arricchire: tutto aggiornato");
+if (total === 0) console.log('niente da arricchire: tutto aggiornato');
 
 process.exit(0);

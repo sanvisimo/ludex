@@ -1,4 +1,4 @@
-import { chunk } from "../lib/chunk";
+import { chunk } from '../lib/chunk';
 
 // Client IGDB. Sta fuori da `services/` perché è l'accesso a un servizio
 // esterno, non logica di dominio: i servizi lo usano, non lo sono.
@@ -7,8 +7,8 @@ import { chunk } from "../lib/chunk";
 // applicativo che dura settimane. Va tenuto in memoria e rinnovato quando scade
 // o quando IGDB risponde 401, mai richiesto a ogni ricerca.
 
-const TOKEN_URL = "https://id.twitch.tv/oauth2/token";
-const API_URL = "https://api.igdb.com/v4";
+const TOKEN_URL = 'https://id.twitch.tv/oauth2/token';
+const API_URL = 'https://api.igdb.com/v4';
 
 // IGDB consente 4 richieste al secondo. Le richieste vengono serializzate e
 // distanziate: allo step 2 ne parte una per ricerca, ma allo step 3 il worker
@@ -23,7 +23,9 @@ function credentials() {
   const clientId = process.env.IGDB_CLIENT_ID;
   const clientSecret = process.env.IGDB_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
-    throw new Error("IGDB_CLIENT_ID e IGDB_CLIENT_SECRET non impostate nel .env");
+    throw new Error(
+      'IGDB_CLIENT_ID e IGDB_CLIENT_SECRET non impostate nel .env',
+    );
   }
   return { clientId, clientSecret };
 }
@@ -33,15 +35,18 @@ async function fetchToken() {
   const params = new URLSearchParams({
     client_id: clientId,
     client_secret: clientSecret,
-    grant_type: "client_credentials",
+    grant_type: 'client_credentials',
   });
 
-  const response = await fetch(`${TOKEN_URL}?${params}`, { method: "POST" });
+  const response = await fetch(`${TOKEN_URL}?${params}`, { method: 'POST' });
   if (!response.ok) {
     throw new Error(`IGDB: token rifiutato (${response.status})`);
   }
 
-  const body = (await response.json()) as { access_token: string; expires_in: number };
+  const body = (await response.json()) as {
+    access_token: string;
+    expires_in: number;
+  };
   // Un minuto di margine, così non si parte con un token che scade a metà richiesta.
   cachedToken = {
     value: body.access_token,
@@ -73,11 +78,11 @@ function schedule<T>(task: () => Promise<T>): Promise<T> {
 function send(endpoint: string, body: string, token: string) {
   const { clientId } = credentials();
   return fetch(`${API_URL}/${endpoint}`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Client-ID": clientId,
+      'Client-ID': clientId,
       Authorization: `Bearer ${token}`,
-      "Content-Type": "text/plain",
+      'Content-Type': 'text/plain',
     },
     body,
   });
@@ -95,7 +100,9 @@ async function query<T>(endpoint: string, body: string): Promise<T> {
     }
 
     if (!response.ok) {
-      throw new Error(`IGDB ${endpoint}: ${response.status} ${await response.text()}`);
+      throw new Error(
+        `IGDB ${endpoint}: ${response.status} ${await response.text()}`,
+      );
     }
 
     return (await response.json()) as T;
@@ -116,20 +123,20 @@ type IgdbGame = {
 // Da GET /v4/game_types. Il tipo si mostra solo quando NON è un gioco
 // principale: serve a distinguere port, remake e bundle nella lista di scelta.
 const GAME_TYPES: Record<number, string> = {
-  1: "DLC",
-  2: "Espansione",
-  3: "Bundle",
-  4: "Espansione standalone",
-  5: "Mod",
-  6: "Episodio",
-  7: "Stagione",
-  8: "Remake",
-  9: "Remaster",
-  10: "Edizione estesa",
-  11: "Port",
-  12: "Fork",
-  13: "Pacchetto",
-  14: "Aggiornamento",
+  1: 'DLC',
+  2: 'Espansione',
+  3: 'Bundle',
+  4: 'Espansione standalone',
+  5: 'Mod',
+  6: 'Episodio',
+  7: 'Stagione',
+  8: 'Remake',
+  9: 'Remaster',
+  10: 'Edizione estesa',
+  11: 'Port',
+  12: 'Fork',
+  13: 'Pacchetto',
+  14: 'Aggiornamento',
 };
 
 // Tipi esclusi dalla ricerca: non sono cose che si possiedono in una libreria.
@@ -149,7 +156,7 @@ const EXCLUDED_TYPES = [
 ];
 
 const SEARCH_FIELDS =
-  "fields name, first_release_date, game_type, involved_companies.developer, involved_companies.company.name;";
+  'fields name, first_release_date, game_type, involved_companies.developer, involved_companies.company.name;';
 
 /**
  * Il valore finisce dentro una stringa apicalypse fra virgolette: vanno
@@ -161,8 +168,8 @@ function escapeSearchTerm(value: string) {
     value
       // I caratteri di controllo qui sono voluti: sono proprio ciò che va ripulito.
       // eslint-disable-next-line no-control-regex
-      .replace(/[\u0000-\u001F\u007F]/g, " ")
-      .replace(/\\/g, "\\\\")
+      .replace(/[\u0000-\u001F\u007F]/g, ' ')
+      .replace(/\\/g, '\\\\')
       .replace(/"/g, '\\"')
   );
 }
@@ -176,7 +183,8 @@ export type IgdbSearchHit = {
 };
 
 function toHit(game: IgdbGame): IgdbSearchHit {
-  const developer = game.involved_companies?.find((entry) => entry.developer)?.company?.name;
+  const developer = game.involved_companies?.find((entry) => entry.developer)
+    ?.company?.name;
 
   return {
     igdbId: game.id,
@@ -189,18 +197,23 @@ function toHit(game: IgdbGame): IgdbSearchHit {
   };
 }
 
-export async function searchIgdbGames(term: string, limit = 20): Promise<IgdbSearchHit[]> {
+export async function searchIgdbGames(
+  term: string,
+  limit = 20,
+): Promise<IgdbSearchHit[]> {
   const games = await query<IgdbGame[]>(
-    "games",
+    'games',
     `search "${escapeSearchTerm(term)}"; ${SEARCH_FIELDS} ` +
-      `where game_type != (${EXCLUDED_TYPES.join(",")}); limit ${limit};`,
+      `where game_type != (${EXCLUDED_TYPES.join(',')}); limit ${limit};`,
   );
   return games.map(toHit);
 }
 
-export async function findIgdbGameById(igdbId: number): Promise<IgdbSearchHit | null> {
+export async function findIgdbGameById(
+  igdbId: number,
+): Promise<IgdbSearchHit | null> {
   const games = await query<IgdbGame[]>(
-    "games",
+    'games',
     `where id = ${Math.trunc(igdbId)}; ${SEARCH_FIELDS} limit 1;`,
   );
   const game = games[0];
@@ -210,11 +223,11 @@ export async function findIgdbGameById(igdbId: number): Promise<IgdbSearchHit | 
 // --- Enrichment (step 3): metadati completi, non la ricerca ---
 
 const DETAIL_FIELDS = [
-  "fields name, summary, first_release_date, aggregated_rating, aggregated_rating_count,",
-  "cover.image_id, cover.width, cover.height,",
-  "genres.id, genres.name, themes.id, themes.name,",
-  "game_modes.id, game_modes.name, player_perspectives.id, player_perspectives.name;",
-].join(" ");
+  'fields name, summary, first_release_date, aggregated_rating, aggregated_rating_count,',
+  'cover.image_id, cover.width, cover.height,',
+  'genres.id, genres.name, themes.id, themes.name,',
+  'game_modes.id, game_modes.name, player_perspectives.id, player_perspectives.name;',
+].join(' ');
 
 type IgdbNamed = { id: number; name: string };
 
@@ -233,7 +246,7 @@ type IgdbGameDetail = {
 };
 
 export type IgdbAttribute = {
-  kind: "genre" | "theme" | "game_mode" | "player_perspective";
+  kind: 'genre' | 'theme' | 'game_mode' | 'player_perspective';
   igdbId: number;
   name: string;
 };
@@ -252,10 +265,14 @@ export type IgdbGameMetadata = {
 };
 
 function collect(
-  kind: IgdbAttribute["kind"],
+  kind: IgdbAttribute['kind'],
   entries: IgdbNamed[] | undefined,
 ): IgdbAttribute[] {
-  return (entries ?? []).map((entry) => ({ kind, igdbId: entry.id, name: entry.name }));
+  return (entries ?? []).map((entry) => ({
+    kind,
+    igdbId: entry.id,
+    name: entry.name,
+  }));
 }
 
 /**
@@ -263,9 +280,11 @@ function collect(
  * alla risoluzione sincrona dello step 2 e chiede molti meno campi: sono due usi
  * distinti di IGDB e vanno tenuti distinti.
  */
-export async function fetchIgdbGameMetadata(igdbId: number): Promise<IgdbGameMetadata | null> {
+export async function fetchIgdbGameMetadata(
+  igdbId: number,
+): Promise<IgdbGameMetadata | null> {
   const games = await query<IgdbGameDetail[]>(
-    "games",
+    'games',
     `where id = ${Math.trunc(igdbId)}; ${DETAIL_FIELDS} limit 1;`,
   );
 
@@ -285,10 +304,10 @@ export async function fetchIgdbGameMetadata(igdbId: number): Promise<IgdbGameMet
     aggregatedRating: game.aggregated_rating ?? null,
     aggregatedRatingCount: game.aggregated_rating_count ?? null,
     attributes: [
-      ...collect("genre", game.genres),
-      ...collect("theme", game.themes),
-      ...collect("game_mode", game.game_modes),
-      ...collect("player_perspective", game.player_perspectives),
+      ...collect('genre', game.genres),
+      ...collect('theme', game.themes),
+      ...collect('game_mode', game.game_modes),
+      ...collect('player_perspective', game.player_perspectives),
     ],
   };
 }
@@ -318,7 +337,8 @@ type IgdbPlatformRow = {
   generation?: number;
 };
 
-const PLATFORM_FIELDS = "fields name, slug, alternative_name, abbreviation, generation;";
+const PLATFORM_FIELDS =
+  'fields name, slug, alternative_name, abbreviation, generation;';
 
 // 500 è il massimo che IGDB accetta. Le piattaforme sono un paio di centinaio,
 // quindi in pratica basta un giro: si scorre comunque, per non dipendere da un
@@ -330,7 +350,7 @@ export async function fetchIgdbPlatforms(): Promise<IgdbPlatform[]> {
 
   for (let offset = 0; ; offset += PLATFORM_PAGE) {
     const page = await query<IgdbPlatformRow[]>(
-      "platforms",
+      'platforms',
       `${PLATFORM_FIELDS} sort id asc; limit ${PLATFORM_PAGE}; offset ${offset};`,
     );
 
@@ -391,10 +411,10 @@ export async function findIgdbGamesBySteamAppIds(
   for (const page of chunk(appIds, EXTERNAL_PAGE)) {
     // Gli appid arrivano da Steam e sono numerici, ma finiscono dentro una
     // stringa apicalypse: si passano dallo stesso filtro delle ricerche.
-    const uids = page.map((appId) => `"${escapeSearchTerm(appId)}"`).join(",");
+    const uids = page.map((appId) => `"${escapeSearchTerm(appId)}"`).join(',');
 
     const rows = await query<IgdbExternalGame[]>(
-      "external_games",
+      'external_games',
       `fields uid, game, game.name;` +
         ` where external_game_source = ${IGDB_SOURCE_STEAM} & uid = (${uids});` +
         ` limit ${EXTERNAL_PAGE};`,

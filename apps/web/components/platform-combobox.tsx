@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import type { Platform } from "@repo/contracts";
-import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import type { Platform } from '@repo/contracts';
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
 import {
   Combobox,
@@ -11,7 +11,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@/components/ui/combobox";
+} from '@/components/ui/combobox';
 
 // Le piattaforme sono 96: una tendina semplice sarebbe inusabile, serve un campo
 // che filtri mentre scrivi. Gli item sono gli slug, non oggetti, così il valore
@@ -26,8 +26,11 @@ export function PlatformCombobox({
   value: string | null;
   onValueChange: (value: string | null) => void;
 }) {
-  const t = useTranslations("platform");
-  const slugs = useMemo(() => platforms.map((platform) => platform.slug), [platforms]);
+  const t = useTranslations('platform');
+  const slugs = useMemo(
+    () => platforms.map((platform) => platform.slug),
+    [platforms],
+  );
   const nameBySlug = useMemo(
     () => new Map(platforms.map((platform) => [platform.slug, platform.name])),
     [platforms],
@@ -44,9 +47,9 @@ export function PlatformCombobox({
     >
       {/* ComboboxInput È il campo: contiene già input e chevron. Non va dentro
           il popup, altrimenti il posizionamento perde l'ancora. */}
-      <ComboboxInput placeholder={t("placeholder")} className="w-full" />
+      <ComboboxInput placeholder={t('placeholder')} className="w-full" />
       <ComboboxContent>
-        <ComboboxEmpty>{t("empty")}</ComboboxEmpty>
+        <ComboboxEmpty>{t('empty')}</ComboboxEmpty>
         <ComboboxList>
           {(slug: string) => (
             <ComboboxItem key={slug} value={slug}>

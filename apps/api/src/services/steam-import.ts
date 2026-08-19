@@ -1,12 +1,12 @@
-import { db, schema } from "@repo/db";
-import { and, eq, inArray, sql } from "@repo/db/orm";
+import { db, schema } from '@repo/db';
+import { and, eq, inArray, sql } from '@repo/db/orm';
 
-import { findIgdbGamesBySteamAppIds } from "../external/igdb";
-import { fetchSteamLibrary, type SteamLibraryEntry } from "../external/steam";
-import { chunk } from "../lib/chunk";
-import { enqueueEnrichment } from "../queue/enrichment";
-import { ensureBacklogEntries, ensureOwnerships } from "./backlog";
-import { findGameIdsByExternalIds, linkExternalGames } from "./games";
+import { findIgdbGamesBySteamAppIds } from '../external/igdb';
+import { fetchSteamLibrary, type SteamLibraryEntry } from '../external/steam';
+import { chunk } from '../lib/chunk';
+import { enqueueEnrichment } from '../queue/enrichment';
+import { ensureBacklogEntries, ensureOwnerships } from './backlog';
+import { findGameIdsByExternalIds, linkExternalGames } from './games';
 
 /**
  * Import della libreria Steam.
@@ -28,7 +28,7 @@ import { findGameIdsByExternalIds, linkExternalGames } from "./games";
 
 // Un gioco Steam è PC: la piattaforma è il filtro hard del motore decisionale
 // ("stasera ho la Switch accesa"), lo store dice solo da dove si lancia.
-export const STEAM_PLATFORM = "pc_windows";
+export const STEAM_PLATFORM = 'pc_windows';
 
 export type SteamImportReport = {
   /** Voci nella libreria Steam. */
@@ -53,7 +53,7 @@ async function recordUnresolved(userId: string, entries: SteamLibraryEntry[]) {
       .values(
         page.map((entry) => ({
           userId,
-          store: "steam" as const,
+          store: 'steam' as const,
           externalId: entry.appId,
           name: entry.name,
           playtimeMinutes: entry.playtimeMinutes,
@@ -95,7 +95,7 @@ async function clearResolved(userId: string, appIds: string[]) {
       .where(
         and(
           eq(schema.unresolvedImports.userId, userId),
-          eq(schema.unresolvedImports.store, "steam"),
+          eq(schema.unresolvedImports.store, 'steam'),
           inArray(schema.unresolvedImports.externalId, page),
         ),
       );
@@ -110,16 +110,18 @@ export async function importSteamLibrary(
 
   // 1. Quello che Ludex conosce già.
   const known = await findGameIdsByExternalIds(
-    "steam",
+    'steam',
     library.map((entry) => entry.appId),
   );
 
   // 2. Solo il resto va su IGDB.
   const missing = library.filter((entry) => !known.has(entry.appId));
-  const matches = await findIgdbGamesBySteamAppIds(missing.map((entry) => entry.appId));
+  const matches = await findIgdbGamesBySteamAppIds(
+    missing.map((entry) => entry.appId),
+  );
 
   const { byExternalId, createdGameIds } = await linkExternalGames(
-    "steam",
+    'steam',
     missing
       .map((entry) => {
         const match = matches.get(entry.appId);
@@ -151,7 +153,7 @@ export async function importSteamLibrary(
     resolved.map((entry) => ({
       backlogId: byGameId.get(gameIdByAppId.get(entry.appId)!)!,
       platformSlug: STEAM_PLATFORM,
-      store: "steam" as const,
+      store: 'steam' as const,
       playtimeMinutes: entry.playtimeMinutes,
       lastPlayedAt: entry.lastPlayedAt,
     })),
@@ -159,13 +161,16 @@ export async function importSteamLibrary(
 
   // Solo i giochi nati adesso: gli altri l'enrichment ce l'hanno già, o ce
   // l'hanno vecchio e ci pensa la spazzata.
-  for (const gameId of createdGameIds) await enqueueEnrichment("igdb", gameId);
+  for (const gameId of createdGameIds) await enqueueEnrichment('igdb', gameId);
 
   await db
     .update(schema.storeAccounts)
     .set({ lastSyncAt: new Date() })
     .where(
-      and(eq(schema.storeAccounts.userId, userId), eq(schema.storeAccounts.store, "steam")),
+      and(
+        eq(schema.storeAccounts.userId, userId),
+        eq(schema.storeAccounts.store, 'steam'),
+      ),
     );
 
   return {

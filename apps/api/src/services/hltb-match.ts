@@ -1,4 +1,4 @@
-import type { HltbSearchHit } from "../external/hltb";
+import type { HltbSearchHit } from '../external/hltb';
 
 /**
  * Scelta della voce HLTB che corrisponde a un nostro gioco.
@@ -21,7 +21,27 @@ import type { HltbSearchHit } from "../external/hltb";
  */
 
 /** Il gioco da agganciare, ridotto a ciò che serve per scegliere. */
-export type HltbQuery = { name: string; releaseYear: number | null };
+export type HltbQuery = {
+  name: string;
+  releaseYear: number | null;
+  /**
+   * Il termine con cui si è davvero cercato, quando non è il titolo intero.
+   *
+   * Serve perché la ricerca e il giudizio sono due cose separate: HLTB cerca in
+   * AND su tutti i termini, quindi un titolo lungo a volte non trova niente e
+   * bisogna chiedere di meno — ma questo non vuol dire che si debba anche
+   * *giudicare* di meno. Il caso che l'ha imposto:
+   *
+   *     nostro:  "Gabriel Knight 3: Blood of the Sacred, Blood of the Damned"
+   *     loro:    "Gabriel Knight III: Blood of the Sacred, Blood of the Damned"
+   *
+   * Sul titolo intero HLTB non restituisce niente, perché "3" non è "III".
+   * Cercando la sola coda la voce salta fuori, e a quel punto i due titoli
+   * interi si somigliano per lo 0.95: il numero romano non era mai stato un
+   * problema di punteggio, solo di ricerca.
+   */
+  searchedAs?: string | null;
+};
 
 export type RankedHit = {
   hit: HltbSearchHit;
@@ -60,11 +80,11 @@ const YEAR_TOLERANCE = 1;
  */
 export function normalizeTitle(value: string) {
   return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/&/g, " and ")
-    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 }
 
@@ -82,11 +102,13 @@ export function normalizeTitle(value: string) {
  * che fa RomM, perché loro partono da un nome di file che si porta davanti il
  * nome della serie, noi dal titolo canonico che si porta dietro l'edizione.
  */
-export function shortenTitle(name: string) {
-  const taglio = name.search(/[:/]/);
+export function shortenTitle(name: string, reverse = false) {
+  const taglio = name.search(/:/);
   if (taglio < 1) return null;
 
-  const testa = name.slice(0, taglio).trim();
+  const testa = reverse
+    ? name.slice(taglio + 1).trim()
+    : name.slice(0, taglio).trim();
   // Due caratteri non sono una ricerca, sono un pescaggio a caso.
   if (testa.length < 3) return null;
   if (normalizeTitle(testa) === normalizeTitle(name)) return null;
@@ -136,22 +158,38 @@ export function titleSimilarity(a: string, b: string) {
  * restituisce tre nei primi cinque risultati — e nessuno di loro è mai il gioco
  * che abbiamo in libreria: quello lo importiamo come gioco a sé.
  */
-export function rankHltbCandidates(query: HltbQuery, hits: HltbSearchHit[]): RankedHit[] {
-  const wanted = normalizeTitle(query.name);
+export function rankHltbCandidates(
+  query: HltbQuery,
+  hits: HltbSearchHit[],
+): RankedHit[] {
+  // Il nostro titolo in tutte le forme che ha preso: quello vero e, se la
+  // ricerca è passata da un accorciamento, anche quello. Si prende il massimo,
+  // simmetricamente a quello che si fa già sul loro lato fra nome e alias —
+  // entrambi i cataloghi scrivono lo stesso gioco in più di un modo, e il
+  // massimo può solo alzare i punteggi, mai perdere un match che già funziona.
+  const nostri = [normalizeTitle(query.name)];
+  if (query.searchedAs) {
+    const anche = normalizeTitle(query.searchedAs);
+    if (anche && anche !== nostri[0]) nostri.push(anche);
+  }
 
   return hits
-    .filter((hit) => hit.type !== "dlc")
+    .filter((hit) => hit.type !== 'dlc')
     .map((hit) => {
       // Anche l'alias conta: HLTB tiene il titolo principale in `game_name` e
       // l'edizione o il nome alternativo in `game_alias`, e a volte è il secondo
       // a coincidere col nostro.
-      const nome = normalizeTitle(hit.name);
-      const alias = hit.alias ? normalizeTitle(hit.alias) : null;
-      let score = Math.max(
-        titleSimilarity(wanted, nome),
-        alias ? titleSimilarity(wanted, alias) : 0,
-      );
-      const exact = nome === wanted || alias === wanted;
+      const loro = [normalizeTitle(hit.name)];
+      if (hit.alias) loro.push(normalizeTitle(hit.alias));
+
+      let score = 0;
+      let exact = false;
+      for (const nostro of nostri) {
+        for (const suo of loro) {
+          score = Math.max(score, titleSimilarity(nostro, suo));
+          if (nostro === suo) exact = true;
+        }
+      }
 
       if (query.releaseYear !== null && hit.releaseYear !== null) {
         const distance = Math.abs(query.releaseYear - hit.releaseYear);
@@ -183,7 +221,8 @@ export function pickByName(ranked: RankedHit[]): RankedHit | null {
   // scarto sono la stessa forma dei due "Resident Evil 4". Lì a decidere non
   // può essere il nome: decide l'appid, o non decide nessuno.
   const esatti = ranked.filter((row) => row.exact);
-  if (esatti.length === 1 && esatti[0]!.score >= NAME_THRESHOLD) return esatti[0]!;
+  if (esatti.length === 1 && esatti[0]!.score >= NAME_THRESHOLD)
+    return esatti[0]!;
 
   const [best, second] = ranked;
   if (!best || best.score < NAME_THRESHOLD) return null;

@@ -1,5 +1,5 @@
-import { db, schema, type Db } from "@repo/db";
-import { and, eq, isNotNull, isNull, lt, ne, or, sql } from "@repo/db/orm";
+import { db, schema, type Db } from '@repo/db';
+import { and, eq, isNotNull, isNull, lt, ne, or, sql } from '@repo/db/orm';
 
 /**
  * La pipeline di enrichment, per la parte che è uguale a tutte le fonti: quali
@@ -12,10 +12,10 @@ import { and, eq, isNotNull, isNull, lt, ne, or, sql } from "@repo/db/orm";
  * stesso ritmo e le farebbe cadere insieme.
  */
 
-export type EnrichmentSource = "igdb" | "hltb";
+export type EnrichmentSource = 'igdb' | 'hltb';
 
 /** Il `tx` che Drizzle passa dentro `db.transaction`, senza doverlo nominare. */
-type Transaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
+type Transaction = Parameters<Parameters<Db['transaction']>[0]>[0];
 
 export const ENRICHMENT_SOURCES = {
   igdb: {
@@ -24,7 +24,7 @@ export const ENRICHMENT_SOURCES = {
     staleAfterDays: 30,
     retryAfterHours: 24,
     // Un gioco senza `igdbId` non è risolto: non c'è niente da chiedere.
-    requires: "igdbId",
+    requires: 'igdbId',
   },
   hltb: {
     // Sei mesi. I tempi di HLTB si muovono molto più piano dei dati IGDB: sono
@@ -35,11 +35,16 @@ export const ENRICHMENT_SOURCES = {
     // fa sul titolo canonico e sull'anno di uscita: senza quei due, scegliere
     // fra i due "Resident Evil 4" è un lancio di moneta. Costo accettato: un
     // gioco che IGDB non conosce non avrà mai una durata.
-    requires: "igdbOk",
+    requires: 'igdbOk',
   },
-} as const satisfies Record<EnrichmentSource, { staleAfterDays: number; retryAfterHours: number; requires: string }>;
+} as const satisfies Record<
+  EnrichmentSource,
+  { staleAfterDays: number; retryAfterHours: number; requires: string }
+>;
 
-export const ENRICHMENT_SOURCE_NAMES = Object.keys(ENRICHMENT_SOURCES) as EnrichmentSource[];
+export const ENRICHMENT_SOURCE_NAMES = Object.keys(
+  ENRICHMENT_SOURCES,
+) as EnrichmentSource[];
 
 /**
  * Annota l'esito di un tentativo su una fonte.
@@ -56,7 +61,7 @@ export async function markSource(
   values: {
     gameId: string;
     source: EnrichmentSource;
-    status: "ok" | "failed" | "not_found";
+    status: 'ok' | 'failed' | 'not_found';
     error?: string | null;
     externalId?: string | null;
   },
@@ -75,7 +80,7 @@ export async function markSource(
       status,
       // `syncedAt` si muove solo sul successo: è il campo su cui si decide
       // cosa riaccodare, e un fallimento non deve far sembrare fresco un dato.
-      syncedAt: status === "ok" ? now : null,
+      syncedAt: status === 'ok' ? now : null,
       attemptedAt: now,
       error,
       externalId: values.externalId ?? null,
@@ -87,17 +92,23 @@ export async function markSource(
         attemptedAt: now,
         error,
         updatedAt: now,
-        ...(status === "ok" ? { syncedAt: now } : {}),
+        ...(status === 'ok' ? { syncedAt: now } : {}),
         ...(touchesExternalId ? { externalId: values.externalId ?? null } : {}),
       },
     });
 }
 
 /** L'id del gioco sulla fonte, se l'abbiamo già trovato una volta. */
-export async function findSourceExternalId(gameId: string, source: EnrichmentSource) {
+export async function findSourceExternalId(
+  gameId: string,
+  source: EnrichmentSource,
+) {
   const row = await db.query.gameSources.findFirst({
     columns: { externalId: true },
-    where: and(eq(schema.gameSources.gameId, gameId), eq(schema.gameSources.source, source)),
+    where: and(
+      eq(schema.gameSources.gameId, gameId),
+      eq(schema.gameSources.source, source),
+    ),
   });
   return row?.externalId ?? null;
 }
@@ -109,8 +120,8 @@ export async function findSourceExternalId(gameId: string, source: EnrichmentSou
  * fonte corrente: quando la fonte corrente *è* IGDB le due si sovrapporrebbero,
  * e servirebbe un alias per una condizione che qui si legge in una riga.
  */
-function requirement(requires: "igdbId" | "igdbOk") {
-  if (requires === "igdbId") return isNotNull(schema.games.igdbId);
+function requirement(requires: 'igdbId' | 'igdbOk') {
+  if (requires === 'igdbId') return isNotNull(schema.games.igdbId);
   return sql`exists (
     select 1 from game_sources igdb
     where igdb.game_id = ${schema.games.id} and igdb.source = 'igdb' and igdb.status = 'ok'
@@ -140,43 +151,45 @@ function requirement(requires: "igdbId" | "igdbOk") {
 export function findGamesNeedingSource(source: EnrichmentSource, limit = 100) {
   const config = ENRICHMENT_SOURCES[source];
 
-  return db
-    .select({ id: schema.games.id })
-    .from(schema.games)
-    .leftJoin(
-      schema.gameSources,
-      and(
-        eq(schema.gameSources.gameId, schema.games.id),
-        eq(schema.gameSources.source, source),
-      ),
-    )
-    .where(
-      and(
-        requirement(config.requires),
-        or(
-          isNull(schema.gameSources.gameId),
-          and(
-            ne(schema.gameSources.status, "not_found"),
-            or(
-              isNull(schema.gameSources.syncedAt),
-              lt(
-                schema.gameSources.syncedAt,
-                sql`now() - ${config.staleAfterDays} * interval '1 day'`,
+  return (
+    db
+      .select({ id: schema.games.id })
+      .from(schema.games)
+      .leftJoin(
+        schema.gameSources,
+        and(
+          eq(schema.gameSources.gameId, schema.games.id),
+          eq(schema.gameSources.source, source),
+        ),
+      )
+      .where(
+        and(
+          requirement(config.requires),
+          or(
+            isNull(schema.gameSources.gameId),
+            and(
+              ne(schema.gameSources.status, 'not_found'),
+              or(
+                isNull(schema.gameSources.syncedAt),
+                lt(
+                  schema.gameSources.syncedAt,
+                  sql`now() - ${config.staleAfterDays} * interval '1 day'`,
+                ),
               ),
-            ),
-            or(
-              isNull(schema.gameSources.attemptedAt),
-              lt(
-                schema.gameSources.attemptedAt,
-                sql`now() - ${config.retryAfterHours} * interval '1 hour'`,
+              or(
+                isNull(schema.gameSources.attemptedAt),
+                lt(
+                  schema.gameSources.attemptedAt,
+                  sql`now() - ${config.retryAfterHours} * interval '1 hour'`,
+                ),
               ),
             ),
           ),
         ),
-      ),
-    )
-    // `sql` grezzo e non `asc()`: quello avvolge l'espressione e produrrebbe
-    // `synced_at nulls first asc`, che Postgres rifiuta.
-    .orderBy(sql`${schema.gameSources.syncedAt} asc nulls first`)
-    .limit(limit);
+      )
+      // `sql` grezzo e non `asc()`: quello avvolge l'espressione e produrrebbe
+      // `synced_at nulls first asc`, che Postgres rifiuta.
+      .orderBy(sql`${schema.gameSources.syncedAt} asc nulls first`)
+      .limit(limit)
+  );
 }

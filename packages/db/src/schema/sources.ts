@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { sql } from 'drizzle-orm';
 import {
   pgEnum,
   pgTable,
@@ -7,18 +7,18 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
-} from "drizzle-orm/pg-core";
+} from 'drizzle-orm/pg-core';
 
-import { games } from "./games";
-import { timestamps } from "./timestamps";
+import { games } from './games';
+import { timestamps } from './timestamps';
 
 // Fonti dei metadati. Distinto da `store` (i negozi) perché OpenCritic e HLTB
 // non sono posti da cui si compra: sono posti da cui si legge.
-export const dataSource = pgEnum("data_source", [
-  "igdb",
-  "opencritic",
-  "hltb",
-  "steamgriddb",
+export const dataSource = pgEnum('data_source', [
+  'igdb',
+  'opencritic',
+  'hltb',
+  'steamgriddb',
 ]);
 
 // `failed` e `not_found` sono due cose diverse e tenerle separate è ciò che
@@ -29,11 +29,11 @@ export const dataSource = pgEnum("data_source", [
 // - `not_found`: la fonte non ha questo gioco. Non passerà da sé: riprovare ogni
 //   sei ore per sempre è lavoro buttato. Si riapre per evento, quando cambia
 //   l'identificativo del gioco su quella fonte, non per scadenza.
-export const sourceStatus = pgEnum("source_status", [
-  "pending",
-  "ok",
-  "failed",
-  "not_found",
+export const sourceStatus = pgEnum('source_status', [
+  'pending',
+  'ok',
+  'failed',
+  'not_found',
 ]);
 
 /**
@@ -53,19 +53,19 @@ export const sourceStatus = pgEnum("source_status", [
  * per tornare a prendere il dato, e stanno accanto allo stato che li riguarda.
  */
 export const gameSources = pgTable(
-  "game_sources",
+  'game_sources',
   {
-    gameId: uuid("game_id")
+    gameId: uuid('game_id')
       .notNull()
-      .references(() => games.id, { onDelete: "cascade" }),
-    source: dataSource("source").notNull(),
-    status: sourceStatus("status").notNull().default("pending"),
+      .references(() => games.id, { onDelete: 'cascade' }),
+    source: dataSource('source').notNull(),
+    status: sourceStatus('status').notNull().default('pending'),
     // Ultimo successo. Null finché non è mai andata a buon fine: è questo il
     // campo su cui si decide che cosa riaccodare.
-    syncedAt: timestamp("synced_at"),
+    syncedAt: timestamp('synced_at'),
     // Ultimo tentativo, riuscito o no.
-    attemptedAt: timestamp("attempted_at"),
-    error: text("error"),
+    attemptedAt: timestamp('attempted_at'),
+    error: text('error'),
     /**
      * L'id del gioco sulla fonte: il 26286 di Hollow Knight su HLTB.
      *
@@ -73,7 +73,7 @@ export const gameSources = pgTable(
      * la parte cara e l'unica che può sbagliare. Nullo finché la fonte non è
      * stata agganciata, e resta nullo su IGDB, che l'id ce l'ha già su `games`.
      */
-    externalId: text("external_id"),
+    externalId: text('external_id'),
     ...timestamps,
   },
   (table) => [
@@ -86,7 +86,7 @@ export const gameSources = pgTable(
     // Parziale, perché i NULL qui sono la norma: senza il `where`, Postgres li
     // considererebbe comunque tutti distinti, ma l'indice si porterebbe dietro
     // una riga per ogni fonte mai tentata.
-    uniqueIndex("game_sources_source_external_id_idx")
+    uniqueIndex('game_sources_source_external_id_idx')
       .on(table.source, table.externalId)
       .where(sql`${table.externalId} is not null`),
   ],

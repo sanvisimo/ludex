@@ -1,15 +1,21 @@
-import type { UserTag, UserTagInput } from "@repo/contracts";
-import type { BacklogStatus, Store } from "@repo/contracts/vocabulary";
+import type { UserTag, UserTagInput } from '@repo/contracts';
+import type { BacklogStatus, Store } from '@repo/contracts/vocabulary';
 
-import { chunk } from "../lib/chunk";
-import { gameColumns } from "./games";
-import { ensureUserTags } from "./tags";
-import { db, schema } from "@repo/db";
-import { and, desc, eq, inArray, sql } from "@repo/db/orm";
+import { chunk } from '../lib/chunk';
+import { gameColumns } from './games';
+import { ensureUserTags } from './tags';
+import { db, schema } from '@repo/db';
+import { and, desc, eq, inArray, sql } from '@repo/db/orm';
 
 // Forma di BacklogEntrySchema: la riga, il gioco, i possessi, i tag.
 const entryQuery = {
-  columns: { id: true, status: true, rating: true, notes: true, createdAt: true },
+  columns: {
+    id: true,
+    status: true,
+    rating: true,
+    notes: true,
+    createdAt: true,
+  },
   with: {
     game: { columns: gameColumns },
     ownerships: {
@@ -69,7 +75,10 @@ export async function findEntryById(userId: string, id: string) {
 export async function findEntryByGame(userId: string, gameId: string) {
   const row = await db.query.backlog.findFirst({
     ...entryQuery,
-    where: and(eq(schema.backlog.userId, userId), eq(schema.backlog.gameId, gameId)),
+    where: and(
+      eq(schema.backlog.userId, userId),
+      eq(schema.backlog.gameId, gameId),
+    ),
   });
   return row ? toEntry(row) : undefined;
 }
@@ -87,10 +96,14 @@ export async function addToBacklog(input: {
   return db.transaction(async (tx) => {
     const [entry] = await tx
       .insert(schema.backlog)
-      .values({ userId: input.userId, gameId: input.gameId, status: input.status })
+      .values({
+        userId: input.userId,
+        gameId: input.gameId,
+        status: input.status,
+      })
       .returning({ id: schema.backlog.id });
 
-    if (!entry) throw new Error("insert su backlog non ha restituito la riga");
+    if (!entry) throw new Error('insert su backlog non ha restituito la riga');
 
     await tx.insert(schema.ownerships).values(
       input.ownerships.map((ownership) => ({
@@ -104,7 +117,11 @@ export async function addToBacklog(input: {
   });
 }
 
-export async function setBacklogStatus(userId: string, id: string, status: BacklogStatus) {
+export async function setBacklogStatus(
+  userId: string,
+  id: string,
+  status: BacklogStatus,
+) {
   const [row] = await db
     .update(schema.backlog)
     .set({ status })
@@ -142,7 +159,10 @@ export async function updateBacklogEntry(
 ) {
   const owned = await db.query.backlog.findFirst({
     columns: { id: true },
-    where: and(eq(schema.backlog.id, input.id), eq(schema.backlog.userId, userId)),
+    where: and(
+      eq(schema.backlog.id, input.id),
+      eq(schema.backlog.userId, userId),
+    ),
   });
   if (!owned) return null;
 
@@ -172,7 +192,9 @@ export async function updateBacklogEntry(
 
     if (tagIds === null) return;
 
-    await tx.delete(schema.backlogTags).where(eq(schema.backlogTags.backlogId, input.id));
+    await tx
+      .delete(schema.backlogTags)
+      .where(eq(schema.backlogTags.backlogId, input.id));
 
     if (tagIds.length > 0) {
       await tx
@@ -207,7 +229,11 @@ export async function addOwnershipToEntry(
   if (!owned) return null;
 
   await ensureOwnerships([
-    { backlogId: id, platformSlug: ownership.platformSlug, store: ownership.store ?? null },
+    {
+      backlogId: id,
+      platformSlug: ownership.platformSlug,
+      store: ownership.store ?? null,
+    },
   ]);
 
   return owned;
@@ -267,7 +293,10 @@ export async function ensureBacklogEntries(
       .select({ id: schema.backlog.id, gameId: schema.backlog.gameId })
       .from(schema.backlog)
       .where(
-        and(eq(schema.backlog.userId, userId), inArray(schema.backlog.gameId, mancanti)),
+        and(
+          eq(schema.backlog.userId, userId),
+          inArray(schema.backlog.gameId, mancanti),
+        ),
       );
 
     for (const row of esistenti) byGameId.set(row.gameId, row.id);
@@ -292,7 +321,7 @@ function fondiDoppioni(rows: OwnershipUpsert[]) {
   const perChiave = new Map<string, OwnershipUpsert>();
 
   for (const row of rows) {
-    const chiave = `${row.backlogId}|${row.platformSlug}|${row.store ?? ""}`;
+    const chiave = `${row.backlogId}|${row.platformSlug}|${row.store ?? ''}`;
     const gia = perChiave.get(chiave);
 
     if (!gia) {
@@ -366,7 +395,10 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           updatedAt: new Date(),
         },
       })
-      .returning({ id: schema.ownerships.id, createdAt: schema.ownerships.createdAt });
+      .returning({
+        id: schema.ownerships.id,
+        createdAt: schema.ownerships.createdAt,
+      });
 
     created += inserted.length;
   }

@@ -1,30 +1,32 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
-import { GameCover } from "@/components/game-cover";
-import { GameDuration } from "@/components/game-duration";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "@/lib/orpc";
+import { GameCover } from '@/components/game-cover';
+import { GameDuration } from '@/components/game-duration';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { api } from '@/lib/orpc';
 
 // Catalogo pubblico: "questi giochi Ludex li conosce". Volutamente anonimo —
 // non dice chi li ha aggiunti, solo che esistono.
 export default function CatalogPage() {
-  const t = useTranslations("catalog");
-  const { data, isPending, error } = useQuery(api.games.latest.queryOptions({ input: {} }));
+  const t = useTranslations('catalog');
+  const { data, isPending, error } = useQuery(
+    api.games.latest.queryOptions({ input: {} }),
+  );
 
   return (
     <main className="mx-auto grid max-w-4xl gap-6 p-6">
       <header className="grid gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground">{t("subtitle")}</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('subtitle')}</p>
       </header>
 
       {error ? (
-        <p className="text-destructive">{t("error")}</p>
+        <p className="text-destructive">{t('error')}</p>
       ) : isPending ? (
         <div className="grid gap-2">
           {Array.from({ length: 4 }).map((_, index) => (
@@ -33,7 +35,9 @@ export default function CatalogPage() {
         </div>
       ) : data.length === 0 ? (
         <Card>
-          <CardContent className="text-muted-foreground">{t("empty")}</CardContent>
+          <CardContent className="text-muted-foreground">
+            {t('empty')}
+          </CardContent>
         </Card>
       ) : (
         <ul className="grid gap-2">
@@ -52,7 +56,9 @@ export default function CatalogPage() {
                       )}
                       <GameDuration game={game} />
                       {game.igdbId === null && (
-                        <span className="text-muted-foreground">{t("unresolved")}</span>
+                        <span className="text-muted-foreground">
+                          {t('unresolved')}
+                        </span>
                       )}
                     </div>
                   </CardContent>

@@ -1,20 +1,23 @@
-import "./env";
+import './env';
 
-import { Worker } from "bullmq";
+import { Worker } from 'bullmq';
 
-import { redisConnection } from "./queue/connection";
+import { redisConnection } from './queue/connection';
 import {
   ENRICHMENT_QUEUE,
   enqueueEnrichment,
   enrichmentQueue,
   scheduleEnrichmentSweep,
   type EnrichmentJob,
-} from "./queue/enrichment";
-import { IMPORTS_QUEUE, type ImportJob } from "./queue/imports";
-import { ENRICHMENT_SOURCE_NAMES, findGamesNeedingSource } from "./services/enrichment";
-import { enrichGameFromHltb } from "./services/hltb-enrichment";
-import { enrichGameFromIgdb } from "./services/igdb-enrichment";
-import { importSteamLibrary } from "./services/steam-import";
+} from './queue/enrichment';
+import { IMPORTS_QUEUE, type ImportJob } from './queue/imports';
+import {
+  ENRICHMENT_SOURCE_NAMES,
+  findGamesNeedingSource,
+} from './services/enrichment';
+import { enrichGameFromHltb } from './services/hltb-enrichment';
+import { enrichGameFromIgdb } from './services/igdb-enrichment';
+import { importSteamLibrary } from './services/steam-import';
 
 // Secondo entrypoint di apps/api. Stesso codebase e stessi servizi di server.ts,
 // ma qui non si espone HTTP: i job non devono girare nel processo che serve le
@@ -31,14 +34,16 @@ const enrichers = {
 const worker = new Worker<EnrichmentJob>(
   ENRICHMENT_QUEUE,
   async (job) => {
-    if (job.data.type === "sweep") {
+    if (job.data.type === 'sweep') {
       // La spazzata non arricchisce: accoda. Il lavoro vero resta un job per
       // gioco e per fonte, con i suoi tentativi e il suo stato.
       let enqueued = 0;
       for (const source of ENRICHMENT_SOURCE_NAMES) {
         const games = await findGamesNeedingSource(source);
         for (const game of games) await enqueueEnrichment(source, game.id);
-        console.log(`[enrichment] spazzata ${source}: ${games.length} giochi accodati`);
+        console.log(
+          `[enrichment] spazzata ${source}: ${games.length} giochi accodati`,
+        );
         enqueued += games.length;
       }
       return { enqueued };
@@ -59,7 +64,7 @@ const worker = new Worker<EnrichmentJob>(
   },
 );
 
-worker.on("failed", (job, error) => {
+worker.on('failed', (job, error) => {
   console.error(`[enrichment] job ${job?.id} fallito:`, error.message);
 });
 
@@ -84,20 +89,20 @@ const importsWorker = new Worker<ImportJob>(
   },
 );
 
-importsWorker.on("failed", (job, error) => {
+importsWorker.on('failed', (job, error) => {
   console.error(`[import] job ${job?.id} fallito:`, error.message);
 });
 
 // La spazzata era registrata come `igdb-sweep` quando IGDB era l'unica fonte.
 // Lo scheduler vecchio vive in Redis e continuerebbe a sparare per conto suo
 // accanto al nuovo: si toglie qui, non serve ricordarsene a mano.
-await enrichmentQueue.removeJobScheduler("igdb-sweep");
+await enrichmentQueue.removeJobScheduler('igdb-sweep');
 await scheduleEnrichmentSweep();
 
-console.log("worker in ascolto sulle code enrichment e imports");
+console.log('worker in ascolto sulle code enrichment e imports');
 
 // Senza chiusura pulita i job in corso verrebbero persi e riprovati inutilmente.
-for (const signal of ["SIGINT", "SIGTERM"] as const) {
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, async () => {
     console.log(`\n${signal}: chiudo i worker…`);
     await Promise.all([worker.close(), importsWorker.close()]);

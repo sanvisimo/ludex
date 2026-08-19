@@ -4,9 +4,13 @@
 //
 // I formati sono quelli di IGDB: t_cover_small (90x128), t_cover_big (264x374),
 // t_720p (1280x720). Il suffisso `_2x` raddoppia per gli schermi ad alta densita'.
-export type CoverSize = "cover_small" | "cover_big" | "720p";
+export type CoverSize = 'cover_small' | 'cover_big' | '720p';
 
-export function igdbCoverUrl(imageId: string, size: CoverSize = "cover_big", retina = true) {
-  const suffix = retina ? "_2x" : "";
+export function igdbCoverUrl(
+  imageId: string,
+  size: CoverSize = 'cover_big',
+  retina = true,
+) {
+  const suffix = retina ? '_2x' : '';
   return `https://images.igdb.com/igdb/image/upload/t_${size}${suffix}/${imageId}.jpg`;
 }

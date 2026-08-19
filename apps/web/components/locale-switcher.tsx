@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { LanguagesIcon } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { LanguagesIcon } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { locales } from "@/i18n/config";
-import { setLocale } from "@/i18n/locale";
+} from '@/components/ui/dropdown-menu';
+import { locales } from '@/i18n/config';
+import { setLocale } from '@/i18n/locale';
 
 export function LocaleSwitcher() {
-  const t = useTranslations("locale");
+  const t = useTranslations('locale');
   const current = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -37,7 +37,12 @@ export function LocaleSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="icon" aria-label={t("label")} disabled={pending}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t('label')}
+            disabled={pending}
+          >
             <LanguagesIcon />
           </Button>
         }

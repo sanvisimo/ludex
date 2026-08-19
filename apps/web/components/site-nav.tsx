@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { signOut, useSession } from "@repo/auth/client";
-import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { signOut, useSession } from '@repo/auth/client';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-import { LocaleSwitcher } from "@/components/locale-switcher";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
+import { LocaleSwitcher } from '@/components/locale-switcher';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { Button } from '@/components/ui/button';
 
 export function SiteNav() {
-  const t = useTranslations("nav");
+  const t = useTranslations('nav');
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
@@ -30,30 +30,42 @@ export function SiteNav() {
           {/* isPending evita che i bottoni da anonimo lampeggino al primo render. */}
           {isPending ? null : session ? (
             <>
-              <Button variant="ghost" nativeButton={false} render={<Link href="/backlog" />}>
-                {t("backlog")}
+              <Button
+                variant="ghost"
+                nativeButton={false}
+                render={<Link href="/backlog" />}
+              >
+                {t('backlog')}
               </Button>
-              <Button variant="ghost" nativeButton={false} render={<Link href="/account" />}>
-                {t("account")}
+              <Button
+                variant="ghost"
+                nativeButton={false}
+                render={<Link href="/account" />}
+              >
+                {t('account')}
               </Button>
               <Button
                 variant="outline"
                 onClick={async () => {
                   await signOut();
-                  router.push("/");
+                  router.push('/');
                   router.refresh();
                 }}
               >
-                {t("signOut")}
+                {t('signOut')}
               </Button>
             </>
           ) : (
             <>
-              <Button variant="ghost" nativeButton={false} render={<Link href="/login" />}>
-                {t("signIn")}
+              <Button
+                variant="ghost"
+                nativeButton={false}
+                render={<Link href="/login" />}
+              >
+                {t('signIn')}
               </Button>
               <Button nativeButton={false} render={<Link href="/register" />}>
-                {t("signUp")}
+                {t('signUp')}
               </Button>
             </>
           )}

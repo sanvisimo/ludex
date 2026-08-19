@@ -9,31 +9,31 @@
 // una volta sola: se si aggiunge uno stato qui, la migration lo vede.
 
 export const backlogStatusValues = [
-  "backlog",
-  "playing",
-  "played",
-  "dropped",
-  "excluded",
+  'backlog',
+  'playing',
+  'played',
+  'dropped',
+  'excluded',
 ] as const;
 
 export const storeValues = [
-  "steam",
-  "gog",
-  "epic",
-  "ea",
-  "battlenet",
-  "amazon",
-  "psn",
-  "xbox",
-  "nintendo",
+  'steam',
+  'gog',
+  'epic',
+  'ea',
+  'battlenet',
+  'amazon',
+  'psn',
+  'xbox',
+  'nintendo',
 ] as const;
 
 // Tipi di attributo IGDB: generi, temi, modalita di gioco, prospettive.
 export const attributeKindValues = [
-  "genre",
-  "theme",
-  "game_mode",
-  "player_perspective",
+  'genre',
+  'theme',
+  'game_mode',
+  'player_perspective',
 ] as const;
 
 // Tag e categorie personali dell'utente. Sono due tipi della stessa cosa — una
@@ -43,7 +43,7 @@ export const attributeKindValues = [
 // La distinzione è d'uso, non di forma: la categoria raggruppa ("GDR lunghi"),
 // il tag qualifica ("quando sono stanco"). Tenerle separate serve allo step 7,
 // dove filtrare per categoria e filtrare per tag sono due gesti diversi.
-export const userTagKindValues = ["tag", "category"] as const;
+export const userTagKindValues = ['tag', 'category'] as const;
 
 export type BacklogStatus = (typeof backlogStatusValues)[number];
 export type UserTagKind = (typeof userTagKindValues)[number];

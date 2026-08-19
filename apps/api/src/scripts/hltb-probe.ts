@@ -1,11 +1,11 @@
-import "../env";
+import '../env';
 
-import { db, schema } from "@repo/db";
-import { and, eq, isNotNull, sql } from "@repo/db/orm";
+import { db, schema } from '@repo/db';
+import { and, eq, isNotNull, sql } from '@repo/db/orm';
 
-import { fetchHltbGameDetail } from "../external/hltb";
-import { findHltbCandidates } from "../services/hltb-enrichment";
-import { pickByName } from "../services/hltb-match";
+import { fetchHltbGameDetail } from '../external/hltb';
+import { findHltbCandidates } from '../services/hltb-enrichment';
+import { pickByName } from '../services/hltb-match';
 
 // Giro a vuoto del match HLTB: cerca, punteggia, **non scrive niente**.
 //
@@ -24,8 +24,16 @@ const cercaTitolo = arg !== undefined && Number.isNaN(Number(arg));
 
 type Riga = { id: string | null; name: string; firstReleaseDate: Date | null };
 
-const giochi: Riga[] = cercaTitolo
-  ? [{ id: null, name: arg, firstReleaseDate: null }]
+let giochi: Riga[] = cercaTitolo
+  ? await db
+      .select({
+        id: schema.games.id,
+        name: schema.games.name,
+        firstReleaseDate: schema.games.firstReleaseDate,
+      })
+      .from(schema.games)
+      .where(eq(schema.games.name, arg))
+      .limit(1)
   : await db
       .select({
         id: schema.games.id,
@@ -33,16 +41,25 @@ const giochi: Riga[] = cercaTitolo
         firstReleaseDate: schema.games.firstReleaseDate,
       })
       .from(schema.games)
-      .where(and(isNotNull(schema.games.igdbId), isNotNull(schema.games.firstReleaseDate)))
+      .where(
+        and(
+          isNotNull(schema.games.igdbId),
+          isNotNull(schema.games.firstReleaseDate),
+        ),
+      )
       .orderBy(sql`random()`)
       .limit(Number(arg ?? 10));
+
+if (!giochi.length && cercaTitolo)
+  giochi = [{ id: null, name: arg, firstReleaseDate: null }];
 
 let agganciati = 0;
 const scartati: string[] = [];
 
 for (const gioco of giochi) {
   const anno = gioco.firstReleaseDate?.getUTCFullYear() ?? null;
-  const { ranked, shortened } = await findHltbCandidates(gioco.name, anno);
+  console.log(`Trying ${gioco.name} (${anno})`);
+  const { ranked, searchedAs } = await findHltbCandidates(gioco.name, anno);
   const scelto = pickByName(ranked);
 
   const appIds = gioco.id
@@ -53,22 +70,22 @@ for (const gioco of giochi) {
           .where(
             and(
               eq(schema.externalIds.gameId, gioco.id),
-              eq(schema.externalIds.source, "steam"),
+              eq(schema.externalIds.source, 'steam'),
             ),
           )
       ).map((row) => row.externalId)
     : [];
 
   console.log(
-    `\n${gioco.name}${anno ? ` (${anno})` : ""}` +
-      (shortened ? ` → secondo tentativo su "${shortened}"` : ""),
+    `\n${gioco.name}${anno ? ` (${anno})` : ''}` +
+      (searchedAs ? ` → trovato cercando "${searchedAs}"` : ''),
   );
   for (const [indice, riga] of ranked.slice(0, 3).entries()) {
-    const marchio = scelto?.hit.hltbId === riga.hit.hltbId ? "→" : " ";
+    const marchio = scelto?.hit.hltbId === riga.hit.hltbId ? '→' : ' ';
     console.log(
       `  ${marchio} ${riga.score.toFixed(2)}  ${String(riga.hit.hltbId).padEnd(7)} ` +
-        `${riga.hit.name}${riga.hit.releaseYear ? ` (${riga.hit.releaseYear})` : ""}` +
-        `${riga.hit.type && riga.hit.type !== "game" ? ` [${riga.hit.type}]` : ""}`,
+        `${riga.hit.name}${riga.hit.releaseYear ? ` (${riga.hit.releaseYear})` : ''}` +
+        `${riga.hit.type && riga.hit.type !== 'game' ? ` [${riga.hit.type}]` : ''}`,
     );
     // La verifica vera dell'import: gli appid della pagina HLTB contro i nostri.
     // Qui si guarda solo il primo candidato, e solo per mostrare se
@@ -78,10 +95,10 @@ for (const gioco of giochi) {
       const suoi = detail?.steamAppIds ?? [];
       const esito =
         suoi.length === 0
-          ? "HLTB non dichiara appid"
+          ? 'HLTB non dichiara appid'
           : suoi.some((appId) => appIds.includes(appId))
-            ? `appid ${appIds.join(",")} confermato`
-            : `appid ${suoi.join(",")} ≠ ${appIds.join(",")} — nessuna conferma`;
+            ? `appid ${appIds.join(',')} confermato`
+            : `appid ${suoi.join(',')} ≠ ${appIds.join(',')} — nessuna conferma`;
       console.log(`      steam: ${esito}`);
     }
   }
@@ -92,7 +109,7 @@ for (const gioco of giochi) {
 
 console.log(`\n${agganciati}/${giochi.length} agganciati per nome e anno`);
 if (scartati.length > 0) {
-  console.log("da sistemare:");
+  console.log('da sistemare:');
   for (const nome of scartati) console.log(`  ${nome}`);
 }
 

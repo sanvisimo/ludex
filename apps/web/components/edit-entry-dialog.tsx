@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import type {
   BacklogEntry,
@@ -6,18 +6,18 @@ import type {
   OwnershipInput,
   Store,
   UserTagKind,
-} from "@repo/contracts";
-import { backlogStatusValues, storeValues } from "@repo/contracts";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+} from '@repo/contracts';
+import { backlogStatusValues, storeValues } from '@repo/contracts';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
-import { OwnershipBadges, ownershipKey } from "@/components/ownership-badges";
-import { PlatformCombobox } from "@/components/platform-combobox";
-import { RatingStars } from "@/components/rating-stars";
-import { TagPicker } from "@/components/tag-picker";
-import { Button } from "@/components/ui/button";
+import { OwnershipBadges, ownershipKey } from '@/components/ownership-badges';
+import { PlatformCombobox } from '@/components/platform-combobox';
+import { RatingStars } from '@/components/rating-stars';
+import { TagPicker } from '@/components/tag-picker';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -25,21 +25,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { useApiErrorMessage } from "@/lib/api-error";
-import { useStatusLabels, useStoreLabels } from "@/lib/labels";
-import { api, client } from "@/lib/orpc";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useApiErrorMessage } from '@/lib/api-error';
+import { useStatusLabels, useStoreLabels } from '@/lib/labels';
+import { api, client } from '@/lib/orpc';
 
-const NO_STORE = "__nessuno__";
+const NO_STORE = '__nessuno__';
 
 function namesOf(entry: BacklogEntry | null, kind: UserTagKind) {
   return (entry?.tags ?? [])
@@ -64,15 +64,15 @@ export function EditEntryDialog({
   entry: BacklogEntry | null;
   onOpenChange: (open: boolean) => void;
 }) {
-  const t = useTranslations("editEntry");
+  const t = useTranslations('editEntry');
   const statusLabels = useStatusLabels();
   const storeLabels = useStoreLabels();
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
 
-  const [status, setStatus] = useState<BacklogStatus>("backlog");
+  const [status, setStatus] = useState<BacklogStatus>('backlog');
   const [rating, setRating] = useState<number | null>(null);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [pending, setPending] = useState<OwnershipInput[]>([]);
@@ -86,9 +86,9 @@ export function EditEntryDialog({
     if (!entry) return;
     setStatus(entry.status);
     setRating(entry.rating);
-    setNotes(entry.notes ?? "");
-    setTags(namesOf(entry, "tag"));
-    setCategories(namesOf(entry, "category"));
+    setNotes(entry.notes ?? '');
+    setTags(namesOf(entry, 'tag'));
+    setCategories(namesOf(entry, 'category'));
     setPending([]);
     setPlatformSlug(null);
     setStore(NO_STORE);
@@ -114,8 +114,8 @@ export function EditEntryDialog({
         rating,
         notes,
         tags: [
-          ...tags.map((name) => ({ kind: "tag" as const, name })),
-          ...categories.map((name) => ({ kind: "category" as const, name })),
+          ...tags.map((name) => ({ kind: 'tag' as const, name })),
+          ...categories.map((name) => ({ kind: 'category' as const, name })),
         ],
       });
 
@@ -132,11 +132,11 @@ export function EditEntryDialog({
         // Il vocabolario può essere cresciuto: i suggerimenti devono saperlo.
         queryClient.invalidateQueries({ queryKey: api.tags.list.key() }),
       ]);
-      toast.success(t("saved"));
+      toast.success(t('saved'));
       onOpenChange(false);
     },
     onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t("saveFailed") })),
+      toast.error(errorMessage(error, { fallback: t('saveFailed') })),
   });
 
   const alreadyOwned = new Set((entry?.ownerships ?? []).map(ownershipKey));
@@ -155,7 +155,11 @@ export function EditEntryDialog({
     // Aggiungere un possesso che c'è già è innocuo lato server — la scrittura è
     // idempotente — ma mostrarlo due volte nell'elenco sarebbe una bugia.
     const key = ownershipKey(chosen);
-    if (alreadyOwned.has(key) || pending.some((row) => ownershipKey(row) === key)) return;
+    if (
+      alreadyOwned.has(key) ||
+      pending.some((row) => ownershipKey(row) === key)
+    )
+      return;
 
     setPending((current) => [...current, chosen]);
     setPlatformSlug(null);
@@ -166,13 +170,13 @@ export function EditEntryDialog({
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{entry?.game.name ?? ""}</DialogDescription>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>{entry?.game.name ?? ''}</DialogDescription>
         </DialogHeader>
 
         <div className="grid max-h-[60vh] gap-4 overflow-y-auto pr-1">
           <div className="grid gap-2">
-            <Label>{t("statusLabel")}</Label>
+            <Label>{t('statusLabel')}</Label>
             <Select
               items={statusLabels}
               value={status}
@@ -192,23 +196,23 @@ export function EditEntryDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label>{t("ratingLabel")}</Label>
+            <Label>{t('ratingLabel')}</Label>
             <RatingStars value={rating} onChange={setRating} />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="note">{t("notesLabel")}</Label>
+            <Label htmlFor="note">{t('notesLabel')}</Label>
             <Textarea
               id="note"
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
-              placeholder={t("notesPlaceholder")}
+              placeholder={t('notesPlaceholder')}
               maxLength={2000}
             />
           </div>
 
           <div className="grid gap-2">
-            <Label>{t("categoriesLabel")}</Label>
+            <Label>{t('categoriesLabel')}</Label>
             <TagPicker
               kind="category"
               value={categories}
@@ -218,7 +222,7 @@ export function EditEntryDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label>{t("tagsLabel")}</Label>
+            <Label>{t('tagsLabel')}</Label>
             <TagPicker
               kind="tag"
               value={tags}
@@ -228,13 +232,13 @@ export function EditEntryDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label>{t("ownershipLabel")}</Label>
+            <Label>{t('ownershipLabel')}</Label>
             <OwnershipBadges ownerships={entry?.ownerships ?? []} />
 
             {pending.length > 0 && (
               <div className="grid gap-1">
                 <span className="text-muted-foreground">
-                  {t("pendingOwnerships", { count: pending.length })}
+                  {t('pendingOwnerships', { count: pending.length })}
                 </span>
                 {/* Solo queste hanno la x: sono aggiunte non ancora scritte, e
                     disfarle vuol dire non scriverle. Togliere un possesso già
@@ -243,7 +247,9 @@ export function EditEntryDialog({
                   ownerships={pending}
                   onRemove={(row) =>
                     setPending((current) =>
-                      current.filter((item) => ownershipKey(item) !== ownershipKey(row)),
+                      current.filter(
+                        (item) => ownershipKey(item) !== ownershipKey(row),
+                      ),
                     )
                   }
                 />
@@ -259,7 +265,7 @@ export function EditEntryDialog({
                 />
               </div>
               <Select
-                items={{ [NO_STORE]: t("noStore"), ...storeLabels }}
+                items={{ [NO_STORE]: t('noStore'), ...storeLabels }}
                 value={store}
                 onValueChange={(next) => setStore(next as string)}
               >
@@ -267,7 +273,7 @@ export function EditEntryDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NO_STORE}>{t("noStore")}</SelectItem>
+                  <SelectItem value={NO_STORE}>{t('noStore')}</SelectItem>
                   {storeValues.map((value) => (
                     <SelectItem key={value} value={value}>
                       {storeLabels[value]}
@@ -282,20 +288,20 @@ export function EditEntryDialog({
                 disabled={platformSlug === null}
                 onClick={addPending}
               >
-                {t("addPlatform")}
+                {t('addPlatform')}
               </Button>
             </div>
 
             {/* Togliere un possesso già salvato non c'è: cancellarlo non
                 basterebbe, perché il prossimo import lo ricrea. Serve prima una
                 logica di scarto. */}
-            <p className="text-muted-foreground">{t("ownershipHint")}</p>
+            <p className="text-muted-foreground">{t('ownershipHint')}</p>
           </div>
         </div>
 
         <DialogFooter>
           <Button onClick={() => save.mutate()} disabled={save.isPending}>
-            {save.isPending ? t("saving") : t("save")}
+            {save.isPending ? t('saving') : t('save')}
           </Button>
         </DialogFooter>
       </DialogContent>

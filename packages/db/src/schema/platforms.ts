@@ -1,6 +1,6 @@
-import { integer, pgTable, text } from "drizzle-orm/pg-core";
+import { integer, pgTable, text } from 'drizzle-orm/pg-core';
 
-import { timestamps } from "./timestamps";
+import { timestamps } from './timestamps';
 
 // Lista di riferimento presa da Playnite (source/Playnite/Emulation/Platforms.yaml),
 // 96 voci, seedata dalla migration che crea la tabella. Lo slug di Playnite fa da
@@ -30,9 +30,9 @@ import { timestamps } from "./timestamps";
 // La relazione Playnite → IGDB è quindi N:1 in generale. Finora `+3` è l'unico
 // caso su 96 righe, quindi non vale un modello diverso; se diventassero cinque,
 // sì.
-export const platforms = pgTable("platforms", {
-  slug: text("slug").primaryKey(),
-  name: text("name").notNull(),
-  igdbId: integer("igdb_id").unique(),
+export const platforms = pgTable('platforms', {
+  slug: text('slug').primaryKey(),
+  name: text('name').notNull(),
+  igdbId: integer('igdb_id').unique(),
   ...timestamps,
 });

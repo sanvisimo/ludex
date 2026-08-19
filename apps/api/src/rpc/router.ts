@@ -1,4 +1,4 @@
-import { ORPCError } from "@orpc/server";
+import { ORPCError } from '@orpc/server';
 
 import {
   addOwnershipToEntry,
@@ -9,7 +9,7 @@ import {
   removeFromBacklog,
   setBacklogStatus,
   updateBacklogEntry,
-} from "../services/backlog";
+} from '../services/backlog';
 import {
   createGame,
   findGameById,
@@ -17,22 +17,25 @@ import {
   listLatestGames,
   resolveGameFromIgdb,
   searchGames,
-} from "../services/games";
-import { findExistingPlatformSlugs, listPlatforms } from "../services/platforms";
-import { deleteUserTag, listUserTags } from "../services/tags";
+} from '../services/games';
+import {
+  findExistingPlatformSlugs,
+  listPlatforms,
+} from '../services/platforms';
+import { deleteUserTag, listUserTags } from '../services/tags';
 import {
   findSteamAccount,
   linkSteamAccount,
   listStoreAccounts,
   unlinkSteamAccount,
-} from "../services/store-accounts";
+} from '../services/store-accounts';
 import {
   dismissUnresolvedImport,
   listUnresolvedImports,
   resolveUnresolvedImport,
-} from "../services/unresolved-imports";
-import { enqueueSteamImport, isSteamImportRunning } from "../queue/imports";
-import { authed, maybeAuthed, os } from "./context";
+} from '../services/unresolved-imports';
+import { enqueueSteamImport, isSteamImportRunning } from '../queue/imports';
+import { authed, maybeAuthed, os } from './context';
 
 export const router = os.router({
   platforms: {
@@ -40,63 +43,87 @@ export const router = os.router({
   },
 
   games: {
-    latest: os.games.latest.handler(({ input }) => listLatestGames(input.limit)),
+    latest: os.games.latest.handler(({ input }) =>
+      listLatestGames(input.limit),
+    ),
 
     byId: os.games.byId.use(maybeAuthed).handler(async ({ input, context }) => {
       const game = await findGameDetailById(input.id);
-      if (!game) throw new ORPCError("NOT_FOUND", { message: "Gioco inesistente" });
+      if (!game)
+        throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
 
       // Da sloggati la scheda esiste comunque, semplicemente senza stato personale.
-      const entry = context.user ? ((await findEntryByGame(context.user.id, game.id)) ?? null) : null;
+      const entry = context.user
+        ? ((await findEntryByGame(context.user.id, game.id)) ?? null)
+        : null;
 
       return { game, entry };
     }),
 
     create: os.games.create.use(authed).handler(async ({ input }) => {
       const game = await createGame(input.name);
-      if (!game) throw new ORPCError("INTERNAL_SERVER_ERROR");
+      if (!game) throw new ORPCError('INTERNAL_SERVER_ERROR');
       return game;
     }),
 
-    search: os.games.search.use(authed).handler(({ input }) => searchGames(input.query)),
+    search: os.games.search
+      .use(authed)
+      .handler(({ input }) => searchGames(input.query)),
 
     fromIgdb: os.games.fromIgdb.use(authed).handler(async ({ input }) => {
       const game = await resolveGameFromIgdb(input.igdbId);
-      if (!game) throw new ORPCError("NOT_FOUND", { message: "IGDB non conosce questo id" });
+      if (!game)
+        throw new ORPCError('NOT_FOUND', {
+          message: 'IGDB non conosce questo id',
+        });
       return game;
     }),
   },
 
   accounts: {
-    list: os.accounts.list.use(authed).handler(({ context }) => listStoreAccounts(context.user.id)),
+    list: os.accounts.list
+      .use(authed)
+      .handler(({ context }) => listStoreAccounts(context.user.id)),
 
-    linkSteam: os.accounts.linkSteam.use(authed).handler(async ({ input, context }) => {
-      const account = await linkSteamAccount(context.user.id, input.profile);
+    linkSteam: os.accounts.linkSteam
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const account = await linkSteamAccount(context.user.id, input.profile);
 
-      // Collegare e importare sono la stessa azione per l'utente: non ha senso
-      // fargli premere un secondo bottone per avere i suoi giochi.
-      await enqueueSteamImport(context.user.id, account.externalAccountId);
+        // Collegare e importare sono la stessa azione per l'utente: non ha senso
+        // fargli premere un secondo bottone per avere i suoi giochi.
+        await enqueueSteamImport(context.user.id, account.externalAccountId);
 
-      return { ...account, syncing: true };
-    }),
+        return { ...account, syncing: true };
+      }),
 
-    unlinkSteam: os.accounts.unlinkSteam.use(authed).handler(async ({ context }) => {
-      const removed = await unlinkSteamAccount(context.user.id);
-      if (!removed) throw new ORPCError("NOT_FOUND", { message: "Nessun account Steam collegato" });
-    }),
+    unlinkSteam: os.accounts.unlinkSteam
+      .use(authed)
+      .handler(async ({ context }) => {
+        const removed = await unlinkSteamAccount(context.user.id);
+        if (!removed)
+          throw new ORPCError('NOT_FOUND', {
+            message: 'Nessun account Steam collegato',
+          });
+      }),
 
-    syncSteam: os.accounts.syncSteam.use(authed).handler(async ({ context }) => {
-      const account = await findSteamAccount(context.user.id);
-      if (!account) throw new ORPCError("NOT_FOUND", { message: "Nessun account Steam collegato" });
+    syncSteam: os.accounts.syncSteam
+      .use(authed)
+      .handler(async ({ context }) => {
+        const account = await findSteamAccount(context.user.id);
+        if (!account)
+          throw new ORPCError('NOT_FOUND', {
+            message: 'Nessun account Steam collegato',
+          });
 
-      // La coda deduplica per utente, quindi due click non fanno due import; il
-      // controllo qui serve solo a dirlo, invece di far finta di aver accodato.
-      if (await isSteamImportRunning(context.user.id)) {
-        throw new ORPCError("CONFLICT", { message: "Import già in corso" });
-      }
+        // La coda deduplica per utente, quindi due click non fanno due import; il
+        // controllo qui serve solo a dirlo, invece di far finta di aver accodato.
+        if (await isSteamImportRunning(context.user.id)) {
+          throw new ORPCError('CONFLICT', { message: 'Import già in corso' });
+        }
 
-      await enqueueSteamImport(context.user.id, account.externalAccountId);
-    }),
+        await enqueueSteamImport(context.user.id, account.externalAccountId);
+      }),
   },
 
   imports: {
@@ -104,46 +131,67 @@ export const router = os.router({
       .use(authed)
       .handler(({ context }) => listUnresolvedImports(context.user.id)),
 
-    resolve: os.imports.resolve.use(authed).handler(async ({ input, context }) => {
-      const esito = await resolveUnresolvedImport(context.user.id, input.id, input.igdbId);
+    resolve: os.imports.resolve
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const esito = await resolveUnresolvedImport(
+          context.user.id,
+          input.id,
+          input.igdbId,
+        );
 
-      if (esito.status === "not_found") {
-        throw new ORPCError("NOT_FOUND", { message: "Voce inesistente" });
-      }
-      if (esito.status === "unknown_igdb_id") {
-        throw new ORPCError("NOT_FOUND", { message: "IGDB non conosce questo id" });
-      }
-      if (!esito.entry) throw new ORPCError("INTERNAL_SERVER_ERROR");
+        if (esito.status === 'not_found') {
+          throw new ORPCError('NOT_FOUND', { message: 'Voce inesistente' });
+        }
+        if (esito.status === 'unknown_igdb_id') {
+          throw new ORPCError('NOT_FOUND', {
+            message: 'IGDB non conosce questo id',
+          });
+        }
+        if (!esito.entry) throw new ORPCError('INTERNAL_SERVER_ERROR');
 
-      return esito.entry;
-    }),
+        return esito.entry;
+      }),
 
-    dismiss: os.imports.dismiss.use(authed).handler(async ({ input, context }) => {
-      const removed = await dismissUnresolvedImport(context.user.id, input.id);
-      if (!removed) throw new ORPCError("NOT_FOUND", { message: "Voce inesistente" });
-    }),
+    dismiss: os.imports.dismiss
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const removed = await dismissUnresolvedImport(
+          context.user.id,
+          input.id,
+        );
+        if (!removed)
+          throw new ORPCError('NOT_FOUND', { message: 'Voce inesistente' });
+      }),
   },
 
   tags: {
-    list: os.tags.list.use(authed).handler(({ context }) => listUserTags(context.user.id)),
+    list: os.tags.list
+      .use(authed)
+      .handler(({ context }) => listUserTags(context.user.id)),
 
     remove: os.tags.remove.use(authed).handler(async ({ input, context }) => {
       const removed = await deleteUserTag(context.user.id, input.id);
-      if (!removed) throw new ORPCError("NOT_FOUND", { message: "Tag inesistente" });
+      if (!removed)
+        throw new ORPCError('NOT_FOUND', { message: 'Tag inesistente' });
     }),
   },
 
   backlog: {
-    list: os.backlog.list.use(authed).handler(({ context }) => listBacklog(context.user.id)),
+    list: os.backlog.list
+      .use(authed)
+      .handler(({ context }) => listBacklog(context.user.id)),
 
     add: os.backlog.add.use(authed).handler(async ({ input, context }) => {
       const game = await findGameById(input.gameId);
-      if (!game) throw new ORPCError("NOT_FOUND", { message: "Gioco inesistente" });
+      if (!game)
+        throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
 
       // Una riga per gioco/utente: il secondo inserimento è un conflitto, non un
       // duplicato silenzioso.
       const existing = await findEntryByGame(context.user.id, input.gameId);
-      if (existing) throw new ORPCError("CONFLICT", { message: "Gioco già nel backlog" });
+      if (existing)
+        throw new ORPCError('CONFLICT', { message: 'Gioco già nel backlog' });
 
       // Validato qui e non lasciato alla foreign key, per dare un messaggio
       // sensato invece di un errore Postgres.
@@ -151,8 +199,8 @@ export const router = os.router({
       const known = await findExistingPlatformSlugs(slugs);
       const unknown = slugs.filter((slug) => !known.has(slug));
       if (unknown.length > 0) {
-        throw new ORPCError("BAD_REQUEST", {
-          message: `Piattaforme sconosciute: ${unknown.join(", ")}`,
+        throw new ORPCError('BAD_REQUEST', {
+          message: `Piattaforme sconosciute: ${unknown.join(', ')}`,
         });
       }
 
@@ -164,50 +212,72 @@ export const router = os.router({
       });
 
       const entry = await findEntryById(context.user.id, id);
-      if (!entry) throw new ORPCError("INTERNAL_SERVER_ERROR");
+      if (!entry) throw new ORPCError('INTERNAL_SERVER_ERROR');
       return entry;
     }),
 
-    setStatus: os.backlog.setStatus.use(authed).handler(async ({ input, context }) => {
-      const updated = await setBacklogStatus(context.user.id, input.id, input.status);
-      if (!updated) throw new ORPCError("NOT_FOUND", { message: "Riga inesistente" });
+    setStatus: os.backlog.setStatus
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const updated = await setBacklogStatus(
+          context.user.id,
+          input.id,
+          input.status,
+        );
+        if (!updated)
+          throw new ORPCError('NOT_FOUND', { message: 'Riga inesistente' });
 
-      const entry = await findEntryById(context.user.id, input.id);
-      if (!entry) throw new ORPCError("INTERNAL_SERVER_ERROR");
-      return entry;
-    }),
+        const entry = await findEntryById(context.user.id, input.id);
+        if (!entry) throw new ORPCError('INTERNAL_SERVER_ERROR');
+        return entry;
+      }),
 
-    update: os.backlog.update.use(authed).handler(async ({ input, context }) => {
-      const updated = await updateBacklogEntry(context.user.id, input);
-      if (!updated) throw new ORPCError("NOT_FOUND", { message: "Riga inesistente" });
+    update: os.backlog.update
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const updated = await updateBacklogEntry(context.user.id, input);
+        if (!updated)
+          throw new ORPCError('NOT_FOUND', { message: 'Riga inesistente' });
 
-      const entry = await findEntryById(context.user.id, input.id);
-      if (!entry) throw new ORPCError("INTERNAL_SERVER_ERROR");
-      return entry;
-    }),
+        const entry = await findEntryById(context.user.id, input.id);
+        if (!entry) throw new ORPCError('INTERNAL_SERVER_ERROR');
+        return entry;
+      }),
 
-    addOwnership: os.backlog.addOwnership.use(authed).handler(async ({ input, context }) => {
-      // Validata qui e non lasciata alla foreign key, come in `add`: un errore
-      // Postgres grezzo non è un messaggio da mostrare a nessuno.
-      const known = await findExistingPlatformSlugs([input.ownership.platformSlug]);
-      if (!known.has(input.ownership.platformSlug)) {
-        throw new ORPCError("BAD_REQUEST", {
-          message: `Piattaforme sconosciute: ${input.ownership.platformSlug}`,
-        });
-      }
+    addOwnership: os.backlog.addOwnership
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        // Validata qui e non lasciata alla foreign key, come in `add`: un errore
+        // Postgres grezzo non è un messaggio da mostrare a nessuno.
+        const known = await findExistingPlatformSlugs([
+          input.ownership.platformSlug,
+        ]);
+        if (!known.has(input.ownership.platformSlug)) {
+          throw new ORPCError('BAD_REQUEST', {
+            message: `Piattaforme sconosciute: ${input.ownership.platformSlug}`,
+          });
+        }
 
-      const added = await addOwnershipToEntry(context.user.id, input.id, input.ownership);
-      if (!added) throw new ORPCError("NOT_FOUND", { message: "Riga inesistente" });
+        const added = await addOwnershipToEntry(
+          context.user.id,
+          input.id,
+          input.ownership,
+        );
+        if (!added)
+          throw new ORPCError('NOT_FOUND', { message: 'Riga inesistente' });
 
-      const entry = await findEntryById(context.user.id, input.id);
-      if (!entry) throw new ORPCError("INTERNAL_SERVER_ERROR");
-      return entry;
-    }),
+        const entry = await findEntryById(context.user.id, input.id);
+        if (!entry) throw new ORPCError('INTERNAL_SERVER_ERROR');
+        return entry;
+      }),
 
-    remove: os.backlog.remove.use(authed).handler(async ({ input, context }) => {
-      const removed = await removeFromBacklog(context.user.id, input.id);
-      if (!removed) throw new ORPCError("NOT_FOUND", { message: "Riga inesistente" });
-    }),
+    remove: os.backlog.remove
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const removed = await removeFromBacklog(context.user.id, input.id);
+        if (!removed)
+          throw new ORPCError('NOT_FOUND', { message: 'Riga inesistente' });
+      }),
   },
 });
 
