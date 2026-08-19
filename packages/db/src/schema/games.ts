@@ -17,7 +17,7 @@ import { timestamps } from './timestamps';
 // Negozi da cui un gioco può provenire. Serve a due cose che oggi hanno la stessa
 // lista: da dove si lancia il gioco (`ownerships.store`) e in che namespace vive
 // un id esterno (`external_ids.source`). Quando arriveranno sorgenti che non sono
-// negozi — HLTB e OpenCritic, step 3 e 6 — `external_ids.source` vorrà un enum
+// negozi — HLTB e OpenCritic, step 6 e 8 — `external_ids.source` vorrà un enum
 // suo e le due cose si separeranno.
 //
 // I valori arrivano da @repo/contracts perché servono anche a web e mobile, che
@@ -66,7 +66,7 @@ export const games = pgTable(
 
     // Quante segnalazioni stanno dietro ciascuna media. Non è statistica per la
     // statistica: una durata con tre segnalazioni è rumore e una con tremila no,
-    // e allo step 7 le due cose non possono pesare uguale. I quattro conteggi
+    // e allo step 12 le due cose non possono pesare uguale. I quattro conteggi
     // divergono parecchio sullo stesso gioco (Hollow Knight: 2739 sulla storia
     // principale, 9418 sul totale), quindi non se ne può tenere uno solo.
     hltbMainCount: integer('hltb_main_count'),
@@ -78,8 +78,9 @@ export const games = pgTable(
     // "non ha una fine" da "durata non ancora presa", che senza sarebbero la
     // stessa colonna vuota — e soprattutto a non leggere come durata un numero
     // che durata non è: Counter-Strike 2 riporta 143 ore di "storia
-    // principale", che sono tempo investito. Come trattarli lo decide lo step 7;
-    // qui si salva il dato grezzo e ciò che serve a interpretarlo.
+    // principale", che sono tempo investito. Come trattarli l'ha deciso lo
+    // step 7: il filtro sulla durata lascia fuori chi una fine non ce l'ha. Qui
+    // si salva il dato grezzo e ciò che serve a interpretarlo.
     hltbHasSolo: boolean('hltb_has_solo'),
     hltbHasCoop: boolean('hltb_has_coop'),
     hltbHasVersus: boolean('hltb_has_versus'),

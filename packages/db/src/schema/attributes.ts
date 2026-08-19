@@ -21,7 +21,7 @@ import { timestamps } from './timestamps';
 //
 // Da non confondere con `user_tags`: quelli hanno la stessa forma ma sono scoped
 // per utente e vivono lato `backlog`. Questi sono attributi del gioco, uguali per
-// tutti, e alimentano i filtri e (allo step 7) l'embedding.
+// tutti, e alimentano i filtri (step 7) e l'embedding (step 12).
 export const attributeKind = pgEnum('attribute_kind', attributeKindValues);
 
 // Gli id IGDB sono unici solo dentro il proprio tipo — il genere 8 e il tema 8

@@ -19,7 +19,8 @@ import { platforms } from './platforms';
 import { timestamps } from './timestamps';
 
 // `excluded` ("non voglio giocarlo") è uno stato, non una tabella a parte: è un
-// segnale negativo esplicito e allo step 7 vale più di molte valutazioni positive.
+// segnale negativo esplicito e allo step 12 vale più di molte valutazioni
+// positive.
 // Valori da @repo/contracts, vedi il commento su `store` in games.ts.
 export const backlogStatus = pgEnum('backlog_status', backlogStatusValues);
 
@@ -91,7 +92,7 @@ export const ownerships = pgTable(
     // Sono dato oggettivo del negozio, non un campo personale dello step 5, e
     // restano nulli sugli inserimenti manuali. Non si usano per indovinare lo
     // stato: due ore su un GDR da sessanta non vogliono dire "giocato", e
-    // `played` allo step 7 pesa.
+    // `played` allo step 12 pesa.
     playtimeMinutes: integer('playtime_minutes'),
     lastPlayedAt: timestamp('last_played_at'),
     ...timestamps,
