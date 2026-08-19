@@ -149,6 +149,7 @@ export type GameDetail = z.infer<typeof GameDetailSchema>;
 export type GameAttribute = z.infer<typeof GameAttributeSchema>;
 export type IgdbSearchHit = z.infer<typeof IgdbSearchHitSchema>;
 export type Ownership = z.infer<typeof OwnershipSchema>;
+export type OwnershipInput = z.infer<typeof OwnershipInputSchema>;
 export type UserTag = z.infer<typeof UserTagSchema>;
 export type UserTagInput = z.infer<typeof UserTagInputSchema>;
 export type BacklogEntry = z.infer<typeof BacklogEntrySchema>;

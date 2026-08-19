@@ -9,7 +9,7 @@ import {
   findEntryById,
   updateBacklogEntry,
 } from "./backlog";
-import { listUserTags } from "./tags";
+import { deleteUserTag, listUserTags } from "./tags";
 
 // Si testa ciò che rompendosi corrompe dati: la scrittura idempotente dei
 // possessi e lo scoping per utente dei tag. Il resto è CRUD.
@@ -157,6 +157,36 @@ describe("tag e categorie", () => {
 
     await updateBacklogEntry(userId, { id: entryId, tags: [] });
     expect((await findEntryById(userId, entryId))?.tags).toHaveLength(0);
+  });
+
+  it("cancellare un tag lo stacca da tutti i giochi", async () => {
+    const altroGioco = await createGame();
+    const altraRiga = await addToBacklog({
+      userId,
+      gameId: altroGioco.id,
+      status: "backlog",
+      ownerships: [{ platformSlug: "pc_windows" }],
+    });
+
+    await updateBacklogEntry(userId, { id: entryId, tags: [{ kind: "tag", name: "refuso" }] });
+    await updateBacklogEntry(userId, { id: altraRiga, tags: [{ kind: "tag", name: "refuso" }] });
+
+    const [tag] = await listUserTags(userId);
+    await deleteUserTag(userId, tag!.id);
+
+    // Il cascade su `backlog_tags`: nessuna delle due righe se lo tiene.
+    expect((await findEntryById(userId, entryId))?.tags).toHaveLength(0);
+    expect((await findEntryById(userId, altraRiga))?.tags).toHaveLength(0);
+    expect(await listUserTags(userId)).toHaveLength(0);
+  });
+
+  it("non cancella il tag di un altro utente", async () => {
+    const altro = await createUser();
+    await updateBacklogEntry(userId, { id: entryId, tags: [{ kind: "tag", name: "mio" }] });
+
+    const [tag] = await listUserTags(userId);
+    expect(await deleteUserTag(altro, tag!.id)).toBeUndefined();
+    expect(await listUserTags(userId)).toHaveLength(1);
   });
 
   it("due utenti che scrivono lo stesso nome hanno due tag distinti", async () => {

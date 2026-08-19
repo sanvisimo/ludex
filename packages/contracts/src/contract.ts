@@ -93,9 +93,14 @@ export const contract = {
   },
 
   tags: {
-    // Il vocabolario personale, per suggerire mentre si scrive invece di
-    // costringere a ricordarsi come si era chiamato un tag il mese scorso.
+    // Il vocabolario personale, da cui si spunta invece di riscrivere ogni volta.
     list: oc.output(z.array(UserTagSchema)),
+
+    // Toglie una parola dal vocabolario. Non è "stacca il tag da questo gioco" —
+    // per quello basta togliere la spunta: qui il tag **sparisce da tutti i
+    // giochi**, per via del cascade sul raccordo. Esiste perché con una lista da
+    // spuntare un refuso resterebbe a schermo per sempre.
+    remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
   },
 
   backlog: {

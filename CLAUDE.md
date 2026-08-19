@@ -212,8 +212,28 @@ enrichment restano due cose distinte: la prima è sincrona e in blocco, il secon
 
 - **generi e temi IGDB**: attributi del gioco, stanno su `games`, alimentano filtri
   ed embedding.
-- **tag e categorie personali dell'utente** ("da rigiocare", "quando sono stanco"):
-  scoped per utente, stanno lato `backlog`. Arrivano allo **step 5**.
+- **tag e categorie personali dell'utente** ("da rigiocare", "quando sono
+  stanco"): scoped per utente, stanno lato `backlog`. Arrivati allo **step 5**,
+  in `user_tags` (una tabella sola, distinta da `kind: tag | category`) più il
+  raccordo `backlog_tags`. I **valori** li inventa l'utente, quanti ne vuole; ciò
+  che è chiuso è l'insieme dei **campi** — l'utente non aggiunge un attributo suo
+  con un valore arbitrario — e per questo niente JSONB e niente EAV. Il confronto
+  sul nome è insensibile alle maiuscole, o "Da rigiocare" e "da rigiocare"
+  spaccherebbero in due lo stesso mucchio.
+
+  Il vocabolario è **per utente, non condiviso**, al contrario di `games`. Lì si
+  condivide perché l'enrichment costa e va pagato una volta sola; un tag non
+  costa niente da creare, quindi l'unico guadagno sarebbe suggerire agli altri le
+  proprie parole — e in cambio rinominarne una o cancellarla diventerebbe un
+  gesto che tocca la libreria di sconosciuti, con una moderazione da inventare.
+  L'elenco è anche intimo ("da giocare con mia figlia"), e in una lista da
+  spuntare lo si rilegge tutto ogni volta.
+
+  Togliere la spunta e cancellare sono due gesti diversi: il primo stacca il tag
+  da quel gioco e lo lascia nel vocabolario — se sparisse all'ultimo utilizzo la
+  lista si svuoterebbe da sé — il secondo lo toglie **da tutti i giochi**, per
+  cascade sul raccordo, ed esiste perché altrimenti un refuso resterebbe nella
+  lista per sempre.
 
 ## Ordine di sviluppo
 

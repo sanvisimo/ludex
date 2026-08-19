@@ -77,3 +77,23 @@ export async function ensureUserTags(userId: string, inputs: UserTagInput[]) {
       ),
     );
 }
+
+/**
+ * Toglie una parola dal vocabolario dell'utente.
+ *
+ * Distruttiva e volutamente semplice: il raccordo `backlog_tags` ha
+ * `on delete cascade`, quindi il tag si stacca da solo da tutti i giochi che ce
+ * l'avevano. È il motivo per cui la UI chiede conferma — un click qui può
+ * toccare venti righe di backlog.
+ *
+ * Lo `userId` nel WHERE non è una formalità: senza, un id indovinato
+ * cancellerebbe il tag di un altro.
+ */
+export async function deleteUserTag(userId: string, id: string) {
+  const [row] = await db
+    .delete(schema.userTags)
+    .where(and(eq(schema.userTags.id, id), eq(schema.userTags.userId, userId)))
+    .returning({ id: schema.userTags.id });
+
+  return row;
+}

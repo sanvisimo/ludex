@@ -93,7 +93,6 @@
     "tagsLabel": "Tag",
     "tagPlaceholder": "Es. quando sono stanco",
     "addTag": "Aggiungi",
-    "removeTag": "Togli {name}",
     "ownershipLabel": "Piattaforme",
     "noStore": "Nessuno store",
     "addPlatform": "Aggiungi",
@@ -102,7 +101,16 @@
     "save": "Salva",
     "saving": "Salvataggio…",
     "saved": "Modifiche salvate",
-    "saveFailed": "Non è stato possibile salvare"
+    "saveFailed": "Non è stato possibile salvare",
+    "noTagMatch": "Nessuna corrispondenza per \"{query}\". Premi Aggiungi per crearla.",
+    "noTagsYet": "Nessuna voce ancora: scrivi qui sopra per crearne una.",
+    "tagUnsaved": "(nuovo)",
+    "deleteTag": "Elimina {name}",
+    "deleteTagConfirm": "Toglierlo da tutti i giochi?",
+    "deleteTagYes": "Elimina",
+    "deleteTagNo": "Annulla",
+    "deleteTagFailed": "Non è stato possibile eliminare",
+    "removePlatform": "Togli {name}"
   },
   "attributeKind": {
     "genre": "Generi",

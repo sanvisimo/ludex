@@ -3,6 +3,7 @@
 import type {
   BacklogEntry,
   BacklogStatus,
+  OwnershipInput,
   Store,
   UserTagKind,
 } from "@repo/contracts";
@@ -12,7 +13,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { OwnershipBadges } from "@/components/ownership-badges";
+import { OwnershipBadges, ownershipKey } from "@/components/ownership-badges";
 import { PlatformCombobox } from "@/components/platform-combobox";
 import { RatingStars } from "@/components/rating-stars";
 import { TagPicker } from "@/components/tag-picker";
@@ -74,9 +75,7 @@ export function EditEntryDialog({
   const [notes, setNotes] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [pending, setPending] = useState<
-    { platformSlug: string; store: string }[]
-  >([]);
+  const [pending, setPending] = useState<OwnershipInput[]>([]);
   const [platformSlug, setPlatformSlug] = useState<string | null>(null);
   const [store, setStore] = useState<string>(NO_STORE);
 
@@ -122,14 +121,8 @@ export function EditEntryDialog({
 
       // In sequenza e non in parallelo: scrivono tutte sulla stessa riga di
       // backlog, e in parallelo si contenderebbero il vincolo unique.
-      for (const row of pending) {
-        await client.backlog.addOwnership({
-          id: entry.id,
-          ownership: {
-            platformSlug: row.platformSlug,
-            store: row.store === NO_STORE ? null : (row.store as Store),
-          },
-        });
+      for (const ownership of pending) {
+        await client.backlog.addOwnership({ id: entry.id, ownership });
       }
     },
     onSuccess: async () => {
@@ -146,28 +139,25 @@ export function EditEntryDialog({
       toast.error(errorMessage(error, { fallback: t("saveFailed") })),
   });
 
-  const alreadyOwned = new Set(
-    (entry?.ownerships ?? []).map(
-      (row) => `${row.platformSlug}|${row.store ?? ""}`,
-    ),
-  );
+  const alreadyOwned = new Set((entry?.ownerships ?? []).map(ownershipKey));
 
   function addPending() {
     if (!platformSlug) return;
-    const key = `${platformSlug}|${store === NO_STORE ? "" : store}`;
+
+    // `NO_STORE` è il sentinella del Select, che non ammette valori vuoti: nei
+    // dati diventa `null`, che è ciò che il contratto si aspetta. Convertirlo
+    // qui e non al salvataggio tiene `pending` già nella forma dell'API.
+    const chosen: OwnershipInput = {
+      platformSlug,
+      store: store === NO_STORE ? null : (store as Store),
+    };
+
     // Aggiungere un possesso che c'è già è innocuo lato server — la scrittura è
     // idempotente — ma mostrarlo due volte nell'elenco sarebbe una bugia.
-    if (
-      alreadyOwned.has(key) ||
-      pending.some(
-        (row) =>
-          `${row.platformSlug}|${row.store === NO_STORE ? "" : row.store}` ===
-          key,
-      )
-    ) {
-      return;
-    }
-    setPending((current) => [...current, { platformSlug, store }]);
+    const key = ownershipKey(chosen);
+    if (alreadyOwned.has(key) || pending.some((row) => ownershipKey(row) === key)) return;
+
+    setPending((current) => [...current, chosen]);
     setPlatformSlug(null);
     setStore(NO_STORE);
   }
@@ -242,10 +232,22 @@ export function EditEntryDialog({
             <OwnershipBadges ownerships={entry?.ownerships ?? []} />
 
             {pending.length > 0 && (
-              <p className="text-muted-foreground">
-                {t("pendingOwnerships", { count: pending.length })} -{" "}
-                {JSON.stringify(pending)}
-              </p>
+              <div className="grid gap-1">
+                <span className="text-muted-foreground">
+                  {t("pendingOwnerships", { count: pending.length })}
+                </span>
+                {/* Solo queste hanno la x: sono aggiunte non ancora scritte, e
+                    disfarle vuol dire non scriverle. Togliere un possesso già
+                    salvato è un'altra cosa e non c'è. */}
+                <OwnershipBadges
+                  ownerships={pending}
+                  onRemove={(row) =>
+                    setPending((current) =>
+                      current.filter((item) => ownershipKey(item) !== ownershipKey(row)),
+                    )
+                  }
+                />
+              </div>
             )}
 
             <div className="flex items-start gap-2">
@@ -284,8 +286,9 @@ export function EditEntryDialog({
               </Button>
             </div>
 
-            {/* Togliere un possesso non c'è: cancellarlo non basterebbe, perché
-                il prossimo import lo ricrea. Serve prima una logica di scarto. */}
+            {/* Togliere un possesso già salvato non c'è: cancellarlo non
+                basterebbe, perché il prossimo import lo ricrea. Serve prima una
+                logica di scarto. */}
             <p className="text-muted-foreground">{t("ownershipHint")}</p>
           </div>
         </div>

@@ -19,7 +19,7 @@ import {
   searchGames,
 } from "../services/games";
 import { findExistingPlatformSlugs, listPlatforms } from "../services/platforms";
-import { listUserTags } from "../services/tags";
+import { deleteUserTag, listUserTags } from "../services/tags";
 import {
   findSteamAccount,
   linkSteamAccount,
@@ -126,6 +126,11 @@ export const router = os.router({
 
   tags: {
     list: os.tags.list.use(authed).handler(({ context }) => listUserTags(context.user.id)),
+
+    remove: os.tags.remove.use(authed).handler(async ({ input, context }) => {
+      const removed = await deleteUserTag(context.user.id, input.id);
+      if (!removed) throw new ORPCError("NOT_FOUND", { message: "Tag inesistente" });
+    }),
   },
 
   backlog: {

@@ -93,7 +93,6 @@
     "tagsLabel": "Tags",
     "tagPlaceholder": "e.g. when I'm tired",
     "addTag": "Add",
-    "removeTag": "Remove {name}",
     "ownershipLabel": "Platforms",
     "noStore": "No store",
     "addPlatform": "Add",
@@ -102,7 +101,16 @@
     "save": "Save",
     "saving": "Saving…",
     "saved": "Changes saved",
-    "saveFailed": "Could not save"
+    "saveFailed": "Could not save",
+    "noTagMatch": "No match for \"{query}\". Press Add to create it.",
+    "noTagsYet": "Nothing here yet: type above to create one.",
+    "tagUnsaved": "(new)",
+    "deleteTag": "Delete {name}",
+    "deleteTagConfirm": "Remove it from every game?",
+    "deleteTagYes": "Delete",
+    "deleteTagNo": "Cancel",
+    "deleteTagFailed": "Could not delete",
+    "removePlatform": "Remove {name}"
   },
   "attributeKind": {
     "genre": "Genres",
