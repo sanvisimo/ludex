@@ -170,8 +170,12 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
     conditions.push(lte(schema.backlog.rating, input.ratingMax));
   }
 
+  // Il voto della critica è `games.criticScore`: il migliore che abbiamo per
+  // quel gioco secondo la precedenza fra le fonti, non più il solo IGDB. La
+  // colonna è denormalizzata apposta — qui serviva un confronto su una colonna,
+  // non tre sottoquery correlate dentro la query più complessa del progetto.
   if (input.criticMin !== undefined) {
-    conditions.push(gte(schema.games.aggregatedRating, input.criticMin));
+    conditions.push(gte(schema.games.criticScore, input.criticMin));
   }
 
   // L'anno arriva come numero e la colonna è un timestamp: il confronto si fa
@@ -236,7 +240,7 @@ function sortExpression(sort: BacklogQuery['sort']): SQL {
     case 'rating':
       return sql`${schema.backlog.rating}`;
     case 'criticRating':
-      return sql`${schema.games.aggregatedRating}`;
+      return sql`${schema.games.criticScore}`;
     case 'lastPlayed':
       return sql`(select max(${schema.ownerships.lastPlayedAt}) from ${schema.ownerships} where ${schema.ownerships.backlogId} = ${schema.backlog.id})`;
     case 'addedAt':

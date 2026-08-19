@@ -74,8 +74,8 @@ export async function findGameDetailById(id: string) {
       summary: true,
       coverWidth: true,
       coverHeight: true,
-      aggregatedRating: true,
-      aggregatedRatingCount: true,
+      criticScore: true,
+      criticScoreSource: true,
       hltbMainMinutes: true,
       hltbPlusMinutes: true,
       hltbCompletionistMinutes: true,
@@ -97,15 +97,19 @@ export async function findGameDetailById(id: string) {
         },
       },
       sources: { columns: { source: true, syncedAt: true } },
+      scores: {
+        columns: { gameId: false, createdAt: false, updatedAt: false },
+      },
     },
   });
 
   if (!game) return null;
 
-  const { attributes, sources, ...rest } = game;
+  const { attributes, sources, scores, ...rest } = game;
 
   return {
     ...rest,
+    scores,
     attributes: attributes.map((row) => row.attribute),
     igdbSyncedAt:
       sources.find((row) => row.source === 'igdb')?.syncedAt ?? null,

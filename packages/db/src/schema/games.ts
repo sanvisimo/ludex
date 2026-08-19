@@ -12,6 +12,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
+import { scoreSource } from './data-source';
 import { timestamps } from './timestamps';
 
 // Negozi da cui un gioco può provenire. Serve a due cose che oggi hanno la stessa
@@ -58,10 +59,27 @@ export const games = pgTable(
     coverImageId: text('cover_image_id'),
     coverWidth: integer('cover_width'),
     coverHeight: integer('cover_height'),
-    // Voto della critica aggregato da IGDB. Allo step 3 è l'unico che abbiamo;
-    // OpenCritic arrivera dopo come fonte separata, senza sovrascrivere questo.
-    aggregatedRating: real('aggregated_rating'),
-    aggregatedRatingCount: integer('aggregated_rating_count'),
+
+    // --- voto della critica: il numero su cui si filtra e si ordina ---
+    //
+    // I voti veri stanno in `game_scores`, una riga per fonte e per
+    // piattaforma. Questi due sono la **denormalizzazione** di quella tabella:
+    // il miglior voto complessivo che abbiamo per questo gioco, con la fonte da
+    // cui viene, ricalcolati in coda a ogni enrichment secondo una precedenza
+    // scritta in un punto solo (OpenCritic → Metacritic → IGDB).
+    //
+    // Esistono per lo step 7: il filtro "sopra 80" e l'ordinamento per voto
+    // critica leggono una colonna indicizzabile invece di infilare tre
+    // sottoquery correlate nella query di ricerca, che è già la più complessa
+    // del progetto. Il prezzo è che vanno ricalcolati a ogni scrittura di
+    // `game_scores` — e per questo il ricalcolo sta nella stessa transazione,
+    // non in un passo che si può dimenticare.
+    //
+    // `criticScoreSource` non è decorazione: senza, la scheda mostrerebbe un
+    // numero senza poter dire di chi è, e OpenCritic e Metacritic non stanno
+    // sulla stessa scala.
+    criticScore: real('critic_score'),
+    criticScoreSource: scoreSource('critic_score_source'),
 
     // --- durate HowLongToBeat, popolate dall'enrichment dello step 6 ---
     //

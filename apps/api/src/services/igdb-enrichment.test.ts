@@ -60,8 +60,14 @@ describe('enrichGameFromIgdb', () => {
     expect(salvato).toMatchObject({
       name: 'Pikmin 4',
       summary: 'Un sommario',
-      aggregatedRating: 87.5,
+      // Il voto non è più una colonna di `games`: è una riga di `game_scores`,
+      // e su `games` resta solo il denormalizzato che il ricalcolo ha scelto.
+      criticScore: 87.5,
+      criticScoreSource: 'igdb',
     });
+    expect(await db.query.gameScores.findMany({ where: eq(schema.gameScores.gameId, game.id) })).toMatchObject([
+      { source: 'igdb', platformSlug: null, score: 87.5 },
+    ]);
     expect(await sourceRow(game.id)).toMatchObject({ status: 'ok' });
     expect((await sourceRow(game.id))?.syncedAt).toBeInstanceOf(Date);
   });

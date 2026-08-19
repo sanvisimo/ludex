@@ -71,6 +71,20 @@
       "when": 1787166633393,
       "tag": "0009_rare_scream",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787166906058,
+      "tag": "0010_easy_shatterstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1787166940059,
+      "tag": "0011_flippant_leader",
+      "breakpoints": true
     }
   ]
 }

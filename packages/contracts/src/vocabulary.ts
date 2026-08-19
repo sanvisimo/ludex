@@ -28,6 +28,16 @@ export const storeValues = [
   'nintendo',
 ] as const;
 
+// Le fonti di un voto della critica. Sottoinsieme delle fonti di dati: HLTB e
+// SteamGridDB non danno voti.
+//
+// L'ordine qui è quello del tipo Postgres e **non** è una precedenza: cambiarlo
+// vorrebbe dire ricreare l'enum nel database. Quale voto vince quando ce n'è
+// più d'uno lo decide `CRITIC_PRECEDENCE` in
+// `apps/api/src/services/scores.ts`, che è una lista sua proprio per non legare
+// una scelta di prodotto alla forma di un tipo SQL.
+export const scoreSourceValues = ['igdb', 'opencritic', 'metacritic'] as const;
+
 // Tipi di attributo IGDB: generi, temi, modalita di gioco, prospettive.
 export const attributeKindValues = [
   'genre',
@@ -64,3 +74,4 @@ export type BacklogStatus = (typeof backlogStatusValues)[number];
 export type UserTagKind = (typeof userTagKindValues)[number];
 export type AttributeKind = (typeof attributeKindValues)[number];
 export type Store = (typeof storeValues)[number];
+export type ScoreSource = (typeof scoreSourceValues)[number];

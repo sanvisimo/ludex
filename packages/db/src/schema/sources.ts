@@ -9,17 +9,9 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
+import { dataSource } from './data-source';
 import { games } from './games';
 import { timestamps } from './timestamps';
-
-// Fonti dei metadati. Distinto da `store` (i negozi) perché OpenCritic e HLTB
-// non sono posti da cui si compra: sono posti da cui si legge.
-export const dataSource = pgEnum('data_source', [
-  'igdb',
-  'opencritic',
-  'hltb',
-  'steamgriddb',
-]);
 
 // `failed` e `not_found` sono due cose diverse e tenerle separate è ciò che
 // permette alla spazzata di smettere di riprovare.

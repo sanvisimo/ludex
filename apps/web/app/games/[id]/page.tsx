@@ -100,6 +100,14 @@ export default function GamePage({
 
   const { game, entry } = data;
   const year = game.firstReleaseDate?.getFullYear() ?? null;
+  // La riga da cui viene il voto mostrato: `criticScore` è il numero, ma il
+  // conteggio delle recensioni sta sulla riga della fonte che ha vinto la
+  // precedenza. `platformSlug` nullo perché quello in testa è il voto del
+  // gioco, non quello di una piattaforma.
+  const votoScelto = game.scores.find(
+    (voto) =>
+      voto.source === game.criticScoreSource && voto.platformSlug === null,
+  );
 
   return (
     <main className="mx-auto grid max-w-3xl gap-6 p-6">
@@ -118,15 +126,15 @@ export default function GamePage({
             {year && <p className="text-muted-foreground">{year}</p>}
           </div>
 
-          {game.aggregatedRating !== null && (
+          {game.criticScore !== null && (
             <p>
               <span className="font-medium">
-                {Math.round(game.aggregatedRating)}
+                {Math.round(game.criticScore)}
               </span>
               <span className="text-muted-foreground">
                 {t('criticRating')}
-                {game.aggregatedRatingCount
-                  ? t('reviewCount', { count: game.aggregatedRatingCount })
+                {votoScelto?.reviewCount
+                  ? t('reviewCount', { count: votoScelto.reviewCount })
                   : ''}
               </span>
             </p>

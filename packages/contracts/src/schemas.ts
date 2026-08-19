@@ -4,6 +4,7 @@ import {
   attributeKindValues,
   backlogSortValues,
   backlogStatusValues,
+  scoreSourceValues,
   sortDirectionValues,
   storeValues,
   userTagKindValues,
@@ -12,6 +13,7 @@ import {
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
 export const AttributeKindSchema = z.enum(attributeKindValues);
 export const StoreSchema = z.enum(storeValues);
+export const ScoreSourceSchema = z.enum(scoreSourceValues);
 export const UserTagKindSchema = z.enum(userTagKindValues);
 
 // Cinque stelle a mezze stelle: dieci valori da 0.5 a 5. Il `multipleOf` è la
@@ -95,13 +97,39 @@ export const HltbTimesSchema = z.object({
   hltbHasVersus: z.boolean().nullable(),
 });
 
+// Un voto della critica. `platformSlug` nullo è il voto complessivo del gioco:
+// è l'unico che IGDB e OpenCritic danno, mentre Metacritic ne dà uno per
+// piattaforma — e le due cose divergono parecchio (Mafia vale 88 su PC e 66 sul
+// port Xbox, che è quello che loro pubblicano come voto del gioco).
+//
+// I campi dopo `reviewCount` valgono per una fonte sola e sono nulli sulle
+// altre: sono l'unione di quello che le tre danno, non l'intersezione.
+export const GameScoreSchema = z.object({
+  source: ScoreSourceSchema,
+  platformSlug: z.string().nullable(),
+  score: z.number(),
+  reviewCount: z.number().int().nullable(),
+  medianScore: z.number().nullable(),
+  percentRecommended: z.number().nullable(),
+  tier: z.string().nullable(),
+  positiveCount: z.number().int().nullable(),
+  neutralCount: z.number().int().nullable(),
+  negativeCount: z.number().int().nullable(),
+  sentiment: z.string().nullable(),
+});
+
 // Scheda completa: quello che la lista non porta perché sarebbe peso inutile.
 export const GameDetailSchema = GameSchema.extend({
   summary: z.string().nullable(),
   coverWidth: z.number().int().nullable(),
   coverHeight: z.number().int().nullable(),
-  aggregatedRating: z.number().nullable(),
-  aggregatedRatingCount: z.number().int().nullable(),
+  // Il voto scelto per precedenza, con la fonte da cui viene. È quello su cui
+  // filtra e ordina lo step 7, e viaggia insieme a `scores` perché la
+  // precedenza la decide il server: se la rifacesse il client, due punti del
+  // sistema potrebbero rispondere in modo diverso alla stessa domanda.
+  criticScore: z.number().nullable(),
+  criticScoreSource: ScoreSourceSchema.nullable(),
+  scores: z.array(GameScoreSchema),
   attributes: z.array(GameAttributeSchema),
   ...HltbTimesSchema.shape,
   // Quando ciascuna fonte è stata sincronizzata con successo. Nullo = mai, e la

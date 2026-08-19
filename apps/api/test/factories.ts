@@ -32,7 +32,10 @@ export async function createGame(
     // che i filtri devono trattare bene.
     hltbMainMinutes?: number | null;
     hltbHasSolo?: boolean | null;
-    aggregatedRating?: number | null;
+    // Il voto denormalizzato, scritto dritto: qui interessa il filtro dello
+    // step 7, non la strada che il numero fa per arrivare in colonna. Chi
+    // testa quella strada passa da `saveScores`.
+    criticScore?: number | null;
   } = {},
 ) {
   const n = unique();
@@ -46,7 +49,7 @@ export async function createGame(
       firstReleaseDate: values.firstReleaseDate ?? null,
       hltbMainMinutes: values.hltbMainMinutes ?? null,
       hltbHasSolo: values.hltbHasSolo ?? null,
-      aggregatedRating: values.aggregatedRating ?? null,
+      criticScore: values.criticScore ?? null,
     })
     .returning({ id: schema.games.id, igdbId: schema.games.igdbId });
   return row!;

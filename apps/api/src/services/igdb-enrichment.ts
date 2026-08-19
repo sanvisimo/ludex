@@ -4,6 +4,7 @@ import { eq, sql } from '@repo/db/orm';
 import { fetchIgdbGameMetadata, type IgdbAttribute } from '../external/igdb';
 import { enqueueEnrichment } from '../queue/enrichment';
 import { markSource } from './enrichment';
+import { saveScores } from './scores';
 
 /**
  * Enrichment IGDB di un singolo gioco.
@@ -88,10 +89,27 @@ export async function enrichGameFromIgdb(
           coverImageId: metadata.coverImageId,
           coverWidth: metadata.coverWidth,
           coverHeight: metadata.coverHeight,
-          aggregatedRating: metadata.aggregatedRating,
-          aggregatedRatingCount: metadata.aggregatedRatingCount,
         })
         .where(eq(schema.games.id, gameId));
+
+      // Il voto sta in `game_scores` come quelli di OpenCritic e Metacritic, e
+      // non in una colonna sua: sono tre numeri della stessa natura, e tenerne
+      // uno a parte era ciò che rendeva impossibile confrontarli. La lista
+      // vuota quando IGDB non ha un voto non è un caso da saltare — è la
+      // cancellazione di un voto che c'era e non c'è più.
+      await saveScores(
+        gameId,
+        'igdb',
+        metadata.aggregatedRating === null
+          ? []
+          : [
+              {
+                score: metadata.aggregatedRating,
+                reviewCount: metadata.aggregatedRatingCount,
+              },
+            ],
+        tx,
+      );
 
       // Riscrittura in blocco invece di un diff: è cio' che rende la funzione
       // idempotente, e gestisce da solo gli attributi tolti da IGDB.
