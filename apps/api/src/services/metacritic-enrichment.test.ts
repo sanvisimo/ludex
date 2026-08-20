@@ -80,6 +80,80 @@ describe('enrichGameFromMetacritic', () => {
     ).toMatchObject({ score: 87, reviewCount: 27 });
   });
 
+  it('scarta la piattaforma su cui Metacritic si contraddice, e scrive il resto', async () => {
+    // Il caso vero, su *Alien Breed*: la stessa pagina elenca due volte
+    // `playstation-vita`, con lo stesso nome e le stesse nove recensioni ma
+    // voti diversi. Prima faceva fallire **tutta** la scrittura — Postgres
+    // rifiuta una ON CONFLICT che tocchi due volte la stessa riga — e il gioco
+    // restava senza nessun voto, complessivo compreso.
+    const game = await createGame({ name: 'Hollow Knight' });
+    await setSource({
+      gameId: game.id,
+      source: 'metacritic',
+      status: 'pending',
+      externalId: 'hollow-knight',
+    });
+
+    const vita = (score: number, positiveCount: number) => ({
+      slug: 'playstation-vita',
+      name: 'PlayStation Vita',
+      score: {
+        score,
+        reviewCount: 9,
+        positiveCount,
+        neutralCount: 5,
+        negativeCount: 0,
+        sentiment: 'Mixed or average',
+      },
+    });
+
+    const base = metacriticGame();
+    mockedDetail.mockResolvedValue({
+      ...base,
+      platforms: [...base.platforms, vita(64, 2), vita(68, 4)],
+    });
+
+    const esito = await enrichGameFromMetacritic(game.id);
+    expect(esito).toMatchObject({ status: 'ok' });
+
+    const righe = await scoreRows(game.id);
+    // La Vita non c'è: fra due voti discordi non tocca a noi scegliere, e
+    // mediarli darebbe un 66 che nessuno ha pubblicato.
+    expect(righe.find((riga) => riga.platformSlug === 'sony_vita')).toBeUndefined();
+    // Ma il complessivo e il PC sì: il dato rotto è di quella piattaforma sola.
+    expect(righe.find((riga) => riga.platformSlug === null)).toMatchObject({
+      score: 90,
+    });
+    expect(
+      righe.find((riga) => riga.platformSlug === 'pc_windows'),
+    ).toMatchObject({ score: 87 });
+  });
+
+  it('un doppione identico non è una contraddizione: si scrive una riga sola', async () => {
+    const game = await createGame({ name: 'Hollow Knight' });
+    await setSource({
+      gameId: game.id,
+      source: 'metacritic',
+      status: 'pending',
+      externalId: 'hollow-knight',
+    });
+
+    const base = metacriticGame();
+    mockedDetail.mockResolvedValue({
+      ...base,
+      platforms: [...base.platforms, base.platforms[0]!],
+    });
+
+    const esito = await enrichGameFromMetacritic(game.id);
+
+    expect(esito).toMatchObject({ status: 'ok' });
+    expect(
+      (await scoreRows(game.id)).filter(
+        (riga) => riga.platformSlug === 'pc_windows',
+      ),
+    ).toHaveLength(1);
+  });
+
   it('usa il link della scheda Steam quando regge', async () => {
     const game = await createGame({
       name: 'Hollow Knight',

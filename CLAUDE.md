@@ -457,6 +457,20 @@ Il voto **non si traduce e non si media fra fonti**: OpenCritic pesa i critici
 di punta e sta sistematicamente qualche punto sotto Metacritic. La scheda del
 gioco li mostra tutti, con la fonte accanto.
 
+E non si media nemmeno **dentro** la stessa fonte, perché capita che una fonte si
+contraddica: su *Alien Breed* la stessa pagina Metacritic elenca due volte
+`playstation-vita`, stesso nome e stesse nove recensioni, con voti diversi (64 e
+68). Quella piattaforma si **scarta**, il resto della scheda si scrive. È la
+stessa regola del giudice dei titoli — davanti a due candidati appaiati non si
+sceglie — e le alternative sono peggiori: mediarli darebbe un 66 che nessuno ha
+pubblicato, tenere il primo lascerebbe decidere all'ordine del loro JSON. Un
+doppione *identico* invece non è una contraddizione: si tiene una riga sola.
+
+La deduplicazione è obbligatoria, non un'accortezza: Postgres rifiuta una
+`ON CONFLICT DO UPDATE` che tocchi la stessa riga due volte nello stesso comando,
+quindi senza, quel gioco resta senza **nessun** voto — complessivo compreso — e
+la spazzata ci riprova per sempre.
+
 #### Due tassonomie separate, da non fondere
 
 - **generi e temi IGDB**: attributi del gioco, stanno su `games`, alimentano filtri

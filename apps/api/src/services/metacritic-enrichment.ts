@@ -58,12 +58,47 @@ export type MetacriticOutcome =
   | { status: 'not_found'; reason: string };
 
 /**
+ * Due righe della stessa piattaforma dicono la stessa cosa?
+ *
+ * Il confronto è su **tutti** i numeri e non solo sul voto: due righe con lo
+ * stesso 68 ma conteggi diversi restano due affermazioni diverse, e fonderle
+ * vorrebbe dire scegliere quale dei due gruppi di recensioni raccontare.
+ */
+function stessoVoto(a: ScoreInput, b: ScoreInput) {
+  return (
+    a.score === b.score &&
+    a.reviewCount === b.reviewCount &&
+    a.positiveCount === b.positiveCount &&
+    a.neutralCount === b.neutralCount &&
+    a.negativeCount === b.negativeCount &&
+    a.sentiment === b.sentiment
+  );
+}
+
+/**
  * Le righe da scrivere: il complessivo più una per piattaforma riconosciuta.
  *
  * Le piattaforme che non sappiamo tradurre — iOS, Meta Quest — si saltano e
  * basta: la nostra tabella `platforms` è la lista di ciò che si può possedere
  * in libreria, e un voto per una piattaforma che nessuno può avere non
  * servirebbe a nessuna domanda.
+ *
+ * **Metacritic si contraddice**, e va gestito qui. Su *Alien Breed* la stessa
+ * pagina elenca `playstation-vita` due volte, stesso nome e stesse nove
+ * recensioni, con due voti diversi — 64 con 2/5/2 e 68 con 4/5/0. Non è il
+ * nostro mapping che collassa due piattaforme in una: in `sony_vita` ci arriva
+ * solo `playstation-vita`.
+ *
+ * Prima questo faceva fallire **tutta** la scrittura: Postgres rifiuta una
+ * `ON CONFLICT DO UPDATE` che tocchi la stessa riga due volte nello stesso
+ * comando, quindi quel gioco restava senza nessun voto — PS3 e complessivo
+ * compresi — e la spazzata ci riprovava per sempre.
+ *
+ * La piattaforma contesa si **scarta**, il resto si scrive. È la stessa regola
+ * del giudice dei titoli, che davanti a due candidati appaiati preferisce non
+ * scegliere: mediarli darebbe un 66 che nessuno ha pubblicato, e tenere il primo
+ * lascerebbe decidere all'ordine del loro JSON. Un doppione **identico** invece
+ * non è una contraddizione: si tiene una riga sola e non si dice niente.
  */
 function toScoreInputs(game: MetacriticGame) {
   const rows: ScoreInput[] = [];
@@ -80,13 +115,17 @@ function toScoreInputs(game: MetacriticGame) {
   }
 
   const saltate: string[] = [];
+  // Per slug e non in coda a `rows`: il complessivo non ha piattaforma e non
+  // entra in questo conto.
+  const perPiattaforma = new Map<string, ScoreInput[]>();
+
   for (const platform of game.platforms) {
     const slug = toPlatformSlug(platform.slug);
     if (!slug) {
       saltate.push(platform.slug);
       continue;
     }
-    rows.push({
+    const riga: ScoreInput = {
       platformSlug: slug,
       score: platform.score.score,
       reviewCount: platform.score.reviewCount,
@@ -94,15 +133,34 @@ function toScoreInputs(game: MetacriticGame) {
       neutralCount: platform.score.neutralCount,
       negativeCount: platform.score.negativeCount,
       sentiment: platform.score.sentiment,
-    });
+    };
+    perPiattaforma.set(slug, [...(perPiattaforma.get(slug) ?? []), riga]);
   }
 
-  return { rows, saltate };
+  const contese: string[] = [];
+  for (const [slug, righe] of perPiattaforma) {
+    const prima = righe[0]!;
+    if (righe.every((riga) => stessoVoto(riga, prima))) {
+      rows.push(prima);
+      continue;
+    }
+    contese.push(slug);
+  }
+
+  return { rows, saltate, contese };
 }
 
 /** Scrive voti e aggancio insieme: o valgono entrambi, o non vale nessuno dei due. */
 async function saveGame(gameId: string, game: MetacriticGame) {
-  const { rows, saltate } = toScoreInputs(game);
+  const { rows, saltate, contese } = toScoreInputs(game);
+
+  if (contese.length > 0) {
+    // Va detto: è un dato della fonte che non torna, non un nostro inciampo, e
+    // il log è l'unico posto dove lo si vede.
+    console.log(
+      `[metacritic] ${game.slug}: voti discordi sulla stessa piattaforma, scartate: ${contese.join(', ')}`,
+    );
+  }
 
   if (saltate.length > 0) {
     // Detto e non taciuto: se un domani comparisse una piattaforma vera fra
