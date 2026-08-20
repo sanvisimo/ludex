@@ -4,8 +4,10 @@ import {
   attributeKindValues,
   backlogSortValues,
   backlogStatusValues,
+  linkableStoreValues,
   scoreSourceValues,
   sortDirectionValues,
+  storeAccountStatusValues,
   storeValues,
   userTagKindValues,
 } from './vocabulary';
@@ -13,6 +15,8 @@ import {
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
 export const AttributeKindSchema = z.enum(attributeKindValues);
 export const StoreSchema = z.enum(storeValues);
+export const LinkableStoreSchema = z.enum(linkableStoreValues);
+export const StoreAccountStatusSchema = z.enum(storeAccountStatusValues);
 export const ScoreSourceSchema = z.enum(scoreSourceValues);
 export const UserTagKindSchema = z.enum(userTagKindValues);
 
@@ -187,9 +191,16 @@ export const BacklogEntrySchema = z.object({
 
 export const StoreAccountSchema = z.object({
   store: StoreSchema,
-  // Lo SteamID64 per Steam. Si mostra all'utente: è la prova che ha collegato
-  // il profilo giusto.
+  // Lo SteamID64 per Steam, il `user_id` per GOG. Si mostra all'utente quando
+  // non c'è di meglio: su Steam è la prova che ha collegato il profilo giusto,
+  // su GOG è un numero che non dice niente — per quello c'è `displayName`.
   externalAccountId: z.string(),
+  // Come chiamare l'account davanti all'utente, dove il negozio lo dice.
+  displayName: z.string().nullable(),
+  // `needs_reauth`: il credenziale è scaduto o è stato revocato e nessun
+  // reimport lo rimette a posto. La UI deve chiedere di ricollegare, non
+  // mostrare un account che ha semplicemente smesso di aggiornarsi.
+  status: StoreAccountStatusSchema,
   // Null = collegato ma mai importato.
   lastSyncAt: z.date().nullable(),
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo

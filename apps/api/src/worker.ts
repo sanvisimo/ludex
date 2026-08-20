@@ -1,6 +1,6 @@
 import './env';
 
-import { Worker } from 'bullmq';
+import { UnrecoverableError, Worker } from 'bullmq';
 
 import { openCriticQuota } from './external/opencritic';
 import { redisConnection } from './queue/connection';
@@ -23,7 +23,9 @@ import { enrichGameFromIgdb } from './services/igdb-enrichment';
 import { enrichGameFromMetacritic } from './services/metacritic-enrichment';
 import { enrichGameFromOpenCritic } from './services/opencritic-enrichment';
 import { resolveOpenCriticIds } from './services/opencritic-resolve';
+import { importGogLibrary } from './services/gog-import';
 import { importSteamLibrary } from './services/steam-import';
+import { StoreReauthRequiredError } from './services/store-accounts';
 
 // Secondo entrypoint di apps/api. Stesso codebase e stessi servizi di server.ts,
 // ma qui non si espone HTTP: i job non devono girare nel processo che serve le
@@ -118,13 +120,32 @@ worker.on('failed', (job, error) => {
 const importsWorker = new Worker<ImportJob>(
   IMPORTS_QUEUE,
   async (job) => {
-    const report = await importSteamLibrary(job.data.userId, job.data.steamId);
-    console.log(
-      `[import] steam ${job.data.userId}: ${report.total} in libreria, ` +
-        `${report.resolved} risolti (${report.newGames} giochi nuovi, ` +
-        `${report.newEntries} aggiunti al backlog), ${report.unresolved} da sistemare`,
-    );
-    return report;
+    const { store, userId } = job.data;
+
+    try {
+      const report =
+        store === 'steam'
+          ? await importSteamLibrary(userId, job.data.steamId!)
+          : await importGogLibrary(userId);
+
+      console.log(
+        `[import] ${store} ${userId}: ${report.total} in libreria, ` +
+          `${report.resolved} risolti (${report.resolvedByName} per nome, ` +
+          `${report.newGames} giochi nuovi, ${report.newEntries} aggiunti al ` +
+          `backlog), ${report.unresolved} da sistemare`,
+      );
+      return report;
+    } catch (error) {
+      // Un credenziale morto non si aggiusta riprovando: i tre tentativi con
+      // backoff esponenziale servono alle reti che cadono, non a un refresh
+      // token revocato. `UnrecoverableError` li salta e manda il job a fallito
+      // subito, che è anche ciò che libera la chiave di deduplicazione.
+      // Lo stato `needs_reauth` sulla riga l'ha già scritto chi ha alzato.
+      if (error instanceof StoreReauthRequiredError) {
+        throw new UnrecoverableError(error.message);
+      }
+      throw error;
+    }
   },
   {
     connection: redisConnection,

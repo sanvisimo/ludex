@@ -109,15 +109,19 @@ describe('unresolved imports', () => {
   });
 
   it('si rifiuta di risolvere lo scarto di un negozio senza piattaforma nota', async () => {
+    // PSN e non GOG: dal 9a GOG una piattaforma ce l'ha (`pc_windows`, come
+    // Steam). I negozi ancora scoperti sono quelli console, ed è lì che la
+    // domanda è davvero senza risposta — questa voce è PS4 o PS5?
     const [row] = await db
       .insert(schema.unresolvedImports)
-      .values({ userId, store: 'gog', externalId: '1', name: 'Qualcosa' })
+      .values({ userId, store: 'psn', externalId: '1', name: 'Qualcosa' })
       .returning({ id: schema.unresolvedImports.id });
 
-    // Meglio fermarsi che archiviare un gioco GOG come se fosse su PC per
-    // default: sarebbe un dato sbagliato scritto senza che nessuno se ne accorga.
+    // Meglio fermarsi che archiviare il gioco su una piattaforma a caso: sarebbe
+    // un dato sbagliato scritto senza che nessuno se ne accorga, dentro la
+    // colonna su cui poi si filtra.
     await expect(resolveUnresolvedImport(userId, row!.id, 555)).rejects.toThrow(
-      'gog',
+      'psn',
     );
   });
 

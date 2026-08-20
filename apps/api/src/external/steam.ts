@@ -10,8 +10,14 @@ const OWNED_GAMES_URL =
   'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/';
 
 export type SteamLibraryEntry = {
-  /** L'appid, come stringa: è la forma in cui vive in `external_ids`. */
-  appId: string;
+  /**
+   * L'appid, come stringa: è la forma in cui vive in `external_ids`.
+   *
+   * Si chiama `externalId` e non `appId` perché dal 9a questa è una
+   * `LibraryEntry` come quelle di GOG e Amazon, e l'import che la consuma è lo
+   * stesso per tutti i negozi.
+   */
+  externalId: string;
   name: string;
   playtimeMinutes: number;
   /** Null se non l'ha mai avviato: Steam manda 0, che come data non vuol dire nulla. */
@@ -81,7 +87,7 @@ export async function fetchSteamLibrary(
   }
 
   return (body.response.games ?? []).map((game) => ({
-    appId: String(game.appid),
+    externalId: String(game.appid),
     // Il nome manca solo su appid ritirati dallo store; l'appid è comunque
     // l'identità, quindi la voce non si butta.
     name: game.name?.trim() || `App ${game.appid}`,

@@ -8,18 +8,18 @@ import {
   linkSteamAccount as seedAccount,
 } from '../../test/factories';
 import { resolveSteamId } from '../external/steam';
-import { isSteamImportRunning } from '../queue/imports';
+import { isImportRunning } from '../queue/imports';
 import {
   linkSteamAccount,
   listStoreAccounts,
-  unlinkSteamAccount,
+  unlinkStoreAccount,
 } from './store-accounts';
 
 vi.mock('../external/steam', () => ({ resolveSteamId: vi.fn() }));
-vi.mock('../queue/imports', () => ({ isSteamImportRunning: vi.fn() }));
+vi.mock('../queue/imports', () => ({ isImportRunning: vi.fn() }));
 
 const mockedResolve = vi.mocked(resolveSteamId);
-const mockedRunning = vi.mocked(isSteamImportRunning);
+const mockedRunning = vi.mocked(isImportRunning);
 
 describe('account di negozio', () => {
   let userId: string;
@@ -74,7 +74,7 @@ describe('account di negozio', () => {
       name: 'Conan Exiles - Public Beta Client',
     });
 
-    await unlinkSteamAccount(userId);
+    await unlinkStoreAccount(userId, 'steam');
 
     // I giochi importati restano suoi, come se li avesse inseriti a mano.
     expect(await db.select().from(schema.backlog)).toHaveLength(1);

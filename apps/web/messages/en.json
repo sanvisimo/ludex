@@ -240,23 +240,36 @@
     "profile": {
       "title": "Your details"
     },
-    "steam": {
-      "title": "Steam",
-      "profileLabel": "Steam profile",
-      "hint": "Paste your Steam profile URL, your SteamID64, or your custom name. The profile must be public, otherwise Steam won't let us read the library.",
-      "link": "Link",
-      "linked": "Account linked: import started",
-      "linkFailed": "I couldn't find that Steam profile",
-      "unlink": "Unlink",
-      "unlinked": "Account unlinked. Imported games stay in your backlog.",
+    "store": {
+      "link": "Connect",
+      "linked": "Account connected: import started",
+      "linkFailed": "Could not connect the account",
+      "unlink": "Disconnect",
+      "unlinked": "Account disconnected. Imported games stay in your backlog.",
+      "unlinkFailed": "Could not disconnect the account",
       "sync": "Re-import",
       "syncStarted": "Import started",
+      "syncFailed": "Could not start the import",
+      "alreadySyncing": "An import is already running",
       "syncing": "importing…",
       "lastSync": "imported {when}",
       "neverSynced": "never imported",
-      "unlinkFailed": "I couldn't unlink the account",
-      "syncFailed": "I couldn't start the import",
-      "alreadySyncing": "An import is already running"
+      "needsReauth": "This connection has expired. Reconnect the account to resume imports.",
+      "reconnect": "Reconnect",
+      "openLogin": "1. Open the login page",
+      "pasteStep": "2. Paste the address here"
+    },
+    "stores": {
+      "steam": {
+        "inputLabel": "Steam profile",
+        "placeholder": "https://steamcommunity.com/id/…",
+        "hint": "Paste your Steam profile URL, your SteamID64 or your custom name. The profile must be public, otherwise Steam won't let us read the library."
+      },
+      "gog": {
+        "inputLabel": "Landing address",
+        "placeholder": "https://embed.gog.com/on_login_success?…",
+        "hint": "Open the login page, sign in with your GOG account, then copy the address of the blank page you land on from the browser bar: the code we need is in there. You only do this once."
+      }
     },
     "unresolved": {
       "title": "Needs attention ({count})",

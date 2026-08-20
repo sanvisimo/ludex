@@ -92,7 +92,7 @@ describe('fetchSteamLibrary', () => {
 
     await expect(fetchSteamLibrary('76561198015402862')).resolves.toEqual([
       {
-        appId: '220',
+        externalId: '220',
         name: 'Half-Life 2',
         playtimeMinutes: 630,
         lastPlayedAt: new Date(1768521600 * 1000),

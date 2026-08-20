@@ -1,3 +1,5 @@
+import type { Store } from '@repo/contracts/vocabulary';
+
 import { chunk } from '../lib/chunk';
 
 // Client IGDB. Sta fuori da `services/` perché è l'accesso a un servizio
@@ -373,16 +375,39 @@ export async function fetchIgdbPlatforms(): Promise<IgdbPlatform[]> {
   }
 }
 
-// --- Risoluzione per id esterno (step 4): da un appid Steam al gioco IGDB ---
+// --- Risoluzione per id esterno (step 4, generalizzata al 9a) ---
 
 /**
- * L'id della sorgente su IGDB, da GET /v4/external_game_sources. Steam è 1.
+ * Gli id delle sorgenti su IGDB, da GET /v4/external_game_sources.
  *
  * Il filtro sulla sorgente non è prudenziale, è obbligatorio: gli `uid` sono
  * unici solo dentro la propria sorgente, e "220" è Half-Life 2 su Steam ma anche
  * altre due cose su GiantBomb e Twitch.
+ *
+ * **Non tutti i negozi ci sono**, ed è la cosa che decide quanto costa un
+ * import. Righe censite su IGDB al momento dello step 9:
+ *
+ *     Steam    174.084      GOG        9.340
+ *     Microsoft 15.547      Amazon ADG   678
+ *     PS Store  15.322      Epic      10.145
+ *
+ * Per EA, Ubisoft, Battle.net e Nintendo **non esiste alcuna sorgente**: quei
+ * negozi, e Amazon che ne ha una vuota in pratica, si risolvono solo per nome.
+ * Un negozio assente da questa mappa è quindi legittimo, non un buco da tappare:
+ * dice «questa libreria si risolve a mano».
  */
-const IGDB_SOURCE_STEAM = 1;
+const IGDB_SOURCES: Partial<Record<Store, number>> = {
+  steam: 1,
+  gog: 5,
+  epic: 26,
+  xbox: 11,
+  psn: 36,
+};
+
+/** L'id della sorgente IGDB per un negozio, o null se IGDB non la mappa. */
+export function igdbSourceFor(store: Store): number | null {
+  return IGDB_SOURCES[store] ?? null;
+}
 
 // IGDB accetta al massimo 500 risultati per richiesta. Su una libreria vera di
 // 452 giochi bastano quattro richieste: la risoluzione non è il collo di
@@ -400,27 +425,34 @@ type IgdbExternalGame = {
 };
 
 /**
- * Mappa appid Steam → gioco IGDB, in blocco.
+ * Mappa id del negozio → gioco IGDB, in blocco.
  *
- * Gli appid che IGDB non conosce semplicemente non compaiono nella mappa: sta al
- * chiamante decidere cosa farne. Su una libreria vera sono l'1%, e sono client
- * beta e "Friend's Pass" più che giochi.
+ * Gli id che IGDB non conosce semplicemente non compaiono nella mappa: sta al
+ * chiamante decidere cosa farne. Quanti siano dipende moltissimo dal negozio, e
+ * sono numeri misurati su librerie vere: su Steam l'1%, su GOG il 5,5% (24 voci
+ * su 435, per lo più artbook e prologhi), su Amazon **il 100%**.
+ *
+ * Con un negozio che IGDB non mappa affatto rende una mappa vuota senza uscire
+ * in rete: chiamarla è sempre lecito, e il chiamante ha già la strada del match
+ * per nome per tutto ciò che non trova.
  */
-export async function findIgdbGamesBySteamAppIds(
-  appIds: string[],
+export async function findIgdbGamesByExternalIds(
+  store: Store,
+  externalIds: string[],
 ): Promise<Map<string, IgdbExternalMatch>> {
   const matches = new Map<string, IgdbExternalMatch>();
-  if (appIds.length === 0) return matches;
+  const source = igdbSourceFor(store);
+  if (source === null || externalIds.length === 0) return matches;
 
-  for (const page of chunk(appIds, EXTERNAL_PAGE)) {
-    // Gli appid arrivano da Steam e sono numerici, ma finiscono dentro una
-    // stringa apicalypse: si passano dallo stesso filtro delle ricerche.
-    const uids = page.map((appId) => `"${escapeSearchTerm(appId)}"`).join(',');
+  for (const page of chunk(externalIds, EXTERNAL_PAGE)) {
+    // Gli id dei negozi sono spesso numerici, ma finiscono dentro una stringa
+    // apicalypse: si passano dallo stesso filtro delle ricerche.
+    const uids = page.map((id) => `"${escapeSearchTerm(id)}"`).join(',');
 
     const rows = await query<IgdbExternalGame[]>(
       'external_games',
       `fields uid, game, game.name;` +
-        ` where external_game_source = ${IGDB_SOURCE_STEAM} & uid = (${uids});` +
+        ` where external_game_source = ${source} & uid = (${uids});` +
         ` limit ${EXTERNAL_PAGE};`,
     );
 

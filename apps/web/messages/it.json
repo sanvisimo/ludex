@@ -240,23 +240,36 @@
     "profile": {
       "title": "I tuoi dati"
     },
-    "steam": {
-      "title": "Steam",
-      "profileLabel": "Profilo Steam",
-      "hint": "Incolla l'indirizzo del tuo profilo Steam, il tuo SteamID64 o il nome scelto. Il profilo deve essere pubblico, altrimenti Steam non ci lascia leggere la libreria.",
+    "store": {
       "link": "Collega",
       "linked": "Account collegato: importazione avviata",
-      "linkFailed": "Non ho trovato questo profilo Steam",
+      "linkFailed": "Non sono riuscito a collegare l'account",
       "unlink": "Scollega",
       "unlinked": "Account scollegato. I giochi importati restano nel backlog.",
+      "unlinkFailed": "Non sono riuscito a scollegare l'account",
       "sync": "Reimporta",
       "syncStarted": "Importazione avviata",
+      "syncFailed": "Non sono riuscito ad avviare l'importazione",
+      "alreadySyncing": "C'è già un'importazione in corso",
       "syncing": "importazione in corso…",
       "lastSync": "importata {when}",
       "neverSynced": "mai importata",
-      "unlinkFailed": "Non sono riuscito a scollegare l'account",
-      "syncFailed": "Non sono riuscito ad avviare l'importazione",
-      "alreadySyncing": "C'è già un'importazione in corso"
+      "needsReauth": "Il collegamento è scaduto. Ricollega l'account per riprendere le importazioni.",
+      "reconnect": "Ricollega",
+      "openLogin": "1. Apri il login",
+      "pasteStep": "2. Incolla qui l'indirizzo"
+    },
+    "stores": {
+      "steam": {
+        "inputLabel": "Profilo Steam",
+        "placeholder": "https://steamcommunity.com/id/…",
+        "hint": "Incolla l'indirizzo del tuo profilo Steam, il tuo SteamID64 o il nome scelto. Il profilo deve essere pubblico, altrimenti Steam non ci lascia leggere la libreria."
+      },
+      "gog": {
+        "inputLabel": "Indirizzo di atterraggio",
+        "placeholder": "https://embed.gog.com/on_login_success?…",
+        "hint": "Apri il login, entra con il tuo account GOG e poi copia dalla barra del browser l'indirizzo della pagina bianca su cui atterri: dentro c'è il codice che serve. Va fatto una volta sola."
+      }
     },
     "unresolved": {
       "title": "Da sistemare ({count})",

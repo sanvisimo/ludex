@@ -2,18 +2,17 @@
 
 import { useSession } from '@repo/auth/client';
 import type { UnresolvedImport } from '@repo/contracts';
+import { linkableStoreValues } from '@repo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { ResolveImportDialog } from '@/components/resolve-import-dialog';
-import { Badge } from '@/components/ui/badge';
+import { StoreAccountCard } from '@/components/store-account-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
@@ -21,14 +20,12 @@ import { api, client } from '@/lib/orpc';
 
 export default function AccountPage() {
   const t = useTranslations('account');
-  const format = useFormatter();
   const errorMessage = useApiErrorMessage();
   const storeLabels = useStoreLabels();
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const { data: session, isPending: sessionPending } = useSession();
-  const [profile, setProfile] = useState('');
   const [resolving, setResolving] = useState<UnresolvedImport | null>(null);
 
   const accounts = useQuery({
@@ -41,8 +38,9 @@ export default function AccountPage() {
 
   const unresolved = useQuery(api.imports.unresolved.queryOptions());
 
-  const steam = accounts.data?.find((row) => row.store === 'steam') ?? null;
-  const syncing = steam?.syncing ?? false;
+  // Basta che UN negozio stia importando perché backlog e scarti cambino sotto
+  // i piedi: la pagina non deve sapere quale.
+  const syncing = accounts.data?.some((row) => row.syncing) ?? false;
 
   // Finito l'import, backlog e scarti sono cambiati sotto i piedi.
   useEffect(() => {
@@ -53,52 +51,8 @@ export default function AccountPage() {
     void queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
   }, [syncing, queryClient]);
 
-  async function refreshAccounts() {
-    await queryClient.invalidateQueries({ queryKey: api.accounts.list.key() });
-  }
 
-  const link = useMutation({
-    mutationFn: () => client.accounts.linkSteam({ profile: profile.trim() }),
-    onSuccess: async () => {
-      setProfile('');
-      await refreshAccounts();
-      toast.success(t('steam.linked'));
-    },
-    onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('steam.linkFailed') })),
-  });
 
-  const unlink = useMutation({
-    mutationFn: () => client.accounts.unlinkSteam(),
-    onSuccess: async () => {
-      await Promise.all([
-        refreshAccounts(),
-        queryClient.invalidateQueries({
-          queryKey: api.imports.unresolved.key(),
-        }),
-      ]);
-      toast.success(t('steam.unlinked'));
-    },
-    onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('steam.unlinkFailed') })),
-  });
-
-  const sync = useMutation({
-    mutationFn: () => client.accounts.syncSteam(),
-    onSuccess: async () => {
-      await refreshAccounts();
-      toast.success(t('steam.syncStarted'));
-    },
-    onError: (error) =>
-      toast.error(
-        errorMessage(error, {
-          fallback: t('steam.syncFailed'),
-          // Lo stesso codice dice cose diverse a seconda di cosa si stava
-          // facendo: qui un conflitto è "c'è già un import in corso".
-          CONFLICT: t('steam.alreadySyncing'),
-        }),
-      ),
-  });
 
   const dismiss = useMutation({
     mutationFn: (id: string) => client.imports.dismiss({ id }),
@@ -137,69 +91,14 @@ export default function AccountPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('steam.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          {accounts.isPending ? (
-            <Skeleton className="h-9 w-full rounded-lg" />
-          ) : steam ? (
-            <>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{steam.externalAccountId}</Badge>
-                <span className="text-muted-foreground">
-                  {syncing
-                    ? t('steam.syncing')
-                    : steam.lastSyncAt
-                      ? t('steam.lastSync', {
-                          when: format.relativeTime(steam.lastSyncAt),
-                        })
-                      : t('steam.neverSynced')}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() => sync.mutate()}
-                  disabled={syncing || sync.isPending}
-                >
-                  {t('steam.sync')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => unlink.mutate()}
-                  disabled={unlink.isPending}
-                >
-                  {t('steam.unlink')}
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="grid gap-2">
-                <Label htmlFor="profilo">{t('steam.profileLabel')}</Label>
-                <div className="flex flex-wrap gap-2">
-                  <Input
-                    id="profilo"
-                    className="min-w-64 flex-1"
-                    value={profile}
-                    onChange={(event) => setProfile(event.target.value)}
-                    placeholder="https://steamcommunity.com/id/…"
-                  />
-                  <Button
-                    onClick={() => link.mutate()}
-                    disabled={profile.trim().length === 0 || link.isPending}
-                  >
-                    {t('steam.link')}
-                  </Button>
-                </div>
-              </div>
-              <p className="text-muted-foreground">{t('steam.hint')}</p>
-            </>
-          )}
-        </CardContent>
-      </Card>
+      {linkableStoreValues.map((store) => (
+        <StoreAccountCard
+          key={store}
+          store={store}
+          account={accounts.data?.find((row) => row.store === store) ?? null}
+          pending={accounts.isPending}
+        />
+      ))}
 
       {(unresolved.data?.length ?? 0) > 0 && (
         <Card>

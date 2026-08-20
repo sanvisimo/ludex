@@ -28,6 +28,31 @@ export const storeValues = [
   'nintendo',
 ] as const;
 
+// I negozi che si possono collegare **oggi**, in ordine di comparsa.
+//
+// Sottoinsieme di `storeValues`, che è invece l'elenco dei posti da cui un gioco
+// può provenire — compresi quelli che l'utente scrive a mano su un possesso e
+// quelli che non si collegheranno mai (Ubisoft e Battle.net leggono un file del
+// client installato, non una API).
+//
+// Sta nel vocabolario e non solo nel router perché è la UI ad averne bisogno:
+// `/account` disegna una scheda per ciascuno, e senza questa lista dovrebbe
+// tenersene una sua che si scorderebbe di aggiornare.
+export const linkableStoreValues = ['steam', 'gog'] as const;
+
+// Lo stato del collegamento a un negozio (step 9).
+//
+// Esiste perché dal 9a il credenziale è un token che scade e si rinnova da sé,
+// e il rinnovo può fallire per sempre — password cambiata, accesso revocato,
+// refresh token invalidato dal negozio. Quando succede **non fallisce il job,
+// fallisce l'utente**: nessun reimport lo rimette a posto, e l'unica via
+// d'uscita è che rifaccia il gesto del collegamento. Senza questo campo
+// `/account` mostrerebbe un account collegato che smette e basta di
+// aggiornarsi, il che è il modo peggiore di rompersi.
+//
+// Steam resta sempre `ok`: non ha credenziali che scadano.
+export const storeAccountStatusValues = ['ok', 'needs_reauth'] as const;
+
 // Le fonti di un voto della critica. Sottoinsieme delle fonti di dati: HLTB e
 // SteamGridDB non danno voti.
 //
@@ -74,4 +99,6 @@ export type BacklogStatus = (typeof backlogStatusValues)[number];
 export type UserTagKind = (typeof userTagKindValues)[number];
 export type AttributeKind = (typeof attributeKindValues)[number];
 export type Store = (typeof storeValues)[number];
+export type LinkableStore = (typeof linkableStoreValues)[number];
+export type StoreAccountStatus = (typeof storeAccountStatusValues)[number];
 export type ScoreSource = (typeof scoreSourceValues)[number];

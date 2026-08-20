@@ -239,7 +239,7 @@ export function steamEntry(
 ): SteamLibraryEntry {
   const n = unique();
   return {
-    appId: String(200_000 + n),
+    externalId: String(200_000 + n),
     name: `Gioco Steam ${n}`,
     playtimeMinutes: 0,
     lastPlayedAt: null,

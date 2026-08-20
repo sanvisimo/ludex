@@ -10,6 +10,7 @@ import {
   GameDetailSchema,
   GameSchema,
   IgdbSearchHitSchema,
+  LinkableStoreSchema,
   NotesSchema,
   OwnershipInputSchema,
   PlatformSchema,
@@ -70,21 +71,50 @@ export const contract = {
   },
 
   accounts: {
-    // Gli account di negozio collegati. Oggi solo Steam, ma la forma è quella
-    // che serviranno anche GOG ed Epic.
+    // Gli account di negozio collegati.
     list: oc.output(z.array(StoreAccountSchema)),
 
-    // Accetta l'URL del profilo, lo SteamID64 o il solo nome scelto: sono le
-    // tre cose che un utente ha davvero sotto mano. Collegare fa partire subito
-    // il primo import.
-    linkSteam: oc
-      .input(z.object({ profile: z.string().trim().min(1).max(200) }))
+    // Dove mandare l'utente a fare il login, per i negozi che vogliono un
+    // codice. Null per Steam, che non ha un login da fare: lì basta il profilo.
+    //
+    // L'indirizzo lo compone il server e non il client per una ragione che si
+    // paga cara a sbagliarla: dentro ci sono `client_id` e `redirect_uri`, e
+    // quest'ultimo deve combaciare **esattamente** con quello dello scambio del
+    // codice. Tenuti in due punti diversi, prima o poi divergono.
+    loginUrl: oc
+      .input(z.object({ store: LinkableStoreSchema }))
+      .output(z.object({ url: z.string().nullable() })),
+
+    // Collega un negozio con quello che l'utente ha incollato.
+    //
+    // Un endpoint solo per tutti perché il gesto è lo stesso: si incolla una
+    // stringa presa dal browser. Cosa sia dipende dal negozio — per Steam l'URL
+    // del profilo, lo SteamID64 o il nome scelto; per GOG l'indirizzo di
+    // atterraggio dopo il login, col codice dentro — ma è il server a saperlo
+    // interpretare, non il client.
+    //
+    // **Il campo non si chiama `code` apposta**: chi lo manda può averlo
+    // ottenuto in modi diversi. Dal web lo incolla l'utente, da mobile lo
+    // prenderà una WebView senza che nessuno lo veda. Questa procedura non deve
+    // sapere quale dei due è stato, o legherebbe l'API al copia-incolla.
+    //
+    // Collegare fa partire subito il primo import: non ha senso far premere un
+    // secondo bottone per avere i propri giochi.
+    link: oc
+      .input(
+        z.object({
+          store: LinkableStoreSchema,
+          // Largo: un URL di atterraggio con dentro un codice di autorizzazione
+          // supera comodamente i 200 caratteri.
+          value: z.string().trim().min(1).max(2000),
+        }),
+      )
       .output(StoreAccountSchema),
 
-    unlinkSteam: oc.output(z.void()),
+    unlink: oc.input(z.object({ store: LinkableStoreSchema })).output(z.void()),
 
     // Rilancia l'import di una libreria già collegata.
-    syncSteam: oc.output(z.void()),
+    sync: oc.input(z.object({ store: LinkableStoreSchema })).output(z.void()),
   },
 
   imports: {

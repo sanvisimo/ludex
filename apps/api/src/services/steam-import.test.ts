@@ -8,27 +8,35 @@ import {
   linkSteamAccount,
   steamEntry,
 } from '../../test/factories';
-import { findIgdbGamesBySteamAppIds } from '../external/igdb';
+import { findIgdbGamesByExternalIds, searchIgdbGames } from '../external/igdb';
 import { fetchSteamLibrary } from '../external/steam';
 import { enqueueEnrichment } from '../queue/enrichment';
 import { importSteamLibrary } from './steam-import';
 
 vi.mock('../external/steam', () => ({ fetchSteamLibrary: vi.fn() }));
-vi.mock('../external/igdb', () => ({ findIgdbGamesBySteamAppIds: vi.fn() }));
+vi.mock('../external/igdb', () => ({
+  findIgdbGamesByExternalIds: vi.fn(),
+  // Il passo 3 del 9a: l'import ora ripiega sul match per nome. Steam non ne ha
+  // bisogno — i suoi appid IGDB li mappa — ma il modulo va stubbato tutto, o la
+  // prima voce irrisolta uscirebbe in rete davvero.
+  searchIgdbGames: vi.fn(),
+  igdbSourceFor: () => 1,
+}));
 vi.mock('../queue/enrichment', () => ({ enqueueEnrichment: vi.fn() }));
 
 const mockedLibrary = vi.mocked(fetchSteamLibrary);
-const mockedResolve = vi.mocked(findIgdbGamesBySteamAppIds);
+const mockedResolve = vi.mocked(findIgdbGamesByExternalIds);
+const mockedSearch = vi.mocked(searchIgdbGames);
 const mockedEnqueue = vi.mocked(enqueueEnrichment);
 
 /** Fa finta che IGDB conosca questi appid, con un igdbId derivato dall'appid. */
 function igdbKnows(
-  entries: { appId: string; igdbId: number; name?: string }[],
+  entries: { externalId: string; igdbId: number; name?: string }[],
 ) {
   mockedResolve.mockResolvedValue(
     new Map(
       entries.map((e) => [
-        e.appId,
+        e.externalId,
         { igdbId: e.igdbId, name: e.name ?? `IGDB ${e.igdbId}` },
       ]),
     ),
@@ -65,23 +73,29 @@ describe('importSteamLibrary', () => {
   beforeEach(async () => {
     userId = await createUser();
     steamId = await linkSteamAccount(userId);
+    // Di default IGDB non trova niente per nome: su Steam la risoluzione passa
+    // dagli appid, e i test che parlano di irrisolti vogliono restare irrisolti.
+    mockedSearch.mockResolvedValue([]);
   });
 
   it('crea giochi, backlog e possessi con le ore di Steam', async () => {
     const giocato = steamEntry({
-      appId: '220',
+      externalId: '220',
       name: 'Half-Life 2',
       playtimeMinutes: 630,
       lastPlayedAt: new Date('2026-01-15T00:00:00Z'),
     });
     mockedLibrary.mockResolvedValue([giocato]);
-    igdbKnows([{ appId: '220', igdbId: 233, name: 'Half-Life 2' }]);
+    igdbKnows([{ externalId: '220', igdbId: 233, name: 'Half-Life 2' }]);
 
     const report = await importSteamLibrary(userId, steamId);
 
     expect(report).toEqual({
       total: 1,
       resolved: 1,
+      // Zero: su Steam si risolve per appid, il match per nome del 9a non entra
+      // mai in gioco.
+      resolvedByName: 0,
       unresolved: 0,
       newGames: 1,
       newEntries: 1,
@@ -100,8 +114,8 @@ describe('importSteamLibrary', () => {
   });
 
   it('rieseguito lascia lo stesso stato', async () => {
-    mockedLibrary.mockResolvedValue([steamEntry({ appId: '220' })]);
-    igdbKnows([{ appId: '220', igdbId: 233 }]);
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
+    igdbKnows([{ externalId: '220', igdbId: 233 }]);
 
     await importSteamLibrary(userId, steamId);
     const secondo = await importSteamLibrary(userId, steamId);
@@ -114,15 +128,15 @@ describe('importSteamLibrary', () => {
 
   it('aggiorna le ore al reimport', async () => {
     mockedLibrary.mockResolvedValue([
-      steamEntry({ appId: '220', playtimeMinutes: 60 }),
+      steamEntry({ externalId: '220', playtimeMinutes: 60 }),
     ]);
-    igdbKnows([{ appId: '220', igdbId: 233 }]);
+    igdbKnows([{ externalId: '220', igdbId: 233 }]);
     await importSteamLibrary(userId, steamId);
 
     mockedLibrary.mockResolvedValue([
-      steamEntry({ appId: '220', playtimeMinutes: 240 }),
+      steamEntry({ externalId: '220', playtimeMinutes: 240 }),
     ]);
-    igdbKnows([{ appId: '220', igdbId: 233 }]);
+    igdbKnows([{ externalId: '220', igdbId: 233 }]);
     await importSteamLibrary(userId, steamId);
 
     expect(await ownershipsOf(userId)).toMatchObject([
@@ -142,9 +156,9 @@ describe('importSteamLibrary', () => {
       .values({ backlogId: entry!.id, platformSlug: 'nintendo_switch' });
 
     mockedLibrary.mockResolvedValue([
-      steamEntry({ appId: '220', playtimeMinutes: 90 }),
+      steamEntry({ externalId: '220', playtimeMinutes: 90 }),
     ]);
-    igdbKnows([{ appId: '220', igdbId: 233 }]);
+    igdbKnows([{ externalId: '220', igdbId: 233 }]);
     await importSteamLibrary(userId, steamId);
 
     const righe = await ownershipsOf(userId);
@@ -170,12 +184,12 @@ describe('importSteamLibrary', () => {
 
   it('regge due appid che puntano allo stesso gioco', async () => {
     mockedLibrary.mockResolvedValue([
-      steamEntry({ appId: '220', playtimeMinutes: 30 }),
-      steamEntry({ appId: '221', playtimeMinutes: 30 }),
+      steamEntry({ externalId: '220', playtimeMinutes: 30 }),
+      steamEntry({ externalId: '221', playtimeMinutes: 30 }),
     ]);
     igdbKnows([
-      { appId: '220', igdbId: 233 },
-      { appId: '221', igdbId: 233 },
+      { externalId: '220', igdbId: 233 },
+      { externalId: '221', igdbId: 233 },
     ]);
 
     const report = await importSteamLibrary(userId, steamId);
@@ -193,7 +207,7 @@ describe('importSteamLibrary', () => {
   it('mette gli irrisolti in tabella a parte, non in games', async () => {
     mockedLibrary.mockResolvedValue([
       steamEntry({
-        appId: '931180',
+        externalId: '931180',
         name: 'Conan Exiles - Public Beta Client',
         playtimeMinutes: 12,
       }),
@@ -221,16 +235,16 @@ describe('importSteamLibrary', () => {
 
   it('toglie dagli irrisolti ciò che IGDB nel frattempo conosce', async () => {
     mockedLibrary.mockResolvedValue([
-      steamEntry({ appId: '1588530', name: 'Dungeon Alchemist' }),
+      steamEntry({ externalId: '1588530', name: 'Dungeon Alchemist' }),
     ]);
     igdbKnows([]);
     await importSteamLibrary(userId, steamId);
     expect(await unresolvedOf(userId)).toHaveLength(1);
 
     mockedLibrary.mockResolvedValue([
-      steamEntry({ appId: '1588530', name: 'Dungeon Alchemist' }),
+      steamEntry({ externalId: '1588530', name: 'Dungeon Alchemist' }),
     ]);
-    igdbKnows([{ appId: '1588530', igdbId: 999 }]);
+    igdbKnows([{ externalId: '1588530', igdbId: 999 }]);
     await importSteamLibrary(userId, steamId);
 
     // IGDB cresce: la voce va tolta, non lasciata lì a chiedere un intervento
@@ -245,27 +259,27 @@ describe('importSteamLibrary', () => {
       .insert(schema.externalIds)
       .values({ gameId: game.id, source: 'steam', externalId: '220' });
 
-    mockedLibrary.mockResolvedValue([steamEntry({ appId: '220' })]);
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
     igdbKnows([]);
 
     const report = await importSteamLibrary(userId, steamId);
 
     // Prima il nostro DB: è ciò che rende quasi gratis l'import del secondo
     // utente che possiede gli stessi giochi del primo.
-    expect(mockedResolve).toHaveBeenCalledWith([]);
+    expect(mockedResolve).toHaveBeenCalledWith('steam', []);
     expect(report).toMatchObject({ resolved: 1, newGames: 0, newEntries: 1 });
   });
 
   it("riusa il gioco importato da un altro utente e non riaccoda l'enrichment", async () => {
     const altro = await createUser();
     await linkSteamAccount(altro, '76561190000000001');
-    mockedLibrary.mockResolvedValue([steamEntry({ appId: '220' })]);
-    igdbKnows([{ appId: '220', igdbId: 233 }]);
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
+    igdbKnows([{ externalId: '220', igdbId: 233 }]);
     await importSteamLibrary(altro, '76561190000000001');
     mockedEnqueue.mockClear();
 
-    mockedLibrary.mockResolvedValue([steamEntry({ appId: '220' })]);
-    igdbKnows([{ appId: '220', igdbId: 233 }]);
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
+    igdbKnows([{ externalId: '220', igdbId: 233 }]);
     const report = await importSteamLibrary(userId, steamId);
 
     // Il costo dell'enrichment si paga una volta sola: è il vantaggio che cresce
@@ -277,12 +291,12 @@ describe('importSteamLibrary', () => {
 
   it("accoda l'enrichment solo per i giochi nuovi", async () => {
     mockedLibrary.mockResolvedValue([
-      steamEntry({ appId: '220' }),
-      steamEntry({ appId: '70' }),
+      steamEntry({ externalId: '220' }),
+      steamEntry({ externalId: '70' }),
     ]);
     igdbKnows([
-      { appId: '220', igdbId: 233 },
-      { appId: '70', igdbId: 231 },
+      { externalId: '220', igdbId: 233 },
+      { externalId: '70', igdbId: 231 },
     ]);
 
     await importSteamLibrary(userId, steamId);

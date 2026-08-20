@@ -1,6 +1,6 @@
 import '../env';
 
-import { findIgdbGamesBySteamAppIds } from '../external/igdb';
+import { findIgdbGamesByExternalIds } from '../external/igdb';
 import { fetchSteamLibrary } from '../external/steam';
 import { findGameIdsByExternalIds } from '../services/games';
 
@@ -22,13 +22,14 @@ if (!steamId) {
 const library = await fetchSteamLibrary(steamId);
 const known = await findGameIdsByExternalIds(
   'steam',
-  library.map((entry) => entry.appId),
+  library.map((entry) => entry.externalId),
 );
-const missing = library.filter((entry) => !known.has(entry.appId));
-const matches = await findIgdbGamesBySteamAppIds(
-  missing.map((entry) => entry.appId),
+const missing = library.filter((entry) => !known.has(entry.externalId));
+const matches = await findIgdbGamesByExternalIds(
+  'steam',
+  missing.map((entry) => entry.externalId),
 );
-const unresolved = missing.filter((entry) => !matches.has(entry.appId));
+const unresolved = missing.filter((entry) => !matches.has(entry.externalId));
 
 const giocati = library.filter((entry) => entry.playtimeMinutes > 0);
 
@@ -46,7 +47,7 @@ if (unresolved.length > 0) {
       entry.playtimeMinutes > 0
         ? ` (${Math.round(entry.playtimeMinutes / 60)}h)`
         : '';
-    console.log(`    ${entry.appId.padEnd(9)} ${entry.name}${ore}`);
+    console.log(`    ${entry.externalId.padEnd(9)} ${entry.name}${ore}`);
   }
 }
 

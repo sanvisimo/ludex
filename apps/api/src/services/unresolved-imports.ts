@@ -7,7 +7,7 @@ import {
   findEntryByGame,
 } from './backlog';
 import { resolveGameFromIgdb } from './games';
-import { STEAM_PLATFORM } from './steam-import';
+import { platformFor } from './library-import';
 
 /**
  * Le voci di libreria che l'import non ha saputo legare a un gioco.
@@ -53,15 +53,11 @@ export async function resolveUnresolvedImport(
   const pending = await findOwn(userId, id);
   if (!pending) return { status: 'not_found' as const };
 
-  // Oggi solo Steam produce scarti, e per Steam la piattaforma è PC. Il giorno
-  // che arriva un negozio di console indovinarla sarebbe scrivere dati sbagliati
-  // in silenzio — PSN è PS4 o PS5? — e non è una domanda da risolvere qui:
-  // meglio fermarsi e costringere chi aggiunge il negozio a decidere.
-  if (pending.store !== 'steam') {
-    throw new Error(
-      `Nessuna piattaforma definita per il negozio ${pending.store}`,
-    );
-  }
+  // La stessa mappa che usa l'import, e per la stessa ragione: se un negozio non
+  // la dichiara `platformFor` alza invece di indovinare. Indovinare vorrebbe
+  // dire scrivere dati sbagliati in silenzio in una tabella su cui si filtra —
+  // PSN è PS4 o PS5? — e la risposta la deve dare chi aggiunge quel negozio.
+  const platformSlug = platformFor(pending.store);
 
   const game = await resolveGameFromIgdb(igdbId);
   if (!game) return { status: 'unknown_igdb_id' as const };
@@ -83,7 +79,7 @@ export async function resolveUnresolvedImport(
   await ensureOwnerships([
     {
       backlogId,
-      platformSlug: STEAM_PLATFORM,
+      platformSlug,
       store: pending.store,
       playtimeMinutes: pending.playtimeMinutes,
       lastPlayedAt: pending.lastPlayedAt,

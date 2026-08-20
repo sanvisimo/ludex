@@ -25,19 +25,20 @@ import {
   findExistingPlatformSlugs,
   listPlatforms,
 } from '../services/platforms';
+import { gogLoginUrl } from '../external/gog';
 import { deleteUserTag, listUserTags } from '../services/tags';
 import {
-  findSteamAccount,
-  linkSteamAccount,
+  findStoreAccount,
+  linkStore,
   listStoreAccounts,
-  unlinkSteamAccount,
+  unlinkStoreAccount,
 } from '../services/store-accounts';
 import {
   dismissUnresolvedImport,
   listUnresolvedImports,
   resolveUnresolvedImport,
 } from '../services/unresolved-imports';
-import { enqueueSteamImport, isSteamImportRunning } from '../queue/imports';
+import { enqueueImport, isImportRunning } from '../queue/imports';
 import { authed, maybeAuthed, os } from './context';
 
 export const router = os.router({
@@ -88,45 +89,66 @@ export const router = os.router({
       .use(authed)
       .handler(({ context }) => listStoreAccounts(context.user.id)),
 
-    linkSteam: os.accounts.linkSteam
+    loginUrl: os.accounts.loginUrl.use(authed).handler(({ input }) => ({
+      // Steam non ha un login da fare: l'utente incolla il proprio profilo, che
+      // è pubblico. Gli altri mandano su una pagina del negozio.
+      url: input.store === 'gog' ? gogLoginUrl() : null,
+    })),
+
+    link: os.accounts.link.use(authed).handler(async ({ input, context }) => {
+      const account = await linkStore(context.user.id, input.store, input.value);
+
+      // Collegare e importare sono la stessa azione per l'utente: non ha senso
+      // fargli premere un secondo bottone per avere i suoi giochi.
+      await enqueueImport({
+        store: input.store,
+        userId: context.user.id,
+        steamId:
+          input.store === 'steam' ? account.externalAccountId : undefined,
+      });
+
+      return { ...account, syncing: true };
+    }),
+
+    unlink: os.accounts.unlink
       .use(authed)
       .handler(async ({ input, context }) => {
-        const account = await linkSteamAccount(context.user.id, input.profile);
-
-        // Collegare e importare sono la stessa azione per l'utente: non ha senso
-        // fargli premere un secondo bottone per avere i suoi giochi.
-        await enqueueSteamImport(context.user.id, account.externalAccountId);
-
-        return { ...account, syncing: true };
-      }),
-
-    unlinkSteam: os.accounts.unlinkSteam
-      .use(authed)
-      .handler(async ({ context }) => {
-        const removed = await unlinkSteamAccount(context.user.id);
+        const removed = await unlinkStoreAccount(context.user.id, input.store);
         if (!removed)
           throw new ORPCError('NOT_FOUND', {
-            message: 'Nessun account Steam collegato',
+            message: `Nessun account ${input.store} collegato`,
           });
       }),
 
-    syncSteam: os.accounts.syncSteam
-      .use(authed)
-      .handler(async ({ context }) => {
-        const account = await findSteamAccount(context.user.id);
-        if (!account)
-          throw new ORPCError('NOT_FOUND', {
-            message: 'Nessun account Steam collegato',
-          });
+    sync: os.accounts.sync.use(authed).handler(async ({ input, context }) => {
+      const account = await findStoreAccount(context.user.id, input.store);
+      if (!account)
+        throw new ORPCError('NOT_FOUND', {
+          message: `Nessun account ${input.store} collegato`,
+        });
 
-        // La coda deduplica per utente, quindi due click non fanno due import; il
-        // controllo qui serve solo a dirlo, invece di far finta di aver accodato.
-        if (await isSteamImportRunning(context.user.id)) {
-          throw new ORPCError('CONFLICT', { message: 'Import già in corso' });
-        }
+      // Un credenziale morto non si sblocca riprovando: accodare qui vorrebbe
+      // dire un job che fallisce e un utente che non capisce perché.
+      if (account.status === 'needs_reauth') {
+        throw new ORPCError('FORBIDDEN', {
+          message: `Il collegamento a ${input.store} è scaduto: ricollega l'account`,
+        });
+      }
 
-        await enqueueSteamImport(context.user.id, account.externalAccountId);
-      }),
+      // La coda deduplica per utente e negozio, quindi due click non fanno due
+      // import; il controllo qui serve solo a dirlo, invece di far finta di
+      // aver accodato.
+      if (await isImportRunning(input.store, context.user.id)) {
+        throw new ORPCError('CONFLICT', { message: 'Import già in corso' });
+      }
+
+      await enqueueImport({
+        store: input.store,
+        userId: context.user.id,
+        steamId:
+          input.store === 'steam' ? account.externalAccountId : undefined,
+      });
+    }),
   },
 
   imports: {

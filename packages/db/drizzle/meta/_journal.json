@@ -85,6 +85,13 @@
       "when": 1787166940059,
       "tag": "0011_flippant_leader",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1787219649436,
+      "tag": "0012_broken_captain_cross",
+      "breakpoints": true
     }
   ]
 }
