@@ -55,8 +55,19 @@ export const linkableStoreValues = [
 // `/account` mostrerebbe un account collegato che smette e basta di
 // aggiornarsi, il che è il modo peggiore di rompersi.
 //
+// `unlinked` è l'account che l'utente ha scollegato **tenendosi i giochi**. La
+// riga sopravvive senza credenziali per una ragione sola: i possessi puntano a
+// lei, e cancellarla vorrebbe dire che il backlog smette di sapere da quale dei
+// due account Amazon veniva un gioco — che è esattamente il buco per cui gli
+// account sono diventati più d'uno. Chi sceglie di cancellare i giochi invece
+// non ha più niente da ricordare, e lì la riga sparisce davvero.
+//
 // Steam resta sempre `ok`: non ha credenziali che scadano.
-export const storeAccountStatusValues = ['ok', 'needs_reauth'] as const;
+export const storeAccountStatusValues = [
+  'ok',
+  'needs_reauth',
+  'unlinked',
+] as const;
 
 // Le fonti di un voto della critica. Sottoinsieme delle fonti di dati: HLTB e
 // SteamGridDB non danno voti.

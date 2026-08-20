@@ -1,5 +1,9 @@
 import './env';
 
+import { storeAccountName } from '@repo/contracts';
+import type { Store } from '@repo/contracts/vocabulary';
+import { db, schema } from '@repo/db';
+import { eq } from '@repo/db/orm';
 import { UnrecoverableError, Worker } from 'bullmq';
 
 import { openCriticQuota } from './external/opencritic';
@@ -28,7 +32,10 @@ import { importEpicLibrary } from './services/epic-import';
 import { importGogLibrary } from './services/gog-import';
 import { type ImportReport } from './services/library-import';
 import { importSteamLibrary } from './services/steam-import';
-import { StoreReauthRequiredError } from './services/store-accounts';
+import {
+  type StoreAccountRow,
+  StoreReauthRequiredError,
+} from './services/store-accounts';
 
 // Secondo entrypoint di apps/api. Stesso codebase e stessi servizi di server.ts,
 // ma qui non si espone HTTP: i job non devono girare nel processo che serve le
@@ -121,19 +128,17 @@ worker.on('failed', (job, error) => {
 // L'unico punto in cui un negozio diventa una funzione, come `enrichers` qui
 // sopra: il worker non sa quali negozi esistano, sa che ce n'è uno da importare.
 //
-// Steam è l'unico che prende un secondo argomento, ed è l'unico che se lo può
-// permettere: lo SteamID64 non è un segreto, viaggia nel job. Gli altri vanno a
-// leggersi il credenziale cifrato da `store_accounts`.
+// Prendono tutti **la riga dell'account** e non `(userId, store)`: da lì si
+// leggono l'utente, l'identità pubblica e il credenziale cifrato. Steam non ha
+// più un argomento in più — il suo SteamID64 è `externalAccountId`, e tenerne
+// una copia nel job voleva dire due posti da cui poteva arrivare la verità.
 const importers: Partial<
-  Record<
-    ImportJob['store'],
-    (userId: string, steamId?: string) => Promise<ImportReport>
-  >
+  Record<Store, (account: StoreAccountRow) => Promise<ImportReport>>
 > = {
-  steam: (userId, steamId) => importSteamLibrary(userId, steamId!),
-  gog: (userId) => importGogLibrary(userId),
-  epic: (userId) => importEpicLibrary(userId),
-  amazon: (userId) => importAmazonLibrary(userId),
+  steam: importSteamLibrary,
+  gog: importGogLibrary,
+  epic: importEpicLibrary,
+  amazon: importAmazonLibrary,
 };
 
 // Coda a parte: un import genera centinaia di job di enrichment, e sulla stessa
@@ -141,21 +146,42 @@ const importers: Partial<
 const importsWorker = new Worker<ImportJob>(
   IMPORTS_QUEUE,
   async (job) => {
-    const { store, userId } = job.data;
+    const { storeAccountId } = job.data;
+
+    // L'account si rilegge qui e non arriva dentro il job: fra l'accodamento e
+    // adesso può essere stato scollegato, o il suo token rinnovato da qualcun
+    // altro. Un job che porta con sé una copia della riga lavora su una verità
+    // vecchia di minuti.
+    const account = await db.query.storeAccounts.findFirst({
+      where: eq(schema.storeAccounts.id, storeAccountId),
+    });
+
+    // Scollegato mentre il job aspettava in coda. Non è un guasto e riprovare
+    // non lo aggiusta: l'utente ha detto che quell'account non lo vuole più.
+    if (!account || account.status === 'unlinked') {
+      throw new UnrecoverableError(
+        `L'account ${storeAccountId} non è più collegato`,
+      );
+    }
 
     try {
-      const importer = importers[store];
+      const importer = importers[account.store];
       // Un negozio non ancora implementato non deve fallire tre volte con un
       // "not a function": succede solo se qualcuno accoda a mano dalla
       // dashboard, ma il messaggio deve dirlo.
       if (!importer) {
-        throw new UnrecoverableError(`Nessun import per il negozio ${store}`);
+        throw new UnrecoverableError(
+          `Nessun import per il negozio ${account.store}`,
+        );
       }
 
-      const report = await importer(userId, job.data.steamId);
+      const report = await importer(account);
 
+      // L'account e non l'utente: con due account sullo stesso negozio, due
+      // righe di log con lo stesso userId sarebbero indistinguibili — lo stesso
+      // problema che le schede avevano a schermo.
       console.log(
-        `[import] ${store} ${userId}: ${report.total} in libreria, ` +
+        `[import] ${account.store} ${storeAccountName(account)}: ${report.total} in libreria, ` +
           `${report.resolved} risolti (${report.resolvedByName} per nome, ` +
           `${report.newGames} giochi nuovi, ${report.newEntries} aggiunti al ` +
           `backlog), ${report.unresolved} da sistemare`,

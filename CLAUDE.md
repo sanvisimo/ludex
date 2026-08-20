@@ -204,10 +204,11 @@ possesso. Conseguenze:
 Le librerie importate aggiungono tre cose al modello, decise allo step 4:
 
 - **`store_accounts`**: l'account dell'utente su un negozio, uno per `(utente,
-negozio)`. Non è una colonna su `user` perché `auth.ts` è generato e viene
-  riscritto. Allo step 4 teneva solo l'identità pubblica dell'account, perché a
-  Steam basta uno SteamID64; dallo step 9 tiene anche i token, e come sono fatti
-  lo dice «Le altre librerie» qui sotto.
+  negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
+  vero, e ci sono utenti con due Steam. Non è una colonna su `user` perché
+  `auth.ts` è generato e viene riscritto. Allo step 4 teneva solo l'identità
+  pubblica dell'account, perché a Steam basta uno SteamID64; dallo step 9 tiene
+  anche i token, e come sono fatti lo dice «Le altre librerie» qui sotto.
 - **ore giocate su `ownerships`**, non su `backlog`: sono una proprietà di
   _quella copia_, e lo stesso gioco su GOG avrebbe le sue. Sono dato oggettivo
   del negozio, non un campo personale dello step 5. **Non si usano per indovinare
@@ -217,12 +218,91 @@ negozio)`. Non è una colonna su `user` perché `auth.ts` è generato e viene
   Stanno lì e **non in `games` come righe non risolte**, perché `games` è
   condivisa fra tutti gli utenti: su una libreria vera gli scarti sono client
   beta e "Friend's Pass", e riversarli nel catalogo di tutti per un problema di
-  uno è sbagliato. L'utente le vede e le risolve a mano.
+  uno è sbagliato. L'utente le vede e le risolve a mano. Sono **per account**,
+  non per negozio, o gli scarti del secondo Amazon sovrascriverebbero quelli del
+  primo.
 
-Lato web tutto questo vive in **`/account`**: il collegamento (si incolla l'URL
-del profilo, lo SteamID64 o il nome scelto — lo SteamID su Steam non è in vista
-da nessuna parte), lo stato dell'import mentre gira, e la lista degli scarti da
-sistemare o scartare. Che un import sia in corso si legge **dalla coda** e non da
+##### Come si chiama un account, quando ne hai due
+
+`store_accounts` porta **due** nomi, e sono di due persone diverse:
+
+- `display_name` è come lo chiama il **negozio**: `personaname` su Steam,
+  `username` su GOG (da `userData.json`, l'unico posto dove GOG dica qualcosa di
+  leggibile — lo scambio del token dà solo l'id), il display name su Epic, il
+  nome di battesimo su Amazon. Si prende **al collegamento** e non a ogni import:
+  è decorazione, e un nome cambiato nel frattempo non vale una richiesta in più
+  per libreria. Se la richiesta non riesce si mette null e si tira avanti — un
+  collegamento riuscito non deve fallire perché non sappiamo come chiamarlo.
+- `label` è come lo chiama **l'utente**, ed è l'unica cosa che risolve il caso
+  per cui esiste: due account Amazon della stessa persona rendono lo **stesso**
+  `given_name`, misurato su due account veri. Nessun dato dell'API li separa, e
+  l'unico che sa quale dei due è «quello di famiglia» è chi li ha collegati.
+
+La precedenza è `label → display_name → external_account_id`, scritta una volta
+sola in `storeAccountName` dentro `packages/contracts`, perché la usano la lista
+degli account, i badge dei possessi e i log del worker.
+
+Da qui discende una regola per i negozi che verranno: **non si va a caccia
+dell'email** per distinguere gli account. GOG ce l'ha, Amazon la nasconde dietro
+uno scope che non abbiamo, EA e Nintendo non danno niente — e anche prendendola
+tutta si resterebbe con due account che si chiamano uguale. L'etichetta funziona
+ovunque e costa zero richieste.
+
+Attenzione a un tranello di GOG: `userData.json` porta un `userId` che **non è**
+quello che salviamo. Il nostro `external_account_id` viene dallo scambio del
+token ed è il `galaxyUserId`. Di quella risposta si prende il nome e nient'altro,
+o l'identità dell'account cambierebbe sotto ai possessi che ci puntano.
+
+##### Il possesso sa da quale account viene
+
+`ownerships` porta uno `store_account_id`, nullo sugli inserimenti manuali. Non è
+un di più: senza, due account dello stesso negozio collassano nella stessa riga
+per il vincolo unique, e da lì discendono due cose che non si possono più fare —
+sapere **da quale dei due lanciare il gioco**, e sapere **quali possessi erano di
+un account** quando lo si scollega. `store` resta accanto e non è ridondante: è
+l'unica cosa che c'è sugli inserimenti manuali, ed è la colonna su cui filtra la
+ricerca dello step 7.
+
+L'account entra anche **nella chiave del vincolo**, e questo ha una conseguenza
+da tenere a mente: un possesso «PC / Amazon» scritto a mano e lo stesso portato
+dall'import sarebbero due righe. Per questo `ensureOwnerships` prima **adotta**
+il possesso senza account invece di sdoppiarlo — l'adozione è ristretta a
+`store_account_id is null`, perché una riga che porta già l'id di un *altro*
+account è il caso vero dei due Amazon e non si tocca.
+
+**Scollegare è una domanda, non un bottone**, ed è l'unica risposta al buco che
+il CLAUDE.md dichiarava aperto sui possessi. Le due strade non sono la stessa
+cosa con un'etichetta diversa:
+
+- **tieni i giochi** — restano nel backlog come se fossero stati inseriti a mano.
+  La riga di `store_accounts` **non si cancella**: passa a `unlinked` e perde le
+  credenziali. Sopravvive perché i possessi puntano a lei, ed è l'unica cosa che
+  ancora ricordi da quale dei due account veniva un gioco. Cancellarla e mettere
+  a nullo i possessi ricreerebbe esattamente il buco appena chiuso.
+- **cancella i giochi** — i possessi di quell'account se ne vanno, e con loro le
+  righe di `backlog` che restano senza nessun possesso: voto, note e tag
+  compresi, senza eccezioni. Qui la riga dell'account si cancella davvero, perché
+  non è rimasto niente da ricordare.
+
+In entrambi i casi **`games` non si tocca mai**: la scheda, i metadata e la
+mappatura in `external_ids` restano nel catalogo condiviso, e il prossimo utente
+che importa quel gioco non ne ripaga l'enrichment perché qualcun altro ha
+scollegato un account. E in entrambi i casi gli scarti se ne vanno: senza
+l'account sono voci di una libreria che non sappiamo più leggere.
+
+Poiché «cancella» è irreversibile e la sua portata **non si vede da fuori** — un
+gioco che sta anche su GOG non sparisce — il dialogo conta prima di eseguire:
+quanti possessi, quanti giochi uscirebbero davvero dal backlog, e quanti di
+quelli hanno qualcosa che ha messo l'utente.
+
+Lato web tutto questo vive in **`/account`**: una **lista di account collegati**
+più un «aggiungi un account» dove si sceglie il negozio, lo stato dell'import
+mentre gira, e la lista degli scarti da sistemare o scartare. `linkableStoreValues`
+non sparisce, cambia mestiere: non è più l'elenco delle schede — una per negozio
+non poteva rappresentare due account Amazon — ma l'elenco di quella tendina. Il
+collegamento resta lo stesso gesto per tutti (si incolla l'URL del profilo, lo
+SteamID64 o il nome scelto — lo SteamID su Steam non è in vista da nessuna
+parte). Che un import sia in corso si legge **dalla coda** e non da
 `last_sync_at`, che al primo giro è ancora nullo e non avrebbe niente da dire.
 
 L'ordine dei passi dell'import è esso stesso una regola: **prima il nostro DB**
@@ -230,6 +310,14 @@ L'ordine dei passi dell'import è esso stesso una regola: **prima il nostro DB**
 resto, in blocchi — su 452 giochi sono quattro richieste. Risoluzione ed
 enrichment restano due cose distinte: la prima è sincrona e in blocco, il secondo
 è un job per gioco.
+
+Il job d'import porta **l'id dell'account e nient'altro**: da lì si leggono
+negozio, utente e identità pubblica. Era `{ store, userId }`, che è anche la
+vecchia chiave di deduplicazione, e con due account sullo stesso negozio si
+escludevano a vicenda — il secondo veniva scartato in silenzio e l'utente
+aspettava una libreria che non arrivava. Il credenziale non è mai nel job: chi
+esegue va a leggerlo, o si scriverebbe un refresh token in chiaro nella
+cronologia di Redis.
 
 #### Le altre librerie (step 9): il problema è il credenziale, non l'API
 
@@ -335,6 +423,10 @@ possesso, e non c'è una terza cosa. Si risponde quando si arriva alla famiglia 
 allo Xbox, non prima, e la risposta decide `ownerships` — non si aggira
 importando e sperando.
 
+**`store_account_id` non è quella risposta**, e non va scambiato per tale: dice
+di chi è la copia, non se è tua. Ma non le sbarra la strada — quando la risposta
+arriverà sarà una colonna accanto, sulla stessa riga, non un'altra tabella.
+
 #### I voti della critica stanno in `game_scores`, non su `games`
 
 Sono tre numeri diversi — IGDB, OpenCritic, Metacritic — e uno di loro **dipende
@@ -417,7 +509,10 @@ gioco li mostra tutti, con la fonte accanto.
      step 4. Fino a qui l'unico modo di aggiungere una piattaforma era cancellare
      la riga e rifarla. **Solo aggiunta**: togliere un possesso non basta a farlo
      sparire, perché il prossimo import lo ricrea — prima serve una logica di
-     scarto/nascondi, che è ancora da pensare.
+     scarto/nascondi, che è ancora da pensare. Lo scollegamento di un account è
+     l'unico taglio che oggi regge, e regge proprio perché toglie *anche* la
+     fonte che ricreerebbe la riga (vedi «Il possesso sa da quale account
+     viene»).
 
    Due cose che si erano immaginate qui e stanno **fuori**, ciascuna perché è uno
    step suo e non un campo in più nel form:

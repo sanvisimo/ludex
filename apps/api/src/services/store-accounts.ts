@@ -1,6 +1,6 @@
 import type { LinkableStore, Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, eq } from '@repo/db/orm';
+import { and, eq, inArray, ne, sql } from '@repo/db/orm';
 
 import {
   AmazonAuthError,
@@ -19,12 +19,13 @@ import {
 } from '../external/epic';
 import {
   exchangeGogCode,
+  fetchGogUsername,
   gogLoginUrl,
   GogAuthError,
   parseGogAuthCode,
   refreshGogTokens,
 } from '../external/gog';
-import { resolveSteamId } from '../external/steam';
+import { fetchSteamPersonaName, resolveSteamId } from '../external/steam';
 import { encryptCredentials, decryptCredentials } from '../lib/crypto';
 import { isImportRunning } from '../queue/imports';
 
@@ -52,7 +53,33 @@ export class StoreReauthRequiredError extends Error {
 }
 
 /**
- * Gli account collegati dall'utente.
+ * La riga di `store_accounts`, come la leggono i servizi.
+ *
+ * Le funzioni che parlano con un negozio prendono **la riga** e non
+ * `(userId, store)`: da quando gli account per negozio possono essere più d'uno,
+ * quella coppia non individua più niente.
+ */
+export type StoreAccountRow = typeof schema.storeAccounts.$inferSelect;
+
+/** Ciò che di un account esce dall'API. Mai le credenziali. */
+const accountColumns = {
+  id: schema.storeAccounts.id,
+  store: schema.storeAccounts.store,
+  externalAccountId: schema.storeAccounts.externalAccountId,
+  displayName: schema.storeAccounts.displayName,
+  label: schema.storeAccounts.label,
+  status: schema.storeAccounts.status,
+  lastSyncAt: schema.storeAccounts.lastSyncAt,
+};
+
+/**
+ * Gli account collegati dall'utente, quanti ne vuole per negozio.
+ *
+ * Gli `unlinked` restano fuori: sono righe che sopravvivono solo per dire ai
+ * possessi da dove venivano, e in `/account` un account scollegato che compare
+ * fra quelli collegati sarebbe una bugia. Chi ha bisogno del loro nome — la
+ * scheda di un gioco, per scrivere «Amazon (secondo account)» — se lo legge
+ * dalla JOIN sul possesso, non da qui.
  *
  * `syncing` non viene dal DB ma dalla coda: durante il primo import `lastSyncAt`
  * è ancora nullo, e senza questo la pagina non avrebbe niente da mostrare per
@@ -60,29 +87,35 @@ export class StoreReauthRequiredError extends Error {
  */
 export async function listStoreAccounts(userId: string) {
   const rows = await db
-    .select({
-      store: schema.storeAccounts.store,
-      externalAccountId: schema.storeAccounts.externalAccountId,
-      displayName: schema.storeAccounts.displayName,
-      status: schema.storeAccounts.status,
-      lastSyncAt: schema.storeAccounts.lastSyncAt,
-    })
+    .select(accountColumns)
     .from(schema.storeAccounts)
-    .where(eq(schema.storeAccounts.userId, userId));
+    .where(
+      and(
+        eq(schema.storeAccounts.userId, userId),
+        ne(schema.storeAccounts.status, 'unlinked'),
+      ),
+    )
+    .orderBy(schema.storeAccounts.store, schema.storeAccounts.createdAt);
 
   return Promise.all(
     rows.map(async (row) => ({
       ...row,
-      syncing: await isImportRunning(row.store, userId),
+      syncing: await isImportRunning(row.id),
     })),
   );
 }
 
-export function findStoreAccount(userId: string, store: Store) {
+/**
+ * Un account dell'utente, per id.
+ *
+ * Sempre in AND con lo `userId`: senza, un id indovinato darebbe accesso
+ * all'account di un altro — e qui dentro ci sono le credenziali.
+ */
+export function findStoreAccount(userId: string, accountId: string) {
   return db.query.storeAccounts.findFirst({
     where: and(
+      eq(schema.storeAccounts.id, accountId),
       eq(schema.storeAccounts.userId, userId),
-      eq(schema.storeAccounts.store, store),
     ),
   });
 }
@@ -90,16 +123,23 @@ export function findStoreAccount(userId: string, store: Store) {
 /**
  * Scrive il collegamento.
  *
- * Ricollegare **sovrascrive**: un utente che si accorge di aver messo il profilo
- * sbagliato deve poter correggere senza scollegare prima. `lastSyncAt` torna
- * nullo, perché la libreria di prima non è quella di adesso, e `status` torna
- * `ok`, perché è esattamente il gesto che rimette in sesto un `needs_reauth`.
+ * Ricollegare **lo stesso account** sovrascrive: è il gesto che rimette in
+ * sesto un `needs_reauth`, e riporta a `ok` anche un account scollegato che
+ * l'utente ripesca. Collegarne uno **diverso** ne aggiunge uno, che è la ragione
+ * per cui la chiave comprende `externalAccountId`.
+ *
+ * Il prezzo, ed è giusto sia scritto: incollare il profilo Steam sbagliato non
+ * si corregge più reincollando quello giusto — si finisce con due account e si
+ * scollega quello di troppo.
+ *
+ * `lastSyncAt` torna nullo perché la libreria di prima non è quella di adesso.
  */
 async function upsertAccount(input: {
   userId: string;
   store: Store;
   externalAccountId: string;
   displayName?: string | null;
+  label?: string | null;
   credentials?: unknown;
   expiresAt?: Date | null;
 }) {
@@ -115,15 +155,24 @@ async function upsertAccount(input: {
       store: input.store,
       externalAccountId: input.externalAccountId,
       displayName: input.displayName ?? null,
+      label: input.label ?? null,
       credentials,
       credentialsExpireAt: input.expiresAt ?? null,
       status: 'ok',
     })
     .onConflictDoUpdate({
-      target: [schema.storeAccounts.userId, schema.storeAccounts.store],
+      target: [
+        schema.storeAccounts.userId,
+        schema.storeAccounts.store,
+        schema.storeAccounts.externalAccountId,
+      ],
       set: {
-        externalAccountId: input.externalAccountId,
         displayName: input.displayName ?? null,
+        // L'etichetta è dell'utente, non del negozio: ricollegare non deve
+        // cancellargliela. Si sovrascrive solo se ne ha scritta una nuova.
+        label: input.label
+          ? input.label
+          : sql`${schema.storeAccounts.label}`,
         credentials,
         credentialsExpireAt: input.expiresAt ?? null,
         status: 'ok',
@@ -131,45 +180,166 @@ async function upsertAccount(input: {
         updatedAt: new Date(),
       },
     })
-    .returning({
-      store: schema.storeAccounts.store,
-      externalAccountId: schema.storeAccounts.externalAccountId,
-      displayName: schema.storeAccounts.displayName,
-      status: schema.storeAccounts.status,
-      lastSyncAt: schema.storeAccounts.lastSyncAt,
-    });
+    .returning(accountColumns);
 
   return row!;
 }
 
 /**
- * Scollega un negozio.
+ * Cosa porta via lo scollegamento, **prima** di portarlo via.
  *
- * Non tocca il backlog: i giochi importati restano dell'utente, come se li avesse
- * inseriti a mano. Toglie invece gli irrisolti di quel negozio, che senza
- * l'account collegato non vogliono più dire niente.
+ * Esiste per il dialogo: cancellare i possessi di un account è irreversibile e
+ * la sua portata non si vede da fuori — «84 giochi» non dice quanti spariscono
+ * dal backlog, perché quelli che stanno anche su GOG restano. E fra quelli che
+ * spariscono possono esserci giochi su cui l'utente ha messo un voto o dei tag,
+ * che sono roba sua e non del negozio.
  */
-export async function unlinkStoreAccount(userId: string, store: Store) {
-  await db
-    .delete(schema.unresolvedImports)
+export async function unlinkImpact(userId: string, accountId: string) {
+  const account = await findStoreAccount(userId, accountId);
+  if (!account) return null;
+
+  const orfani = await orphanEntries(accountId);
+  const conteggio = await db
+    .select({ possessi: sql<number>`count(*)::int` })
+    .from(schema.ownerships)
+    .where(eq(schema.ownerships.storeAccountId, accountId));
+
+  return {
+    // Possessi che questo account ha portato.
+    ownerships: conteggio[0]?.possessi ?? 0,
+    // Di quelli, i giochi che uscirebbero dal backlog: quelli che stanno solo
+    // qui. Gli altri hanno un altro possesso e restano.
+    removedEntries: orfani.length,
+    // E di questi, quelli su cui l'utente ha messo qualcosa di suo.
+    withPersonalData: orfani.filter((row) => row.personale).length,
+  };
+}
+
+/**
+ * Le righe di backlog che resterebbero **senza nessun possesso** togliendo
+ * quelli di questo account.
+ *
+ * `is distinct from` e non `<>`: gli altri possessi possono avere l'account
+ * nullo (inseriti a mano, o importati prima che gli account fossero più d'uno),
+ * e con `<>` un NULL non è né uguale né diverso — quelle righe sparirebbero dal
+ * conteggio e verrebbero cancellate pur avendo ancora un possesso valido.
+ */
+function orphanEntries(accountId: string) {
+  return db
+    .select({
+      id: schema.backlog.id,
+      personale: sql<boolean>`(
+        ${schema.backlog.rating} is not null
+        or ${schema.backlog.notes} is not null
+        or ${schema.backlog.status} <> 'backlog'
+        or exists (
+          select 1 from ${schema.backlogTags}
+           where ${schema.backlogTags.backlogId} = ${schema.backlog.id}
+        )
+      )`,
+    })
+    .from(schema.backlog)
     .where(
       and(
-        eq(schema.unresolvedImports.userId, userId),
-        eq(schema.unresolvedImports.store, store),
+        sql`exists (
+          select 1 from ${schema.ownerships}
+           where ${schema.ownerships.backlogId} = ${schema.backlog.id}
+             and ${schema.ownerships.storeAccountId} = ${accountId}
+        )`,
+        sql`not exists (
+          select 1 from ${schema.ownerships}
+           where ${schema.ownerships.backlogId} = ${schema.backlog.id}
+             and ${schema.ownerships.storeAccountId} is distinct from ${accountId}
+        )`,
       ),
     );
+}
 
-  const [row] = await db
-    .delete(schema.storeAccounts)
-    .where(
-      and(
-        eq(schema.storeAccounts.userId, userId),
-        eq(schema.storeAccounts.store, store),
-      ),
-    )
-    .returning({ id: schema.storeAccounts.id });
+/**
+ * Scollega un account, in uno dei due modi che l'utente ha scelto.
+ *
+ * **`keep`** — i giochi restano suoi, come se li avesse inseriti a mano. La riga
+ * dell'account **non si cancella**: diventa `unlinked` e perde le credenziali.
+ * Sopravvive perché i possessi puntano a lei, ed è l'unica cosa che ancora
+ * ricordi da quale dei due account Amazon veniva un gioco. Cancellarla e mettere
+ * a nullo i possessi vorrebbe dire ricreare esattamente il buco che gli account
+ * multipli sono venuti a chiudere.
+ *
+ * **`purge`** — i possessi di questo account se ne vanno, e con loro le righe di
+ * backlog che restano senza nessun possesso: voto, note e tag compresi. È roba
+ * dell'utente e la butta l'utente, che l'ha chiesto sapendo quanta ce n'era —
+ * gliel'ha detto `unlinkImpact`. Qui la riga dell'account si cancella davvero:
+ * non è rimasto niente che debba ricordarsene.
+ *
+ * In entrambi i casi gli scarti se ne vanno: senza l'account collegato sono voci
+ * di una libreria che non sappiamo più leggere. Nel ramo `purge` li porta via il
+ * `cascade`, nel ramo `keep` vanno tolti a mano.
+ *
+ * E in nessuno dei due casi si tocca `games`: la scheda del gioco, i suoi
+ * metadata e la mappatura in `external_ids` restano nel catalogo condiviso. Il
+ * prossimo utente che importa quel gioco non deve ripagarne l'enrichment perché
+ * qualcun altro ha scollegato un account.
+ */
+export async function unlinkStoreAccount(
+  userId: string,
+  accountId: string,
+  mode: 'keep' | 'purge',
+) {
+  const account = await findStoreAccount(userId, accountId);
+  if (!account) return null;
 
-  return row;
+  if (mode === 'keep') {
+    return db.transaction(async (tx) => {
+      await tx
+        .delete(schema.unresolvedImports)
+        .where(eq(schema.unresolvedImports.storeAccountId, accountId));
+
+      const [row] = await tx
+        .update(schema.storeAccounts)
+        .set({
+          status: 'unlinked',
+          // Le credenziali se ne vanno subito: la riga sopravvive per dire da
+          // dove veniva un gioco, non per tenere un token che nessuno rinnoverà
+          // più.
+          credentials: null,
+          credentialsExpireAt: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.storeAccounts.id, accountId))
+        .returning({ id: schema.storeAccounts.id });
+
+      return row!;
+    });
+  }
+
+  return db.transaction(async (tx) => {
+    // Prima si guarda chi resterebbe orfano, perché subito dopo i possessi non
+    // ci sono più e la domanda non si può più fare.
+    const orfani = await orphanEntries(accountId);
+
+    await tx
+      .delete(schema.ownerships)
+      .where(eq(schema.ownerships.storeAccountId, accountId));
+
+    if (orfani.length > 0) {
+      await tx.delete(schema.backlog).where(
+        and(
+          eq(schema.backlog.userId, userId),
+          inArray(
+            schema.backlog.id,
+            orfani.map((row) => row.id),
+          ),
+        ),
+      );
+    }
+
+    const [row] = await tx
+      .delete(schema.storeAccounts)
+      .where(eq(schema.storeAccounts.id, accountId))
+      .returning({ id: schema.storeAccounts.id });
+
+    return row!;
+  });
 }
 
 // --- Steam: nessun credenziale, solo l'identità pubblica ---
@@ -182,12 +352,21 @@ export async function unlinkStoreAccount(userId: string, store: Store) {
  * vista da nessuna parte. È la stessa idea con cui il 9a accetta l'URL intero di
  * atterraggio degli altri negozi invece del codice estratto.
  */
-export async function linkSteamAccount(userId: string, profile: string) {
+export async function linkSteamAccount(
+  userId: string,
+  profile: string,
+  label?: string | null,
+) {
   const steamId = await resolveSteamId(profile);
   return upsertAccount({
     userId,
     store: 'steam',
     externalAccountId: steamId,
+    // Il nome che si è dato: senza, `/account` mostrerebbe uno SteamID64 nudo.
+    // Costa una richiesta con la nostra chiave e non fallisce mai in modo
+    // rumoroso — al massimo rende null e si ripiega sull'id, come prima.
+    displayName: await fetchSteamPersonaName(steamId),
+    label,
   });
 }
 
@@ -210,7 +389,11 @@ export class GogCodeError extends Error {
  * noi: GOG accetta solo i propri, e questo l'abbiamo verificato, non supposto
  * (vedi `external/gog.ts`).
  */
-export async function linkGogAccount(userId: string, pasted: string) {
+export async function linkGogAccount(
+  userId: string,
+  pasted: string,
+  label?: string | null,
+) {
   const code = parseGogAuthCode(pasted);
   if (!code) throw new GogCodeError();
 
@@ -220,11 +403,13 @@ export async function linkGogAccount(userId: string, pasted: string) {
     userId,
     store: 'gog',
     externalAccountId: credentials.userId,
-    // GOG non dà un nome leggibile insieme al token: resta l'id, e la UI mostra
-    // quello. Amazon ed Epic invece lo daranno.
-    displayName: null,
+    // Lo scambio del token dà solo l'id, che a un umano non dice niente: il nome
+    // sta su `userData.json` e costa una richiesta in più. L'id resta quello del
+    // token — vedi l'avvertenza su `fetchGogUsername`.
+    displayName: await fetchGogUsername(credentials.accessToken),
     credentials,
     expiresAt: new Date(credentials.expiresAt),
+    label,
   });
 }
 
@@ -245,7 +430,11 @@ export class EpicCodeError extends Error {
  * Epic, al contrario di GOG, dà un nome leggibile insieme al token: è quello
  * che `/account` mostra, invece dell'id dell'account che non dice niente.
  */
-export async function linkEpicAccount(userId: string, pasted: string) {
+export async function linkEpicAccount(
+  userId: string,
+  pasted: string,
+  label?: string | null,
+) {
   const code = parseEpicAuthCode(pasted);
   if (!code) throw new EpicCodeError();
 
@@ -258,6 +447,7 @@ export async function linkEpicAccount(userId: string, pasted: string) {
     displayName: credentials.displayName,
     credentials,
     expiresAt: new Date(credentials.expiresAt),
+    label,
   });
 }
 
@@ -272,7 +462,18 @@ export class AmazonCodeError extends Error {
   }
 }
 
-export async function linkAmazonAccount(userId: string, pasted: string) {
+/**
+ * Collega Amazon.
+ *
+ * È il negozio per cui l'etichetta esiste: `customer_info` rende il **nome di
+ * battesimo**, quindi due account della stessa persona arrivano con lo stesso
+ * `displayName` e nessun dato dell'API li separa. Misurato su due account veri.
+ */
+export async function linkAmazonAccount(
+  userId: string,
+  pasted: string,
+  label?: string | null,
+) {
   const code = parseAmazonAuthCode(pasted);
   if (!code) throw new AmazonCodeError();
 
@@ -285,6 +486,7 @@ export async function linkAmazonAccount(userId: string, pasted: string) {
     displayName: credentials.displayName,
     credentials,
     expiresAt: null,
+    label,
   });
 }
 
@@ -297,10 +499,9 @@ export async function linkAmazonAccount(userId: string, pasted: string) {
  * funzione condivisa, che è il modo in cui le funzioni condivise smettono di
  * esserlo.
  */
-export async function amazonAccess(userId: string) {
-  const account = await findStoreAccount(userId, 'amazon');
-  if (!account?.credentials) throw new Error('Nessun account amazon collegato');
-  if (account.status === 'needs_reauth') {
+export async function amazonAccess(account: StoreAccountRow) {
+  if (!account.credentials) throw new Error('Nessun account amazon collegato');
+  if (account.status !== 'ok') {
     throw new StoreReauthRequiredError('amazon');
   }
 
@@ -308,7 +509,7 @@ export async function amazonAccess(userId: string) {
   try {
     credentials = decryptCredentials<AmazonCredentials>(account.credentials);
   } catch {
-    return requireReauth(userId, 'amazon');
+    return requireReauth(account);
   }
 
   if (credentials.expiresAt > Date.now()) {
@@ -319,7 +520,7 @@ export async function amazonAccess(userId: string) {
   try {
     rinnovato = await refreshAmazonTokens(credentials.refreshToken);
   } catch (error) {
-    if (error instanceof AmazonAuthError) return requireReauth(userId, 'amazon');
+    if (error instanceof AmazonAuthError) return requireReauth(account);
     throw error;
   }
 
@@ -336,12 +537,7 @@ export async function amazonAccess(userId: string) {
       credentialsExpireAt: new Date(aggiornato.expiresAt),
       updatedAt: new Date(),
     })
-    .where(
-      and(
-        eq(schema.storeAccounts.userId, userId),
-        eq(schema.storeAccounts.store, 'amazon'),
-      ),
-    );
+    .where(eq(schema.storeAccounts.id, account.id));
 
   return { accessToken: aggiornato.accessToken, serial: aggiornato.serial };
 }
@@ -373,17 +569,54 @@ export function storeLoginUrl(userId: string, store: LinkableStore) {
  * worker: il router non sa quali negozi esistano, sa che ce n'è uno da
  * collegare. Aggiungere Epic sarà aggiungere una riga qui.
  */
-export function linkStore(userId: string, store: LinkableStore, value: string) {
+export function linkStore(
+  userId: string,
+  store: LinkableStore,
+  value: string,
+  label?: string | null,
+) {
   switch (store) {
     case 'steam':
-      return linkSteamAccount(userId, value);
+      return linkSteamAccount(userId, value, label);
     case 'gog':
-      return linkGogAccount(userId, value);
+      return linkGogAccount(userId, value, label);
     case 'epic':
-      return linkEpicAccount(userId, value);
+      return linkEpicAccount(userId, value, label);
     case 'amazon':
-      return linkAmazonAccount(userId, value);
+      return linkAmazonAccount(userId, value, label);
   }
+}
+
+/**
+ * Rinomina un account.
+ *
+ * Serve **anche** per gli account già collegati: se l'etichetta si potesse
+ * scrivere solo al collegamento, chi ha già due Amazon in tabella dovrebbe
+ * scollegarne uno e rifarlo da capo per poterli distinguere — cioè rifare il
+ * giro dal browser per un campo di testo.
+ *
+ * Stringa vuota o soli spazi la tolgono: cancellare l'etichetta è un gesto
+ * legittimo, e non merita una mutazione sua.
+ */
+export async function renameStoreAccount(
+  userId: string,
+  accountId: string,
+  label: string | null,
+) {
+  const pulita = label?.trim();
+
+  const [row] = await db
+    .update(schema.storeAccounts)
+    .set({ label: pulita ? pulita : null, updatedAt: new Date() })
+    .where(
+      and(
+        eq(schema.storeAccounts.id, accountId),
+        eq(schema.storeAccounts.userId, userId),
+      ),
+    )
+    .returning(accountColumns);
+
+  return row;
 }
 
 /**
@@ -395,19 +628,13 @@ export function linkStore(userId: string, store: LinkableStore, value: string) {
  * l'utente vedrebbe un account «ok» che ha semplicemente smesso di aggiornarsi.
  */
 export async function requireReauth(
-  userId: string,
-  store: Store,
+  account: Pick<StoreAccountRow, 'id' | 'store'>,
 ): Promise<never> {
   await db
     .update(schema.storeAccounts)
     .set({ status: 'needs_reauth', updatedAt: new Date() })
-    .where(
-      and(
-        eq(schema.storeAccounts.userId, userId),
-        eq(schema.storeAccounts.store, store),
-      ),
-    );
-  throw new StoreReauthRequiredError(store);
+    .where(eq(schema.storeAccounts.id, account.id));
+  throw new StoreReauthRequiredError(account.store);
 }
 
 /**
@@ -432,6 +659,9 @@ const OAUTH_STORES = {
 
 type OAuthStore = keyof typeof OAUTH_STORES;
 
+const isOAuthStore = (store: Store): store is OAuthStore =>
+  store in OAUTH_STORES;
+
 /** La forma minima che ogni credenziale OAuth condivide. */
 type OAuthCredentials = {
   accessToken: string;
@@ -453,14 +683,16 @@ type OAuthCredentials = {
  * dovrebbe ricollegare per colpa di una rete andata giù.
  */
 export async function storeAccessToken(
-  userId: string,
-  store: OAuthStore,
+  account: StoreAccountRow,
 ): Promise<string> {
-  const account = await findStoreAccount(userId, store);
-  if (!account?.credentials) {
+  const store = account.store;
+  if (!isOAuthStore(store)) {
+    throw new Error(`Il negozio ${store} non ha un credenziale da rinnovare`);
+  }
+  if (!account.credentials) {
     throw new Error(`Nessun account ${store} collegato`);
   }
-  if (account.status === 'needs_reauth') {
+  if (account.status !== 'ok') {
     throw new StoreReauthRequiredError(store);
   }
 
@@ -470,7 +702,7 @@ export async function storeAccessToken(
   } catch {
     // Chiave ruotata, o byte corrotti: il credenziale non è recuperabile e
     // l'unica uscita onesta è chiedere di ricollegare.
-    return requireReauth(userId, store);
+    return requireReauth(account);
   }
 
   if (credentials.expiresAt > Date.now()) return credentials.accessToken;
@@ -484,7 +716,7 @@ export async function storeAccessToken(
     // Solo un rifiuto del negozio è definitivo. Una rete che cade o un 500 sono
     // temporanei, e lì il job deve riprovare invece di mandare l'utente a
     // ricollegare un account che sta benissimo.
-    if (error instanceof AuthError) return requireReauth(userId, store);
+    if (error instanceof AuthError) return requireReauth(account);
     throw error;
   }
 
@@ -495,17 +727,7 @@ export async function storeAccessToken(
       credentialsExpireAt: new Date(rinnovato.expiresAt),
       updatedAt: new Date(),
     })
-    .where(
-      and(
-        eq(schema.storeAccounts.userId, userId),
-        eq(schema.storeAccounts.store, store),
-      ),
-    );
+    .where(eq(schema.storeAccounts.id, account.id));
 
   return rinnovato.accessToken;
 }
-
-export const gogAccessToken = (userId: string) =>
-  storeAccessToken(userId, 'gog');
-export const epicAccessToken = (userId: string) =>
-  storeAccessToken(userId, 'epic');

@@ -98,6 +98,41 @@ export async function fetchSteamLibrary(
   }));
 }
 
+const PLAYER_SUMMARIES_URL =
+  'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/';
+
+/**
+ * Il nome che l'utente si è dato su Steam, per non mostrargli uno SteamID64.
+ *
+ * Costa una richiesta con la **nostra** chiave applicativa, non con una
+ * credenziale sua: Steam resta il negozio senza credenziali per utente, e questo
+ * non lo cambia.
+ *
+ * Rende `null` invece di alzare, sempre: è decorazione. Un profilo che non
+ * risponde o un nome che manca non devono far fallire il collegamento di un
+ * account che per il resto funziona benissimo — la libreria si legge con lo
+ * SteamID, non col nome.
+ */
+export async function fetchSteamPersonaName(
+  steamId: string,
+): Promise<string | null> {
+  const url = new URL(PLAYER_SUMMARIES_URL);
+  url.searchParams.set('key', apiKey());
+  url.searchParams.set('steamids', steamId);
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+
+    const body = (await response.json()) as {
+      response?: { players?: { personaname?: string }[] };
+    };
+    return body.response?.players?.[0]?.personaname ?? null;
+  } catch {
+    return null;
+  }
+}
+
 const RESOLVE_VANITY_URL =
   'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/';
 

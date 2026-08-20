@@ -87,15 +87,26 @@ export const ownershipsRelations = relations(ownerships, ({ one }) => ({
     fields: [ownerships.platformSlug],
     references: [platforms.slug],
   }),
+  // Da quale account viene la copia. Nulla sugli inserimenti manuali: è una
+  // relazione opzionale, non una che manca.
+  storeAccount: one(storeAccounts, {
+    fields: [ownerships.storeAccountId],
+    references: [storeAccounts.id],
+  }),
 }));
 
 export const platformsRelations = relations(platforms, ({ many }) => ({
   ownerships: many(ownerships),
 }));
 
-export const storeAccountsRelations = relations(storeAccounts, ({ one }) => ({
-  user: one(user, { fields: [storeAccounts.userId], references: [user.id] }),
-}));
+export const storeAccountsRelations = relations(
+  storeAccounts,
+  ({ one, many }) => ({
+    user: one(user, { fields: [storeAccounts.userId], references: [user.id] }),
+    ownerships: many(ownerships),
+    unresolvedImports: many(unresolvedImports),
+  }),
+);
 
 export const unresolvedImportsRelations = relations(
   unresolvedImports,
@@ -103,6 +114,10 @@ export const unresolvedImportsRelations = relations(
     user: one(user, {
       fields: [unresolvedImports.userId],
       references: [user.id],
+    }),
+    storeAccount: one(storeAccounts, {
+      fields: [unresolvedImports.storeAccountId],
+      references: [storeAccounts.id],
     }),
   }),
 );

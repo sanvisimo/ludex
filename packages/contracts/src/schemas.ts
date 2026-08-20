@@ -163,11 +163,26 @@ export const IgdbSearchHitSchema = z.object({
   totalRatingCount: z.number().int().nullable(),
 });
 
+// L'account di negozio visto da un possesso: quel tanto che basta a dire *quale*
+// dei due account Amazon, senza rifare la query degli account.
+export const OwnershipAccountSchema = z.object({
+  id: z.uuid(),
+  displayName: z.string().nullable(),
+  label: z.string().nullable(),
+  externalAccountId: z.string(),
+  status: StoreAccountStatusSchema,
+});
+
 export const OwnershipSchema = z.object({
   id: z.uuid(),
   platformSlug: z.string(),
   // Vuoto sugli inserimenti manuali: la piattaforma si sa sempre, il negozio no.
   store: StoreSchema.nullable(),
+  // Da quale account viene questa copia. Nullo sugli inserimenti manuali e su
+  // tutto ciò che è stato importato prima che gli account fossero più d'uno.
+  // `status` può essere `unlinked`: l'account non c'è più, il gioco sì, e la
+  // scheda lo dice invece di far finta di niente.
+  storeAccount: OwnershipAccountSchema.nullable(),
   // Come le riporta il negozio da cui viene l'import; nulle sugli inserimenti
   // manuali. Non dicono lo stato: sono un'informazione a sé.
   playtimeMinutes: z.number().int().nullable(),
@@ -194,13 +209,21 @@ export const BacklogEntrySchema = z.object({
 // --- Import di librerie (step 4) ---
 
 export const StoreAccountSchema = z.object({
+  // Gli account per negozio possono essere più d'uno: è l'id, non il negozio, a
+  // dire di quale si sta parlando. Ogni mutazione su un account parte da qui.
+  id: z.uuid(),
   store: StoreSchema,
   // Lo SteamID64 per Steam, il `user_id` per GOG. Si mostra all'utente quando
   // non c'è di meglio: su Steam è la prova che ha collegato il profilo giusto,
   // su GOG è un numero che non dice niente — per quello c'è `displayName`.
   externalAccountId: z.string(),
-  // Come chiamare l'account davanti all'utente, dove il negozio lo dice.
+  // Come lo chiama il negozio: `personaname` su Steam, `username` su GOG, il
+  // display name su Epic, il nome di battesimo su Amazon. Nullo dove non c'è.
   displayName: z.string().nullable(),
+  // Come lo chiama l'utente, e vince su tutto il resto. Nullo finché non lo
+  // scrive lui — su Amazon è l'unica cosa che distingue due suoi account,
+  // perché il negozio rende lo stesso nome per entrambi.
+  label: z.string().nullable(),
   // `needs_reauth`: il credenziale è scaduto o è stato revocato e nessun
   // reimport lo rimette a posto. La UI deve chiedere di ricollegare, non
   // mostrare un account che ha semplicemente smesso di aggiornarsi.
@@ -210,6 +233,20 @@ export const StoreAccountSchema = z.object({
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
   // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
   syncing: z.boolean(),
+});
+
+// Cosa porta via lo scollegamento di un account, prima di portarlo via: sono i
+// numeri che il dialogo mostra all'utente, perché «cancella i possessi» è
+// irreversibile e la sua portata non si vede da fuori.
+export const UnlinkImpactSchema = z.object({
+  // Quanti possessi ha portato questo account.
+  ownerships: z.number().int(),
+  // Quanti giochi uscirebbero dal backlog: quelli che stanno **solo** qui. Chi
+  // ha anche un'altra copia resta.
+  removedEntries: z.number().int(),
+  // E di quelli, quanti hanno un voto, delle note, dei tag o uno stato che
+  // l'utente ha messo a mano. È la riga che fa esitare, ed è per questo che c'è.
+  withPersonalData: z.number().int(),
 });
 
 // Una voce di libreria che l'import non ha saputo legare a un gioco. Il nome è
@@ -322,11 +359,28 @@ export type HltbTimes = z.infer<typeof HltbTimesSchema>;
 export type GameAttribute = z.infer<typeof GameAttributeSchema>;
 export type IgdbSearchHit = z.infer<typeof IgdbSearchHitSchema>;
 export type Ownership = z.infer<typeof OwnershipSchema>;
+export type OwnershipAccount = z.infer<typeof OwnershipAccountSchema>;
 export type OwnershipInput = z.infer<typeof OwnershipInputSchema>;
 export type UserTag = z.infer<typeof UserTagSchema>;
 export type UserTagInput = z.infer<typeof UserTagInputSchema>;
 export type BacklogEntry = z.infer<typeof BacklogEntrySchema>;
 export type StoreAccount = z.infer<typeof StoreAccountSchema>;
+
+/**
+ * Come chiamare un account a schermo, in un punto solo.
+ *
+ * L'ordine è una precedenza di **chi lo sa meglio**: l'etichetta la scrive
+ * l'utente e quindi vince; poi il nome che dà il negozio; l'id è l'ultima
+ * spiaggia, ed è leggibile solo su Steam.
+ */
+export function storeAccountName(account: {
+  label: string | null;
+  displayName: string | null;
+  externalAccountId: string;
+}) {
+  return account.label ?? account.displayName ?? account.externalAccountId;
+}
+export type UnlinkImpact = z.infer<typeof UnlinkImpactSchema>;
 export type UnresolvedImport = z.infer<typeof UnresolvedImportSchema>;
 export type BacklogFilter = z.infer<typeof BacklogFilterSchema>;
 export type BacklogSort = z.infer<typeof BacklogSortSchema>;

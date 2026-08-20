@@ -1,16 +1,17 @@
 'use client';
 
 import { useSession } from '@repo/auth/client';
-import type { UnresolvedImport } from '@repo/contracts';
-import { linkableStoreValues } from '@repo/contracts';
+import type { StoreAccount, UnresolvedImport } from '@repo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { AddStoreAccount } from '@/components/add-store-account';
 import { ResolveImportDialog } from '@/components/resolve-import-dialog';
 import { StoreAccountCard } from '@/components/store-account-card';
+import { UnlinkAccountDialog } from '@/components/unlink-account-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,6 +28,9 @@ export default function AccountPage() {
 
   const { data: session, isPending: sessionPending } = useSession();
   const [resolving, setResolving] = useState<UnresolvedImport | null>(null);
+  // Scollegare è una domanda con due risposte diverse, non un bottone: il
+  // dialogo la fa, dopo aver contato cosa porta via.
+  const [unlinking, setUnlinking] = useState<StoreAccount | null>(null);
 
   const accounts = useQuery({
     ...api.accounts.list.queryOptions(),
@@ -91,14 +95,19 @@ export default function AccountPage() {
         </CardContent>
       </Card>
 
-      {linkableStoreValues.map((store) => (
-        <StoreAccountCard
-          key={store}
-          store={store}
-          account={accounts.data?.find((row) => row.store === store) ?? null}
-          pending={accounts.isPending}
-        />
-      ))}
+      {accounts.isPending ? (
+        <Skeleton className="h-32 w-full rounded-xl" />
+      ) : (
+        accounts.data?.map((account) => (
+          <StoreAccountCard
+            key={account.id}
+            account={account}
+            onUnlink={() => setUnlinking(account)}
+          />
+        ))
+      )}
+
+      <AddStoreAccount />
 
       {(unresolved.data?.length ?? 0) > 0 && (
         <Card>
@@ -149,6 +158,13 @@ export default function AccountPage() {
           </CardContent>
         </Card>
       )}
+
+      <UnlinkAccountDialog
+        account={unlinking}
+        onOpenChange={(open) => {
+          if (!open) setUnlinking(null);
+        }}
+      />
 
       <ResolveImportDialog
         entry={resolving}

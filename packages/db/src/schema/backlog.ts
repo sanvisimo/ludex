@@ -15,6 +15,7 @@ import { sql } from 'drizzle-orm';
 
 import { user } from './auth';
 import { games, store } from './games';
+import { storeAccounts } from './imports';
 import { platforms } from './platforms';
 import { timestamps } from './timestamps';
 
@@ -85,6 +86,23 @@ export const ownerships = pgTable(
     // Vuoto sugli inserimenti manuali: si sa su che console ci giochi, non
     // necessariamente da dove viene la copia.
     store: store('store'),
+    // **Da quale account** viene questa copia. Nullo sugli inserimenti manuali,
+    // che un account non ce l'hanno, e nullo su tutto ciò che è stato importato
+    // prima che gli account fossero più d'uno.
+    //
+    // È la riga che risponde a due domande insieme: scollegando un account si sa
+    // esattamente quali possessi erano suoi, e avendo due account Amazon si sa
+    // da quale dei due lanciare il gioco. `store` resta accanto e non diventa
+    // ridondante: sugli inserimenti manuali è l'unica cosa che c'è, ed è la
+    // colonna su cui filtra la ricerca dello step 7.
+    //
+    // `restrict` e non `cascade`: quale dei due rami dello scollegamento si sta
+    // percorrendo lo decide l'utente, non la foreign key. Cancellare i possessi
+    // è una scelta esplicita, e un `cascade` la farebbe di nascosto anche
+    // quando l'utente ha chiesto di tenersi i giochi.
+    storeAccountId: uuid('store_account_id').references(() => storeAccounts.id, {
+      onDelete: 'restrict',
+    }),
     // Ore giocate e ultima partita, come le riporta il negozio da cui viene
     // l'import. Stanno qui e non su `backlog` perche' sono una proprieta' di
     // *questa copia*: lo stesso gioco su GOG avrebbe le sue.
@@ -98,11 +116,22 @@ export const ownerships = pgTable(
     ...timestamps,
   },
   (table) => [
-    // NULLS NOT DISTINCT perché store è nullable: con il comportamento standard
-    // di Postgres i NULL sono tutti diversi fra loro, e "PC / nessuno store" si
-    // potrebbe inserire due volte sullo stesso gioco.
+    // NULLS NOT DISTINCT perché store e account sono nullable: con il
+    // comportamento standard di Postgres i NULL sono tutti diversi fra loro, e
+    // "PC / nessuno store" si potrebbe inserire due volte sullo stesso gioco.
+    //
+    // L'account è **dentro la chiave**: lo stesso gioco su due account Amazon
+    // sono due copie, e fonderle vorrebbe dire non sapere più da quale dei due
+    // si lancia. Il rovescio è che un possesso inserito a mano (account nullo) e
+    // uno importato non sono più la stessa riga — vedi `ensureOwnerships`, che
+    // prima di scrivere adotta quello a mano invece di sdoppiarlo.
     unique('ownerships_backlog_platform_store_key')
-      .on(table.backlogId, table.platformSlug, table.store)
+      .on(
+        table.backlogId,
+        table.platformSlug,
+        table.store,
+        table.storeAccountId,
+      )
       .nullsNotDistinct(),
     index('ownerships_backlog_id_idx').on(table.backlogId),
   ],

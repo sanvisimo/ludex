@@ -1,6 +1,10 @@
 import { AmazonAuthError, fetchAmazonLibrary } from '../external/amazon';
 import { type ImportReport, importLibrary } from './library-import';
-import { amazonAccess, requireReauth } from './store-accounts';
+import {
+  amazonAccess,
+  requireReauth,
+  type StoreAccountRow,
+} from './store-accounts';
 
 /**
  * Import della libreria Amazon Games.
@@ -14,15 +18,15 @@ import { amazonAccess, requireReauth } from './store-accounts';
  * **Niente ore giocate.**
  */
 export async function importAmazonLibrary(
-  userId: string,
+  account: StoreAccountRow,
 ): Promise<ImportReport> {
-  const { accessToken, serial } = await amazonAccess(userId);
+  const { accessToken, serial } = await amazonAccess(account);
 
   try {
     const library = await fetchAmazonLibrary(accessToken, serial);
-    return await importLibrary('amazon', userId, library);
+    return await importLibrary(account, library);
   } catch (error) {
-    if (error instanceof AmazonAuthError) return requireReauth(userId, 'amazon');
+    if (error instanceof AmazonAuthError) return requireReauth(account);
     throw error;
   }
 }

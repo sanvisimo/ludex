@@ -1,6 +1,10 @@
 import { fetchGogLibrary, GogAuthError } from '../external/gog';
 import { type ImportReport, importLibrary } from './library-import';
-import { gogAccessToken, requireReauth } from './store-accounts';
+import {
+  requireReauth,
+  type StoreAccountRow,
+  storeAccessToken,
+} from './store-accounts';
 
 /**
  * Import della libreria GOG.
@@ -10,7 +14,7 @@ import { gogAccessToken, requireReauth } from './store-accounts';
  *
  * La differenza con Steam è tutta nel credenziale. Steam legge un profilo
  * pubblico con una chiave nostra; qui c'è un refresh token dell'utente, che
- * `gogAccessToken` rinnova da sé e che un giorno potrà essere revocato. Quel
+ * `storeAccessToken` rinnova da sé e che un giorno potrà essere revocato. Quel
  * giorno il job non deve riprovare: `StoreReauthRequiredError` è definitivo e va
  * lasciato passare fino al worker, che lo tratta come tale.
  *
@@ -18,8 +22,10 @@ import { gogAccessToken, requireReauth } from './store-accounts';
  * nascono senza. È il motivo per cui `ensureOwnerships` aggiorna le ore in
  * COALESCE — un import che non le porta non deve cancellare quelle che c'erano.
  */
-export async function importGogLibrary(userId: string): Promise<ImportReport> {
-  const accessToken = await gogAccessToken(userId);
+export async function importGogLibrary(
+  account: StoreAccountRow,
+): Promise<ImportReport> {
+  const accessToken = await storeAccessToken(account);
 
   let library;
   try {
@@ -28,9 +34,9 @@ export async function importGogLibrary(userId: string): Promise<ImportReport> {
     // Il token era valido un istante fa e GOG lo rifiuta lo stesso: revocato
     // mentre giravamo. Stessa uscita del rinnovo fallito — e va scritta, o
     // l'account resterebbe «ok» pur avendo smesso di funzionare.
-    if (error instanceof GogAuthError) return requireReauth(userId, 'gog');
+    if (error instanceof GogAuthError) return requireReauth(account);
     throw error;
   }
 
-  return importLibrary('gog', userId, library);
+  return importLibrary(account, library);
 }

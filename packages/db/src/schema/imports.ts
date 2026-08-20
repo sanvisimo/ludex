@@ -49,14 +49,25 @@ export const storeAccounts = pgTable(
     // SteamID64 per Steam, `user_id` per GOG e Amazon. Testo e non numero: gli
     // altri negozi usano UUID, email o handle.
     externalAccountId: text('external_account_id').notNull(),
-    // Come chiamare l'account davanti all'utente.
+    // Come il **negozio** chiama l'account: `personaname` su Steam, `username`
+    // su GOG, il display name su Epic, il nome di battesimo su Amazon. Nullable
+    // perché non tutti ne danno uno, e in quel caso la UI ripiega sull'id.
     //
-    // Su Steam bastava `externalAccountId`, perché lo SteamID64 è la prova che
-    // hai collegato il profilo giusto — lo si riconosce. Su GOG lo stesso campo
-    // è `50771470519354436`, che a un umano non dice niente; Amazon invece dà il
-    // nome di battesimo ed Epic il display name. Nullable perché non tutti i
-    // negozi ne danno uno, e in quel caso la UI ripiega sull'id.
+    // Preso al collegamento e non ad ogni import: è decorazione, e un nome
+    // cambiato nel frattempo non vale una richiesta in più per libreria.
     displayName: text('display_name'),
+    // Come lo chiama **l'utente**. Sempre nullo finché non lo scrive lui.
+    //
+    // Esiste perché il nome del negozio non basta a distinguere due account
+    // della stessa persona, ed è misurato: i due account Amazon dello stesso
+    // utente rendono lo stesso `given_name`, quindi due schede identiche. Nessun
+    // dato dell'API risolve quel caso — l'unico che sa quale dei due è «quello
+    // di famiglia» è chi li ha collegati.
+    //
+    // Vale anche per i negozi che verranno: EA, Nintendo e Xbox non danno
+    // nessun nome leggibile, e qui c'è già la risposta invece di doverne
+    // inventare una per ciascuno.
+    label: text('label'),
 
     // --- il credenziale (step 9a) ---
     //
@@ -81,9 +92,21 @@ export const storeAccounts = pgTable(
     ...timestamps,
   },
   (table) => [
-    // Un account per negozio per utente: collegare due volte Steam è un
-    // ricollegamento, non un secondo account.
-    unique('store_accounts_user_id_store_key').on(table.userId, table.store),
+    // **Un account per negozio per utente non basta.** Due account Amazon sono
+    // un caso vero, non un'ipotesi: senza l'id del negozio nella chiave, il
+    // secondo collegamento sovrascrive il primo, i suoi giochi restano in
+    // backlog senza niente che ricordi da dove venissero, e il vincolo su
+    // `ownerships` ha già fuso i due possessi in uno.
+    //
+    // Con l'id dentro, ricollegare **lo stesso** account resta un aggiornamento
+    // (è ciò che rimette a posto un `needs_reauth`), collegarne uno diverso ne
+    // aggiunge uno. Il prezzo è che incollare il profilo Steam sbagliato non si
+    // corregge più reincollando: si scollega quello di troppo.
+    unique('store_accounts_user_store_external_key').on(
+      table.userId,
+      table.store,
+      table.externalAccountId,
+    ),
     index('store_accounts_user_id_idx').on(table.userId),
   ],
 );
@@ -107,6 +130,17 @@ export const unresolvedImports = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     store: store('store').notNull(),
+    // **Da quale account** viene lo scarto. `cascade`: scollegando, gli scarti
+    // di quell'account se ne vanno da soli in entrambi i rami — senza l'account
+    // sono voci di una libreria che non possiamo più leggere.
+    //
+    // Non nullable, al contrario di `ownerships.storeAccountId`: uno scarto
+    // esiste solo perché un import l'ha prodotto, non c'è il caso
+    // dell'inserimento manuale. `store` resta accanto perché è denormalizzato e
+    // ci si filtra sopra senza JOIN.
+    storeAccountId: uuid('store_account_id')
+      .notNull()
+      .references(() => storeAccounts.id, { onDelete: 'cascade' }),
     // L'appid su Steam. Stessa forma di `external_ids.external_id`: risolta la
     // voce, è questo il valore che ci finisce.
     externalId: text('external_id').notNull(),
@@ -118,10 +152,11 @@ export const unresolvedImports = pgTable(
     ...timestamps,
   },
   (table) => [
-    // Reimportare non deve accumulare doppioni degli stessi scarti.
-    unique('unresolved_imports_user_store_external_key').on(
-      table.userId,
-      table.store,
+    // Reimportare non deve accumulare doppioni degli stessi scarti. Per account
+    // e non per negozio: due account Amazon hanno ciascuno i suoi scarti, e con
+    // la chiave vecchia il secondo import sovrascriveva le voci del primo.
+    unique('unresolved_imports_account_external_key').on(
+      table.storeAccountId,
       table.externalId,
     ),
     index('unresolved_imports_user_id_idx').on(table.userId),

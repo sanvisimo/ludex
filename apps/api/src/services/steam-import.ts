@@ -1,5 +1,6 @@
 import { fetchSteamLibrary } from '../external/steam';
 import { type ImportReport, importLibrary } from './library-import';
+import type { StoreAccountRow } from './store-accounts';
 
 /**
  * Import della libreria Steam.
@@ -10,15 +11,14 @@ import { type ImportReport, importLibrary } from './library-import';
  *
  * Steam è l'unico negozio senza credenziale dell'utente: la chiave è
  * dell'applicazione e identifica noi, per leggere una libreria basta che quel
- * profilo sia pubblico. Per questo prende uno SteamID64 e non passa da
- * `store-accounts` a farsi dare un token.
+ * profilo sia pubblico. Per questo non passa da `store-accounts` a farsi dare un
+ * token: lo SteamID64 che gli serve è l'identità pubblica sulla riga.
  */
 export type SteamImportReport = ImportReport;
 
 export async function importSteamLibrary(
-  userId: string,
-  steamId: string,
+  account: StoreAccountRow,
 ): Promise<SteamImportReport> {
-  const library = await fetchSteamLibrary(steamId);
-  return importLibrary('steam', userId, library);
+  const library = await fetchSteamLibrary(account.externalAccountId);
+  return importLibrary(account, library);
 }

@@ -256,8 +256,32 @@
       "neverSynced": "never imported",
       "needsReauth": "This connection has expired. Reconnect the account to resume imports.",
       "reconnect": "Reconnect",
+      "labelField": "Label (optional)",
+      "labelPlaceholder": "e.g. main, family",
+      "labelHint": "Useful when you connect two accounts on the same store: the name the store gives can be the same for both.",
+      "renameAdd": "Name it",
+      "renameEdit": "Rename",
+      "renameSave": "Save",
+      "renameCancel": "Cancel",
+      "renameFailed": "Could not rename the account",
       "openLogin": "1. Open the login page",
       "pasteStep": "2. Paste the address here"
+    },
+    "add": {
+      "title": "Add an account",
+      "description": "You can connect more than one account per store: each imports its own library, and your backlog remembers which one a game came from.",
+      "storeLabel": "Store",
+      "submit": "Connect"
+    },
+    "unlinkDialog": {
+      "title": "Disconnect {store}?",
+      "description": "Account {name}. You can keep the games imported from here or delete them: they are two different things.",
+      "summary": "{count, plural, =0 {This account brought no copies.} =1 {This account brought one copy.} other {This account brought # copies.}}",
+      "removed": "{count, plural, =0 {No game would leave your backlog: you own them all elsewhere too.} =1 {One game would leave your backlog, because you do not own it anywhere else.} other {# games would leave your backlog, because you do not own them anywhere else.}}",
+      "personal": "{count, plural, =1 {One of them has your rating, notes or tags: deleting takes those too.} other {# of them have your rating, notes or tags: deleting takes those too.}}",
+      "keep": "Keep the games",
+      "purge": "Delete the games",
+      "cancel": "Cancel"
     },
     "stores": {
       "steam": {

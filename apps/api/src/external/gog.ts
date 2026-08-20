@@ -115,6 +115,38 @@ async function requestToken(
 }
 
 /**
+ * Il nome utente GOG, per non mostrare `50771470519354436`.
+ *
+ * Lo scambio del token non lo dà — rende solo l'id — e `userData.json` è
+ * l'unico posto dove GOG dice qualcosa di leggibile. Misurato: risponde 200 con
+ * `username`, `email` e `avatar`.
+ *
+ * **Attenzione all'id**: `userData.json` porta un `userId` che *non* è quello
+ * che salviamo. Il nostro `externalAccountId` viene dallo scambio del token ed è
+ * il `galaxyUserId`; il campo `userId` di qui è un altro numero. Di questa
+ * risposta si prende il nome e nient'altro, o l'identità dell'account
+ * cambierebbe sotto ai possessi che ci puntano.
+ *
+ * Rende `null` invece di alzare, come l'equivalente Steam: è decorazione, e non
+ * deve far fallire un collegamento riuscito.
+ */
+export async function fetchGogUsername(
+  accessToken: string,
+): Promise<string | null> {
+  try {
+    const response = await fetch('https://embed.gog.com/userData.json', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) return null;
+
+    const body = (await response.json()) as { username?: string };
+    return body.username ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Da quello che l'utente incolla al codice di autorizzazione.
  *
  * Accetta l'URL intero di atterraggio o il solo codice, per la stessa ragione

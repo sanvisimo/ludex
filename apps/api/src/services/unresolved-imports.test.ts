@@ -2,7 +2,11 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createGame, createUser } from '../../test/factories';
+import {
+  createGame,
+  createUser,
+  linkStoreAccount,
+} from '../../test/factories';
 import { findIgdbGameById } from '../external/igdb';
 import {
   dismissUnresolvedImport,
@@ -22,11 +26,13 @@ async function pending(
   userId: string,
   over: { externalId?: string; name?: string; playtimeMinutes?: number } = {},
 ) {
+  const account = await linkStoreAccount(userId, 'steam');
   const [row] = await db
     .insert(schema.unresolvedImports)
     .values({
       userId,
       store: 'steam',
+      storeAccountId: account.id,
       externalId: over.externalId ?? '931180',
       name: over.name ?? 'Conan Exiles - Public Beta Client',
       playtimeMinutes: over.playtimeMinutes ?? null,
@@ -114,9 +120,16 @@ describe('unresolved imports', () => {
     // PSN e non GOG: dal 9a GOG una piattaforma ce l'ha (`pc_windows`, come
     // Steam). I negozi ancora scoperti sono quelli console, ed è lì che la
     // domanda è davvero senza risposta — questa voce è PS4 o PS5?
+    const psn = await linkStoreAccount(userId, 'psn');
     const [row] = await db
       .insert(schema.unresolvedImports)
-      .values({ userId, store: 'psn', externalId: '1', name: 'Qualcosa' })
+      .values({
+        userId,
+        store: 'psn',
+        storeAccountId: psn.id,
+        externalId: '1',
+        name: 'Qualcosa',
+      })
       .returning({ id: schema.unresolvedImports.id });
 
     // Meglio fermarsi che archiviare il gioco su una piattaforma a caso: sarebbe

@@ -1,92 +1,81 @@
 'use client';
 
-import type { LinkableStore, StoreAccount } from '@repo/contracts';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { LinkableStore, Store, StoreAccount } from '@repo/contracts';
+import { linkableStoreValues, storeAccountName } from '@repo/contracts';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { StoreLinkForm } from '@/components/store-link-form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 
 /**
- * Una scheda per negozio in `/account`.
+ * Un account collegato.
  *
- * Un componente solo per tutti perché il gesto è lo stesso ovunque: si incolla
- * una stringa presa dal browser. Cambia **cosa** si incolla — per Steam
- * l'indirizzo del profilo, per GOG quello su cui si atterra dopo il login — e
- * cambia se prima c'è un login da aprire, che è quello che dice `loginUrl`.
+ * Una scheda per **account** e non per negozio: due account Amazon sono un caso
+ * vero — per il motore decisionale sono la stessa cosa, «ci posso giocare
+ * stasera» non cambia, ma per lanciare il gioco bisogna essere collegati a
+ * quello giusto. Finché la scheda era una per negozio, il secondo collegamento
+ * sovrascriveva il primo senza dirlo.
  *
- * Il copia-incolla non è un ripiego provvisorio: nessuno dei negozi accetta un
- * `redirect_uri` nostro, quindi il codice non può tornarci da solo. Ma è un
- * gesto **solo**: da lì in poi il refresh token si rinnova da sé.
+ * Il modulo per collegare non sta più qui: quello è `add-store-account`, perché
+ * aggiungere un account e guardarne uno collegato sono due gesti diversi. Qui
+ * ricompare solo quando il credenziale è scaduto, dove ricollegare è esattamente
+ * ciò che rimette a posto un `needs_reauth`.
  */
+const isLinkable = (store: Store): store is LinkableStore =>
+  (linkableStoreValues as readonly string[]).includes(store);
+
 export function StoreAccountCard({
-  store,
   account,
-  pending,
+  onUnlink,
 }: {
-  store: LinkableStore;
-  account: StoreAccount | null;
-  pending: boolean;
+  account: StoreAccount;
+  onUnlink: () => void;
 }) {
   const t = useTranslations('account.store');
-  const tStore = useTranslations(`account.stores.${store}`);
   const format = useFormatter();
   const errorMessage = useApiErrorMessage();
   const storeLabels = useStoreLabels();
   const queryClient = useQueryClient();
 
-  const [value, setValue] = useState('');
+  // `null` = non si sta rinominando. Stringa vuota è un valore legittimo: è
+  // l'etichetta cancellata, che è un gesto e non un errore.
+  const [label, setLabel] = useState<string | null>(null);
 
-  // Solo per i negozi che hanno un login da aprire: Steam rende null, perché lì
-  // l'utente ha già sottomano il proprio profilo.
-  const loginUrl = useQuery(api.accounts.loginUrl.queryOptions({ input: { store } }));
+  const syncing = account.syncing;
+  // Ricollegare si può solo dove c'è un collegamento da rifare. `store` sul
+  // contratto è l'insieme largo — comprende i negozi da cui un gioco *proviene*,
+  // scritti a mano su un possesso — e non tutti si collegano.
+  const relinkStore =
+    account.status === 'needs_reauth' && isLinkable(account.store)
+      ? account.store
+      : null;
 
-  const syncing = account?.syncing ?? false;
-  const needsReauth = account?.status === 'needs_reauth';
-
-  async function refreshAccounts() {
-    await queryClient.invalidateQueries({ queryKey: api.accounts.list.key() });
-  }
-
-  const link = useMutation({
-    mutationFn: () => client.accounts.link({ store, value: value.trim() }),
+  const rename = useMutation({
+    mutationFn: () =>
+      client.accounts.rename({ accountId: account.id, label: label ?? null }),
     onSuccess: async () => {
-      setValue('');
-      await refreshAccounts();
-      toast.success(t('linked'));
+      setLabel(null);
+      await queryClient.invalidateQueries({ queryKey: api.accounts.list.key() });
+      // Il nome dell'account compare anche sui possessi, nella scheda del gioco.
+      await queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
     },
     onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('linkFailed') })),
-  });
-
-  const unlink = useMutation({
-    mutationFn: () => client.accounts.unlink({ store }),
-    onSuccess: async () => {
-      await Promise.all([
-        refreshAccounts(),
-        queryClient.invalidateQueries({
-          queryKey: api.imports.unresolved.key(),
-        }),
-      ]);
-      toast.success(t('unlinked'));
-    },
-    onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('unlinkFailed') })),
+      toast.error(errorMessage(error, { fallback: t('renameFailed') })),
   });
 
   const sync = useMutation({
-    mutationFn: () => client.accounts.sync({ store }),
+    mutationFn: () => client.accounts.sync({ accountId: account.id }),
     onSuccess: async () => {
-      await refreshAccounts();
+      await queryClient.invalidateQueries({ queryKey: api.accounts.list.key() });
       toast.success(t('syncStarted'));
     },
     onError: (error) =>
@@ -100,100 +89,81 @@ export function StoreAccountCard({
       ),
   });
 
-  // Il modulo di collegamento: si mostra quando l'account non c'è **e anche**
-  // quando il credenziale è scaduto, perché ricollegare è esattamente il gesto
-  // che rimette a posto un `needs_reauth`.
-  const linkForm = (
-    <div className="grid gap-3">
-      {loginUrl.data?.url && (
-        <Button
-          variant="outline"
-          className="justify-self-start"
-          onClick={() => window.open(loginUrl.data.url!, '_blank', 'noopener')}
-        >
-          {t('openLogin')}
-        </Button>
-      )}
-
-      <div className="grid gap-2">
-        <Label htmlFor={`collega-${store}`}>
-          {loginUrl.data?.url ? t('pasteStep') : tStore('inputLabel')}
-        </Label>
-        <div className="flex flex-wrap gap-2">
-          <Input
-            id={`collega-${store}`}
-            className="min-w-64 flex-1"
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            placeholder={tStore('placeholder')}
-          />
-          <Button
-            onClick={() => link.mutate()}
-            disabled={value.trim().length === 0 || link.isPending}
-          >
-            {needsReauth ? t('reconnect') : t('link')}
-          </Button>
-        </div>
-      </div>
-
-      <p className="text-muted-foreground">{tStore('hint')}</p>
-    </div>
-  );
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{storeLabels[store]}</CardTitle>
+        <CardTitle>{storeLabels[account.store]}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4">
-        {pending ? (
-          <Skeleton className="h-9 w-full rounded-lg" />
-        ) : !account ? (
-          linkForm
-        ) : (
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary">{storeAccountName(account)}</Badge>
+          {/* Il nome del negozio accanto all'etichetta: serve a ritrovare quale
+              account è, quando l'etichetta gliel'hai data tu. */}
+          {account.label && account.displayName && (
+            <span className="text-muted-foreground">{account.displayName}</span>
+          )}
+          <span className="text-muted-foreground">
+            {syncing
+              ? t('syncing')
+              : account.lastSyncAt
+                ? t('lastSync', {
+                    when: format.relativeTime(account.lastSyncAt),
+                  })
+                : t('neverSynced')}
+          </span>
+        </div>
+
+        {relinkStore ? (
           <>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">
-                {account.displayName ?? account.externalAccountId}
-              </Badge>
-              <span className="text-muted-foreground">
-                {syncing
-                  ? t('syncing')
-                  : account.lastSyncAt
-                    ? t('lastSync', {
-                        when: format.relativeTime(account.lastSyncAt),
-                      })
-                    : t('neverSynced')}
-              </span>
-            </div>
-
-            {needsReauth ? (
-              <>
-                <p className="rounded-lg bg-destructive/10 px-3 py-2 text-destructive">
-                  {t('needsReauth')}
-                </p>
-                {linkForm}
-              </>
-            ) : (
-              <Button
-                onClick={() => sync.mutate()}
-                disabled={syncing || sync.isPending}
-                className="justify-self-start"
-              >
-                {t('sync')}
-              </Button>
-            )}
-
-            <Button
-              variant="ghost"
-              onClick={() => unlink.mutate()}
-              disabled={unlink.isPending}
-              className="justify-self-start"
-            >
-              {t('unlink')}
-            </Button>
+            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-destructive">
+              {t('needsReauth')}
+            </p>
+            <StoreLinkForm store={relinkStore} submitLabel={t('reconnect')} />
           </>
+        ) : (
+          <Button
+            onClick={() => sync.mutate()}
+            disabled={syncing || sync.isPending}
+            className="justify-self-start"
+          >
+            {t('sync')}
+          </Button>
         )}
+
+        {label === null ? (
+          <Button
+            variant="ghost"
+            onClick={() => setLabel(account.label ?? '')}
+            className="justify-self-start"
+          >
+            {account.label ? t('renameEdit') : t('renameAdd')}
+          </Button>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            <Input
+              className="min-w-48 flex-1"
+              value={label}
+              onChange={(event) => setLabel(event.target.value)}
+              placeholder={t('labelPlaceholder')}
+              maxLength={60}
+              autoFocus
+            />
+            <Button onClick={() => rename.mutate()} disabled={rename.isPending}>
+              {t('renameSave')}
+            </Button>
+            <Button variant="ghost" onClick={() => setLabel(null)}>
+              {t('renameCancel')}
+            </Button>
+          </div>
+        )}
+
+        <Button
+          variant="ghost"
+          onClick={onUnlink}
+          className="justify-self-start"
+        >
+          {t('unlink')}
+        </Button>
       </CardContent>
     </Card>
   );

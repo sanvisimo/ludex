@@ -256,8 +256,32 @@
       "neverSynced": "mai importata",
       "needsReauth": "Il collegamento è scaduto. Ricollega l'account per riprendere le importazioni.",
       "reconnect": "Ricollega",
+      "labelField": "Etichetta (facoltativa)",
+      "labelPlaceholder": "es. principale, di famiglia",
+      "labelHint": "Serve se colleghi due account dello stesso negozio: il nome che dà il negozio può essere lo stesso per entrambi.",
+      "renameAdd": "Dai un nome",
+      "renameEdit": "Rinomina",
+      "renameSave": "Salva",
+      "renameCancel": "Annulla",
+      "renameFailed": "Non sono riuscito a rinominare l’account",
       "openLogin": "1. Apri il login",
       "pasteStep": "2. Incolla qui l'indirizzo"
+    },
+    "add": {
+      "title": "Aggiungi un account",
+      "description": "Puoi collegare più account dello stesso negozio: ognuno importa la sua libreria, e il backlog ricorda da quale dei due viene ogni gioco.",
+      "storeLabel": "Negozio",
+      "submit": "Collega"
+    },
+    "unlinkDialog": {
+      "title": "Scollegare {store}?",
+      "description": "Account {name}. I giochi importati da qui puoi tenerli o cancellarli: sono due cose diverse.",
+      "summary": "{count, plural, =0 {Questo account non ha portato nessun possesso.} =1 {Questo account ha portato un possesso.} other {Questo account ha portato # possessi.}}",
+      "removed": "{count, plural, =0 {Nessun gioco uscirebbe dal backlog: li hai tutti anche altrove.} =1 {Un gioco uscirebbe dal backlog, perché non ce l'hai da nessun'altra parte.} other {# giochi uscirebbero dal backlog, perché non li hai da nessun'altra parte.}}",
+      "personal": "{count, plural, =1 {Uno di questi ha un tuo voto, delle note o dei tag: se cancelli, se ne vanno con lui.} other {# di questi hanno un tuo voto, delle note o dei tag: se cancelli, se ne vanno con loro.}}",
+      "keep": "Tieni i giochi",
+      "purge": "Cancella i giochi",
+      "cancel": "Annulla"
     },
     "stores": {
       "steam": {

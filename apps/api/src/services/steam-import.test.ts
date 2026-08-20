@@ -1,5 +1,5 @@
 import { db, schema } from '@repo/db';
-import { and, eq } from '@repo/db/orm';
+import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -68,11 +68,13 @@ const unresolvedOf = (userId: string) =>
 
 describe('importSteamLibrary', () => {
   let userId: string;
-  let steamId: string;
+  // La riga dell'account, non lo SteamID64: lo SteamID è `externalAccountId` su
+  // di lei, e l'import se lo legge da lì invece di farselo passare.
+  let account: Awaited<ReturnType<typeof linkSteamAccount>>;
 
   beforeEach(async () => {
     userId = await createUser();
-    steamId = await linkSteamAccount(userId);
+    account = await linkSteamAccount(userId);
     // Di default IGDB non trova niente per nome: su Steam la risoluzione passa
     // dagli appid, e i test che parlano di irrisolti vogliono restare irrisolti.
     mockedSearch.mockResolvedValue([]);
@@ -88,7 +90,7 @@ describe('importSteamLibrary', () => {
     mockedLibrary.mockResolvedValue([giocato]);
     igdbKnows([{ externalId: '220', igdbId: 233, name: 'Half-Life 2' }]);
 
-    const report = await importSteamLibrary(userId, steamId);
+    const report = await importSteamLibrary(account);
 
     expect(report).toEqual({
       total: 1,
@@ -117,8 +119,8 @@ describe('importSteamLibrary', () => {
     mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
     igdbKnows([{ externalId: '220', igdbId: 233 }]);
 
-    await importSteamLibrary(userId, steamId);
-    const secondo = await importSteamLibrary(userId, steamId);
+    await importSteamLibrary(account);
+    const secondo = await importSteamLibrary(account);
 
     // Niente si accumula: né la riga games, né il backlog, né il possesso.
     expect(await db.select().from(schema.games)).toHaveLength(1);
@@ -131,13 +133,13 @@ describe('importSteamLibrary', () => {
       steamEntry({ externalId: '220', playtimeMinutes: 60 }),
     ]);
     igdbKnows([{ externalId: '220', igdbId: 233 }]);
-    await importSteamLibrary(userId, steamId);
+    await importSteamLibrary(account);
 
     mockedLibrary.mockResolvedValue([
       steamEntry({ externalId: '220', playtimeMinutes: 240 }),
     ]);
     igdbKnows([{ externalId: '220', igdbId: 233 }]);
-    await importSteamLibrary(userId, steamId);
+    await importSteamLibrary(account);
 
     expect(await ownershipsOf(userId)).toMatchObject([
       { playtimeMinutes: 240 },
@@ -159,7 +161,7 @@ describe('importSteamLibrary', () => {
       steamEntry({ externalId: '220', playtimeMinutes: 90 }),
     ]);
     igdbKnows([{ externalId: '220', igdbId: 233 }]);
-    await importSteamLibrary(userId, steamId);
+    await importSteamLibrary(account);
 
     const righe = await ownershipsOf(userId);
     expect(righe).toHaveLength(2);
@@ -192,7 +194,7 @@ describe('importSteamLibrary', () => {
       { externalId: '221', igdbId: 233 },
     ]);
 
-    const report = await importSteamLibrary(userId, steamId);
+    const report = await importSteamLibrary(account);
 
     // Succede davvero su una libreria vera: 445 giochi IGDB distinti per 447
     // appid. Due mappature esterne, una riga games, una riga di backlog.
@@ -214,7 +216,7 @@ describe('importSteamLibrary', () => {
     ]);
     igdbKnows([]);
 
-    const report = await importSteamLibrary(userId, steamId);
+    const report = await importSteamLibrary(account);
 
     expect(report).toMatchObject({
       total: 1,
@@ -238,14 +240,14 @@ describe('importSteamLibrary', () => {
       steamEntry({ externalId: '1588530', name: 'Dungeon Alchemist' }),
     ]);
     igdbKnows([]);
-    await importSteamLibrary(userId, steamId);
+    await importSteamLibrary(account);
     expect(await unresolvedOf(userId)).toHaveLength(1);
 
     mockedLibrary.mockResolvedValue([
       steamEntry({ externalId: '1588530', name: 'Dungeon Alchemist' }),
     ]);
     igdbKnows([{ externalId: '1588530', igdbId: 999 }]);
-    await importSteamLibrary(userId, steamId);
+    await importSteamLibrary(account);
 
     // IGDB cresce: la voce va tolta, non lasciata lì a chiedere un intervento
     // manuale che non serve più.
@@ -262,7 +264,7 @@ describe('importSteamLibrary', () => {
     mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
     igdbKnows([]);
 
-    const report = await importSteamLibrary(userId, steamId);
+    const report = await importSteamLibrary(account);
 
     // Prima il nostro DB: è ciò che rende quasi gratis l'import del secondo
     // utente che possiede gli stessi giochi del primo.
@@ -272,15 +274,15 @@ describe('importSteamLibrary', () => {
 
   it("riusa il gioco importato da un altro utente e non riaccoda l'enrichment", async () => {
     const altro = await createUser();
-    await linkSteamAccount(altro, '76561190000000001');
+    const suoAccount = await linkSteamAccount(altro, '76561190000000001');
     mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
     igdbKnows([{ externalId: '220', igdbId: 233 }]);
-    await importSteamLibrary(altro, '76561190000000001');
+    await importSteamLibrary(suoAccount);
     mockedEnqueue.mockClear();
 
     mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
     igdbKnows([{ externalId: '220', igdbId: 233 }]);
-    const report = await importSteamLibrary(userId, steamId);
+    const report = await importSteamLibrary(account);
 
     // Il costo dell'enrichment si paga una volta sola: è il vantaggio che cresce
     // col numero di utenti.
@@ -299,7 +301,7 @@ describe('importSteamLibrary', () => {
       { externalId: '70', igdbId: 231 },
     ]);
 
-    await importSteamLibrary(userId, steamId);
+    await importSteamLibrary(account);
 
     expect(mockedEnqueue).toHaveBeenCalledTimes(2);
   });
@@ -308,17 +310,12 @@ describe('importSteamLibrary', () => {
     mockedLibrary.mockResolvedValue([]);
     igdbKnows([]);
 
-    await importSteamLibrary(userId, steamId);
+    await importSteamLibrary(account);
 
-    const [account] = await db
+    const [aggiornato] = await db
       .select()
       .from(schema.storeAccounts)
-      .where(
-        and(
-          eq(schema.storeAccounts.userId, userId),
-          eq(schema.storeAccounts.store, 'steam'),
-        ),
-      );
-    expect(account?.lastSyncAt).toBeInstanceOf(Date);
+      .where(eq(schema.storeAccounts.id, account.id));
+    expect(aggiornato?.lastSyncAt).toBeInstanceOf(Date);
   });
 });

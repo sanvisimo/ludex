@@ -10,6 +10,7 @@ import {
 import { chunk } from '../lib/chunk';
 import { enqueueEnrichment } from '../queue/enrichment';
 import { ensureBacklogEntries, ensureOwnerships } from './backlog';
+import type { StoreAccountRow } from './store-accounts';
 import {
   type ExternalGameLink,
   findGameIdsByExternalIds,
@@ -189,8 +190,7 @@ export type ImportReport = {
 
 /** Le voci che non si sono legate a niente. Restano dell'utente, non sporcano `games`. */
 async function recordUnresolved(
-  userId: string,
-  store: Store,
+  account: StoreAccountRow,
   entries: LibraryEntry[],
 ) {
   if (entries.length === 0) return;
@@ -200,8 +200,9 @@ async function recordUnresolved(
       .insert(schema.unresolvedImports)
       .values(
         page.map((entry) => ({
-          userId,
-          store,
+          userId: account.userId,
+          store: account.store,
+          storeAccountId: account.id,
           externalId: entry.externalId,
           name: entry.name,
           playtimeMinutes: entry.playtimeMinutes ?? null,
@@ -211,8 +212,7 @@ async function recordUnresolved(
       // Un reimport aggiorna nome e ore invece di duplicare la voce.
       .onConflictDoUpdate({
         target: [
-          schema.unresolvedImports.userId,
-          schema.unresolvedImports.store,
+          schema.unresolvedImports.storeAccountId,
           schema.unresolvedImports.externalId,
         ],
         // `excluded` e non la colonna: riferendo la colonna si riscriverebbe il
@@ -246,11 +246,7 @@ async function recordUnresolved(
  * `dismiss` resta un'altra cosa: quello è l'utente che dice «non è un gioco» di
  * una voce che nella libreria **c'è**.
  */
-async function pruneUnresolved(
-  userId: string,
-  store: Store,
-  daTogliere: string[],
-) {
+async function pruneUnresolved(storeAccountId: string, daTogliere: string[]) {
   if (daTogliere.length === 0) return;
 
   for (const page of chunk(daTogliere, 1000)) {
@@ -258,25 +254,19 @@ async function pruneUnresolved(
       .delete(schema.unresolvedImports)
       .where(
         and(
-          eq(schema.unresolvedImports.userId, userId),
-          eq(schema.unresolvedImports.store, store),
+          eq(schema.unresolvedImports.storeAccountId, storeAccountId),
           inArray(schema.unresolvedImports.externalId, page),
         ),
       );
   }
 }
 
-/** Gli id che questo utente ha oggi negli scarti di un negozio. */
-async function currentUnresolvedIds(userId: string, store: Store) {
+/** Gli id che questo account ha oggi negli scarti. */
+async function currentUnresolvedIds(storeAccountId: string) {
   const rows = await db
     .select({ externalId: schema.unresolvedImports.externalId })
     .from(schema.unresolvedImports)
-    .where(
-      and(
-        eq(schema.unresolvedImports.userId, userId),
-        eq(schema.unresolvedImports.store, store),
-      ),
-    );
+    .where(eq(schema.unresolvedImports.storeAccountId, storeAccountId));
   return rows.map((row) => row.externalId);
 }
 
@@ -419,10 +409,10 @@ async function resolveByName(
 }
 
 export async function importLibrary(
-  store: Store,
-  userId: string,
+  account: StoreAccountRow,
   library: LibraryEntry[],
 ): Promise<ImportReport> {
+  const { id: storeAccountId, userId, store } = account;
   const platformSlug = platformFor(store);
 
   // 1. Quello che Ludex conosce già.
@@ -480,11 +470,11 @@ export async function importLibrary(
   // Prima si guarda cosa c'era negli scarti, perché subito dopo si riscrive:
   // ciò che non torna né fra i risolti né fra gli irrisolti è sparito dalla
   // libreria, e va tolto.
-  const scartiPrima = await currentUnresolvedIds(userId, store);
+  const scartiPrima = await currentUnresolvedIds(storeAccountId);
   const nellaLibreria = new Set(library.map((entry) => entry.externalId));
 
-  await recordUnresolved(userId, store, unresolved);
-  await pruneUnresolved(userId, store, [
+  await recordUnresolved(account, unresolved);
+  await pruneUnresolved(storeAccountId, [
     ...resolved.map((entry) => entry.externalId),
     ...scartiPrima.filter((externalId) => !nellaLibreria.has(externalId)),
   ]);
@@ -497,11 +487,16 @@ export async function importLibrary(
   // Un possesso per voce di libreria. Due id che puntano allo stesso gioco
   // producono la stessa riga: il vincolo unique la collassa, e vince l'ultima
   // che porta le ore.
+  //
+  // Con `storeAccountId`, lo stesso gioco su due account Amazon resta **due
+  // possessi**: è da quale dei due si lancia, ed è la ragione per cui l'account
+  // sta nella chiave.
   await ensureOwnerships(
     resolved.map((entry) => ({
       backlogId: byGameId.get(gameIdByExternalId.get(entry.externalId)!)!,
       platformSlug,
       store,
+      storeAccountId,
       playtimeMinutes: entry.playtimeMinutes ?? null,
       lastPlayedAt: entry.lastPlayedAt ?? null,
     })),
@@ -514,12 +509,7 @@ export async function importLibrary(
   await db
     .update(schema.storeAccounts)
     .set({ lastSyncAt: new Date() })
-    .where(
-      and(
-        eq(schema.storeAccounts.userId, userId),
-        eq(schema.storeAccounts.store, store),
-      ),
-    );
+    .where(eq(schema.storeAccounts.id, storeAccountId));
 
   return {
     total: library.length,

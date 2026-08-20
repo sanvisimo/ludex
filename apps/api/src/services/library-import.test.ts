@@ -2,7 +2,7 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createUser } from '../../test/factories';
+import { createUser, linkStoreAccount } from '../../test/factories';
 import {
   findIgdbGamesByExternalIds,
   igdbSourceFor,
@@ -54,9 +54,13 @@ const gamesOf = (userId: string) =>
 
 describe('importLibrary: risoluzione per nome (passo 3)', () => {
   let userId: string;
+  // L'import parte dalla riga dell'account, non da `(negozio, utente)`: è lei
+  // che dice a quale dei due account Amazon appartiene ciò che si sta scrivendo.
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
 
   beforeEach(async () => {
     userId = await createUser();
+    account = await linkStoreAccount(userId, 'gog');
     mockedById.mockResolvedValue(new Map());
     mockedSearch.mockResolvedValue([]);
     // GOG ha una sorgente su IGDB; i test che vogliono il caso "negozio che
@@ -67,7 +71,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
   it('aggancia per nome ciò che l id non ha risolto', async () => {
     mockedSearch.mockResolvedValue([hit({ igdbId: 1234, name: 'Frostpunk' })]);
 
-    const report = await importLibrary('gog', userId, [
+    const report = await importLibrary(account, [
       { externalId: '1648559910', name: 'Frostpunk' },
     ]);
 
@@ -82,7 +86,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
 
   it("scrive la mappatura, così il prossimo import non ripassa dalla ricerca", async () => {
     mockedSearch.mockResolvedValue([hit({ igdbId: 1234, name: 'Frostpunk' })]);
-    await importLibrary('gog', userId, [
+    await importLibrary(account, [
       { externalId: '1648559910', name: 'Frostpunk' },
     ]);
 
@@ -106,7 +110,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
       hit({ igdbId: 3, name: 'Flame Dragon 2: Legend of Golden Castle' }),
     ]);
 
-    const report = await importLibrary('gog', userId, [
+    const report = await importLibrary(account, [
       { externalId: '1321890219', name: 'Dragons of Flame' },
     ]);
 
@@ -121,7 +125,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
       hit({ igdbId: 9, name: 'Shadow Sorcerer', releaseYear: 2021 }),
     ]);
 
-    const report = await importLibrary('gog', userId, [
+    const report = await importLibrary(account, [
       { externalId: '1779703219', name: 'Shadow Sorcerer', releaseYear: 1991 },
     ]);
 
@@ -133,7 +137,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
       hit({ igdbId: 9, name: 'Builders of Egypt', releaseYear: 2025 }),
     ]);
 
-    const report = await importLibrary('gog', userId, [
+    const report = await importLibrary(account, [
       { externalId: '1212177362', name: 'Builders of Egypt', releaseYear: 2022 },
     ]);
 
@@ -151,7 +155,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
         : [hit({ igdbId: 77, name: 'Legend of Keepers' })],
     );
 
-    const report = await importLibrary('gog', userId, [
+    const report = await importLibrary(account, [
       { externalId: '2020648154', name: 'Legend of Keepers: Prologue' },
     ]);
 
@@ -176,7 +180,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
           ],
     );
 
-    const report = await importLibrary('gog', userId, [
+    const report = await importLibrary(account, [
       { externalId: '1180139263', name: intero },
     ]);
 
@@ -192,7 +196,8 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     // tutti gli utenti.
     mockedSearch.mockResolvedValue([hit({ igdbId: 85682, name: 'Live' })]);
 
-    const report = await importLibrary('epic', userId, [
+    const epic = await linkStoreAccount(userId, 'epic');
+    const report = await importLibrary(epic, [
       { externalId: 'a', name: 'Live' },
       { externalId: 'b', name: 'Live' },
       { externalId: 'c', name: 'Live' },
@@ -213,7 +218,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
   it('un nome unico continua ad agganciarsi normalmente', async () => {
     mockedSearch.mockResolvedValue([hit({ igdbId: 1, name: 'Celeste' })]);
 
-    const report = await importLibrary('epic', userId, [
+    const report = await importLibrary(account, [
       { externalId: 'a', name: 'Celeste' },
       { externalId: 'b', name: 'Live' },
       { externalId: 'c', name: 'Live' },
@@ -232,7 +237,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
       hit({ igdbId: 3, name: 'Inside', totalRatingCount: null }),
     ]);
 
-    const report = await importLibrary('epic', userId, [
+    const report = await importLibrary(account, [
       { externalId: 'x', name: 'Inside' },
     ]);
 
@@ -248,7 +253,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
       hit({ igdbId: 2, name: 'Observer', totalRatingCount: 120 }),
     ]);
 
-    const report = await importLibrary('epic', userId, [
+    const report = await importLibrary(account, [
       { externalId: 'x', name: 'Observer' },
     ]);
 
@@ -260,13 +265,13 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     // abbiamo imparato a riconoscerla come non-gioco. Senza questa pulizia
     // resterebbe negli scarti per sempre, e l'utente dovrebbe scartare a mano
     // roba che nessuno gli sta più proponendo.
-    await importLibrary('epic', userId, [
+    await importLibrary(account, [
       { externalId: 'sparita', name: 'coolgrey Production' },
       { externalId: 'resta', name: 'Celeste' },
     ]);
     expect(await unresolvedOf(userId)).toHaveLength(2);
 
-    await importLibrary('epic', userId, [
+    await importLibrary(account, [
       { externalId: 'resta', name: 'Celeste' },
     ]);
 
@@ -278,7 +283,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
       hit({ igdbId: 7, name: 'Inkulinati Goodies Pack', gameType: 'DLC' }),
     ]);
 
-    const report = await importLibrary('gog', userId, [
+    const report = await importLibrary(account, [
       { externalId: '1174117468', name: 'Inkulinati Goodies Pack' },
     ]);
 
@@ -292,7 +297,8 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     mockedSource.mockReturnValue(null);
     mockedSearch.mockResolvedValue([hit({ igdbId: 55, name: 'Heaven Dust 2' })]);
 
-    const report = await importLibrary('amazon', userId, [
+    const amazon = await linkStoreAccount(userId, 'amazon');
+    const report = await importLibrary(amazon, [
       {
         externalId: 'amzn1.adg.product.625256c0',
         name: 'Heaven Dust 2',
@@ -310,8 +316,8 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     mockedSearch.mockResolvedValue([hit({ igdbId: 1234, name: 'Frostpunk' })]);
     const entry = { externalId: '1648559910', name: 'Frostpunk' };
 
-    await importLibrary('gog', userId, [entry]);
-    const secondo = await importLibrary('gog', userId, [entry]);
+    await importLibrary(account, [entry]);
+    const secondo = await importLibrary(account, [entry]);
 
     // Al secondo giro lo risolve il passo 1 dal nostro DB: niente ricerca, e
     // nessuna riga in più da nessuna parte.
@@ -327,12 +333,12 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
   it('toglie dagli scarti la voce che la ricerca ha imparato a risolvere', async () => {
     const entry = { externalId: '1305299338', name: 'Ghost Song' };
 
-    await importLibrary('gog', userId, [entry]);
+    await importLibrary(account, [entry]);
     expect(await unresolvedOf(userId)).toHaveLength(1);
 
     // IGDB cresce, e un gioco che oggi non c'è può esserci fra un mese.
     mockedSearch.mockResolvedValue([hit({ igdbId: 42, name: 'Ghost Song' })]);
-    await importLibrary('gog', userId, [entry]);
+    await importLibrary(account, [entry]);
 
     expect(await unresolvedOf(userId)).toHaveLength(0);
   });

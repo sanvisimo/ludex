@@ -1,6 +1,10 @@
 import { EpicAuthError, fetchEpicLibrary } from '../external/epic';
 import { type ImportReport, importLibrary } from './library-import';
-import { epicAccessToken, requireReauth } from './store-accounts';
+import {
+  requireReauth,
+  type StoreAccountRow,
+  storeAccessToken,
+} from './store-accounts';
 
 /**
  * Import della libreria Epic.
@@ -14,17 +18,19 @@ import { epicAccessToken, requireReauth } from './store-accounts';
  *
  * **Niente ore giocate**, come GOG.
  */
-export async function importEpicLibrary(userId: string): Promise<ImportReport> {
-  const accessToken = await epicAccessToken(userId);
+export async function importEpicLibrary(
+  account: StoreAccountRow,
+): Promise<ImportReport> {
+  const accessToken = await storeAccessToken(account);
 
   try {
     const library = await fetchEpicLibrary(accessToken);
-    return await importLibrary('epic', userId, library);
+    return await importLibrary(account, library);
   } catch (error) {
     // Il token era valido un istante fa ed Epic lo rifiuta lo stesso: revocato
     // mentre giravamo. Va scritto, o l'account resterebbe «ok» pur avendo
     // smesso di funzionare.
-    if (error instanceof EpicAuthError) return requireReauth(userId, 'epic');
+    if (error instanceof EpicAuthError) return requireReauth(account);
     throw error;
   }
 }

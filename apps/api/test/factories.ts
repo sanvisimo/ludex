@@ -1,3 +1,5 @@
+import type { Store } from '@repo/contracts/vocabulary';
+
 import type { HltbGameDetail, HltbSearchHit } from '../src/external/hltb';
 import type { IgdbGameMetadata } from '../src/external/igdb';
 import type { MetacriticGame } from '../src/external/metacritic';
@@ -222,16 +224,31 @@ export const ago = {
   days: (n: number) => new Date(Date.now() - n * 86_400_000),
 };
 
-export async function linkSteamAccount(
+/**
+ * Un account di negozio collegato.
+ *
+ * Rende **la riga**, non l'identificativo: da quando gli account per negozio
+ * possono essere più d'uno, è la riga che i servizi si passano — `importLibrary`
+ * e compagnia prendono quella.
+ */
+export async function linkStoreAccount(
+  userId: string,
+  store: Store = 'steam',
+  externalAccountId = `acct-${unique()}`,
+) {
+  const [row] = await db
+    .insert(schema.storeAccounts)
+    .values({ userId, store, externalAccountId })
+    .returning();
+  return row!;
+}
+
+/** Un account Steam, con uno SteamID64 che sembra tale. */
+export function linkSteamAccount(
   userId: string,
   steamId = '76561190000000000',
 ) {
-  await db.insert(schema.storeAccounts).values({
-    userId,
-    store: 'steam',
-    externalAccountId: steamId,
-  });
-  return steamId;
+  return linkStoreAccount(userId, 'steam', steamId);
 }
 
 /** Una voce di libreria Steam come la restituisce il client. */

@@ -1,6 +1,7 @@
 'use client';
 
-import type { Store } from '@repo/contracts';
+import type { OwnershipAccount, Store } from '@repo/contracts';
+import { storeAccountName } from '@repo/contracts';
 import { useQuery } from '@tanstack/react-query';
 import { XIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -9,19 +10,20 @@ import { Badge } from '@/components/ui/badge';
 import { useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 
-// Di un possesso qui servono solo piattaforma e negozio: né l'id né le ore
-// finiscono a schermo. Tenere il tipo su questo minimo permette di mostrare con
-// lo stesso componente sia le righe salvate sia quelle ancora da salvare, che un
-// id non ce l'hanno.
+// Di un possesso qui servono piattaforma, negozio e — quando serve a
+// distinguere — l'account. Né l'id né le ore finiscono a schermo. Tenere il tipo
+// su questo minimo permette di mostrare con lo stesso componente sia le righe
+// salvate sia quelle ancora da salvare, che un id non ce l'hanno.
 export type DisplayedOwnership = {
   id?: string;
   platformSlug: string;
   store?: Store | null;
+  storeAccount?: OwnershipAccount | null;
 };
 
 /** Chiave stabile per un possesso, salvato o no: è la stessa del vincolo unique. */
 export function ownershipKey(ownership: DisplayedOwnership) {
-  return `${ownership.platformSlug}|${ownership.store ?? ''}`;
+  return `${ownership.platformSlug}|${ownership.store ?? ''}|${ownership.storeAccount?.id ?? ''}`;
 }
 
 // Le righe di possesso portano lo slug della piattaforma, non il nome: il nome
@@ -48,12 +50,31 @@ export function OwnershipBadges({
 
   const nameBySlug = new Map((platforms ?? []).map((p) => [p.slug, p.name]));
 
+  // Il nome dell'account si mostra **solo dove serve a distinguere**: se dello
+  // stesso negozio c'è una copia sola, «Amazon» basta e «Amazon (simone)»
+  // sarebbe rumore. Con due account lo stesso badge ripetuto non direbbe da
+  // quale dei due si lancia, che è l'unica ragione per cui l'account è a
+  // schermo.
+  const perNegozio = new Map<string, number>();
+  for (const ownership of ownerships) {
+    if (!ownership.store) continue;
+    perNegozio.set(ownership.store, (perNegozio.get(ownership.store) ?? 0) + 1);
+  }
+
   return (
     <div className="flex flex-wrap gap-1">
       {ownerships.map((ownership) => {
+        const account =
+          ownership.store &&
+          (perNegozio.get(ownership.store) ?? 0) > 1 &&
+          ownership.storeAccount
+            ? storeAccountName(ownership.storeAccount)
+            : null;
+
         const label =
           (nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug) +
-          (ownership.store ? ` · ${storeLabels[ownership.store]}` : '');
+          (ownership.store ? ` · ${storeLabels[ownership.store]}` : '') +
+          (account ? ` (${account})` : '');
 
         return (
           <Badge

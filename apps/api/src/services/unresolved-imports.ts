@@ -81,6 +81,10 @@ export async function resolveUnresolvedImport(
       backlogId,
       platformSlug,
       store: pending.store,
+      // Lo scarto sa da quale account veniva, e il possesso che ne nasce deve
+      // saperlo quanto un possesso importato: risolvere a mano non è un
+      // inserimento manuale, è un import finito a mano.
+      storeAccountId: pending.storeAccountId,
       playtimeMinutes: pending.playtimeMinutes,
       lastPlayedAt: pending.lastPlayedAt,
     },

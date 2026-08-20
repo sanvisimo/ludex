@@ -30,6 +30,21 @@ export const entryQuery = {
         playtimeMinutes: true,
         lastPlayedAt: true,
       },
+      // Da quale account viene la copia: è ciò che permette alla scheda di
+      // scrivere «Amazon — secondo account» invece di due volte «Amazon».
+      // Nullo sugli inserimenti manuali, e sui possessi importati prima che gli
+      // account fossero più d'uno.
+      with: {
+        storeAccount: {
+          columns: {
+            id: true,
+            displayName: true,
+            label: true,
+            externalAccountId: true,
+            status: true,
+          },
+        },
+      },
     },
     tags: {
       columns: {},
@@ -50,6 +65,9 @@ export function toEntry<T extends { tags: { tag: UserTag }[] }>(entry: T) {
   return { ...rest, tags: tags.map((row) => row.tag) };
 }
 
+// Il possesso inserito a mano dallo step 5. Nessun `storeAccountId`: l'account
+// lo attacca solo un import, e un utente che dichiara «ce l'ho su Amazon» non sta
+// dicendo su quale dei suoi account.
 export type OwnershipInput = { platformSlug: string; store?: Store | null };
 
 // Quante righe per INSERT. Postgres regge 65535 parametri per istruzione: con
@@ -315,7 +333,7 @@ function fondiDoppioni(rows: OwnershipUpsert[]) {
   const perChiave = new Map<string, OwnershipUpsert>();
 
   for (const row of rows) {
-    const chiave = `${row.backlogId}|${row.platformSlug}|${row.store ?? ''}`;
+    const chiave = `${row.backlogId}|${row.platformSlug}|${row.store ?? ''}|${row.storeAccountId ?? ''}`;
     const gia = perChiave.get(chiave);
 
     if (!gia) {
@@ -343,16 +361,63 @@ export type OwnershipUpsert = {
   backlogId: string;
   platformSlug: string;
   store?: Store | null;
+  storeAccountId?: string | null;
   playtimeMinutes?: number | null;
   lastPlayedAt?: Date | null;
 };
 
 /**
+ * Attacca l'account ai possessi che il negozio ce l'hanno già, ma l'account no.
+ *
+ * Serve perché `storeAccountId` è entrato nella chiave del vincolo. Senza questo
+ * passo, un possesso «PC / Amazon» inserito a mano allo step 5 e lo stesso
+ * possesso portato dall'import sono **due righe diverse**, e la scheda del gioco
+ * mostra due volte Amazon: il primo import dopo questa modifica sdoppierebbe in
+ * silenzio ogni possesso che l'utente si era scritto a mano.
+ *
+ * L'adozione è ristretta a `store_account_id is null`: un possesso che porta già
+ * l'id di un **altro** account non si tocca, perché quello è il caso vero dei due
+ * account Amazon e sono due copie distinte.
+ *
+ * Vale una volta sola per riga — dopo, l'account c'è — quindi non è un costo
+ * ricorrente: dal secondo import in poi non aggiorna niente.
+ */
+async function adottaPossessiSenzaAccount(rows: OwnershipUpsert[]) {
+  // Raggruppate per (account, negozio, piattaforma): dentro un import sono
+  // sempre le stesse tre cose, quindi quattrocento giochi diventano **una**
+  // UPDATE invece di quattrocento andate e ritorni al database.
+  const gruppi = new Map<string, { row: OwnershipUpsert; ids: string[] }>();
+
+  for (const row of rows) {
+    if (!row.storeAccountId || !row.store) continue;
+    const chiave = `${row.storeAccountId}|${row.store}|${row.platformSlug}`;
+    const gruppo = gruppi.get(chiave);
+    if (gruppo) gruppo.ids.push(row.backlogId);
+    else gruppi.set(chiave, { row, ids: [row.backlogId] });
+  }
+
+  for (const { row, ids } of gruppi.values()) {
+    await db
+      .update(schema.ownerships)
+      .set({ storeAccountId: row.storeAccountId, updatedAt: new Date() })
+      .where(
+        and(
+          inArray(schema.ownerships.backlogId, ids),
+          eq(schema.ownerships.platformSlug, row.platformSlug),
+          eq(schema.ownerships.store, row.store!),
+          sql`${schema.ownerships.storeAccountId} is null`,
+        ),
+      );
+  }
+}
+
+/**
  * Scrive i possessi che mancano e aggiorna il tempo di gioco di quelli che ci sono.
  *
- * Idempotente per costruzione: la chiave è `(backlog, piattaforma, store)`, e il
- * vincolo è `NULLS NOT DISTINCT` — senza, "PC / nessuno store" si potrebbe
- * inserire due volte perché in Postgres i NULL sono tutti diversi fra loro.
+ * Idempotente per costruzione: la chiave è `(backlog, piattaforma, store,
+ * account)`, e il vincolo è `NULLS NOT DISTINCT` — senza, "PC / nessuno store"
+ * si potrebbe inserire due volte perché in Postgres i NULL sono tutti diversi
+ * fra loro.
  *
  * Sul conflitto aggiorna **solo** le ore, e solo se il chiamante le ha portate:
  * un inserimento manuale non deve azzerare il tempo di gioco che l'import aveva
@@ -364,6 +429,8 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
   let created = 0;
 
   for (const page of chunk(fondiDoppioni(rows), WRITE_CHUNK)) {
+    await adottaPossessiSenzaAccount(page);
+
     const inserted = await db
       .insert(schema.ownerships)
       .values(
@@ -371,6 +438,7 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           backlogId: row.backlogId,
           platformSlug: row.platformSlug,
           store: row.store ?? null,
+          storeAccountId: row.storeAccountId ?? null,
           playtimeMinutes: row.playtimeMinutes ?? null,
           lastPlayedAt: row.lastPlayedAt ?? null,
         })),
@@ -380,6 +448,7 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           schema.ownerships.backlogId,
           schema.ownerships.platformSlug,
           schema.ownerships.store,
+          schema.ownerships.storeAccountId,
         ],
         set: {
           // COALESCE e non assegnazione secca: se questa scrittura non porta le

@@ -15,19 +15,25 @@ export const IMPORTS_QUEUE = 'imports';
  */
 
 /**
- * Un import da fare, per un utente e un negozio.
+ * Un import da fare: **l'account, e nient'altro**.
  *
- * Allo step 4 c'era il solo `{ type: 'steam', steamId }`. Dal 9a il negozio è un
- * campo e **il job non porta il credenziale**: chi lo esegue va a leggerlo da
- * `store_accounts`. Portarlo dentro il job vorrebbe dire scrivere un refresh
- * token in chiaro dentro Redis, dove resta nella cronologia dei job completati
- * per giorni — e vorrebbe dire eseguire con un token già rinnovato da qualcun
- * altro nel frattempo.
+ * Allo step 4 c'era `{ type: 'steam', steamId }`, poi `{ store, userId }`. Ora è
+ * l'id della riga di `store_accounts`, da cui si leggono negozio, utente e
+ * identità pubblica: due account Amazon dello stesso utente sono due import
+ * distinti, e `{ store, userId }` non sapeva distinguerli — il secondo veniva
+ * scartato dalla deduplicazione del primo.
  *
- * Steam resta l'eccezione e tiene il suo `steamId` nel job: non è un segreto,
- * è l'identificativo pubblico di un profilo.
+ * **Il job non porta il credenziale** e non lo portava nemmeno prima: chi lo
+ * esegue va a leggerlo da `store_accounts`. Portarlo dentro vorrebbe dire
+ * scrivere un refresh token in chiaro in Redis, dove resta nella cronologia dei
+ * job completati per giorni, e vorrebbe dire eseguire con un token che nel
+ * frattempo qualcun altro ha già rinnovato.
+ *
+ * Anche lo `steamId` è sparito di qui, e non perché fosse un segreto: è
+ * `externalAccountId` sulla riga, e tenerne una copia nel job voleva dire due
+ * posti da cui poteva arrivare la verità.
  */
-export type ImportJob = { store: Store; userId: string; steamId?: string };
+export type ImportJob = { storeAccountId: string };
 
 export const importsQueue = new Queue<ImportJob>(IMPORTS_QUEUE, {
   connection: redisConnection,
@@ -42,13 +48,15 @@ export const importsQueue = new Queue<ImportJob>(IMPORTS_QUEUE, {
 });
 
 /**
- * La chiave di deduplicazione: un import per utente **e per negozio**.
+ * La chiave di deduplicazione: un import **per account**.
  *
- * Il negozio dentro la chiave non è un dettaglio: senza, collegare GOG mentre
- * gira l'import di Steam scarterebbe silenziosamente il secondo, e l'utente
- * vedrebbe una libreria che non arriva mai.
+ * Era `${store}-${userId}`, che con due account sullo stesso negozio si
+ * escludono a vicenda: colleghi il secondo Amazon mentre gira il primo e il suo
+ * import viene scartato in silenzio, con l'utente che aspetta una libreria che
+ * non arriva mai. L'id dell'account è già unico per (utente, negozio, account) e
+ * non ha bisogno di prefissi.
  */
-const dedupKey = (store: Store, userId: string) => `${store}-${userId}`;
+const dedupKey = (storeAccountId: string) => storeAccountId;
 
 /**
  * Accoda l'import di una libreria.
@@ -56,23 +64,26 @@ const dedupKey = (store: Store, userId: string) => `${store}-${userId}`;
  * Deduplicato: premere due volte il bottone non fa partire due import. Senza
  * `ttl`, la chiave vive quanto il job e si libera alla fine, così un reimport
  * più tardi passa (vedi il commento in queue/enrichment.ts).
+ *
+ * Il nome del job resta il negozio, che è ciò che si legge nella dashboard: l'id
+ * dell'account lì non direbbe niente a nessuno.
  */
-export async function enqueueImport(job: ImportJob) {
-  return importsQueue.add(job.store, job, {
-    deduplication: { id: dedupKey(job.store, job.userId) },
+export async function enqueueImport(store: Store, job: ImportJob) {
+  return importsQueue.add(store, job, {
+    deduplication: { id: dedupKey(job.storeAccountId) },
   });
 }
 
 /**
- * C'è un import in corso per questo utente su questo negozio?
+ * C'è un import in corso per questo account?
  *
  * Si guarda la chiave di deduplicazione e non lo stato dei job: la chiave esiste
  * esattamente finché il job è in coda o in lavorazione, e si libera quando
  * finisce. È la stessa proprietà su cui poggia la deduplicazione.
  */
-export async function isImportRunning(store: Store, userId: string) {
+export async function isImportRunning(storeAccountId: string) {
   const jobId = await importsQueue.getDeduplicationJobId(
-    dedupKey(store, userId),
+    dedupKey(storeAccountId),
   );
   return jobId !== null;
 }

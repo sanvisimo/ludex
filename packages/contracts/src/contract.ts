@@ -16,6 +16,7 @@ import {
   PlatformSchema,
   RatingSchema,
   StoreAccountSchema,
+  UnlinkImpactSchema,
   UnresolvedImportSchema,
   UserTagInputSchema,
   UserTagSchema,
@@ -107,14 +108,57 @@ export const contract = {
           // Largo: un URL di atterraggio con dentro un codice di autorizzazione
           // supera comodamente i 200 caratteri.
           value: z.string().trim().min(1).max(2000),
+          // Come vuole chiamarlo l'utente. Opzionale, e quasi sempre vuota: il
+          // nome del negozio basta finché di account ce n'è uno. Serve quando
+          // ce ne sono due della stessa persona, dove nessun dato dell'API li
+          // separa — su Amazon rendono lo stesso nome di battesimo.
+          label: z.string().trim().max(60).nullish(),
         }),
       )
       .output(StoreAccountSchema),
 
-    unlink: oc.input(z.object({ store: LinkableStoreSchema })).output(z.void()),
+    // Rinomina un account già collegato. Esiste separata da `link` perché
+    // altrimenti etichettare quelli che hai già vorrebbe dire scollegarli e
+    // rifare il giro dal browser per scrivere un campo di testo. Vuota = togli.
+    rename: oc
+      .input(
+        z.object({
+          accountId: z.uuid(),
+          label: z.string().trim().max(60).nullish(),
+        }),
+      )
+      .output(StoreAccountSchema),
 
-    // Rilancia l'import di una libreria già collegata.
-    sync: oc.input(z.object({ store: LinkableStoreSchema })).output(z.void()),
+    // Cosa si porterebbe via lo scollegamento. Si chiede **prima** di aprire la
+    // scelta, perché «84 giochi» non dice quanti ne spariscono davvero: quelli
+    // che stanno anche su GOG restano, e fra gli altri ce ne possono essere con
+    // un voto o dei tag dell'utente.
+    unlinkImpact: oc
+      .input(z.object({ accountId: z.uuid() }))
+      .output(UnlinkImpactSchema),
+
+    // Scollega un account, in uno dei due modi.
+    //
+    // `keep` — i giochi restano suoi, come se li avesse inseriti a mano. La riga
+    // dell'account sopravvive senza credenziali, perché è l'unica cosa che
+    // ricordi da quale dei due account Amazon veniva un gioco.
+    //
+    // `purge` — i possessi di quell'account se ne vanno, e con loro le righe di
+    // backlog che restano senza nessun possesso: voto, note e tag compresi.
+    //
+    // Non c'è un default: la scelta la fa l'utente nel dialogo, e un default qui
+    // vorrebbe dire che un client distratto ne cancella una a caso.
+    unlink: oc
+      .input(
+        z.object({
+          accountId: z.uuid(),
+          ownerships: z.enum(['keep', 'purge']),
+        }),
+      )
+      .output(z.void()),
+
+    // Rilancia l'import della libreria di un account già collegato.
+    sync: oc.input(z.object({ accountId: z.uuid() })).output(z.void()),
   },
 
   imports: {

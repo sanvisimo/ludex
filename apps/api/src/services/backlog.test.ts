@@ -2,10 +2,15 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createGame, createUser } from '../../test/factories';
+import {
+  createGame,
+  createUser,
+  linkStoreAccount,
+} from '../../test/factories';
 import {
   addOwnershipToEntry,
   addToBacklog,
+  ensureOwnerships,
   findEntryById,
   updateBacklogEntry,
 } from './backlog';
@@ -316,5 +321,55 @@ describe('aggiunta di un possesso', () => {
       }),
     ).toBeNull();
     expect((await findEntryById(userId, entryId))?.ownerships).toHaveLength(1);
+  });
+
+  it("l'import adotta il possesso scritto a mano invece di sdoppiarlo", async () => {
+    // `storeAccountId` è entrato nella chiave del vincolo: senza l'adozione, il
+    // possesso «PC / Steam» inserito a mano e quello portato dall'import sono
+    // due righe, e la scheda del gioco mostrerebbe Steam due volte.
+    const account = await linkStoreAccount(userId, 'steam');
+
+    await ensureOwnerships([
+      {
+        backlogId: entryId,
+        platformSlug: 'pc_windows',
+        store: 'steam',
+        storeAccountId: account.id,
+        playtimeMinutes: 630,
+      },
+    ]);
+
+    const entry = await findEntryById(userId, entryId);
+    expect(entry?.ownerships).toHaveLength(1);
+    expect(entry?.ownerships[0]).toMatchObject({
+      playtimeMinutes: 630,
+      storeAccount: { id: account.id },
+    });
+  });
+
+  it('due account dello stesso negozio sono due possessi', async () => {
+    // Ed è il punto di tutta la modifica: per il filtro hard sono la stessa
+    // cosa, ma per lanciare il gioco no — bisogna essere collegati a quello
+    // giusto, e il backlog deve poterlo dire.
+    const primo = await linkStoreAccount(userId, 'amazon', 'amazon-1');
+    const secondo = await linkStoreAccount(userId, 'amazon', 'amazon-2');
+
+    for (const account of [primo, secondo]) {
+      await ensureOwnerships([
+        {
+          backlogId: entryId,
+          platformSlug: 'pc_windows',
+          store: 'amazon',
+          storeAccountId: account.id,
+        },
+      ]);
+    }
+
+    const entry = await findEntryById(userId, entryId);
+    const amazon = entry?.ownerships.filter((o) => o.store === 'amazon') ?? [];
+    expect(amazon).toHaveLength(2);
+    expect(amazon.map((o) => o.storeAccount?.id).sort()).toEqual(
+      [primo.id, secondo.id].sort(),
+    );
   });
 });

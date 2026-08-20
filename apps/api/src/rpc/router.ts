@@ -30,7 +30,9 @@ import {
   findStoreAccount,
   linkStore,
   listStoreAccounts,
+  renameStoreAccount,
   storeLoginUrl,
+  unlinkImpact,
   unlinkStoreAccount,
 } from '../services/store-accounts';
 import {
@@ -96,58 +98,72 @@ export const router = os.router({
     })),
 
     link: os.accounts.link.use(authed).handler(async ({ input, context }) => {
-      const account = await linkStore(context.user.id, input.store, input.value);
+      const account = await linkStore(
+        context.user.id,
+        input.store,
+        input.value,
+        input.label,
+      );
 
       // Collegare e importare sono la stessa azione per l'utente: non ha senso
       // fargli premere un secondo bottone per avere i suoi giochi.
-      await enqueueImport({
-        store: input.store,
-        userId: context.user.id,
-        steamId:
-          input.store === 'steam' ? account.externalAccountId : undefined,
-      });
+      await enqueueImport(account.store, { storeAccountId: account.id });
 
       return { ...account, syncing: true };
     }),
 
+    rename: os.accounts.rename.use(authed).handler(async ({ input, context }) => {
+      const account = await renameStoreAccount(
+        context.user.id,
+        input.accountId,
+        input.label ?? null,
+      );
+      if (!account)
+        throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+      return { ...account, syncing: await isImportRunning(account.id) };
+    }),
+
+    unlinkImpact: os.accounts.unlinkImpact
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const impact = await unlinkImpact(context.user.id, input.accountId);
+        if (!impact)
+          throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+        return impact;
+      }),
+
     unlink: os.accounts.unlink
       .use(authed)
       .handler(async ({ input, context }) => {
-        const removed = await unlinkStoreAccount(context.user.id, input.store);
+        const removed = await unlinkStoreAccount(
+          context.user.id,
+          input.accountId,
+          input.ownerships === 'purge' ? 'purge' : 'keep',
+        );
         if (!removed)
-          throw new ORPCError('NOT_FOUND', {
-            message: `Nessun account ${input.store} collegato`,
-          });
+          throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
       }),
 
     sync: os.accounts.sync.use(authed).handler(async ({ input, context }) => {
-      const account = await findStoreAccount(context.user.id, input.store);
-      if (!account)
-        throw new ORPCError('NOT_FOUND', {
-          message: `Nessun account ${input.store} collegato`,
-        });
+      const account = await findStoreAccount(context.user.id, input.accountId);
+      if (!account || account.status === 'unlinked')
+        throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
 
       // Un credenziale morto non si sblocca riprovando: accodare qui vorrebbe
       // dire un job che fallisce e un utente che non capisce perché.
       if (account.status === 'needs_reauth') {
         throw new ORPCError('FORBIDDEN', {
-          message: `Il collegamento a ${input.store} è scaduto: ricollega l'account`,
+          message: `Il collegamento a ${account.store} è scaduto: ricollega l'account`,
         });
       }
 
-      // La coda deduplica per utente e negozio, quindi due click non fanno due
-      // import; il controllo qui serve solo a dirlo, invece di far finta di
-      // aver accodato.
-      if (await isImportRunning(input.store, context.user.id)) {
+      // La coda deduplica per account, quindi due click non fanno due import; il
+      // controllo qui serve solo a dirlo, invece di far finta di aver accodato.
+      if (await isImportRunning(account.id)) {
         throw new ORPCError('CONFLICT', { message: 'Import già in corso' });
       }
 
-      await enqueueImport({
-        store: input.store,
-        userId: context.user.id,
-        steamId:
-          input.store === 'steam' ? account.externalAccountId : undefined,
-      });
+      await enqueueImport(account.store, { storeAccountId: account.id });
     }),
   },
 
