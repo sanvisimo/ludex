@@ -157,6 +157,10 @@ export const IgdbSearchHitSchema = z.object({
   developer: z.string().nullable(),
   // Valorizzato solo quando non è un gioco principale: "Port", "Remake"…
   gameType: z.string().nullable(),
+  // Quante recensioni aggregate ha la scheda IGDB. Viaggia fino al client
+  // perché la lista di scelta manuale ha lo stesso problema dell'import: fra
+  // tre schede intitolate «Inside» quella vera è quella vissuta.
+  totalRatingCount: z.number().int().nullable(),
 });
 
 export const OwnershipSchema = z.object({

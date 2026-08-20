@@ -269,6 +269,16 @@
         "inputLabel": "Landing address",
         "placeholder": "https://embed.gog.com/on_login_success?…",
         "hint": "Open the login page, sign in with your GOG account, then copy the address of the blank page you land on from the browser bar: the code we need is in there. You only do this once."
+      },
+      "epic": {
+        "inputLabel": "Authorization code",
+        "placeholder": "{\"redirectUrl\":\"…\",\"authorizationCode\":\"…\"}",
+        "hint": "Open the login page, sign in with your Epic account, then copy the JSON shown on screen — the whole thing is fine, no need to pick the code out of it. You only do this once."
+      },
+      "amazon": {
+        "inputLabel": "Landing address",
+        "placeholder": "https://www.amazon.com/?…openid.oa2.authorization_code=…",
+        "hint": "Open the login page and sign in with your Amazon account — the store is the US one, but a non-US account signs in just fine. Once you land on the amazon.com home page, copy the address from the browser bar. Connecting registers an “AGSLauncher for Windows” device on your Amazon account, which you can remove any time from your Amazon settings."
       }
     },
     "unresolved": {

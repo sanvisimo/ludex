@@ -25,12 +25,12 @@ import {
   findExistingPlatformSlugs,
   listPlatforms,
 } from '../services/platforms';
-import { gogLoginUrl } from '../external/gog';
 import { deleteUserTag, listUserTags } from '../services/tags';
 import {
   findStoreAccount,
   linkStore,
   listStoreAccounts,
+  storeLoginUrl,
   unlinkStoreAccount,
 } from '../services/store-accounts';
 import {
@@ -89,10 +89,10 @@ export const router = os.router({
       .use(authed)
       .handler(({ context }) => listStoreAccounts(context.user.id)),
 
-    loginUrl: os.accounts.loginUrl.use(authed).handler(({ input }) => ({
+    loginUrl: os.accounts.loginUrl.use(authed).handler(({ input, context }) => ({
       // Steam non ha un login da fare: l'utente incolla il proprio profilo, che
       // è pubblico. Gli altri mandano su una pagina del negozio.
-      url: input.store === 'gog' ? gogLoginUrl() : null,
+      url: storeLoginUrl(context.user.id, input.store),
     })),
 
     link: os.accounts.link.use(authed).handler(async ({ input, context }) => {

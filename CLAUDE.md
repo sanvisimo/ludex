@@ -265,7 +265,7 @@ Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 | Negozio | Credenziale | Id su IGDB | Ore |
 | --------- | ------------------------------- | ------------------------------------------------- | --- |
 | GOG | refresh token, non scade in pratica | product id, sorgente 5 — **94,5% su 435 giochi** | no |
-| Epic | refresh token | catalogItemId, sorgente 26 | no |
+| Epic | refresh token | **nessuno**: vedi sotto | no |
 | Amazon | refresh token | **nessuno**: sorgente 23 ha 678 righe in tutto | no |
 | PSN | refresh token da npsso, ~2 mesi | `conceptId` **è** l'uid della sorgente 36 | parziali |
 | EA | sessione corta, si sgancia sempre | nessuno | sì |
@@ -275,9 +275,19 @@ Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 Dove l'id c'è l'import costa nulla: i 435 giochi GOG si risolvono in **tre**
 richieste da 200 id, e il matcher per nome ne recupera altri 16, per un 98,2%
 automatico e due sole scelte da fare a mano. Dove l'id non c'è si paga **una
-ricerca IGDB per gioco**: Amazon sono 92 richieste per un 85,9%, con 13 voci che
-finiscono in `unresolved_imports`. Su queste fonti gli scarti sono la regola, non
-l'angolo, e va messo un tetto ai tentativi come già impone l'enrichment.
+ricerca IGDB per gioco**: Amazon sono 92 richieste per un 85,9%, Epic 705. Su
+queste fonti gli scarti sono la regola, non l'angolo, e va messo un tetto ai
+tentativi come già impone l'enrichment.
+
+**Epic è il caso che inganna, e va scritto perché la trappola è ben nascosta.**
+IGDB ha una sorgente Epic con diecimila righe, e i suoi uid hanno la stessa forma
+degli id che il launcher restituisce — 32 esadecimali. Sono cose diverse: gli uid
+di IGDB sono gli **offer id del negozio**, il launcher dà `catalogItemId`,
+`namespace` e `productId`. Su una libreria vera nessuno dei tre trova niente,
+**zero su 705**, misurato. In compenso il record di libreria porta già il titolo
+in `sandboxName` — quindi niente chiamate al catalogo — e gioco e DLC
+condividono il `productId`, che è ciò che li fa collassare: 836 voci diventano
+705 giochi senza chiedere niente a nessuno.
 
 Tre dettagli che si pagano se si scoprono tardi:
 

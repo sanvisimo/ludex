@@ -16,8 +16,10 @@ import {
   linkExternalGames,
 } from './games';
 import {
+  NAME_THRESHOLD,
   normalizeTitle,
   pickByName,
+  type Ranked,
   rankCandidates,
   shortenTitle,
 } from './title-match';
@@ -97,14 +99,20 @@ export function platformFor(store: Store): string {
 /**
  * Quante ricerche per nome si spendono al massimo in un import.
  *
- * Serve perché il costo del passo 3 dipende dal negozio in modo brutale: GOG ne
- * chiede 24 su 435 giochi, Amazon 92 su 92. A 4 richieste al secondo — il tetto
- * di IGDB — una libreria Amazon di mille voci fermerebbe la coda per quattro
- * minuti buoni. Oltre il tetto le voci restanti vanno negli irrisolti, dove
- * l'utente le vede: è un rinvio, non una perdita, e il reimport successivo
- * riparte da lì perché nel frattempo il passo 1 non le conosce ancora.
+ * Serve perché il costo del passo 3 dipende dal negozio in modo brutale, e sono
+ * numeri misurati su librerie vere: GOG ne chiede 24 su 435 giochi, perché il
+ * suo product id IGDB lo conosce; **Epic 705 su 705 e Amazon 92 su 92**, perché
+ * i loro id IGDB non li ha affatto.
+ *
+ * A 4 richieste al secondo — il tetto di IGDB — settecento voci sono tre minuti
+ * di coda. È accettabile per un job che gira in background e succede una volta:
+ * al reimport le voci risolte le riconosce il passo 1 dal nostro database.
+ *
+ * Il tetto è quindi un freno contro le librerie fuori scala, non una politica.
+ * Oltre, le voci restanti vanno negli irrisolti, dove l'utente le vede: è un
+ * rinvio e non una perdita, e il reimport successivo riparte da lì.
  */
-const NAME_SEARCH_CAP = 300;
+const NAME_SEARCH_CAP = 1000;
 
 /**
  * Di quanti anni possono discostarsi l'anno del negozio e quello di IGDB.
@@ -115,6 +123,54 @@ const NAME_SEARCH_CAP = 300;
  * remake — che è una distanza di decenni, non di anni.
  */
 const STORE_YEAR_TOLERANCE = 5;
+
+/**
+ * Quanto il più recensito deve staccare il secondo per rompere una parità.
+ *
+ * Serve quando IGDB ha **più schede col titolo identico** e il negozio non dà
+ * l'anno per distinguerle — che è il caso di Epic, dove finiscono lì 41 voci su
+ * 705. Il matcher a quel punto giustamente rinuncia: sul nome non c'è più
+ * niente da dire.
+ *
+ * Ma i doppioni di IGDB non sono candidati alla pari, sono **schede vuote**:
+ *
+ *     Inside (2016)   1666 recensioni     ← il gioco
+ *     Inside (?)         0 recensioni
+ *     Inside (?)         0 recensioni
+ *
+ * Tre volte, e non «il più recensito vince»: con un margine stretto si
+ * sceglierebbe fra due schede entrambe vissute, che è proprio il caso in cui
+ * decidere non tocca a noi. Misurata sulla libreria vera, questa regola rompe
+ * **34 pareggi su 41** e lascia agli scarti quelli davvero contesi.
+ */
+const TIE_REVIEW_RATIO = 3;
+
+/**
+ * Il candidato che stacca gli altri per numero di recensioni, o null.
+ *
+ * Sta qui e **non in `pickByName`**: quel giudice lo usano anche HLTB e
+ * Metacritic, dove i candidati sono voci loro e un conteggio recensioni IGDB non
+ * ce l'hanno. Allargare l'interfaccia condivisa per un caso solo vorrebbe dire
+ * pagare in tre posti per risolverne uno.
+ */
+function breakTieByReviews<T extends { totalRatingCount: number | null }>(
+  ranked: Ranked<T>[],
+): T | null {
+  const esatti = ranked
+    .filter((row) => row.exact && row.score >= NAME_THRESHOLD)
+    .sort(
+      (a, b) =>
+        (b.hit.totalRatingCount ?? 0) - (a.hit.totalRatingCount ?? 0),
+    );
+  if (esatti.length < 2) return null;
+
+  const primo = esatti[0]!.hit.totalRatingCount ?? 0;
+  const secondo = esatti[1]!.hit.totalRatingCount ?? 0;
+  // Il `+ 1` evita che zero contro zero passi per un distacco infinito.
+  return primo > 0 && primo >= TIE_REVIEW_RATIO * (secondo + 1)
+    ? esatti[0]!.hit
+    : null;
+}
 
 export type ImportReport = {
   /** Voci nella libreria del negozio. */
@@ -172,20 +228,32 @@ async function recordUnresolved(
 }
 
 /**
- * Toglie dagli irrisolti le voci che nel frattempo si sono risolte.
+ * Riallinea gli scarti alla libreria: restano solo quelli ancora irrisolti
+ * **e ancora presenti**.
  *
- * Serve perché IGDB cresce: un gioco che oggi non c'è può esserci fra un mese, e
- * al reimport la voce va tolta dalla lista degli scarti invece di restare lì a
- * chiedere un intervento manuale che non serve più.
+ * Due pulizie in una, per due ragioni diverse.
+ *
+ * La prima: IGDB cresce, e un gioco che oggi non c'è può esserci fra un mese.
+ * Al reimport la voce va tolta dalla lista invece di restare lì a chiedere un
+ * intervento che non serve più.
+ *
+ * La seconda: una voce può **sparire dalla libreria**, perché l'utente l'ha
+ * rimossa o perché abbiamo imparato a riconoscerla come non-gioco. Senza questa
+ * pulizia quella riga resterebbe negli scarti per sempre, e l'utente si
+ * troverebbe a dover scartare a mano roba che nessuno gli sta più proponendo —
+ * `coolgrey Production` che sopravvive a tre reimport di fila.
+ *
+ * `dismiss` resta un'altra cosa: quello è l'utente che dice «non è un gioco» di
+ * una voce che nella libreria **c'è**.
  */
-async function clearResolved(
+async function pruneUnresolved(
   userId: string,
   store: Store,
-  externalIds: string[],
+  daTogliere: string[],
 ) {
-  if (externalIds.length === 0) return;
+  if (daTogliere.length === 0) return;
 
-  for (const page of chunk(externalIds, 1000)) {
+  for (const page of chunk(daTogliere, 1000)) {
     await db
       .delete(schema.unresolvedImports)
       .where(
@@ -196,6 +264,20 @@ async function clearResolved(
         ),
       );
   }
+}
+
+/** Gli id che questo utente ha oggi negli scarti di un negozio. */
+async function currentUnresolvedIds(userId: string, store: Store) {
+  const rows = await db
+    .select({ externalId: schema.unresolvedImports.externalId })
+    .from(schema.unresolvedImports)
+    .where(
+      and(
+        eq(schema.unresolvedImports.userId, userId),
+        eq(schema.unresolvedImports.store, store),
+      ),
+    );
+  return rows.map((row) => row.externalId);
 }
 
 /**
@@ -222,7 +304,10 @@ async function clearResolved(
  * modo in cui questo ripiego era stato dimenticato la prima volta.
  */
 export async function searchWithFallback(name: string) {
-  const hits = await searchIgdbGames(name);
+  // Normalizzato **anche al primo tentativo**, come fa HLTB. I negozi infilano
+  // ™ e ® nei titoli — Epic in particolare — e IGDB su quelli non trova niente:
+  // «Rocket League®» dà zero risultati, «rocket league» venti.
+  const hits = await searchIgdbGames(normalizeTitle(name));
   if (hits.length > 0) return { hits, searchedAs: null as string | null };
 
   const tried: string[] = [];
@@ -255,36 +340,78 @@ async function resolveByName(
 ): Promise<ExternalGameLink[]> {
   const links: ExternalGameLink[] = [];
 
-  for (const entry of entries.slice(0, NAME_SEARCH_CAP)) {
+  // Un nome che si ripete nella stessa libreria non è un titolo, è
+  // un'etichetta: due prodotti diversi con lo stesso nome non li può separare
+  // nessuna ricerca per nome, e agganciarli entrambi vorrebbe dire dire il
+  // falso su almeno uno.
+  //
+  // **Non è un caso di scuola.** Su una libreria Epic vera 266 voci su 705
+  // arrivavano chiamate «Live» — sono progetti Unreal e isole di Fortnite
+  // Creative — e IGDB un gioco chiamato davvero *Live* ce l'ha, con
+  // corrispondenza esatta e unica. Il matcher le ha agganciate tutte e 266 a
+  // quello, scrivendo 266 mappature false in `external_ids`, che è **condivisa
+  // fra tutti gli utenti**: il danno non era nella libreria di chi importava,
+  // era nel catalogo di tutti.
+  //
+  // Il filtro sulle voci-spazzatura sta a monte, nel client del negozio, ed è
+  // il posto giusto per riconoscerle. Questo è la rete sotto: lì serve sapere
+  // come è fatto quel negozio, qui basta contare.
+  const ripetuti = new Set<string>();
+  const visti = new Set<string>();
+  for (const entry of entries) {
+    const chiave = entry.name.trim().toLowerCase();
+    if (visti.has(chiave)) ripetuti.add(chiave);
+    visti.add(chiave);
+  }
+
+  const daCercare = entries.slice(0, NAME_SEARCH_CAP);
+  let fatte = 0;
+
+  for (const entry of daCercare) {
+    // Ogni cinquanta, e non a ogni voce: qui dentro si passano minuti — su Epic
+    // sono settecento ricerche a quattro al secondo — e senza una riga ogni
+    // tanto un import che lavora e uno che si è piantato si assomigliano
+    // parecchio. Cinquanta è circa una riga ogni dodici secondi.
+    if (fatte > 0 && fatte % 50 === 0) {
+      console.log(
+        `[import] ricerca per nome: ${fatte}/${daCercare.length}, ${links.length} agganciati`,
+      );
+    }
+    fatte++;
+
+    if (ripetuti.has(entry.name.trim().toLowerCase())) continue;
     const { hits, searchedAs } = await searchWithFallback(entry.name);
     if (hits.length === 0) continue;
 
-    const picked = pickByName(
-      rankCandidates(
-        {
-          name: entry.name,
-          searchedAs,
-          releaseYear: entry.releaseYear ?? null,
-          yearTolerance: STORE_YEAR_TOLERANCE,
-        },
-        hits.map((hit) => ({
-          name: hit.name,
-          releaseYear: hit.releaseYear,
-          // `rankCandidates` butta i DLC, ma li riconosce da questa stringa: la
-          // ricerca IGDB rende l'etichetta leggibile, non il codice.
-          type: hit.gameType === 'DLC' ? 'dlc' : null,
-          igdbId: hit.igdbId,
-        })),
-      ),
+    const ranked = rankCandidates(
+      {
+        name: entry.name,
+        searchedAs,
+        releaseYear: entry.releaseYear ?? null,
+        yearTolerance: STORE_YEAR_TOLERANCE,
+      },
+      hits.map((hit) => ({
+        name: hit.name,
+        releaseYear: hit.releaseYear,
+        // `rankCandidates` butta i DLC, ma li riconosce da questa stringa: la
+        // ricerca IGDB rende l'etichetta leggibile, non il codice.
+        type: hit.gameType === 'DLC' ? 'dlc' : null,
+        igdbId: hit.igdbId,
+        totalRatingCount: hit.totalRatingCount,
+      })),
     );
-    if (!picked) continue;
+
+    // Il giudizio per nome prima, e solo se rinuncia si guarda quanto le schede
+    // sono vissute: è un ripiego per le parità, non un criterio di merito.
+    const scelto = pickByName(ranked)?.hit ?? breakTieByReviews(ranked);
+    if (!scelto) continue;
 
     links.push({
       externalId: entry.externalId,
-      igdbId: picked.hit.igdbId,
+      igdbId: scelto.igdbId,
       // Il nome di IGDB, non quello del negozio: i negozi decorano i titoli con
       // l'edizione, e quello finirebbe su una riga `games` condivisa da tutti.
-      name: picked.hit.name,
+      name: scelto.name,
     });
   }
 
@@ -307,6 +434,9 @@ export async function importLibrary(
   // 2. Il resto su IGDB, per id. Con un negozio che IGDB non mappa questa non
   //    esce nemmeno in rete e cade tutto al passo 3.
   const missing = library.filter((entry) => !known.has(entry.externalId));
+  console.log(
+    `[import] ${store}: ${library.length} in libreria, ${known.size} già note a Ludex`,
+  );
   const byId = await findIgdbGamesByExternalIds(
     store,
     igdbSourceFor(store) === null
@@ -320,6 +450,12 @@ export async function importLibrary(
       return match ? { externalId: entry.externalId, ...match } : null;
     })
     .filter((link): link is ExternalGameLink => link !== null);
+
+  if (idLinks.length > 0 || missing.length > 0) {
+    console.log(
+      `[import] ${store}: ${idLinks.length} risolte per id, ${missing.length - idLinks.length} da cercare per nome`,
+    );
+  }
 
   // 3. E per nome, ciò che l'id non ha preso.
   const nameLinks = await resolveByName(
@@ -340,12 +476,18 @@ export async function importLibrary(
   );
 
   // 4. Le scritture.
+  //
+  // Prima si guarda cosa c'era negli scarti, perché subito dopo si riscrive:
+  // ciò che non torna né fra i risolti né fra gli irrisolti è sparito dalla
+  // libreria, e va tolto.
+  const scartiPrima = await currentUnresolvedIds(userId, store);
+  const nellaLibreria = new Set(library.map((entry) => entry.externalId));
+
   await recordUnresolved(userId, store, unresolved);
-  await clearResolved(
-    userId,
-    store,
-    resolved.map((entry) => entry.externalId),
-  );
+  await pruneUnresolved(userId, store, [
+    ...resolved.map((entry) => entry.externalId),
+    ...scartiPrima.filter((externalId) => !nellaLibreria.has(externalId)),
+  ]);
 
   const { byGameId, created } = await ensureBacklogEntries(
     userId,

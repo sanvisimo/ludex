@@ -3,8 +3,23 @@ import { db, schema } from '@repo/db';
 import { and, eq } from '@repo/db/orm';
 
 import {
+  AmazonAuthError,
+  amazonLoginUrl,
+  type AmazonCredentials,
+  parseAmazonAuthCode,
+  refreshAmazonTokens,
+  registerAmazonDevice,
+} from '../external/amazon';
+import {
+  EpicAuthError,
+  epicLoginUrl,
+  exchangeEpicCode,
+  parseEpicAuthCode,
+  refreshEpicTokens,
+} from '../external/epic';
+import {
   exchangeGogCode,
-  type GogCredentials,
+  gogLoginUrl,
   GogAuthError,
   parseGogAuthCode,
   refreshGogTokens,
@@ -213,6 +228,144 @@ export async function linkGogAccount(userId: string, pasted: string) {
   });
 }
 
+// --- Epic: stesso modello di GOG ---
+
+export class EpicCodeError extends Error {
+  constructor() {
+    super(
+      'Non trovo il codice: incolla il JSON che vedi a schermo, o il solo valore di authorizationCode',
+    );
+    this.name = 'EpicCodeError';
+  }
+}
+
+/**
+ * Collega Epic dal codice di autorizzazione.
+ *
+ * Epic, al contrario di GOG, dà un nome leggibile insieme al token: è quello
+ * che `/account` mostra, invece dell'id dell'account che non dice niente.
+ */
+export async function linkEpicAccount(userId: string, pasted: string) {
+  const code = parseEpicAuthCode(pasted);
+  if (!code) throw new EpicCodeError();
+
+  const credentials = await exchangeEpicCode(code);
+
+  return upsertAccount({
+    userId,
+    store: 'epic',
+    externalAccountId: credentials.accountId,
+    displayName: credentials.displayName,
+    credentials,
+    expiresAt: new Date(credentials.expiresAt),
+  });
+}
+
+// --- Amazon: registrazione di un dispositivo ---
+
+export class AmazonCodeError extends Error {
+  constructor() {
+    super(
+      "Non trovo il codice: incolla l'indirizzo intero della pagina Amazon su cui sei atterrato",
+    );
+    this.name = 'AmazonCodeError';
+  }
+}
+
+export async function linkAmazonAccount(userId: string, pasted: string) {
+  const code = parseAmazonAuthCode(pasted);
+  if (!code) throw new AmazonCodeError();
+
+  const credentials = await registerAmazonDevice(userId, code);
+
+  return upsertAccount({
+    userId,
+    store: 'amazon',
+    externalAccountId: credentials.accountId,
+    displayName: credentials.displayName,
+    credentials,
+    expiresAt: null,
+  });
+}
+
+/**
+ * Un access token Amazon valido, più il serial che serve agli entitlement.
+ *
+ * Non passa da `storeAccessToken` perché Amazon rinnova in modo suo: rende solo
+ * l'access token, e refresh token e serial vanno riportati dentro dal
+ * credenziale salvato. Fondere i due casi avrebbe voluto dire un ramo dentro la
+ * funzione condivisa, che è il modo in cui le funzioni condivise smettono di
+ * esserlo.
+ */
+export async function amazonAccess(userId: string) {
+  const account = await findStoreAccount(userId, 'amazon');
+  if (!account?.credentials) throw new Error('Nessun account amazon collegato');
+  if (account.status === 'needs_reauth') {
+    throw new StoreReauthRequiredError('amazon');
+  }
+
+  let credentials: AmazonCredentials;
+  try {
+    credentials = decryptCredentials<AmazonCredentials>(account.credentials);
+  } catch {
+    return requireReauth(userId, 'amazon');
+  }
+
+  if (credentials.expiresAt > Date.now()) {
+    return { accessToken: credentials.accessToken, serial: credentials.serial };
+  }
+
+  let rinnovato;
+  try {
+    rinnovato = await refreshAmazonTokens(credentials.refreshToken);
+  } catch (error) {
+    if (error instanceof AmazonAuthError) return requireReauth(userId, 'amazon');
+    throw error;
+  }
+
+  const aggiornato: AmazonCredentials = {
+    ...credentials,
+    accessToken: rinnovato.accessToken,
+    expiresAt: rinnovato.expiresAt,
+  };
+
+  await db
+    .update(schema.storeAccounts)
+    .set({
+      credentials: encryptCredentials(aggiornato),
+      credentialsExpireAt: new Date(aggiornato.expiresAt),
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(schema.storeAccounts.userId, userId),
+        eq(schema.storeAccounts.store, 'amazon'),
+      ),
+    );
+
+  return { accessToken: aggiornato.accessToken, serial: aggiornato.serial };
+}
+
+/**
+ * Dove mandare l'utente a fare il login, per i negozi che ne hanno uno.
+ *
+ * Prende l'utente perché Amazon lo richiede: il suo `client_id` è derivato per
+ * utente (vedi `external/amazon.ts`). Steam non c'è — lì si incolla il proprio
+ * profilo, che è pubblico, e non c'è nessun login da fare.
+ */
+export function storeLoginUrl(userId: string, store: LinkableStore) {
+  switch (store) {
+    case 'gog':
+      return gogLoginUrl();
+    case 'epic':
+      return epicLoginUrl();
+    case 'amazon':
+      return amazonLoginUrl(userId);
+    default:
+      return null;
+  }
+}
+
 /**
  * Collega un negozio da quello che l'utente ha incollato.
  *
@@ -226,6 +379,10 @@ export function linkStore(userId: string, store: LinkableStore, value: string) {
       return linkSteamAccount(userId, value);
     case 'gog':
       return linkGogAccount(userId, value);
+    case 'epic':
+      return linkEpicAccount(userId, value);
+    case 'amazon':
+      return linkAmazonAccount(userId, value);
   }
 }
 
@@ -254,44 +411,80 @@ export async function requireReauth(
 }
 
 /**
- * Un access token GOG valido, rinnovandolo se serve.
+ * Come si rinnova il credenziale, per i negozi che ne hanno uno.
+ *
+ * Estratta quando i negozi OAuth sono diventati due, non prima: con GOG da solo
+ * sarebbe stata un'astrazione disegnata su un caso e mezzo. Ciò che varia è
+ * esattamente questo — chi chiede il rinnovo, e come si riconosce un rifiuto
+ * definitivo da una rete che cade.
+ *
+ * Steam non c'è: non ha credenziali che scadano.
+ */
+const OAUTH_STORES = {
+  gog: { refresh: refreshGogTokens, AuthError: GogAuthError },
+  epic: { refresh: refreshEpicTokens, AuthError: EpicAuthError },
+} as const;
+
+// Amazon **non è qui** e non è una dimenticanza: il suo rinnovo non ruota il
+// refresh token e non rende un credenziale completo — rende un solo access
+// token, e il resto (refresh token e serial del dispositivo) va riportato
+// dentro da chi chiama. Ha il suo `amazonAccess` qui sotto.
+
+type OAuthStore = keyof typeof OAUTH_STORES;
+
+/** La forma minima che ogni credenziale OAuth condivide. */
+type OAuthCredentials = {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+};
+
+/**
+ * Un access token valido per un negozio, rinnovandolo se serve.
  *
  * È il pezzo che rende il copia-incolla **un gesto solo**: l'access token dura
- * un'ora, il refresh token no, e l'utente non deve accorgersi di niente.
+ * poco — un'ora su GOG, otto ore su Epic — il refresh token no, e l'utente non
+ * deve accorgersi di niente.
  *
- * Il token nuovo si riscrive subito, prima di usarlo: GOG rende un refresh token
- * diverso a ogni rinnovo e quello vecchio smette di valere. Tenerlo in memoria e
- * salvarlo a fine import vorrebbe dire che un import fallito a metà lascia in
- * tabella un credenziale già morto.
+ * Il token nuovo si riscrive **subito, prima di usarlo**: entrambi i negozi
+ * rendono un refresh token diverso a ogni rinnovo e quello vecchio smette di
+ * valere. Tenerlo in memoria e salvarlo a fine import vorrebbe dire che un
+ * import fallito a metà lascia in tabella un credenziale già morto, e l'utente
+ * dovrebbe ricollegare per colpa di una rete andata giù.
  */
-export async function gogAccessToken(userId: string): Promise<string> {
-  const account = await findStoreAccount(userId, 'gog');
+export async function storeAccessToken(
+  userId: string,
+  store: OAuthStore,
+): Promise<string> {
+  const account = await findStoreAccount(userId, store);
   if (!account?.credentials) {
-    throw new Error('Nessun account GOG collegato');
+    throw new Error(`Nessun account ${store} collegato`);
   }
   if (account.status === 'needs_reauth') {
-    throw new StoreReauthRequiredError('gog');
+    throw new StoreReauthRequiredError(store);
   }
 
-  let credentials: GogCredentials;
+  let credentials: OAuthCredentials;
   try {
-    credentials = decryptCredentials<GogCredentials>(account.credentials);
+    credentials = decryptCredentials<OAuthCredentials>(account.credentials);
   } catch {
     // Chiave ruotata, o byte corrotti: il credenziale non è recuperabile e
     // l'unica uscita onesta è chiedere di ricollegare.
-    return requireReauth(userId, 'gog');
+    return requireReauth(userId, store);
   }
 
   if (credentials.expiresAt > Date.now()) return credentials.accessToken;
 
-  let rinnovato: GogCredentials;
+  const { refresh, AuthError } = OAUTH_STORES[store];
+
+  let rinnovato: OAuthCredentials;
   try {
-    rinnovato = await refreshGogTokens(credentials.refreshToken);
+    rinnovato = await refresh(credentials.refreshToken);
   } catch (error) {
-    // Solo un rifiuto di GOG è definitivo. Una rete che cade o un 500 sono
+    // Solo un rifiuto del negozio è definitivo. Una rete che cade o un 500 sono
     // temporanei, e lì il job deve riprovare invece di mandare l'utente a
     // ricollegare un account che sta benissimo.
-    if (error instanceof GogAuthError) return requireReauth(userId, 'gog');
+    if (error instanceof AuthError) return requireReauth(userId, store);
     throw error;
   }
 
@@ -305,9 +498,14 @@ export async function gogAccessToken(userId: string): Promise<string> {
     .where(
       and(
         eq(schema.storeAccounts.userId, userId),
-        eq(schema.storeAccounts.store, 'gog'),
+        eq(schema.storeAccounts.store, store),
       ),
     );
 
   return rinnovato.accessToken;
 }
+
+export const gogAccessToken = (userId: string) =>
+  storeAccessToken(userId, 'gog');
+export const epicAccessToken = (userId: string) =>
+  storeAccessToken(userId, 'epic');

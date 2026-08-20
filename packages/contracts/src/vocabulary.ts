@@ -38,7 +38,12 @@ export const storeValues = [
 // Sta nel vocabolario e non solo nel router perché è la UI ad averne bisogno:
 // `/account` disegna una scheda per ciascuno, e senza questa lista dovrebbe
 // tenersene una sua che si scorderebbe di aggiornare.
-export const linkableStoreValues = ['steam', 'gog'] as const;
+export const linkableStoreValues = [
+  'steam',
+  'gog',
+  'epic',
+  'amazon',
+] as const;
 
 // Lo stato del collegamento a un negozio (step 9).
 //

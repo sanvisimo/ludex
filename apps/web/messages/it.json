@@ -269,6 +269,16 @@
         "inputLabel": "Indirizzo di atterraggio",
         "placeholder": "https://embed.gog.com/on_login_success?…",
         "hint": "Apri il login, entra con il tuo account GOG e poi copia dalla barra del browser l'indirizzo della pagina bianca su cui atterri: dentro c'è il codice che serve. Va fatto una volta sola."
+      },
+      "epic": {
+        "inputLabel": "Codice di autorizzazione",
+        "placeholder": "{\"redirectUrl\":\"…\",\"authorizationCode\":\"…\"}",
+        "hint": "Apri il login, entra con il tuo account Epic e poi copia il JSON che compare a schermo — va bene tutto quanto, non serve estrarne il codice. Va fatto una volta sola."
+      },
+      "amazon": {
+        "inputLabel": "Indirizzo di atterraggio",
+        "placeholder": "https://www.amazon.com/?…openid.oa2.authorization_code=…",
+        "hint": "Apri il login ed entra con il tuo account Amazon: il negozio è quello americano, ma un account italiano ci entra lo stesso. Atterrato sulla home di amazon.com, copia l'indirizzo dalla barra del browser. Il collegamento registra un dispositivo «AGSLauncher for Windows» sul tuo account, che puoi togliere quando vuoi dalle impostazioni Amazon."
       }
     },
     "unresolved": {

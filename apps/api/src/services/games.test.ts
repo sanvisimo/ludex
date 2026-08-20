@@ -24,6 +24,7 @@ const hit = (igdbId: number, name: string) => ({
   releaseYear: null,
   developer: null,
   gameType: null,
+  totalRatingCount: null,
 });
 
 describe('resolveGameFromIgdb', () => {

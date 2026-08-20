@@ -50,6 +50,7 @@ describe('unresolved imports', () => {
       releaseYear: null,
       developer: null,
       gameType: null,
+      totalRatingCount: null,
     });
 
     const esito = await resolveUnresolvedImport(userId, id, 555);
@@ -72,6 +73,7 @@ describe('unresolved imports', () => {
       releaseYear: null,
       developer: null,
       gameType: null,
+      totalRatingCount: null,
     });
 
     await resolveUnresolvedImport(userId, id, 555);

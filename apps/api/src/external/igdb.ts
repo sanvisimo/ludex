@@ -116,6 +116,7 @@ type IgdbGame = {
   name: string;
   first_release_date?: number;
   game_type?: number;
+  total_rating_count?: number;
   involved_companies?: {
     developer: boolean;
     company?: { name: string };
@@ -158,7 +159,8 @@ const EXCLUDED_TYPES = [
 ];
 
 const SEARCH_FIELDS =
-  'fields name, first_release_date, game_type, involved_companies.developer, involved_companies.company.name;';
+  'fields name, first_release_date, game_type, total_rating_count,' +
+  ' involved_companies.developer, involved_companies.company.name;';
 
 /**
  * Il valore finisce dentro una stringa apicalypse fra virgolette: vanno
@@ -182,6 +184,16 @@ export type IgdbSearchHit = {
   releaseYear: number | null;
   developer: string | null;
   gameType: string | null;
+  /**
+   * Quante recensioni aggregate ha la scheda. Non è un voto: è **quanto quella
+   * scheda è vissuta**, e serve a distinguere un gioco da un doppione vuoto.
+   *
+   * IGDB è pieno di schede omonime senza niente dentro: cercando «Inside» ne
+   * escono tre con lo stesso titolo esatto, e solo una ha 1666 recensioni. Fra
+   * titoli identici è l'unico segnale che resta quando il negozio non dà
+   * nemmeno l'anno — ed è il caso di Epic.
+   */
+  totalRatingCount: number | null;
 };
 
 function toHit(game: IgdbGame): IgdbSearchHit {
@@ -196,6 +208,7 @@ function toHit(game: IgdbGame): IgdbSearchHit {
       : null,
     developer: developer ?? null,
     gameType: game.game_type ? (GAME_TYPES[game.game_type] ?? null) : null,
+    totalRatingCount: game.total_rating_count ?? null,
   };
 }
 
@@ -391,15 +404,22 @@ export async function fetchIgdbPlatforms(): Promise<IgdbPlatform[]> {
  *     Microsoft 15.547      Amazon ADG   678
  *     PS Store  15.322      Epic      10.145
  *
- * Per EA, Ubisoft, Battle.net e Nintendo **non esiste alcuna sorgente**: quei
- * negozi, e Amazon che ne ha una vuota in pratica, si risolvono solo per nome.
+ * Per EA, Ubisoft, Battle.net e Nintendo **non esiste alcuna sorgente**, e
+ * Amazon ne ha una vuota in pratica: quei negozi si risolvono solo per nome.
+ *
+ * **Epic è assente di proposito, ed è il caso che inganna**: la sorgente 26
+ * esiste e ha diecimila righe, ma i suoi uid sono gli offer id del negozio,
+ * mentre le API del launcher danno `catalogItemId`, `namespace` e `productId`.
+ * Su una libreria vera di 705 giochi nessuno dei tre trova niente — zero su
+ * 705, misurato. Rimetterla qui costerebbe una richiesta per non trovare mai
+ * nulla.
+ *
  * Un negozio assente da questa mappa è quindi legittimo, non un buco da tappare:
- * dice «questa libreria si risolve a mano».
+ * dice «questa libreria si risolve per nome».
  */
 const IGDB_SOURCES: Partial<Record<Store, number>> = {
   steam: 1,
   gog: 5,
-  epic: 26,
   xbox: 11,
   psn: 36,
 };

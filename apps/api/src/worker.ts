@@ -23,7 +23,10 @@ import { enrichGameFromIgdb } from './services/igdb-enrichment';
 import { enrichGameFromMetacritic } from './services/metacritic-enrichment';
 import { enrichGameFromOpenCritic } from './services/opencritic-enrichment';
 import { resolveOpenCriticIds } from './services/opencritic-resolve';
+import { importAmazonLibrary } from './services/amazon-import';
+import { importEpicLibrary } from './services/epic-import';
 import { importGogLibrary } from './services/gog-import';
+import { type ImportReport } from './services/library-import';
 import { importSteamLibrary } from './services/steam-import';
 import { StoreReauthRequiredError } from './services/store-accounts';
 
@@ -115,6 +118,24 @@ worker.on('failed', (job, error) => {
   console.error(`[enrichment] job ${job?.id} fallito:`, error.message);
 });
 
+// L'unico punto in cui un negozio diventa una funzione, come `enrichers` qui
+// sopra: il worker non sa quali negozi esistano, sa che ce n'è uno da importare.
+//
+// Steam è l'unico che prende un secondo argomento, ed è l'unico che se lo può
+// permettere: lo SteamID64 non è un segreto, viaggia nel job. Gli altri vanno a
+// leggersi il credenziale cifrato da `store_accounts`.
+const importers: Partial<
+  Record<
+    ImportJob['store'],
+    (userId: string, steamId?: string) => Promise<ImportReport>
+  >
+> = {
+  steam: (userId, steamId) => importSteamLibrary(userId, steamId!),
+  gog: (userId) => importGogLibrary(userId),
+  epic: (userId) => importEpicLibrary(userId),
+  amazon: (userId) => importAmazonLibrary(userId),
+};
+
 // Coda a parte: un import genera centinaia di job di enrichment, e sulla stessa
 // coda finirebbe in fila dietro il lavoro che ha appena prodotto.
 const importsWorker = new Worker<ImportJob>(
@@ -123,10 +144,15 @@ const importsWorker = new Worker<ImportJob>(
     const { store, userId } = job.data;
 
     try {
-      const report =
-        store === 'steam'
-          ? await importSteamLibrary(userId, job.data.steamId!)
-          : await importGogLibrary(userId);
+      const importer = importers[store];
+      // Un negozio non ancora implementato non deve fallire tre volte con un
+      // "not a function": succede solo se qualcuno accoda a mano dalla
+      // dashboard, ma il messaggio deve dirlo.
+      if (!importer) {
+        throw new UnrecoverableError(`Nessun import per il negozio ${store}`);
+      }
+
+      const report = await importer(userId, job.data.steamId);
 
       console.log(
         `[import] ${store} ${userId}: ${report.total} in libreria, ` +

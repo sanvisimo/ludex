@@ -27,6 +27,7 @@ function hit(over: {
   name: string;
   releaseYear?: number | null;
   gameType?: string | null;
+  totalRatingCount?: number | null;
 }) {
   return {
     igdbId: over.igdbId,
@@ -34,6 +35,7 @@ function hit(over: {
     releaseYear: over.releaseYear ?? null,
     developer: null,
     gameType: over.gameType ?? null,
+    totalRatingCount: over.totalRatingCount ?? null,
   };
 }
 
@@ -181,6 +183,96 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     expect(report).toMatchObject({ resolved: 1, resolvedByName: 1 });
   });
 
+  it('non aggancia un nome che si ripete: è un etichetta, non un titolo', async () => {
+    // Il caso vero, e il peggiore capitato finora. Su una libreria Epic 266
+    // voci su 705 arrivavano chiamate «Live» — progetti Unreal e isole di
+    // Fortnite Creative — e IGDB un gioco chiamato *Live* ce l'ha davvero, con
+    // corrispondenza esatta e unica. Sono state agganciate tutte allo stesso
+    // gioco, scrivendo mappature false in `external_ids`, che è condivisa fra
+    // tutti gli utenti.
+    mockedSearch.mockResolvedValue([hit({ igdbId: 85682, name: 'Live' })]);
+
+    const report = await importLibrary('epic', userId, [
+      { externalId: 'a', name: 'Live' },
+      { externalId: 'b', name: 'Live' },
+      { externalId: 'c', name: 'Live' },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 0, unresolved: 3 });
+    // E soprattutto: nessuna mappatura scritta nel catalogo di tutti.
+    expect(
+      await db
+        .select()
+        .from(schema.externalIds)
+        .where(eq(schema.externalIds.source, 'epic')),
+    ).toHaveLength(0);
+    // Non si è nemmeno sprecata la ricerca.
+    expect(mockedSearch).not.toHaveBeenCalled();
+  });
+
+  it('un nome unico continua ad agganciarsi normalmente', async () => {
+    mockedSearch.mockResolvedValue([hit({ igdbId: 1, name: 'Celeste' })]);
+
+    const report = await importLibrary('epic', userId, [
+      { externalId: 'a', name: 'Celeste' },
+      { externalId: 'b', name: 'Live' },
+      { externalId: 'c', name: 'Live' },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 1, resolvedByName: 1 });
+  });
+
+  it('a parità di titolo sceglie la scheda vissuta, non il doppione vuoto', async () => {
+    // IGDB ha tre schede intitolate «Inside». Senza anno — Epic non lo dà — il
+    // giudizio per nome rinuncia, giustamente. Ma due delle tre sono gusci
+    // vuoti, e questo lo dice il numero di recensioni.
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 1, name: 'Inside', releaseYear: 2016, totalRatingCount: 1666 }),
+      hit({ igdbId: 2, name: 'Inside', totalRatingCount: 0 }),
+      hit({ igdbId: 3, name: 'Inside', totalRatingCount: null }),
+    ]);
+
+    const report = await importLibrary('epic', userId, [
+      { externalId: 'x', name: 'Inside' },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 1, resolvedByName: 1 });
+    expect(await gamesOf(userId)).toEqual([{ name: 'Inside', igdbId: 1 }]);
+  });
+
+  it('a parità di titolo non sceglie se entrambe le schede sono vissute', async () => {
+    // È il caso in cui decidere non tocca a noi: due giochi veri, omonimi. Lì
+    // la lista degli scarti è la risposta giusta.
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 1, name: 'Observer', totalRatingCount: 174 }),
+      hit({ igdbId: 2, name: 'Observer', totalRatingCount: 120 }),
+    ]);
+
+    const report = await importLibrary('epic', userId, [
+      { externalId: 'x', name: 'Observer' },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
+  });
+
+  it('toglie dagli scarti la voce che non è più nella libreria', async () => {
+    // Una voce può sparire perché l'utente l'ha tolta dal negozio, o perché
+    // abbiamo imparato a riconoscerla come non-gioco. Senza questa pulizia
+    // resterebbe negli scarti per sempre, e l'utente dovrebbe scartare a mano
+    // roba che nessuno gli sta più proponendo.
+    await importLibrary('epic', userId, [
+      { externalId: 'sparita', name: 'coolgrey Production' },
+      { externalId: 'resta', name: 'Celeste' },
+    ]);
+    expect(await unresolvedOf(userId)).toHaveLength(2);
+
+    await importLibrary('epic', userId, [
+      { externalId: 'resta', name: 'Celeste' },
+    ]);
+
+    expect(await unresolvedOf(userId)).toMatchObject([{ name: 'Celeste' }]);
+  });
+
   it('butta i DLC che la ricerca restituisce', async () => {
     mockedSearch.mockResolvedValue([
       hit({ igdbId: 7, name: 'Inkulinati Goodies Pack', gameType: 'DLC' }),
@@ -210,6 +302,9 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     expect(mockedById).toHaveBeenCalledWith('amazon', []);
     expect(report).toMatchObject({ resolved: 1, resolvedByName: 1 });
   });
+
+
+
 
   it('rieseguito lascia lo stesso stato', async () => {
     mockedSearch.mockResolvedValue([hit({ igdbId: 1234, name: 'Frostpunk' })]);
