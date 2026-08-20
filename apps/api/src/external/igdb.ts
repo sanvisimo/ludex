@@ -440,6 +440,14 @@ export async function fetchIgdbPlatforms(): Promise<IgdbPlatform[]> {
  * 705, misurato. Rimetterla qui costerebbe una richiesta per non trovare mai
  * nulla.
  *
+ * **PSN è uscito di qui col 9b, ed è la stessa trappola di Epic vista due
+ * volte.** La sorgente 36 esiste e ha quindicimila righe, ma i suoi uid sono i
+ * `conceptId` numerici dello store — *Dying Light 2* è `232374` — mentre la
+ * libreria dell'utente porta `titleId` come `CUSA12555_00`. Il campo
+ * `conceptId` c'è nella risposta di Sony e arriva **nullo su ogni riga**: 336
+ * su 336, misurato. Tenerla qui costava una richiesta per non trovare mai
+ * niente.
+ *
  * Un negozio assente da questa mappa è quindi legittimo, non un buco da tappare:
  * dice «questa libreria si risolve per nome».
  */
@@ -447,7 +455,6 @@ const IGDB_SOURCES: Partial<Record<Store, number>> = {
   steam: 1,
   gog: 5,
   xbox: 11,
-  psn: 36,
 };
 
 /** L'id della sorgente IGDB per un negozio, o null se IGDB non la mappa. */

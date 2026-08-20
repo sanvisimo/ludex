@@ -1,4 +1,4 @@
-import type { Store } from '@repo/contracts/vocabulary';
+import type { Store, Subscription } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, eq, inArray, sql } from '@repo/db/orm';
 
@@ -64,6 +64,24 @@ export type LibraryEntry = {
   lastPlayedAt?: Date | null;
   /** Solo per il match per nome del passo 3, dove distingue i remake. */
   releaseYear?: number | null;
+  /**
+   * La piattaforma di **questa riga**, per i negozi che la dicono.
+   *
+   * Nulla sui negozi PC, dove la piattaforma è una costante del negozio e la
+   * mette `platformFor`. Valorizzata da PSN in poi: la stessa libreria porta
+   * PS4 e PS5 insieme, e lo stesso gioco comprato una volta sola in cross-buy
+   * arriva come **due righe**, che sono due copie vere — a lanciarle si accende
+   * una console diversa.
+   */
+  platformSlug?: string | null;
+  /**
+   * Da quale abbonamento viene il diritto, se non è un acquisto.
+   *
+   * Nullo = comprato. Su PSN sono 274 righe su 336, quindi non è un angolo: è
+   * quasi tutta la libreria, e senza questo il backlog non saprebbe distinguere
+   * ciò che è tuo da ciò che hai finché paghi.
+   */
+  subscription?: Subscription | null;
 };
 
 /**
@@ -88,6 +106,11 @@ const STORE_PLATFORM: Partial<Record<Store, string>> = {
 /**
  * Fallisce invece di indovinare. Indovinare la piattaforma vorrebbe dire
  * scrivere dati sbagliati in silenzio dentro una tabella su cui poi si filtra.
+ *
+ * Dal 9b non è più l'unica strada: i negozi console la piattaforma la dicono
+ * riga per riga, e quella vince. Questa resta per i negozi PC — dove la riga
+ * non ne porta nessuna — e continua ad alzare per chi non è né l'uno né
+ * l'altro, che è il modo giusto di accorgersi di un negozio aggiunto a metà.
  */
 export function platformFor(store: Store): string {
   const platform = STORE_PLATFORM[store];
@@ -95,6 +118,11 @@ export function platformFor(store: Store): string {
     throw new Error(`Nessuna piattaforma definita per il negozio ${store}`);
   }
   return platform;
+}
+
+/** La piattaforma di una voce: quella che dice lei, o quella del negozio. */
+export function platformOf(store: Store, entry: LibraryEntry): string {
+  return entry.platformSlug ?? platformFor(store);
 }
 
 /**
@@ -205,6 +233,11 @@ async function recordUnresolved(
           storeAccountId: account.id,
           externalId: entry.externalId,
           name: entry.name,
+          // Solo quella della riga: su un negozio PC resta nulla, e chi
+          // risolverà lo scarto la ricaverà da `platformFor` come sempre.
+          // Scriverci dentro la costante del negozio vorrebbe dire dire due
+          // volte la stessa cosa, e in due posti che possono divergere.
+          platformSlug: entry.platformSlug ?? null,
           playtimeMinutes: entry.playtimeMinutes ?? null,
           lastPlayedAt: entry.lastPlayedAt ?? null,
         })),
@@ -219,6 +252,7 @@ async function recordUnresolved(
         // valore vecchio su sé stesso, e il reimport non aggiornerebbe nulla.
         set: {
           name: sql`excluded.name`,
+          platformSlug: sql`excluded.platform_slug`,
           playtimeMinutes: sql`excluded.playtime_minutes`,
           lastPlayedAt: sql`excluded.last_played_at`,
           updatedAt: new Date(),
@@ -324,13 +358,29 @@ export async function searchWithFallback(name: string) {
  * artbook, editor di mod e versioni alfa, che GOG marca `isGame` come tutto il
  * resto. Non c'è un campo per distinguerle, e non serve inventarne uno: non
  * essere su IGDB è già la risposta.
+ *
+ * Esportata per la stessa ragione di `searchWithFallback`: un arnese che voglia
+ * mostrare cosa farebbe l'import deve percorrere **questa** strada e non una
+ * sua copia, o mostrerebbe numeri che il job non produrrebbe mai.
  */
-async function resolveByName(
+export async function resolveByName(
   entries: LibraryEntry[],
 ): Promise<ExternalGameLink[]> {
   const links: ExternalGameLink[] = [];
 
-  // Un nome che si ripete nella stessa libreria non è un titolo, è
+  // Le voci si raggruppano **per nome**, e il gruppo si cerca una volta sola.
+  //
+  // Perché il cross-buy esiste: su PSN lo stesso gioco comprato una volta
+  // arriva come due righe, PS4 e PS5, con lo stesso identico titolo — 80 gruppi
+  // su 256 nomi, misurati. Cercarli due volte sarebbe spreco; ma il punto vero
+  // è un altro, ed è che la regola qui sotto li avrebbe buttati tutti.
+  const gruppi = new Map<string, LibraryEntry[]>();
+  for (const entry of entries) {
+    const chiave = entry.name.trim().toLowerCase();
+    gruppi.set(chiave, [...(gruppi.get(chiave) ?? []), entry]);
+  }
+
+  // Un nome che si ripete **sulla stessa piattaforma** non è un titolo, è
   // un'etichetta: due prodotti diversi con lo stesso nome non li può separare
   // nessuna ricerca per nome, e agganciarli entrambi vorrebbe dire dire il
   // falso su almeno uno.
@@ -343,21 +393,26 @@ async function resolveByName(
   // fra tutti gli utenti**: il danno non era nella libreria di chi importava,
   // era nel catalogo di tutti.
   //
+  // «Sulla stessa piattaforma» è il 9b che affina la regola, non che la
+  // indebolisce: sui negozi PC la piattaforma è una sola per tutta la libreria,
+  // quindi qualunque ripetizione resta ambigua esattamente come prima. Su PSN
+  // invece due righe su due console sono **una copia ciascuna** dello stesso
+  // gioco, e trattarle da omonimi vorrebbe dire scartare metà libreria in
+  // silenzio.
+  //
   // Il filtro sulle voci-spazzatura sta a monte, nel client del negozio, ed è
   // il posto giusto per riconoscerle. Questo è la rete sotto: lì serve sapere
   // come è fatto quel negozio, qui basta contare.
-  const ripetuti = new Set<string>();
-  const visti = new Set<string>();
-  for (const entry of entries) {
-    const chiave = entry.name.trim().toLowerCase();
-    if (visti.has(chiave)) ripetuti.add(chiave);
-    visti.add(chiave);
-  }
+  const daCercare = [...gruppi.values()]
+    .filter((gruppo) => {
+      const piattaforme = new Set(gruppo.map((entry) => entry.platformSlug));
+      return gruppo.length <= piattaforme.size;
+    })
+    .slice(0, NAME_SEARCH_CAP);
 
-  const daCercare = entries.slice(0, NAME_SEARCH_CAP);
   let fatte = 0;
 
-  for (const entry of daCercare) {
+  for (const gruppo of daCercare) {
     // Ogni cinquanta, e non a ogni voce: qui dentro si passano minuti — su Epic
     // sono settecento ricerche a quattro al secondo — e senza una riga ogni
     // tanto un import che lavora e uno che si è piantato si assomigliano
@@ -369,7 +424,7 @@ async function resolveByName(
     }
     fatte++;
 
-    if (ripetuti.has(entry.name.trim().toLowerCase())) continue;
+    const entry = gruppo[0]!;
     const { hits, searchedAs } = await searchWithFallback(entry.name);
     if (hits.length === 0) continue;
 
@@ -396,13 +451,20 @@ async function resolveByName(
     const scelto = pickByName(ranked)?.hit ?? breakTieByReviews(ranked);
     if (!scelto) continue;
 
-    links.push({
-      externalId: entry.externalId,
-      igdbId: scelto.igdbId,
-      // Il nome di IGDB, non quello del negozio: i negozi decorano i titoli con
-      // l'edizione, e quello finirebbe su una riga `games` condivisa da tutti.
-      name: scelto.name,
-    });
+    // Un link **per ogni riga del gruppo**, non uno per il gruppo: gli id
+    // esterni sono distinti — su PSN il `titleId` è per console — e ciascuno va
+    // scritto in `external_ids`, o al prossimo import la riga PS4 tornerebbe a
+    // costare una ricerca.
+    for (const riga of gruppo) {
+      links.push({
+        externalId: riga.externalId,
+        igdbId: scelto.igdbId,
+        // Il nome di IGDB, non quello del negozio: i negozi decorano i titoli
+        // con l'edizione, e quello finirebbe su una riga `games` condivisa da
+        // tutti.
+        name: scelto.name,
+      });
+    }
   }
 
   return links;
@@ -413,7 +475,6 @@ export async function importLibrary(
   library: LibraryEntry[],
 ): Promise<ImportReport> {
   const { id: storeAccountId, userId, store } = account;
-  const platformSlug = platformFor(store);
 
   // 1. Quello che Ludex conosce già.
   const known = await findGameIdsByExternalIds(
@@ -485,8 +546,9 @@ export async function importLibrary(
   );
 
   // Un possesso per voce di libreria. Due id che puntano allo stesso gioco
-  // producono la stessa riga: il vincolo unique la collassa, e vince l'ultima
-  // che porta le ore.
+  // producono la stessa riga **se stanno sulla stessa piattaforma**: il vincolo
+  // unique la collassa, e vince l'ultima che porta le ore. Se le piattaforme
+  // sono due — il cross-buy PS4/PS5 — restano due righe, che è la verità.
   //
   // Con `storeAccountId`, lo stesso gioco su due account Amazon resta **due
   // possessi**: è da quale dei due si lancia, ed è la ragione per cui l'account
@@ -494,11 +556,15 @@ export async function importLibrary(
   await ensureOwnerships(
     resolved.map((entry) => ({
       backlogId: byGameId.get(gameIdByExternalId.get(entry.externalId)!)!,
-      platformSlug,
+      // Della riga se ce l'ha, del negozio altrimenti: è qui che il cross-buy
+      // diventa due possessi invece di uno, perché la piattaforma entra nella
+      // chiave del vincolo.
+      platformSlug: platformOf(store, entry),
       store,
       storeAccountId,
       playtimeMinutes: entry.playtimeMinutes ?? null,
       lastPlayedAt: entry.lastPlayedAt ?? null,
+      subscription: entry.subscription ?? null,
     })),
   );
 

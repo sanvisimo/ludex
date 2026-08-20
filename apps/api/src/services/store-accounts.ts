@@ -25,6 +25,15 @@ import {
   parseGogAuthCode,
   refreshGogTokens,
 } from '../external/gog';
+import {
+  exchangeNpssoForCode,
+  exchangePsnCode,
+  fetchPsnProfile,
+  parseNpsso,
+  PsnAuthError,
+  refreshPsnTokens,
+  SSO_COOKIE_URL,
+} from '../external/psn';
 import { fetchSteamPersonaName, resolveSteamId } from '../external/steam';
 import { encryptCredentials, decryptCredentials } from '../lib/crypto';
 import { isImportRunning } from '../queue/imports';
@@ -490,6 +499,65 @@ export async function linkAmazonAccount(
   });
 }
 
+// --- PSN: l'npsso, che è un cookie e non un codice ---
+
+export class PsnNpssoError extends Error {
+  constructor() {
+    super(
+      'Non trovo l\'npsso: incolla la risposta della pagina ssocookie, o il solo valore',
+    );
+    this.name = 'PsnNpssoError';
+  }
+}
+
+/**
+ * Collega PSN.
+ *
+ * È l'unico negozio in cui quello che l'utente incolla **non è un codice di
+ * autorizzazione**: il `redirect_uri` di Sony è uno schema custom Android, e da
+ * uno schema custom non si atterra su nessuna pagina da cui copiare qualcosa.
+ * Si incolla invece l'npsso, cioè il cookie di sessione del sito, che sta in
+ * chiaro su una pagina normale — ed è esattamente il gesto che Playnite chiede,
+ * fino ad accettare tanto il JSON intero quanto il solo valore.
+ *
+ * Il giro dal codice al token lo fa poi il server, in due passi invisibili
+ * all'utente. Da qui in avanti è un OAuth come gli altri, con una differenza
+ * che si sentirà: il refresh token dura **dieci giorni**, non due mesi.
+ *
+ * Il nome leggibile arriva insieme al token, dentro l'`id_token`: nessuna
+ * richiesta in più, e il profilo si interroga solo se quella claim mancasse.
+ */
+export async function linkPsnAccount(
+  userId: string,
+  pasted: string,
+  label?: string | null,
+) {
+  const npsso = parseNpsso(pasted);
+  if (!npsso) throw new PsnNpssoError();
+
+  const credentials = await exchangePsnCode(
+    await exchangeNpssoForCode(npsso),
+  );
+
+  return upsertAccount({
+    userId,
+    store: 'psn',
+    // L'`accountId` numerico e non l'`onlineId`: il PSN ID si può cambiare, e
+    // un utente che si rinomina si ritroverebbe due account collegati con i
+    // possessi appesi a quello vecchio. Verificato che la claim sia davvero
+    // l'account: il profilo chiesto con quell'id rende lo stesso PSN ID.
+    externalAccountId: credentials.accountId,
+    displayName:
+      credentials.onlineId ??
+      (await fetchPsnProfile(credentials.accessToken, credentials.accountId))
+        ?.onlineId ??
+      null,
+    credentials,
+    expiresAt: new Date(credentials.expiresAt),
+    label,
+  });
+}
+
 /**
  * Un access token Amazon valido, più il serial che serve agli entitlement.
  *
@@ -557,6 +625,11 @@ export function storeLoginUrl(userId: string, store: LinkableStore) {
       return epicLoginUrl();
     case 'amazon':
       return amazonLoginUrl(userId);
+    case 'psn':
+      // Non un login ma la pagina che rende l'npsso: se l'utente non è ancora
+      // entrato su playstation.com la trova vuota, e a dirglielo è il testo del
+      // modulo. Un login vero non c'è da aprire — è già suo, nel browser.
+      return SSO_COOKIE_URL;
     default:
       return null;
   }
@@ -584,6 +657,8 @@ export function linkStore(
       return linkEpicAccount(userId, value, label);
     case 'amazon':
       return linkAmazonAccount(userId, value, label);
+    case 'psn':
+      return linkPsnAccount(userId, value, label);
   }
 }
 
@@ -650,6 +725,7 @@ export async function requireReauth(
 const OAUTH_STORES = {
   gog: { refresh: refreshGogTokens, AuthError: GogAuthError },
   epic: { refresh: refreshEpicTokens, AuthError: EpicAuthError },
+  psn: { refresh: refreshPsnTokens, AuthError: PsnAuthError },
 } as const;
 
 // Amazon **non è qui** e non è una dimenticanza: il suo rinnovo non ruota il
@@ -673,8 +749,14 @@ type OAuthCredentials = {
  * Un access token valido per un negozio, rinnovandolo se serve.
  *
  * È il pezzo che rende il copia-incolla **un gesto solo**: l'access token dura
- * poco — un'ora su GOG, otto ore su Epic — il refresh token no, e l'utente non
- * deve accorgersi di niente.
+ * poco — un'ora su GOG e su PSN, otto ore su Epic — il refresh token no, e
+ * l'utente non deve accorgersi di niente.
+ *
+ * Su PSN «no» dura però **dieci giorni**, misurati: passati quelli il rinnovo
+ * fallisce, l'account va in `needs_reauth` e l'utente deve tornare a prendersi
+ * un npsso. `credentialsExpireAt` non lo dice — quella colonna è la scadenza
+ * dell'access token, la stessa cosa per tutti i negozi — quindi oggi la brutta
+ * notizia arriva quando arriva, e non prima.
  *
  * Il token nuovo si riscrive **subito, prima di usarlo**: entrambi i negozi
  * rendono un refresh token diverso a ogni rinnovo e quello vecchio smette di

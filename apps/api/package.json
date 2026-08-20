@@ -17,6 +17,7 @@
     "hltb:probe": "tsx src/scripts/hltb-probe.ts",
     "opencritic:resolve": "tsx src/scripts/opencritic-resolve.ts",
     "metacritic:probe": "tsx src/scripts/metacritic-probe.ts",
+    "psn:probe": "tsx src/scripts/psn-probe.ts",
     "queues": "tsx src/queues-dashboard.ts"
   },
   "dependencies": {

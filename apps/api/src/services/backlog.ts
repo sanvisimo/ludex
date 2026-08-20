@@ -1,5 +1,9 @@
 import type { UserTag, UserTagInput } from '@repo/contracts';
-import type { BacklogStatus, Store } from '@repo/contracts/vocabulary';
+import type {
+  BacklogStatus,
+  Store,
+  Subscription,
+} from '@repo/contracts/vocabulary';
 
 import { chunk } from '../lib/chunk';
 import { gameColumns } from './games';
@@ -29,6 +33,7 @@ export const entryQuery = {
         store: true,
         playtimeMinutes: true,
         lastPlayedAt: true,
+        subscription: true,
       },
       // Da quale account viene la copia: è ciò che permette alla scheda di
       // scrivere «Amazon — secondo account» invece di due volte «Amazon».
@@ -364,6 +369,8 @@ export type OwnershipUpsert = {
   storeAccountId?: string | null;
   playtimeMinutes?: number | null;
   lastPlayedAt?: Date | null;
+  /** Nullo = comprato. Vedi la colonna omonima su `ownerships`. */
+  subscription?: Subscription | null;
 };
 
 /**
@@ -441,6 +448,7 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           storeAccountId: row.storeAccountId ?? null,
           playtimeMinutes: row.playtimeMinutes ?? null,
           lastPlayedAt: row.lastPlayedAt ?? null,
+          subscription: row.subscription ?? null,
         })),
       )
       .onConflictDoUpdate({
@@ -455,6 +463,14 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           // ore, restano quelle che c'erano.
           playtimeMinutes: sql`coalesce(excluded.playtime_minutes, ${schema.ownerships.playtimeMinutes})`,
           lastPlayedAt: sql`coalesce(excluded.last_played_at, ${schema.ownerships.lastPlayedAt})`,
+          // **Non** in COALESCE, al contrario delle ore, ed è una differenza
+          // voluta: il negozio è l'unica autorità su come possiedi quella copia,
+          // e il caso che conta è quello in cui il valore **sparisce** — compri
+          // un gioco che avevi col Plus, e il possesso deve smettere di dire che
+          // dipende dall'abbonamento. Con COALESCE resterebbe marcato per
+          // sempre. Le ore sono il caso opposto: un import che non le porta non
+          // deve cancellare quelle che un altro aveva scritto.
+          subscription: sql`excluded.subscription`,
           updatedAt: new Date(),
         },
       })

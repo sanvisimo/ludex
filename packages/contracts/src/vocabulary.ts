@@ -43,6 +43,7 @@ export const linkableStoreValues = [
   'gog',
   'epic',
   'amazon',
+  'psn',
 ] as const;
 
 // Lo stato del collegamento a un negozio (step 9).
@@ -68,6 +69,28 @@ export const storeAccountStatusValues = [
   'needs_reauth',
   'unlinked',
 ] as const;
+
+// Gli abbonamenti da cui può arrivare il diritto di giocare a un gioco.
+//
+// Nasce col 9b, perché PSN è il primo negozio in cui la distinzione si vede: su
+// una libreria vera **274 voci su 336 vengono da PS Plus** e 62 sono acquisti.
+// Sony le manda nello stesso elenco e le marca, e buttare via quella marcatura
+// vorrebbe dire non sapere più — fra sei mesi, o il giorno che l'abbonamento
+// scade — quali di quei giochi erano davvero tuoi.
+//
+// Sta su `ownerships` e non su `backlog` per la stessa ragione delle ore: è una
+// proprietà di **quella copia**. Lo stesso gioco comprato su Steam non diventa
+// «da abbonamento» perché su PS5 ce l'hai col Plus. Nullo = comprato, che è il
+// caso normale e non merita un valore.
+//
+// Cosa farne quando l'abbonamento finisce è lo **step 14**, non qui: questa
+// colonna è ciò che rende quello step possibile, non la sua risposta.
+//
+// Un avvertimento misurato: il campo di Sony vale `PS_PLUS` sia per il gioco
+// mensile riscattato — che resta tuo finché sei abbonato — sia per il catalogo
+// Extra/Premium, che tuo non è mai stato. **Quella distinzione l'API non la
+// fa**, e nessun valore qui può inventarla.
+export const subscriptionValues = ['ps_plus'] as const;
 
 // Le fonti di un voto della critica. Sottoinsieme delle fonti di dati: HLTB e
 // SteamGridDB non danno voti.
@@ -118,3 +141,4 @@ export type Store = (typeof storeValues)[number];
 export type LinkableStore = (typeof linkableStoreValues)[number];
 export type StoreAccountStatus = (typeof storeAccountStatusValues)[number];
 export type ScoreSource = (typeof scoreSourceValues)[number];
+export type Subscription = (typeof subscriptionValues)[number];

@@ -30,6 +30,7 @@ import { resolveOpenCriticIds } from './services/opencritic-resolve';
 import { importAmazonLibrary } from './services/amazon-import';
 import { importEpicLibrary } from './services/epic-import';
 import { importGogLibrary } from './services/gog-import';
+import { importPsnLibrary } from './services/psn-import';
 import { type ImportReport } from './services/library-import';
 import { importSteamLibrary } from './services/steam-import';
 import {
@@ -139,6 +140,7 @@ const importers: Partial<
   gog: importGogLibrary,
   epic: importEpicLibrary,
   amazon: importAmazonLibrary,
+  psn: importPsnLibrary,
 };
 
 // Coda a parte: un import genera centinaia di job di enrichment, e sulla stessa

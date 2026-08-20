@@ -9,6 +9,7 @@ import {
   sortDirectionValues,
   storeAccountStatusValues,
   storeValues,
+  subscriptionValues,
   userTagKindValues,
 } from './vocabulary';
 
@@ -17,6 +18,7 @@ export const AttributeKindSchema = z.enum(attributeKindValues);
 export const StoreSchema = z.enum(storeValues);
 export const LinkableStoreSchema = z.enum(linkableStoreValues);
 export const StoreAccountStatusSchema = z.enum(storeAccountStatusValues);
+export const SubscriptionSchema = z.enum(subscriptionValues);
 export const ScoreSourceSchema = z.enum(scoreSourceValues);
 export const UserTagKindSchema = z.enum(userTagKindValues);
 
@@ -187,6 +189,11 @@ export const OwnershipSchema = z.object({
   // manuali. Non dicono lo stato: sono un'informazione a sé.
   playtimeMinutes: z.number().int().nullable(),
   lastPlayedAt: z.date().nullable(),
+  // Nullo = comprato. Valorizzato vuol dire che quella copia dipende da un
+  // abbonamento, e viaggia fino al client perché è una cosa che l'utente deve
+  // poter vedere sul possesso: «ce l'hai finché paghi» non è un dettaglio da
+  // tenere solo nel database.
+  subscription: SubscriptionSchema.nullable(),
 });
 
 export const OwnershipInputSchema = z.object({

@@ -140,6 +140,39 @@ describe('unresolved imports', () => {
     );
   });
 
+  it('risolve sulla piattaforma che lo scarto si porta dietro', async () => {
+    // Il rovescio del test qui sopra, ed è il 9b che lo rende possibile: la
+    // voce PSN sa di essere PS5, quindi non c'è più niente da indovinare e il
+    // possesso nasce sulla console giusta.
+    const psn = await linkStoreAccount(userId, 'psn');
+    const [row] = await db
+      .insert(schema.unresolvedImports)
+      .values({
+        userId,
+        store: 'psn',
+        storeAccountId: psn.id,
+        externalId: 'PPSA02262_00',
+        name: 'Dying Light 2: Stay Human',
+        platformSlug: 'sony_playstation5',
+      })
+      .returning({ id: schema.unresolvedImports.id });
+
+    mockedFindById.mockResolvedValue({
+      igdbId: 102584,
+      name: 'Dying Light 2: Stay Human',
+      releaseYear: null,
+      developer: null,
+      gameType: null,
+      totalRatingCount: null,
+    });
+
+    const esito = await resolveUnresolvedImport(userId, row!.id, 102584);
+    expect(esito.status).toBe('ok');
+    expect(esito.entry?.ownerships).toMatchObject([
+      { platformSlug: 'sony_playstation5', store: 'psn' },
+    ]);
+  });
+
   it('scartata, la voce sparisce senza entrare nel backlog', async () => {
     const id = await pending(userId);
 

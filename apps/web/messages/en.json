@@ -303,6 +303,11 @@
         "inputLabel": "Landing address",
         "placeholder": "https://www.amazon.com/?…openid.oa2.authorization_code=…",
         "hint": "Open the login page and sign in with your Amazon account — the store is the US one, but a non-US account signs in just fine. Once you land on the amazon.com home page, copy the address from the browser bar. Connecting registers an “AGSLauncher for Windows” device on your Amazon account, which you can remove any time from your Amazon settings."
+      },
+      "psn": {
+        "inputLabel": "ssocookie page response",
+        "placeholder": "{\"npsso\":\"…\"}",
+        "hint": "First sign in to playstation.com in your browser and tick “Trust this browser”, then open the link above: the page answers with a line like {\"npsso\":\"…\"}. Paste the whole thing, or just the value. An empty npsso or an error means you are not signed in yet. Note: on PlayStation the connection lasts about ten days, then you have to do this again."
       }
     },
     "unresolved": {
@@ -331,5 +336,8 @@
     "opencritic": "OpenCritic",
     "metacritic": "Metacritic",
     "igdb": "IGDB"
+  },
+  "subscription": {
+    "ps_plus": "PS Plus"
   }
 }

@@ -53,11 +53,16 @@ export async function resolveUnresolvedImport(
   const pending = await findOwn(userId, id);
   if (!pending) return { status: 'not_found' as const };
 
-  // La stessa mappa che usa l'import, e per la stessa ragione: se un negozio non
-  // la dichiara `platformFor` alza invece di indovinare. Indovinare vorrebbe
-  // dire scrivere dati sbagliati in silenzio in una tabella su cui si filtra —
-  // PSN è PS4 o PS5? — e la risposta la deve dare chi aggiunge quel negozio.
-  const platformSlug = platformFor(pending.store);
+  // La piattaforma della riga se il negozio l'ha detta, quella del negozio
+  // altrimenti — la stessa precedenza dell'import, e per la stessa ragione:
+  // indovinare vorrebbe dire scrivere dati sbagliati in silenzio in una tabella
+  // su cui si filtra.
+  //
+  // «PSN è PS4 o PS5?» era la domanda lasciata qui in sospeso, e il 9b ha
+  // risposto: **lo dice la riga**, e da allora lo scarto se la porta dietro. Su
+  // un negozio PC resta nulla e decide `platformFor`, che continua ad alzare per
+  // i negozi che non hanno né l'una né l'altra.
+  const platformSlug = pending.platformSlug ?? platformFor(pending.store);
 
   const game = await resolveGameFromIgdb(igdbId);
   if (!game) return { status: 'unknown_igdb_id' as const };

@@ -1,4 +1,7 @@
-import { backlogStatusValues } from '@repo/contracts/vocabulary';
+import {
+  backlogStatusValues,
+  subscriptionValues,
+} from '@repo/contracts/vocabulary';
 import {
   check,
   index,
@@ -24,6 +27,10 @@ import { timestamps } from './timestamps';
 // positive.
 // Valori da @repo/contracts, vedi il commento su `store` in games.ts.
 export const backlogStatus = pgEnum('backlog_status', backlogStatusValues);
+
+// Da quale abbonamento viene il diritto di giocare a una copia. Valori da
+// @repo/contracts, vedi il commento su `store` in games.ts.
+export const subscription = pgEnum('subscription', subscriptionValues);
 
 // L'esistenza della riga È il possesso: nessun flag "posseduto". La wishlist è
 // una tabella separata, così ogni query qui resta semplice.
@@ -113,6 +120,19 @@ export const ownerships = pgTable(
     // `played` allo step 12 pesa.
     playtimeMinutes: integer('playtime_minutes'),
     lastPlayedAt: timestamp('last_played_at'),
+    // **Questa copia è tua, o ce l'hai finché paghi?**
+    //
+    // Nullo = comprata, che è il caso normale. Valorizzato = il diritto viene da
+    // un abbonamento, e il giorno che finisce quella riga dice il falso.
+    //
+    // Sta qui e non su `backlog` per la stessa ragione delle ore: è una
+    // proprietà della copia, non un giudizio sul gioco. Lo stesso titolo
+    // comprato su Steam resta comprato anche se su PS5 ce l'hai col Plus.
+    //
+    // Nasce col 9b perché PSN è il primo posto in cui la cosa si vede: su una
+    // libreria vera sono 274 righe su 336. Cosa farne è lo step 14; questa
+    // colonna serve a non aver buttato l'informazione prima di arrivarci.
+    subscription: subscription('subscription'),
     ...timestamps,
   },
   (table) => [

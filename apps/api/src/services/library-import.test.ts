@@ -8,7 +8,7 @@ import {
   igdbSourceFor,
   searchIgdbGames,
 } from '../external/igdb';
-import { importLibrary, platformFor } from './library-import';
+import { importLibrary, platformFor, platformOf } from './library-import';
 
 vi.mock('../external/igdb', () => ({
   findIgdbGamesByExternalIds: vi.fn(),
@@ -344,6 +344,133 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
   });
 });
 
+describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  const possessi = (userId: string) =>
+    db
+      .select({
+        platformSlug: schema.ownerships.platformSlug,
+        subscription: schema.ownerships.subscription,
+        playtimeMinutes: schema.ownerships.playtimeMinutes,
+      })
+      .from(schema.ownerships)
+      .innerJoin(schema.backlog, eq(schema.backlog.id, schema.ownerships.backlogId))
+      .where(eq(schema.backlog.userId, userId));
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'psn');
+    mockedById.mockResolvedValue(new Map());
+    mockedSearch.mockResolvedValue([]);
+    // PSN non ha una sorgente IGDB utilizzabile: i suoi id sono `titleId`, la
+    // sorgente 36 indicizza i concept, e Sony i concept non li manda.
+    mockedSource.mockReturnValue(null);
+  });
+
+  it('fa due possessi dello stesso gioco comprato in cross-buy', async () => {
+    mockedSearch.mockResolvedValue([hit({ igdbId: 77, name: 'CrossCode' })]);
+
+    const report = await importLibrary(account, [
+      {
+        externalId: 'CUSA15461_00',
+        name: 'CrossCode',
+        platformSlug: 'sony_playstation4',
+      },
+      {
+        externalId: 'PPSA03234_00',
+        name: 'CrossCode',
+        platformSlug: 'sony_playstation5',
+      },
+    ]);
+
+    // Una ricerca sola per due righe: è lo stesso gioco, e a IGDB si chiede una
+    // volta. Ma i possessi sono due, perché a lanciarli si accende una console
+    // diversa.
+    expect(mockedSearch).toHaveBeenCalledTimes(1);
+    expect(report).toMatchObject({ resolved: 2, newEntries: 1 });
+    expect(await gamesOf(userId)).toEqual([{ name: 'CrossCode', igdbId: 77 }]);
+    expect(
+      (await possessi(userId)).map((row) => row.platformSlug).sort(),
+    ).toEqual(['sony_playstation4', 'sony_playstation5']);
+  });
+
+  it('scrive la mappatura di **ogni** riga, non solo della prima', async () => {
+    mockedSearch.mockResolvedValue([hit({ igdbId: 77, name: 'CrossCode' })]);
+
+    await importLibrary(account, [
+      { externalId: 'CUSA15461_00', name: 'CrossCode', platformSlug: 'sony_playstation4' },
+      { externalId: 'PPSA03234_00', name: 'CrossCode', platformSlug: 'sony_playstation5' },
+    ]);
+
+    // Se la riga PS4 restasse senza mappatura, al prossimo import tornerebbe a
+    // costare una ricerca — e su una libreria vera sono ottanta ricerche.
+    const mappature = await db
+      .select({ externalId: schema.externalIds.externalId })
+      .from(schema.externalIds)
+      .where(eq(schema.externalIds.source, 'psn'));
+    expect(mappature.map((row) => row.externalId).sort()).toEqual([
+      'CUSA15461_00',
+      'PPSA03234_00',
+    ]);
+  });
+
+  it('resta ambiguo lo stesso nome sulla stessa piattaforma', async () => {
+    mockedSearch.mockResolvedValue([hit({ igdbId: 5, name: 'Live' })]);
+
+    const report = await importLibrary(account, [
+      { externalId: 'CUSA00001_00', name: 'Live', platformSlug: 'sony_playstation4' },
+      { externalId: 'CUSA00002_00', name: 'Live', platformSlug: 'sony_playstation4' },
+    ]);
+
+    // È il caso dei 266 «Live» di Epic: due prodotti diversi che si chiamano
+    // uguale. Nessuna ricerca per nome può separarli, e agganciarli entrambi
+    // scriverebbe una mappatura falsa in una tabella condivisa da tutti.
+    expect(mockedSearch).not.toHaveBeenCalled();
+    expect(report).toMatchObject({ resolved: 0, unresolved: 2 });
+  });
+
+  it("marca il possesso che viene dall'abbonamento, e lo smarca quando lo compri", async () => {
+    mockedSearch.mockResolvedValue([hit({ igdbId: 9, name: "Death's Door" })]);
+    const entry = {
+      externalId: 'PPSA05304_00',
+      name: "Death's Door",
+      platformSlug: 'sony_playstation5',
+      playtimeMinutes: 969,
+    };
+
+    await importLibrary(account, [{ ...entry, subscription: 'ps_plus' as const }]);
+    expect(await possessi(userId)).toMatchObject([
+      { subscription: 'ps_plus', playtimeMinutes: 969 },
+    ]);
+
+    // Comprato: il negozio smette di dirlo, e il possesso deve smettere di
+    // dirlo con lui. È il motivo per cui questa colonna **non** è in COALESCE
+    // come le ore.
+    await importLibrary(account, [entry]);
+    expect(await possessi(userId)).toMatchObject([
+      { subscription: null, playtimeMinutes: 969 },
+    ]);
+  });
+
+  it('tiene la piattaforma sugli scarti, o risolverli a mano sarebbe indovinare', async () => {
+    await importLibrary(account, [
+      {
+        externalId: 'CUSA00127_00',
+        name: 'Netflix',
+        platformSlug: 'sony_playstation4',
+      },
+    ]);
+
+    // `platformFor('psn')` alza di proposito: senza questa colonna, la voce
+    // risolta a mano non saprebbe su quale console scrivere il possesso.
+    expect(await unresolvedOf(userId)).toMatchObject([
+      { name: 'Netflix', platformSlug: 'sony_playstation4' },
+    ]);
+  });
+});
+
 describe('platformFor', () => {
   it('dà PC ai negozi PC', () => {
     expect(platformFor('gog')).toBe('pc_windows');
@@ -352,9 +479,22 @@ describe('platformFor', () => {
 
   it('si rifiuta di indovinare per i negozi console', () => {
     // Scrivere `pc_windows` su un gioco PSN sarebbe un dato sbagliato dentro la
-    // colonna su cui il motore decisionale filtra. Chi aggiunge PSN deve
-    // decidere, non ereditare un default.
+    // colonna su cui il motore decisionale filtra. Il 9b ha risposto per PSN —
+    // la piattaforma la porta la riga — ma la risposta sta lì, non qui: questa
+    // funzione continua ad alzare per chiunque non l'abbia data.
     expect(() => platformFor('psn')).toThrow('psn');
     expect(() => platformFor('nintendo')).toThrow('nintendo');
+  });
+
+  it('preferisce la piattaforma della riga a quella del negozio', () => {
+    expect(
+      platformOf('psn', {
+        externalId: 'PPSA03234_00',
+        name: 'CrossCode',
+        platformSlug: 'sony_playstation5',
+      }),
+    ).toBe('sony_playstation5');
+    // E ci ripiega solo se la riga non ne porta nessuna.
+    expect(platformOf('gog', { externalId: '1', name: 'x' })).toBe('pc_windows');
   });
 });

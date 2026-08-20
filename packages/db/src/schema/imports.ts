@@ -13,6 +13,7 @@ import {
 
 import { user } from './auth';
 import { store } from './games';
+import { platforms } from './platforms';
 import { timestamps } from './timestamps';
 
 export const storeAccountStatus = pgEnum(
@@ -147,6 +148,14 @@ export const unresolvedImports = pgTable(
     // Il nome che dà il negozio. È tutto ciò che si può mostrare all'utente per
     // fargli capire di che gioco si tratta.
     name: text('name').notNull(),
+    // Su quale piattaforma stava la voce, quando il negozio lo dice.
+    //
+    // Nulla sui negozi PC, dove la piattaforma è una costante del negozio e la
+    // ricava `platformFor`. Valorizzata da PSN in poi, dove la piattaforma la
+    // dice la riga: senza, risolvere a mano uno scarto PS5 non saprebbe su cosa
+    // scrivere il possesso — e `platformFor('psn')` alzerebbe, com'era giusto
+    // che facesse finché nessuno aveva risposto a quella domanda.
+    platformSlug: text('platform_slug').references(() => platforms.slug),
     playtimeMinutes: integer('playtime_minutes'),
     lastPlayedAt: timestamp('last_played_at'),
     ...timestamps,

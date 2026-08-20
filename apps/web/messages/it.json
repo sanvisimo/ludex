@@ -303,6 +303,11 @@
         "inputLabel": "Indirizzo di atterraggio",
         "placeholder": "https://www.amazon.com/?…openid.oa2.authorization_code=…",
         "hint": "Apri il login ed entra con il tuo account Amazon: il negozio è quello americano, ma un account italiano ci entra lo stesso. Atterrato sulla home di amazon.com, copia l'indirizzo dalla barra del browser. Il collegamento registra un dispositivo «AGSLauncher for Windows» sul tuo account, che puoi togliere quando vuoi dalle impostazioni Amazon."
+      },
+      "psn": {
+        "inputLabel": "Risposta della pagina ssocookie",
+        "placeholder": "{\"npsso\":\"…\"}",
+        "hint": "Entra prima su playstation.com col browser e spunta «Fidati di questo browser», poi apri il collegamento qui sopra: la pagina risponde con una riga tipo {\"npsso\":\"…\"}. Incollala tutta, o solo il valore. Se vedi npsso vuoto o un errore, vuol dire che il login non è ancora andato. Attenzione: su PlayStation il collegamento dura una decina di giorni, poi va rifatto."
       }
     },
     "unresolved": {
@@ -331,5 +336,8 @@
     "opencritic": "OpenCritic",
     "metacritic": "Metacritic",
     "igdb": "IGDB"
+  },
+  "subscription": {
+    "ps_plus": "PS Plus"
   }
 }

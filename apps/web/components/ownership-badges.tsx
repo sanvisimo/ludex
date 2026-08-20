@@ -1,6 +1,6 @@
 'use client';
 
-import type { OwnershipAccount, Store } from '@repo/contracts';
+import type { OwnershipAccount, Store, Subscription } from '@repo/contracts';
 import { storeAccountName } from '@repo/contracts';
 import { useQuery } from '@tanstack/react-query';
 import { XIcon } from 'lucide-react';
@@ -19,6 +19,14 @@ export type DisplayedOwnership = {
   platformSlug: string;
   store?: Store | null;
   storeAccount?: OwnershipAccount | null;
+  /**
+   * Da quale abbonamento viene la copia, se non è un acquisto.
+   *
+   * Sta a schermo perché è una cosa che cambia il senso del possesso: «ce l'hai
+   * finché paghi» non è la stessa frase di «è tuo», e su PSN riguarda la
+   * maggioranza della libreria.
+   */
+  subscription?: Subscription | null;
 };
 
 /** Chiave stabile per un possesso, salvato o no: è la stessa del vincolo unique. */
@@ -42,6 +50,7 @@ export function OwnershipBadges({
   onRemove?: (ownership: DisplayedOwnership) => void;
 }) {
   const t = useTranslations('editEntry');
+  const tSubscription = useTranslations('subscription');
   const storeLabels = useStoreLabels();
   const { data: platforms } = useQuery({
     ...api.platforms.list.queryOptions(),
@@ -74,7 +83,10 @@ export function OwnershipBadges({
         const label =
           (nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug) +
           (ownership.store ? ` · ${storeLabels[ownership.store]}` : '') +
-          (account ? ` (${account})` : '');
+          (account ? ` (${account})` : '') +
+          (ownership.subscription
+            ? ` · ${tSubscription(ownership.subscription)}`
+            : '');
 
         return (
           <Badge
