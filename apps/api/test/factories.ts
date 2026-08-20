@@ -96,6 +96,7 @@ export function igdbMetadata(
   return {
     igdbId: 100_001,
     name: 'Nome da IGDB',
+    storeIds: [],
     summary: null,
     firstReleaseDate: null,
     coverImageId: null,

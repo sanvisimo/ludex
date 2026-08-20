@@ -111,6 +111,38 @@ export async function enrichGameFromIgdb(
         tx,
       );
 
+      // Gli id del gioco sugli altri negozi, così come IGDB li conosce.
+      //
+      // Serve soprattutto **l'appid Steam**, che è la prova d'identità su cui
+      // poggiano HLTB e Metacritic: la pagina HLTB dichiara un appid, la scheda
+      // del negozio Steam dichiara lo slug Metacritic. Fino allo step 9 l'appid
+      // ce l'avevano solo i giochi arrivati da un import Steam; con GOG, Epic e
+      // Amazon ne è rimasto senza più di metà del catalogo, e con lui senza
+      // quelle due strade — restava il nome, che sull'anno si affonda da solo
+      // ("Undying" è 2021 per HLTB e 2023 per IGDB, ed è lo stesso gioco).
+      //
+      // È **identità e non possesso**: dire che questo gioco su Steam si chiama
+      // 638990 non dice che qualcuno ce l'abbia. Il possesso sta in
+      // `ownerships`, e questa tabella non lo riguarda.
+      //
+      // `onConflictDoNothing` perché la mappatura può già esserci — scritta da
+      // un import, o da un altro utente: `external_ids` è condivisa. Chi c'era
+      // prima ha ragione: quello viene da una libreria vera, questo da IGDB.
+      if (metadata.storeIds.length > 0) {
+        await tx
+          .insert(schema.externalIds)
+          .values(
+            metadata.storeIds.map((row) => ({
+              gameId,
+              source: row.store,
+              externalId: row.externalId,
+            })),
+          )
+          .onConflictDoNothing({
+            target: [schema.externalIds.source, schema.externalIds.externalId],
+          });
+      }
+
       // Riscrittura in blocco invece di un diff: è cio' che rende la funzione
       // idempotente, e gestisce da solo gli attributi tolti da IGDB.
       await tx

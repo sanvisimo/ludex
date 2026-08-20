@@ -72,6 +72,66 @@ describe('enrichGameFromIgdb', () => {
     expect((await sourceRow(game.id))?.syncedAt).toBeInstanceOf(Date);
   });
 
+  it("scrive gli id degli altri negozi, che è la prova d'identità per HLTB", async () => {
+    // Fino allo step 9 l'appid Steam ce l'avevano solo i giochi arrivati da un
+    // import Steam. Con GOG, Epic e Amazon ne è rimasto senza più di metà del
+    // catalogo, e senza appid HLTB può contare solo sul nome — che sull'anno
+    // affonda da solo, perché HLTB data l'accesso anticipato e IGDB la 1.0.
+    const game = await createGame();
+    mockedFetch.mockResolvedValue(
+      igdbMetadata({
+        storeIds: [
+          { store: 'steam', externalId: '638990' },
+          { store: 'gog', externalId: '1207658691' },
+        ],
+      }),
+    );
+
+    await enrichGameFromIgdb(game.id);
+
+    const righe = await db
+      .select({
+        source: schema.externalIds.source,
+        externalId: schema.externalIds.externalId,
+      })
+      .from(schema.externalIds)
+      .where(eq(schema.externalIds.gameId, game.id));
+
+    expect(righe).toEqual(
+      expect.arrayContaining([
+        { source: 'steam', externalId: '638990' },
+        { source: 'gog', externalId: '1207658691' },
+      ]),
+    );
+  });
+
+  it('non ruba una mappatura che un import aveva già scritto', async () => {
+    // `external_ids` è condivisa fra tutti gli utenti, e ha un unique su
+    // `(source, externalId)`. Se IGDB sbaglia — o se due giochi si contendono
+    // un appid — chi c'era prima vince: quello viene da una libreria vera,
+    // questo da un catalogo di terzi.
+    const altro = await createGame();
+    await db
+      .insert(schema.externalIds)
+      .values({ gameId: altro.id, source: 'steam', externalId: '638990' });
+
+    const game = await createGame();
+    mockedFetch.mockResolvedValue(
+      igdbMetadata({ storeIds: [{ store: 'steam', externalId: '638990' }] }),
+    );
+
+    // Non solleva: l'enrichment del gioco va a buon fine lo stesso.
+    await expect(enrichGameFromIgdb(game.id)).resolves.toMatchObject({
+      status: 'ok',
+    });
+
+    const [riga] = await db
+      .select({ gameId: schema.externalIds.gameId })
+      .from(schema.externalIds)
+      .where(eq(schema.externalIds.externalId, '638990'));
+    expect(riga?.gameId).toBe(altro.id);
+  });
+
   it('rieseguito porta allo stesso stato invece di accumularlo', async () => {
     const game = await createGame();
     mockedFetch.mockResolvedValue(

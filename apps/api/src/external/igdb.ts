@@ -241,7 +241,10 @@ const DETAIL_FIELDS = [
   'fields name, slug, summary, first_release_date, aggregated_rating, aggregated_rating_count,',
   'cover.image_id, cover.width, cover.height,',
   'genres.id, genres.name, themes.id, themes.name,',
-  'game_modes.id, game_modes.name, player_perspectives.id, player_perspectives.name;',
+  'game_modes.id, game_modes.name, player_perspectives.id, player_perspectives.name,',
+  // Gli id che il gioco ha sugli altri negozi. Non costano una richiesta in
+  // più: sono due campi su una chiamata che si fa comunque.
+  'external_games.uid, external_games.external_game_source;',
 ].join(' ');
 
 type IgdbNamed = { id: number; name: string };
@@ -259,6 +262,7 @@ type IgdbGameDetail = {
   themes?: IgdbNamed[];
   game_modes?: IgdbNamed[];
   player_perspectives?: IgdbNamed[];
+  external_games?: { uid?: string; external_game_source?: number }[];
 };
 
 export type IgdbAttribute = {
@@ -280,6 +284,19 @@ export type IgdbGameMetadata = {
   aggregatedRating: number | null;
   aggregatedRatingCount: number | null;
   attributes: IgdbAttribute[];
+  /**
+   * Gli id che questo gioco ha sui negozi che sappiamo tradurre.
+   *
+   * Serve soprattutto per **l'appid Steam**, che è la prova d'identità su cui
+   * poggiano HLTB (l'appid dichiarato dalla pagina) e Metacritic (lo slug
+   * dichiarato dalla scheda del negozio). Fino al 9a l'appid ce l'avevano solo i
+   * giochi arrivati da un import Steam; con Epic, GOG e Amazon ne è rimasto
+   * senza il 68% del catalogo, e con lui senza quelle due strade.
+   *
+   * È identità, non possesso: dire «questo gioco su Steam si chiama 638990» non
+   * dice che l'utente ce l'abbia. Il possesso sta in `ownerships`.
+   */
+  storeIds: { store: Store; externalId: string }[];
 };
 
 function collect(
@@ -322,6 +339,15 @@ export async function fetchIgdbGameMetadata(
     coverHeight: game.cover?.height ?? null,
     aggregatedRating: game.aggregated_rating ?? null,
     aggregatedRatingCount: game.aggregated_rating_count ?? null,
+    // Solo i negozi che sappiamo tradurre: IGDB rende anche GiantBomb, Twitch e
+    // YouTube, che non sono posti da cui si compra.
+    storeIds: (game.external_games ?? []).flatMap(
+      (row): { store: Store; externalId: string }[] => {
+        if (row.external_game_source === undefined || !row.uid) return [];
+        const store = STORE_BY_IGDB_SOURCE.get(row.external_game_source);
+        return store ? [{ store, externalId: row.uid }] : [];
+      },
+    ),
     attributes: [
       ...collect('genre', game.genres),
       ...collect('theme', game.themes),
@@ -428,6 +454,14 @@ const IGDB_SOURCES: Partial<Record<Store, number>> = {
 export function igdbSourceFor(store: Store): number | null {
   return IGDB_SOURCES[store] ?? null;
 }
+
+/** La direzione opposta: da una sorgente IGDB al nostro negozio, se lo è. */
+const STORE_BY_IGDB_SOURCE = new Map<number, Store>(
+  Object.entries(IGDB_SOURCES).map(([store, source]) => [
+    source as number,
+    store as Store,
+  ]),
+);
 
 // IGDB accetta al massimo 500 risultati per richiesta. Su una libreria vera di
 // 452 giochi bastano quattro richieste: la risoluzione non è il collo di
