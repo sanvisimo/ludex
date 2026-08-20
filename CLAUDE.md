@@ -142,6 +142,15 @@ SQL può fare in modo deterministico.
   IGDB non conosce non riuscirà mai: la spazzata deve avere un tetto ai
   tentativi, o riaccoda per sempre lo stesso gioco irrisolvibile. I tentativi
   dentro un singolo job li governa BullMQ; questo è il livello sopra.
+- «Definitivo» però non vuol dire eterno, ed è la parte che si scopre tardi: un
+  `not_found` è definitivo **rispetto a ciò che sapevamo quando l'abbiamo
+  scritto**. La spazzata giustamente non lo ripesca mai — quindi a riaprirlo
+  dev'essere un **evento**, e l'evento è l'arrivo di un id nuovo in
+  `external_ids`. Quando l'enrichment IGDB scrive l'appid Steam di un gioco che
+  non ce l'aveva, HLTB e Metacritic vanno riaperti: è su quell'appid che
+  entrambi verificano l'identità, e senza avevano solo il nome. OpenCritic no,
+  lui l'appid non lo guarda. È lo stesso meccanismo che lo step 5 descrive per
+  il ri-collegamento IGDB, con un secondo evento a innescarlo.
 - A runtime si embedda **solo la query dell'utente** (stringa breve) per la
   similarity search.
 
@@ -443,7 +452,22 @@ gioco li mostra tutti, con la fonte accanto.
       prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
       librerie», e per ora è volutamente aperta.
 10. **Import da file** — importazione di giochi da file CSV. 
-11. **Admin** — gestione degli utenti, dei giochi non collegati. 
+11. **Admin** — dove finisce ciò che nessun automatismo ha saputo chiudere. Non
+    è una cosa sola:
+    - **giochi non collegati** (senza `igdbId`, quindi mai arricchiti) e gli
+      **scarti d'import** rimasti in `unresolved_imports`.
+    - **fonti in `not_found`**: il gioco è su IGDB, ma HLTB, OpenCritic o
+      Metacritic non l'hanno trovato. È un mucchio a parte e molto più grande —
+      sulla libreria di prova 455 righe contro 52 scarti d'import. Servono il
+      ritentativo forzato e soprattutto **l'inserimento a mano dell'id
+      esterno**: `game_sources.external_id` c'è già, e scritto lui il match non
+      si rifà, si salta. È la valvola per ciò che nessuna euristica prenderà
+      mai; l'alternativa è ritoccare le soglie del matcher finché non passa
+      quel gioco lì, e romperne altri due.
+    - **gestione degli utenti**.
+
+    La riapertura *automatica* di un `not_found` non sta qui: è enrichment, e
+    la sua regola sta scritta lassù. Qui c'è solo ciò che va deciso da un umano.
 12. **Ui** — layout e design dell'applicazione. 
 13. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding. 
 14. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
