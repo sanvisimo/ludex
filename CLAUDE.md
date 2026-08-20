@@ -196,9 +196,9 @@ Le librerie importate aggiungono tre cose al modello, decise allo step 4:
 
 - **`store_accounts`**: l'account dell'utente su un negozio, uno per `(utente,
 negozio)`. Non è una colonna su `user` perché `auth.ts` è generato e viene
-  riscritto. Tiene solo l'identità pubblica dell'account: i negozi che vorranno
-  un token OAuth per utente avranno bisogno di cifratura a riposo e di rinnovo,
-  che si decidono quando si arriva a quelli.
+  riscritto. Allo step 4 teneva solo l'identità pubblica dell'account, perché a
+  Steam basta uno SteamID64; dallo step 9 tiene anche i token, e come sono fatti
+  lo dice «Le altre librerie» qui sotto.
 - **ore giocate su `ownerships`**, non su `backlog`: sono una proprietà di
   _quella copia_, e lo stesso gioco su GOG avrebbe le sue. Sono dato oggettivo
   del negozio, non un campo personale dello step 5. **Non si usano per indovinare
@@ -221,6 +221,100 @@ L'ordine dei passi dell'import è esso stesso una regola: **prima il nostro DB**
 resto, in blocchi — su 452 giochi sono quattro richieste. Risoluzione ed
 enrichment restano due cose distinte: la prima è sincrona e in blocco, il secondo
 è un job per gioco.
+
+#### Le altre librerie (step 9): il problema è il credenziale, non l'API
+
+Steam è l'eccezione, non il modello: una chiave applicativa nostra, un profilo
+pubblico, zero credenziali dell'utente. Nessun altro negozio funziona così.
+
+Playnite li risolve tutti aprendo una webview, ma **la webview gli serve una
+volta sola**: fatto il login tiene i cookie o i token su disco e da lì in poi usa
+`HttpClient` normale, senza più aprire niente. Cioè l'**uso** è HTTP semplice
+per tutti — un server lo fa identico. A dividerci da Playnite resta solo
+l'**acquisizione**, perché una pagina web non può leggere l'URL né il corpo di
+un'altra origine: è la same-origin policy, e non è aggirabile con un `iframe` o
+un `window.open`.
+
+La via d'uscita ovvia sarebbe un OAuth con `redirect_uri` nostro. **Non esiste, ed
+è misurato**: GOG risponde `redirect_uri_mismatch` (dopo il login riuscito, quindi
+non lo si scopre con un `curl`), Amazon risponde 404 a qualunque `openid.return_to`
+fuori dai suoi domini. Sono i `client_id` dei loro launcher, con la lista dei
+redirect già fissata. Non riproporlo.
+
+Quindi: **l'utente incolla l'URL su cui è atterrato.** Si accetta l'URL intero e
+non il codice estratto, come fa già `resolveSteamId` con il profilo Steam — qui
+«incolla quello che hai sotto mano» è una convenzione, non un ripiego inventato
+per l'occasione. È un gesto solo: da lì in poi il `refresh_token` rinnova da sé e
+l'utente non lo rivede più.
+
+Conseguenza di disegno da rispettare: **la mutazione che collega un account non
+deve sapere chi le ha portato il codice.** Dal web lo incolla l'utente, da
+`apps/mobile` una `WebView` nativa lo prenderà da sola, che è esattamente ciò che
+fa Playnite. Se il collegamento viene disegnato *intorno* al copia-incolla, il
+mobile poi lo trova incastrato.
+
+`store_accounts` cresce di conseguenza: access token, refresh token, scadenza,
+cifrati a riposo in **AES-256-GCM** con `STORE_TOKEN_KEY` (da dichiarare anche in
+`globalEnv` dentro `turbo.json`), più uno stato esplicito «da ricollegare» —
+perché quando il rinnovo fallisce non fallisce il job, fallisce l'utente, e
+`/account` deve saperglielo dire.
+
+Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
+**quanto costa risolvere l'identità**. Misurate su una libreria vera:
+
+| Negozio | Credenziale | Id su IGDB | Ore |
+| --------- | ------------------------------- | ------------------------------------------------- | --- |
+| GOG | refresh token, non scade in pratica | product id, sorgente 5 — **94,5% su 435 giochi** | no |
+| Epic | refresh token | catalogItemId, sorgente 26 | no |
+| Amazon | refresh token | **nessuno**: sorgente 23 ha 678 righe in tutto | no |
+| PSN | refresh token da npsso, ~2 mesi | `conceptId` **è** l'uid della sorgente 36 | parziali |
+| EA | sessione corta, si sgancia sempre | nessuno | sì |
+| Nintendo | cookie di sessione | nessuno | no |
+| Xbox | chiave OpenXBL, o XSTS in proprio | `titleId` → ProductId via `displaycatalog`, sorgente 11 | sì |
+
+Dove l'id c'è l'import costa nulla: i 435 giochi GOG si risolvono in **tre**
+richieste da 200 id, e il matcher per nome ne recupera altri 16, per un 98,2%
+automatico e due sole scelte da fare a mano. Dove l'id non c'è si paga **una
+ricerca IGDB per gioco**: Amazon sono 92 richieste per un 85,9%, con 13 voci che
+finiscono in `unresolved_imports`. Su queste fonti gli scarti sono la regola, non
+l'angolo, e va messo un tetto ai tentativi come già impone l'enrichment.
+
+Tre dettagli che si pagano se si scoprono tardi:
+
+- **Amazon vive solo sul mercato americano.** `amzn1.adg` è registrato su
+  `amazon.com` con `marketPlaceId=ATVPDKIKX0DER`; su `amazon.it` la stessa
+  richiesta è un 404. Un account italiano si autentica benissimo lì, quindi il
+  mercato si inchioda e non si parametrizza.
+- **Amazon decora i titoli con l'edizione** (`- CE` per le Collector's Edition):
+  nove dei tredici irrisolti sono quello. Toglierlo prima di cercare è una regola
+  per `shortenTitle`, non un caso particolare.
+- **GOG marca `isGame: true` anche i *goodies***, gli artbook e il REDkit di The
+  Witcher 3. Non c'è un campo per filtrarli e non serve: cadono da soli negli
+  irrisolti, che è dove devono stare.
+
+La piattaforma resta **`pc_windows` fissa** su tutti i negozi PC, come per Steam,
+e l'utente la corregge dalla schermata dello step 5. GOG dichiarerebbe anche
+Mac e Linux in `worksOn`, ma sapere su cosa *girerebbe* non è sapere su cosa ci
+giochi. Per le console la piattaforma la dice la fonte, riga per riga.
+
+**Ubisoft Connect e Battle.net non si faranno mai**, ed è bene che sia scritto qui
+perché sembrano possibili: Playnite li importa leggendo il file di cache del
+client installato e il registro di Windows, non una API. Non c'è nessun
+credenziale di rete da acquisire, da rinnovare o da cifrare — c'è un disco a cui
+un server non è attaccato. Con Battle.net non c'è nemmeno il ripiego di un
+endpoint pubblico: l'OAuth ufficiale di Blizzard esiste ma non espone la libreria
+a nessuno.
+
+Steam Family, quando si farà, **non porta credenziali nuove**: è lo stesso
+`GetOwnedGames` chiamato su N SteamID64. Non è un problema di autenticazione: è
+un problema di modello, e lo stesso di Xbox.
+
+Che è la domanda lasciata aperta apposta, perché nessun negozio del 9a la pone:
+**un gioco a cui puoi giocare stasera ma che non è tuo** — Game Pass, PS Plus, la
+libreria di tuo fratello — sta in `backlog` o no? `backlog` oggi vuol dire
+possesso, e non c'è una terza cosa. Si risponde quando si arriva alla famiglia o
+allo Xbox, non prima, e la risposta decide `ownerships` — non si aggira
+importando e sperando.
 
 #### I voti della critica stanno in `game_scores`, non su `games`
 
@@ -325,19 +419,32 @@ gioco li mostra tutti, con la fonte accanto.
 8. **OpenCritic** — i voti della critica, e con loro **Metacritic**: sono la
    stessa schermata e lo stesso modello, e separarli avrebbe voluto dire
    scrivere due volte la stessa tabella. Porta `game_scores` (vedi sotto).
-9.  **Altre librerie** — gestione delle librerie di altri provider.
-10. **Admin** — gestione degli utenti, dei giochi non collegati. 
-11. **Ui** — layout e design dell'applicazione. 
-12. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding. 
-13. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
+9.  **Altre librerie** — gli altri negozi, in cinque tempi. L'ordine non è per
+    simpatia: è per quanto dura il credenziale e per quanto costa risolvere
+    l'identità (vedi «Le altre librerie» sotto).
+    - **9a — GOG, Epic, Amazon**: tutti PC, tutti un gesto solo che non si
+      ripete. Qui si costruiscono i token cifrati, e la forma del provider si
+      estrae da tre casi veri invece che da Steam più le ipotesi.
+    - **9b — PSN**: prima console. Piattaforma per riga, possesso vero, id
+      risolvibile.
+    - **9c — EA**: non un account collegato ma un'**importazione una tantum**.
+    - **9d — Nintendo**: barattolo di cookie, nessun id che IGDB conosca.
+    - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
+      prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
+      librerie», e per ora è volutamente aperta.
+10. **Import da file** — importazione di giochi da file CSV. 
+11. **Admin** — gestione degli utenti, dei giochi non collegati. 
+12. **Ui** — layout e design dell'applicazione. 
+13. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding. 
+14. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
     posseduti.
 
 Ricerca ed enrichment sono due usi distinti di IGDB e non vanno confusi: lo step 2
 cerca e salva id e titolo, in modo sincrono e senza coda; lo step 3 scarica i
 metadata completi in job asincroni.
 
-Poi: mobile, e le altre librerie importabili (GOG, Epic, EA, Battle.net, Amazon,
-PSN, Xbox, Switch) sul modello dello step 4.
+Poi: mobile — che non è solo un'altra interfaccia, perché una `WebView` nativa
+sblocca i negozi che dal web non si possono collegare (vedi «Le altre librerie»).
 
 Non anticipare step successivi: se una feature appartiene allo step 12, non
 implementarla mentre si lavora sull'1.
