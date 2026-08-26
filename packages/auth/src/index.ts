@@ -11,9 +11,9 @@ if (!secret) {
 
 export const auth = betterAuth({
   secret,
-  baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3001',
+  baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3005',
   // Il web gira su un'origine diversa dall'API, quindi va dichiarata esplicitamente.
-  trustedOrigins: [process.env.WEB_URL ?? 'http://localhost:3000'],
+  trustedOrigins: [process.env.WEB_URL ?? 'http://localhost:8085'],
   database: drizzleAdapter(db, { provider: 'pg', schema }),
   emailAndPassword: {
     enabled: true,

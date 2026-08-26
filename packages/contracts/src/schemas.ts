@@ -157,6 +157,7 @@ export const IgdbSearchHitSchema = z.object({
   name: z.string(),
   releaseYear: z.number().int().nullable(),
   developer: z.string().nullable(),
+  cover: z.string().nullable(),
   // Valorizzato solo quando non è un gioco principale: "Port", "Remake"…
   gameType: z.string().nullable(),
   // Quante recensioni aggregate ha la scheda IGDB. Viaggia fino al client
@@ -261,6 +262,7 @@ export const UnlinkImpactSchema = z.object({
 export const UnresolvedImportSchema = z.object({
   id: z.uuid(),
   store: StoreSchema,
+  storeName: z.string(),
   externalId: z.string(),
   name: z.string(),
   playtimeMinutes: z.number().int().nullable(),

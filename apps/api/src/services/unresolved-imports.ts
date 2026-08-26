@@ -1,5 +1,5 @@
 import { db, schema } from '@repo/db';
-import { and, asc, eq } from '@repo/db/orm';
+import { and, asc, eq, sql } from '@repo/db/orm';
 
 import {
   ensureBacklogEntries,
@@ -17,12 +17,14 @@ export function listUnresolvedImports(userId: string) {
     .select({
       id: schema.unresolvedImports.id,
       store: schema.unresolvedImports.store,
+      storeName: sql`coalesce(store_accounts.label, store_accounts.display_name)`,
       externalId: schema.unresolvedImports.externalId,
       name: schema.unresolvedImports.name,
       playtimeMinutes: schema.unresolvedImports.playtimeMinutes,
       lastPlayedAt: schema.unresolvedImports.lastPlayedAt,
     })
     .from(schema.unresolvedImports)
+    .leftJoin(schema.storeAccounts, eq(schema.unresolvedImports.storeAccountId, schema.storeAccounts.id))
     .where(eq(schema.unresolvedImports.userId, userId))
     .orderBy(asc(schema.unresolvedImports.name));
 }

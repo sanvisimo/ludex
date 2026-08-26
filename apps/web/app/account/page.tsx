@@ -129,7 +129,7 @@ export default function AccountPage() {
                   <div className="grid flex-1 gap-0.5">
                     <span className="font-medium">{entry.name}</span>
                     <span className="text-muted-foreground">
-                      {storeLabels[entry.store]} · {entry.externalId}
+                      {storeLabels[entry.store]} ({entry.storeName}) · {entry.externalId}
                       {entry.playtimeMinutes
                         ? ` · ${t('unresolved.hours', {
                             hours: Math.round(entry.playtimeMinutes / 60),

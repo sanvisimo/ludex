@@ -159,7 +159,7 @@ const EXCLUDED_TYPES = [
 ];
 
 const SEARCH_FIELDS =
-  'fields name, first_release_date, game_type, total_rating_count,' +
+  'fields name, first_release_date, game_type, total_rating_count, cover.image_id,' +
   ' involved_companies.developer, involved_companies.company.name;';
 
 /**
@@ -184,6 +184,7 @@ export type IgdbSearchHit = {
   releaseYear: number | null;
   developer: string | null;
   gameType: string | null;
+  cover: string | null;
   /**
    * Quante recensioni aggregate ha la scheda. Non è un voto: è **quanto quella
    * scheda è vissuta**, e serve a distinguere un gioco da un doppione vuoto.
@@ -207,6 +208,7 @@ function toHit(game: IgdbGame): IgdbSearchHit {
       ? new Date(game.first_release_date * 1000).getUTCFullYear()
       : null,
     developer: developer ?? null,
+    cover: game.cover?.image_id ?? null,
     gameType: game.game_type ? (GAME_TYPES[game.game_type] ?? null) : null,
     totalRatingCount: game.total_rating_count ?? null,
   };

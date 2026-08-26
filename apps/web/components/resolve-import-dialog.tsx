@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
+import {GameCover} from "@/components/game-cover";
 
 /**
  * Sistema a mano una voce che l'import non ha saputo risolvere.
@@ -57,6 +58,8 @@ export function ResolveImportDialog({
         queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),
       ]);
       toast.success(t('resolved', { name: created.game.name }));
+      setQuery('');
+      setSubmitted(null);
       onOpenChange(false);
     },
     onError: (error) =>
@@ -116,7 +119,8 @@ export function ResolveImportDialog({
               ) : (
                 <ul className="grid gap-0.5 p-1">
                   {search.data?.map((hit) => (
-                    <li key={hit.igdbId}>
+                    <li key={hit.igdbId} className='flex'>
+                      <GameCover imageId={hit.cover} name={hit.name} />
                       <button
                         type="button"
                         disabled={resolve.isPending}

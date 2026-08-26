@@ -9,7 +9,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 // filtrano sempre per userId. Questo serve solo a evitare che un anonimo veda lo
 // scheletro di una pagina privata prima del rimbalzo.
 //
-// Nota per il deploy: il cookie è emesso dall'API (porta 3001) e arriva al web
+// Nota per il deploy: il cookie è emesso dall'API (porta 3005) e arriva al web
 // (porta 3000) perché i cookie non sono separati per porta. Con API e web su
 // sottodomini diversi servirà configurare `crossSubDomainCookies` in Better Auth,
 // o qui il cookie non si vedrà.

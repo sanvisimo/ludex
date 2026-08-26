@@ -9,8 +9,8 @@ import { cors } from 'hono/cors';
 
 import { router } from './rpc/router';
 
-const webUrl = process.env.WEB_URL ?? 'http://localhost:3000';
-const port = Number(process.env.API_PORT ?? 3001);
+const webUrl = process.env.WEB_URL ?? 'http://localhost:8085';
+const port = Number(process.env.API_PORT ?? 3005);
 
 const app = new Hono();
 

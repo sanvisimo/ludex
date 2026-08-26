@@ -394,6 +394,52 @@ aspettava una libreria che non arrivava. Il credenziale non è mai nel job: chi
 esegue va a leggerlo, o si scriverebbe un refresh token in chiaro nella
 cronologia di Redis.
 
+##### Un collegamento sbagliato non si disfa togliendo il gioco
+
+Il ri-collegamento a IGDB sta scritto fra le cose che lo step 5 rimanda, e lì è
+descritto come «correggere l'`igdbId` di un gioco risolto male». Visto da un
+import è un'altra cosa, e la differenza non è accademica: **il collegamento
+sbagliato non sta su `games`, sta in `external_ids`**. È la riga
+`(negozio, id esterno) → gioco` che il passo 1 dell'import legge per prima, ed è
+per questo che l'errore è appiccicoso.
+
+Da qui discendono due gesti che sembrano rimedi e non lo sono:
+
+- **togliere il gioco dal backlog non tocca la mappatura.** È giusto che non la
+  tocchi — `external_ids` è del catalogo condiviso, il backlog è tuo — ma il
+  prossimo import rilegge quella riga e ti ricollega **lo stesso identico gioco
+  sbagliato**, senza spendere niente e senza chiedere niente. Sembra che l'import
+  «insista»; in realtà sta solo credendo a una cosa che nessuno ha corretto.
+- **cancellare la riga di `games` è peggio del problema.** Le FK verso `games`
+  sono tutte `on delete cascade`: se ne vanno `external_ids`, `game_attributes`,
+  `game_sources`, `game_scores` e i `backlog` — con voti, note e possessi — **di
+  tutti gli utenti che avevano quel gioco**, non solo di chi ha sbagliato. E in
+  cambio non riporta le cose al punto di partenza: dove IGDB ha una sorgente per
+  il negozio (Steam, GOG, Xbox) il passo 2 riaggancia lo stesso id al primo
+  reimport, dove non ce l'ha (Epic, Amazon, PSN) la voce ricade negli scarti, che
+  visto da fuori assomiglia a «il gioco è sparito e non torna più».
+
+Oggi l'unico gesto che funziona davvero è cancellare a mano la riga di
+`external_ids` e rilanciare l'import: la voce torna fra gli scarti e la si
+ricollega dal dialogo di `/account`. Che sia una `DELETE` in psql è la misura di
+quanto manchi l'interfaccia.
+
+Quindi il ri-collegamento sono **due strade verso lo stesso posto**, e chi lo
+farà deve trovarle scritte tutte e due:
+
+- **il gioco è quello giusto ma l'id no** — un gioco inserito a mano senza
+  `igdbId`, o risolto male: si corregge `games.igdbId`, con la fusione di due
+  righe che lo step 5 descrive.
+- **il gioco è giusto per qualcun altro ma non per questa voce di libreria** —
+  l'errore è nell'import: si **ripunta la riga di `external_ids`** a un altro
+  gioco, o la si toglie perché torni a essere uno scarto. `games` non si tocca,
+  e per un motivo solo ma sufficiente: quel gioco è di tutti, questa mappatura è
+  di una libreria sola.
+
+Ha un parente stretto e non è un caso: è lo stesso gesto che l'admin dello step
+11 chiama «inserimento a mano dell'id esterno» per le fonti in `not_found`.
+Scritto l'id giusto, il match non si rifà — si salta.
+
 #### Le altre librerie (step 9): il problema è il credenziale, non l'API
 
 Steam è l'eccezione, non il modello: una chiave applicativa nostra, un profilo
@@ -697,6 +743,11 @@ la spazzata ci riprova per sempre.
      `games`** — con i loro backlog, possessi ed `external_ids` — e le due righe
      di backlog dello stesso utente, decidendo quale stato, quale voto e quali tag
      sopravvivono. È anche l'evento che riapre un `game_sources` in `not_found`.
+
+     E non è solo `games.igdbId`: quando l'errore viene da un import la riga
+     sbagliata è quella di `external_ids`, e finché resta lì togliere il gioco
+     dal backlog non serve a niente — il prossimo import lo ricollega identico.
+     Vedi «Un collegamento sbagliato non si disfa togliendo il gioco».
 
 6. **Recupero HLTB**
 7. **Filtraggio** — ricerca e filtraggio dei giochi, con possibilità di

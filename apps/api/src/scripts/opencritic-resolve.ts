@@ -13,7 +13,7 @@ import { resolveOpenCriticIds } from '../services/opencritic-resolve';
 // Nel worker gira da solo una volta a settimana; questo serve al primo giro,
 // quando il catalogo è pieno e nessuno è ancora agganciato.
 
-const limit = Number(process.argv[2] ?? 500);
+const limit = Number(process.argv[2] ?? 200);
 const report = await resolveOpenCriticIds(limit);
 
 console.log(
