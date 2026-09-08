@@ -18,17 +18,41 @@
 //   `__NEXT_DATA__` porta più roba della ricerca: i tempi con i conteggi, i
 //   flag su che modalità il gioco abbia, e l'appid Steam — che è ciò che
 //   permette di *verificare* un match invece di sperarci.
+// - **il path che cambia**. HLTB ruota l'endpoint di ricerca ogni tanto e senza
+//   dirlo: era `/api/find`, poi `/api/bleed`, oggi `/api/search/site`. Quando
+//   succede tutto risponde 404 e il client se lo ritrova da solo — vedi la
+//   sezione in fondo.
 
 const BASE_URL = 'https://howlongtobeat.com';
 
 /**
- * HLTB ruota il path dell'endpoint di ricerca ogni tanto (era `/api/find`, oggi
- * è `/api/bleed`). Quando succede tutte le richieste rispondono 404: si cambia
- * questa variabile senza toccare il codice, e nel frattempo `game_sources` porta
- * scritto perché i job falliscono.
+ * Il path al momento in cui questa riga è stata scritta. Non è la verità, è il
+ * punto di partenza: quando HLTB lo ruota, `discoverSearchPath` trova quello
+ * nuovo e questo resta lì a invecchiare senza fare danni.
  */
+const DEFAULT_API_PATH = '/api/search/site';
+
+/** Ciò che la scoperta ha trovato: in memoria, e per questo processo soltanto. */
+let discoveredPath: string | null = null;
+
+/**
+ * `HLTB_API_PATH` non sparisce e **vince su tutto**: è la scappatoia per il
+ * giorno in cui la scoperta si sbaglia o non trova niente. Va lasciata vuota se
+ * non serve, perché scritta spegne la scoperta — l'ultima parola ce l'ha chi
+ * l'ha messa lì, non un'euristica.
+ */
+function pinnedPath() {
+  const pinned = process.env.HLTB_API_PATH?.trim();
+  return pinned ? pinned : null;
+}
+
+/** Il path che il client sta usando adesso. */
+export function hltbApiPath() {
+  return pinnedPath() ?? discoveredPath ?? DEFAULT_API_PATH;
+}
+
 function searchUrl() {
-  return `${BASE_URL}${process.env.HLTB_API_PATH ?? '/api/bleed'}`;
+  return `${BASE_URL}${hltbApiPath()}`;
 }
 
 // Dichiararsi è la cosa corretta da fare e funziona: la sessione la si ottiene
@@ -81,10 +105,13 @@ function baseHeaders() {
  */
 function sessionFailure(status: number) {
   if (status === 404) {
-    return (
-      `l'endpoint di ricerca non esiste più (${process.env.HLTB_API_PATH ?? '/api/bleed'}): ` +
-      'HLTB lo ha ruotato, va rimesso il path nuovo in HLTB_API_PATH'
-    );
+    // Le due frasi vogliono due gesti diversi: se il path è fissato a mano la
+    // scoperta non è nemmeno partita, ed è quella variabile ad andare svuotata.
+    return pinnedPath()
+      ? `l'endpoint di ricerca non esiste più (${hltbApiPath()}): è HLTB_API_PATH ` +
+          'a tenercelo fisso, va svuotata e lasciata fare alla scoperta'
+      : `l'endpoint di ricerca non esiste più (${hltbApiPath()}): HLTB lo ha ` +
+          'ruotato e la scoperta non ne ha trovato uno che funzioni';
   }
   if (status === 403) {
     return "sessione rifiutata: è scaduta, o è cambiato l'IP pubblico del server a cui era legata";
@@ -93,39 +120,61 @@ function sessionFailure(status: number) {
   return `risposta inattesa da /init (${status})`;
 }
 
-async function fetchSession(): Promise<Session> {
+type SessionBody = Partial<{ token: string; hpKey: string; hpVal: string }>;
+
+function parseSession(body: unknown): Session | null {
+  const { token, hpKey, hpVal } = (body ?? {}) as SessionBody;
+  return token && hpKey && hpVal ? { token, hpKey, hpVal } : null;
+}
+
+/**
+ * Chiede una sessione al `/init` di un path qualunque.
+ *
+ * Prende l'url invece di leggerselo perché la scoperta minta sui **candidati**,
+ * che non sono ancora il path del client: è lo stesso codice a decidere se un
+ * candidato vale e a servire le ricerche vere, o si validerebbe una cosa e se
+ * ne userebbe un'altra.
+ */
+async function mint(url: string) {
   // Anche `/init` è traffico verso HLTB, e va contato: passa dallo stesso
   // ritmatore delle ricerche, o un rinnovo si infilerebbe fra due richieste
   // distanziate.
   await acquire();
-  const response = await fetch(`${searchUrl()}/init?t=${Date.now()}`, {
-    headers: baseHeaders(),
-  });
+  return fetch(`${url}/init?t=${Date.now()}`, { headers: baseHeaders() });
+}
+
+async function fetchSession(): Promise<Session> {
+  let response = await mint(searchUrl());
+
+  // Un 404 già qui è il caso del processo che parte **dopo** la rotazione: non
+  // c'è nessuna sessione da buttare, il path è sbagliato dal primo istante.
+  if (response.status === 404 && (await rediscover())) {
+    response = await mint(searchUrl());
+  }
 
   if (!response.ok) {
     throw new Error(`HLTB: ${sessionFailure(response.status)}`);
   }
 
-  const body = (await response.json()) as Partial<{
-    token: string;
-    hpKey: string;
-    hpVal: string;
-  }>;
-
-  if (!body.token || !body.hpKey || !body.hpVal) {
+  const minted = parseSession(await response.json());
+  if (!minted) {
     throw new Error('HLTB: risposta di /init senza token');
   }
 
-  session = { token: body.token, hpKey: body.hpKey, hpVal: body.hpVal };
-  return session;
+  session = minted;
+  return minted;
 }
 
 function getSession() {
   return session ? Promise.resolve(session) : fetchSession();
 }
 
-function send(payload: Record<string, unknown>, current: Session) {
-  return fetch(searchUrl(), {
+function send(
+  payload: Record<string, unknown>,
+  current: Session,
+  url = searchUrl(),
+) {
+  return fetch(url, {
     method: 'POST',
     headers: {
       ...baseHeaders(),
@@ -140,18 +189,31 @@ function send(payload: Record<string, unknown>, current: Session) {
   });
 }
 
-async function post<T>(payload: Record<string, unknown>): Promise<T> {
+/** Una ricerca con la sessione che c'è, rinnovandola una volta sola se scaduta. */
+async function attempt(payload: Record<string, unknown>) {
   const current = await getSession();
   await acquire();
-  let response = await send(payload, current);
+  const response = await send(payload, current);
 
   // La sessione scade, e scade anche se cambia l'IP pubblico del server. Si
   // butta e si riprova una volta sola, come il 401 di IGDB.
-  if (response.status === 403) {
+  if (response.status !== 403) return response;
+
+  session = null;
+  const rinnovata = await fetchSession();
+  await acquire();
+  return send(payload, rinnovata);
+}
+
+async function post<T>(payload: Record<string, unknown>): Promise<T> {
+  let response = await attempt(payload);
+
+  // 404 con una sessione in mano: la rotazione è avvenuta a lavoro iniziato.
+  // La sessione va buttata comunque — è stata mintata su un endpoint che non
+  // c'è più, e non si dà per scontato che valga anche sul nuovo.
+  if (response.status === 404 && (await rediscover())) {
     session = null;
-    const rinnovata = await fetchSession();
-    await acquire();
-    response = await send(payload, rinnovata);
+    response = await attempt(payload);
   }
 
   if (!response.ok) {
@@ -190,11 +252,13 @@ export type HltbSearchHit = {
   releaseYear: number | null;
 };
 
-export async function searchHltbGames(
-  term: string,
-  size = 20,
-): Promise<HltbSearchHit[]> {
-  const body = await post<{ data?: HltbSearchRow[] }>({
+/**
+ * Il corpo di una ricerca. Estratto perché **la scoperta manda esattamente
+ * questo** ai candidati: validare con una richiesta diversa da quella vera
+ * vorrebbe dire promuovere un path che poi fallisce al primo job.
+ */
+function searchPayload(term: string, size: number) {
+  return {
     searchType: 'games',
     // HLTB vuole i termini già spezzati, non la stringa intera.
     searchTerms: term.split(' ').filter(Boolean),
@@ -222,7 +286,16 @@ export async function searchHltbGames(
       randomizer: 0,
     },
     useCache: true,
-  });
+  };
+}
+
+export async function searchHltbGames(
+  term: string,
+  size = 20,
+): Promise<HltbSearchHit[]> {
+  const body = await post<{ data?: HltbSearchRow[] }>(
+    searchPayload(term, size),
+  );
 
   return (body.data ?? []).map((row) => ({
     hltbId: row.game_id,
@@ -346,4 +419,209 @@ export async function fetchHltbGameDetail(
       .filter((appId): appId is number => Boolean(appId))
       .map(String),
   };
+}
+
+// --- Scoperta dell'endpoint: da un sito che è cambiato al path nuovo ---
+//
+// Next elenca ogni route che serve, come stringa in chiaro, dentro
+// `_buildManifest.js`. Il candidato è la route che ha una sorella `/init`, cioè
+// l'accoppiata che questo client dà per scontata: su 90 route `/api/` ne resta
+// una sola, e i quasi-omonimi (`/api/forum/search`, `/api/search/users`) cadono
+// perché il mint non ce l'hanno.
+//
+// Ma la lista è solo un indizio: **a decidere è una ricerca vera**. Un path che
+// risponde non è ancora un path che cerca giochi, e promuoverlo per un 200
+// vorrebbe dire scoprire l'errore un job alla volta, dentro `game_sources`.
+//
+// È la strada di RomM (`utils/update_hltb_api_url.py`), che però la percorre in
+// CI una volta a settimana e ne scrive il risultato in un file servito a tutte
+// le installazioni. Quel file non ci serve: non abbiamo una flotta da servire e
+// ce l'avremmo comunque stantio — il loro è rimasto tre mesi su `/api/bleed`.
+// La stessa funzione gira qui quando un job si becca il 404, e a mano da
+// `pnpm --filter api hltb:endpoint`.
+
+/** Il manifest è linkato dalla homepage, con dentro l'id della build. */
+const BUILD_MANIFEST =
+  /src="([^"]*\/_next\/static\/[^"]+\/_buildManifest\.js)"/;
+
+const API_ROUTE = /["'](\/api\/[^"']*)["']/g;
+
+/** Termine con troppi risultati noti perché uno zero sia colpa sua e non del path. */
+const VALIDATION_TERM = 'mario';
+
+/** Dopo un tentativo a vuoto si sta zitti un po': vedi `rediscover`. */
+const DISCOVERY_COOLDOWN_MS = 10 * 60 * 1000;
+
+let discovery: Promise<boolean> | null = null;
+let discoveryRetryAt = 0;
+
+/**
+ * I path che dal manifest sembrano l'endpoint di ricerca, i più promettenti
+ * prima.
+ *
+ * Pura e senza rete, che è il solo modo di provarla: la parte che sceglie è
+ * questa, quella che valida ha bisogno di HLTB acceso.
+ */
+export function hltbSearchCandidates(manifest: string): string[] {
+  const routes = new Set<string>();
+  for (const match of manifest.matchAll(API_ROUTE)) {
+    if (match[1]) routes.add(match[1]);
+  }
+
+  return (
+    [...routes]
+      .filter((route) => routes.has(`${route}/init`))
+      // Avere "search" nel nome non basta a sceglierlo — a quello ci pensa la
+      // ricerca vera — ma basta a provarlo per primo e risparmiare due giri.
+      .sort(
+        (a, b) => Number(b.includes('search')) - Number(a.includes('search')),
+      )
+  );
+}
+
+async function fetchBuildManifest(log: (message: string) => void) {
+  await acquire();
+  const homepage = await fetch(`${BASE_URL}/`, { headers: baseHeaders() });
+  if (!homepage.ok) {
+    throw new Error(`homepage: ${homepage.status}`);
+  }
+
+  const match = BUILD_MANIFEST.exec(await homepage.text());
+  if (!match?.[1]) {
+    log('la homepage non linka nessun _buildManifest.js');
+    return null;
+  }
+
+  const url = new URL(match[1], BASE_URL).toString();
+  log(`manifest: ${url}`);
+
+  await acquire();
+  // Gli header di `baseHeaders` non sono decorazione qui: il manifest risponde
+  // **403** a chi non si dichiara, al contrario della homepage che passa.
+  const manifest = await fetch(url, { headers: baseHeaders() });
+  if (!manifest.ok) {
+    throw new Error(`manifest: ${manifest.status}`);
+  }
+
+  return manifest.text();
+}
+
+/** Il candidato serve davvero la ricerca dei giochi, non solo una risposta. */
+async function servesSearch(path: string, log: (message: string) => void) {
+  const url = `${BASE_URL}${path}`;
+
+  const minted = await mint(url);
+  if (!minted.ok) {
+    log(`scartato ${path}: /init risponde ${minted.status}`);
+    return false;
+  }
+
+  const candidate = parseSession(await minted.json());
+  if (!candidate) {
+    log(`scartato ${path}: /init non emette una sessione`);
+    return false;
+  }
+
+  await acquire();
+  const response = await send(
+    searchPayload(VALIDATION_TERM, 5),
+    candidate,
+    url,
+  );
+  if (!response.ok) {
+    log(`scartato ${path}: la ricerca risponde ${response.status}`);
+    return false;
+  }
+
+  // Si guarda **la forma che `searchHltbGames` legge**, non che risponda 200:
+  // una route che esiste e restituisce altro passerebbe qualunque controllo più
+  // debole di questo, e sarebbe promossa.
+  const rows = ((await response.json()) as { data?: unknown }).data;
+  if (!Array.isArray(rows) || rows.length === 0) {
+    log(`scartato ${path}: la ricerca non trova niente`);
+    return false;
+  }
+
+  const giochi = rows.every(
+    (row) =>
+      typeof row === 'object' &&
+      row !== null &&
+      'game_id' in row &&
+      'game_name' in row,
+  );
+  if (!giochi) {
+    log(`scartato ${path}: i risultati non sono giochi`);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Il path dell'endpoint di ricerca, ritrovato dal sito. Null se non ce n'è
+ * nessuno che regga: è un esito, non un guasto: chi chiama tiene quello che ha.
+ */
+export async function discoverSearchPath(
+  log: (message: string) => void = () => {},
+): Promise<string | null> {
+  const manifest = await fetchBuildManifest(log);
+  if (!manifest) return null;
+
+  const candidates = hltbSearchCandidates(manifest);
+  if (candidates.length === 0) {
+    log('nessuna route del manifest ha un /init accanto');
+    return null;
+  }
+  log(`candidati: ${candidates.join(', ')}`);
+
+  for (const path of candidates) {
+    try {
+      if (await servesSearch(path, log)) {
+        log(`confermato: ${path}`);
+        return path;
+      }
+    } catch (error) {
+      // Un candidato che esplode è un candidato scartato, non una scoperta
+      // finita: quello dopo potrebbe essere quello giusto.
+      log(`scartato ${path}: ${String(error)}`);
+    }
+  }
+
+  log('nessun candidato serve la ricerca dei giochi');
+  return null;
+}
+
+/**
+ * Riscopre l'endpoint dopo un 404, e dice se **è cambiato** — solo allora ha
+ * senso riprovare la richiesta che ha innescato tutto.
+ *
+ * Due cautele, entrambe per il caso vero: mille job in coda che falliscono
+ * insieme. La scoperta è a **volo singolo**, o ognuno ripagherebbe le sue
+ * quattro richieste; e un tentativo che non porta a niente lascia un silenzio,
+ * o la coda intera si trasformerebbe in una raffica di scoperte contro un sito
+ * che è semplicemente giù.
+ */
+function rediscover(): Promise<boolean> {
+  if (pinnedPath()) return Promise.resolve(false);
+  if (discovery) return discovery;
+  if (Date.now() < discoveryRetryAt) return Promise.resolve(false);
+
+  const precedente = hltbApiPath();
+
+  discovery = discoverSearchPath((message) => console.log(`HLTB: ${message}`))
+    .catch((error) => {
+      console.log(`HLTB: scoperta dell'endpoint fallita: ${String(error)}`);
+      return null;
+    })
+    .then((found) => {
+      const cambiato = Boolean(found) && found !== precedente;
+      if (found) discoveredPath = found;
+      if (!cambiato) discoveryRetryAt = Date.now() + DISCOVERY_COOLDOWN_MS;
+      return cambiato;
+    })
+    .finally(() => {
+      discovery = null;
+    });
+
+  return discovery;
 }

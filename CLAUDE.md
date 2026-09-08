@@ -110,6 +110,21 @@ residui dello scaffold `create-turbo`.
   del plugin Playnite), risultati **sempre cachati in DB**. Mai scraping a runtime
   su richiesta utente. (ROMM gestisce le [API HLTB](https://github.com/rommapp/romm/blob/master/backend/handler/metadata/hltb_handler.py))
 
+  Il path dell'endpoint di ricerca **ruota senza preavviso** — `/api/find`,
+  `/api/bleed`, oggi `/api/search/site` — e quando succede ogni job risponde
+  404. Non è una variabile da rimettere a mano: il client legge le route dal
+  `_buildManifest.js` del sito, prende quella che ha una sorella `/init` e la
+  promuove **solo dopo una ricerca vera** di cui controlla la forma. Che la
+  ricerca sia vera è il punto: una route che risponde 200 e restituisce altro
+  passerebbe qualunque controllo più debole, e l'errore si scoprirebbe un job
+  alla volta dentro `game_sources`. `HLTB_API_PATH` resta come scappatoia e
+  vince su tutto — scritta, la scoperta non parte nemmeno.
+
+  RomM fa la stessa scoperta ma in CI, e ne serve il risultato a tutte le
+  installazioni da un file nel repo. Quella metà lì non ci serve e non va
+  copiata: non abbiamo una flotta, e il loro file è rimasto tre mesi fermo su
+  `/api/bleed` mentre HLTB era già altrove.
+
 ## Architettura del layer di raccomandazione
 
 RAG, non fine-tuning. Il prompt si costruisce a runtime interrogando il DB
@@ -901,6 +916,7 @@ di turbo, perché non fanno parte di nessuna pipeline:
 | `pnpm --filter api platforms:audit [--all]` | confronta la tabella `platforms` con l'elenco vero di IGDB. Segnala, non scrive: le correzioni vanno in una migration                                         |
 | `pnpm --filter api steam:probe [steamid64]` | giro a vuoto dell'import Steam: legge la libreria e prova a risolverla senza toccare il DB                                                                    |
 | `pnpm --filter api hltb:probe [n\|titolo]`  | giro a vuoto del match HLTB: cerca e punteggia senza scrivere. La riga che conta è quella dei "da sistemare"                                                  |
+| `pnpm --filter api hltb:endpoint`           | ritrova il path dell'endpoint di ricerca HLTB dalle route del sito e lo valida con una ricerca vera. Non scrive: stampa. Lo stesso che il client fa da sé sul 404 |
 | `pnpm --filter api opencritic:resolve [n]`  | aggancia in blocco gli id OpenCritic chiedendoli a Wikidata. Non chiama OpenCritic e non spende budget: scrive solo dove guardare                             |
 | `pnpm --filter api metacritic:probe [n\|titolo]` | giro a vuoto del match Metacritic. Mostra anche se il link della scheda Steam regge e quali piattaforme non sappiamo tradurre                            |
 | `pnpm --filter api psn:probe [npsso]`       | giro a vuoto dell'import PSN: identità, libreria, piattaforme e ore, senza toccare il DB. Vuole l'npsso (o `PSN_TEST_NPSSO`) e usa `resolveByName`, cioè il matcher vero  |
