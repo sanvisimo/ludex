@@ -2,11 +2,7 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  createGame,
-  createUser,
-  linkStoreAccount,
-} from '../../test/factories';
+import { createGame, createUser, linkStoreAccount } from '../../test/factories';
 import { findIgdbGameById } from '../external/igdb';
 import {
   dismissUnresolvedImport,
@@ -24,9 +20,16 @@ const mockedFindById = vi.mocked(findIgdbGameById);
 
 async function pending(
   userId: string,
-  over: { externalId?: string; name?: string; playtimeMinutes?: number } = {},
+  over: {
+    externalId?: string;
+    name?: string;
+    playtimeMinutes?: number;
+    accountId?: string;
+  } = {},
 ) {
-  const account = await linkStoreAccount(userId, 'steam');
+  const account = over.accountId
+    ? { id: over.accountId }
+    : await linkStoreAccount(userId, 'steam');
   const [row] = await db
     .insert(schema.unresolvedImports)
     .values({
@@ -42,6 +45,35 @@ async function pending(
 }
 
 describe('unresolved imports', () => {
+  it("chiama l'account come l'utente, poi come il negozio, poi con l'id", async () => {
+    // La precedenza è quella di `storeAccountName`, e questa lista è l'unico
+    // posto dell'app dove si vede il nome di un account accanto a uno scarto.
+    // Prima la query se la riscriveva in SQL con un coalesce a due termini, e
+    // sul caso di partenza — nessuna etichetta, nessun nome dal negozio, che è
+    // esattamente com'è un account appena collegato quando la chiamata al
+    // profilo non è riuscita — rendeva **null** una cosa dichiarata stringa.
+    const account = await linkStoreAccount(userId, 'steam', 'acct-42');
+    await pending(userId, { accountId: account.id });
+
+    const nome = async () =>
+      (await listUnresolvedImports(userId))[0]?.storeName;
+    const rinomina = (values: { label?: string; displayName?: string }) =>
+      db
+        .update(schema.storeAccounts)
+        .set(values)
+        .where(eq(schema.storeAccounts.id, account.id));
+
+    expect(await nome()).toBe('acct-42');
+
+    await rinomina({ displayName: 'sanvi' });
+    expect(await nome()).toBe('sanvi');
+
+    // L'etichetta vince sul nome del negozio: è l'unica cosa che distingue due
+    // account che il negozio chiama allo stesso modo.
+    await rinomina({ label: 'quello di famiglia' });
+    expect(await nome()).toBe('quello di famiglia');
+  });
+
   let userId: string;
 
   beforeEach(async () => {
@@ -55,6 +87,7 @@ describe('unresolved imports', () => {
       name: 'Dungeon Alchemist',
       releaseYear: null,
       developer: null,
+      cover: null,
       gameType: null,
       totalRatingCount: null,
     });
@@ -78,6 +111,7 @@ describe('unresolved imports', () => {
       name: 'Dungeon Alchemist',
       releaseYear: null,
       developer: null,
+      cover: null,
       gameType: null,
       totalRatingCount: null,
     });
@@ -162,6 +196,7 @@ describe('unresolved imports', () => {
       name: 'Dying Light 2: Stay Human',
       releaseYear: null,
       developer: null,
+      cover: null,
       gameType: null,
       totalRatingCount: null,
     });

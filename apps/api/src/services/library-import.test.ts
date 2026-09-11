@@ -34,6 +34,7 @@ function hit(over: {
     name: over.name,
     releaseYear: over.releaseYear ?? null,
     developer: null,
+    cover: null,
     gameType: over.gameType ?? null,
     totalRatingCount: over.totalRatingCount ?? null,
   };

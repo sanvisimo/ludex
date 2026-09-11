@@ -117,6 +117,8 @@ type IgdbGame = {
   first_release_date?: number;
   game_type?: number;
   total_rating_count?: number;
+  // `cover.image_id` è ciò che SEARCH_FIELDS chiede: la URL si compone da lì.
+  cover?: { image_id: string };
   involved_companies?: {
     developer: boolean;
     company?: { name: string };

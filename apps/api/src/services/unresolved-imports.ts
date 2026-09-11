@@ -1,5 +1,6 @@
+import { storeAccountName } from '@repo/contracts';
 import { db, schema } from '@repo/db';
-import { and, asc, eq, sql } from '@repo/db/orm';
+import { and, asc, eq } from '@repo/db/orm';
 
 import {
   ensureBacklogEntries,
@@ -12,21 +13,45 @@ import { platformFor } from './library-import';
 /**
  * Le voci di libreria che l'import non ha saputo legare a un gioco.
  */
-export function listUnresolvedImports(userId: string) {
-  return db
+export async function listUnresolvedImports(userId: string) {
+  // Le tre colonne del nome si portano su e si compongono in JS, invece di un
+  // `coalesce` in SQL: la precedenza `label → display_name → external_account_id`
+  // sta scritta in `storeAccountName` dentro packages/contracts, ed è l'unico
+  // posto dove deve stare. Un coalesce a due termini è la stessa regola scritta
+  // male una seconda volta, e infatti rendeva null il nome di un account senza
+  // etichetta di cui il negozio non ci ha detto come si chiama.
+  const rows = await db
     .select({
       id: schema.unresolvedImports.id,
       store: schema.unresolvedImports.store,
-      storeName: sql`coalesce(store_accounts.label, store_accounts.display_name)`,
+      label: schema.storeAccounts.label,
+      displayName: schema.storeAccounts.displayName,
+      externalAccountId: schema.storeAccounts.externalAccountId,
       externalId: schema.unresolvedImports.externalId,
       name: schema.unresolvedImports.name,
       playtimeMinutes: schema.unresolvedImports.playtimeMinutes,
       lastPlayedAt: schema.unresolvedImports.lastPlayedAt,
     })
     .from(schema.unresolvedImports)
-    .leftJoin(schema.storeAccounts, eq(schema.unresolvedImports.storeAccountId, schema.storeAccounts.id))
+    // La FK è NOT NULL, quindi la riga dell'account c'è sempre: la JOIN è
+    // sinistra solo per non far sparire uno scarto se quel vincolo cambiasse.
+    .leftJoin(
+      schema.storeAccounts,
+      eq(schema.unresolvedImports.storeAccountId, schema.storeAccounts.id),
+    )
     .where(eq(schema.unresolvedImports.userId, userId))
     .orderBy(asc(schema.unresolvedImports.name));
+
+  return rows.map(
+    ({ label, displayName, externalAccountId, ...unresolved }) => ({
+      ...unresolved,
+      storeName: storeAccountName({
+        label,
+        displayName,
+        externalAccountId: externalAccountId ?? '',
+      }),
+    }),
+  );
 }
 
 function findOwn(userId: string, id: string) {
