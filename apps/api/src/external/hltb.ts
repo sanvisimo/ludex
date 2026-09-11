@@ -23,6 +23,8 @@
 //   succede tutto risponde 404 e il client se lo ritrova da solo — vedi la
 //   sezione in fondo.
 
+import { cacheGet, cacheSet } from '../lib/redis';
+
 const BASE_URL = 'https://howlongtobeat.com';
 
 /**
@@ -32,7 +34,11 @@ const BASE_URL = 'https://howlongtobeat.com';
  */
 const DEFAULT_API_PATH = '/api/search/site';
 
-/** Ciò che la scoperta ha trovato: in memoria, e per questo processo soltanto. */
+/**
+ * Ciò che la scoperta ha trovato. In memoria per questo processo, ma **non solo
+ * qui**: passa anche da Redis, che è l'unico posto che il server HTTP e il
+ * worker condividono davvero — vedi la sezione della scoperta in fondo.
+ */
 let discoveredPath: string | null = null;
 
 /**
@@ -206,6 +212,10 @@ async function attempt(payload: Record<string, unknown>) {
 }
 
 async function post<T>(payload: Record<string, unknown>): Promise<T> {
+  // Unico punto d'ingresso del traffico di ricerca, quindi l'unico posto dove
+  // valga la pena chiedersi se qualcun altro ha già fatto il lavoro.
+  await primeFromCache();
+
   let response = await attempt(payload);
 
   // 404 con una sessione in mano: la rotazione è avvenuta a lavoro iniziato.
@@ -449,11 +459,57 @@ const API_ROUTE = /["'](\/api\/[^"']*)["']/g;
 /** Termine con troppi risultati noti perché uno zero sia colpa sua e non del path. */
 const VALIDATION_TERM = 'mario';
 
-/** Dopo un tentativo a vuoto si sta zitti un po': vedi `rediscover`. */
-const DISCOVERY_COOLDOWN_MS = 10 * 60 * 1000;
+/**
+ * Le due chiavi condivise fra il server HTTP e il worker. Stanno in Redis e non
+ * su disco perché i due processi si deployano separati: un file lo
+ * condividerebbero solo finché stanno sulla stessa macchina, cioè solo in
+ * sviluppo, e smetterebbe di funzionare esattamente quando serve.
+ *
+ * E stanno in Redis e non in Postgres perché il path **è una cache**: si
+ * ottiene di nuovo interrogando il sito, vale finché è fresco, e sbagliarlo non
+ * lascia niente dietro di sé.
+ */
+const PATH_KEY = 'hltb:search-path';
+const COOLDOWN_KEY = 'hltb:discovery-cooldown';
+
+/**
+ * Il TTL non è prudenza, è ciò che rende la cache una cache: scaduto, il primo
+ * processo che riparte ricontrolla il sito invece di credere a una riga scritta
+ * chissà quando.
+ */
+const PATH_TTL_SECONDS = 7 * 24 * 60 * 60;
+
+/** Dopo un tentativo a vuoto si sta zitti un po': vedi `runDiscovery`. */
+const COOLDOWN_SECONDS = 10 * 60;
 
 let discovery: Promise<boolean> | null = null;
 let discoveryRetryAt = 0;
+let primed: Promise<void> | null = null;
+
+/**
+ * Adotta, **una volta sola per processo**, il path che un altro processo ha già
+ * scoperto.
+ *
+ * È la metà silenziosa della condivisione: senza, un worker appena riavviato
+ * ripartirebbe dal default, prenderebbe il suo 404 e ripagherebbe una scoperta
+ * intera per arrivare a una cosa che era già scritta.
+ */
+function primeFromCache(): Promise<void> {
+  primed ??= (async () => {
+    // Fissato a mano vuol dire che nessuno deve metterci bocca, Redis compreso.
+    if (pinnedPath()) return;
+
+    const cached = await cacheGet(PATH_KEY);
+    if (cached && !discoveredPath) discoveredPath = cached;
+  })();
+
+  return primed;
+}
+
+/** Il path che un altro processo ha trovato, per chi vuole guardare: `hltb:endpoint`. */
+export function cachedHltbApiPath() {
+  return cacheGet(PATH_KEY);
+}
 
 /**
  * I path che dal manifest sembrano l'endpoint di ricerca, i più promettenti
@@ -603,25 +659,51 @@ export async function discoverSearchPath(
  */
 function rediscover(): Promise<boolean> {
   if (pinnedPath()) return Promise.resolve(false);
-  if (discovery) return discovery;
-  if (Date.now() < discoveryRetryAt) return Promise.resolve(false);
 
-  const precedente = hltbApiPath();
-
-  discovery = discoverSearchPath((message) => console.log(`HLTB: ${message}`))
-    .catch((error) => {
-      console.log(`HLTB: scoperta dell'endpoint fallita: ${String(error)}`);
-      return null;
-    })
-    .then((found) => {
-      const cambiato = Boolean(found) && found !== precedente;
-      if (found) discoveredPath = found;
-      if (!cambiato) discoveryRetryAt = Date.now() + DISCOVERY_COOLDOWN_MS;
-      return cambiato;
-    })
-    .finally(() => {
-      discovery = null;
-    });
+  discovery ??= runDiscovery().finally(() => {
+    discovery = null;
+  });
 
   return discovery;
+}
+
+async function runDiscovery(): Promise<boolean> {
+  const precedente = hltbApiPath();
+
+  // Prima di andare su HLTB si guarda se qualcun altro l'ha già fatto: una GET
+  // su Redis contro quattro richieste, ed è la ragione per cui questa cache è
+  // condivisa e non locale. Il caso è quello vero — il worker scopre, il server
+  // se lo trova fatto.
+  const condiviso = await cacheGet(PATH_KEY);
+  if (condiviso && condiviso !== precedente) {
+    discoveredPath = condiviso;
+    console.log(`HLTB: endpoint preso dalla cache condivisa: ${condiviso}`);
+    return true;
+  }
+
+  // Due freni e servono entrambi: quello in memoria regge quando Redis è giù,
+  // quello condiviso regge il worker che riparte in loop — che è proprio il
+  // caso in cui una variabile di processo riparte da zero e il freno non c'è.
+  if (Date.now() < discoveryRetryAt) return false;
+  if (await cacheGet(COOLDOWN_KEY)) return false;
+
+  const found = await discoverSearchPath((message) =>
+    console.log(`HLTB: ${message}`),
+  ).catch((error: unknown) => {
+    console.log(`HLTB: scoperta dell'endpoint fallita: ${String(error)}`);
+    return null;
+  });
+
+  if (found) discoveredPath = found;
+
+  if (found && found !== precedente) {
+    await cacheSet(PATH_KEY, found, PATH_TTL_SECONDS);
+    return true;
+  }
+
+  // Anche una scoperta *riuscita* che conferma il path che sta dando 404 è un
+  // buco nell'acqua: riprovare sarebbe un altro 404.
+  discoveryRetryAt = Date.now() + COOLDOWN_SECONDS * 1000;
+  await cacheSet(COOLDOWN_KEY, '1', COOLDOWN_SECONDS);
+  return false;
 }
