@@ -80,7 +80,7 @@ export function StoreLinkForm({
 
       <div className="grid gap-2">
         <Label htmlFor={`collega-${store}`}>
-          {loginUrl.data?.url ? t('pasteStep') : tStore('inputLabel')}
+          {loginUrl.data?.url ? t('pasteStep', { address: store === 'psn' ? t('pasteContent') : t('pasteAddress') }) : tStore('inputLabel')}
         </Label>
         <div className="flex flex-wrap gap-2">
           <Input

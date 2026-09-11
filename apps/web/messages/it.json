@@ -265,7 +265,9 @@
       "renameCancel": "Annulla",
       "renameFailed": "Non sono riuscito a rinominare l’account",
       "openLogin": "1. Apri il login",
-      "pasteStep": "2. Incolla qui l'indirizzo"
+      "pasteStep": "2. Incolla qui {address}",
+      "pasteAddress": "l’indirizzo",
+      "pasteContent": "il contenuto della scheda"
     },
     "add": {
       "title": "Aggiungi un account",
@@ -296,7 +298,7 @@
       },
       "epic": {
         "inputLabel": "Codice di autorizzazione",
-        "placeholder": "{\"redirectUrl\":\"…\",\"authorizationCode\":\"…\"}",
+        "placeholder": "'{\"redirectUrl\":\"…\",\"authorizationCode\":\"…\"}'",
         "hint": "Apri il login, entra con il tuo account Epic e poi copia il JSON che compare a schermo — va bene tutto quanto, non serve estrarne il codice. Va fatto una volta sola."
       },
       "amazon": {
@@ -306,8 +308,8 @@
       },
       "psn": {
         "inputLabel": "Risposta della pagina ssocookie",
-        "placeholder": "{\"npsso\":\"…\"}",
-        "hint": "Entra prima su playstation.com col browser e spunta «Fidati di questo browser», poi apri il collegamento qui sopra: la pagina risponde con una riga tipo {\"npsso\":\"…\"}. Incollala tutta, o solo il valore. Se vedi npsso vuoto o un errore, vuol dire che il login non è ancora andato. Attenzione: su PlayStation il collegamento dura una decina di giorni, poi va rifatto."
+        "placeholder": "'{\"npsso\":\"…\"}'",
+        "hint": "Entra prima su playstation.com col browser e spunta «Fidati di questo browser», poi apri il collegamento qui sopra: la pagina risponde con una riga tipo '{\"npsso\":\"…\"}'. Incollala tutta, o solo il valore. Se vedi npsso vuoto o un errore, vuol dire che il login non è ancora andato. Attenzione: su PlayStation il collegamento dura una decina di giorni, poi va rifatto."
       }
     },
     "unresolved": {

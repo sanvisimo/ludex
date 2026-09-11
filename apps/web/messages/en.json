@@ -265,7 +265,9 @@
       "renameCancel": "Cancel",
       "renameFailed": "Could not rename the account",
       "openLogin": "1. Open the login page",
-      "pasteStep": "2. Paste the address here"
+      "pasteStep": "2. Paste here {address}",
+      "pasteAddress": "the address",
+      "pasteContent": "the content of the tab"
     },
     "add": {
       "title": "Add an account",
@@ -296,7 +298,7 @@
       },
       "epic": {
         "inputLabel": "Authorization code",
-        "placeholder": "{\"redirectUrl\":\"…\",\"authorizationCode\":\"…\"}",
+        "placeholder": "'{\"redirectUrl\":\"…\",\"authorizationCode\":\"…\"}'",
         "hint": "Open the login page, sign in with your Epic account, then copy the JSON shown on screen — the whole thing is fine, no need to pick the code out of it. You only do this once."
       },
       "amazon": {
@@ -306,8 +308,8 @@
       },
       "psn": {
         "inputLabel": "ssocookie page response",
-        "placeholder": "{\"npsso\":\"…\"}",
-        "hint": "First sign in to playstation.com in your browser and tick “Trust this browser”, then open the link above: the page answers with a line like {\"npsso\":\"…\"}. Paste the whole thing, or just the value. An empty npsso or an error means you are not signed in yet. Note: on PlayStation the connection lasts about ten days, then you have to do this again."
+        "placeholder": "'{\"npsso\":\"…\"}'",
+        "hint": "First sign in to playstation.com in your browser and tick “Trust this browser”, then open the link above: the page answers with a line like '{\"npsso\":\"…\"}'. Paste the whole thing, or just the value. An empty npsso or an error means you are not signed in yet. Note: on PlayStation the connection lasts about ten days, then you have to do this again."
       }
     },
     "unresolved": {

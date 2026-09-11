@@ -3,7 +3,7 @@
 import type { LinkableStore, Store, StoreAccount } from '@repo/contracts';
 import { linkableStoreValues, storeAccountName } from '@repo/contracts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useFormatter, useNow, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -42,6 +42,9 @@ export function StoreAccountCard({
 }) {
   const t = useTranslations('account.store');
   const format = useFormatter();
+  // Il riferimento di «X fa» è esplicito e avanza da sé: la pagina resta aperta
+  // mentre l'import gira, e un «3 minuti fa» fermo diventerebbe falso.
+  const now = useNow({ updateInterval: 60_000 });
   const errorMessage = useApiErrorMessage();
   const storeLabels = useStoreLabels();
   const queryClient = useQueryClient();
@@ -107,7 +110,7 @@ export function StoreAccountCard({
               ? t('syncing')
               : account.lastSyncAt
                 ? t('lastSync', {
-                    when: format.relativeTime(account.lastSyncAt),
+                    when: format.relativeTime(account.lastSyncAt, now),
                   })
                 : t('neverSynced')}
           </span>
