@@ -879,12 +879,12 @@ dati condivisi fra tutti gli utenti.
 
 ### Ambiente
 
-Node ≥ 24, pnpm 11, Docker. Primo avvio:
+Node ≥ 24, pnpm 12, Docker. Primo avvio:
 
 ```bash
 cp .env.example .env   # e genera BETTER_AUTH_SECRET con: openssl rand -base64 32
 pnpm install
-pnpm db:up             # Postgres in Docker
+pnpm db:up             # Postgres e Redis in Docker
 pnpm db:migrate
 pnpm dev
 ```
@@ -892,8 +892,10 @@ pnpm dev
 Il `.env` sta **alla radice del repo** e lo leggono tutti i workspace: i task turbo
 girano con cwd = cartella del package, quindi il path è sempre `../../.env`.
 
-Porte: web 3000, api 3001, Postgres **5433** sull'host (la 5432 è occupata da un
-altro progetto).
+Porte: web 8085, api 3005, dashboard delle code 3002, Postgres **5433** e Redis
+**6380** sull'host (la 5432 e la 6379 sono occupate da un altro progetto). Un
+`REDIS_URL` rimasto sulla 6379 non dà errore: si collega al Redis dell'altro
+progetto, e server e worker lavorano su una coda vuota.
 
 ### Comandi
 

@@ -41,7 +41,7 @@ li lancia insieme.
 
 ## Primo avvio
 
-Servono Node ≥ 24, pnpm 11 e Docker.
+Servono Node ≥ 24, pnpm 12 e Docker.
 
 ```bash
 cp .env.example .env   # e genera BETTER_AUTH_SECRET con: openssl rand -base64 32
@@ -53,8 +53,8 @@ pnpm dev
 
 Il `.env` sta **alla radice del repo** e lo leggono tutti i workspace.
 
-Porte: web `3000`, api `3001`, dashboard delle code `3002`, Postgres `5433`
-(la 5432 è occupata da un altro progetto), Redis `6379`.
+Porte: web `8085`, api `3005`, dashboard delle code `3002`, Postgres `5433`
+(la 5432 è occupata da un altro progetto), Redis `6380` (la 6379 pure).
 
 ### Chiavi
 

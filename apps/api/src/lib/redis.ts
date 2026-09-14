@@ -25,7 +25,7 @@ let lastErrorLoggedAt = 0;
 function redis() {
   if (client) return client;
 
-  client = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+  client = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6380', {
     lazyConnect: true,
     maxRetriesPerRequest: 1,
     commandTimeout: 1000,

@@ -29,8 +29,10 @@ services:
     restart: unless-stopped
     # appendonly: i job in coda sopravvivono a un riavvio del container.
     command: ["redis-server", "--appendonly", "yes"]
+    # 6380 sull'host: la 6379 è occupata da un altro progetto. Un REDIS_URL
+    # rimasto sulla 6379 non fallisce, si collega al Redis sbagliato.
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis-data:/data
     healthcheck:
