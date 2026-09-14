@@ -2,7 +2,13 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createGame, createUser, linkStoreAccount } from '../../test/factories';
+import {
+  ago,
+  createGame,
+  createUser,
+  linkStoreAccount,
+  setSource,
+} from '../../test/factories';
 import { findIgdbGameById } from '../external/igdb';
 import {
   dismissUnresolvedImport,
@@ -230,5 +236,26 @@ describe('unresolved imports', () => {
     expect(esito.status === 'ok' && esito.entry?.game.id).toBe(game.id);
     // Il gioco c'era: non si ricontrolla su IGDB.
     expect(mockedFindById).not.toHaveBeenCalled();
+  });
+
+  it('collegare a mano un appid Steam riapre i not_found del gioco', async () => {
+    // Lo stesso evento di quando l'appid lo porta IGDB: HLTB e Metacritic
+    // verificano l'identità su quello, e prima avevano solo il nome.
+    const game = await createGame({ igdbId: 555 });
+    await setSource({
+      gameId: game.id,
+      source: 'metacritic',
+      status: 'not_found',
+      attemptedAt: ago.days(3),
+    });
+    const id = await pending(userId, { externalId: '1588530' });
+
+    await resolveUnresolvedImport(userId, id, 555);
+
+    const [metacritic] = await db
+      .select({ status: schema.gameSources.status })
+      .from(schema.gameSources)
+      .where(eq(schema.gameSources.gameId, game.id));
+    expect(metacritic).toEqual({ status: 'pending' });
   });
 });

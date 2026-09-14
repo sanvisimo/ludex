@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ago, createGame, igdbMetadata, setSource } from '../../test/factories';
 import { fetchIgdbGameMetadata } from '../external/igdb';
+import { enqueueEnrichment } from '../queue/enrichment';
 import { enrichGameFromIgdb } from './igdb-enrichment';
 
 // Stubbato al confine del servizio esterno e non su `fetch`: il client vero
@@ -11,10 +12,26 @@ import { enrichGameFromIgdb } from './igdb-enrichment';
 // cose che in un test sono solo attesa e stato condiviso fra casi.
 vi.mock('../external/igdb', () => ({ fetchIgdbGameMetadata: vi.fn() }));
 
-// L'enrichment IGDB riuscito accoda quello HLTB: qui non deve toccare Redis.
+// L'enrichment IGDB riuscito accoda HLTB e Metacritic: qui non deve toccare Redis.
 vi.mock('../queue/enrichment', () => ({ enqueueEnrichment: vi.fn() }));
 
 const mockedFetch = vi.mocked(fetchIgdbGameMetadata);
+const mockedEnqueue = vi.mocked(enqueueEnrichment);
+
+function sourceOf(
+  gameId: string,
+  source: 'hltb' | 'metacritic' | 'opencritic',
+) {
+  return db.query.gameSources.findFirst({
+    where: and(
+      eq(schema.gameSources.gameId, gameId),
+      eq(schema.gameSources.source, source),
+    ),
+  });
+}
+
+const accodati = () =>
+  mockedEnqueue.mock.calls.map(([source, gameId]) => ({ source, gameId }));
 
 function sourceRow(gameId: string) {
   return db.query.gameSources.findFirst({
@@ -65,9 +82,11 @@ describe('enrichGameFromIgdb', () => {
       criticScore: 87.5,
       criticScoreSource: 'igdb',
     });
-    expect(await db.query.gameScores.findMany({ where: eq(schema.gameScores.gameId, game.id) })).toMatchObject([
-      { source: 'igdb', platformSlug: null, score: 87.5 },
-    ]);
+    expect(
+      await db.query.gameScores.findMany({
+        where: eq(schema.gameScores.gameId, game.id),
+      }),
+    ).toMatchObject([{ source: 'igdb', platformSlug: null, score: 87.5 }]);
     expect(await sourceRow(game.id)).toMatchObject({ status: 'ok' });
     expect((await sourceRow(game.id))?.syncedAt).toBeInstanceOf(Date);
   });
@@ -130,6 +149,125 @@ describe('enrichGameFromIgdb', () => {
       .from(schema.externalIds)
       .where(eq(schema.externalIds.externalId, '638990'));
     expect(riga?.gameId).toBe(altro.id);
+  });
+
+  it('un appid Steam nuovo riapre HLTB e Metacritic rimasti not_found, e li accoda', async () => {
+    // È l'evento che il CLAUDE.md chiede: il `not_found` era definitivo
+    // rispetto a ciò che sapevamo, e senza appid HLTB e Metacritic avevano solo
+    // il nome. La spazzata non lo ripescherebbe mai.
+    const game = await createGame();
+    for (const source of ['hltb', 'metacritic', 'opencritic'] as const) {
+      await setSource({
+        gameId: game.id,
+        source,
+        status: 'not_found',
+        attemptedAt: ago.days(3),
+      });
+    }
+    mockedFetch.mockResolvedValue(
+      igdbMetadata({ storeIds: [{ store: 'steam', externalId: '638990' }] }),
+    );
+
+    await enrichGameFromIgdb(game.id);
+
+    expect(await sourceOf(game.id, 'hltb')).toMatchObject({
+      status: 'pending',
+      attemptedAt: null,
+    });
+    expect(await sourceOf(game.id, 'metacritic')).toMatchObject({
+      status: 'pending',
+    });
+    // OpenCritic l'appid non lo guarda: riaprirlo spenderebbe una ricerca delle
+    // 25 del giorno per ottenere la stessa risposta.
+    expect(await sourceOf(game.id, 'opencritic')).toMatchObject({
+      status: 'not_found',
+    });
+    expect(accodati()).toEqual(
+      expect.arrayContaining([
+        { source: 'hltb', gameId: game.id },
+        { source: 'metacritic', gameId: game.id },
+      ]),
+    );
+  });
+
+  it('un appid che il gioco aveva già non riapre niente', async () => {
+    // Il rinfresco mensile riporta sempre gli stessi id: se bastasse vederli
+    // per riaprire, ogni mese si ripagherebbe la ricerca che aveva detto di no.
+    const game = await createGame();
+    await db
+      .insert(schema.externalIds)
+      .values({ gameId: game.id, source: 'steam', externalId: '638990' });
+    await setSource({
+      gameId: game.id,
+      source: 'hltb',
+      status: 'not_found',
+      attemptedAt: ago.days(40),
+    });
+    mockedFetch.mockResolvedValue(
+      igdbMetadata({ storeIds: [{ store: 'steam', externalId: '638990' }] }),
+    );
+
+    await enrichGameFromIgdb(game.id);
+
+    expect(await sourceOf(game.id, 'hltb')).toMatchObject({
+      status: 'not_found',
+    });
+    expect(accodati()).not.toContainEqual({ source: 'hltb', gameId: game.id });
+  });
+
+  it('un appid rubato da un altro gioco non è un evento per questo', async () => {
+    const altro = await createGame();
+    await db
+      .insert(schema.externalIds)
+      .values({ gameId: altro.id, source: 'steam', externalId: '638990' });
+    const game = await createGame();
+    await setSource({
+      gameId: game.id,
+      source: 'hltb',
+      status: 'not_found',
+      attemptedAt: ago.days(3),
+    });
+    mockedFetch.mockResolvedValue(
+      igdbMetadata({ storeIds: [{ store: 'steam', externalId: '638990' }] }),
+    );
+
+    await enrichGameFromIgdb(game.id);
+
+    expect(await sourceOf(game.id, 'hltb')).toMatchObject({
+      status: 'not_found',
+    });
+  });
+
+  it('non riaccoda HLTB e Metacritic ancora freschi a ogni rinfresco IGDB', async () => {
+    // Prima si accodava HLTB sempre: IGDB si rinfresca ogni 30 giorni, e HLTB
+    // finiva rifatto a quel ritmo invece che ai suoi 180.
+    const game = await createGame();
+    for (const source of ['hltb', 'metacritic'] as const) {
+      await setSource({
+        gameId: game.id,
+        source,
+        status: 'ok',
+        syncedAt: ago.days(35),
+        attemptedAt: ago.days(35),
+      });
+    }
+    mockedFetch.mockResolvedValue(igdbMetadata());
+
+    await enrichGameFromIgdb(game.id);
+
+    expect(mockedEnqueue).not.toHaveBeenCalled();
+  });
+
+  it('su un gioco nuovo accoda HLTB e Metacritic, non OpenCritic', async () => {
+    const game = await createGame();
+    mockedFetch.mockResolvedValue(igdbMetadata());
+
+    await enrichGameFromIgdb(game.id);
+
+    expect(accodati()).toEqual([
+      { source: 'hltb', gameId: game.id },
+      { source: 'metacritic', gameId: game.id },
+    ]);
   });
 
   it('rieseguito porta allo stesso stato invece di accumularlo', async () => {

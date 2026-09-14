@@ -1,7 +1,13 @@
+import { db, schema } from '@repo/db';
+import { and, eq } from '@repo/db/orm';
 import { describe, expect, it } from 'vitest';
 
 import { ago, createGame, setSource } from '../../test/factories';
-import { findGamesNeedingSource } from './enrichment';
+import {
+  findGamesNeedingSource,
+  isSourceDue,
+  reopenSourcesForNewExternalIds,
+} from './enrichment';
 
 describe('findGamesNeedingSource', () => {
   // I casi che decidono cosa la spazzata riaccoda. Il predicato è l'unico punto
@@ -35,6 +41,18 @@ describe('findGamesNeedingSource', () => {
     {
       nome: 'fallito da più di un giorno',
       source: { status: 'failed' as const, attemptedAt: ago.hours(30) },
+      atteso: true,
+    },
+    {
+      // La riapertura per evento: un `not_found` arrivato dopo un vecchio `ok`
+      // si porta dietro la data di quel successo, e se contasse quella la fonte
+      // riaperta aspetterebbe la soglia di freschezza invece di ripartire.
+      nome: 'riaperto, anche se il vecchio synced_at è fresco',
+      source: {
+        status: 'pending' as const,
+        syncedAt: ago.days(5),
+        attemptedAt: null,
+      },
       atteso: true,
     },
     {
@@ -147,5 +165,93 @@ describe('findGamesNeedingSource, dipendenze fra fonti', () => {
     await expect(findGamesNeedingSource('hltb')).resolves.toEqual([
       { id: game.id },
     ]);
+  });
+});
+
+describe('isSourceDue', () => {
+  it('risponde con lo stesso predicato della spazzata', async () => {
+    const igdbOk = await createGame();
+    await setSource({ gameId: igdbOk.id, status: 'ok', syncedAt: ago.days(1) });
+    const fresco = await createGame();
+    await setSource({ gameId: fresco.id, status: 'ok', syncedAt: ago.days(1) });
+    await setSource({
+      gameId: fresco.id,
+      source: 'hltb',
+      status: 'ok',
+      syncedAt: ago.days(1),
+      attemptedAt: ago.days(1),
+    });
+
+    expect(await isSourceDue('hltb', igdbOk.id)).toBe(true);
+    expect(await isSourceDue('hltb', fresco.id)).toBe(false);
+  });
+});
+
+describe('reopenSourcesForNewExternalIds', () => {
+  const rowOf = (
+    gameId: string,
+    source: 'hltb' | 'metacritic' | 'opencritic',
+  ) =>
+    db.query.gameSources.findFirst({
+      where: and(
+        eq(schema.gameSources.gameId, gameId),
+        eq(schema.gameSources.source, source),
+      ),
+    });
+
+  it('un appid Steam riapre solo i not_found di HLTB e Metacritic', async () => {
+    const game = await createGame();
+    await setSource({
+      gameId: game.id,
+      source: 'hltb',
+      status: 'not_found',
+      attemptedAt: ago.days(2),
+    });
+    await setSource({
+      gameId: game.id,
+      source: 'metacritic',
+      status: 'ok',
+      syncedAt: ago.days(2),
+      attemptedAt: ago.days(2),
+    });
+    await setSource({
+      gameId: game.id,
+      source: 'opencritic',
+      status: 'not_found',
+      attemptedAt: ago.days(2),
+    });
+
+    const riaperte = await reopenSourcesForNewExternalIds([
+      { gameId: game.id, source: 'steam' },
+    ]);
+
+    expect(riaperte).toEqual([{ gameId: game.id, source: 'hltb' }]);
+    expect(await rowOf(game.id, 'hltb')).toMatchObject({
+      status: 'pending',
+      attemptedAt: null,
+      error: null,
+    });
+    // Un `ok` non è un conto aperto: resta com'è fino alla sua soglia.
+    expect(await rowOf(game.id, 'metacritic')).toMatchObject({ status: 'ok' });
+    expect(await rowOf(game.id, 'opencritic')).toMatchObject({
+      status: 'not_found',
+    });
+  });
+
+  it('un id di un negozio su cui nessuna fonte verifica non riapre niente', async () => {
+    const game = await createGame();
+    await setSource({
+      gameId: game.id,
+      source: 'hltb',
+      status: 'not_found',
+      attemptedAt: ago.days(2),
+    });
+
+    const riaperte = await reopenSourcesForNewExternalIds([
+      { gameId: game.id, source: 'gog' },
+    ]);
+
+    expect(riaperte).toEqual([]);
+    expect(await rowOf(game.id, 'hltb')).toMatchObject({ status: 'not_found' });
   });
 });

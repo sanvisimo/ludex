@@ -5,6 +5,7 @@ import { and, desc, eq, inArray } from '@repo/db/orm';
 import { findIgdbGameById, searchIgdbGames } from '../external/igdb';
 import { chunk } from '../lib/chunk';
 import { enqueueEnrichment } from '../queue/enrichment';
+import { reopenSourcesForNewExternalIds } from './enrichment';
 
 // Postgres regge 65535 parametri per istruzione: con librerie da qualche
 // migliaio di voci un colpo solo li sfonderebbe.
@@ -285,7 +286,7 @@ export async function linkExternalGames(
     );
 
   for (const page of chunk(mappature, WRITE_CHUNK)) {
-    await db
+    const inserted = await db
       .insert(schema.externalIds)
       .values(
         page.map(({ link, gameId }) => ({
@@ -297,7 +298,16 @@ export async function linkExternalGames(
       // Reimportare non deve rompersi sulle mappature già scritte.
       .onConflictDoNothing({
         target: [schema.externalIds.source, schema.externalIds.externalId],
+      })
+      .returning({
+        gameId: schema.externalIds.gameId,
+        source: schema.externalIds.source,
       });
+
+    // Un appid Steam nuovo su un gioco che c'era già riapre i suoi `not_found`,
+    // come quando lo porta IGDB. Non si accoda: la riapertura li rende dovuti,
+    // e la spazzata li riprende da sé senza che l'import sappia delle fonti.
+    await reopenSourcesForNewExternalIds(inserted);
   }
 
   for (const { link, gameId } of mappature)

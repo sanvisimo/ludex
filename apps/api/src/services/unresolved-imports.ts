@@ -7,6 +7,7 @@ import {
   ensureOwnerships,
   findEntryByGame,
 } from './backlog';
+import { reopenSourcesForNewExternalIds } from './enrichment';
 import { resolveGameFromIgdb } from './games';
 import { platformFor } from './library-import';
 
@@ -94,7 +95,7 @@ export async function resolveUnresolvedImport(
   const game = await resolveGameFromIgdb(igdbId);
   if (!game) return { status: 'unknown_igdb_id' as const };
 
-  await db
+  const inserted = await db
     .insert(schema.externalIds)
     .values({
       gameId: game.id,
@@ -103,7 +104,13 @@ export async function resolveUnresolvedImport(
     })
     .onConflictDoNothing({
       target: [schema.externalIds.source, schema.externalIds.externalId],
+    })
+    .returning({
+      gameId: schema.externalIds.gameId,
+      source: schema.externalIds.source,
     });
+  // Collegare a mano un appid Steam è lo stesso evento di quando lo porta IGDB.
+  await reopenSourcesForNewExternalIds(inserted);
 
   const { byGameId } = await ensureBacklogEntries(userId, [game.id]);
   const backlogId = byGameId.get(game.id)!;

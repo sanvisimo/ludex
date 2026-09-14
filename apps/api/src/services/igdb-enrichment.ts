@@ -3,7 +3,12 @@ import { eq, sql } from '@repo/db/orm';
 
 import { fetchIgdbGameMetadata, type IgdbAttribute } from '../external/igdb';
 import { enqueueEnrichment } from '../queue/enrichment';
-import { markSource } from './enrichment';
+import {
+  isSourceDue,
+  markSource,
+  reopenSourcesForNewExternalIds,
+  type EnrichmentSource,
+} from './enrichment';
 import { saveScores } from './scores';
 
 /**
@@ -36,6 +41,16 @@ async function upsertAttributes(attributes: IgdbAttribute[]) {
 
   return rows.map((row) => row.id);
 }
+
+/**
+ * Le fonti che aspettano IGDB e si accodano appena finisce, invece che alla
+ * prossima spazzata.
+ *
+ * OpenCritic no, anche se aspetta IGDB quanto loro: ha 25 ricerche al giorno, e
+ * accodarlo qui vorrebbe dire lasciarle spendere all'ordine in cui arrivano gli
+ * import. Lo governano la spazzata e `catchup`, che conoscono il budget.
+ */
+const FOLLOW_IGDB: EnrichmentSource[] = ['hltb', 'metacritic'];
 
 export type EnrichmentOutcome =
   | { status: 'ok'; name: string; attributes: number }
@@ -128,8 +143,14 @@ export async function enrichGameFromIgdb(
       // `onConflictDoNothing` perché la mappatura può già esserci — scritta da
       // un import, o da un altro utente: `external_ids` è condivisa. Chi c'era
       // prima ha ragione: quello viene da una libreria vera, questo da IGDB.
+      //
+      // Le righe davvero nuove tornano dal RETURNING, ed è su quelle che si
+      // riaprono i `not_found`: un appid arrivato adesso è la prova che mancava
+      // quando HLTB o Metacritic hanno detto di no. Nella stessa transazione,
+      // o un crash fra le due scritture lascerebbe l'appid scritto e la fonte
+      // chiusa — e al giro dopo l'insert non tornerebbe più come nuovo.
       if (metadata.storeIds.length > 0) {
-        await tx
+        const inserted = await tx
           .insert(schema.externalIds)
           .values(
             metadata.storeIds.map((row) => ({
@@ -140,7 +161,12 @@ export async function enrichGameFromIgdb(
           )
           .onConflictDoNothing({
             target: [schema.externalIds.source, schema.externalIds.externalId],
+          })
+          .returning({
+            gameId: schema.externalIds.gameId,
+            source: schema.externalIds.source,
           });
+        await reopenSourcesForNewExternalIds(inserted, tx);
       }
 
       // Riscrittura in blocco invece di un diff: è cio' che rende la funzione
@@ -158,11 +184,20 @@ export async function enrichGameFromIgdb(
 
     await markSource({ gameId, source: 'igdb', status: 'ok' });
 
-    // HLTB aspetta questo momento: prima di adesso il gioco non aveva né il
-    // titolo canonico né l'anno, e senza quei due il match sbaglia. Accodare
-    // qui vuol dire che un gioco nuovo prende la sua durata in minuti, non alla
-    // prossima spazzata.
-    await enqueueEnrichment('hltb', gameId);
+    // HLTB e Metacritic aspettano questo momento: prima di adesso il gioco non
+    // aveva né il titolo canonico né l'anno, e senza quei due il match sbaglia.
+    // Accodare qui vuol dire che un gioco nuovo prende durata e voti in minuti,
+    // non alla prossima spazzata.
+    //
+    // **Solo se sono dovute**, con lo stesso predicato della spazzata. Accodare
+    // sempre voleva dire rifare HLTB a ogni rinfresco IGDB — ogni 30 giorni
+    // invece dei suoi 180 — e riprovare ogni mese anche i `not_found`, che
+    // devono riaprirsi per evento e non per calendario. L'evento c'è: è la
+    // riapertura qui sopra, che li rimette dovuti.
+    for (const source of FOLLOW_IGDB) {
+      if (await isSourceDue(source, gameId))
+        await enqueueEnrichment(source, gameId);
+    }
 
     return {
       status: 'ok',

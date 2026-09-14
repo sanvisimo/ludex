@@ -3,9 +3,11 @@ import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  ago,
   createGame,
   createUser,
   linkSteamAccount,
+  setSource,
   steamEntry,
 } from '../../test/factories';
 import { findIgdbGamesByExternalIds, searchIgdbGames } from '../external/igdb';
@@ -204,6 +206,28 @@ describe('importSteamLibrary', () => {
     // stesso gioco, e il tempo speso è la somma dei due.
     expect(await ownershipsOf(userId)).toMatchObject([{ playtimeMinutes: 60 }]);
     expect(report).toMatchObject({ resolved: 2, newGames: 1, newEntries: 1 });
+  });
+
+  it("un appid nuovo su un gioco che c'era già riapre i suoi not_found", async () => {
+    // Il gioco era arrivato da GOG, senza appid: HLTB aveva provato col nome e
+    // aveva detto di no. L'import Steam porta la prova che mancava.
+    const game = await createGame({ igdbId: 233 });
+    await setSource({
+      gameId: game.id,
+      source: 'hltb',
+      status: 'not_found',
+      attemptedAt: ago.days(3),
+    });
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
+    igdbKnows([{ externalId: '220', igdbId: 233 }]);
+
+    await importSteamLibrary(account);
+
+    const [hltb] = await db
+      .select({ status: schema.gameSources.status })
+      .from(schema.gameSources)
+      .where(eq(schema.gameSources.gameId, game.id));
+    expect(hltb).toEqual({ status: 'pending' });
   });
 
   it('mette gli irrisolti in tabella a parte, non in games', async () => {

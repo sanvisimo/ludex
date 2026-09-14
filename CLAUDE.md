@@ -166,6 +166,14 @@ SQL può fare in modo deterministico.
   entrambi verificano l'identità, e senza avevano solo il nome. OpenCritic no,
   lui l'appid non lo guarda. È lo stesso meccanismo che lo step 5 descrive per
   il ri-collegamento IGDB, con un secondo evento a innescarlo.
+
+  L'evento non guarda **chi** scrive l'appid: l'enrichment IGDB, l'import
+  Steam su un gioco arrivato da un altro negozio, lo scarto risolto a mano. Si
+  riapre sulle righe che l'insert ha **davvero** scritto, mai su quelle
+  proposte, o ogni reimport ripagherebbe la ricerca che aveva detto di no. La
+  regola sta in `reopenSourcesForNewExternalIds`. Per lo stesso motivo HLTB e
+  Metacritic, dopo IGDB, si accodano **solo se dovuti**: accodarli sempre li
+  rifaceva al ritmo di IGDB (30 giorni) invece che al loro.
 - A runtime si embedda **solo la query dell'utente** (stringa breve) per la
   similarity search.
 
