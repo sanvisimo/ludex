@@ -82,9 +82,6 @@ Regole di confine:
   propria; si condividono solo tipi e client API. Non introdurre un layer di
   componenti cross-platform senza una decisione esplicita.
 
-Da rimuovere quando si inizia: `apps/docs` e i componenti demo di `packages/ui`,
-residui dello scaffold `create-turbo`.
-
 ## Fonti dati esterne
 
 - **IGDB** — metadata primario
@@ -931,6 +928,7 @@ di turbo, perché non fanno parte di nessuna pipeline:
 | `pnpm --filter api metacritic:probe [n\|titolo]` | giro a vuoto del match Metacritic. Mostra anche se il link della scheda Steam regge e quali piattaforme non sappiamo tradurre                            |
 | `pnpm --filter api psn:probe [npsso]`       | giro a vuoto dell'import PSN: identità, libreria, piattaforme e ore, senza toccare il DB. Vuole l'npsso (o `PSN_TEST_NPSSO`) e usa `resolveByName`, cioè il matcher vero  |
 | `pnpm --filter api backfill [n]`            | accoda l'enrichment di ciò che è dovuto. Non forza: rispetta le soglie di freschezza                                                                          |
+| `pnpm --filter api catchup [--resolve]`     | il `backfill` dei giorni col worker spento: accoda il dovuto delle altre fonti, poi spende il budget OpenCritic a blocchi e si ferma quando è finito. Vuole il worker acceso. `--resolve` fa prima l'aggancio Wikidata |
 | `pnpm --filter api queues`                  | dashboard Bull Board sulle code, su `localhost:3002`. Ascolta solo su localhost: non c'è ruolo admin e non lo si inventa qui, da remoto si passa da un tunnel |
 
 Le variabili d'ambiente nuove vanno dichiarate anche in `globalEnv` dentro

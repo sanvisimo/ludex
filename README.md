@@ -92,6 +92,7 @@ e non stanno in nessuna pipeline:
 | Comando                                          | Cosa fa                                                                  |
 | ------------------------------------------------ | ------------------------------------------------------------------------ |
 | `pnpm --filter api backfill [n]`                 | accoda l'enrichment di ciò che è dovuto, rispettando le scadenze         |
+| `pnpm --filter api catchup [--resolve]`          | accoda il dovuto e spende il budget OpenCritic del giorno, poi si ferma  |
 | `pnpm --filter api opencritic:resolve [n]`       | aggancia gli id OpenCritic chiedendoli a Wikidata, senza spendere budget |
 | `pnpm --filter api queues`                       | dashboard Bull Board sulle code, solo su localhost                       |
 | `pnpm --filter api steam:probe [steamid64]`      | giro a vuoto dell'import Steam, senza scrivere                           |

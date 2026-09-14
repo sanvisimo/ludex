@@ -1,7 +1,7 @@
 services:
   postgres:
     # immagine con pgvector già installato: l'estensione va abilitata sul server,
-    # non è una dipendenza npm. Serve dallo step 7, ma partire con l'immagine
+    # non è una dipendenza npm. Serve dallo step 13, ma partire con l'immagine
     # giusta costa zero.
     image: pgvector/pgvector:pg17
     container_name: ludex-postgres
