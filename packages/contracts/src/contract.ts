@@ -16,6 +16,7 @@ import {
   PlatformSchema,
   RatingSchema,
   StoreAccountSchema,
+  SyncAllResultSchema,
   UnlinkImpactSchema,
   UnresolvedImportSchema,
   UserTagInputSchema,
@@ -159,6 +160,10 @@ export const contract = {
 
     // Rilancia l'import della libreria di un account già collegato.
     sync: oc.input(z.object({ accountId: z.uuid() })).output(z.void()),
+
+    // Rilancia l'import di tutti gli account collegati. Non fallisce per uno
+    // solo: chi è da ricollegare o sta già importando si salta e si conta.
+    syncAll: oc.output(SyncAllResultSchema),
   },
 
   imports: {

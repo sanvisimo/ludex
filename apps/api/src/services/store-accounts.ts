@@ -36,7 +36,7 @@ import {
 } from '../external/psn';
 import { fetchSteamPersonaName, resolveSteamId } from '../external/steam';
 import { encryptCredentials, decryptCredentials } from '../lib/crypto';
-import { isImportRunning } from '../queue/imports';
+import { enqueueImport, isImportRunning } from '../queue/imports';
 
 /**
  * Gli account di negozio collegati, e il ciclo di vita dei loro credenziali.
@@ -112,6 +112,45 @@ export async function listStoreAccounts(userId: string) {
       syncing: await isImportRunning(row.id),
     })),
   );
+}
+
+/**
+ * Rilancia l'import di tutti gli account collegati dall'utente.
+ *
+ * Gli stessi tre filtri di `accounts.sync`, ma qui nessuno è un errore: con
+ * cinque account, uno da ricollegare non deve impedire agli altri quattro di
+ * partire. Si salta e si conta, e la pagina dice quanti.
+ *
+ * Accodarli tutti insieme non li fa girare insieme: il worker degli import ne
+ * esegue uno alla volta.
+ */
+export async function syncAllStoreAccounts(userId: string) {
+  const rows = await db
+    .select({
+      id: schema.storeAccounts.id,
+      store: schema.storeAccounts.store,
+      status: schema.storeAccounts.status,
+    })
+    .from(schema.storeAccounts)
+    .where(
+      and(
+        eq(schema.storeAccounts.userId, userId),
+        ne(schema.storeAccounts.status, 'unlinked'),
+      ),
+    );
+
+  const result = { queued: 0, alreadyRunning: 0, needsReauth: 0 };
+  for (const row of rows) {
+    if (row.status === 'needs_reauth') {
+      result.needsReauth++;
+    } else if (await isImportRunning(row.id)) {
+      result.alreadyRunning++;
+    } else {
+      await enqueueImport(row.store, { storeAccountId: row.id });
+      result.queued++;
+    }
+  }
+  return result;
 }
 
 /**

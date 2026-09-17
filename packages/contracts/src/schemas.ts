@@ -263,6 +263,18 @@ export const UnlinkImpactSchema = z.object({
   withPersonalData: z.number().int(),
 });
 
+// L'esito di «aggiorna tutti gli account»: un numero per ogni motivo, perché
+// un account da ricollegare non è un errore dell'intera richiesta — gli altri
+// partono lo stesso, e l'utente va avvisato solo di quello.
+export const SyncAllResultSchema = z.object({
+  // Import accodati adesso.
+  queued: z.number().int(),
+  // Già in coda o in lavorazione: non si accodano due volte.
+  alreadyRunning: z.number().int(),
+  // Collegamento scaduto: riprovare non lo sblocca, va ricollegato a mano.
+  needsReauth: z.number().int(),
+});
+
 // Una voce di libreria che l'import non ha saputo legare a un gioco. Il nome è
 // quello del negozio: è tutto ciò che si può mostrare per farla riconoscere.
 export const UnresolvedImportSchema = z.object({
@@ -396,6 +408,7 @@ export function storeAccountName(account: {
   return account.label ?? account.displayName ?? account.externalAccountId;
 }
 export type UnlinkImpact = z.infer<typeof UnlinkImpactSchema>;
+export type SyncAllResult = z.infer<typeof SyncAllResultSchema>;
 export type UnresolvedImport = z.infer<typeof UnresolvedImportSchema>;
 export type BacklogFilter = z.infer<typeof BacklogFilterSchema>;
 export type BacklogSort = z.infer<typeof BacklogSortSchema>;

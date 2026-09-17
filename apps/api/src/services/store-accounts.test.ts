@@ -10,11 +10,12 @@ import {
   linkStoreAccount,
 } from '../../test/factories';
 import { fetchSteamPersonaName, resolveSteamId } from '../external/steam';
-import { isImportRunning } from '../queue/imports';
+import { enqueueImport, isImportRunning } from '../queue/imports';
 import {
   linkSteamAccount,
   listStoreAccounts,
   renameStoreAccount,
+  syncAllStoreAccounts,
   unlinkImpact,
   unlinkStoreAccount,
 } from './store-accounts';
@@ -23,11 +24,15 @@ vi.mock('../external/steam', () => ({
   resolveSteamId: vi.fn(),
   fetchSteamPersonaName: vi.fn(),
 }));
-vi.mock('../queue/imports', () => ({ isImportRunning: vi.fn() }));
+vi.mock('../queue/imports', () => ({
+  isImportRunning: vi.fn(),
+  enqueueImport: vi.fn(),
+}));
 
 const mockedResolve = vi.mocked(resolveSteamId);
 const mockedPersona = vi.mocked(fetchSteamPersonaName);
 const mockedRunning = vi.mocked(isImportRunning);
+const mockedEnqueue = vi.mocked(enqueueImport);
 
 /**
  * Un gioco nel backlog con un possesso, e da quale account viene.
@@ -295,5 +300,47 @@ describe('account di negozio', () => {
       unlinkStoreAccount(userId, altrui.id, 'purge'),
     ).resolves.toBeNull();
     expect(await db.select().from(schema.storeAccounts)).toHaveLength(1);
+  });
+
+  describe('aggiorna tutti gli account', () => {
+    beforeEach(() => mockedEnqueue.mockClear());
+
+    it('accoda gli account collegati, e salta e conta gli altri', async () => {
+      const ok = await linkStoreAccount(userId, 'gog');
+      const running = await linkStoreAccount(userId, 'amazon');
+      const scaduto = await linkStoreAccount(userId, 'psn');
+      const scollegato = await linkStoreAccount(userId, 'epic');
+      await db
+        .update(schema.storeAccounts)
+        .set({ status: 'needs_reauth' })
+        .where(eq(schema.storeAccounts.id, scaduto.id));
+      await db
+        .update(schema.storeAccounts)
+        .set({ status: 'unlinked' })
+        .where(eq(schema.storeAccounts.id, scollegato.id));
+      mockedRunning.mockImplementation(async (id) => id === running.id);
+
+      await expect(syncAllStoreAccounts(userId)).resolves.toEqual({
+        queued: 1,
+        alreadyRunning: 1,
+        needsReauth: 1,
+      });
+      // Lo scollegato non è nemmeno contato: per l'utente non esiste più.
+      expect(mockedEnqueue).toHaveBeenCalledTimes(1);
+      expect(mockedEnqueue).toHaveBeenCalledWith('gog', {
+        storeAccountId: ok.id,
+      });
+    });
+
+    it('non tocca gli account di altri utenti', async () => {
+      await linkStoreAccount(await createUser(), 'gog');
+
+      await expect(syncAllStoreAccounts(userId)).resolves.toEqual({
+        queued: 0,
+        alreadyRunning: 0,
+        needsReauth: 0,
+      });
+      expect(mockedEnqueue).not.toHaveBeenCalled();
+    });
   });
 });

@@ -505,6 +505,53 @@ cifrati a riposo in **AES-256-GCM** con `STORE_TOKEN_KEY` (da dichiarare anche i
 perché quando il rinnovo fallisce non fallisce il job, fallisce l'utente, e
 `/account` deve saperglielo dire.
 
+##### Accorgersi prima che un collegamento è morto (da valutare)
+
+**Non deciso, non implementato.** È stato analizzato e rimandato: sta qui perché
+chi lo riprende non ricominci da capo, non perché sia la strada presa.
+
+Oggi `needs_reauth` lo scopre **solo l'import**, quando il rinnovo viene
+rifiutato e passa da `requireReauth`. Fino a quel momento la scheda in
+`/account` dice che va tutto bene. L'idea valutata:
+
+- **controllo all'apertura di `/account`**, con lo stesso `storeAccessToken` /
+  `amazonAccess` dell'import. Rinnova **solo se l'access token è scaduto** — un
+  token ancora valido vuol dire che un rinnovo è riuscito da poco — e salta gli
+  account con un import in corso e Steam, che credenziali non ne ha.
+- **quanto costa**: una richiesta al server dei token, al massimo ogni ora su GOG,
+  PSN e Amazon e ogni otto su Epic. Nessuna chiamata alla libreria, nessuna
+  sessione né dispositivo nuovo (Amazon registra il dispositivo solo al
+  collegamento). Se qualche negozio avvisi l'utente a ogni rinnovo **non è
+  misurato**; non ce lo si aspetta, perché i launcher rinnovano di continuo.
+- **cosa non dice**: un rinnovo riuscito prova che il credenziale è vivo, non che
+  la libreria si legga; una revoca fatta mentre l'access token è valido si vede
+  solo alla sua scadenza.
+
+**Il prerequisito, e il vero rischio: il blocco sulla riga.** GOG, Epic e PSN
+invalidano il refresh token vecchio a ogni rinnovo. Oggi non c'è concorrenza
+perché rinnova solo il worker, un import alla volta e deduplicato per account;
+un rinnovo lanciato dalla pagina — o da due schede aperte — mentre l'import
+rinnova lo stesso token manda in `needs_reauth` un account sano. Prima di
+qualunque controllo fuori dal worker, il rinnovo va fatto sotto un lock sulla
+riga di `store_accounts`, rileggendo il credenziale dopo averlo preso. Amazon
+non ruota il token e non ne soffre.
+
+Due pezzi collegati, anche loro da valutare:
+
+- **PSN può avvisare prima, a zero richieste.** Il credenziale salvato è la
+  risposta intera del token, compreso `refreshExpiresAt` quando Sony dichiara la
+  durata: «PSN scade fra due giorni» si calcola dal DB, ed è più utile di «è
+  morto». Non chiude il 9b — serve comunque qualcosa che rinnovi — ma lo rende
+  visibile.
+- **notifiche** (campanella, oltre al toast). Devono nascere **sul server, in
+  `requireReauth`**, che è l'unico punto da cui passa ogni account che diventa
+  `needs_reauth` — da un import o da un controllo — e non da un confronto lato
+  client, che vedrebbe solo ciò che succede con la pagina aperta. Vuol dire una
+  tabella di notifiche con lette e non lette: il modello è la decisione da
+  prendere prima del codice. Il testo è «da ricollegare», **non «scollegato»**:
+  quella parola è già del gesto «Scollega», e farebbe credere di aver perso i
+  giochi.
+
 Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 **quanto costa risolvere l'identità**. Misurate su una libreria vera:
 

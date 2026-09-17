@@ -32,6 +32,7 @@ import {
   listStoreAccounts,
   renameStoreAccount,
   storeLoginUrl,
+  syncAllStoreAccounts,
   unlinkImpact,
   unlinkStoreAccount,
 } from '../services/store-accounts';
@@ -135,6 +136,18 @@ export const router = os.router({
     unlink: os.accounts.unlink
       .use(authed)
       .handler(async ({ input, context }) => {
+        const account = await findStoreAccount(context.user.id, input.accountId);
+        if (!account || account.status === 'unlinked')
+          throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+
+        // Il worker guarda `unlinked` solo quando parte: scollegando a metà, il
+        // job continuerebbe a scrivere possessi su un account che non c'è più,
+        // e con `purge` la cancellazione della riga si scontrerebbe con i
+        // possessi appena scritti.
+        if (await isImportRunning(account.id)) {
+          throw new ORPCError('CONFLICT', { message: 'Import in corso' });
+        }
+
         const removed = await unlinkStoreAccount(
           context.user.id,
           input.accountId,
@@ -165,6 +178,10 @@ export const router = os.router({
 
       await enqueueImport(account.store, { storeAccountId: account.id });
     }),
+
+    syncAll: os.accounts.syncAll
+      .use(authed)
+      .handler(({ context }) => syncAllStoreAccounts(context.user.id)),
   },
 
   imports: {

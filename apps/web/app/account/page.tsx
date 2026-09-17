@@ -55,8 +55,20 @@ export default function AccountPage() {
     void queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
   }, [syncing, queryClient]);
 
-
-
+  const syncAll = useMutation({
+    mutationFn: () => client.accounts.syncAll(),
+    onSuccess: async ({ queued, needsReauth }) => {
+      await queryClient.invalidateQueries({ queryKey: api.accounts.list.key() });
+      // Un account da ricollegare non ferma gli altri, ma va detto: la sua
+      // scheda lo segnala già, il toast dice perché non è partito.
+      if (queued > 0 || needsReauth === 0)
+        toast.success(t('store.syncAllStarted', { count: queued }));
+      if (needsReauth > 0)
+        toast.warning(t('store.syncAllNeedsReauth', { count: needsReauth }));
+    },
+    onError: (error) =>
+      toast.error(errorMessage(error, { fallback: t('store.syncAllFailed') })),
+  });
 
   const dismiss = useMutation({
     mutationFn: (id: string) => client.imports.dismiss({ id }),
@@ -83,7 +95,21 @@ export default function AccountPage() {
 
   return (
     <main className="mx-auto grid max-w-4xl gap-6 p-6">
-      <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        {/* Con un account solo farebbe la stessa cosa del bottone sulla sua
+            scheda. Spento mentre qualcosa importa: la coda deduplica per
+            account, ma un bottone che non fa niente è peggio di uno spento. */}
+        {(accounts.data?.length ?? 0) >= 2 && (
+          <Button
+            variant="outline"
+            onClick={() => syncAll.mutate()}
+            disabled={syncing || syncAll.isPending}
+          >
+            {t('store.syncAll')}
+          </Button>
+        )}
+      </div>
 
       <Card>
         <CardHeader>
@@ -102,6 +128,7 @@ export default function AccountPage() {
           <StoreAccountCard
             key={account.id}
             account={account}
+            busy={syncing}
             onUnlink={() => setUnlinking(account)}
           />
         ))

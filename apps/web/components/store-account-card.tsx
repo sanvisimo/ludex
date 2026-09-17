@@ -35,9 +35,17 @@ const isLinkable = (store: Store): store is LinkableStore =>
 
 export function StoreAccountCard({
   account,
+  busy,
   onUnlink,
 }: {
   account: StoreAccount;
+  /**
+   * C'è un import in corso su **un qualunque** account dell'utente. Spegne
+   * «Aggiorna» e «Scollega» su tutte le schede, non solo su quella che importa:
+   * dopo «Aggiorna tutti» i job aspettano in fila, e una scheda ancora in coda
+   * sembrerebbe libera.
+   */
+  busy: boolean;
   onUnlink: () => void;
 }) {
   const t = useTranslations('account.store');
@@ -126,7 +134,7 @@ export function StoreAccountCard({
         ) : (
           <Button
             onClick={() => sync.mutate()}
-            disabled={syncing || sync.isPending}
+            disabled={busy || syncing || sync.isPending}
             className="justify-self-start"
           >
             {t('sync')}
@@ -163,6 +171,7 @@ export function StoreAccountCard({
         <Button
           variant="ghost"
           onClick={onUnlink}
+          disabled={busy || syncing}
           className="justify-self-start"
         >
           {t('unlink')}

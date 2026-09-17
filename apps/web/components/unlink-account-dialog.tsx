@@ -72,7 +72,12 @@ export function UnlinkAccountDialog({
       onOpenChange(false);
     },
     onError: (error) =>
-      toast.error(errorMessage(error, { fallback: tStore('unlinkFailed') })),
+      toast.error(
+        errorMessage(error, {
+          fallback: tStore('unlinkFailed'),
+          CONFLICT: tStore('unlinkWhileSyncing'),
+        }),
+      ),
   });
 
   const name = account ? storeAccountName(account) : '';
