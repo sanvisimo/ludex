@@ -3,12 +3,17 @@ import { eq } from '@repo/db/orm';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createGame } from '../../test/factories';
-import { findIgdbGameById } from '../external/igdb';
+import {
+  findIgdbGameById,
+  findIgdbGameBySlug,
+  searchIgdbGames,
+} from '../external/igdb';
 import { enqueueEnrichment } from '../queue/enrichment';
-import { resolveGameFromIgdb } from './games';
+import { parseSearchTerm, resolveGameFromIgdb, searchGames } from './games';
 
 vi.mock('../external/igdb', () => ({
   findIgdbGameById: vi.fn(),
+  findIgdbGameBySlug: vi.fn(),
   searchIgdbGames: vi.fn(),
 }));
 // Stubbata per non aprire Redis nei test: qui interessa *se* si accoda, non che
@@ -16,6 +21,8 @@ vi.mock('../external/igdb', () => ({
 vi.mock('../queue/enrichment', () => ({ enqueueEnrichment: vi.fn() }));
 
 const mockedFindById = vi.mocked(findIgdbGameById);
+const mockedFindBySlug = vi.mocked(findIgdbGameBySlug);
+const mockedSearch = vi.mocked(searchIgdbGames);
 const mockedEnqueue = vi.mocked(enqueueEnrichment);
 
 const hit = (igdbId: number, name: string) => ({
@@ -64,5 +71,60 @@ describe('resolveGameFromIgdb', () => {
     await expect(resolveGameFromIgdb(999_999)).resolves.toBeNull();
     expect(await db.select().from(schema.games)).toHaveLength(0);
     expect(mockedEnqueue).not.toHaveBeenCalled();
+  });
+});
+
+describe('parseSearchTerm', () => {
+  it("riconosce l'URL di una scheda IGDB, con o senza protocollo", () => {
+    expect(
+      parseSearchTerm('https://www.igdb.com/games/hollow-knight?foo=1'),
+    ).toEqual({ kind: 'slug', slug: 'hollow-knight' });
+    expect(parseSearchTerm(' igdb.com/games/Celeste/ ')).toEqual({
+      kind: 'slug',
+      slug: 'celeste',
+    });
+  });
+
+  it('riconosce un id, e lascia per nome tutto il resto', () => {
+    expect(parseSearchTerm('1942')).toEqual({ kind: 'id', igdbId: 1942 });
+    expect(parseSearchTerm('198X')).toEqual({ kind: 'name' });
+    expect(parseSearchTerm('0')).toEqual({ kind: 'name' });
+    expect(parseSearchTerm('https://example.com/games/x')).toEqual({
+      kind: 'name',
+    });
+  });
+});
+
+describe('searchGames', () => {
+  it('con un URL cerca solo lo slug, non il nome', async () => {
+    mockedFindBySlug.mockResolvedValue(hit(14593, 'Hollow Knight'));
+
+    const risultati = await searchGames(
+      'https://www.igdb.com/games/hollow-knight',
+    );
+
+    expect(risultati).toEqual([hit(14593, 'Hollow Knight')]);
+    expect(mockedFindBySlug).toHaveBeenCalledWith('hollow-knight');
+    expect(mockedSearch).not.toHaveBeenCalled();
+  });
+
+  it("con un numero mette davanti il gioco con quell'id e tiene la ricerca per nome", async () => {
+    // *1942* è un titolo vero: un numero non può essere soltanto un id.
+    mockedFindById.mockResolvedValue(hit(1942, 'The Witcher 3'));
+    mockedSearch.mockResolvedValue([
+      hit(5, '1942'),
+      hit(1942, 'The Witcher 3'),
+    ]);
+
+    const risultati = await searchGames('1942');
+
+    expect(risultati.map((r) => r.igdbId)).toEqual([1942, 5]);
+  });
+
+  it('con un numero che IGDB non conosce come id resta la ricerca per nome', async () => {
+    mockedFindById.mockResolvedValue(null);
+    mockedSearch.mockResolvedValue([hit(5, '1942')]);
+
+    expect(await searchGames('1942')).toEqual([hit(5, '1942')]);
   });
 });

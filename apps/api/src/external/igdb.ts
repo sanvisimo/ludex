@@ -239,6 +239,25 @@ export async function findIgdbGameById(
   return game ? toHit(game) : null;
 }
 
+/**
+ * Lo slug è ciò che sta nell'URL della scheda (`igdb.com/games/hollow-knight`):
+ * l'id numerico nella pagina c'è, ma l'URL è quello che si ha sotto mano.
+ */
+export async function findIgdbGameBySlug(
+  slug: string,
+): Promise<IgdbSearchHit | null> {
+  // Lo slug finisce fra virgolette nella query: si accetta solo la sua forma,
+  // invece di fidarsi dell'escape.
+  if (!/^[a-z0-9-]+$/.test(slug)) return null;
+
+  const games = await query<IgdbGame[]>(
+    'games',
+    `where slug = "${slug}"; ${SEARCH_FIELDS} limit 1;`,
+  );
+  const game = games[0];
+  return game ? toHit(game) : null;
+}
+
 // --- Enrichment (step 3): metadati completi, non la ricerca ---
 
 const DETAIL_FIELDS = [

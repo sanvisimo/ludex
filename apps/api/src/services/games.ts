@@ -2,7 +2,11 @@ import type { Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, desc, eq, inArray } from '@repo/db/orm';
 
-import { findIgdbGameById, searchIgdbGames } from '../external/igdb';
+import {
+  findIgdbGameById,
+  findIgdbGameBySlug,
+  searchIgdbGames,
+} from '../external/igdb';
 import { chunk } from '../lib/chunk';
 import { enqueueEnrichment } from '../queue/enrichment';
 import { reopenSourcesForNewExternalIds } from './enrichment';
@@ -131,8 +135,55 @@ export async function createGame(name: string) {
   return row;
 }
 
-export function searchGames(term: string) {
-  return searchIgdbGames(term);
+const IGDB_URL = /^(?:https?:\/\/)?(?:www\.)?igdb\.com\/games\/([a-z0-9-]+)/i;
+
+/**
+ * Cosa ha scritto l'utente nel campo di ricerca: un URL di IGDB, un id, o un
+ * titolo. Pura, per poterla provare senza IGDB.
+ */
+export function parseSearchTerm(
+  term: string,
+):
+  | { kind: 'slug'; slug: string }
+  | { kind: 'id'; igdbId: number }
+  | { kind: 'name' } {
+  const value = term.trim();
+
+  const url = IGDB_URL.exec(value);
+  if (url) return { kind: 'slug', slug: url[1]!.toLowerCase() };
+
+  if (/^\d+$/.test(value)) {
+    const igdbId = Number(value);
+    if (Number.isSafeInteger(igdbId) && igdbId > 0)
+      return { kind: 'id', igdbId };
+  }
+
+  return { kind: 'name' };
+}
+
+/**
+ * Cerca su IGDB per nome, ma riconosce anche l'URL di una scheda o un id: è la
+ * via diretta per quando la ricerca per nome non trova il gioco giusto.
+ */
+export async function searchGames(term: string) {
+  const parsed = parseSearchTerm(term);
+
+  // Un URL non è un titolo: cercarlo anche per nome non troverebbe niente.
+  if (parsed.kind === 'slug') {
+    const hit = await findIgdbGameBySlug(parsed.slug);
+    return hit ? [hit] : [];
+  }
+
+  if (parsed.kind === 'name') return searchIgdbGames(term);
+
+  // Un numero invece può essere un titolo — *1942*, *198X* — quindi la ricerca
+  // per nome resta, e il gioco con quell'id le sta davanti.
+  const [byId, byName] = await Promise.all([
+    findIgdbGameById(parsed.igdbId),
+    searchIgdbGames(term),
+  ]);
+  if (!byId) return byName;
+  return [byId, ...byName.filter((hit) => hit.igdbId !== byId.igdbId)];
 }
 
 export function findGameByIgdbId(igdbId: number) {
