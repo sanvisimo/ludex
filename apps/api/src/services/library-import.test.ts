@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createUser, linkStoreAccount } from '../../test/factories';
 import {
   findIgdbGamesByExternalIds,
+  findIgdbGamesBySource,
   igdbSourceFor,
   searchIgdbGames,
 } from '../external/igdb';
@@ -12,6 +13,7 @@ import { importLibrary, platformFor, platformOf } from './library-import';
 
 vi.mock('../external/igdb', () => ({
   findIgdbGamesByExternalIds: vi.fn(),
+  findIgdbGamesBySource: vi.fn(),
   searchIgdbGames: vi.fn(),
   igdbSourceFor: vi.fn(),
 }));
@@ -20,6 +22,7 @@ vi.mock('../queue/enrichment', () => ({ enqueueEnrichment: vi.fn() }));
 const mockedById = vi.mocked(findIgdbGamesByExternalIds);
 const mockedSearch = vi.mocked(searchIgdbGames);
 const mockedSource = vi.mocked(igdbSourceFor);
+const mockedBySource = vi.mocked(findIgdbGamesBySource);
 
 /** Un risultato di ricerca IGDB, ridotto a ciò che il matcher guarda. */
 function hit(over: {
@@ -85,7 +88,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     expect(await unresolvedOf(userId)).toHaveLength(0);
   });
 
-  it("scrive la mappatura, così il prossimo import non ripassa dalla ricerca", async () => {
+  it('scrive la mappatura, così il prossimo import non ripassa dalla ricerca', async () => {
     mockedSearch.mockResolvedValue([hit({ igdbId: 1234, name: 'Frostpunk' })]);
     await importLibrary(account, [
       { externalId: '1648559910', name: 'Frostpunk' },
@@ -121,7 +124,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     ]);
   });
 
-  it("affonda il candidato che dista decenni: è il remake, non il gioco", async () => {
+  it('affonda il candidato che dista decenni: è il remake, non il gioco', async () => {
     mockedSearch.mockResolvedValue([
       hit({ igdbId: 9, name: 'Shadow Sorcerer', releaseYear: 2021 }),
     ]);
@@ -139,7 +142,11 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     ]);
 
     const report = await importLibrary(account, [
-      { externalId: '1212177362', name: 'Builders of Egypt', releaseYear: 2022 },
+      {
+        externalId: '1212177362',
+        name: 'Builders of Egypt',
+        releaseYear: 2022,
+      },
     ]);
 
     expect(report).toMatchObject({ resolved: 1, resolvedByName: 1 });
@@ -233,7 +240,12 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     // giudizio per nome rinuncia, giustamente. Ma due delle tre sono gusci
     // vuoti, e questo lo dice il numero di recensioni.
     mockedSearch.mockResolvedValue([
-      hit({ igdbId: 1, name: 'Inside', releaseYear: 2016, totalRatingCount: 1666 }),
+      hit({
+        igdbId: 1,
+        name: 'Inside',
+        releaseYear: 2016,
+        totalRatingCount: 1666,
+      }),
       hit({ igdbId: 2, name: 'Inside', totalRatingCount: 0 }),
       hit({ igdbId: 3, name: 'Inside', totalRatingCount: null }),
     ]);
@@ -272,9 +284,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     ]);
     expect(await unresolvedOf(userId)).toHaveLength(2);
 
-    await importLibrary(account, [
-      { externalId: 'resta', name: 'Celeste' },
-    ]);
+    await importLibrary(account, [{ externalId: 'resta', name: 'Celeste' }]);
 
     expect(await unresolvedOf(userId)).toMatchObject([{ name: 'Celeste' }]);
   });
@@ -296,7 +306,9 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     // **tutte** le voci passano dal match per nome. Interrogare per id sarebbe
     // una richiesta spesa per sapere quello che si sa già.
     mockedSource.mockReturnValue(null);
-    mockedSearch.mockResolvedValue([hit({ igdbId: 55, name: 'Heaven Dust 2' })]);
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 55, name: 'Heaven Dust 2' }),
+    ]);
 
     const amazon = await linkStoreAccount(userId, 'amazon');
     const report = await importLibrary(amazon, [
@@ -309,9 +321,6 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     expect(mockedById).toHaveBeenCalledWith('amazon', []);
     expect(report).toMatchObject({ resolved: 1, resolvedByName: 1 });
   });
-
-
-
 
   it('rieseguito lascia lo stesso stato', async () => {
     mockedSearch.mockResolvedValue([hit({ igdbId: 1234, name: 'Frostpunk' })]);
@@ -355,9 +364,13 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
         platformSlug: schema.ownerships.platformSlug,
         subscription: schema.ownerships.subscription,
         playtimeMinutes: schema.ownerships.playtimeMinutes,
+        medium: schema.ownerships.medium,
       })
       .from(schema.ownerships)
-      .innerJoin(schema.backlog, eq(schema.backlog.id, schema.ownerships.backlogId))
+      .innerJoin(
+        schema.backlog,
+        eq(schema.backlog.id, schema.ownerships.backlogId),
+      )
       .where(eq(schema.backlog.userId, userId));
 
   beforeEach(async () => {
@@ -368,6 +381,7 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
     // PSN non ha una sorgente IGDB utilizzabile: i suoi id sono `titleId`, la
     // sorgente 36 indicizza i concept, e Sony i concept non li manda.
     mockedSource.mockReturnValue(null);
+    mockedBySource.mockResolvedValue(new Map());
   });
 
   it('fa due possessi dello stesso gioco comprato in cross-buy', async () => {
@@ -401,8 +415,16 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
     mockedSearch.mockResolvedValue([hit({ igdbId: 77, name: 'CrossCode' })]);
 
     await importLibrary(account, [
-      { externalId: 'CUSA15461_00', name: 'CrossCode', platformSlug: 'sony_playstation4' },
-      { externalId: 'PPSA03234_00', name: 'CrossCode', platformSlug: 'sony_playstation5' },
+      {
+        externalId: 'CUSA15461_00',
+        name: 'CrossCode',
+        platformSlug: 'sony_playstation4',
+      },
+      {
+        externalId: 'PPSA03234_00',
+        name: 'CrossCode',
+        platformSlug: 'sony_playstation5',
+      },
     ]);
 
     // Se la riga PS4 restasse senza mappatura, al prossimo import tornerebbe a
@@ -421,8 +443,16 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
     mockedSearch.mockResolvedValue([hit({ igdbId: 5, name: 'Live' })]);
 
     const report = await importLibrary(account, [
-      { externalId: 'CUSA00001_00', name: 'Live', platformSlug: 'sony_playstation4' },
-      { externalId: 'CUSA00002_00', name: 'Live', platformSlug: 'sony_playstation4' },
+      {
+        externalId: 'CUSA00001_00',
+        name: 'Live',
+        platformSlug: 'sony_playstation4',
+      },
+      {
+        externalId: 'CUSA00002_00',
+        name: 'Live',
+        platformSlug: 'sony_playstation4',
+      },
     ]);
 
     // È il caso dei 266 «Live» di Epic: due prodotti diversi che si chiamano
@@ -441,7 +471,9 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
       playtimeMinutes: 969,
     };
 
-    await importLibrary(account, [{ ...entry, subscription: 'ps_plus' as const }]);
+    await importLibrary(account, [
+      { ...entry, subscription: 'ps_plus' as const },
+    ]);
     expect(await possessi(userId)).toMatchObject([
       { subscription: 'ps_plus', playtimeMinutes: 969 },
     ]);
@@ -453,6 +485,120 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
     expect(await possessi(userId)).toMatchObject([
       { subscription: null, playtimeMinutes: 969 },
     ]);
+  });
+
+  it('risolve per concept la voce che lo porta, senza cercare per nome', async () => {
+    mockedBySource.mockResolvedValue(
+      new Map([['10000886', { igdbId: 1234, name: 'Horizon Forbidden West' }]]),
+    );
+
+    const report = await importLibrary(account, [
+      {
+        externalId: 'PPSA01521_00',
+        name: 'Horizon Forbidden West',
+        platformSlug: 'sony_playstation5',
+        medium: 'physical',
+        igdbLookup: { source: 36, uid: '10000886' },
+      },
+    ]);
+
+    expect(mockedBySource).toHaveBeenCalledWith(36, ['10000886']);
+    expect(mockedSearch).not.toHaveBeenCalled();
+    expect(report).toMatchObject({ resolved: 1, resolvedByName: 0 });
+    expect(await gamesOf(userId)).toEqual([
+      { name: 'Horizon Forbidden West', igdbId: 1234 },
+    ]);
+    // L'id esterno resta il `titleId`: è quello che il prossimo import rilegge
+    // al passo 1, senza chiedere niente a IGDB.
+    const [mappatura] = await db
+      .select({ externalId: schema.externalIds.externalId })
+      .from(schema.externalIds);
+    expect(mappatura).toEqual({ externalId: 'PPSA01521_00' });
+  });
+
+  it('se IGDB non conosce il concept, ripiega sul nome', async () => {
+    // FIFA 19: l'unico dei 47 concept provati che la sorgente 36 non ha.
+    mockedSearch.mockResolvedValue([hit({ igdbId: 55, name: 'FIFA 19' })]);
+
+    const report = await importLibrary(account, [
+      {
+        externalId: 'CUSA11608_00',
+        name: 'FIFA 19',
+        platformSlug: 'sony_playstation4',
+        igdbLookup: { source: 36, uid: '231776' },
+      },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 1, resolvedByName: 1 });
+  });
+
+  it('scrive il supporto: digitale di default, disco quando la voce lo dice', async () => {
+    mockedSearch.mockImplementation(async (nome) =>
+      nome.toLowerCase().includes('souls')
+        ? [hit({ igdbId: 1, name: 'Demon’s Souls' })]
+        : [hit({ igdbId: 2, name: 'Sifu' })],
+    );
+
+    await importLibrary(account, [
+      {
+        externalId: 'PPSA03001_00',
+        name: 'Sifu',
+        platformSlug: 'sony_playstation5',
+      },
+      {
+        externalId: 'PPSA01341_00',
+        name: 'Demon’s Souls',
+        platformSlug: 'sony_playstation5',
+        medium: 'physical',
+      },
+    ]);
+
+    expect((await possessi(userId)).map((row) => row.medium).sort()).toEqual([
+      'digital',
+      'physical',
+    ]);
+  });
+
+  it('il disco comprato poi in digitale smette di dirsi disco', async () => {
+    mockedSearch.mockResolvedValue([hit({ igdbId: 1, name: 'Stellar Blade' })]);
+    const voce = {
+      externalId: 'PPSA13197_00',
+      name: 'Stellar Blade',
+      platformSlug: 'sony_playstation5',
+    };
+
+    await importLibrary(account, [{ ...voce, medium: 'physical' as const }]);
+    await importLibrary(account, [voce]);
+
+    expect(await possessi(userId)).toMatchObject([{ medium: 'digital' }]);
+  });
+
+  it('disco e digitale dello stesso gioco sulla stessa console: vince il digitale', async () => {
+    // Due codici diversi — una regione per il disco, una per l'acquisto — che
+    // portano allo stesso gioco: un possesso solo, e il diritto digitale copre
+    // il disco.
+    mockedBySource.mockResolvedValue(
+      new Map([['10000333', { igdbId: 9, name: 'Elden Ring' }]]),
+    );
+    const lookup = { source: 36, uid: '10000333' };
+
+    await importLibrary(account, [
+      {
+        externalId: 'PPSA04609_00',
+        name: 'ELDEN RING',
+        platformSlug: 'sony_playstation5',
+        igdbLookup: lookup,
+      },
+      {
+        externalId: 'PPSA04608_00',
+        name: 'ELDEN RING',
+        platformSlug: 'sony_playstation5',
+        medium: 'physical',
+        igdbLookup: lookup,
+      },
+    ]);
+
+    expect(await possessi(userId)).toMatchObject([{ medium: 'digital' }]);
   });
 
   it('tiene la piattaforma sugli scarti, o risolverli a mano sarebbe indovinare', async () => {
@@ -496,6 +642,8 @@ describe('platformFor', () => {
       }),
     ).toBe('sony_playstation5');
     // E ci ripiega solo se la riga non ne porta nessuna.
-    expect(platformOf('gog', { externalId: '1', name: 'x' })).toBe('pc_windows');
+    expect(platformOf('gog', { externalId: '1', name: 'x' })).toBe(
+      'pc_windows',
+    );
   });
 });

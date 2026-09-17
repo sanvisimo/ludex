@@ -1,9 +1,11 @@
-import type { Store, Subscription } from '@repo/contracts/vocabulary';
+import type { Medium, Store, Subscription } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, eq, inArray, sql } from '@repo/db/orm';
 
 import {
   findIgdbGamesByExternalIds,
+  findIgdbGamesBySource,
+  type IgdbExternalMatch,
   igdbSourceFor,
   searchIgdbGames,
 } from '../external/igdb';
@@ -82,6 +84,21 @@ export type LibraryEntry = {
    * ciò che è tuo da ciò che hai finché paghi.
    */
   subscription?: Subscription | null;
+  /**
+   * Disco o digitale. Assente = digitale, perché la libreria di un negozio è
+   * fatta di diritti digitali; lo dichiara solo chi porta dischi, cioè PSN.
+   */
+  medium?: Medium | null;
+  /**
+   * Un id che IGDB conosce **diverso** dall'id esterno, con la sua sorgente.
+   *
+   * Il passo 2 cerca per `externalId` quando il negozio ha una sorgente IGDB,
+   * e qui c'è il caso in cui non basta: su PSN l'id esterno è il `titleId`, che
+   * IGDB non indicizza, mentre il `conceptId` che indicizza arriva da un altro
+   * elenco. L'id esterno resta il `titleId` — è ciò che si scrive in
+   * `external_ids` e che il passo 1 rilegge — e questo serve solo a trovarlo.
+   */
+  igdbLookup?: { source: number; uid: string } | null;
 };
 
 /**
@@ -188,8 +205,7 @@ function breakTieByReviews<T extends { totalRatingCount: number | null }>(
   const esatti = ranked
     .filter((row) => row.exact && row.score >= NAME_THRESHOLD)
     .sort(
-      (a, b) =>
-        (b.hit.totalRatingCount ?? 0) - (a.hit.totalRatingCount ?? 0),
+      (a, b) => (b.hit.totalRatingCount ?? 0) - (a.hit.totalRatingCount ?? 0),
     );
   if (esatti.length < 2) return null;
 
@@ -470,6 +486,34 @@ export async function resolveByName(
   return links;
 }
 
+/**
+ * Il passo 2 per le voci che portano un id IGDB proprio: una richiesta per
+ * sorgente, e i risultati scritti in `byId` sotto l'id esterno della voce.
+ *
+ * Più voci possono portare lo stesso uid — il cross-buy PS4/PS5 condivide il
+ * concept — e prendono tutte lo stesso gioco, che è la verità.
+ */
+async function resolveByLookup(
+  entries: LibraryEntry[],
+  byId: Map<string, IgdbExternalMatch>,
+) {
+  const perSorgente = new Map<number, LibraryEntry[]>();
+  for (const entry of entries) {
+    const { source } = entry.igdbLookup!;
+    perSorgente.set(source, [...(perSorgente.get(source) ?? []), entry]);
+  }
+
+  for (const [source, gruppo] of perSorgente) {
+    const matches = await findIgdbGamesBySource(source, [
+      ...new Set(gruppo.map((entry) => entry.igdbLookup!.uid)),
+    ]);
+    for (const entry of gruppo) {
+      const match = matches.get(entry.igdbLookup!.uid);
+      if (match) byId.set(entry.externalId, match);
+    }
+  }
+}
+
 export async function importLibrary(
   account: StoreAccountRow,
   library: LibraryEntry[],
@@ -488,11 +532,17 @@ export async function importLibrary(
   console.log(
     `[import] ${store}: ${library.length} in libreria, ${known.size} già note a Ludex`,
   );
-  const byId = await findIgdbGamesByExternalIds(
-    store,
-    igdbSourceFor(store) === null
-      ? []
-      : missing.map((entry) => entry.externalId),
+  const byId = new Map<string, IgdbExternalMatch>(
+    await findIgdbGamesByExternalIds(
+      store,
+      igdbSourceFor(store) === null
+        ? []
+        : missing.map((entry) => entry.externalId),
+    ),
+  );
+  await resolveByLookup(
+    missing.filter((entry) => entry.igdbLookup && !byId.has(entry.externalId)),
+    byId,
   );
 
   const idLinks: ExternalGameLink[] = missing
@@ -565,6 +615,7 @@ export async function importLibrary(
       playtimeMinutes: entry.playtimeMinutes ?? null,
       lastPlayedAt: entry.lastPlayedAt ?? null,
       subscription: entry.subscription ?? null,
+      medium: entry.medium ?? 'digital',
     })),
   );
 

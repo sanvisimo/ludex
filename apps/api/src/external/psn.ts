@@ -566,6 +566,27 @@ export type PsnPlayedTitle = {
   name: string;
   playtimeMinutes: number | null;
   lastPlayedAt: Date | null;
+  /** `ps5_native_game`, `ps4_game`, o `unknown` sulle righe più vecchie. */
+  category: string | null;
+  /**
+   * Con quale diritto Sony abbina il gioco **adesso**: `ps_plus`,
+   * `none(purchased)` — o `none_purchased`, stessa cosa scritta come si
+   * scriveva prima — oppure `other`, cioè nessun diritto digitale
+   * sull'account. È `other` che segna i dischi.
+   *
+   * Non è come lo si è giocato la prima volta: un disco del 2018 arrivato poi
+   * nel Plus oggi dice `ps_plus`.
+   */
+  service: string | null;
+  /**
+   * Il concept, che è l'uid della sorgente 36 di IGDB. L'elenco degli acquisti
+   * lo dichiara e lo manda nullo; questo lo manda davvero.
+   *
+   * È la **scheda del negozio**, non il gioco: su una raccolta tutti i giochi
+   * che la compongono portano il concept della raccolta. Per questo risolve i
+   * dischi e non gli acquisti — vedi `buildPsnEntries`.
+   */
+  conceptId: string | null;
 };
 
 /** I campi di un giocato che l'import legge. Gli altri li vede solo l'arnese. */
@@ -576,6 +597,8 @@ type GameListTitle = {
   playDuration?: string;
   lastPlayedDateTime?: string;
   category?: string;
+  service?: string;
+  concept?: { id?: number };
 };
 
 /**
@@ -653,9 +676,11 @@ export async function fetchPsnPlayedTitlesRaw(
  * è davvero avviato. Per questo le ore su PSN sono parziali per costruzione, e
  * non c'è modo di averle per un PS3 o per un gioco mai aperto.
  *
- * **Non è una fonte di possessi.** Qui dentro finisce anche ciò che si è giocato
- * senza possederlo, e `backlog` oggi vuol dire possesso: questo elenco serve a
- * decorare i possessi che la libreria ha già dichiarato, non ad aggiungerne.
+ * Serve a due cose: le ore dei possessi che la libreria ha dichiarato, e **i
+ * dischi**, che dalla libreria non passano e arrivano col loro concept. Solo la
+ * seconda crea possessi, e solo per le righe `other`: il resto di ciò che si è
+ * giocato senza possederlo — un Plus scaduto, un acquisto sparito dal negozio —
+ * non entra. La scelta sta in `buildPsnEntries`, non qui.
  */
 export async function fetchPsnPlayedTitles(
   accessToken: string,
@@ -676,6 +701,9 @@ export async function fetchPsnPlayedTitles(
       lastPlayedAt: title.lastPlayedDateTime
         ? new Date(title.lastPlayedDateTime)
         : null,
+      category: title.category ?? null,
+      service: title.service ?? null,
+      conceptId: title.concept?.id != null ? String(title.concept.id) : null,
     });
   }
   return titles;

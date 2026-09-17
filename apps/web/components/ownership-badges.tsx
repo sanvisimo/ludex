@@ -1,6 +1,11 @@
 'use client';
 
-import type { OwnershipAccount, Store, Subscription } from '@repo/contracts';
+import type {
+  Medium,
+  OwnershipAccount,
+  Store,
+  Subscription,
+} from '@repo/contracts';
 import { storeAccountName } from '@repo/contracts';
 import { useQuery } from '@tanstack/react-query';
 import { XIcon } from 'lucide-react';
@@ -27,6 +32,11 @@ export type DisplayedOwnership = {
    * maggioranza della libreria.
    */
   subscription?: Subscription | null;
+  /**
+   * Disco o digitale. A schermo va solo il disco: il digitale è il caso normale,
+   * e scriverlo su ogni badge sarebbe rumore.
+   */
+  medium?: Medium | null;
 };
 
 /** Chiave stabile per un possesso, salvato o no: è la stessa del vincolo unique. */
@@ -51,6 +61,7 @@ export function OwnershipBadges({
 }) {
   const t = useTranslations('editEntry');
   const tSubscription = useTranslations('subscription');
+  const tMedium = useTranslations('medium');
   const storeLabels = useStoreLabels();
   const { data: platforms } = useQuery({
     ...api.platforms.list.queryOptions(),
@@ -86,7 +97,8 @@ export function OwnershipBadges({
           (account ? ` (${account})` : '') +
           (ownership.subscription
             ? ` · ${tSubscription(ownership.subscription)}`
-            : '');
+            : '') +
+          (ownership.medium === 'physical' ? ` · ${tMedium('physical')}` : '');
 
         return (
           <Badge

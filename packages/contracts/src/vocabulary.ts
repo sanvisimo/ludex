@@ -92,6 +92,19 @@ export const storeAccountStatusValues = [
 // fa**, e nessun valore qui può inventarla.
 export const subscriptionValues = ['ps_plus'] as const;
 
+// **Su che supporto** sta una copia: un diritto digitale o un disco.
+//
+// Nasce col 9b, quando si è visto che i dischi PSN fra gli acquisti non ci sono
+// e compaiono solo fra i giocati, con `service: other`. È la gemella di
+// `subscriptionValues` e risponde a una domanda accanto: quella dice *a che
+// titolo* hai la copia, questa *che cosa* hai in mano. Un disco non scade con
+// l'abbonamento e non si avvia dal negozio, e allo step 14 è la differenza fra
+// togliere un gioco e toglierne uno che sta sullo scaffale.
+//
+// Nullo = non dichiarato, che è il caso degli inserimenti manuali: l'import dice
+// sempre cosa porta, l'utente per ora no.
+export const mediumValues = ['digital', 'physical'] as const;
+
 // Le fonti di un voto della critica. Sottoinsieme delle fonti di dati: HLTB e
 // SteamGridDB non danno voti.
 //
@@ -142,3 +155,4 @@ export type LinkableStore = (typeof linkableStoreValues)[number];
 export type StoreAccountStatus = (typeof storeAccountStatusValues)[number];
 export type ScoreSource = (typeof scoreSourceValues)[number];
 export type Subscription = (typeof subscriptionValues)[number];
+export type Medium = (typeof mediumValues)[number];

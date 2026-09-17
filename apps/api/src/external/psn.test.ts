@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import { parseNpsso, parsePlayDuration } from './psn';
-import { toPlatformSlug } from '../services/psn-platforms';
+import {
+  toPlatformSlug,
+  toPlayedPlatformSlug,
+} from '../services/psn-platforms';
 
 // Puro: nessuna rete, nessun database. Su PSN quello che l'utente si trova
 // davanti è una pagina JSON come su Epic, ma il campo che conta è uno solo.
 
 describe('parseNpsso', () => {
-  const npsso = 'HcJ2kQ8vT1nR5wLpY7bXeM0aZsD4gFhU3iOoK9lNqVrCtWyPjB6xEfAdSgZmIuTn';
+  const npsso =
+    'HcJ2kQ8vT1nR5wLpY7bXeM0aZsD4gFhU3iOoK9lNqVrCtWyPjB6xEfAdSgZmIuTn';
 
   it('accetta la risposta JSON intera, che è quella che si vede a schermo', () => {
     expect(parseNpsso(`{"npsso":"${npsso}"}`)).toBe(npsso);
@@ -72,5 +76,35 @@ describe('toPlatformSlug', () => {
     // avviare. Chi chiama deve dirlo, non tirare a indovinare.
     expect(toPlatformSlug('PS6')).toBe(null);
     expect(toPlatformSlug('')).toBe(null);
+  });
+});
+
+describe('toPlayedPlatformSlug', () => {
+  it('traduce le categorie dei giocati', () => {
+    expect(toPlayedPlatformSlug('ps5_native_game', 'PPSA01521_00')).toBe(
+      'sony_playstation5',
+    );
+    expect(toPlayedPlatformSlug('ps4_game', 'CUSA08519_00')).toBe(
+      'sony_playstation4',
+    );
+  });
+
+  it('sulle righe vecchie `unknown` decide il prefisso del titleId', () => {
+    expect(toPlayedPlatformSlug('unknown', 'CUSA05399_00')).toBe(
+      'sony_playstation4',
+    );
+    expect(toPlayedPlatformSlug(null, 'PPSA01341_00')).toBe(
+      'sony_playstation5',
+    );
+  });
+
+  it('un disco PS4 avviato su PS5 resta PS4: è quella la copia che hai', () => {
+    expect(toPlayedPlatformSlug('unknown', 'CUSA13801_00')).toBe(
+      'sony_playstation4',
+    );
+  });
+
+  it('rende null quando né la categoria né il prefisso dicono niente', () => {
+    expect(toPlayedPlatformSlug('ps3_game', 'NPEB01234_00')).toBe(null);
   });
 });

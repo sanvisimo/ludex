@@ -341,5 +341,9 @@
   },
   "subscription": {
     "ps_plus": "PS Plus"
+  },
+  "medium": {
+    "digital": "Digital",
+    "physical": "Disc"
   }
 }

@@ -5,6 +5,7 @@ import {
   backlogSortValues,
   backlogStatusValues,
   linkableStoreValues,
+  mediumValues,
   scoreSourceValues,
   sortDirectionValues,
   storeAccountStatusValues,
@@ -19,6 +20,7 @@ export const StoreSchema = z.enum(storeValues);
 export const LinkableStoreSchema = z.enum(linkableStoreValues);
 export const StoreAccountStatusSchema = z.enum(storeAccountStatusValues);
 export const SubscriptionSchema = z.enum(subscriptionValues);
+export const MediumSchema = z.enum(mediumValues);
 export const ScoreSourceSchema = z.enum(scoreSourceValues);
 export const UserTagKindSchema = z.enum(userTagKindValues);
 
@@ -195,6 +197,10 @@ export const OwnershipSchema = z.object({
   // poter vedere sul possesso: «ce l'hai finché paghi» non è un dettaglio da
   // tenere solo nel database.
   subscription: SubscriptionSchema.nullable(),
+  // Disco o digitale; nullo sugli inserimenti manuali. Va al client per la
+  // stessa ragione dell'abbonamento: un disco si avvia inserendolo, e il badge
+  // del possesso deve poterlo dire.
+  medium: MediumSchema.nullable(),
 });
 
 export const OwnershipInputSchema = z.object({

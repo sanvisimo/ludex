@@ -1,5 +1,6 @@
 import {
   backlogStatusValues,
+  mediumValues,
   subscriptionValues,
 } from '@repo/contracts/vocabulary';
 import {
@@ -31,6 +32,9 @@ export const backlogStatus = pgEnum('backlog_status', backlogStatusValues);
 // Da quale abbonamento viene il diritto di giocare a una copia. Valori da
 // @repo/contracts, vedi il commento su `store` in games.ts.
 export const subscription = pgEnum('subscription', subscriptionValues);
+
+// Disco o digitale. Valori da @repo/contracts, vedi il commento lì.
+export const medium = pgEnum('medium', mediumValues);
 
 // L'esistenza della riga È il possesso: nessun flag "posseduto". La wishlist è
 // una tabella separata, così ogni query qui resta semplice.
@@ -107,9 +111,12 @@ export const ownerships = pgTable(
     // percorrendo lo decide l'utente, non la foreign key. Cancellare i possessi
     // è una scelta esplicita, e un `cascade` la farebbe di nascosto anche
     // quando l'utente ha chiesto di tenersi i giochi.
-    storeAccountId: uuid('store_account_id').references(() => storeAccounts.id, {
-      onDelete: 'restrict',
-    }),
+    storeAccountId: uuid('store_account_id').references(
+      () => storeAccounts.id,
+      {
+        onDelete: 'restrict',
+      },
+    ),
     // Ore giocate e ultima partita, come le riporta il negozio da cui viene
     // l'import. Stanno qui e non su `backlog` perche' sono una proprieta' di
     // *questa copia*: lo stesso gioco su GOG avrebbe le sue.
@@ -133,6 +140,16 @@ export const ownerships = pgTable(
     // libreria vera sono 274 righe su 336. Cosa farne è lo step 14; questa
     // colonna serve a non aver buttato l'informazione prima di arrivarci.
     subscription: subscription('subscription'),
+    // **Disco o digitale?** Nullo = non dichiarato, cioè gli inserimenti manuali.
+    //
+    // L'import lo dice sempre: `digital` per ogni libreria di un negozio, che
+    // è fatta di diritti digitali, `physical` per i dischi PSN, che dalla
+    // libreria non passano e arrivano dall'elenco dei giocati.
+    //
+    // Non entra nella chiave del vincolo, ed è voluto: un gioco che si ha su
+    // disco *e* in digitale sulla stessa console è una copia sola da avviare, e
+    // vince il digitale — vedi `fondiDoppioni`.
+    medium: medium('medium'),
     ...timestamps,
   },
   (table) => [

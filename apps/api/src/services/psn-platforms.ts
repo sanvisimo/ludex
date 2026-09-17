@@ -33,3 +33,30 @@ const MAP: Record<string, string> = {
 export function toPlatformSlug(psnPlatform: string): string | null {
   return MAP[psnPlatform.trim().toUpperCase()] ?? null;
 }
+
+/** Le `category` dell'elenco dei giocati, che non sono le piattaforme della libreria. */
+const PLAYED_CATEGORY: Record<string, string> = {
+  ps5_native_game: 'sony_playstation5',
+  ps4_game: 'sony_playstation4',
+};
+
+/**
+ * La piattaforma di un titolo **giocato**, dove Sony non scrive `PS5` ma una
+ * categoria.
+ *
+ * Le righe più vecchie portano `unknown`, e lì decide il prefisso del
+ * `titleId`. Non è un'ipotesi sul gioco ma la forma dell'identificativo: `CUSA`
+ * è lo spazio dei titoli PS4 e `PPSA` quello dei PS5, e un disco PS4 avviato su
+ * PS5 resta `CUSA` — che è giusto, perché è la copia PS4 quella che hai.
+ * Tutto il resto rende null, con la stessa regola di `toPlatformSlug`.
+ */
+export function toPlayedPlatformSlug(
+  category: string | null,
+  titleId: string,
+): string | null {
+  const daCategoria = category ? PLAYED_CATEGORY[category] : undefined;
+  if (daCategoria) return daCategoria;
+  if (/^PPSA/i.test(titleId)) return 'sony_playstation5';
+  if (/^CUSA/i.test(titleId)) return 'sony_playstation4';
+  return null;
+}

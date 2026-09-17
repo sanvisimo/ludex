@@ -452,6 +452,12 @@ export async function fetchIgdbPlatforms(): Promise<IgdbPlatform[]> {
  * su 336, misurato. Tenerla qui costava una richiesta per non trovare mai
  * niente.
  *
+ * Il concept però **c'è sull'elenco dei giocati**, e lì la sorgente 36 trova la
+ * scheda giusta 46 volte su 47. Resta fuori da questa mappa lo stesso, perché
+ * questa mappa vuol dire «l'id esterno del negozio *è* l'uid IGDB», e per PSN
+ * l'id esterno resta il `titleId`. Il concept viaggia a parte, sulla voce di
+ * libreria dei soli dischi, e si cerca con `findIgdbGamesBySource`.
+ *
  * Un negozio assente da questa mappa è quindi legittimo, non un buco da tappare:
  * dice «questa libreria si risolve per nome».
  */
@@ -460,6 +466,9 @@ const IGDB_SOURCES: Partial<Record<Store, number>> = {
   gog: 5,
   xbox: 11,
 };
+
+/** La sorgente IGDB dei `conceptId` del PlayStation Store. Vedi sopra. */
+export const IGDB_PS_STORE_SOURCE = 36;
 
 /** L'id della sorgente IGDB per un negozio, o null se IGDB non la mappa. */
 export function igdbSourceFor(store: Store): number | null {
@@ -505,19 +514,35 @@ export async function findIgdbGamesByExternalIds(
   store: Store,
   externalIds: string[],
 ): Promise<Map<string, IgdbExternalMatch>> {
-  const matches = new Map<string, IgdbExternalMatch>();
   const source = igdbSourceFor(store);
-  if (source === null || externalIds.length === 0) return matches;
+  if (source === null) return new Map();
+  return findIgdbGamesBySource(source, externalIds);
+}
 
-  for (const page of chunk(externalIds, EXTERNAL_PAGE)) {
+/**
+ * Come `findIgdbGamesByExternalIds`, ma con la sorgente detta da chi chiama.
+ *
+ * Serve quando l'id che IGDB conosce **non è** l'id esterno del negozio: su PSN
+ * l'id esterno è il `titleId`, e ciò che IGDB indicizza è il concept, che
+ * arriva da un altro elenco. Mappa uid → gioco, e chi chiama sa a quale voce
+ * appartiene ciascun uid.
+ */
+export async function findIgdbGamesBySource(
+  source: number,
+  uids: string[],
+): Promise<Map<string, IgdbExternalMatch>> {
+  const matches = new Map<string, IgdbExternalMatch>();
+  if (uids.length === 0) return matches;
+
+  for (const page of chunk(uids, EXTERNAL_PAGE)) {
     // Gli id dei negozi sono spesso numerici, ma finiscono dentro una stringa
     // apicalypse: si passano dallo stesso filtro delle ricerche.
-    const uids = page.map((id) => `"${escapeSearchTerm(id)}"`).join(',');
+    const list = page.map((id) => `"${escapeSearchTerm(id)}"`).join(',');
 
     const rows = await query<IgdbExternalGame[]>(
       'external_games',
       `fields uid, game, game.name;` +
-        ` where external_game_source = ${source} & uid = (${uids});` +
+        ` where external_game_source = ${source} & uid = (${list});` +
         ` limit ${EXTERNAL_PAGE};`,
     );
 

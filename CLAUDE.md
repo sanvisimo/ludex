@@ -232,6 +232,14 @@ Le librerie importate aggiungono tre cose al modello, decise allo step 4:
 - **abbonamento su `ownerships`**: `subscription`, nullo se la copia è comprata.
   Vedi «un gioco a cui puoi giocare stasera ma che non è tuo», più sotto: è la
   risposta parziale che il 9b ha dovuto dare, non un campo in più.
+- **supporto su `ownerships`**: `medium`, `digital` o `physical`, nullo sugli
+  inserimenti manuali che non lo dicono. Gemello di `subscription`: quello dice
+  *a che titolo* hai la copia, questo *che cosa* hai in mano. L'import lo scrive
+  sempre — `digital` per ogni libreria di negozio, `physical` per i dischi PSN
+  — e al reimport lo riscrive in COALESCE, così un inserimento a mano non
+  cancella ciò che l'import sapeva. Non sta nella chiave del vincolo: disco e
+  digitale dello stesso gioco sulla stessa console sono una copia sola, e vince
+  il digitale.
 - **ore giocate su `ownerships`**, non su `backlog`: sono una proprietà di
   _quella copia_, e lo stesso gioco su GOG avrebbe le sue. Sono dato oggettivo
   del negozio, non un campo personale dello step 5. **Non si usano per indovinare
@@ -554,9 +562,26 @@ PS5, di ogni regione. Provati sulla sorgente 36 di IGDB: **46 su 47** trovano il
 gioco giusto, e l'unico che manca è *FIFA 19*. Vale solo per ciò che si è
 avviato su PS4 o PS5 — 49 titoli contro 342 acquisti — ma dove c'è è un id
 esatto: niente ricerca, e niente titolo in italiano da far combaciare con quello
-inglese di IGDB. Metà degli irrisolti per nome che *non* sono Netflix sono
-proprio questo: *Uncharted 4: Fine di un ladro*, *Sackboy: Una grande
-avventura*, *Sapere è Potere*.
+inglese di IGDB.
+
+**Ma il concept è la scheda del negozio, non il gioco**, e per questo risolve
+**solo i dischi**. La *Master Collection* di Metal Gear sono cinque acquisti —
+MGS 1, 2 e 3, Metal Gear 1 e 2, i contenuti bonus — che si installano e si
+giocano uno per uno, e fra i giocati stanno **tutti** sotto il concept della
+raccolta, che su IGDB è *Master Collection: Volume 1*. Per nome ciascuno trova
+il suo gioco, con la sua durata; per concept diventerebbero una voce sola. Lo
+stesso concept di *Horizon Zero Dawn* elenca fra le sue edizioni anche
+l'artbook. E in cambio, sulla libreria vera, il concept non recuperava nessun
+acquisto che il nome perdesse: i titoli in italiano rimasti fuori sono giochi
+mai avviati, che fra i giocati non ci sono. Quindi gli acquisti restano **per
+nome**, e il concept si usa dove è l'unica cosa che c'è: un disco ha solo la sua
+riga fra i giocati, che porta già il nome del concept, e un disco di una
+raccolta finisce sulla raccolta, che è ciò che si è inserito nella console.
+
+Il concept viaggia su `LibraryEntry.igdbLookup` e **non** diventa l'id
+esterno: quello resta il `titleId`, che è ciò che si scrive in `external_ids` e
+che il passo 1 rilegge, ed è lo stesso codice della copia digitale nella stessa
+regione.
 
 Sempre di PSN, quattro cose che si pagano care se si scoprono tardi:
 
@@ -576,8 +601,8 @@ Sempre di PSN, quattro cose che si pagano care se si scoprono tardi:
   nascosta: l'elenco degli acquisti non dichiara il `titleId` come campo suo, lo
   porta dentro l'`entitlementId` (`UP3971-PPSA33764_00-WALKWALKWALKWALK`, il
   pezzo di mezzo). Su una libreria vera 31 dei 49 giocati trovano così il loro
-  possesso; gli altri 18 sono roba giocata e non posseduta, che **non entra** —
-  e 14 di quei 18 sono dischi, vedi sotto.
+  possesso; gli altri 18 sono giocati e non posseduti, e di quelli entrano
+  solo i 14 dischi, vedi sotto.
 - **Il credenziale dura dieci giorni**, non due mesi, e **la finestra riparte a
   ogni rinnovo**. Misurato a distanza di giorni sullo stesso account: un refresh
   token emesso l'11 settembre, che scadeva il 21, rinnovato il 14 ne ha dato uno
@@ -604,11 +629,19 @@ Gli altri quattro dei 18 sono `none_purchased`: comprati, ma assenti dagli
 acquisti attivi — *FIFA 19* e *WWE 2K18* sono stati tolti dal negozio, e il
 sospetto, non verificato, è che il diritto sia decaduto con loro.
 
-La strada quindi c'è ed è esatta da capo a fondo: un giocato con `service`
-`other` diventa un possesso, sulla piattaforma della sua `category`, risolto
-per `concept.id` e non per nome. **Non è ancora deciso come entra**, e la
-domanda non è tecnica: oggi l'elenco dei giocati *decora* i possessi e non ne
-crea, e farlo cambia cosa vuol dire `backlog` per quella fonte.
+**Ed entrano.** Un giocato `other` che fra gli acquisti non c'è diventa un
+possesso come gli altri — negozio `psn`, l'account da cui viene, abbonamento
+nullo — con `medium: physical`, sulla piattaforma della sua `category` (sulle
+righe vecchie `unknown` decide il prefisso del `titleId`: `CUSA` è PS4, `PPSA`
+è PS5), e risolto per concept prima che per nome. La scelta sta in
+`buildPsnEntries`, che è pura apposta. Sulla libreria vera sono 14 voci in più,
+e tutti e 14 i concept trovano il gioco giusto.
+
+Il prezzo è noto e accettato: `other` vuol dire «avviato senza un diritto
+digitale», non «è tuo». Un disco prestato entra come fosse tuo, e finché non
+esiste il nascondere dello step 5 il prossimo import lo ricrea. Gli altri
+giocati assenti dagli acquisti **non** entrano: un Plus scaduto non è tuo, e di
+un acquisto sparito dal negozio non sappiamo abbastanza.
 
 Tre cose che `service` **non** dice, da tenere presenti:
 
@@ -836,11 +869,11 @@ la spazzata ci riprova per sempre.
     - **9b — PSN**: prima console, ed è quella che ha smentito due delle sue
       tre premesse. La piattaforma per riga sì, ed è entrata nel modello. Il
       possesso «vero» no: **274 righe su 336 vengono da PS Plus**. E l'id
-      risolvibile nemmeno — vedi «PSN» qui sotto. **Non è chiuso**: mancano i
-      **dischi fisici**, che fra gli acquisti non compaiono. Fra i giocati si
-      riconoscono (`service: other`) e si risolvono per `concept.id`; resta da
-      decidere come entrano, e da far girare un rinnovo entro dieci giorni
-      perché il collegamento non muoia da solo.
+      risolvibile nemmeno — vedi «PSN» qui sotto. I **dischi fisici**, che fra
+      gli acquisti non compaiono, entrano dall'elenco dei giocati
+      (`service: other`) risolti per concept, e il possesso lo dice
+      (`medium`). **Non è chiuso** per una cosa sola: far girare un rinnovo
+      entro dieci giorni, perché il collegamento non muoia da solo.
     - **9c — EA**: non un account collegato ma un'**importazione una tantum**.
     - **9d — Nintendo**: barattolo di cookie, nessun id che IGDB conosca.
     - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia

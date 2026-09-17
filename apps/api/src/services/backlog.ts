@@ -1,6 +1,7 @@
 import type { UserTag, UserTagInput } from '@repo/contracts';
 import type {
   BacklogStatus,
+  Medium,
   Store,
   Subscription,
 } from '@repo/contracts/vocabulary';
@@ -34,6 +35,7 @@ export const entryQuery = {
         playtimeMinutes: true,
         lastPlayedAt: true,
         subscription: true,
+        medium: true,
       },
       // Da quale account viene la copia: è ciò che permette alla scheda di
       // scrivere «Amazon — secondo account» invece di due volte «Amazon».
@@ -333,6 +335,12 @@ export async function ensureBacklogEntries(
  *
  * Le ore si sommano: sono due voci di libreria dello stesso gioco, e il tempo
  * speso è la somma dei due. L'ultima partita è la più recente delle due.
+ *
+ * Il supporto invece non si somma, si sceglie: se una delle due è digitale il
+ * possesso è digitale. È il caso del disco PSN con un codice diverso dalla
+ * copia comprata sulla stessa console — due voci, un gioco, una console — e un
+ * diritto digitale copre il disco: è quella la copia che si avvia senza
+ * cercarlo sullo scaffale, e quella che Sony dichiara.
  */
 function fondiDoppioni(rows: OwnershipUpsert[]) {
   const perChiave = new Map<string, OwnershipUpsert>();
@@ -356,6 +364,10 @@ function fondiDoppioni(rows: OwnershipUpsert[]) {
         [gia.lastPlayedAt, row.lastPlayedAt]
           .filter((date): date is Date => date instanceof Date)
           .sort((a, b) => b.getTime() - a.getTime())[0] ?? null,
+      medium:
+        gia.medium === 'digital' || row.medium === 'digital'
+          ? 'digital'
+          : (gia.medium ?? row.medium ?? null),
     });
   }
 
@@ -371,6 +383,8 @@ export type OwnershipUpsert = {
   lastPlayedAt?: Date | null;
   /** Nullo = comprato. Vedi la colonna omonima su `ownerships`. */
   subscription?: Subscription | null;
+  /** Nullo = non dichiarato. Vedi la colonna omonima su `ownerships`. */
+  medium?: Medium | null;
 };
 
 /**
@@ -449,6 +463,7 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           playtimeMinutes: row.playtimeMinutes ?? null,
           lastPlayedAt: row.lastPlayedAt ?? null,
           subscription: row.subscription ?? null,
+          medium: row.medium ?? null,
         })),
       )
       .onConflictDoUpdate({
@@ -471,6 +486,12 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           // sempre. Le ore sono il caso opposto: un import che non le porta non
           // deve cancellare quelle che un altro aveva scritto.
           subscription: sql`excluded.subscription`,
+          // In COALESCE come le ore, e per una ragione diversa da loro: l'import
+          // il supporto lo dice **sempre**, quindi quando cambia — il disco che
+          // hai poi comprato in digitale — il valore nuovo arriva e scrive. A
+          // non portarlo è solo l'inserimento a mano, che non sa niente della
+          // copia e non deve cancellare ciò che l'import sapeva.
+          medium: sql`coalesce(excluded.medium, ${schema.ownerships.medium})`,
           updatedAt: new Date(),
         },
       })
