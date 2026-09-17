@@ -6,8 +6,10 @@ import {
   fetchPsnLibrary,
   fetchPsnLibraryRawPage,
   fetchPsnPlayedTitles,
+  fetchPsnPlayedTitlesRaw,
   fetchPsnProfile,
   parseNpsso,
+  parsePlayDuration,
   type PsnLibraryEntry,
   refreshPsnTokens,
 } from '../external/psn';
@@ -29,6 +31,10 @@ import { toPlatformSlug } from '../services/psn-platforms';
 //     l'unica cosa che IGDB conosca di PSN. Le altre andranno risolte per nome
 //     come su Epic e Amazon, o non andranno risolte affatto.
 //  3. **le ore** — la libreria e l'elenco dei giocati condividono una chiave?
+//  4. **i giocati che non sono fra gli acquisti** — i dischi fisici stanno qui
+//     (Horizon Forbidden West l'ha confermato), ma insieme a Plus scaduti,
+//     prove e giochi di altri account. Si stampano tutti con i campi grezzi di
+//     Sony, per cercare quello che li separa.
 //
 // Senza argomento usa PSN_TEST_NPSSO.
 
@@ -49,6 +55,9 @@ if (!npsso) {
   );
   process.exit(1);
 }
+
+const parsePlayDurationDaGrezzo = (valore: unknown) =>
+  parsePlayDuration(typeof valore === 'string' ? valore : undefined);
 
 const conteggio = <T>(rows: T[], chiave: (row: T) => string) => {
   const mappa = new Map<string, number>();
@@ -154,7 +163,10 @@ console.log(
   `  con titleId ricavabile:   ${conTitleId.length}  (${percento(conTitleId.length, library.length)})`,
 );
 console.log(
-  `  da abbonamento:           ${daAbbonamento.length}  (${conteggio(library, (entry) => entry.subscription ?? '(nullo)')
+  `  da abbonamento:           ${daAbbonamento.length}  (${conteggio(
+    library,
+    (entry) => entry.subscription ?? '(nullo)',
+  )
     .map(([valore, n]) => `${valore} ${n}`)
     .join(', ')})`,
 );
@@ -221,13 +233,18 @@ const ambigui = [...perNome.values()].filter((gruppo) => {
 });
 
 const crossBuy = [...perNome.values()].filter(
-  (gruppo) => gruppo.length > 1 && new Set(gruppo.map((e) => e.platform)).size > 1,
+  (gruppo) =>
+    gruppo.length > 1 && new Set(gruppo.map((e) => e.platform)).size > 1,
 );
 
 console.log('\nnomi');
 console.log(`  nomi distinti:            ${perNome.size}`);
-console.log(`  di cui cross-buy:         ${crossBuy.length}  (stesso gioco su due console)`);
-console.log(`  ambigui davvero:          ${ambigui.length}  (stesso nome, stessa console)`);
+console.log(
+  `  di cui cross-buy:         ${crossBuy.length}  (stesso gioco su due console)`,
+);
+console.log(
+  `  ambigui davvero:          ${ambigui.length}  (stesso nome, stessa console)`,
+);
 
 // Il matcher **dell'import**, non una sua copia: se questi numeri differissero
 // da quelli del job, l'arnese non servirebbe a niente.
@@ -271,7 +288,9 @@ console.log(`  di quelli, con ore:       ${conOre.length}`);
 console.log(
   `  agganciati per titleId:   ${agganciati.length}  (${percento(agganciati.length, giocati.length)} dei giocati)`,
 );
-for (const title of giocati.slice(0, 8)) {
+// Tutti e non un campione: sono poche decine, e l'elenco completo è ciò che si
+// incrocia con una lista di dischi scritta a mano.
+for (const title of giocati) {
   const trovato = titleIdInLibreria.has(title.titleId.toUpperCase());
   console.log(
     `    ${title.titleId.padEnd(13)} ${(title.playtimeMinutes ?? 0).toString().padStart(6)} min  ${trovato ? '✓' : '·'} ${title.name}`,
@@ -282,6 +301,65 @@ if (giocati.length > 0 && agganciati.length === 0) {
     '  ← nessun aggancio: la libreria e i giocati non condividono il titleId,\n' +
       '    quindi le ore costerebbero un match per titolo. Da decidere.',
   );
+}
+
+// --- 5. i giocati che fra gli acquisti non ci sono ---
+//
+// La domanda è se un campo della risposta distingua un disco dal resto. Per
+// questo il riepilogo mette ogni campo **accanto a sé stesso** fra posseduti e
+// non posseduti: un campo che vale una cosa sui dischi e un'altra sui digitali
+// si vede lì, senza leggere cinquanta righe di JSON.
+
+const grezziGiocati = await fetchPsnPlayedTitlesRaw(accessToken, accountId);
+const posseduto = (raw: Record<string, unknown>) =>
+  typeof raw.titleId === 'string' &&
+  titleIdInLibreria.has(raw.titleId.toUpperCase());
+const nonPosseduti = grezziGiocati.filter((raw) => !posseduto(raw));
+
+const comeTesto = (valore: unknown) =>
+  valore === undefined
+    ? '(assente)'
+    : typeof valore === 'string'
+      ? valore
+      : JSON.stringify(valore);
+
+console.log(`\ngiocati e non posseduti (${nonPosseduti.length})`);
+const campi = [...new Set(grezziGiocati.flatMap((raw) => Object.keys(raw)))];
+console.log(`  campi di ogni riga:       ${campi.join(', ')}`);
+
+// Solo i campi con pochi valori: quelli che valgono uno per titolo (nomi, date,
+// immagini) non separano niente.
+console.log('\n  per campo, posseduti | non posseduti:');
+for (const campo of campi) {
+  const valori = new Set(grezziGiocati.map((raw) => comeTesto(raw[campo])));
+  if (valori.size > 8) continue;
+  const riassunto = (righe: Record<string, unknown>[]) =>
+    conteggio(righe, (raw) => comeTesto(raw[campo]).slice(0, 60))
+      .map(([valore, n]) => `${valore} ${n}`)
+      .join(', ') || '—';
+  console.log(
+    `    ${campo.padEnd(22)} ${riassunto(grezziGiocati.filter(posseduto))}  |  ${riassunto(nonPosseduti)}`,
+  );
+}
+
+// Le immagini sono URL lunghi e non dicono niente; nome e titleId stanno già
+// sulla riga di intestazione.
+const giaStampati = new Set([
+  'titleId',
+  'name',
+  'localizedName',
+  'imageUrl',
+  'localizedImageUrl',
+]);
+for (const raw of nonPosseduti) {
+  const minuti = parsePlayDurationDaGrezzo(raw.playDuration);
+  console.log(
+    `\n    ${comeTesto(raw.titleId).padEnd(13)} ${String(minuti ?? 0).padStart(6)} min  ${comeTesto(raw.localizedName ?? raw.name)}`,
+  );
+  for (const [campo, valore] of Object.entries(raw)) {
+    if (giaStampati.has(campo)) continue;
+    console.log(`      ${campo.padEnd(22)} ${comeTesto(valore).slice(0, 160)}`);
+  }
 }
 
 if (irrisolti.length > 0) {

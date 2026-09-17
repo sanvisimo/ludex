@@ -31,7 +31,8 @@ const CLIENT_SECRET = 'ucPjka5tntB2KqsP';
 const REDIRECT_URI = 'com.scee.psxandroid.scecompcall://redirect';
 const SCOPE = 'psn:mobile.v2.core psn:clientapp';
 
-const AUTHORIZE_URL = 'https://ca.account.sony.com/api/authz/v3/oauth/authorize';
+const AUTHORIZE_URL =
+  'https://ca.account.sony.com/api/authz/v3/oauth/authorize';
 const TOKEN_URL = 'https://ca.account.sony.com/api/authz/v3/oauth/token';
 
 /**
@@ -402,9 +403,11 @@ export type PsnLibraryEntry = {
 export function titleIdFromEntitlement(
   entitlementId: string | null | undefined,
 ): string | null {
-  return /\b((?:CUSA|PPSA|PCJS|PCSE|PCSF|PCSG|PCSH|NPWR)\d+_\d+)\b/i.exec(
-    entitlementId ?? '',
-  )?.[1] ?? null;
+  return (
+    /\b((?:CUSA|PPSA|PCJS|PCSE|PCSF|PCSG|PCSH|NPWR)\d+_\d+)\b/i.exec(
+      entitlementId ?? '',
+    )?.[1] ?? null
+  );
 }
 
 type PurchasedGame = {
@@ -565,17 +568,14 @@ export type PsnPlayedTitle = {
   lastPlayedAt: Date | null;
 };
 
-type GameListResponse = {
-  titles?: {
-    titleId?: string;
-    name?: string;
-    localizedName?: string;
-    playDuration?: string;
-    lastPlayedDateTime?: string;
-    category?: string;
-  }[];
-  nextOffset?: number | null;
-  totalItemCount?: number;
+/** I campi di un giocato che l'import legge. Gli altri li vede solo l'arnese. */
+type GameListTitle = {
+  titleId?: string;
+  name?: string;
+  localizedName?: string;
+  playDuration?: string;
+  lastPlayedDateTime?: string;
+  category?: string;
 };
 
 /**
@@ -602,21 +602,18 @@ export function parsePlayDuration(duration: string | undefined): number | null {
 }
 
 /**
- * I giochi **giocati**, con le ore.
+ * L'elenco dei giocati **grezzo**, tutte le pagine, per gli arnesi.
  *
- * Elenco separato dalla libreria e più piccolo: solo PS4 e PS5, solo ciò che si
- * è davvero avviato. Per questo le ore su PSN sono parziali per costruzione, e
- * non c'è modo di averle per un PS3 o per un gioco mai aperto.
- *
- * **Non è una fonte di possessi.** Qui dentro finisce anche ciò che si è giocato
- * senza possederlo, e `backlog` oggi vuol dire possesso: questo elenco serve a
- * decorare i possessi che la libreria ha già dichiarato, non ad aggiungerne.
+ * Come `fetchPsnLibraryRawPage`, e per la stessa ragione: il tipo sotto legge
+ * cinque campi e butta il resto, e se un campo distingue un disco da un Plus
+ * scaduto sta proprio fra quelli buttati. `fetchPsnPlayedTitles` passa da qui,
+ * così l'arnese e l'import vedono la stessa risposta.
  */
-export async function fetchPsnPlayedTitles(
+export async function fetchPsnPlayedTitlesRaw(
   accessToken: string,
   accountId: string,
-): Promise<PsnPlayedTitle[]> {
-  const titles: PsnPlayedTitle[] = [];
+): Promise<Record<string, unknown>[]> {
+  const titles: Record<string, unknown>[] = [];
 
   for (let offset = 0; ; ) {
     const url = new URL(GAMELIST_URL.replace('{accountId}', accountId));
@@ -636,23 +633,50 @@ export async function fetchPsnPlayedTitles(
     }
     if (!response.ok) throw new Error(`PSN gamelist: ${response.status}`);
 
-    const body = (await response.json()) as GameListResponse;
-
-    for (const title of body.titles ?? []) {
-      if (!title.titleId) continue;
-      titles.push({
-        titleId: title.titleId,
-        name: (title.localizedName ?? title.name ?? '').trim(),
-        playtimeMinutes: parsePlayDuration(title.playDuration),
-        lastPlayedAt: title.lastPlayedDateTime
-          ? new Date(title.lastPlayedDateTime)
-          : null,
-      });
-    }
+    const body = (await response.json()) as {
+      titles?: Record<string, unknown>[];
+      nextOffset?: number | null;
+    };
+    titles.push(...(body.titles ?? []));
 
     if (!body.nextOffset || body.nextOffset <= offset) break;
     offset = body.nextOffset;
   }
 
+  return titles;
+}
+
+/**
+ * I giochi **giocati**, con le ore.
+ *
+ * Elenco separato dalla libreria e più piccolo: solo PS4 e PS5, solo ciò che si
+ * è davvero avviato. Per questo le ore su PSN sono parziali per costruzione, e
+ * non c'è modo di averle per un PS3 o per un gioco mai aperto.
+ *
+ * **Non è una fonte di possessi.** Qui dentro finisce anche ciò che si è giocato
+ * senza possederlo, e `backlog` oggi vuol dire possesso: questo elenco serve a
+ * decorare i possessi che la libreria ha già dichiarato, non ad aggiungerne.
+ */
+export async function fetchPsnPlayedTitles(
+  accessToken: string,
+  accountId: string,
+): Promise<PsnPlayedTitle[]> {
+  const raw = (await fetchPsnPlayedTitlesRaw(
+    accessToken,
+    accountId,
+  )) as GameListTitle[];
+
+  const titles: PsnPlayedTitle[] = [];
+  for (const title of raw) {
+    if (!title.titleId) continue;
+    titles.push({
+      titleId: title.titleId,
+      name: (title.localizedName ?? title.name ?? '').trim(),
+      playtimeMinutes: parsePlayDuration(title.playDuration),
+      lastPlayedAt: title.lastPlayedDateTime
+        ? new Date(title.lastPlayedDateTime)
+        : null,
+    });
+  }
   return titles;
 }

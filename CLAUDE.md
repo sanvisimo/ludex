@@ -505,13 +505,14 @@ Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 | GOG | refresh token, non scade in pratica | product id, sorgente 5 — **94,5% su 435 giochi** | no |
 | Epic | refresh token | **nessuno**: vedi sotto | no |
 | Amazon | refresh token | **nessuno**: sorgente 23 ha 678 righe in tutto | no |
-| PSN | refresh token da npsso, **10 giorni** | **nessuno**: vedi sotto | parziali |
+| PSN | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto | parziali |
 | EA | sessione corta, si sgancia sempre | nessuno | sì |
 | Nintendo | cookie di sessione | nessuno | no |
 | Xbox | chiave OpenXBL, o XSTS in proprio | `titleId` → ProductId via `displaycatalog`, sorgente 11 | sì |
 
 Le prime due colonne sono state scritte **prima** di provare, e il 9b ha
-smentito quella su PSN in tutte e due i campi. Restano qui corrette e non
+smentito quella su PSN in tutte e due i campi — e poi ha smentito la sua stessa
+smentita sull'id, che c'è ma non dove lo si cercava. Restano qui corrette e non
 riscritte in silenzio, perché il modo in cui ci si sbaglia su un negozio è esso
 stesso un'informazione: si sbaglia guardando cosa l'API *espone*, invece di
 guardare cosa *restituisce*.
@@ -546,6 +547,17 @@ del genere. Quindi PSN si risolve **per nome**, come Epic e Amazon: 88% su 256
 nomi distinti, e metà degli irrisolti sono Netflix, Spotify e YouTube, che
 giochi non sono e che nessun campo dell'API distingue da un gioco.
 
+**Il `conceptId` però esiste, e sta sull'altro elenco.** L'elenco dei giocati
+(`gamelist/v2`, REST e non una persisted query) porta su **ogni** riga un
+oggetto `concept` con `id` e `titleIds` — tutte le edizioni di quel gioco, PS4 e
+PS5, di ogni regione. Provati sulla sorgente 36 di IGDB: **46 su 47** trovano il
+gioco giusto, e l'unico che manca è *FIFA 19*. Vale solo per ciò che si è
+avviato su PS4 o PS5 — 49 titoli contro 342 acquisti — ma dove c'è è un id
+esatto: niente ricerca, e niente titolo in italiano da far combaciare con quello
+inglese di IGDB. Metà degli irrisolti per nome che *non* sono Netflix sono
+proprio questo: *Uncharted 4: Fine di un ladro*, *Sackboy: Una grande
+avventura*, *Sapere è Potere*.
+
 Sempre di PSN, quattro cose che si pagano care se si scoprono tardi:
 
 - **Il gateway GraphQL rifiuta le richieste «semplici»**, e non è un problema di
@@ -564,14 +576,54 @@ Sempre di PSN, quattro cose che si pagano care se si scoprono tardi:
   nascosta: l'elenco degli acquisti non dichiara il `titleId` come campo suo, lo
   porta dentro l'`entitlementId` (`UP3971-PPSA33764_00-WALKWALKWALKWALK`, il
   pezzo di mezzo). Su una libreria vera 31 dei 49 giocati trovano così il loro
-  possesso; gli altri 18 sono roba giocata e non posseduta, che **non entra**.
-- **Il credenziale dura dieci giorni**, non due mesi. Se la finestra rotoli a
-  ogni rinnovo o sia fissa dal login non è ancora deciso: con una misura sola le
-  due ipotesi danno lo stesso numero, e serve rilanciare `psn:probe` a distanza
-  di giorni. Se è fissa, PSN è l'unico negozio che va **ricollegato a mano a
-  scadenza**, e avvisare prima vorrebbe dire tenere quella data in una colonna
-  interrogabile: `credentials_expire_at` oggi è la scadenza dell'*access token*,
-  che è un'altra cosa e vale un'ora.
+  possesso; gli altri 18 sono roba giocata e non posseduta, che **non entra** —
+  e 14 di quei 18 sono dischi, vedi sotto.
+- **Il credenziale dura dieci giorni**, non due mesi, e **la finestra riparte a
+  ogni rinnovo**. Misurato a distanza di giorni sullo stesso account: un refresh
+  token emesso l'11 settembre, che scadeva il 21, rinnovato il 14 ne ha dato uno
+  che scade il 24. Quindi PSN non va ricollegato a scadenza — ma solo **finché
+  qualcosa rinnova entro dieci giorni**, e oggi niente lo fa da solo: non c'è un
+  import periodico, e un account lasciato fermo undici giorni finisce in
+  `needs_reauth`. È l'unico negozio dove la frequenza dell'import non è una
+  questione di freschezza dei dati ma di tenere vivo il collegamento.
+
+**I dischi fisici non stanno fra gli acquisti, ed è la parte che manca al 9b.**
+L'elenco degli acquisti è l'elenco dei *diritti digitali*: un gioco comprato su
+disco non ne ha uno, e lì non compare. L'unica traccia che lascia è nell'elenco
+dei giocati, e solo se lo si è avviato su PS4 o PS5.
+
+Lì lo si **riconosce**, ed è misurato: ogni riga dei giocati porta `service`,
+che vale `ps_plus`, `none(purchased)` — o `none_purchased` sulle righe più
+vecchie, stessa cosa scritta in due modi — oppure **`other`**, cioè avviato
+senza nessun diritto digitale sull'account. Dei 18 giocati e non posseduti, 14
+sono `other`, e i quattro controllati uno per uno sono dischi: *Horizon
+Forbidden West*, *Demon's Souls*, *Wild Hearts*, *Spider-Man: Miles Morales*.
+L'eccezione nota è *Astro's Playroom*, `other` perché preinstallato sulla PS5 —
+non è un disco, ma sulla console c'è davvero, e farlo entrare non è un errore.
+Gli altri quattro dei 18 sono `none_purchased`: comprati, ma assenti dagli
+acquisti attivi — *FIFA 19* e *WWE 2K18* sono stati tolti dal negozio, e il
+sospetto, non verificato, è che il diritto sia decaduto con loro.
+
+La strada quindi c'è ed è esatta da capo a fondo: un giocato con `service`
+`other` diventa un possesso, sulla piattaforma della sua `category`, risolto
+per `concept.id` e non per nome. **Non è ancora deciso come entra**, e la
+domanda non è tecnica: oggi l'elenco dei giocati *decora* i possessi e non ne
+crea, e farlo cambia cosa vuol dire `backlog` per quella fonte.
+
+Tre cose che `service` **non** dice, da tenere presenti:
+
+- **è il diritto di adesso, non quello della prima partita.** *God of War*
+  (2018) è un disco comprato quell'anno e giocato da allora, ma è arrivato poi
+  nel Plus: oggi è `ps_plus` fra i giocati e `PS_PLUS` fra gli acquisti, e il
+  disco non si vede più. Il gioco entra lo stesso, ma come abbonamento — ed è
+  esattamente il caso che lo step 14 rischia di cancellare.
+- **un diritto digitale copre il disco.** *God of War Ragnarök* sembrava un
+  disco ed era un voucher: `none(purchased)` e comprato, correttamente. Un gioco
+  che si ha sia su disco sia in digitale entra come digitale, e non c'è niente
+  da recuperare.
+- **un disco mai avviato non lascia traccia da nessuna parte**, e nemmeno un
+  disco PS3 o Vita, che l'elenco dei giocati non copre. Per quelli restano
+  l'inserimento a mano e l'import da file dello step 10.
 
 Tre dettagli che si pagano se si scoprono tardi:
 
@@ -784,13 +836,19 @@ la spazzata ci riprova per sempre.
     - **9b — PSN**: prima console, ed è quella che ha smentito due delle sue
       tre premesse. La piattaforma per riga sì, ed è entrata nel modello. Il
       possesso «vero» no: **274 righe su 336 vengono da PS Plus**. E l'id
-      risolvibile nemmeno — vedi «PSN» qui sotto.
+      risolvibile nemmeno — vedi «PSN» qui sotto. **Non è chiuso**: mancano i
+      **dischi fisici**, che fra gli acquisti non compaiono. Fra i giocati si
+      riconoscono (`service: other`) e si risolvono per `concept.id`; resta da
+      decidere come entrano, e da far girare un rinnovo entro dieci giorni
+      perché il collegamento non muoia da solo.
     - **9c — EA**: non un account collegato ma un'**importazione una tantum**.
     - **9d — Nintendo**: barattolo di cookie, nessun id che IGDB conosca.
     - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
       prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
       librerie», e per ora è volutamente aperta.
-10. **Import da file** — importazione di giochi da file CSV. 
+10. **Import da file** — importazione di giochi da file CSV. **In analisi.**
+    Il file di prova è un export di Playnite, in
+    `apps/api/test/fixtures/playnite-export-2026-08.csv`.
 11. **Admin** — dove finisce ciò che nessun automatismo ha saputo chiudere. Non
     è una cosa sola:
     - **giochi non collegati** (senza `igdbId`, quindi mai arricchiti) e gli
@@ -829,6 +887,11 @@ la spazzata ci riprova per sempre.
     `PS_PLUS` tanto il gioco mensile riscattato — che resta tuo finché sei
     abbonato — quanto il catalogo Extra/Premium, che tuo non è mai stato. Quella
     distinzione lì dentro non c'è, e nessuna colonna nostra può inventarla.
+
+    E ce n'è una terza, peggiore delle due: `PS_PLUS` può coprire un **disco**.
+    *God of War* (2018) comprato su disco e poi arrivato nel Plus è marcato
+    abbonamento su entrambi gli elenchi. Cancellarlo alla fine del Plus
+    toglierebbe dal backlog un gioco che sta sullo scaffale.
 15. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
     posseduti.
 
