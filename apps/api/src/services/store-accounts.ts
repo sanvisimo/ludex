@@ -6,6 +6,8 @@ import {
   AmazonAuthError,
   amazonLoginUrl,
   type AmazonCredentials,
+  isAmazonSerial,
+  newAmazonSerial,
   parseAmazonAuthCode,
   refreshAmazonTokens,
   registerAmazonDevice,
@@ -69,6 +71,37 @@ export class StoreReauthRequiredError extends Error {
  * quella coppia non individua più niente.
  */
 export type StoreAccountRow = typeof schema.storeAccounts.$inferSelect;
+
+/**
+ * Si stava ricollegando un account, e il negozio ne ha reso un altro.
+ *
+ * Il caso vero è Amazon con due account legati fra loro: la sessione del sito
+ * può essere già sull'altro, e il login finisce lì senza che l'utente se ne
+ * accorga. Senza questo controllo si aggiornava **in silenzio** la riga
+ * dell'altro account, e quello da ricollegare restava morto — che visto da
+ * fuori sembra «si è scollegato di nuovo».
+ */
+export class StoreAccountMismatchError extends Error {
+  constructor(readonly store: Store) {
+    super(`Il login su ${store} è stato fatto con un altro account`);
+    this.name = 'StoreAccountMismatchError';
+  }
+}
+
+/**
+ * Come si collega, oltre a ciò che l'utente ha incollato.
+ *
+ * - `label`: come vuole chiamarlo l'utente.
+ * - `state`: il valore che `storeLoginUrl` ha reso, tornato indietro intatto.
+ *   Oggi serve solo ad Amazon, che ci mette il serial del dispositivo.
+ * - `relinking`: l'account che si sta ricollegando, se è un ricollegamento.
+ *   Il negozio deve rendere **quello**, o il collegamento si rifiuta.
+ */
+export type LinkOptions = {
+  label?: string | null;
+  state?: string | null;
+  relinking?: Pick<StoreAccountRow, 'externalAccountId'> | null;
+};
 
 /** Ciò che di un account esce dall'API. Mai le credenziali. */
 const accountColumns = {
@@ -190,7 +223,16 @@ async function upsertAccount(input: {
   label?: string | null;
   credentials?: unknown;
   expiresAt?: Date | null;
+  /** Chi ci si aspetta di trovare, su un ricollegamento. */
+  expectedExternalAccountId?: string | null;
 }) {
+  if (
+    input.expectedExternalAccountId &&
+    input.expectedExternalAccountId !== input.externalAccountId
+  ) {
+    throw new StoreAccountMismatchError(input.store);
+  }
+
   const credentials =
     input.credentials === undefined
       ? null
@@ -403,7 +445,7 @@ export async function unlinkStoreAccount(
 export async function linkSteamAccount(
   userId: string,
   profile: string,
-  label?: string | null,
+  options: LinkOptions = {},
 ) {
   const steamId = await resolveSteamId(profile);
   return upsertAccount({
@@ -414,7 +456,8 @@ export async function linkSteamAccount(
     // Costa una richiesta con la nostra chiave e non fallisce mai in modo
     // rumoroso — al massimo rende null e si ripiega sull'id, come prima.
     displayName: await fetchSteamPersonaName(steamId),
-    label,
+    label: options.label,
+    expectedExternalAccountId: options.relinking?.externalAccountId,
   });
 }
 
@@ -440,7 +483,7 @@ export class GogCodeError extends Error {
 export async function linkGogAccount(
   userId: string,
   pasted: string,
-  label?: string | null,
+  options: LinkOptions = {},
 ) {
   const code = parseGogAuthCode(pasted);
   if (!code) throw new GogCodeError();
@@ -457,7 +500,8 @@ export async function linkGogAccount(
     displayName: await fetchGogUsername(credentials.accessToken),
     credentials,
     expiresAt: new Date(credentials.expiresAt),
-    label,
+    label: options.label,
+    expectedExternalAccountId: options.relinking?.externalAccountId,
   });
 }
 
@@ -481,7 +525,7 @@ export class EpicCodeError extends Error {
 export async function linkEpicAccount(
   userId: string,
   pasted: string,
-  label?: string | null,
+  options: LinkOptions = {},
 ) {
   const code = parseEpicAuthCode(pasted);
   if (!code) throw new EpicCodeError();
@@ -495,7 +539,8 @@ export async function linkEpicAccount(
     displayName: credentials.displayName,
     credentials,
     expiresAt: new Date(credentials.expiresAt),
-    label,
+    label: options.label,
+    expectedExternalAccountId: options.relinking?.externalAccountId,
   });
 }
 
@@ -520,12 +565,20 @@ export class AmazonCodeError extends Error {
 export async function linkAmazonAccount(
   userId: string,
   pasted: string,
-  label?: string | null,
+  options: LinkOptions = {},
 ) {
   const code = parseAmazonAuthCode(pasted);
   if (!code) throw new AmazonCodeError();
 
-  const credentials = await registerAmazonDevice(userId, code);
+  // Il serial con cui è stato composto il link di login: senza lo stesso, il
+  // verifier non combacia e Amazon rifiuta il codice. Mancarlo è un errore del
+  // client, non dell'utente.
+  const serial = options.state;
+  if (!serial || !isAmazonSerial(serial)) {
+    throw new Error('Amazon: manca il serial reso da loginUrl');
+  }
+
+  const credentials = await registerAmazonDevice(userId, serial, code);
 
   return upsertAccount({
     userId,
@@ -534,7 +587,8 @@ export async function linkAmazonAccount(
     displayName: credentials.displayName,
     credentials,
     expiresAt: null,
-    label,
+    label: options.label,
+    expectedExternalAccountId: options.relinking?.externalAccountId,
   });
 }
 
@@ -569,7 +623,7 @@ export class PsnNpssoError extends Error {
 export async function linkPsnAccount(
   userId: string,
   pasted: string,
-  label?: string | null,
+  options: LinkOptions = {},
 ) {
   const npsso = parseNpsso(pasted);
   if (!npsso) throw new PsnNpssoError();
@@ -593,7 +647,8 @@ export async function linkPsnAccount(
       null,
     credentials,
     expiresAt: new Date(credentials.expiresAt),
-    label,
+    label: options.label,
+    expectedExternalAccountId: options.relinking?.externalAccountId,
   });
 }
 
@@ -650,27 +705,59 @@ export async function amazonAccess(account: StoreAccountRow) {
 }
 
 /**
- * Dove mandare l'utente a fare il login, per i negozi che ne hanno uno.
+ * Dove mandare l'utente a fare il login, per i negozi che ne hanno uno, e il
+ * valore che deve tornare indietro con `link`.
  *
- * Prende l'utente perché Amazon lo richiede: il suo `client_id` è derivato per
- * utente (vedi `external/amazon.ts`). Steam non c'è — lì si incolla il proprio
- * profilo, che è pubblico, e non c'è nessun login da fare.
+ * Lo `state` esiste per Amazon, che deve decidere il serial del dispositivo
+ * **prima** del login e ritrovarlo dopo (vedi `external/amazon.ts`). Gli altri
+ * rendono null. Steam non ha un login: lì si incolla il proprio profilo, che è
+ * pubblico.
+ *
+ * Su un ricollegamento si passa l'account, e Amazon riusa il suo serial: senza,
+ * ogni ricollegamento lascerebbe un «AGSLauncher» in più fra i dispositivi
+ * dell'account Amazon.
  */
-export function storeLoginUrl(userId: string, store: LinkableStore) {
+export function storeLoginUrl(
+  userId: string,
+  store: LinkableStore,
+  relinking?: StoreAccountRow | null,
+): { url: string | null; state: string | null } {
   switch (store) {
     case 'gog':
-      return gogLoginUrl();
+      return { url: gogLoginUrl(), state: null };
     case 'epic':
-      return epicLoginUrl();
-    case 'amazon':
-      return amazonLoginUrl(userId);
+      return { url: epicLoginUrl(), state: null };
+    case 'amazon': {
+      const serial =
+        (relinking && storedAmazonSerial(relinking)) ?? newAmazonSerial();
+      return { url: amazonLoginUrl(userId, serial), state: serial };
+    }
     case 'psn':
       // Non un login ma la pagina che rende l'npsso: se l'utente non è ancora
       // entrato su playstation.com la trova vuota, e a dirglielo è il testo del
       // modulo. Un login vero non c'è da aprire — è già suo, nel browser.
-      return SSO_COOKIE_URL;
+      return { url: SSO_COOKIE_URL, state: null };
     default:
-      return null;
+      return { url: null, state: null };
+  }
+}
+
+/**
+ * Il serial del dispositivo di un account Amazon già collegato.
+ *
+ * Null se non c'è più niente da leggere — un account scollegato ha perso le
+ * credenziali, uno con la chiave ruotata non le sa più aprire — e allora il
+ * ricollegamento registra un dispositivo nuovo, che è l'unica cosa possibile.
+ */
+function storedAmazonSerial(account: StoreAccountRow): string | null {
+  if (account.store !== 'amazon' || !account.credentials) return null;
+  try {
+    const { serial } = decryptCredentials<AmazonCredentials>(
+      account.credentials,
+    );
+    return isAmazonSerial(serial) ? serial : null;
+  } catch {
+    return null;
   }
 }
 
@@ -685,19 +772,19 @@ export function linkStore(
   userId: string,
   store: LinkableStore,
   value: string,
-  label?: string | null,
+  options: LinkOptions = {},
 ) {
   switch (store) {
     case 'steam':
-      return linkSteamAccount(userId, value, label);
+      return linkSteamAccount(userId, value, options);
     case 'gog':
-      return linkGogAccount(userId, value, label);
+      return linkGogAccount(userId, value, options);
     case 'epic':
-      return linkEpicAccount(userId, value, label);
+      return linkEpicAccount(userId, value, options);
     case 'amazon':
-      return linkAmazonAccount(userId, value, label);
+      return linkAmazonAccount(userId, value, options);
     case 'psn':
-      return linkPsnAccount(userId, value, label);
+      return linkPsnAccount(userId, value, options);
   }
 }
 

@@ -244,6 +244,7 @@
       "link": "Collega",
       "linked": "Account collegato: importazione avviata",
       "linkFailed": "Non sono riuscito a collegare l'account",
+      "wrongAccount": "Hai fatto il login con un altro account: entra con quello da ricollegare e riprova",
       "unlink": "Scollega",
       "unlinked": "Account scollegato. I giochi importati restano nel backlog.",
       "unlinkFailed": "Non sono riuscito a scollegare l'account",

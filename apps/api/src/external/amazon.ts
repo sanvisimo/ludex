@@ -1,4 +1,4 @@
-import { createHash, createHmac } from 'node:crypto';
+import { createHash, createHmac, randomBytes } from 'node:crypto';
 
 import { storeTokenKey } from '../lib/crypto';
 
@@ -31,37 +31,57 @@ const APP_NAME = 'AGSLauncher for Windows';
 const b64url = (value: Buffer) => value.toString('base64url');
 
 /**
- * Le credenziali PKCE di questo utente, **derivate invece che conservate**.
+ * Il serial di un dispositivo nuovo.
+ *
+ * **Uno per account Amazon, non uno per utente.** Fino a qui era derivato
+ * dall'utente, quindi il secondo account Amazon della stessa persona
+ * registrava lo *stesso* dispositivo — e Amazon, che tiene un dispositivo su un
+ * account solo, lo toglieva al primo. Il risultato visto da fuori era un
+ * ping-pong: dei due account ne restava vivo uno, quello collegato per ultimo.
+ * Visto su due account veri.
+ *
+ * Casuale e non derivato perché al momento del login non sappiamo ancora con
+ * quale account l'utente entrerà: non c'è niente da cui derivarlo. Chi ricollega
+ * un account che ha già un serial lo riusa (vedi `storeLoginUrl`), così il
+ * dispositivo non si moltiplica a ogni ricollegamento.
+ */
+export function newAmazonSerial() {
+  return randomBytes(16).toString('hex').toUpperCase();
+}
+
+/** Ha la forma di un serial nostro? È un valore che torna dal client. */
+export function isAmazonSerial(value: string) {
+  return /^[0-9A-F]{32}$/.test(value);
+}
+
+/**
+ * Le credenziali PKCE di un collegamento, **derivate invece che conservate**.
  *
  * Il flusso di Amazon vuole che `code_verifier` e `client_id` siano decisi
  * prima di mandare l'utente al login e ritrovati dopo, quando torna col codice.
  * Fra i due momenti passa un giro dal browser, quindi qualcosa va tenuto da
  * qualche parte: di solito una riga in Redis con una scadenza.
  *
- * Qui si derivano da `STORE_TOKEN_KEY` e dall'id dell'utente. Niente stato,
- * niente scadenza da azzeccare, niente flusso che muore perché l'utente ci ha
- * messo venti minuti a fare il login. Il verifier resta segreto perché lo è la
- * chiave, e non lascia mai il server: nel giro del browser passa solo il codice
- * di autorizzazione, che è monouso e dura pochi minuti.
+ * Qui il server non tiene niente. Il serial fa il giro dal client — lo rende
+ * `loginUrl`, torna con `link` — e il verifier si deriva da `STORE_TOKEN_KEY`,
+ * dall'utente e dal serial. Niente stato, niente scadenza da azzeccare, niente
+ * flusso che muore perché l'utente ci ha messo venti minuti a fare il login.
  *
- * Un effetto di lato che è desiderabile: il `serial` è sempre lo stesso, quindi
- * ricollegare **riscrive lo stesso dispositivo** sull'account Amazon invece di
- * accumularne uno per tentativo.
+ * Che il serial passi dal client non è un problema: non è un segreto, è il
+ * numero del dispositivo. Il segreto è il verifier, che resta tale perché lo è
+ * la chiave, e non lascia mai il server.
  */
-function pkceFor(userId: string) {
+function pkceFor(userId: string, serial: string) {
   const verifier = b64url(
-    createHmac('sha256', storeTokenKey()).update(`amazon:v:${userId}`).digest(),
+    createHmac('sha256', storeTokenKey())
+      .update(`amazon:v:${userId}:${serial}`)
+      .digest(),
   );
   const challenge = b64url(createHash('sha256').update(verifier).digest());
-  const serial = createHmac('sha256', storeTokenKey())
-    .update(`amazon:s:${userId}`)
-    .digest('hex')
-    .slice(0, 32)
-    .toUpperCase();
   const clientId = Buffer.from(`${serial}#${DEVICE_TYPE}`, 'ascii').toString(
     'hex',
   );
-  return { verifier, challenge, serial, clientId };
+  return { verifier, challenge, clientId };
 }
 
 /**
@@ -72,8 +92,8 @@ function pkceFor(userId: string) {
  * questo è verificato. L'utente atterra sulla home di amazon.com con il codice
  * nella barra degli indirizzi.
  */
-export function amazonLoginUrl(userId: string) {
-  const { challenge, clientId } = pkceFor(userId);
+export function amazonLoginUrl(userId: string, serial: string) {
+  const { challenge, clientId } = pkceFor(userId, serial);
 
   const params = new URLSearchParams({
     'openid.ns': 'http://specs.openid.net/auth/2.0',
@@ -147,9 +167,10 @@ export function parseAmazonAuthCode(input: string): string | null {
  */
 export async function registerAmazonDevice(
   userId: string,
+  serial: string,
   code: string,
 ): Promise<AmazonCredentials> {
-  const { verifier, serial, clientId } = pkceFor(userId);
+  const { verifier, clientId } = pkceFor(userId, serial);
 
   const response = await fetch(`${AMAZON_API}/auth/register`, {
     method: 'POST',

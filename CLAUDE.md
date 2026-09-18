@@ -705,8 +705,17 @@ Tre cose che `service` **non** dice, da tenere presenti:
   disco PS3 o Vita, che l'elenco dei giocati non copre. Per quelli restano
   l'inserimento a mano e l'import da file dello step 10.
 
-Tre dettagli che si pagano se si scoprono tardi:
+Quattro dettagli che si pagano se si scoprono tardi:
 
+- **Amazon registra un dispositivo, e un dispositivo sta su un account
+  solo.** Il serial era derivato dall'utente, quindi il secondo account
+  Amazon della stessa persona registrava lo stesso dispositivo e lo toglieva
+  al primo: dei due ne restava vivo uno, a ping-pong. Ora il serial è **per
+  collegamento**, fa il giro dal client (`state` di `loginUrl` → `link`) e un
+  ricollegamento riusa quello dell'account. Il ricollegamento controlla anche
+  che il login sia stato fatto **con quell'account**: con due account Amazon
+  legati fra loro la sessione del sito può stare sull'altro, e prima se ne
+  aggiornava la riga in silenzio.
 - **Amazon vive solo sul mercato americano.** `amzn1.adg` è registrato su
   `amazon.com` con `marketPlaceId=ATVPDKIKX0DER`; su `amazon.it` la stessa
   richiesta è un 404. Un account italiano si autentica benissimo lì, quindi il

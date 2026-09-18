@@ -83,9 +83,27 @@ export const contract = {
     // paga cara a sbagliarla: dentro ci sono `client_id` e `redirect_uri`, e
     // quest'ultimo deve combaciare **esattamente** con quello dello scambio del
     // codice. Tenuti in due punti diversi, prima o poi divergono.
+    //
+    // `state` è un valore opaco che deve tornare **intatto** a `link`: Amazon ci
+    // mette il serial del dispositivo, che va deciso prima del login e ritrovato
+    // dopo. Null per gli altri negozi. Il client lo tiene dal momento in cui
+    // apre il login, non lo rilegge dopo.
+    //
+    // `accountId` quando si ricollega un account già presente: Amazon riusa il
+    // suo dispositivo invece di registrarne un altro.
     loginUrl: oc
-      .input(z.object({ store: LinkableStoreSchema }))
-      .output(z.object({ url: z.string().nullable() })),
+      .input(
+        z.object({
+          store: LinkableStoreSchema,
+          accountId: z.uuid().nullish(),
+        }),
+      )
+      .output(
+        z.object({
+          url: z.string().nullable(),
+          state: z.string().nullable(),
+        }),
+      ),
 
     // Collega un negozio con quello che l'utente ha incollato.
     //
@@ -114,6 +132,13 @@ export const contract = {
           // ce ne sono due della stessa persona, dove nessun dato dell'API li
           // separa — su Amazon rendono lo stesso nome di battesimo.
           label: z.string().trim().max(60).nullish(),
+          // Lo `state` reso da `loginUrl`, così com'era.
+          state: z.string().max(200).nullish(),
+          // L'account che si sta ricollegando. Se il negozio ne rende un altro
+          // — su Amazon succede quando la sessione del sito è sull'account
+          // legato — il collegamento si rifiuta con CONFLICT, invece di
+          // aggiornare in silenzio l'altro.
+          accountId: z.uuid().nullish(),
         }),
       )
       .output(StoreAccountSchema),

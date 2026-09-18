@@ -10,11 +10,14 @@ import {
   linkStoreAccount,
 } from '../../test/factories';
 import { fetchSteamPersonaName, resolveSteamId } from '../external/steam';
+import { encryptCredentials, resetStoreTokenKey } from '../lib/crypto';
 import { enqueueImport, isImportRunning } from '../queue/imports';
 import {
   linkSteamAccount,
   listStoreAccounts,
   renameStoreAccount,
+  StoreAccountMismatchError,
+  storeLoginUrl,
   syncAllStoreAccounts,
   unlinkImpact,
   unlinkStoreAccount,
@@ -342,5 +345,87 @@ describe('account di negozio', () => {
       });
       expect(mockedEnqueue).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('ricollegamento', () => {
+  let userId: string;
+
+  beforeEach(async () => {
+    process.env.STORE_TOKEN_KEY = Buffer.alloc(32, 7).toString('base64');
+    resetStoreTokenKey();
+    userId = await createUser();
+    mockedPersona.mockResolvedValue(null);
+  });
+
+  it("rifiuta un login fatto con un altro account, e non tocca l'altro", async () => {
+    mockedResolve.mockResolvedValue('76561190000000001');
+    const giusto = await linkSteamAccount(userId, 'giusto');
+    mockedResolve.mockResolvedValue('76561190000000002');
+    const altro = await linkSteamAccount(userId, 'altro');
+    await db
+      .update(schema.storeAccounts)
+      .set({ lastSyncAt: new Date() })
+      .where(eq(schema.storeAccounts.id, altro.id));
+
+    // Si ricollega `giusto`, ma il negozio rende `altro`: è il caso dei due
+    // Amazon legati, con la sessione del sito rimasta sull'altro account.
+    await expect(
+      linkSteamAccount(userId, 'altro', { relinking: giusto }),
+    ).rejects.toBeInstanceOf(StoreAccountMismatchError);
+
+    // Prima si aggiornava in silenzio la riga sbagliata, azzerandone l'import.
+    const [riletta] = await db
+      .select()
+      .from(schema.storeAccounts)
+      .where(eq(schema.storeAccounts.id, altro.id));
+    expect(riletta!.lastSyncAt).not.toBeNull();
+  });
+
+  it("ricollega quando il negozio rende l'account atteso", async () => {
+    mockedResolve.mockResolvedValue('76561190000000001');
+    const account = await linkSteamAccount(userId, 'pippo');
+
+    const ricollegato = await linkSteamAccount(userId, 'pippo', {
+      relinking: account,
+    });
+
+    expect(ricollegato.id).toBe(account.id);
+  });
+
+  it('un collegamento Amazon nuovo prende un dispositivo nuovo ogni volta', () => {
+    const primo = storeLoginUrl(userId, 'amazon');
+    const secondo = storeLoginUrl(userId, 'amazon');
+
+    expect(primo.state).toMatch(/^[0-9A-F]{32}$/);
+    expect(secondo.state).not.toBe(primo.state);
+  });
+
+  it('ricollegando Amazon si riusa il dispositivo che l\'account aveva', async () => {
+    const serial = 'ABCDEF0123456789ABCDEF0123456789';
+    const account = await linkStoreAccount(userId, 'amazon');
+    const [conCredenziali] = await db
+      .update(schema.storeAccounts)
+      .set({ credentials: encryptCredentials({ serial }) })
+      .where(eq(schema.storeAccounts.id, account.id))
+      .returning();
+
+    // Senza, ogni ricollegamento lascerebbe un «AGSLauncher» in più fra i
+    // dispositivi dell'account Amazon.
+    expect(storeLoginUrl(userId, 'amazon', conCredenziali).state).toBe(serial);
+  });
+
+  it('un account senza più credenziali prende un dispositivo nuovo', async () => {
+    // Scollegato con `keep`: la riga c'è, il credenziale no.
+    const account = await linkStoreAccount(userId, 'amazon');
+
+    expect(storeLoginUrl(userId, 'amazon', account).state).toMatch(
+      /^[0-9A-F]{32}$/,
+    );
+  });
+
+  it('gli altri negozi non hanno uno state', () => {
+    expect(storeLoginUrl(userId, 'gog').state).toBeNull();
+    expect(storeLoginUrl(userId, 'steam')).toEqual({ url: null, state: null });
   });
 });

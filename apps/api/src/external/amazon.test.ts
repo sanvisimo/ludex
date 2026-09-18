@@ -5,6 +5,8 @@ import {
   AmazonAuthError,
   amazonLoginUrl,
   isAmazonRejection,
+  isAmazonSerial,
+  newAmazonSerial,
   parseAmazonAuthCode,
   refreshAmazonTokens,
 } from './amazon';
@@ -45,8 +47,10 @@ describe('parseAmazonAuthCode', () => {
 });
 
 describe('amazonLoginUrl', () => {
+  const serial = newAmazonSerial();
+
   it('usa il mercato americano e il return_to di Amazon', () => {
-    const url = new URL(amazonLoginUrl('utente-1'));
+    const url = new URL(amazonLoginUrl('utente-1', serial));
 
     // Il mercato è inchiodato: l'assoc_handle del launcher esiste solo lì, e
     // su amazon.it la stessa richiesta è un 404. Verificato.
@@ -59,25 +63,33 @@ describe('amazonLoginUrl', () => {
     );
   });
 
-  it('dà a ogni utente il suo client_id, sempre lo stesso', () => {
-    const uno = new URL(amazonLoginUrl('utente-1'));
-    const ancora = new URL(amazonLoginUrl('utente-1'));
-    const due = new URL(amazonLoginUrl('utente-2'));
+  const clientId = (u: string) =>
+    new URL(u).searchParams.get('openid.oa2.client_id');
+  const challenge = (u: string) =>
+    new URL(u).searchParams.get('openid.oa2.code_challenge');
 
-    const clientId = (u: URL) => u.searchParams.get('openid.oa2.client_id');
-    const challenge = (u: URL) =>
-      u.searchParams.get('openid.oa2.code_challenge');
-
-    // Stabile: è ciò che permette di non tenere nessuno stato fra il momento in
-    // cui si apre il login e quello in cui torna il codice — e fa sì che
-    // ricollegare riscriva lo stesso dispositivo invece di accumularne uno per
-    // tentativo.
+  it('a parità di utente e serial rende sempre lo stesso login', () => {
+    // È ciò che permette di non tenere nessuno stato fra il momento in cui si
+    // apre il login e quello in cui torna il codice: basta che torni il serial.
+    const uno = amazonLoginUrl('utente-1', serial);
+    const ancora = amazonLoginUrl('utente-1', serial);
     expect(clientId(uno)).toBe(clientId(ancora));
     expect(challenge(uno)).toBe(challenge(ancora));
+  });
 
-    // E separato per utente: due account non condividono il dispositivo.
-    expect(clientId(uno)).not.toBe(clientId(due));
-    expect(challenge(uno)).not.toBe(challenge(due));
+  it('dà a ogni collegamento il suo dispositivo, anche allo stesso utente', () => {
+    // Il bug che c'era: il dispositivo dipendeva solo dall'utente, e il secondo
+    // account Amazon della stessa persona lo toglieva al primo.
+    const primo = amazonLoginUrl('utente-1', serial);
+    const secondo = amazonLoginUrl('utente-1', newAmazonSerial());
+    expect(clientId(primo)).not.toBe(clientId(secondo));
+    expect(challenge(primo)).not.toBe(challenge(secondo));
+  });
+
+  it('non rende lo stesso verifier a due utenti con lo stesso serial', () => {
+    expect(challenge(amazonLoginUrl('utente-1', serial))).not.toBe(
+      challenge(amazonLoginUrl('utente-2', serial)),
+    );
   });
 
   it('senza la chiave non compone niente', () => {
@@ -85,7 +97,16 @@ describe('amazonLoginUrl', () => {
     resetStoreTokenKey();
     // Il verifier PKCE è derivato dalla chiave: senza, il link sarebbe
     // costruito su un segreto che non c'è.
-    expect(() => amazonLoginUrl('utente-1')).toThrow('STORE_TOKEN_KEY');
+    expect(() => amazonLoginUrl('utente-1', serial)).toThrow('STORE_TOKEN_KEY');
+  });
+});
+
+describe('newAmazonSerial', () => {
+  it('ha la forma che isAmazonSerial riconosce, e non si ripete', () => {
+    const a = newAmazonSerial();
+    expect(isAmazonSerial(a)).toBe(true);
+    expect(newAmazonSerial()).not.toBe(a);
+    expect(isAmazonSerial('non-un-serial')).toBe(false);
   });
 });
 

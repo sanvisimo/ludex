@@ -27,12 +27,17 @@ import { api, client } from '@/lib/orpc';
  * E resta un `value` opaco, non un `code`: da `apps/mobile` lo prenderà una
  * WebView senza che nessuno lo veda, e questa procedura non deve sapere quale
  * dei due è stato.
+ *
+ * `accountId` c'è quando si ricollega: il server controlla che il login sia
+ * stato fatto proprio con quell'account, e Amazon riusa il suo dispositivo.
  */
 export function StoreLinkForm({
   store,
+  accountId,
   submitLabel,
 }: {
   store: LinkableStore;
+  accountId?: string;
   submitLabel: string;
 }) {
   const t = useTranslations('account.store');
@@ -42,12 +47,21 @@ export function StoreLinkForm({
 
   const [value, setValue] = useState('');
   const [label, setLabel] = useState('');
+  // Lo `state` del login che l'utente ha **davvero** aperto. Su Amazon cambia a
+  // ogni richiesta (è il serial di un dispositivo nuovo), e il codice che torna
+  // vale solo con quello: rileggerlo dalla query al momento di collegare
+  // vorrebbe dire rischiare di mandarne uno diverso.
+  const [openedState, setOpenedState] = useState<string | null>(null);
 
   // Solo per i negozi che hanno un login da aprire: Steam rende null, perché lì
-  // l'utente ha già sottomano il proprio profilo.
-  const loginUrl = useQuery(
-    api.accounts.loginUrl.queryOptions({ input: { store } }),
-  );
+  // l'utente ha già sottomano il proprio profilo. Mai ricaricata da sola: al
+  // ritorno dalla scheda del negozio un refetch cambierebbe il link sotto al
+  // bottone.
+  const loginUrl = useQuery({
+    ...api.accounts.loginUrl.queryOptions({ input: { store, accountId } }),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
 
   const link = useMutation({
     mutationFn: () =>
@@ -55,15 +69,30 @@ export function StoreLinkForm({
         store,
         value: value.trim(),
         label: label.trim() || null,
+        state: openedState ?? loginUrl.data?.state ?? null,
+        accountId: accountId ?? null,
       }),
     onSuccess: async () => {
       setValue('');
       setLabel('');
+      setOpenedState(null);
+      // Un link usato non si riusa: su Amazon porta il serial del dispositivo
+      // appena registrato, e collegarci un secondo account gli toglierebbe il
+      // dispositivo — il bug che il serial per account è venuto a chiudere.
+      await queryClient.invalidateQueries({
+        queryKey: api.accounts.loginUrl.key(),
+      });
       await queryClient.invalidateQueries({ queryKey: api.accounts.list.key() });
       toast.success(t('linked'));
     },
     onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('linkFailed') })),
+      toast.error(
+        errorMessage(error, {
+          fallback: t('linkFailed'),
+          // Solo sui ricollegamenti: il negozio ha reso un altro account.
+          CONFLICT: t('wrongAccount'),
+        }),
+      ),
   });
 
   return (
@@ -72,7 +101,10 @@ export function StoreLinkForm({
         <Button
           variant="outline"
           className="justify-self-start"
-          onClick={() => window.open(loginUrl.data.url!, '_blank', 'noopener')}
+          onClick={() => {
+            setOpenedState(loginUrl.data.state);
+            window.open(loginUrl.data.url!, '_blank', 'noopener');
+          }}
         >
           {t('openLogin')}
         </Button>

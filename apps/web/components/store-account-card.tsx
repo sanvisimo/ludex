@@ -129,7 +129,11 @@ export function StoreAccountCard({
             <p className="rounded-lg bg-destructive/10 px-3 py-2 text-destructive">
               {t('needsReauth')}
             </p>
-            <StoreLinkForm store={relinkStore} submitLabel={t('reconnect')} />
+            <StoreLinkForm
+              store={relinkStore}
+              accountId={account.id}
+              submitLabel={t('reconnect')}
+            />
           </>
         ) : (
           <Button

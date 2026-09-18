@@ -244,6 +244,7 @@
       "link": "Connect",
       "linked": "Account connected: import started",
       "linkFailed": "Could not connect the account",
+      "wrongAccount": "You signed in with a different account: sign in with the one you are reconnecting and try again",
       "unlink": "Disconnect",
       "unlinked": "Account disconnected. Imported games stay in your backlog.",
       "unlinkFailed": "Could not disconnect the account",

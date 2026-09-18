@@ -31,6 +31,7 @@ import {
   linkStore,
   listStoreAccounts,
   renameStoreAccount,
+  StoreAccountMismatchError,
   storeLoginUrl,
   syncAllStoreAccounts,
   unlinkImpact,
@@ -43,6 +44,26 @@ import {
 } from '../services/unresolved-imports';
 import { enqueueImport, isImportRunning } from '../queue/imports';
 import { authed, maybeAuthed, os } from './context';
+
+/**
+ * L'account che si sta ricollegando, se la richiesta ne nomina uno.
+ *
+ * Sempre dell'utente e dello stesso negozio: un id di un altro utente, o di un
+ * account GOG passato a un ricollegamento Amazon, è un 404 e non un collegamento
+ * nuovo fatto di nascosto.
+ */
+async function relinkTarget(
+  userId: string,
+  store: string,
+  accountId: string | null | undefined,
+) {
+  if (!accountId) return null;
+  const account = await findStoreAccount(userId, accountId);
+  if (!account || account.store !== store) {
+    throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+  }
+  return account;
+}
 
 export const router = os.router({
   platforms: {
@@ -92,19 +113,36 @@ export const router = os.router({
       .use(authed)
       .handler(({ context }) => listStoreAccounts(context.user.id)),
 
-    loginUrl: os.accounts.loginUrl.use(authed).handler(({ input, context }) => ({
-      // Steam non ha un login da fare: l'utente incolla il proprio profilo, che
-      // è pubblico. Gli altri mandano su una pagina del negozio.
-      url: storeLoginUrl(context.user.id, input.store),
-    })),
+    loginUrl: os.accounts.loginUrl
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const relinking = await relinkTarget(
+          context.user.id,
+          input.store,
+          input.accountId,
+        );
+        // Steam non ha un login da fare: l'utente incolla il proprio profilo,
+        // che è pubblico. Gli altri mandano su una pagina del negozio.
+        return storeLoginUrl(context.user.id, input.store, relinking);
+      }),
 
     link: os.accounts.link.use(authed).handler(async ({ input, context }) => {
-      const account = await linkStore(
+      const relinking = await relinkTarget(
         context.user.id,
         input.store,
-        input.value,
-        input.label,
+        input.accountId,
       );
+
+      const account = await linkStore(context.user.id, input.store, input.value, {
+        label: input.label,
+        state: input.state,
+        relinking,
+      }).catch((error: unknown) => {
+        if (error instanceof StoreAccountMismatchError) {
+          throw new ORPCError('CONFLICT', { message: error.message });
+        }
+        throw error;
+      });
 
       // Collegare e importare sono la stessa azione per l'utente: non ha senso
       // fargli premere un secondo bottone per avere i suoi giochi.
