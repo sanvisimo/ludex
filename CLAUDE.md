@@ -791,9 +791,12 @@ un server non è attaccato. Con Battle.net non c'è nemmeno il ripiego di un
 endpoint pubblico: l'OAuth ufficiale di Blizzard esiste ma non espone la libreria
 a nessuno.
 
-Steam Family, quando si farà, **non porta credenziali nuove**: è lo stesso
-`GetOwnedGames` chiamato su N SteamID64. Non è un problema di autenticazione: è
-un problema di modello, e lo stesso di Xbox.
+Steam Family, quando si farà (9f), legge la libreria con lo stesso
+`GetOwnedGames` chiamato su N SteamID64. Qui c'era scritto che **non porta
+credenziali nuove**, e va verificato prima di crederci: sapere *chi* sta nella
+famiglia probabilmente richiede il token di un membro, cioè il login Steam che
+il 9f porta con sé. La parte che resta certa è l'altra: è un problema di
+modello, e lo stesso di Xbox.
 
 Che è la domanda che nessun negozio del 9a poneva, e che **il 9b ha posto subito
 e in grande**: un gioco a cui puoi giocare stasera ma che non è tuo — Game Pass,
@@ -950,7 +953,7 @@ la spazzata ci riprova per sempre.
 8. **OpenCritic** — i voti della critica, e con loro **Metacritic**: sono la
    stessa schermata e lo stesso modello, e separarli avrebbe voluto dire
    scrivere due volte la stessa tabella. Porta `game_scores` (vedi sotto).
-9.  **Altre librerie** — gli altri negozi, in cinque tempi. L'ordine non è per
+9.  **Altre librerie** — gli altri negozi, in sei tempi. L'ordine non è per
     simpatia: è per quanto dura il credenziale e per quanto costa risolvere
     l'identità (vedi «Le altre librerie» sotto).
     - **9a — GOG, Epic, Amazon**: tutti PC, tutti un gesto solo che non si
@@ -969,6 +972,10 @@ la spazzata ci riprova per sempre.
     - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
       prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
       librerie», e per ora è volutamente aperta.
+    - **9f — Steam con login e Family**: il login Steam al posto del solo
+      profilo pubblico, e con lui la libreria della famiglia. Ha la stessa
+      domanda di Xbox — un gioco della libreria di tuo fratello è tuo? — e va
+      fatto per ultimo.
 10. **Import da file** — importazione di giochi da file CSV. **In analisi.**
     Il file di prova è un export di Playnite, in
     `apps/api/test/fixtures/playnite-export-2026-08.csv`.
