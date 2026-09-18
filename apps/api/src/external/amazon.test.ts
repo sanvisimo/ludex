@@ -1,9 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resetStoreTokenKey } from '../lib/crypto';
-import { amazonLoginUrl, parseAmazonAuthCode } from './amazon';
+import {
+  AmazonAuthError,
+  amazonLoginUrl,
+  isAmazonRejection,
+  parseAmazonAuthCode,
+  refreshAmazonTokens,
+} from './amazon';
 
-// Puro: nessuna rete, nessun database.
+// Nessuna rete e nessun database: dove serve si stubba `fetch`, che per questo
+// modulo è il confine vero — non ha rate limiter né token in cache.
 
 const CHIAVE = Buffer.alloc(32, 7).toString('base64');
 
@@ -79,5 +86,62 @@ describe('amazonLoginUrl', () => {
     // Il verifier PKCE è derivato dalla chiave: senza, il link sarebbe
     // costruito su un segreto che non c'è.
     expect(() => amazonLoginUrl('utente-1')).toThrow('STORE_TOKEN_KEY');
+  });
+});
+
+describe('isAmazonRejection', () => {
+  it('prende per rifiuto i 4xx, e per temporanei i guasti e i limiti', () => {
+    for (const status of [400, 401, 403, 404]) {
+      expect(isAmazonRejection(status)).toBe(true);
+    }
+    // Un loro guasto, un limite di frequenza o un timeout non dicono niente
+    // sul credenziale: mandare l'utente a ricollegare sarebbe il bug.
+    for (const status of [408, 429, 500, 502, 503]) {
+      expect(isAmazonRejection(status)).toBe(false);
+    }
+  });
+});
+
+describe('refreshAmazonTokens', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => vi.stubGlobal('fetch', fetchMock));
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    fetchMock.mockReset();
+  });
+
+  const reply = (status: number, body: unknown) =>
+    fetchMock.mockResolvedValueOnce({
+      ok: status >= 200 && status < 300,
+      status,
+      json: async () => body,
+    });
+
+  it('rende il token nuovo', async () => {
+    reply(200, { access_token: 'nuovo', expires_in: 3600 });
+    await expect(refreshAmazonTokens('refresh')).resolves.toMatchObject({
+      accessToken: 'nuovo',
+    });
+  });
+
+  it('su un rifiuto alza AmazonAuthError, che porta a ricollegare', async () => {
+    reply(400, { error: 'invalid_grant' });
+    await expect(refreshAmazonTokens('refresh')).rejects.toBeInstanceOf(
+      AmazonAuthError,
+    );
+  });
+
+  it('su un guasto di Amazon alza un errore qualunque, che il job riprova', async () => {
+    reply(503, null);
+    const errore = await refreshAmazonTokens('refresh').catch((e) => e);
+    expect(errore).toBeInstanceOf(Error);
+    expect(errore).not.toBeInstanceOf(AmazonAuthError);
+  });
+
+  it('un 200 senza token non è un rifiuto', async () => {
+    reply(200, {});
+    const errore = await refreshAmazonTokens('refresh').catch((e) => e);
+    expect(errore).not.toBeInstanceOf(AmazonAuthError);
   });
 });

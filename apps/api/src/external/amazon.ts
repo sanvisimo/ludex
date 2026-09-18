@@ -216,6 +216,22 @@ export async function registerAmazonDevice(
 }
 
 /**
+ * Uno stato HTTP che vuol dire «questo credenziale non vale più».
+ *
+ * Fino a qui ogni risposta non-ok del rinnovo era un rifiuto, e un 503 di
+ * Amazon mandava in `needs_reauth` un account sano: l'utente doveva rifare il
+ * login per colpa di un loro guasto. GOG distingue guardando `invalid_grant`;
+ * qui non si fa, perché la risposta di Amazon a un dispositivo tolto
+ * dall'account non è misurata, e sbagliarla vorrebbe dire il caso peggiore —
+ * un account che resta «ok» e smette di aggiornarsi senza dirlo. Quindi la
+ * regola è sullo stato: sono **temporanei** i 5xx, il 429 e il 408, e ogni altro
+ * 4xx è un rifiuto.
+ */
+export function isAmazonRejection(status: number) {
+  return status >= 400 && status < 500 && status !== 408 && status !== 429;
+}
+
+/**
  * Rinnovo.
  *
  * Al contrario di GOG ed Epic, Amazon **non ruota il refresh token**: rende solo
@@ -241,10 +257,18 @@ export async function refreshAmazonTokens(
     expires_in?: number;
   } | null;
 
-  if (!response.ok || !body?.access_token) {
-    throw new AmazonAuthError(
-      `Amazon ha rifiutato il refresh token (${response.status})`,
-    );
+  if (!response.ok) {
+    if (isAmazonRejection(response.status)) {
+      throw new AmazonAuthError(
+        `Amazon ha rifiutato il refresh token (${response.status})`,
+      );
+    }
+    throw new Error(`Amazon token: ${response.status}`);
+  }
+  // Un 200 senza token non è un rifiuto: è una risposta rotta, e riprovare è
+  // l'unica cosa sensata da fare.
+  if (!body?.access_token) {
+    throw new Error('Amazon token: risposta senza access token');
   }
 
   return {
