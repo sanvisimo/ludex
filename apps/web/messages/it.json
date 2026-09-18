@@ -240,6 +240,13 @@
     "profile": {
       "title": "I tuoi dati"
     },
+    "autoSync": {
+      "title": "Aggiornamento automatico",
+      "label": "Aggiorna automaticamente la libreria",
+      "description": "Le librerie collegate si reimportano da sole: PlayStation ogni {psnDays} giorni, gli altri negozi ogni {otherDays}. Puoi sempre aggiornarle a mano.",
+      "psnWarning": "Con l'aggiornamento automatico spento, il collegamento a PlayStation scade se non importi la libreria almeno una volta ogni dieci giorni.",
+      "failed": "Non sono riuscito a salvare la preferenza"
+    },
     "store": {
       "link": "Collega",
       "linked": "Account collegato: importazione avviata",
@@ -273,7 +280,11 @@
       "openLogin": "1. Apri il login",
       "pasteStep": "2. Incolla qui {address}",
       "pasteAddress": "l’indirizzo",
-      "pasteContent": "il contenuto della scheda"
+      "pasteContent": "il contenuto della scheda",
+      "autoSync": "Aggiorna automaticamente",
+      "autoSyncOffGlobally": "L'aggiornamento automatico è spento per tutti gli account.",
+      "autoSyncPsnWarning": "Senza aggiornamento automatico il collegamento scade se non importi la libreria almeno una volta ogni dieci giorni.",
+      "autoSyncFailed": "Non sono riuscito a salvare la preferenza"
     },
     "add": {
       "title": "Aggiungi un account",

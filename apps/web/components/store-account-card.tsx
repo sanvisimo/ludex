@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
@@ -36,6 +38,7 @@ const isLinkable = (store: Store): store is LinkableStore =>
 export function StoreAccountCard({
   account,
   busy,
+  autoSyncLibrary,
   onUnlink,
 }: {
   account: StoreAccount;
@@ -46,6 +49,12 @@ export function StoreAccountCard({
    * sembrerebbe libera.
    */
   busy: boolean;
+  /**
+   * L'interruttore generale. Spento, quello della scheda non conta: resta
+   * visibile ma fermo, così la scelta fatta su questo account non si perde e
+   * torna com'era quando si riaccende quello generale.
+   */
+  autoSyncLibrary: boolean;
   onUnlink: () => void;
 }) {
   const t = useTranslations('account.store');
@@ -82,6 +91,26 @@ export function StoreAccountCard({
     onError: (error) =>
       toast.error(errorMessage(error, { fallback: t('renameFailed') })),
   });
+
+  const autoSync = useMutation({
+    mutationFn: (value: boolean) =>
+      client.accounts.setAutoSync({ accountId: account.id, autoSync: value }),
+    // La riga che torna è già quella giusta: si scrive nella lista invece di
+    // ricaricarla, così l'interruttore non torna indietro per un istante.
+    onSuccess: (saved) =>
+      queryClient.setQueryData(
+        api.accounts.list.queryKey(),
+        (rows: StoreAccount[] | undefined) =>
+          rows?.map((row) => (row.id === saved.id ? saved : row)),
+      ),
+    onError: (error) =>
+      toast.error(errorMessage(error, { fallback: t('autoSyncFailed') })),
+  });
+  // Come per l'interruttore generale: durante la richiesta mostra già la
+  // scelta nuova, o sembrerebbe che il clic non sia arrivato.
+  const autoSyncChecked = autoSync.isPending
+    ? (autoSync.variables ?? account.autoSync)
+    : account.autoSync;
 
   const sync = useMutation({
     mutationFn: () => client.accounts.sync({ accountId: account.id }),
@@ -144,6 +173,29 @@ export function StoreAccountCard({
             {t('sync')}
           </Button>
         )}
+
+        <div className="grid gap-2">
+          <Label className="gap-3">
+            <Switch
+              checked={autoSyncChecked}
+              onCheckedChange={(value) => autoSync.mutate(value)}
+              disabled={!autoSyncLibrary || autoSync.isPending}
+            />
+            {t('autoSync')}
+          </Label>
+          {!autoSyncLibrary ? (
+            <p className="text-muted-foreground">{t('autoSyncOffGlobally')}</p>
+          ) : (
+            // Solo PSN: sugli altri negozi spegnerlo vuol dire una libreria
+            // meno fresca, qui vuol dire un collegamento che muore.
+            account.store === 'psn' &&
+            !autoSyncChecked && (
+              <p className="rounded-lg bg-destructive/10 px-3 py-2 text-destructive">
+                {t('autoSyncPsnWarning')}
+              </p>
+            )
+          )}
+        </div>
 
         {label === null ? (
           <Button

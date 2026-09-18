@@ -147,6 +147,36 @@ export const backlogSortValues = [
 
 export const sortDirectionValues = ['asc', 'desc'] as const;
 
+/**
+ * Ogni quanti giorni un account si aggiorna da solo, per negozio.
+ *
+ * PSN è l'unico dove la soglia non è una questione di freschezza: il refresh
+ * token dura **dieci giorni** che ripartono a ogni rinnovo, e senza un import
+ * che rinnovi l'account muore da solo. Tre giorni lasciano spazio a due giri
+ * andati male prima della scadenza.
+ *
+ * Gli altri a una settimana: una libreria cambia quando si compra qualcosa, e
+ * un gioco comprato stamattina che compare fra qualche giorno non toglie niente
+ * a «cosa gioco stasera». Anche qui c'è un credenziale da tenere vivo, ma GOG
+ * in pratica non scade e Amazon non ruota. Epic **non è misurato**: la durata
+ * del suo refresh token la dichiara la risposta, e da ora la si tiene nel
+ * credenziale (`refreshExpiresAt`) — se venisse fuori sotto la settimana, è
+ * questa la riga da cambiare.
+ *
+ * Sta qui e non in `apps/api` perché la UI la mostra: «PSN ogni tre giorni»
+ * scritto a mano nelle traduzioni sarebbe il secondo posto da tenere allineato.
+ */
+export const AUTO_SYNC_EVERY_DAYS: Record<
+  (typeof linkableStoreValues)[number],
+  number
+> = {
+  steam: 7,
+  gog: 7,
+  epic: 7,
+  amazon: 7,
+  psn: 3,
+};
+
 export type BacklogStatus = (typeof backlogStatusValues)[number];
 export type UserTagKind = (typeof userTagKindValues)[number];
 export type AttributeKind = (typeof attributeKindValues)[number];

@@ -240,6 +240,13 @@
     "profile": {
       "title": "Your details"
     },
+    "autoSync": {
+      "title": "Automatic updates",
+      "label": "Update libraries automatically",
+      "description": "Linked libraries re-import on their own: PlayStation every {psnDays} days, other stores every {otherDays}. You can always update them by hand.",
+      "psnWarning": "With automatic updates off, the PlayStation connection expires unless you import the library at least once every ten days.",
+      "failed": "Could not save the preference"
+    },
     "store": {
       "link": "Connect",
       "linked": "Account connected: import started",
@@ -273,7 +280,11 @@
       "openLogin": "1. Open the login page",
       "pasteStep": "2. Paste here {address}",
       "pasteAddress": "the address",
-      "pasteContent": "the content of the tab"
+      "pasteContent": "the content of the tab",
+      "autoSync": "Update automatically",
+      "autoSyncOffGlobally": "Automatic updates are off for all accounts.",
+      "autoSyncPsnWarning": "Without automatic updates the connection expires unless you import the library at least once every ten days.",
+      "autoSyncFailed": "Could not save the preference"
     },
     "add": {
       "title": "Add an account",

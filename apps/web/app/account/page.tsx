@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { AddStoreAccount } from '@/components/add-store-account';
+import { AutoSyncSettings } from '@/components/auto-sync-settings';
 import { ResolveImportDialog } from '@/components/resolve-import-dialog';
 import { StoreAccountCard } from '@/components/store-account-card';
 import { UnlinkAccountDialog } from '@/components/unlink-account-dialog';
@@ -41,6 +42,7 @@ export default function AccountPage() {
   });
 
   const unresolved = useQuery(api.imports.unresolved.queryOptions());
+  const settings = useQuery(api.settings.get.queryOptions());
 
   // Basta che UN negozio stia importando perché backlog e scarti cambino sotto
   // i piedi: la pagina non deve sapere quale.
@@ -121,7 +123,16 @@ export default function AccountPage() {
         </CardContent>
       </Card>
 
-      {accounts.isPending ? (
+      {/* Solo con qualcosa da aggiornare: senza account è un interruttore che
+          non accende niente. */}
+      {settings.data && (accounts.data?.length ?? 0) > 0 && (
+        <AutoSyncSettings
+          settings={settings.data}
+          hasPsn={accounts.data?.some((row) => row.store === 'psn') ?? false}
+        />
+      )}
+
+      {accounts.isPending || settings.isPending ? (
         <Skeleton className="h-32 w-full rounded-xl" />
       ) : (
         accounts.data?.map((account) => (
@@ -129,6 +140,7 @@ export default function AccountPage() {
             key={account.id}
             account={account}
             busy={syncing}
+            autoSyncLibrary={settings.data?.autoSyncLibrary ?? true}
             onUnlink={() => setUnlinking(account)}
           />
         ))
