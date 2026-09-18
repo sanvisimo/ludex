@@ -75,6 +75,16 @@ export type EpicCredentials = {
   refreshToken: string;
   /** Epoch in millisecondi. L'access token dura circa 36 ore. */
   expiresAt: number;
+  /**
+   * Quando muore il **refresh token**, come lo dichiara Epic. Zero se non lo
+   * dichiara.
+   *
+   * Tenuto per misurarlo, non perché qualcosa lo legga già: da quanto dura
+   * dipende se l'aggiornamento automatico settimanale basta a tenere vivo
+   * l'account, come per PSN. Dentro il credenziale e non su una colonna per
+   * la stessa ragione di PSN: `credentialsExpireAt` è dell'access token.
+   */
+  refreshExpiresAt: number;
   accountId: string;
   displayName: string | null;
 };
@@ -83,11 +93,22 @@ type TokenResponse = {
   access_token?: string;
   refresh_token?: string;
   expires_in?: number;
+  refresh_expires?: number;
+  refresh_expires_at?: string;
   account_id?: string;
   displayName?: string;
   errorCode?: string;
   errorMessage?: string;
 };
+
+/** La scadenza del refresh token: la data se c'è, altrimenti la durata. */
+function refreshExpiry(body: TokenResponse) {
+  const at = body.refresh_expires_at
+    ? Date.parse(body.refresh_expires_at)
+    : NaN;
+  if (Number.isFinite(at)) return at;
+  return body.refresh_expires ? Date.now() + body.refresh_expires * 1000 : 0;
+}
 
 async function requestToken(
   params: Record<string, string>,
@@ -128,6 +149,7 @@ async function requestToken(
     // Un minuto di margine, come per gli altri: non si parte con un token che
     // scade a metà import.
     expiresAt: Date.now() + ((body.expires_in ?? 28_800) - 60) * 1000,
+    refreshExpiresAt: refreshExpiry(body),
     accountId: body.account_id ?? '',
     displayName: body.displayName ?? null,
   };

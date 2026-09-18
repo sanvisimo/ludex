@@ -122,7 +122,8 @@ export type PsnCredentials = {
   /** Epoch in millisecondi. L'access token dura un'ora. */
   expiresAt: number;
   /**
-   * Quando muore il **refresh token**, che su PSN sono circa due mesi.
+   * Quando muore il **refresh token**: dieci giorni, che ripartono a ogni
+   * rinnovo. Misurato; all'inizio si credeva fossero due mesi.
    *
    * Tenuto dentro il credenziale e non nella colonna `credentialsExpireAt`, che
    * è dell'access token: qui serve a sapere, un giorno, che l'account sta per
