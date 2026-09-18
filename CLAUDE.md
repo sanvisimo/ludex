@@ -505,6 +505,40 @@ cifrati a riposo in **AES-256-GCM** con `STORE_TOKEN_KEY` (da dichiarare anche i
 perché quando il rinnovo fallisce non fallisce il job, fallisce l'utente, e
 `/account` deve saperglielo dire.
 
+##### L'aggiornamento automatico
+
+Le librerie si reimportano da sole: una spazzata sulla coda `imports`, ogni sei
+ore, accoda l'import degli account il cui `last_sync_at` è più vecchio della
+soglia del loro negozio — **tre giorni su PSN, sette sugli altri**
+(`AUTO_SYNC_EVERY_DAYS`). Su PSN è ciò che tiene vivo il collegamento, sugli
+altri è freschezza. Come la spazzata dell'enrichment, accoda e non importa.
+
+Due interruttori, e servono **tutti e due** accesi:
+
+- **`user_settings.auto_sync_library`** — «Aggiorna automaticamente la
+  libreria», per tutti gli account dell'utente. Una tabella a parte e non una
+  colonna su `user`, per la stessa ragione di `store_accounts`. **Nessuna riga
+  vuol dire i default**, che stanno sulle colonne: niente migrazione dei dati
+  per gli utenti che c'erano, niente hook alla registrazione, e chi legge
+  ripiega sempre sul default (`coalesce` in SQL).
+- **`store_accounts.auto_sync`** — per account, perché ci sono librerie che non
+  cambiano più: un account Amazon su cui non si riscatta niente da un anno.
+
+Tutti e due partono accesi. Spegnere quello generale e riaccenderlo non cambia
+le scelte fatte sui singoli account. Si salta chi è `needs_reauth` —
+riprovare non lo sblocca — e un account con un import già in coda non si
+accoda due volte, per la stessa deduplicazione del doppio clic.
+
+**Non serve il lock sulla riga** di cui parla la sezione qui sotto: il rinnovo
+resta dentro l'import, quindi nel worker, uno alla volta per account. Il lock
+torna a servire il giorno in cui qualcosa rinnova da fuori.
+
+Due cose che la UI, quando arriverà, deve dire: spegnere l'aggiornamento su un
+account PSN, o quello generale con un PSN collegato, vuol dire **lasciarlo
+morire in dieci giorni**. E in locale la spazzata gira solo col worker acceso:
+lo scheduler recupera il giro perso appena riparte, ma un PSN fermo da più di
+dieci giorni è già morto.
+
 ##### Accorgersi prima che un collegamento è morto (da valutare)
 
 **Non deciso, non implementato.** È stato analizzato e rimandato: sta qui perché
@@ -654,10 +688,10 @@ Sempre di PSN, quattro cose che si pagano care se si scoprono tardi:
   ogni rinnovo**. Misurato a distanza di giorni sullo stesso account: un refresh
   token emesso l'11 settembre, che scadeva il 21, rinnovato il 14 ne ha dato uno
   che scade il 24. Quindi PSN non va ricollegato a scadenza — ma solo **finché
-  qualcosa rinnova entro dieci giorni**, e oggi niente lo fa da solo: non c'è un
-  import periodico, e un account lasciato fermo undici giorni finisce in
-  `needs_reauth`. È l'unico negozio dove la frequenza dell'import non è una
-  questione di freschezza dei dati ma di tenere vivo il collegamento.
+  qualcosa rinnova entro dieci giorni**. A farlo è l'aggiornamento automatico
+  (vedi «L'aggiornamento automatico»), che su PSN reimporta ogni tre giorni.
+  È l'unico negozio dove la frequenza dell'import non è una questione di
+  freschezza dei dati ma di tenere vivo il collegamento.
 
 **I dischi fisici non stanno fra gli acquisti, ed è la parte che manca al 9b.**
 L'elenco degli acquisti è l'elenco dei *diritti digitali*: un gioco comprato su
@@ -928,8 +962,8 @@ la spazzata ci riprova per sempre.
       risolvibile nemmeno — vedi «PSN» qui sotto. I **dischi fisici**, che fra
       gli acquisti non compaiono, entrano dall'elenco dei giocati
       (`service: other`) risolti per concept, e il possesso lo dice
-      (`medium`). **Non è chiuso** per una cosa sola: far girare un rinnovo
-      entro dieci giorni, perché il collegamento non muoia da solo.
+      (`medium`). Il rinnovo entro dieci giorni, perché il collegamento non
+      muoia da solo, lo fa l'aggiornamento automatico.
     - **9c — EA**: non un account collegato ma un'**importazione una tantum**.
     - **9d — Nintendo**: barattolo di cookie, nessun id che IGDB conosca.
     - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia

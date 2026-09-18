@@ -31,6 +31,7 @@ import {
   linkStore,
   listStoreAccounts,
   renameStoreAccount,
+  setStoreAccountAutoSync,
   StoreAccountMismatchError,
   storeLoginUrl,
   syncAllStoreAccounts,
@@ -42,6 +43,7 @@ import {
   listUnresolvedImports,
   resolveUnresolvedImport,
 } from '../services/unresolved-imports';
+import { getUserSettings, updateUserSettings } from '../services/user-settings';
 import { enqueueImport, isImportRunning } from '../queue/imports';
 import { authed, maybeAuthed, os } from './context';
 
@@ -133,11 +135,16 @@ export const router = os.router({
         input.accountId,
       );
 
-      const account = await linkStore(context.user.id, input.store, input.value, {
-        label: input.label,
-        state: input.state,
-        relinking,
-      }).catch((error: unknown) => {
+      const account = await linkStore(
+        context.user.id,
+        input.store,
+        input.value,
+        {
+          label: input.label,
+          state: input.state,
+          relinking,
+        },
+      ).catch((error: unknown) => {
         if (error instanceof StoreAccountMismatchError) {
           throw new ORPCError('CONFLICT', { message: error.message });
         }
@@ -220,6 +227,31 @@ export const router = os.router({
     syncAll: os.accounts.syncAll
       .use(authed)
       .handler(({ context }) => syncAllStoreAccounts(context.user.id)),
+
+    setAutoSync: os.accounts.setAutoSync
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const account = await setStoreAccountAutoSync(
+          context.user.id,
+          input.accountId,
+          input.autoSync,
+        );
+        if (!account)
+          throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+        return { ...account, syncing: await isImportRunning(account.id) };
+      }),
+  },
+
+  settings: {
+    get: os.settings.get
+      .use(authed)
+      .handler(({ context }) => getUserSettings(context.user.id)),
+
+    update: os.settings.update
+      .use(authed)
+      .handler(({ input, context }) =>
+        updateUserSettings(context.user.id, input),
+      ),
   },
 
   imports: {

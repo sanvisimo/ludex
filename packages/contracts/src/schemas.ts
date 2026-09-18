@@ -244,6 +244,9 @@ export const StoreAccountSchema = z.object({
   status: StoreAccountStatusSchema,
   // Null = collegato ma mai importato.
   lastSyncAt: z.date().nullable(),
+  // Se si aggiorna da solo. Conta solo con l'interruttore generale acceso
+  // (`UserSettings.autoSyncLibrary`): servono tutti e due.
+  autoSync: z.boolean(),
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
   // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
   syncing: z.boolean(),
@@ -273,6 +276,15 @@ export const SyncAllResultSchema = z.object({
   alreadyRunning: z.number().int(),
   // Collegamento scaduto: riprovare non lo sblocca, va ricollegato a mano.
   needsReauth: z.number().int(),
+});
+
+// Le preferenze dell'utente. Complete in uscita anche per chi non ha mai
+// cambiato niente: i default li mette il server, il client non li conosce.
+export const UserSettingsSchema = z.object({
+  // «Aggiorna automaticamente la libreria», per tutti gli account. Spegnerla
+  // con un account PSN collegato vuol dire lasciarlo morire in dieci giorni:
+  // la UI lo deve dire.
+  autoSyncLibrary: z.boolean(),
 });
 
 // Una voce di libreria che l'import non ha saputo legare a un gioco. Il nome è
@@ -409,6 +421,7 @@ export function storeAccountName(account: {
 }
 export type UnlinkImpact = z.infer<typeof UnlinkImpactSchema>;
 export type SyncAllResult = z.infer<typeof SyncAllResultSchema>;
+export type UserSettings = z.infer<typeof UserSettingsSchema>;
 export type UnresolvedImport = z.infer<typeof UnresolvedImportSchema>;
 export type BacklogFilter = z.infer<typeof BacklogFilterSchema>;
 export type BacklogSort = z.infer<typeof BacklogSortSchema>;

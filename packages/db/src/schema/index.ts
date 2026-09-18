@@ -12,4 +12,5 @@ export * from './sources';
 export * from './scores';
 export * from './imports';
 export * from './tags';
+export * from './settings';
 export * from './relations';

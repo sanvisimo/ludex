@@ -16,7 +16,13 @@ import {
   scheduleOpenCriticResolve,
   type EnrichmentJob,
 } from './queue/enrichment';
-import { IMPORTS_QUEUE, type ImportJob } from './queue/imports';
+import {
+  IMPORTS_QUEUE,
+  type ImportJob,
+  type ImportsSweepJob,
+  isImportsSweep,
+  scheduleImportsSweep,
+} from './queue/imports';
 import {
   ENRICHMENT_SOURCE_NAMES,
   findGamesNeedingSource,
@@ -30,6 +36,7 @@ import { resolveOpenCriticIds } from './services/opencritic-resolve';
 import { importAmazonLibrary } from './services/amazon-import';
 import { importEpicLibrary } from './services/epic-import';
 import { importGogLibrary } from './services/gog-import';
+import { enqueueDueImports } from './services/library-sync';
 import { importPsnLibrary } from './services/psn-import';
 import { type ImportReport } from './services/library-import';
 import { importSteamLibrary } from './services/steam-import';
@@ -145,9 +152,17 @@ const importers: Partial<
 
 // Coda a parte: un import genera centinaia di job di enrichment, e sulla stessa
 // coda finirebbe in fila dietro il lavoro che ha appena prodotto.
-const importsWorker = new Worker<ImportJob>(
+const importsWorker = new Worker<ImportJob | ImportsSweepJob>(
   IMPORTS_QUEUE,
   async (job) => {
+    if (isImportsSweep(job.data)) {
+      // Come la spazzata dell'enrichment: accoda, non importa. Gli import veri
+      // restano un job per account, in fila dietro a questo.
+      const queued = await enqueueDueImports();
+      console.log(`[import] spazzata: ${queued} account accodati`);
+      return { queued };
+    }
+
     const { storeAccountId } = job.data;
 
     // L'account si rilegge qui e non arriva dentro il job: fra l'accodamento e
@@ -219,6 +234,7 @@ importsWorker.on('failed', (job, error) => {
 await enrichmentQueue.removeJobScheduler('igdb-sweep');
 await scheduleEnrichmentSweep();
 await scheduleOpenCriticResolve();
+await scheduleImportsSweep();
 
 console.log('worker in ascolto sulle code enrichment e imports');
 

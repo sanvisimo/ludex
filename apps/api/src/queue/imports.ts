@@ -35,17 +35,33 @@ export const IMPORTS_QUEUE = 'imports';
  */
 export type ImportJob = { storeAccountId: string };
 
-export const importsQueue = new Queue<ImportJob>(IMPORTS_QUEUE, {
-  connection: redisConnection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: { type: 'exponential', delay: 10_000 },
-    // Tenuti più a lungo dei job di enrichment: sono pochi e l'utente vuole
-    // sapere com'è andata l'ultima importazione.
-    removeOnComplete: { count: 50 },
-    removeOnFail: { count: 100 },
+/**
+ * La spazzata periodica: non importa niente, accoda gli import dovuti.
+ *
+ * Un tipo a parte e non un `type` aggiunto a `ImportJob`: i job d'import già
+ * in Redis sono `{ storeAccountId }` e basta, e il worker li deve riconoscere
+ * anche senza un campo che quando sono stati scritti non esisteva.
+ */
+export type ImportsSweepJob = { type: 'sweep' };
+
+export const importsQueue = new Queue<ImportJob | ImportsSweepJob>(
+  IMPORTS_QUEUE,
+  {
+    connection: redisConnection,
+    defaultJobOptions: {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 10_000 },
+      // Tenuti più a lungo dei job di enrichment: sono pochi e l'utente vuole
+      // sapere com'è andata l'ultima importazione.
+      removeOnComplete: { count: 50 },
+      removeOnFail: { count: 100 },
+    },
   },
-});
+);
+
+export const isImportsSweep = (
+  job: ImportJob | ImportsSweepJob,
+): job is ImportsSweepJob => 'type' in job && job.type === 'sweep';
 
 /**
  * La chiave di deduplicazione: un import **per account**.
@@ -86,4 +102,26 @@ export async function isImportRunning(storeAccountId: string) {
     dedupKey(storeAccountId),
   );
   return jobId !== null;
+}
+
+const SWEEP_SCHEDULER_ID = 'imports-sweep';
+// Ogni sei ore, come la spazzata dell'enrichment. Le soglie vere sono di giorni
+// (vedi `AUTO_SYNC_EVERY_DAYS`): la frequenza qui dice solo con quanto ritardo,
+// al massimo, un account dovuto viene notato.
+const SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * Registra la spazzata periodica degli import.
+ *
+ * Uno scheduler di BullMQ e non un setInterval, per le stesse ragioni di quello
+ * dell'enrichment: lo stato vive in Redis, con più worker parte una volta sola,
+ * e a worker spento il giro rimasto indietro si fa appena riparte — che in
+ * locale vuol dire «si aggiorna quando avvio il progetto».
+ */
+export async function scheduleImportsSweep() {
+  await importsQueue.upsertJobScheduler(
+    SWEEP_SCHEDULER_ID,
+    { every: SWEEP_EVERY_MS },
+    { name: 'sweep', data: { type: 'sweep' } },
+  );
 }

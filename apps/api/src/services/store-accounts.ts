@@ -112,6 +112,7 @@ const accountColumns = {
   label: schema.storeAccounts.label,
   status: schema.storeAccounts.status,
   lastSyncAt: schema.storeAccounts.lastSyncAt,
+  autoSync: schema.storeAccounts.autoSync,
 };
 
 /**
@@ -809,6 +810,32 @@ export async function renameStoreAccount(
   const [row] = await db
     .update(schema.storeAccounts)
     .set({ label: pulita ? pulita : null, updatedAt: new Date() })
+    .where(
+      and(
+        eq(schema.storeAccounts.id, accountId),
+        eq(schema.storeAccounts.userId, userId),
+      ),
+    )
+    .returning(accountColumns);
+
+  return row;
+}
+
+/**
+ * Accende o spegne l'aggiornamento automatico di un account.
+ *
+ * Non tocca l'import manuale: «Aggiorna» resta lì. E non tocca lo stato: un
+ * account spento non è scollegato, i suoi giochi e il suo credenziale restano
+ * dove sono.
+ */
+export async function setStoreAccountAutoSync(
+  userId: string,
+  accountId: string,
+  autoSync: boolean,
+) {
+  const [row] = await db
+    .update(schema.storeAccounts)
+    .set({ autoSync, updatedAt: new Date() })
     .where(
       and(
         eq(schema.storeAccounts.id, accountId),

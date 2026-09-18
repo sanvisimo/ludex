@@ -19,6 +19,7 @@ import {
   SyncAllResultSchema,
   UnlinkImpactSchema,
   UnresolvedImportSchema,
+  UserSettingsSchema,
   UserTagInputSchema,
   UserTagSchema,
 } from './schemas';
@@ -189,6 +190,20 @@ export const contract = {
     // Rilancia l'import di tutti gli account collegati. Non fallisce per uno
     // solo: chi è da ricollegare o sta già importando si salta e si conta.
     syncAll: oc.output(SyncAllResultSchema),
+
+    // Accende o spegne l'aggiornamento automatico di un account. Esiste per le
+    // librerie che non cambiano più: aggiornarle è solo lavoro buttato.
+    setAutoSync: oc
+      .input(z.object({ accountId: z.uuid(), autoSync: z.boolean() }))
+      .output(StoreAccountSchema),
+  },
+
+  settings: {
+    // Le preferenze, coi default per chi non ne ha mai cambiata una.
+    get: oc.output(UserSettingsSchema),
+
+    // Scrive solo i campi che arrivano: gli altri restano come sono.
+    update: oc.input(UserSettingsSchema.partial()).output(UserSettingsSchema),
   },
 
   imports: {

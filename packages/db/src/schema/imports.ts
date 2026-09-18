@@ -1,5 +1,6 @@
 import { storeAccountStatusValues } from '@repo/contracts/vocabulary';
 import {
+  boolean,
   customType,
   index,
   integer,
@@ -90,6 +91,13 @@ export const storeAccounts = pgTable(
 
     // Ultimo import andato a buon fine. Null = collegato ma mai importato.
     lastSyncAt: timestamp('last_sync_at'),
+    // Se questo account si aggiorna da solo. Vale solo con l'interruttore
+    // generale acceso (`user_settings.auto_sync_library`): servono tutti e due.
+    //
+    // Per account perché ci sono librerie che non cambiano più — un account
+    // Amazon su cui non si riscatta niente da un anno — e aggiornarle è solo
+    // una manciata di ricerche IGDB buttate a ogni giro.
+    autoSync: boolean('auto_sync').notNull().default(true),
     ...timestamps,
   },
   (table) => [
