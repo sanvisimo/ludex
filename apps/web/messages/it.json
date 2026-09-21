@@ -114,6 +114,7 @@
     "noResults": "Nessun risultato per «{query}». Puoi aggiungerlo lo stesso a mano.",
     "ownershipLabel": "Dove ce l'hai",
     "noStore": "Nessuno store",
+    "noMedium": "Non dichiarato",
     "removeRow": "Togli la riga {number}",
     "addPlatform": "Aggiungi piattaforma",
     "ownershipHint": "Su PC lo stesso gioco può stare su Steam <em>e</em> GOG: sono due righe.",
@@ -171,6 +172,7 @@
     "addTag": "Aggiungi",
     "ownershipLabel": "Piattaforme",
     "noStore": "Nessuno store",
+    "noMedium": "Non dichiarato",
     "addPlatform": "Aggiungi",
     "pendingOwnerships": "{count, plural, one {# piattaforma da salvare} other {# piattaforme da salvare}}",
     "ownershipHint": "Le piattaforme si aggiungono soltanto: per toglierne una, per ora, va rimosso e rifatto il gioco.",
@@ -387,6 +389,6 @@
   },
   "medium": {
     "digital": "Digitale",
-    "physical": "Disco"
+    "physical": "Fisico"
   }
 }

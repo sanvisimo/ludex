@@ -150,15 +150,26 @@ export const ownerships = pgTable(
     // libreria vera sono 274 righe su 336. Cosa farne è lo step 14; questa
     // colonna serve a non aver buttato l'informazione prima di arrivarci.
     subscription: subscription('subscription'),
-    // **Disco o digitale?** Nullo = non dichiarato, cioè gli inserimenti manuali.
+    // **Disco o digitale?** Nullo = non dichiarato: le righe di prima che il
+    // campo si potesse scrivere a mano, e chi non se ne cura.
     //
     // L'import lo dice sempre: `digital` per ogni libreria di un negozio, che
     // è fatta di diritti digitali, `physical` per i dischi PSN, che dalla
     // libreria non passano e arrivano dall'elenco dei giocati.
     //
-    // Non entra nella chiave del vincolo, ed è voluto: un gioco che si ha su
-    // disco *e* in digitale sulla stessa console è una copia sola da avviare, e
-    // vince il digitale — vedi `fondiDoppioni`.
+    // **Entra nella chiave del vincolo**, ed è la cosa da capire di questa
+    // colonna: non descrive com'è fatta una copia, dice *quale* copia è. Il
+    // disco sullo scaffale e il diritto sul Plus sono due copie dello stesso
+    // gioco sulla stessa console, esattamente come Steam e GOG sono due copie
+    // sullo stesso PC, e stanno su due righe.
+    //
+    // Non sono simmetriche, ed è il motivo per cui la chiave è larga: a
+    // sparire è sempre il digitale — l'abbonamento finisce, il gioco esce dal
+    // negozio — mentre un disco che l'import non vede più non è un disco che
+    // non hai, è un disco che Sony non ha modo di dichiarare. Con la chiave
+    // stretta l'arrivo di un diritto digitale riscriveva la riga e il disco
+    // spariva dal database: è la storia di God of War (2018), comprato su
+    // disco e poi finito nel catalogo Plus.
     medium: medium('medium'),
     ...timestamps,
   },
@@ -167,17 +178,20 @@ export const ownerships = pgTable(
     // comportamento standard di Postgres i NULL sono tutti diversi fra loro, e
     // "PC / nessuno store" si potrebbe inserire due volte sullo stesso gioco.
     //
-    // L'account è **dentro la chiave**: lo stesso gioco su due account Amazon
-    // sono due copie, e fonderle vorrebbe dire non sapere più da quale dei due
-    // si lancia. Il rovescio è che un possesso inserito a mano (account nullo) e
-    // uno importato non sono più la stessa riga — vedi `ensureOwnerships`, che
-    // prima di scrivere adotta quello a mano invece di sdoppiarlo.
+    // Account e supporto sono **dentro la chiave** per la stessa ragione: lo
+    // stesso gioco su due account Amazon, o su disco e in digitale sulla stessa
+    // console, sono due copie, e fonderle vorrebbe dire non sapere più da quale
+    // delle due si parte. Il rovescio è che un possesso inserito a mano (account
+    // nullo, e supporto nullo finché non lo si dichiara) e uno importato non
+    // sono più la stessa riga — vedi `ensureOwnerships`, che prima di scrivere
+    // adotta quello a mano invece di sdoppiarlo.
     unique('ownerships_backlog_platform_store_key')
       .on(
         table.backlogId,
         table.platformSlug,
         table.store,
         table.storeAccountId,
+        table.medium,
       )
       .nullsNotDistinct(),
     index('ownerships_backlog_id_idx').on(table.backlogId),

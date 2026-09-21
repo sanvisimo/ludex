@@ -561,7 +561,10 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
     ]);
   });
 
-  it('il disco comprato poi in digitale smette di dirsi disco', async () => {
+  it('il disco comprato poi in digitale non smette di essere un disco', async () => {
+    // Il disco resta sullo scaffale anche il giorno che compri il gioco: sono
+    // due copie, e la seconda non riscrive la prima. È il caso che con il
+    // supporto fuori dalla chiave cancellava un disco senza dirlo.
     mockedSearch.mockResolvedValue([hit({ igdbId: 1, name: 'Stellar Blade' })]);
     const voce = {
       externalId: 'PPSA13197_00',
@@ -572,13 +575,16 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
     await importLibrary(account, [{ ...voce, medium: 'physical' as const }]);
     await importLibrary(account, [voce]);
 
-    expect(await possessi(userId)).toMatchObject([{ medium: 'digital' }]);
+    expect((await possessi(userId)).map((row) => row.medium).sort()).toEqual([
+      'digital',
+      'physical',
+    ]);
   });
 
-  it('disco e digitale dello stesso gioco sulla stessa console: vince il digitale', async () => {
+  it('disco e digitale dello stesso gioco sulla stessa console sono due copie', async () => {
     // Due codici diversi — una regione per il disco, una per l'acquisto — che
-    // portano allo stesso gioco: un possesso solo, e il diritto digitale copre
-    // il disco.
+    // portano allo stesso gioco. Il gioco è uno, le copie due: il diritto
+    // digitale non fa sparire il disco, dice solo che puoi avviarlo senza.
     mockedBySource.mockResolvedValue(
       new Map([['10000333', { igdbId: 9, name: 'Elden Ring' }]]),
     );
@@ -600,7 +606,13 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
       },
     ]);
 
-    expect(await possessi(userId)).toMatchObject([{ medium: 'digital' }]);
+    // Una riga di backlog sola, con due possessi: è l'identità del gioco a non
+    // doversi sdoppiare, non quella della copia.
+    expect(await db.select().from(schema.backlog)).toHaveLength(1);
+    expect((await possessi(userId)).map((row) => row.medium).sort()).toEqual([
+      'digital',
+      'physical',
+    ]);
   });
 
   it('tiene la piattaforma sugli scarti, o risolverli a mano sarebbe indovinare', async () => {

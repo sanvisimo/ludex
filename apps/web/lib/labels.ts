@@ -1,7 +1,7 @@
 'use client';
 
-import type { BacklogStatus, Store } from '@repo/contracts';
-import { backlogStatusValues, storeValues } from '@repo/contracts';
+import type { BacklogStatus, Medium, Store } from '@repo/contracts';
+import { backlogStatusValues, mediumValues, storeValues } from '@repo/contracts';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
@@ -31,6 +31,17 @@ export function useStoreLabels(): Record<Store, string> {
       Object.fromEntries(
         storeValues.map((value) => [value, t(value)]),
       ) as Record<Store, string>,
+    [t],
+  );
+}
+
+export function useMediumLabels(): Record<Medium, string> {
+  const t = useTranslations('medium');
+  return useMemo(
+    () =>
+      Object.fromEntries(
+        mediumValues.map((value) => [value, t(value)]),
+      ) as Record<Medium, string>,
     [t],
   );
 }

@@ -1,8 +1,17 @@
 'use client';
 
 import { ORPCError } from '@orpc/client';
-import type { BacklogStatus, IgdbSearchHit, Store } from '@repo/contracts';
-import { backlogStatusValues, storeValues } from '@repo/contracts';
+import type {
+  BacklogStatus,
+  IgdbSearchHit,
+  Medium,
+  Store,
+} from '@repo/contracts';
+import {
+  backlogStatusValues,
+  mediumValues,
+  storeValues,
+} from '@repo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { XIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -32,24 +41,36 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useApiErrorMessage } from '@/lib/api-error';
-import { useStatusLabels, useStoreLabels } from '@/lib/labels';
+import { useMediumLabels, useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 
 const NO_STORE = '__nessuno__';
+// Il supporto non dichiarato non è un terzo valore: è l'assenza di una
+// dichiarazione, e vuol dire «adottami al primo import». Dirlo è ciò che
+// distingue una copia da un'altra — il disco che hai in mano dal diritto che
+// l'abbonamento ti presta — quindi il vuoto resta il default.
+const NO_MEDIUM = '__nessuno__';
 
-type OwnershipRow = { key: number; platformSlug: string | null; store: string };
+type OwnershipRow = {
+  key: number;
+  platformSlug: string | null;
+  store: string;
+  medium: string;
+};
 
 let rowSeq = 0;
 const emptyRow = (): OwnershipRow => ({
   key: ++rowSeq,
   platformSlug: null,
   store: NO_STORE,
+  medium: NO_MEDIUM,
 });
 
 export function AddGameDialog() {
   const t = useTranslations('addGame');
   const statusLabels = useStatusLabels();
   const storeLabels = useStoreLabels();
+  const mediumLabels = useMediumLabels();
   const errorMessage = useApiErrorMessage();
 
   const queryClient = useQueryClient();
@@ -118,6 +139,7 @@ export function AddGameDialog() {
         ownerships: filledRows.map((row) => ({
           platformSlug: row.platformSlug as string,
           store: row.store === NO_STORE ? null : (row.store as Store),
+          medium: row.medium === NO_MEDIUM ? null : (row.medium as Medium),
         })),
       });
     },
@@ -155,7 +177,7 @@ export function AddGameDialog() {
     >
       <DialogTrigger render={<Button>{t('trigger')}</Button>} />
 
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{t('description')}</DialogDescription>
@@ -257,8 +279,14 @@ export function AddGameDialog() {
             ) : (
               <div className="grid gap-2">
                 {rows.map((row, index) => (
-                  <div key={row.key} className="flex items-start gap-2">
-                    <div className="flex-1">
+                  <div
+                    key={row.key}
+                    className="flex flex-wrap items-start gap-2"
+                  >
+                    {/* La piattaforma non scende sotto una larghezza leggibile:
+                        con tre controlli in riga, su una finestra stretta a
+                        stringersi sarebbe sempre lei. */}
+                    <div className="min-w-48 flex-1">
                       <PlatformCombobox
                         platforms={platforms.data ?? []}
                         value={row.platformSlug}
@@ -294,6 +322,33 @@ export function AddGameDialog() {
                         {storeValues.map((value) => (
                           <SelectItem key={value} value={value}>
                             {storeLabels[value]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      items={{ [NO_MEDIUM]: t('noMedium'), ...mediumLabels }}
+                      value={row.medium}
+                      onValueChange={(next) =>
+                        setRows((current) =>
+                          current.map((item) =>
+                            item.key === row.key
+                              ? { ...item, medium: next as string }
+                              : item,
+                          ),
+                        )
+                      }
+                    >
+                      <SelectTrigger className="w-36 shrink-0">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NO_MEDIUM}>
+                          {t('noMedium')}
+                        </SelectItem>
+                        {mediumValues.map((value) => (
+                          <SelectItem key={value} value={value}>
+                            {mediumLabels[value]}
                           </SelectItem>
                         ))}
                       </SelectContent>

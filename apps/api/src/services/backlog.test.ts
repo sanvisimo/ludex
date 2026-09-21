@@ -373,3 +373,158 @@ describe('aggiunta di un possesso', () => {
     );
   });
 });
+
+// Il supporto è entrato nella chiave del vincolo, e con lui ha cambiato senso:
+// non dice com'è fatta una copia, dice **quale** copia è. Da qui discende tutto
+// ciò che segue, e il caso che lo giustifica è God of War (2018): comprato su
+// disco e poi arrivato nel catalogo Plus. Per Sony da quel giorno è digitale, e
+// con la chiave stretta il disco spariva dal database senza che nessuno lo
+// avesse chiesto.
+describe('il supporto distingue due copie', () => {
+  let userId: string;
+  let entryId: string;
+  let account: { id: string };
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'psn');
+    const game = await createGame();
+    // Senza possessi, che qui sono ciò che si sta provando: `addToBacklog` ne
+    // vuole almeno uno, e partire con una riga di troppo falserebbe i conteggi.
+    const [entry] = await db
+      .insert(schema.backlog)
+      .values({ userId, gameId: game.id, status: 'backlog' })
+      .returning({ id: schema.backlog.id });
+    entryId = entry!.id;
+  });
+
+  async function importa(medium: 'digital' | 'physical', extra = {}) {
+    await ensureOwnerships([
+      {
+        backlogId: entryId,
+        platformSlug: 'sony_playstation5',
+        store: 'psn',
+        storeAccountId: account.id,
+        medium,
+        ...extra,
+      },
+    ]);
+  }
+
+  it('il disco dichiarato a mano non se lo prende un import digitale', async () => {
+    await addOwnershipToEntry(userId, entryId, {
+      platformSlug: 'sony_playstation5',
+      medium: 'physical',
+    });
+    await importa('digital', { subscription: 'ps_plus' as const });
+
+    const ownerships = (await findEntryById(userId, entryId))?.ownerships ?? [];
+    expect(ownerships).toHaveLength(2);
+    // Il disco resta senza negozio e senza abbonamento: è tuo, e nessun import
+    // lo ha portato.
+    expect(ownerships).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          medium: 'physical',
+          store: null,
+          subscription: null,
+        }),
+        expect.objectContaining({ medium: 'digital', subscription: 'ps_plus' }),
+      ]),
+    );
+  });
+
+  it("il disco dichiarato a mano e quello dell'import sono la stessa copia", async () => {
+    await addOwnershipToEntry(userId, entryId, {
+      platformSlug: 'sony_playstation5',
+      medium: 'physical',
+    });
+    await importa('physical', { playtimeMinutes: 120 });
+
+    const ownerships = (await findEntryById(userId, entryId))?.ownerships ?? [];
+    expect(ownerships).toHaveLength(1);
+    expect(ownerships[0]).toMatchObject({
+      medium: 'physical',
+      store: 'psn',
+      playtimeMinutes: 120,
+      storeAccount: { id: account.id },
+    });
+  });
+
+  it("una riga che non dichiara il supporto se la prende l'import", async () => {
+    // È la forma di ogni possesso scritto a mano prima che il campo esistesse:
+    // «non lo so» non è «un'altra copia», quindi si fa adottare.
+    await addOwnershipToEntry(userId, entryId, {
+      platformSlug: 'sony_playstation5',
+    });
+    await importa('physical');
+
+    const ownerships = (await findEntryById(userId, entryId))?.ownerships ?? [];
+    expect(ownerships).toHaveLength(1);
+    expect(ownerships[0]).toMatchObject({ medium: 'physical', store: 'psn' });
+  });
+
+  it('la riga rimasta accanto a quella già importata si cancella', async () => {
+    // Lo stato di chi aveva inserito il gioco a mano *prima* che l'adozione
+    // esistesse: due righe per la stessa copia. Adottare violerebbe il vincolo,
+    // quindi la meno specifica se ne va — la più specifica sa già tutto.
+    await importa('physical', { playtimeMinutes: 30 });
+    await db.insert(schema.ownerships).values({
+      backlogId: entryId,
+      platformSlug: 'sony_playstation5',
+    });
+
+    await importa('physical', { playtimeMinutes: 45 });
+
+    const ownerships = (await findEntryById(userId, entryId))?.ownerships ?? [];
+    expect(ownerships).toHaveLength(1);
+    expect(ownerships[0]).toMatchObject({
+      medium: 'physical',
+      playtimeMinutes: 45,
+    });
+  });
+
+  it('dichiarare il disco dove c’è solo il digitale aggiunge una copia', async () => {
+    await importa('digital');
+    await addOwnershipToEntry(userId, entryId, {
+      platformSlug: 'sony_playstation5',
+      medium: 'physical',
+    });
+
+    expect(
+      ((await findEntryById(userId, entryId))?.ownerships ?? [])
+        .map((row) => row.medium)
+        .sort(),
+    ).toEqual(['digital', 'physical']);
+  });
+
+  it('dichiarare un possesso che c’è già non ne crea un altro', async () => {
+    await importa('digital');
+
+    // Senza supporto: «ce l'ho su PS5» non contraddice niente.
+    await addOwnershipToEntry(userId, entryId, {
+      platformSlug: 'sony_playstation5',
+    });
+    // E dichiarando lo stesso supporto nemmeno.
+    await addOwnershipToEntry(userId, entryId, {
+      platformSlug: 'sony_playstation5',
+      medium: 'digital',
+    });
+
+    expect((await findEntryById(userId, entryId))?.ownerships).toHaveLength(1);
+  });
+
+  it('dichiarare il supporto su una riga che non lo diceva la completa', async () => {
+    await addOwnershipToEntry(userId, entryId, {
+      platformSlug: 'nintendo_switch',
+    });
+    await addOwnershipToEntry(userId, entryId, {
+      platformSlug: 'nintendo_switch',
+      medium: 'physical',
+    });
+
+    const ownerships = (await findEntryById(userId, entryId))?.ownerships ?? [];
+    expect(ownerships).toHaveLength(1);
+    expect(ownerships[0]).toMatchObject({ medium: 'physical' });
+  });
+});

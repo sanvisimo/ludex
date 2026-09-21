@@ -208,6 +208,12 @@ export const OwnershipSchema = z.object({
 export const OwnershipInputSchema = z.object({
   platformSlug: z.string().min(1),
   store: StoreSchema.nullish(),
+  // Disco o digitale, e nullo vuol dire «non lo dico»: non è un valore in
+  // mezzo, è l'assenza di una dichiarazione. Chi lo lascia vuoto si fa adottare
+  // dal primo import che passa; chi scrive «fisico» dove l'import vede solo un
+  // diritto digitale sta dichiarando una **seconda copia**, ed è l'unico modo
+  // di non perdere un disco coperto da un abbonamento.
+  medium: MediumSchema.nullish(),
 });
 
 export const BacklogEntrySchema = z.object({

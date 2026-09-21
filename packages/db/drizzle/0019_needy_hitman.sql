@@ -1,0 +1,2 @@
+ALTER TABLE "ownerships" DROP CONSTRAINT "ownerships_backlog_platform_store_key";--> statement-breakpoint
+ALTER TABLE "ownerships" ADD CONSTRAINT "ownerships_backlog_platform_store_key" UNIQUE NULLS NOT DISTINCT("backlog_id","platform_slug","store","store_account_id","medium");

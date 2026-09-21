@@ -76,7 +76,15 @@ export function toEntry<T extends { tags: { tag: UserTag }[] }>(entry: T) {
 // Il possesso inserito a mano dallo step 5. Nessun `storeAccountId`: l'account
 // lo attacca solo un import, e un utente che dichiara «ce l'ho su Amazon» non sta
 // dicendo su quale dei suoi account.
-export type OwnershipInput = { platformSlug: string; store?: Store | null };
+//
+// Il supporto invece sì, ed è l'unica fonte che possa dirlo per un disco coperto
+// da un diritto digitale: un gioco comprato su disco e poi finito nel Plus, per
+// il negozio, è digitale e basta.
+export type OwnershipInput = {
+  platformSlug: string;
+  store?: Store | null;
+  medium?: Medium | null;
+};
 
 // Quante righe per INSERT. Postgres regge 65535 parametri per istruzione: con
 // una libreria da qualche migliaio di giochi un colpo solo li sfonderebbe.
@@ -130,6 +138,7 @@ export async function addToBacklog(input: {
         backlogId: entry.id,
         platformSlug: ownership.platformSlug,
         store: ownership.store ?? null,
+        medium: ownership.medium ?? null,
       })),
     );
 
@@ -256,11 +265,17 @@ export async function updateBacklogEntry(
 /**
  * Aggiunge una piattaforma a un gioco già nel backlog.
  *
- * Non riscrive niente da sé: appoggia su `ensureOwnerships`, la stessa scrittura
- * idempotente che usa l'import Steam. Riaggiungere un possesso che c'è già non è
- * un errore e non duplica la riga — è il vincolo `(backlog, piattaforma, store)`
- * con `NULLS NOT DISTINCT` a garantirlo — e il COALESCE lascia intatte le ore
- * che l'import aveva scritto.
+ * Non passa da `ensureOwnerships`, e non è una svista: quella scrittura è fatta
+ * per righe **più** specifiche di quelle che trova — un import porta negozio e
+ * account, e adotta ciò che ne ha meno. Qui è il contrario: chi scrive a mano
+ * porta *meno* di ciò che c'è già, perché un account non ce l'ha e spesso
+ * nemmeno un negozio, e con il vincolo largo finirebbe su una riga sua.
+ *
+ * Quindi la regola è la compatibilità: dire «ce l'ho su PS5, fisico» quando
+ * quella copia è già lì non ne crea una seconda, perché ciò che non si dichiara
+ * vale come «non lo so», non come «diverso». Al contrario dichiarare il disco
+ * dove c'è solo il digitale scrive una riga nuova: sono due copie, ed è tutto il
+ * punto del supporto dentro la chiave.
  */
 export async function addOwnershipToEntry(
   userId: string,
@@ -275,13 +290,58 @@ export async function addOwnershipToEntry(
   });
   if (!owned) return null;
 
-  await ensureOwnerships([
-    {
+  const store = ownership.store ?? null;
+  const medium = ownership.medium ?? null;
+
+  const esistenti = await db
+    .select({
+      id: schema.ownerships.id,
+      store: schema.ownerships.store,
+      medium: schema.ownerships.medium,
+    })
+    .from(schema.ownerships)
+    .where(
+      and(
+        eq(schema.ownerships.backlogId, id),
+        eq(schema.ownerships.platformSlug, ownership.platformSlug),
+      ),
+    );
+
+  const compatibili = esistenti.filter(
+    (riga) =>
+      (store === null || riga.store === store) &&
+      (medium === null || riga.medium === null || riga.medium === medium),
+  );
+
+  // Prima chi dice già la stessa cosa, poi chi non dice niente, poi chiunque:
+  // l'ordine conta solo dichiarando un supporto — «fisico» dove ci sono una riga
+  // fisica e una muta non deve andare a riscrivere quella muta. Chi non
+  // dichiara niente si accontenta di qualunque copia già nota, perché non sta
+  // affermando che ne esista un'altra.
+  const gia =
+    compatibili.find((riga) => riga.medium === medium) ??
+    compatibili.find((riga) => riga.medium === null) ??
+    compatibili[0];
+
+  if (!gia) {
+    await db.insert(schema.ownerships).values({
       backlogId: id,
       platformSlug: ownership.platformSlug,
-      store: ownership.store ?? null,
-    },
-  ]);
+      store,
+      medium,
+    });
+    return owned;
+  }
+
+  // Una riga che non diceva il supporto e ora lo sa: è l'unico caso in cui
+  // l'aggiunta **modifica** invece di aggiungere, e resta un'aggiunta di
+  // informazione — nessun valore dichiarato viene riscritto.
+  if (gia.medium === null && medium !== null) {
+    await db
+      .update(schema.ownerships)
+      .set({ medium, updatedAt: new Date() })
+      .where(eq(schema.ownerships.id, gia.id));
+  }
 
   return owned;
 }
@@ -364,17 +424,17 @@ export async function ensureBacklogEntries(
  * Le ore si sommano: sono due voci di libreria dello stesso gioco, e il tempo
  * speso è la somma dei due. L'ultima partita è la più recente delle due.
  *
- * Il supporto invece non si somma, si sceglie: se una delle due è digitale il
- * possesso è digitale. È il caso del disco PSN con un codice diverso dalla
- * copia comprata sulla stessa console — due voci, un gioco, una console — e un
- * diritto digitale copre il disco: è quella la copia che si avvia senza
- * cercarlo sullo scaffale, e quella che Sony dichiara.
+ * Sul supporto non c'è niente da decidere, e prima che entrasse nella chiave
+ * c'era: due voci che finiscono qui insieme lo hanno per forza uguale. Il disco
+ * PSN con un codice diverso dalla copia comprata sulla stessa console — due
+ * voci, un gioco, una console — non cade più sulla stessa chiave, e resta
+ * quello che è: due copie.
  */
 function fondiDoppioni(rows: OwnershipUpsert[]) {
   const perChiave = new Map<string, OwnershipUpsert>();
 
   for (const row of rows) {
-    const chiave = `${row.backlogId}|${row.platformSlug}|${row.store ?? ''}|${row.storeAccountId ?? ''}`;
+    const chiave = chiavePossesso(row);
     const gia = perChiave.get(chiave);
 
     if (!gia) {
@@ -392,14 +452,27 @@ function fondiDoppioni(rows: OwnershipUpsert[]) {
         [gia.lastPlayedAt, row.lastPlayedAt]
           .filter((date): date is Date => date instanceof Date)
           .sort((a, b) => b.getTime() - a.getTime())[0] ?? null,
-      medium:
-        gia.medium === 'digital' || row.medium === 'digital'
-          ? 'digital'
-          : (gia.medium ?? row.medium ?? null),
     });
   }
 
   return [...perChiave.values()];
+}
+
+/** La chiave del vincolo unique, scritta una volta sola. */
+function chiavePossesso(row: {
+  backlogId: string;
+  platformSlug: string;
+  store?: Store | null;
+  storeAccountId?: string | null;
+  medium?: Medium | null;
+}) {
+  return [
+    row.backlogId,
+    row.platformSlug,
+    row.store ?? '',
+    row.storeAccountId ?? '',
+    row.medium ?? '',
+  ].join('|');
 }
 
 export type OwnershipUpsert = {
@@ -416,47 +489,125 @@ export type OwnershipUpsert = {
 };
 
 /**
- * Attacca l'account ai possessi che il negozio ce l'hanno già, ma l'account no.
+ * Fa proprie le righe **meno specifiche** di quelle in arrivo.
  *
- * Serve perché `storeAccountId` è entrato nella chiave del vincolo. Senza questo
- * passo, un possesso «PC / Amazon» inserito a mano allo step 5 e lo stesso
- * possesso portato dall'import sono **due righe diverse**, e la scheda del gioco
- * mostra due volte Amazon: il primo import dopo questa modifica sdoppierebbe in
- * silenzio ogni possesso che l'utente si era scritto a mano.
+ * Serve perché account e supporto stanno nella chiave del vincolo. Un possesso
+ * scritto a mano non ha un account, spesso non ha nemmeno un negozio, e finché
+ * non lo si dichiara non ha un supporto: senza questo passo, il primo import
+ * sdoppierebbe in silenzio ogni riga che l'utente si era scritto da sé — la
+ * scheda del gioco mostrerebbe «PS5» e «PS5 · PlayStation Store» come se
+ * fossero due copie.
  *
- * L'adozione è ristretta a `store_account_id is null`: un possesso che porta già
- * l'id di un **altro** account non si tocca, perché quello è il caso vero dei due
- * account Amazon e sono due copie distinte.
+ * Cosa può essere adottato, e cosa no:
  *
- * Vale una volta sola per riga — dopo, l'account c'è — quindi non è un costo
- * ricorrente: dal secondo import in poi non aggiorna niente.
+ * - **mai una riga di un altro account** (`store_account_id is null`): due
+ *   account Amazon sono due copie, ed è il caso per cui l'account sta nella
+ *   chiave.
+ * - **mai una riga di un altro negozio**: «PC · GOG» scritto a mano non è la
+ *   copia che sta arrivando da Steam.
+ * - **mai una riga di un altro supporto**: è tutto il punto del disco dentro la
+ *   chiave. Il disco che dichiari resta tuo anche il giorno che il gioco entra
+ *   nel catalogo dell'abbonamento, e quella è una riga nuova, non un aggiornamento
+ *   della tua.
+ *
+ * Ciò che non dichiara niente invece si adotta: una riga senza supporto dice
+ * «non lo so», non «un altro».
+ *
+ * Quando la riga di destinazione **esiste già** — l'import era passato, e la
+ * riga a mano è rimasta lì accanto — adottare vorrebbe dire violare il vincolo:
+ * lì la riga meno specifica si cancella, perché le due sono la stessa copia e
+ * quella più specifica sa tutto ciò che sapeva l'altra.
+ *
+ * Una SELECT per pagina, e quasi sempre nessuna scrittura: su una libreria
+ * importata una seconda volta non c'è più niente di meno specifico da adottare.
  */
-async function adottaPossessiSenzaAccount(rows: OwnershipUpsert[]) {
-  // Raggruppate per (account, negozio, piattaforma): dentro un import sono
-  // sempre le stesse tre cose, quindi quattrocento giochi diventano **una**
-  // UPDATE invece di quattrocento andate e ritorni al database.
-  const gruppi = new Map<string, { row: OwnershipUpsert; ids: string[] }>();
+async function adottaPossessiMenoSpecifici(rows: OwnershipUpsert[]) {
+  const backlogIds = [...new Set(rows.map((row) => row.backlogId))];
+  if (backlogIds.length === 0) return;
 
-  for (const row of rows) {
-    if (!row.storeAccountId || !row.store) continue;
-    const chiave = `${row.storeAccountId}|${row.store}|${row.platformSlug}`;
-    const gruppo = gruppi.get(chiave);
-    if (gruppo) gruppo.ids.push(row.backlogId);
-    else gruppi.set(chiave, { row, ids: [row.backlogId] });
+  const esistenti = await db
+    .select({
+      id: schema.ownerships.id,
+      backlogId: schema.ownerships.backlogId,
+      platformSlug: schema.ownerships.platformSlug,
+      store: schema.ownerships.store,
+      storeAccountId: schema.ownerships.storeAccountId,
+      medium: schema.ownerships.medium,
+    })
+    .from(schema.ownerships)
+    .where(inArray(schema.ownerships.backlogId, backlogIds));
+
+  if (esistenti.length === 0) return;
+
+  const occupate = new Set(esistenti.map(chiavePossesso));
+  // Una riga meno specifica si adotta una volta sola, e una destinazione la
+  // sistema una riga sola: senza questi due insiemi la seconda passata
+  // riprenderebbe ciò che ha già fatto la prima.
+  const prese = new Set<string>();
+  const servite = new Set<string>();
+
+  // Da adottare, raggruppate per la destinazione: dentro un import negozio,
+  // account e supporto sono quasi sempre gli stessi, quindi quattrocento giochi
+  // restano una UPDATE invece di quattrocento andate e ritorni.
+  const daAdottare = new Map<string, { row: OwnershipUpsert; ids: string[] }>();
+  const daCancellare: string[] = [];
+
+  // Due passate: prima chi dichiara già lo stesso supporto, poi chi non lo
+  // dichiara affatto. Senza, con una riga «fisico» e una senza supporto sulla
+  // stessa piattaforma, a farsi adottare sarebbe quella che càpita per prima.
+  for (const esatto of [true, false]) {
+    for (const row of rows) {
+      const destinazione = chiavePossesso(row);
+      if (servite.has(destinazione)) continue;
+
+      const candidata = esistenti.find(
+        (riga) =>
+          !prese.has(riga.id) &&
+          riga.backlogId === row.backlogId &&
+          riga.platformSlug === row.platformSlug &&
+          riga.storeAccountId === null &&
+          (riga.store === null || riga.store === (row.store ?? null)) &&
+          (esatto
+            ? riga.medium !== null && riga.medium === (row.medium ?? null)
+            : riga.medium === null) &&
+          chiavePossesso(riga) !== destinazione,
+      );
+      if (!candidata) continue;
+
+      prese.add(candidata.id);
+      servite.add(destinazione);
+
+      // La destinazione esiste già: adottare violerebbe il vincolo, e non
+      // c'è niente da salvare — la riga più specifica sa già tutto.
+      if (occupate.has(destinazione)) {
+        daCancellare.push(candidata.id);
+        continue;
+      }
+
+      occupate.add(destinazione);
+      const gruppo = `${row.platformSlug}|${row.store ?? ''}|${row.storeAccountId ?? ''}|${row.medium ?? ''}`;
+      const gia = daAdottare.get(gruppo);
+      if (gia) gia.ids.push(candidata.id);
+      else daAdottare.set(gruppo, { row, ids: [candidata.id] });
+    }
   }
 
-  for (const { row, ids } of gruppi.values()) {
+  for (const { row, ids } of daAdottare.values()) {
     await db
       .update(schema.ownerships)
-      .set({ storeAccountId: row.storeAccountId, updatedAt: new Date() })
-      .where(
-        and(
-          inArray(schema.ownerships.backlogId, ids),
-          eq(schema.ownerships.platformSlug, row.platformSlug),
-          eq(schema.ownerships.store, row.store!),
-          sql`${schema.ownerships.storeAccountId} is null`,
-        ),
-      );
+      .set({
+        store: row.store ?? null,
+        storeAccountId: row.storeAccountId ?? null,
+        medium: row.medium ?? null,
+        updatedAt: new Date(),
+      })
+      .where(inArray(schema.ownerships.id, ids));
+  }
+
+  if (daCancellare.length > 0) {
+    await db
+      .delete(schema.ownerships)
+      .where(inArray(schema.ownerships.id, daCancellare));
   }
 }
 
@@ -464,13 +615,13 @@ async function adottaPossessiSenzaAccount(rows: OwnershipUpsert[]) {
  * Scrive i possessi che mancano e aggiorna il tempo di gioco di quelli che ci sono.
  *
  * Idempotente per costruzione: la chiave è `(backlog, piattaforma, store,
- * account)`, e il vincolo è `NULLS NOT DISTINCT` — senza, "PC / nessuno store"
- * si potrebbe inserire due volte perché in Postgres i NULL sono tutti diversi
- * fra loro.
+ * account, supporto)`, e il vincolo è `NULLS NOT DISTINCT` — senza, "PC /
+ * nessuno store" si potrebbe inserire due volte perché in Postgres i NULL sono
+ * tutti diversi fra loro.
  *
- * Sul conflitto aggiorna **solo** le ore, e solo se il chiamante le ha portate:
- * un inserimento manuale non deve azzerare il tempo di gioco che l'import aveva
- * scritto.
+ * Sul conflitto aggiorna **solo** le ore e l'abbonamento: il supporto sta nella
+ * chiave, quindi una riga non lo cambia mai — cambiarlo vorrebbe dire che è
+ * un'altra copia, e un'altra copia è un'altra riga.
  */
 export async function ensureOwnerships(rows: OwnershipUpsert[]) {
   if (rows.length === 0) return { created: 0 };
@@ -478,7 +629,7 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
   let created = 0;
 
   for (const page of chunk(fondiDoppioni(rows), WRITE_CHUNK)) {
-    await adottaPossessiSenzaAccount(page);
+    await adottaPossessiMenoSpecifici(page);
 
     const inserted = await db
       .insert(schema.ownerships)
@@ -500,6 +651,7 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           schema.ownerships.platformSlug,
           schema.ownerships.store,
           schema.ownerships.storeAccountId,
+          schema.ownerships.medium,
         ],
         set: {
           // COALESCE e non assegnazione secca: se questa scrittura non porta le
@@ -514,12 +666,10 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           // sempre. Le ore sono il caso opposto: un import che non le porta non
           // deve cancellare quelle che un altro aveva scritto.
           subscription: sql`excluded.subscription`,
-          // In COALESCE come le ore, e per una ragione diversa da loro: l'import
-          // il supporto lo dice **sempre**, quindi quando cambia — il disco che
-          // hai poi comprato in digitale — il valore nuovo arriva e scrive. A
-          // non portarlo è solo l'inserimento a mano, che non sa niente della
-          // copia e non deve cancellare ciò che l'import sapeva.
-          medium: sql`coalesce(excluded.medium, ${schema.ownerships.medium})`,
+          // Il supporto **non c'è**, e prima c'era: è entrato nella chiave, e su
+          // una riga trovata per conflitto è uguale per definizione. Il giorno
+          // che il disco lo compri anche in digitale non cambia questa riga,
+          // ne nasce un'altra — il disco resta sullo scaffale.
           updatedAt: new Date(),
         },
       })

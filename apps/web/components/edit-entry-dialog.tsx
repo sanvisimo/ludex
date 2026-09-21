@@ -3,11 +3,16 @@
 import type {
   BacklogEntry,
   BacklogStatus,
+  Medium,
   OwnershipInput,
   Store,
   UserTagKind,
 } from '@repo/contracts';
-import { backlogStatusValues, storeValues } from '@repo/contracts';
+import {
+  backlogStatusValues,
+  mediumValues,
+  storeValues,
+} from '@repo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -36,10 +41,13 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useApiErrorMessage } from '@/lib/api-error';
-import { useStatusLabels, useStoreLabels } from '@/lib/labels';
+import { useMediumLabels, useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 
 const NO_STORE = '__nessuno__';
+// Vedi `add-game-dialog`: non dichiarare il supporto vuol dire «non lo so», e
+// una riga che non lo sa se la prende il primo import che passa.
+const NO_MEDIUM = '__nessuno__';
 
 function namesOf(entry: BacklogEntry | null, kind: UserTagKind) {
   return (entry?.tags ?? [])
@@ -67,6 +75,7 @@ export function EditEntryDialog({
   const t = useTranslations('editEntry');
   const statusLabels = useStatusLabels();
   const storeLabels = useStoreLabels();
+  const mediumLabels = useMediumLabels();
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
 
@@ -78,6 +87,7 @@ export function EditEntryDialog({
   const [pending, setPending] = useState<OwnershipInput[]>([]);
   const [platformSlug, setPlatformSlug] = useState<string | null>(null);
   const [store, setStore] = useState<string>(NO_STORE);
+  const [medium, setMedium] = useState<string>(NO_MEDIUM);
 
   // Il form si ricarica quando cambia la riga, non a ogni render: `entry` arriva
   // da una query che si aggiorna da sé, e ricopiarla sempre cancellerebbe ciò
@@ -92,6 +102,7 @@ export function EditEntryDialog({
     setPending([]);
     setPlatformSlug(null);
     setStore(NO_STORE);
+    setMedium(NO_MEDIUM);
   }, [entry]);
 
   const platforms = useQuery({
@@ -150,6 +161,7 @@ export function EditEntryDialog({
     const chosen: OwnershipInput = {
       platformSlug,
       store: store === NO_STORE ? null : (store as Store),
+      medium: medium === NO_MEDIUM ? null : (medium as Medium),
     };
 
     // Aggiungere un possesso che c'è già è innocuo lato server — la scrittura è
@@ -164,11 +176,12 @@ export function EditEntryDialog({
     setPending((current) => [...current, chosen]);
     setPlatformSlug(null);
     setStore(NO_STORE);
+    setMedium(NO_MEDIUM);
   }
 
   return (
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{entry?.game.name ?? ''}</DialogDescription>
@@ -256,8 +269,10 @@ export function EditEntryDialog({
               </div>
             )}
 
-            <div className="flex items-start gap-2">
-              <div className="flex-1">
+            <div className="flex flex-wrap items-start gap-2">
+              {/* Vedi `add-game-dialog`: la piattaforma tiene la sua larghezza
+                  e sono gli altri a andare a capo. */}
+              <div className="min-w-48 flex-1">
                 <PlatformCombobox
                   platforms={platforms.data ?? []}
                   value={platformSlug}
@@ -277,6 +292,23 @@ export function EditEntryDialog({
                   {storeValues.map((value) => (
                     <SelectItem key={value} value={value}>
                       {storeLabels[value]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                items={{ [NO_MEDIUM]: t('noMedium'), ...mediumLabels }}
+                value={medium}
+                onValueChange={(next) => setMedium(next as string)}
+              >
+                <SelectTrigger className="w-36 shrink-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_MEDIUM}>{t('noMedium')}</SelectItem>
+                  {mediumValues.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {mediumLabels[value]}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -33,15 +33,19 @@ export type DisplayedOwnership = {
    */
   subscription?: Subscription | null;
   /**
-   * Disco o digitale. A schermo va solo il disco: il digitale è il caso normale,
-   * e scriverlo su ogni badge sarebbe rumore.
+   * Disco o digitale. A schermo va solo il fisico: il digitale è il caso
+   * normale, e scriverlo su ogni badge sarebbe rumore.
+   *
+   * Non è una decorazione del possesso, è parte di quale copia sia: sulla stessa
+   * console il disco e il diritto che l'abbonamento presta sono due righe, e il
+   * badge è l'unico posto in cui si vede la differenza.
    */
   medium?: Medium | null;
 };
 
 /** Chiave stabile per un possesso, salvato o no: è la stessa del vincolo unique. */
 export function ownershipKey(ownership: DisplayedOwnership) {
-  return `${ownership.platformSlug}|${ownership.store ?? ''}|${ownership.storeAccount?.id ?? ''}`;
+  return `${ownership.platformSlug}|${ownership.store ?? ''}|${ownership.storeAccount?.id ?? ''}|${ownership.medium ?? ''}`;
 }
 
 // Le righe di possesso portano lo slug della piattaforma, non il nome: il nome

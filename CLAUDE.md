@@ -232,14 +232,49 @@ Le librerie importate aggiungono tre cose al modello, decise allo step 4:
 - **abbonamento su `ownerships`**: `subscription`, nullo se la copia è comprata.
   Vedi «un gioco a cui puoi giocare stasera ma che non è tuo», più sotto: è la
   risposta parziale che il 9b ha dovuto dare, non un campo in più.
-- **supporto su `ownerships`**: `medium`, `digital` o `physical`, nullo sugli
-  inserimenti manuali che non lo dicono. Gemello di `subscription`: quello dice
-  *a che titolo* hai la copia, questo *che cosa* hai in mano. L'import lo scrive
+- **supporto su `ownerships`**: `medium`, `digital` o `physical`, nullo quando
+  nessuno l'ha dichiarato. Gemello di `subscription`: quello dice *a che
+  titolo* hai la copia, questo *che cosa* hai in mano. L'import lo scrive
   sempre — `digital` per ogni libreria di negozio, `physical` per i dischi PSN
-  — e al reimport lo riscrive in COALESCE, così un inserimento a mano non
-  cancella ciò che l'import sapeva. Non sta nella chiave del vincolo: disco e
-  digitale dello stesso gioco sulla stessa console sono una copia sola, e vince
-  il digitale.
+  — e dallo step 5 lo scrive anche l'utente, che è l'unica fonte possibile per
+  un disco coperto da un diritto digitale: per il negozio quel gioco è
+  digitale e basta.
+
+  **Sta nella chiave del vincolo**, e qui c'era scritto il contrario. Non
+  descrive com'è fatta una copia, dice **quale** copia è: il disco sullo
+  scaffale e il diritto che l'abbonamento presta sono due copie dello stesso
+  gioco sulla stessa console, esattamente come Steam e GOG sono due copie sullo
+  stesso PC, e stanno su due righe.
+
+  Le due non sono simmetriche, ed è questo a decidere la chiave larga: a
+  sparire è sempre il digitale — l'abbonamento finisce, il gioco esce dal
+  negozio — mentre un disco che l'import non vede più non è un disco che non
+  hai, è un disco che Sony non ha modo di dichiarare. Con la chiave stretta
+  l'arrivo di un diritto digitale riscriveva la riga in COALESCE e il disco
+  spariva: è la storia di *God of War* (2018), comprato su disco e poi finito
+  nel Plus, e succedeva **anche senza che nessuno avesse scritto niente a
+  mano**, ai dischi che l'import stesso aveva dedotto da `service: other`.
+
+  Il prezzo, che è vero e va accettato: niente cancella una riga che l'import
+  smette di emettere, e togliere un possesso oggi non si può. Un disco dedotto
+  male — quello prestato da un amico, *Astro's Playroom* che è preinstallato —
+  resta lì anche il giorno che compri il gioco in digitale. È il baratto
+  scelto: la chiave stretta non accumula mai righe false ma perde in silenzio
+  una copia che hai davvero, la larga sbaglia in un modo che si vede e che un
+  gesto di rimozione — prima o poi necessario — sistema.
+
+  Da qui tre regole a valle. **`ensureOwnerships` non aggiorna più il
+  supporto**: sta nella chiave, quindi su una riga trovata per conflitto è
+  uguale per definizione. **`fondiDoppioni` non lo arbitra più**: due voci che
+  cadono sulla stessa chiave ce l'hanno uguale, e il disco PSN con un codice
+  diverso dall'acquisto sulla stessa console — che prima diventava una riga
+  sola — resta quello che è, due copie. E **l'adozione si allarga**: una riga
+  meno specifica (senza account, senza negozio, senza supporto) se la prende
+  l'import, ma mai una che dichiari un supporto *diverso*. Ciò che non dichiara
+  niente dice «non lo so», non «un'altra»: è la forma di ogni possesso scritto
+  a mano prima che il campo esistesse, e si fa adottare. Dove la riga di
+  destinazione esiste già — l'import era passato e quella a mano è rimasta lì
+  accanto — adottare violerebbe il vincolo, e la meno specifica si cancella.
 - **ore giocate su `ownerships`**, non su `backlog`: sono una proprietà di
   _quella copia_, e lo stesso gioco su GOG avrebbe le sue. Sono dato oggettivo
   del negozio, non un campo personale dello step 5. **Non si usano per indovinare
@@ -955,6 +990,19 @@ la spazzata ci riprova per sempre.
      fonte che ricreerebbe la riga (vedi «Il possesso sa da quale account
      viene»).
 
+     Si aggiunge anche **il supporto**, ed è l'unico campo del form che non è
+     personale: dichiarare il disco è l'unico modo di non perderlo il giorno
+     che il gioco entra nell'abbonamento, perché il negozio quel disco non lo
+     vede. Lasciandolo vuoto la riga si fa adottare dal primo import; con la
+     chiave del vincolo allargata, dichiararlo dove l'import vede solo un
+     diritto digitale scrive una **seconda copia**. Vedi il supporto in «Import
+     di librerie».
+
+     Qui «solo aggiunta» comincia a stringere: con due copie per console una
+     riga sbagliata — il disco prestato che l'import ha dedotto — non si toglie
+     più. Il gesto di rimozione non è in questo step, ma è la prima cosa che il
+     supporto dentro la chiave rende necessaria.
+
    Due cose che si erano immaginate qui e stanno **fuori**, ciascuna perché è uno
    step suo e non un campo in più nel form:
    - **copertina da SteamGridDB**, per non subire quella di IGDB. Va deciso anche
@@ -1048,6 +1096,14 @@ la spazzata ci riprova per sempre.
     *God of War* (2018) comprato su disco e poi arrivato nel Plus è marcato
     abbonamento su entrambi gli elenchi. Cancellarlo alla fine del Plus
     toglierebbe dal backlog un gioco che sta sullo scaffale.
+
+    Metà risposta c'è già, ed è il supporto dentro la chiave del vincolo: chi
+    dichiara il disco si ritrova **due righe**, e cancellando quella
+    dell'abbonamento il gioco resta. Metà, perché nessuno può dichiarare un
+    disco che non sa di dover dichiarare: finché il Plus dura le due copie si
+    somigliano, e la differenza si scopre il giorno in cui è troppo tardi. Se
+    questo step decidesse di cancellare, dovrebbe **chiedere prima** — è
+    l'unico momento in cui l'utente ha l'informazione e noi no.
 15. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
     posseduti.
 
