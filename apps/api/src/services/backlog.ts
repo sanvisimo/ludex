@@ -23,6 +23,7 @@ export const entryQuery = {
     status: true,
     rating: true,
     notes: true,
+    hiddenAt: true,
     createdAt: true,
   },
   with: {
@@ -144,6 +145,33 @@ export async function setBacklogStatus(
   const [row] = await db
     .update(schema.backlog)
     .set({ status })
+    .where(and(eq(schema.backlog.id, id), eq(schema.backlog.userId, userId)))
+    .returning({ id: schema.backlog.id });
+  return row;
+}
+
+/**
+ * Nasconde il gioco dalla lista, o lo rimette.
+ *
+ * Tocca solo `hiddenAt`: né lo stato né i possessi. Nascondere non è «non ce
+ * l'ho» — il possesso resta, e il prossimo import non ricrea niente perché non
+ * c'è niente da ricreare — e non è `excluded`, che è un giudizio sul gioco.
+ *
+ * Nascondere un gioco già nascosto non ne sposta la data: la vista dei nascosti
+ * è in ordine di quando, e un secondo clic non deve riportarlo in cima.
+ */
+export async function setBacklogHidden(
+  userId: string,
+  id: string,
+  hidden: boolean,
+) {
+  const [row] = await db
+    .update(schema.backlog)
+    .set({
+      hiddenAt: hidden
+        ? sql`coalesce(${schema.backlog.hiddenAt}, now())`
+        : null,
+    })
     .where(and(eq(schema.backlog.id, id), eq(schema.backlog.userId, userId)))
     .returning({ id: schema.backlog.id });
   return row;

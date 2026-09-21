@@ -5,6 +5,7 @@ import {
   backlogSortValues,
   backlogStatusValues,
   linkableStoreValues,
+  hiddenKindValues,
   mediumValues,
   scoreSourceValues,
   sortDirectionValues,
@@ -21,6 +22,7 @@ export const LinkableStoreSchema = z.enum(linkableStoreValues);
 export const StoreAccountStatusSchema = z.enum(storeAccountStatusValues);
 export const SubscriptionSchema = z.enum(subscriptionValues);
 export const MediumSchema = z.enum(mediumValues);
+export const HiddenKindSchema = z.enum(hiddenKindValues);
 export const ScoreSourceSchema = z.enum(scoreSourceValues);
 export const UserTagKindSchema = z.enum(userTagKindValues);
 
@@ -217,6 +219,9 @@ export const BacklogEntrySchema = z.object({
   tags: z.array(UserTagSchema),
   game: GameSchema,
   ownerships: z.array(OwnershipSchema),
+  // Nascosto dalla lista: il gioco resta tuo, solo non lo vuoi vedere. Non è
+  // `excluded`, che è un giudizio sul gioco.
+  hiddenAt: z.date().nullable(),
   createdAt: z.date(),
 });
 
@@ -264,6 +269,9 @@ export const UnlinkImpactSchema = z.object({
   // E di quelli, quanti hanno un voto, delle note, dei tag o uno stato che
   // l'utente ha messo a mano. È la riga che fa esitare, ed è per questo che c'è.
   withPersonalData: z.number().int(),
+  // E quanti di quelli sono nascosti: cancellare roba che non vedi da mesi è
+  // esattamente il caso in cui conviene dirlo.
+  hiddenEntries: z.number().int(),
 });
 
 // L'esito di «aggiorna tutti gli account»: un numero per ogni motivo, perché
@@ -297,6 +305,10 @@ export const UnresolvedImportSchema = z.object({
   name: z.string(),
   playtimeMinutes: z.number().int().nullable(),
   lastPlayedAt: z.date().nullable(),
+  // Nascosta, e perché: vedi `hiddenKindValues`. Tutti e due nulli, o tutti e
+  // due valorizzati. La lista le rende tutte, e la pagina le separa.
+  hiddenAt: z.date().nullable(),
+  hiddenKind: HiddenKindSchema.nullable(),
 });
 
 // --- Filtraggio (step 7) ---
@@ -348,6 +360,10 @@ export const BacklogFilterSchema = z.object({
   // inserimenti manuali `playtimeMinutes` è NULL — "non lo so", non "zero" —
   // e quei giochi rientrano qui, perché nessuno ha mai detto il contrario.
   neverPlayed: z.boolean().optional(),
+  // La vista dei nascosti: `true` rende **solo** quelli. Assente, la lista è
+  // quella di sempre, senza. Un filtro e non una pagina a parte, così ricerca,
+  // ordinamento e paginazione valgono anche lì.
+  hidden: z.boolean().optional(),
 });
 
 // I NULL vanno in fondo su ogni chiave: ordinando per durata, senza, la prima

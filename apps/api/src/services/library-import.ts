@@ -293,8 +293,10 @@ async function recordUnresolved(
  * troverebbe a dover scartare a mano roba che nessuno gli sta più proponendo —
  * `coolgrey Production` che sopravvive a tre reimport di fila.
  *
- * `dismiss` resta un'altra cosa: quello è l'utente che dice «non è un gioco» di
- * una voce che nella libreria **c'è**.
+ * Vale anche per le voci **nascoste**, ed è voluto. Se sparisce dalla libreria
+ * non c'è più niente da nascondere; se IGDB impara a riconoscerla, non è più uno
+ * scarto ma un gioco nel backlog, e il nascondere non la segue perché l'oggetto
+ * è cambiato. Ricomparirà una volta, e lì si nasconde di nuovo, dall'altro lato.
  */
 async function pruneUnresolved(storeAccountId: string, daTogliere: string[]) {
   if (daTogliere.length === 0) return;

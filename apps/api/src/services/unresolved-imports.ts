@@ -1,6 +1,7 @@
 import { storeAccountName } from '@repo/contracts';
+import type { HiddenKind } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, asc, eq } from '@repo/db/orm';
+import { and, asc, eq, sql } from '@repo/db/orm';
 
 import {
   ensureBacklogEntries,
@@ -12,7 +13,11 @@ import { resolveGameFromIgdb } from './games';
 import { platformFor } from './library-import';
 
 /**
- * Le voci di libreria che l'import non ha saputo legare a un gioco.
+ * Le voci di libreria che l'import non ha saputo legare a un gioco, nascoste
+ * comprese.
+ *
+ * Tutte in una lista sola: sono decine e non migliaia, e la pagina le separa
+ * da sé. Due procedure vorrebbero dire due richieste per la stessa schermata.
  */
 export async function listUnresolvedImports(userId: string) {
   // Le tre colonne del nome si portano su e si compongono in JS, invece di un
@@ -32,6 +37,8 @@ export async function listUnresolvedImports(userId: string) {
       name: schema.unresolvedImports.name,
       playtimeMinutes: schema.unresolvedImports.playtimeMinutes,
       lastPlayedAt: schema.unresolvedImports.lastPlayedAt,
+      hiddenAt: schema.unresolvedImports.hiddenAt,
+      hiddenKind: schema.unresolvedImports.hiddenKind,
     })
     .from(schema.unresolvedImports)
     // La FK è NOT NULL, quindi la riga dell'account c'è sempre: la JOIN è
@@ -138,18 +145,32 @@ export async function resolveUnresolvedImport(
 }
 
 /**
- * "Non è un gioco": toglie la voce senza importarla.
+ * Nasconde una voce dicendo perché, o la rimette fra i «da sistemare».
  *
- * Serve perché la maggior parte degli scarti non si risolverà mai — client beta,
- * "Friend's Pass", branch instabili — e senza una via d'uscita resterebbero nella
- * lista a chiedere un intervento che non arriverà.
+ * Prima qui c'era `dismiss`, che **cancellava** la riga: il prossimo import la
+ * riportava, perché nella libreria la voce c'è ancora, e l'utente si ritrovava
+ * Netflix fra gli scarti a ogni giro. Un campo sulla riga invece sopravvive da
+ * sé — l'upsert di `recordUnresolved` non lo tocca — senza che l'import debba
+ * sapere che esiste.
  *
- * Torneranno al prossimo import: è il prezzo di non tenere una lista di ignorati,
- * che sarebbe una tabella in più per un fastidio che si toglie con un click.
+ * Cambiare il tipo di una voce già nascosta non ne sposta la data: è la stessa
+ * decisione corretta, non una nuova.
  */
-export async function dismissUnresolvedImport(userId: string, id: string) {
+export async function setUnresolvedImportHidden(
+  userId: string,
+  id: string,
+  kind: HiddenKind | null,
+) {
   const [row] = await db
-    .delete(schema.unresolvedImports)
+    .update(schema.unresolvedImports)
+    .set(
+      kind
+        ? {
+            hiddenKind: kind,
+            hiddenAt: sql`coalesce(${schema.unresolvedImports.hiddenAt}, now())`,
+          }
+        : { hiddenKind: null, hiddenAt: null },
+    )
     .where(
       and(
         eq(schema.unresolvedImports.id, id),

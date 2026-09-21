@@ -1,5 +1,6 @@
 'use client';
 
+import { ORPCError } from '@orpc/client';
 import type { BacklogStatus, IgdbSearchHit, Store } from '@repo/contracts';
 import { backlogStatusValues, storeValues } from '@repo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -129,11 +130,16 @@ export function AddGameDialog() {
     },
     onError: (error) => {
       // `CONFLICT` qui ha un significato preciso che vale la pena dire: il
-      // gioco c'è già, non è un errore da riprovare.
+      // gioco c'è già, non è un errore da riprovare. E se c'è ma è nascosto,
+      // «ce l'hai già» senza dire dove farebbe credere a un errore: in lista
+      // non si vede.
+      const hidden =
+        error instanceof ORPCError &&
+        (error.data as { hidden?: boolean } | undefined)?.hidden === true;
       toast.error(
         errorMessage(error, {
           fallback: t('failed'),
-          CONFLICT: t('duplicate'),
+          CONFLICT: hidden ? t('duplicateHidden') : t('duplicate'),
         }),
       );
     },

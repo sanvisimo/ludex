@@ -186,8 +186,13 @@ describe('account di negozio', () => {
     const account = await linkStoreAccount(userId, 'amazon');
     // Sta solo qui e ha un voto: è la riga che fa esitare.
     await ownedGame(userId, account.id, 'amazon', { rating: 4 });
-    // Sta solo qui e non ha niente di suo.
-    await ownedGame(userId, account.id);
+    // Sta solo qui e non ha niente di suo, ma è nascosto: se ne andrebbe
+    // senza che l'utente lo veda in lista, ed è per questo che si conta.
+    const nascosto = await ownedGame(userId, account.id);
+    await db
+      .update(schema.backlog)
+      .set({ hiddenAt: new Date() })
+      .where(eq(schema.backlog.id, nascosto.backlogId));
     // Sta anche altrove: non sparirebbe.
     const anche = await ownedGame(userId, account.id);
     await db.insert(schema.ownerships).values({
@@ -200,6 +205,7 @@ describe('account di negozio', () => {
       ownerships: 3,
       removedEntries: 2,
       withPersonalData: 1,
+      hiddenEntries: 1,
     });
   });
 
@@ -401,7 +407,7 @@ describe('ricollegamento', () => {
     expect(secondo.state).not.toBe(primo.state);
   });
 
-  it('ricollegando Amazon si riusa il dispositivo che l\'account aveva', async () => {
+  it("ricollegando Amazon si riusa il dispositivo che l'account aveva", async () => {
     const serial = 'ABCDEF0123456789ABCDEF0123456789';
     const account = await linkStoreAccount(userId, 'amazon');
     const [conCredenziali] = await db

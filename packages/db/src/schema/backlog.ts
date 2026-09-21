@@ -63,6 +63,16 @@ export const backlog = pgTable(
     // Testo libero. È l'unico campo non strutturato ammesso, e proprio perché è
     // testo per l'utente non diventa un campo su cui filtrare o ragionare.
     notes: text('notes'),
+    // Nascosto dalla lista. **Il possesso resta**: il gioco è tuo, e allo
+    // scollegamento di un account si conta fra quelli che spariscono. Per
+    // questo il campo sta qui e non su `ownerships`.
+    //
+    // Non è `excluded`, e fonderli sarebbe l'errore: `excluded` è un giudizio
+    // sul gioco e allo step 13 pesa più di molte valutazioni positive, questo è
+    // una preferenza di vista — il motore non lo propone, ma non ne impara
+    // niente. Sopravvive ai reimport da solo, perché `ensureBacklogEntries` le
+    // righe esistenti non le tocca.
+    hiddenAt: timestamp('hidden_at'),
 
     ...timestamps,
   },

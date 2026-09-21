@@ -1,6 +1,10 @@
-import { storeAccountStatusValues } from '@repo/contracts/vocabulary';
+import {
+  hiddenKindValues,
+  storeAccountStatusValues,
+} from '@repo/contracts/vocabulary';
 import {
   boolean,
+  check,
   customType,
   index,
   integer,
@@ -11,11 +15,14 @@ import {
   unique,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 import { user } from './auth';
 import { store } from './games';
 import { platforms } from './platforms';
 import { timestamps } from './timestamps';
+
+export const hiddenKind = pgEnum('hidden_kind', hiddenKindValues);
 
 export const storeAccountStatus = pgEnum(
   'store_account_status',
@@ -166,9 +173,23 @@ export const unresolvedImports = pgTable(
     platformSlug: text('platform_slug').references(() => platforms.slug),
     playtimeMinutes: integer('playtime_minutes'),
     lastPlayedAt: timestamp('last_played_at'),
+    // Nascosta dall'utente: non compare più fra i «da sistemare».
+    //
+    // Prima c'era `dismiss`, che **cancellava** la riga — e il prossimo import
+    // la riportava, perché la voce nella libreria c'è ancora. Un campo invece
+    // sopravvive da sé: l'upsert di `recordUnresolved` riscrive nome, ore e
+    // piattaforma e non tocca questi due. Una data e non un booleano perché la
+    // vista dei nascosti li mette in ordine di quando.
+    hiddenAt: timestamp('hidden_at'),
+    // Perché: vedi `hiddenKindValues`. C'è se e solo se c'è `hiddenAt`.
+    hiddenKind: hiddenKind('hidden_kind'),
     ...timestamps,
   },
   (table) => [
+    check(
+      'unresolved_imports_hidden_kind',
+      sql`(${table.hiddenAt} is null) = (${table.hiddenKind} is null)`,
+    ),
     // Reimportare non deve accumulare doppioni degli stessi scarti. Per account
     // e non per negozio: due account Amazon hanno ciascuno i suoi scarti, e con
     // la chiave vecchia il secondo import sovrascriveva le voci del primo.

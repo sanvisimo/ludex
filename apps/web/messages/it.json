@@ -41,7 +41,28 @@
     "edit": "Modifica",
     "noMatchTitle": "Nessun gioco corrisponde.",
     "noMatchHint": "Prova ad allargare i filtri: le spunte dello stesso criterio si sommano, quindi due tag insieme vogliono i giochi che li hanno entrambi.",
-    "loadMore": "Carica altri ({count})"
+    "loadMore": "Carica altri ({count})",
+    "showHidden": "Nascosti ({count})",
+    "hiddenViewTitle": "Giochi nascosti",
+    "hiddenViewHint": "Non compaiono nella lista né fra i filtri, ma restano tuoi: il possesso non cambia. «Mostra di nuovo» li rimette in lista.",
+    "backToList": "Torna alla lista",
+    "hiddenEmptyTitle": "Nessun gioco nascosto."
+  },
+  "hidden": {
+    "hide": "Nascondi",
+    "unhide": "Mostra di nuovo",
+    "hiddenToast": "Nascosto dalla lista",
+    "unhiddenToast": "Di nuovo in lista",
+    "undo": "Annulla",
+    "failed": "Non sono riuscito a cambiarlo",
+    "badge": "Nascosto",
+    "kinds": {
+      "app": "App o servizio",
+      "dlc": "DLC o espansione",
+      "extra": "Contenuto extra",
+      "prerelease": "Versione di prova",
+      "unwanted": "Non mi interessa"
+    }
   },
   "filters": {
     "searchPlaceholder": "Cerca un titolo",
@@ -101,7 +122,8 @@
     "submitting": "Aggiungo…",
     "added": "{name} aggiunto al backlog",
     "duplicate": "Questo gioco è già nel tuo backlog",
-    "failed": "Non sono riuscito ad aggiungere il gioco"
+    "failed": "Non sono riuscito ad aggiungere il gioco",
+    "duplicateHidden": "Ce l'hai già, ma è fra i nascosti: lo trovi in «Nascosti», nel backlog."
   },
   "game": {
     "notFoundTitle": "Gioco non trovato",
@@ -115,7 +137,8 @@
     "goToBacklog": "Vai al backlog",
     "notInBacklogHint": "Questo gioco non è nel tuo backlog. Puoi aggiungerlo dalla pagina del backlog.",
     "coverAlt": "Copertina di {name}",
-    "edit": "Modifica"
+    "edit": "Modifica",
+    "hiddenNotice": "Nascosto dalla tua lista: resta tuo, solo non compare."
   },
   "hltb": {
     "title": "Quanto dura",
@@ -300,7 +323,8 @@
       "personal": "{count, plural, =1 {Uno di questi ha un tuo voto, delle note o dei tag: se cancelli, se ne vanno con lui.} other {# di questi hanno un tuo voto, delle note o dei tag: se cancelli, se ne vanno con loro.}}",
       "keep": "Tieni i giochi",
       "purge": "Cancella i giochi",
-      "cancel": "Annulla"
+      "cancel": "Annulla",
+      "hidden": "{count, plural, =1 {Uno di questi è nascosto: non lo vedi in lista, ma se ne andrebbe anche lui.} other {# di questi sono nascosti: non li vedi in lista, ma se ne andrebbero anche loro.}}"
     },
     "stores": {
       "steam": {
@@ -331,10 +355,9 @@
     },
     "unresolved": {
       "title": "Da sistemare ({count})",
-      "description": "Queste voci della libreria non sono state riconosciute. Di solito sono client beta o contenuti che non sono giochi: puoi collegarle al gioco giusto o toglierle dalla lista.",
+      "description": "Queste voci della libreria non sono state riconosciute. Di solito sono client beta o contenuti che non sono giochi: puoi collegarle al gioco giusto o nasconderle, dicendo che cosa sono.",
       "hours": "{hours}h",
       "resolve": "Collega",
-      "dismiss": "Non è un gioco",
       "resolveTitle": "Collega al gioco giusto",
       "resolveDescription": "Cerca su IGDB il gioco che corrisponde a «{name}». Puoi scrivere anche l'id IGDB o incollare l'URL della scheda.",
       "searchLabel": "Cerca",
@@ -343,7 +366,10 @@
       "noResults": "Nessun risultato",
       "resolved": "{name} aggiunto al backlog",
       "resolveFailed": "Non sono riuscito a collegare questa voce",
-      "dismissFailed": "Non sono riuscito a togliere questa voce"
+      "notAGame": "Non è un gioco",
+      "hiddenTitle": "Nascosti ({count})",
+      "hiddenHint": "Voci che hai tolto dai «da sistemare». Restano qui anche dopo i prossimi import: se una è un gioco vero, puoi ancora collegarla.",
+      "hideFailed": "Non sono riuscito a nascondere questa voce"
     }
   },
   "critic": {

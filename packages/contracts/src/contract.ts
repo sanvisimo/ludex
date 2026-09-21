@@ -9,6 +9,7 @@ import {
   BacklogStatusSchema,
   GameDetailSchema,
   GameSchema,
+  HiddenKindSchema,
   IgdbSearchHitSchema,
   LinkableStoreSchema,
   NotesSchema,
@@ -216,9 +217,12 @@ export const contract = {
       .input(z.object({ id: z.uuid(), igdbId: z.number().int().positive() }))
       .output(BacklogEntrySchema),
 
-    // "Non è un gioco": i client beta e i Friend's Pass non si risolveranno mai,
-    // e senza una via d'uscita resterebbero nella lista per sempre.
-    dismiss: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+    // Nasconde una voce, dicendo perché, o la rimette fra i «da sistemare» con
+    // `kind: null`. Era `dismiss`, che cancellava la riga — e il prossimo
+    // import la riportava, perché nella libreria la voce c'è ancora.
+    setHidden: oc
+      .input(z.object({ id: z.uuid(), kind: HiddenKindSchema.nullable() }))
+      .output(z.void()),
   },
 
   tags: {
@@ -285,6 +289,12 @@ export const contract = {
     // stesso possesso non è un errore e non duplica nulla.
     addOwnership: oc
       .input(z.object({ id: z.uuid(), ownership: OwnershipInputSchema }))
+      .output(BacklogEntrySchema),
+
+    // Nasconde il gioco dalla lista, o lo rimette. Il possesso resta: non è
+    // «non ce l'ho», è «non lo voglio vedere». E non è `excluded`.
+    setHidden: oc
+      .input(z.object({ id: z.uuid(), hidden: z.boolean() }))
       .output(BacklogEntrySchema),
 
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),

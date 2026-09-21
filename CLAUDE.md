@@ -257,15 +257,15 @@ Le librerie importate aggiungono tre cose al modello, decise allo step 4:
   non per negozio, o gli scarti del secondo Amazon sovrascriverebbero quelli del
   primo.
 
-##### Ciò che non voglio vedere (questione aperta)
+##### Ciò che non voglio vedere
 
 Il documento la rimanda già due volte — lo step 5 sui possessi («prima serve una
 logica di scarto/nascondi, che è ancora da pensare») e lo step 11 sugli scarti —
 e il 9b la rende concreta: la libreria PSN porta Netflix, YouTube, Spotify, Prime
 Video, MUBI, DAZN e il lettore multimediale, che **nessun campo dell'API
 distingue** da un gioco. Cadono negli irrisolti, che è dove devono stare, ma non
-ci restano: `dismissUnresolvedImport` **cancella la riga**, e il prossimo import
-la riporta.
+ci restavano: il vecchio `dismiss` **cancellava la riga**, e il prossimo import
+la riportava.
 
 Sono due gesti su due oggetti diversi, e vanno tenuti distinti:
 
@@ -281,13 +281,29 @@ L'import non ricrea ciò che c'è già: `ensureBacklogEntries` fa
 mentre l'upsert degli scarti riscrive solo nome, piattaforma e ore. Un campo
 messo su quelle righe sopravvive da sé, senza che il job debba sapere che
 esiste. Ciò che non sopravvive è **cancellare** — ed è esattamente l'errore che
-`dismiss` fa oggi, e la ragione per cui lo step 5 dice che togliere un possesso
+`dismiss` faceva, e la ragione per cui lo step 5 dice che togliere un possesso
 non basta.
 
-Quindi la forma è **un flag per riga, in due tabelle**, e nient'altro:
-`unresolved_imports` per non vederla più fra gli scarti, `backlog` per non
-vedere il gioco in lista. Stessa parola per lo stesso intento, e le liste che
-filtrano di default.
+Quindi la forma è **un campo per riga, in due tabelle**, e nient'altro:
+`hidden_at` su `unresolved_imports` per non vederla più fra gli scarti, e su
+`backlog` per non vedere il gioco in lista. Stessa parola per lo stesso
+intento, e le liste che filtrano di default. Una data e non un booleano, perché
+la vista dei nascosti li mette in ordine di quando; nasconderli due volte non
+la sposta.
+
+Sugli scarti c'è anche **il perché**, `hidden_kind`, perché «nascosto» mette
+insieme cose diverse. Su una libreria vera sono app (Netflix, Spotify, DAZN),
+contenuti extra (goodies GOG, il REDkit, un artbook), versioni di prova (beta,
+alpha, «Friend's Pass») e DLC. I tipi sono cinque, un insieme chiuso in
+`hiddenKindValues`: `app`, `dlc`, `extra`, `prerelease` e `unwanted`. I primi
+quattro sono un **fatto** sulla voce; `unwanted` — un gioco vero che non si ha
+voglia di sistemare — è una **preferenza**. Un vincolo nel database tiene
+`hidden_at` e `hidden_kind` nulli o valorizzati insieme.
+
+Sul backlog il tipo **non c'è**: lì sta un gioco già risolto, nasconderlo è una
+preferenza di vista, e il giudizio sul gioco ha già il suo posto in `excluded`.
+Un DLC finito nel backlog perché IGDB ha agganciato la sua scheda non è una
+scelta dell'utente ma un dato, e lo dice IGDB (`game_type`).
 
 Tre cose che qualunque versione dovrà rispettare:
 
@@ -303,8 +319,9 @@ Tre cose che qualunque versione dovrà rispettare:
   gioco nascosto perché è spazzatura insegnerebbe al motore che non ti piace
   quel genere.
 
-Resta aperta una domanda sola, e non è urgente: **è roba di uno o di tutti?**
-Che Netflix su PSN non sia un gioco è vero per chiunque, e come l'enrichment si
+Restava aperta una domanda sola: **è roba di uno o di tutti?** Il tipo ne dà
+metà della risposta — si potrà promuovere un fatto, mai una preferenza — e il
+resto è dello step 11. Che Netflix su PSN non sia un gioco è vero per chiunque, e come l'enrichment si
 paga una volta sola potrebbe pagarsi una volta sola anche il contrario — con
 l'admin dello step 11 che promuove a globale ciò che un utente ha già bocciato.
 Il rovescio è quello già scritto per i tag: una decisione di uno che tocca la
@@ -324,6 +341,16 @@ Due conseguenze minori, scritte perché si scoprono altrimenti a cose fatte:
   essere uno scarto e diventa un gioco in backlog: il nascondere **non la
   segue**, perché l'oggetto è cambiato. Ricomparirà una volta, e lì si nasconde
   di nuovo — dall'altro lato.
+
+Due cose che restano da decidere, e che chi arriva dopo deve trovare scritte:
+
+- **allo step 13 i nascosti escono dai candidati, ma non insegnano niente.** È la
+  differenza con `excluded` portata sulla query: chi non vuole vedere un gioco
+  non vuole nemmeno che gli venga proposto, ma non ha detto che non gli piace.
+- **«Rimuovi» accanto a «Nascondi» è ambiguo.** Su un gioco importato «Rimuovi»
+  serve a poco: il prossimo import lo rimette. Per ora stanno tutti e due;
+  limitare «Rimuovi» ai giochi senza possessi da import è un passo da
+  decidere.
 
 ##### Come si chiama un account, quando ne hai due
 
@@ -719,8 +746,8 @@ righe vecchie `unknown` decide il prefisso del `titleId`: `CUSA` è PS4, `PPSA`
 e tutti e 14 i concept trovano il gioco giusto.
 
 Il prezzo è noto e accettato: `other` vuol dire «avviato senza un diritto
-digitale», non «è tuo». Un disco prestato entra come fosse tuo, e finché non
-esiste il nascondere dello step 5 il prossimo import lo ricrea. Gli altri
+digitale», non «è tuo». Un disco prestato entra come fosse tuo, e il prossimo
+import lo ricrea: la risposta è nasconderlo, che sopravvive ai reimport. Gli altri
 giocati assenti dagli acquisti **non** entrano: un Plus scaduto non è tuo, e di
 un acquisto sparito dal negozio non sappiamo abbastanza.
 
@@ -922,9 +949,8 @@ la spazzata ci riprova per sempre.
    - **possessi**: le mutazioni oRPC che espongono la scrittura già scritta allo
      step 4. Fino a qui l'unico modo di aggiungere una piattaforma era cancellare
      la riga e rifarla. **Solo aggiunta**: togliere un possesso non basta a farlo
-     sparire, perché il prossimo import lo ricrea — prima serve una logica di
-     scarto/nascondi, che è ancora da pensare: vedi «Ciò che non voglio vedere»,
-     dove il 9b l'ha resa concreta. Lo scollegamento di un account è
+     sparire, perché il prossimo import lo ricrea — per quello c'è il
+     nascondere, arrivato dopo il 9b: vedi «Ciò che non voglio vedere». Lo scollegamento di un account è
      l'unico taglio che oggi regge, e regge proprio perché toglie *anche* la
      fonte che ricreerebbe la riga (vedi «Il possesso sa da quale account
      viene»).

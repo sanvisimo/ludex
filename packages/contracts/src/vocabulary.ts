@@ -105,6 +105,31 @@ export const subscriptionValues = ['ps_plus'] as const;
 // sempre cosa porta, l'utente per ora no.
 export const mediumValues = ['digital', 'physical'] as const;
 
+// **Perché** uno scarto d'import non si vuole più vedere fra i «da sistemare».
+//
+// Quattro tipi dicono **che cos'è** la voce, e sono un fatto: che Netflix su PSN
+// sia un'app è vero per chiunque. `unwanted` invece è una **preferenza** — un
+// gioco vero che non si ha voglia di sistemare. La differenza non è decorativa:
+// è la risposta alla domanda «è roba di uno o di tutti?» che CLAUDE.md lasciava
+// aperta. Allo step 11 l'admin potrà promuovere a regola globale un fatto, mai
+// una preferenza — e senza il tipo nessuna riga saprebbe dire quale dei due era.
+//
+// Presi dagli scarti di una libreria vera: `app` sono Netflix, Spotify, DAZN, il
+// lettore multimediale; `extra` i goodies GOG, il REDkit, l'artbook di Horizon;
+// `prerelease` beta, alpha, «Friend's Pass» e accessi di prova. I DLC puri non
+// c'erano, ma i negozi li restituiscono e il gesto deve saperli dire.
+//
+// Solo sugli scarti. Un gioco del backlog si nasconde senza tipo: lì nasconderlo
+// è una preferenza di vista, e il giudizio sul gioco ha già il suo posto in
+// `excluded`.
+export const hiddenKindValues = [
+  'app',
+  'dlc',
+  'extra',
+  'prerelease',
+  'unwanted',
+] as const;
+
 // Le fonti di un voto della critica. Sottoinsieme delle fonti di dati: HLTB e
 // SteamGridDB non danno voti.
 //
@@ -186,3 +211,4 @@ export type StoreAccountStatus = (typeof storeAccountStatusValues)[number];
 export type ScoreSource = (typeof scoreSourceValues)[number];
 export type Subscription = (typeof subscriptionValues)[number];
 export type Medium = (typeof mediumValues)[number];
+export type HiddenKind = (typeof hiddenKindValues)[number];

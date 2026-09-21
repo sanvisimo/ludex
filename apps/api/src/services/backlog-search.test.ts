@@ -5,7 +5,7 @@ import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createGame, createUser } from '../../test/factories';
-import { addToBacklog, updateBacklogEntry } from './backlog';
+import { addToBacklog, setBacklogHidden, updateBacklogEntry } from './backlog';
 import { listBacklogFilterOptions, searchBacklog } from './backlog-search';
 
 // Si testa quello che, rompendosi, mente all'utente senza dirglielo: i NULL
@@ -348,3 +348,71 @@ async function aggiungi(
     ownerships: [{ platformSlug: 'pc_windows' }],
   });
 }
+
+describe('nascosti', () => {
+  let userId: string;
+
+  beforeEach(async () => {
+    userId = await createUser();
+  });
+
+  it('la lista di sempre li esclude, la vista dei nascosti rende solo loro', async () => {
+    await aggiungi(userId, { name: 'Visibile' });
+    const nascosto = await aggiungi(userId, { name: 'Nascosto' });
+    await setBacklogHidden(userId, nascosto, true);
+
+    expect(await nomi(userId)).toEqual(['Visibile']);
+    expect(await nomi(userId, { hidden: true })).toEqual(['Nascosto']);
+    // Il totale segue la vista: «3 giochi» con due a schermo mentirebbe.
+    expect((await search(userId)).total).toBe(1);
+  });
+
+  it('rimesso in lista, torna nella lista di sempre', async () => {
+    const id = await aggiungi(userId, { name: 'Ripensato' });
+    await setBacklogHidden(userId, id, true);
+    await setBacklogHidden(userId, id, false);
+
+    expect(await nomi(userId)).toEqual(['Ripensato']);
+    expect(await nomi(userId, { hidden: true })).toEqual([]);
+  });
+
+  it('nasconderlo due volte non ne sposta la data', async () => {
+    const id = await aggiungi(userId, { name: 'Due volte' });
+    await setBacklogHidden(userId, id, true);
+    const [prima] = await db
+      .select({ hiddenAt: schema.backlog.hiddenAt })
+      .from(schema.backlog)
+      .where(eq(schema.backlog.id, id));
+
+    await setBacklogHidden(userId, id, true);
+    const [dopo] = await db
+      .select({ hiddenAt: schema.backlog.hiddenAt })
+      .from(schema.backlog)
+      .where(eq(schema.backlog.id, id));
+
+    expect(dopo!.hiddenAt).toEqual(prima!.hiddenAt);
+  });
+
+  it('il pannello dei filtri non propone ciò che sta solo sui nascosti', async () => {
+    const game = await createGame({ name: 'Solo su Switch' });
+    const id = await addToBacklog({
+      userId,
+      gameId: game.id,
+      status: 'backlog',
+      ownerships: [{ platformSlug: 'nintendo_switch' }],
+    });
+    await aggiungi(userId, { name: 'Su PC' });
+    await setBacklogHidden(userId, id, true);
+
+    const { platforms } = await listBacklogFilterOptions(userId);
+    expect(platforms.map((row) => row.slug)).toEqual(['pc_windows']);
+  });
+
+  it('non nasconde la riga di un altro utente', async () => {
+    const altro = await createUser();
+    const suo = await aggiungi(altro, { name: 'Suo' });
+
+    await expect(setBacklogHidden(userId, suo, true)).resolves.toBeUndefined();
+    expect(await nomi(altro)).toEqual(['Suo']);
+  });
+});

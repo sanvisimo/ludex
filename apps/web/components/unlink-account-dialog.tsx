@@ -106,6 +106,11 @@ export function UnlinkAccountDialog({
                   {t('personal', { count: impact.data.withPersonalData })}
                 </p>
               )}
+              {/* Se ne andrebbero senza che l'utente li veda in lista: è il caso
+                  in cui «84 giochi» detto e basta tradisce di più. */}
+              {impact.data.hiddenEntries > 0 && (
+                <p>{t('hidden', { count: impact.data.hiddenEntries })}</p>
+              )}
             </div>
           ) : null}
         </div>

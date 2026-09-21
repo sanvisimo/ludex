@@ -28,6 +28,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { toQueryInput, useBacklogFilter } from '@/lib/backlog-filter';
+import { useSetEntryHidden } from '@/lib/hide-entry';
 import { useStatusLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 
@@ -39,11 +40,13 @@ const PAGINA = 50;
 
 export default function BacklogPage() {
   const t = useTranslations('backlog');
+  const tHidden = useTranslations('hidden');
   const statusLabels = useStatusLabels();
   const errorMessage = useApiErrorMessage();
 
   const queryClient = useQueryClient();
-  const { filter, activeCount } = useBacklogFilter();
+  const { filter, setFilter, activeCount } = useBacklogFilter();
+  const inHidden = filter.hidden;
 
   const [limit, setLimit] = useState(PAGINA);
   const input = useMemo(() => toQueryInput(filter, limit), [filter, limit]);
@@ -59,6 +62,15 @@ export default function BacklogPage() {
     // ogni tasto nel campo di ricerca farebbe lampeggiare gli scheletri.
     placeholderData: (precedente) => precedente,
   });
+
+  // Quanti sono i nascosti, per il bottone che ci porta. Una riga sola: il
+  // totale viene dalla window function della ricerca, e serve solo quello.
+  const hiddenCount = useQuery(
+    api.backlog.list.queryOptions({ input: { hidden: true, limit: 1 } }),
+  );
+  const hiddenTotal = hiddenCount.data?.total ?? 0;
+
+  const setHidden = useSetEntryHidden();
 
   const [editing, setEditing] = useState<BacklogEntry | null>(null);
 
@@ -99,14 +111,40 @@ export default function BacklogPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="grid gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">
-            {t('title')}
+            {inHidden ? t('hiddenViewTitle') : t('title')}
           </h1>
           <p className="text-muted-foreground">
             {backlog.data ? t('count', { count: total }) : ' '}
           </p>
         </div>
-        <AddGameDialog />
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Il posto dove ripensarci. Senza, un gioco nascosto per sbaglio
+              sparirebbe per sempre: è l'unico pezzo di interfaccia che il
+              nascondere richiede davvero. Compare solo se c'è qualcosa. */}
+          {inHidden ? (
+            <Button
+              variant="outline"
+              onClick={() => setFilter({ hidden: null })}
+            >
+              {t('backToList')}
+            </Button>
+          ) : (
+            hiddenTotal > 0 && (
+              <Button
+                variant="ghost"
+                onClick={() => setFilter({ hidden: true })}
+              >
+                {t('showHidden', { count: hiddenTotal })}
+              </Button>
+            )
+          )}
+          <AddGameDialog />
+        </div>
       </header>
+
+      {inHidden && (
+        <p className="text-muted-foreground">{t('hiddenViewHint')}</p>
+      )}
 
       <BacklogFilters />
 
@@ -124,11 +162,17 @@ export default function BacklogPage() {
             {/* Vuoto perché non hai giochi e vuoto perché nessuno passa i
                 filtri sono due cose diverse, e la seconda ha una via d'uscita. */}
             <p className="font-medium">
-              {activeCount > 0 ? t('noMatchTitle') : t('emptyTitle')}
+              {activeCount > 0
+                ? t('noMatchTitle')
+                : inHidden
+                  ? t('hiddenEmptyTitle')
+                  : t('emptyTitle')}
             </p>
-            <p className="text-muted-foreground">
-              {activeCount > 0 ? t('noMatchHint') : t('emptyHint')}
-            </p>
+            {(activeCount > 0 || !inHidden) && (
+              <p className="text-muted-foreground">
+                {activeCount > 0 ? t('noMatchHint') : t('emptyHint')}
+              </p>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -195,6 +239,22 @@ export default function BacklogPage() {
                         onClick={() => setEditing(entry)}
                       >
                         {t('edit')}
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setHidden.mutate({
+                            id: entry.id,
+                            hidden: entry.hiddenAt === null,
+                          })
+                        }
+                        disabled={setHidden.isPending}
+                      >
+                        {entry.hiddenAt === null
+                          ? tHidden('hide')
+                          : tHidden('unhide')}
                       </Button>
 
                       <Button

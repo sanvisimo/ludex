@@ -11,9 +11,9 @@ import {
 } from '../../test/factories';
 import { findIgdbGameById } from '../external/igdb';
 import {
-  dismissUnresolvedImport,
   listUnresolvedImports,
   resolveUnresolvedImport,
+  setUnresolvedImportHidden,
 } from './unresolved-imports';
 
 vi.mock('../external/igdb', () => ({
@@ -140,8 +140,12 @@ describe('unresolved imports', () => {
     ).resolves.toMatchObject({
       status: 'not_found',
     });
-    await expect(dismissUnresolvedImport(userId, id)).resolves.toBeUndefined();
-    expect(await listUnresolvedImports(altro)).toHaveLength(1);
+    await expect(
+      setUnresolvedImportHidden(userId, id, 'app'),
+    ).resolves.toBeUndefined();
+    expect(await listUnresolvedImports(altro)).toMatchObject([
+      { hiddenAt: null, hiddenKind: null },
+    ]);
   });
 
   it('rifiuta un igdbId che IGDB non conosce, senza consumare la voce', async () => {
@@ -214,13 +218,50 @@ describe('unresolved imports', () => {
     ]);
   });
 
-  it('scartata, la voce sparisce senza entrare nel backlog', async () => {
+  it('nascosta, la voce resta con il suo perché e non entra nel backlog', async () => {
     const id = await pending(userId);
 
-    await dismissUnresolvedImport(userId, id);
+    await setUnresolvedImportHidden(userId, id, 'prerelease');
 
-    expect(await listUnresolvedImports(userId)).toHaveLength(0);
+    // Resta: è ciò che la distingue dal vecchio `dismiss`, che cancellava la
+    // riga e lasciava al prossimo import il compito di riportarla.
+    const [voce] = await listUnresolvedImports(userId);
+    expect(voce).toMatchObject({ hiddenKind: 'prerelease' });
+    expect(voce?.hiddenAt).toBeInstanceOf(Date);
     expect(await db.select().from(schema.backlog)).toHaveLength(0);
+  });
+
+  it('cambiare il perché non sposta la data, rimetterla la toglie', async () => {
+    const id = await pending(userId);
+    await setUnresolvedImportHidden(userId, id, 'unwanted');
+    const [prima] = await listUnresolvedImports(userId);
+
+    // Corretta a posteriori: è la stessa decisione, non una nuova, e la vista
+    // dei nascosti in ordine di data non deve riportarla in cima.
+    await setUnresolvedImportHidden(userId, id, 'app');
+    const [dopo] = await listUnresolvedImports(userId);
+    expect(dopo).toMatchObject({
+      hiddenKind: 'app',
+      hiddenAt: prima!.hiddenAt,
+    });
+
+    await setUnresolvedImportHidden(userId, id, null);
+    expect(await listUnresolvedImports(userId)).toMatchObject([
+      { hiddenAt: null, hiddenKind: null },
+    ]);
+  });
+
+  it('il database rifiuta una voce nascosta senza perché', async () => {
+    // Il vincolo sta nel database e non solo nel servizio: la domanda «fatto o
+    // preferenza?» dello step 11 si fa sulle righe, e una riga nascosta senza
+    // tipo non saprebbe rispondere.
+    const id = await pending(userId);
+    await expect(
+      db
+        .update(schema.unresolvedImports)
+        .set({ hiddenAt: new Date() })
+        .where(eq(schema.unresolvedImports.id, id)),
+    ).rejects.toThrow();
   });
 
   it('risolve su un gioco che esiste già senza duplicarlo', async () => {

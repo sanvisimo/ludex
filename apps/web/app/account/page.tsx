@@ -12,18 +12,17 @@ import { AddStoreAccount } from '@/components/add-store-account';
 import { AutoSyncSettings } from '@/components/auto-sync-settings';
 import { ResolveImportDialog } from '@/components/resolve-import-dialog';
 import { StoreAccountCard } from '@/components/store-account-card';
+import { UnresolvedImports } from '@/components/unresolved-imports';
 import { UnlinkAccountDialog } from '@/components/unlink-account-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useApiErrorMessage } from '@/lib/api-error';
-import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 
 export default function AccountPage() {
   const t = useTranslations('account');
   const errorMessage = useApiErrorMessage();
-  const storeLabels = useStoreLabels();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -70,16 +69,6 @@ export default function AccountPage() {
     },
     onError: (error) =>
       toast.error(errorMessage(error, { fallback: t('store.syncAllFailed') })),
-  });
-
-  const dismiss = useMutation({
-    mutationFn: (id: string) => client.imports.dismiss({ id }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: api.imports.unresolved.key() }),
-    onError: (error) =>
-      toast.error(
-        errorMessage(error, { fallback: t('unresolved.dismissFailed') }),
-      ),
   });
 
   // La pagina non ha senso da anonimo: parla dell'account di chi la guarda.
@@ -148,55 +137,10 @@ export default function AccountPage() {
 
       <AddStoreAccount />
 
-      {(unresolved.data?.length ?? 0) > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {t('unresolved.title', { count: unresolved.data?.length ?? 0 })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            <p className="text-muted-foreground">
-              {t('unresolved.description')}
-            </p>
-            <ul className="grid gap-2">
-              {unresolved.data?.map((entry) => (
-                <li
-                  key={entry.id}
-                  className="flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 ring-1 ring-foreground/10"
-                >
-                  <div className="grid flex-1 gap-0.5">
-                    <span className="font-medium">{entry.name}</span>
-                    <span className="text-muted-foreground">
-                      {storeLabels[entry.store]} ({entry.storeName}) · {entry.externalId}
-                      {entry.playtimeMinutes
-                        ? ` · ${t('unresolved.hours', {
-                            hours: Math.round(entry.playtimeMinutes / 60),
-                          })}`
-                        : ''}
-                    </span>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setResolving(entry)}
-                  >
-                    {t('unresolved.resolve')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => dismiss.mutate(entry.id)}
-                    disabled={dismiss.isPending}
-                  >
-                    {t('unresolved.dismiss')}
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+      <UnresolvedImports
+        entries={unresolved.data ?? []}
+        onResolve={setResolving}
+      />
 
       <UnlinkAccountDialog
         account={unlinking}

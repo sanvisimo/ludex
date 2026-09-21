@@ -8,6 +8,8 @@ import {
   gte,
   ilike,
   inArray,
+  isNotNull,
+  isNull,
   lt,
   lte,
   notExists,
@@ -57,7 +59,14 @@ function tuttiPresenti<T>(valori: T[], predicato: (valore: T) => SQL): SQL[] {
 }
 
 function buildConditions(userId: string, input: BacklogQuery): SQL[] {
-  const conditions: SQL[] = [eq(schema.backlog.userId, userId)];
+  const conditions: SQL[] = [
+    eq(schema.backlog.userId, userId),
+    // I nascosti sono una vista a sé, non un di più: o solo loro, o senza.
+    // Mescolarli alla lista di sempre vorrebbe dire che nasconderli non serve.
+    input.hidden
+      ? isNotNull(schema.backlog.hiddenAt)
+      : isNull(schema.backlog.hiddenAt),
+  ];
 
   if (input.q) {
     conditions.push(ilike(schema.games.name, `%${escapeLike(input.q)}%`));
@@ -321,6 +330,19 @@ export async function searchBacklog(userId: string, input: BacklogQuery) {
  * cui ne possiedi tre nasconde le tre che contano. Il costo è una query per
  * elenco, tutte su indici che ci sono già.
  */
+/**
+ * Le righe che la lista mostra di default: dell'utente, e non nascoste.
+ *
+ * Il pannello dei filtri parla della lista di sempre: una piattaforma che
+ * compare solo su giochi nascosti non va proposta come filtro.
+ */
+function visibleOf(userId: string) {
+  return and(
+    eq(schema.backlog.userId, userId),
+    isNull(schema.backlog.hiddenAt),
+  );
+}
+
 export async function listBacklogFilterOptions(userId: string) {
   const platforms = await db
     .selectDistinct({
@@ -337,7 +359,7 @@ export async function listBacklogFilterOptions(userId: string) {
       schema.platforms,
       eq(schema.platforms.slug, schema.ownerships.platformSlug),
     )
-    .where(eq(schema.backlog.userId, userId))
+    .where(visibleOf(userId))
     .orderBy(schema.platforms.name);
 
   const storeRows = await db
@@ -349,7 +371,7 @@ export async function listBacklogFilterOptions(userId: string) {
     )
     .where(
       and(
-        eq(schema.backlog.userId, userId),
+        visibleOf(userId),
         // Nullo sugli inserimenti manuali: "nessuno store" non è uno store da
         // offrire come filtro.
         sql`${schema.ownerships.store} is not null`,
@@ -372,7 +394,7 @@ export async function listBacklogFilterOptions(userId: string) {
       schema.igdbAttributes,
       eq(schema.igdbAttributes.id, schema.gameAttributes.attributeId),
     )
-    .where(eq(schema.backlog.userId, userId))
+    .where(visibleOf(userId))
     .orderBy(schema.igdbAttributes.kind, schema.igdbAttributes.name);
 
   return {

@@ -303,6 +303,8 @@ export async function unlinkImpact(userId: string, accountId: string) {
     removedEntries: orfani.length,
     // E di questi, quelli su cui l'utente ha messo qualcosa di suo.
     withPersonalData: orfani.filter((row) => row.personale).length,
+    // E quelli nascosti: se ne andrebbero senza che l'utente li veda in lista.
+    hiddenEntries: orfani.filter((row) => row.nascosto).length,
   };
 }
 
@@ -319,6 +321,7 @@ function orphanEntries(accountId: string) {
   return db
     .select({
       id: schema.backlog.id,
+      nascosto: sql<boolean>`${schema.backlog.hiddenAt} is not null`,
       personale: sql<boolean>`(
         ${schema.backlog.rating} is not null
         or ${schema.backlog.notes} is not null

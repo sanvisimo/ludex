@@ -6,6 +6,7 @@ import {
   findEntryByGame,
   findEntryById,
   removeFromBacklog,
+  setBacklogHidden,
   setBacklogStatus,
   updateBacklogEntry,
 } from '../services/backlog';
@@ -39,9 +40,9 @@ import {
   unlinkStoreAccount,
 } from '../services/store-accounts';
 import {
-  dismissUnresolvedImport,
   listUnresolvedImports,
   resolveUnresolvedImport,
+  setUnresolvedImportHidden,
 } from '../services/unresolved-imports';
 import { getUserSettings, updateUserSettings } from '../services/user-settings';
 import { enqueueImport, isImportRunning } from '../queue/imports';
@@ -281,14 +282,15 @@ export const router = os.router({
         return esito.entry;
       }),
 
-    dismiss: os.imports.dismiss
+    setHidden: os.imports.setHidden
       .use(authed)
       .handler(async ({ input, context }) => {
-        const removed = await dismissUnresolvedImport(
+        const row = await setUnresolvedImportHidden(
           context.user.id,
           input.id,
+          input.kind,
         );
-        if (!removed)
+        if (!row)
           throw new ORPCError('NOT_FOUND', { message: 'Voce inesistente' });
       }),
   },
@@ -323,7 +325,12 @@ export const router = os.router({
       // duplicato silenzioso.
       const existing = await findEntryByGame(context.user.id, input.gameId);
       if (existing)
-        throw new ORPCError('CONFLICT', { message: 'Gioco già nel backlog' });
+        // `hidden` perché «ce l'hai già» su un gioco che in lista non si vede
+        // non si capisce: il client deve poter dire «è fra i nascosti».
+        throw new ORPCError('CONFLICT', {
+          message: 'Gioco già nel backlog',
+          data: { hidden: existing.hiddenAt !== null },
+        });
 
       // Validato qui e non lasciato alla foreign key, per dare un messaggio
       // sensato invece di un errore Postgres.
@@ -396,6 +403,22 @@ export const router = os.router({
           input.ownership,
         );
         if (!added)
+          throw new ORPCError('NOT_FOUND', { message: 'Riga inesistente' });
+
+        const entry = await findEntryById(context.user.id, input.id);
+        if (!entry) throw new ORPCError('INTERNAL_SERVER_ERROR');
+        return entry;
+      }),
+
+    setHidden: os.backlog.setHidden
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const row = await setBacklogHidden(
+          context.user.id,
+          input.id,
+          input.hidden,
+        );
+        if (!row)
           throw new ORPCError('NOT_FOUND', { message: 'Riga inesistente' });
 
         const entry = await findEntryById(context.user.id, input.id);

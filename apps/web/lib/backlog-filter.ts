@@ -59,6 +59,10 @@ export const filterParsers = {
   releasedFrom: parseAsInteger,
   releasedTo: parseAsInteger,
   neverPlayed: parseAsBoolean.withDefault(false),
+  // La vista dei nascosti. **Non** sta fra i `criteri` qui sotto: è una vista,
+  // non un filtro, quindi «azzera» non ti fa uscire dai nascosti e non conta fra
+  // i filtri accesi.
+  hidden: parseAsBoolean.withDefault(false),
   sort: parseAsStringLiteral(backlogSortValues).withDefault('addedAt'),
   direction: parseAsStringLiteral(sortDirectionValues).withDefault('desc'),
 };
@@ -120,6 +124,7 @@ export function toQueryInput(
     releasedFrom: filter.releasedFrom ?? undefined,
     releasedTo: filter.releasedTo ?? undefined,
     neverPlayed: filter.neverPlayed || undefined,
+    hidden: filter.hidden || undefined,
     sort: filter.sort,
     direction: filter.direction,
     limit,

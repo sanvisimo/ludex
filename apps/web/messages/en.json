@@ -41,7 +41,28 @@
     "edit": "Edit",
     "noMatchTitle": "No game matches.",
     "noMatchHint": "Try loosening the filters: ticks within the same criterion add up, so two tags together mean the games that have both.",
-    "loadMore": "Load more ({count})"
+    "loadMore": "Load more ({count})",
+    "showHidden": "Hidden ({count})",
+    "hiddenViewTitle": "Hidden games",
+    "hiddenViewHint": "They don't show up in the list or the filters, but they're still yours: ownership doesn't change. “Show again” puts them back.",
+    "backToList": "Back to the list",
+    "hiddenEmptyTitle": "No hidden games."
+  },
+  "hidden": {
+    "hide": "Hide",
+    "unhide": "Show again",
+    "hiddenToast": "Hidden from your list",
+    "unhiddenToast": "Back in your list",
+    "undo": "Undo",
+    "failed": "I couldn't change it",
+    "badge": "Hidden",
+    "kinds": {
+      "app": "App or service",
+      "dlc": "DLC or expansion",
+      "extra": "Extra content",
+      "prerelease": "Pre-release version",
+      "unwanted": "Not interested"
+    }
   },
   "filters": {
     "searchPlaceholder": "Search a title",
@@ -101,7 +122,8 @@
     "submitting": "Adding…",
     "added": "{name} added to the backlog",
     "duplicate": "This game is already in your backlog",
-    "failed": "I couldn't add the game"
+    "failed": "I couldn't add the game",
+    "duplicateHidden": "You already have it, but it's hidden: you'll find it under “Hidden” in the backlog."
   },
   "game": {
     "notFoundTitle": "Game not found",
@@ -115,7 +137,8 @@
     "goToBacklog": "Go to the backlog",
     "notInBacklogHint": "This game isn't in your backlog. You can add it from the backlog page.",
     "coverAlt": "{name} cover",
-    "edit": "Edit"
+    "edit": "Edit",
+    "hiddenNotice": "Hidden from your list: still yours, it just doesn't show up."
   },
   "hltb": {
     "title": "How long it takes",
@@ -300,7 +323,8 @@
       "personal": "{count, plural, =1 {One of them has your rating, notes or tags: deleting takes those too.} other {# of them have your rating, notes or tags: deleting takes those too.}}",
       "keep": "Keep the games",
       "purge": "Delete the games",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "hidden": "{count, plural, =1 {One of these is hidden: you don't see it in your list, but it would go too.} other {# of these are hidden: you don't see them in your list, but they would go too.}}"
     },
     "stores": {
       "steam": {
@@ -331,10 +355,9 @@
     },
     "unresolved": {
       "title": "Needs attention ({count})",
-      "description": "These library entries weren't recognised. They're usually beta clients or things that aren't games: you can link them to the right game or drop them from the list.",
+      "description": "These library entries weren't recognised. They're usually beta clients or things that aren't games: you can link them to the right game or hide them, saying what they are.",
       "hours": "{hours}h",
       "resolve": "Link",
-      "dismiss": "Not a game",
       "resolveTitle": "Link to the right game",
       "resolveDescription": "Search IGDB for the game matching “{name}”. You can also type the IGDB id or paste the game page URL.",
       "searchLabel": "Search",
@@ -343,7 +366,10 @@
       "noResults": "No results",
       "resolved": "{name} added to your backlog",
       "resolveFailed": "I couldn't link this entry",
-      "dismissFailed": "I couldn't drop this entry"
+      "notAGame": "Not a game",
+      "hiddenTitle": "Hidden ({count})",
+      "hiddenHint": "Entries you took out of “needs attention”. They stay here after the next imports: if one turns out to be a real game, you can still link it.",
+      "hideFailed": "I couldn't hide this entry"
     }
   },
   "critic": {

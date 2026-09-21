@@ -9,7 +9,9 @@ import {
   igdbSourceFor,
   searchIgdbGames,
 } from '../external/igdb';
+import { setBacklogHidden } from './backlog';
 import { importLibrary, platformFor, platformOf } from './library-import';
+import { setUnresolvedImportHidden } from './unresolved-imports';
 
 vi.mock('../external/igdb', () => ({
   findIgdbGamesByExternalIds: vi.fn(),
@@ -645,5 +647,56 @@ describe('platformFor', () => {
     expect(platformOf('gog', { externalId: '1', name: 'x' })).toBe(
       'pc_windows',
     );
+  });
+});
+
+describe('importLibrary: ciò che si è nascosto resta nascosto', () => {
+  // È la regola che fa funzionare il nascondere senza che l'import sappia che
+  // esiste: le righe non si ricreano, si aggiornano, e un campo che l'import non
+  // scrive sopravvive da sé. Il vecchio `dismiss` cancellava, ed era il bug.
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'gog');
+    mockedById.mockResolvedValue(new Map());
+    mockedSearch.mockResolvedValue([]);
+    mockedSource.mockReturnValue(5);
+  });
+
+  it('uno scarto nascosto sopravvive al reimport, che ne aggiorna solo il nome', async () => {
+    await importLibrary(account, [
+      { externalId: '1', name: 'Cyberpunk 2077 Goodies Collection' },
+    ]);
+    const [scarto] = await unresolvedOf(userId);
+    await setUnresolvedImportHidden(userId, scarto!.id, 'extra');
+
+    await importLibrary(account, [
+      { externalId: '1', name: 'Cyberpunk 2077 Goodies' },
+    ]);
+
+    expect(await unresolvedOf(userId)).toMatchObject([
+      { name: 'Cyberpunk 2077 Goodies', hiddenKind: 'extra' },
+    ]);
+  });
+
+  it('un gioco nascosto resta nascosto, e il reimport non ne crea un altro', async () => {
+    mockedSearch.mockResolvedValue([hit({ igdbId: 1234, name: 'Frostpunk' })]);
+    await importLibrary(account, [{ externalId: '2', name: 'Frostpunk' }]);
+    const [entry] = await db
+      .select()
+      .from(schema.backlog)
+      .where(eq(schema.backlog.userId, userId));
+    await setBacklogHidden(userId, entry!.id, true);
+
+    await importLibrary(account, [{ externalId: '2', name: 'Frostpunk' }]);
+
+    const righe = await db
+      .select()
+      .from(schema.backlog)
+      .where(eq(schema.backlog.userId, userId));
+    expect(righe).toHaveLength(1);
+    expect(righe[0]!.hiddenAt).toBeInstanceOf(Date);
   });
 });

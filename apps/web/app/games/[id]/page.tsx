@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useSetEntryHidden } from '@/lib/hide-entry';
 import { useStatusLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 
@@ -60,7 +61,9 @@ export default function GamePage({
   params: Promise<{ id: string }>;
 }) {
   const t = useTranslations('game');
+  const tHidden = useTranslations('hidden');
   const statusLabels = useStatusLabels();
+  const setHidden = useSetEntryHidden();
 
   const { id } = use(params);
   const { data, isPending, error } = useQuery(
@@ -147,11 +150,21 @@ export default function GamePage({
 
       <Card>
         <CardHeader>
-          <CardTitle>{entry ? t('inBacklog') : t('notInBacklog')}</CardTitle>
+          <CardTitle className="flex flex-wrap items-center gap-2">
+            {entry ? t('inBacklog') : t('notInBacklog')}
+            {entry?.hiddenAt && (
+              <Badge variant="secondary">{tHidden('badge')}</Badge>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
           {entry ? (
             <>
+              {/* Ci si arriva da una ricerca o da un link: senza, il gioco
+                  sembrerebbe in lista e in lista non si trova. */}
+              {entry.hiddenAt && (
+                <p className="text-muted-foreground">{t('hiddenNotice')}</p>
+              )}
               <p>
                 {t.rich('statusLine', {
                   status: statusLabels[entry.status],
@@ -173,6 +186,21 @@ export default function GamePage({
                   onClick={() => setEditing(true)}
                 >
                   {t('edit')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-fit"
+                  onClick={() =>
+                    setHidden.mutate({
+                      id: entry.id,
+                      hidden: entry.hiddenAt === null,
+                    })
+                  }
+                  disabled={setHidden.isPending}
+                >
+                  {entry.hiddenAt === null
+                    ? tHidden('hide')
+                    : tHidden('unhide')}
                 </Button>
                 <Button
                   variant="ghost"
