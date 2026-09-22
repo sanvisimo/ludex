@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 
 import { AddStoreAccount } from '@/components/add-store-account';
 import { AutoSyncSettings } from '@/components/auto-sync-settings';
+import { HiddenEntries } from '@/components/hidden-entries';
 import { ResolveImportDialog } from '@/components/resolve-import-dialog';
 import { StoreAccountCard } from '@/components/store-account-card';
 import { UnresolvedImports } from '@/components/unresolved-imports';
@@ -141,6 +142,8 @@ export default function AccountPage() {
         entries={unresolved.data ?? []}
         onResolve={setResolving}
       />
+
+      <HiddenEntries />
 
       <UnlinkAccountDialog
         account={unlinking}

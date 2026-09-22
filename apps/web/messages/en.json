@@ -393,6 +393,11 @@
       "hiddenTitle": "Hidden ({count})",
       "hiddenHint": "Entries you took out of “needs attention”. They stay here after the next imports: if one turns out to be a real game, you can still link it.",
       "hideFailed": "I couldn't hide this entry"
+    },
+    "hiddenEntries": {
+      "title": "Hidden games ({count})",
+      "description": "They don't show up in your backlog or in the filters, but they're still yours: ownership doesn't change.",
+      "showAll": "See all {count} in your backlog"
     }
   },
   "critic": {

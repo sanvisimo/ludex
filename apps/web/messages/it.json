@@ -393,6 +393,11 @@
       "hiddenTitle": "Nascosti ({count})",
       "hiddenHint": "Voci che hai tolto dai «da sistemare». Restano qui anche dopo i prossimi import: se una è un gioco vero, puoi ancora collegarla.",
       "hideFailed": "Non sono riuscito a nascondere questa voce"
+    },
+    "hiddenEntries": {
+      "title": "Giochi nascosti ({count})",
+      "description": "Non compaiono nel backlog né fra i filtri, ma restano tuoi: il possesso non cambia.",
+      "showAll": "Vedili tutti nel backlog ({count})"
     }
   },
   "critic": {
