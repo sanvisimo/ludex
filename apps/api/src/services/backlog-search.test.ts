@@ -416,3 +416,59 @@ describe('nascosti', () => {
     expect(await nomi(altro)).toEqual(['Suo']);
   });
 });
+
+describe('tipo della scheda', () => {
+  let userId: string;
+
+  beforeEach(async () => {
+    userId = await createUser();
+  });
+
+  it('le spunte sono in OR: un gioco ha un tipo solo', async () => {
+    // Al contrario di piattaforme, store e tag, che sono in AND: lì una riga può
+    // avere più valori, qui no, e l'AND darebbe sempre zero.
+    await aggiungi(userId, { name: 'Gioco', gameType: 'main_game' });
+    await aggiungi(userId, { name: 'Espansione', gameType: 'expansion' });
+    await aggiungi(userId, { name: 'Pacchetto', gameType: 'bundle' });
+
+    expect(await nomi(userId, { gameTypes: ['expansion'] })).toEqual([
+      'Espansione',
+    ]);
+    expect(
+      (await nomi(userId, { gameTypes: ['expansion', 'bundle'] })).sort(),
+    ).toEqual(['Espansione', 'Pacchetto']);
+  });
+
+  it('un gioco senza tipo non risponde a nessuna spunta, ma c è senza filtro', async () => {
+    // Null è «non lo so»: un gioco non ancora arricchito non è un gioco
+    // principale, e dirlo sarebbe inventare un dato che IGDB non ha dato.
+    await aggiungi(userId, { name: 'Non arricchito' });
+    await aggiungi(userId, { name: 'Gioco', gameType: 'main_game' });
+
+    expect(await nomi(userId, { gameTypes: ['main_game'] })).toEqual(['Gioco']);
+    expect((await nomi(userId)).sort()).toEqual(['Gioco', 'Non arricchito']);
+  });
+
+  it('il pannello propone i tipi presenti, senza i nulli e senza i nascosti', async () => {
+    await aggiungi(userId, { name: 'Senza tipo' });
+    await aggiungi(userId, { name: 'Gioco', gameType: 'main_game' });
+    const nascosto = await aggiungi(userId, {
+      name: 'DLC nascosto',
+      gameType: 'dlc',
+    });
+    await setBacklogHidden(userId, nascosto, true);
+
+    // L'ordine è quello dell'enum, che Postgres rispetta: prima «Gioco».
+    const { gameTypes } = await listBacklogFilterOptions(userId);
+    expect(gameTypes).toEqual(['main_game']);
+  });
+
+  it('propone i tipi nell ordine in cui sono dichiarati', async () => {
+    await aggiungi(userId, { name: 'Port', gameType: 'port' });
+    await aggiungi(userId, { name: 'DLC', gameType: 'dlc' });
+    await aggiungi(userId, { name: 'Gioco', gameType: 'main_game' });
+
+    const { gameTypes } = await listBacklogFilterOptions(userId);
+    expect(gameTypes).toEqual(['main_game', 'dlc', 'port']);
+  });
+});

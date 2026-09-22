@@ -200,6 +200,40 @@ Flusso di risoluzione, all'inserimento (manuale o da import):
 Un gioco senza `igdbId` è quindi semplicemente un gioco non ancora risolto:
 **nessuna query può assumere che i metadata siano popolati**.
 
+##### Che cos'è la scheda: `game_type`
+
+IGDB non indicizza solo giochi: la stessa tabella tiene DLC, espansioni,
+bundle, remaster e port, e un import che aggancia per nome può benissimo
+prendere la scheda del DLC. In lista quel DLC è identico a un gioco, e da fuori
+non c'è modo di accorgersene.
+
+Quindi `games` porta **`game_type`** — un insieme chiuso in `gameTypeValues`,
+tradotto dai numeri di IGDB in un punto solo (`gameTypeFromIgdb`) — e
+**`parent_igdb_id`**, il gioco a cui un DLC è attaccato. Tre cose da tenere
+insieme:
+
+- **è un dato, non una preferenza.** Che sia un DLC lo dice IGDB; che non lo si
+  voglia vedere lo dice l'utente, ed è `backlog.hidden_at`. Non vanno confusi.
+- **`main_game` è esplicito, null vuol dire «non lo so»**: un gioco non ancora
+  arricchito, o un tipo che IGDB ha aggiunto dopo di noi. La UI non mostra
+  niente in nessuno dei due casi.
+- **l'id del padre è quello di IGDB, non il nostro UUID**: il gioco padre può
+  non essere ancora in `games`, e una FK verso una riga che non c'è impedirebbe
+  di scrivere il figlio.
+
+Nessuno nasconde né esclude i DLC da solo: un'espansione come *Phantom Liberty*
+si gioca eccome. Il tipo si **mostra** — un badge accanto al titolo quando non è
+un gioco principale — e si **filtra**, ma nessun filtro è acceso di default.
+
+Il filtro è in **OR**, come lo stato e al contrario di tutto il resto del
+pannello: una riga ha esattamente un tipo, quindi l'AND darebbe sempre zero. E
+un gioco **senza** tipo non risponde a nessuna spunta, perché null vuol dire
+«non lo so» e non «è un gioco»: senza filtro c'è, con «Gioco» spuntato no. È la
+stessa regola dei NULL che vale per la durata.
+
+Allo step 13 il tipo dirà se un DLC è un candidato a sé o solo insieme al suo
+gioco.
+
 #### `backlog` = possesso
 
 Se esiste la riga in `backlog`, l'utente possiede il gioco. Punto: nessun flag di
@@ -1200,6 +1234,7 @@ di turbo, perché non fanno parte di nessuna pipeline:
 | `pnpm --filter api hltb:probe [n\|titolo]`  | giro a vuoto del match HLTB: cerca e punteggia senza scrivere. La riga che conta è quella dei "da sistemare"                                                  |
 | `pnpm --filter api hltb:endpoint`           | ritrova il path dell'endpoint di ricerca HLTB dalle route del sito e lo valida con una ricerca vera. Non scrive: stampa. Lo stesso che il client fa da sé sul 404 |
 | `pnpm --filter api opencritic:resolve [n]`  | aggancia in blocco gli id OpenCritic chiedendoli a Wikidata. Non chiama OpenCritic e non spende budget: scrive solo dove guardare                             |
+| `pnpm --filter api igdb:types [n]`          | riempie `game_type` e `parent_igdb_id` sui giochi che c'erano prima di quelle colonne. 500 id per richiesta; da lì in poi li scrive l'enrichment               |
 | `pnpm --filter api metacritic:probe [n\|titolo]` | giro a vuoto del match Metacritic. Mostra anche se il link della scheda Steam regge e quali piattaforme non sappiamo tradurre                            |
 | `pnpm --filter api psn:probe [npsso]`       | giro a vuoto dell'import PSN: identità, libreria, piattaforme e ore, senza toccare il DB. Vuole l'npsso (o `PSN_TEST_NPSSO`) e usa `resolveByName`, cioè il matcher vero  |
 | `pnpm --filter api backfill [n]`            | accoda l'enrichment di ciò che è dovuto. Non forza: rispetta le soglie di freschezza                                                                          |

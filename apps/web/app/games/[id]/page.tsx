@@ -10,6 +10,7 @@ import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import { EntryTags } from '@/components/entry-tags';
 import { CriticScores } from '@/components/critic-scores';
 import { GameCover } from '@/components/game-cover';
+import { GameTypeBadge } from '@/components/game-type-badge';
 import { HltbTimes } from '@/components/hltb-times';
 import { OwnershipBadges } from '@/components/ownership-badges';
 import { RatingValue } from '@/components/rating-value';
@@ -116,8 +117,9 @@ export default function GamePage({
 
         <div className="grid flex-1 content-start gap-3">
           <div className="grid gap-1">
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight">
               {game.name}
+              <GameTypeBadge type={game.gameType} />
             </h1>
             {year && <p className="text-muted-foreground">{year}</p>}
           </div>

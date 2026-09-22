@@ -33,6 +33,7 @@ export const gameColumns = {
   firstReleaseDate: true,
   hltbMainMinutes: true,
   hltbHasSolo: true,
+  gameType: true,
   createdAt: true,
 } as const;
 

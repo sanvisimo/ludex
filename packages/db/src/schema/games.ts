@@ -1,4 +1,4 @@
-import { storeValues } from '@repo/contracts/vocabulary';
+import { gameTypeValues, storeValues } from '@repo/contracts/vocabulary';
 import {
   boolean,
   index,
@@ -24,6 +24,10 @@ import { timestamps } from './timestamps';
 // I valori arrivano da @repo/contracts perché servono anche a web e mobile, che
 // non possono importare questo package.
 export const store = pgEnum('store', storeValues);
+
+// Che cos'è la scheda: un gioco, un DLC, un bundle… Lo dice IGDB, i valori
+// stanno in @repo/contracts come gli altri enum.
+export const gameType = pgEnum('game_type', gameTypeValues);
 
 // Condivisa fra tutti gli utenti: se l'utente 2 importa un gioco già presente
 // riusa questa riga e l'enrichment si paga una volta sola. Per questo qui NON
@@ -54,6 +58,19 @@ export const games = pgTable(
     // `game_sources`, non il fatto che una colonna sia piena.
     summary: text('summary'),
     firstReleaseDate: timestamp('first_release_date'),
+    // Che cos'è questa scheda, secondo IGDB. Null = non ancora arricchito, o un
+    // tipo che IGDB ha aggiunto dopo di noi: in entrambi i casi «non lo so».
+    //
+    // Sta qui e non è una scelta dell'utente: un DLC finito nel backlog perché
+    // l'import ha agganciato la sua scheda è un dato sbagliato, non una
+    // preferenza — per quella c'è `backlog.hidden_at`.
+    gameType: gameType('game_type'),
+    // Il gioco a cui questa scheda è attaccata, per DLC ed espansioni: l'id
+    // IGDB, non il nostro UUID, perché il gioco padre può non essere ancora in
+    // `games` — e una FK verso una riga che non c'è impedirebbe di scrivere il
+    // figlio. Arriva con la stessa richiesta dell'enrichment, quindi non costa
+    // niente; a usarlo sarà chi vorrà mostrare «DLC di The Witcher 3».
+    parentIgdbId: integer('parent_igdb_id'),
     // IGDB restituisce un `image_id`: l'URL si compone al momento di mostrarlo,
     // scegliendo la dimensione. Salvare l'URL gia fatto vincolerebbe al formato.
     coverImageId: text('cover_image_id'),

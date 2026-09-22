@@ -18,6 +18,7 @@
     "hltb:probe": "tsx src/scripts/hltb-probe.ts",
     "hltb:endpoint": "tsx src/scripts/hltb-endpoint.ts",
     "opencritic:resolve": "tsx src/scripts/opencritic-resolve.ts",
+    "igdb:types": "tsx src/scripts/game-types.ts",
     "metacritic:probe": "tsx src/scripts/metacritic-probe.ts",
     "psn:probe": "tsx src/scripts/psn-probe.ts",
     "queues": "tsx src/queues-dashboard.ts"

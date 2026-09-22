@@ -141,6 +141,13 @@
       "when": 1789990946985,
       "tag": "0019_needy_hitman",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1789999851100,
+      "tag": "0020_first_randall_flagg",
+      "breakpoints": true
     }
   ]
 }

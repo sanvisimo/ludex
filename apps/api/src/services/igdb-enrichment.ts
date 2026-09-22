@@ -104,6 +104,8 @@ export async function enrichGameFromIgdb(
           coverImageId: metadata.coverImageId,
           coverWidth: metadata.coverWidth,
           coverHeight: metadata.coverHeight,
+          gameType: metadata.gameType,
+          parentIgdbId: metadata.parentIgdbId,
         })
         .where(eq(schema.games.id, gameId));
 

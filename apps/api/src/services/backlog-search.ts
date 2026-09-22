@@ -1,5 +1,5 @@
 import type { BacklogQuery } from '@repo/contracts';
-import type { Store } from '@repo/contracts/vocabulary';
+import type { GameType, Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import {
   and,
@@ -112,6 +112,13 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
         ),
       ),
     );
+  }
+
+  // In OR come lo stato, e per la stessa ragione: un gioco ha esattamente un
+  // tipo. Sta su `games`, che la ricerca unisce comunque, quindi è un confronto
+  // sulla riga e non una sottoquery.
+  if (input.gameTypes?.length) {
+    conditions.push(inArray(schema.games.gameType, input.gameTypes));
   }
 
   // Parte da `games` e non da `backlog`: generi e temi sono attributi del gioco,
@@ -379,6 +386,17 @@ export async function listBacklogFilterOptions(userId: string) {
     )
     .orderBy(schema.ownerships.store);
 
+  // I tipi presenti nel backlog visibile. I nulli restano fuori: un gioco non
+  // ancora arricchito non è una voce da offrire, e chi lo spuntasse non saprebbe
+  // che cosa ha spuntato. L'ordine lo dà Postgres, che ordina un enum come è
+  // stato dichiarato: prima «Gioco», poi DLC ed espansioni.
+  const gameTypeRows = await db
+    .selectDistinct({ gameType: schema.games.gameType })
+    .from(schema.backlog)
+    .innerJoin(schema.games, eq(schema.games.id, schema.backlog.gameId))
+    .where(and(visibleOf(userId), isNotNull(schema.games.gameType)))
+    .orderBy(schema.games.gameType);
+
   const attributes = await db
     .selectDistinct({
       id: schema.igdbAttributes.id,
@@ -402,6 +420,9 @@ export async function listBacklogFilterOptions(userId: string) {
     stores: storeRows
       .map((row) => row.store)
       .filter((store): store is Store => store !== null),
+    gameTypes: gameTypeRows
+      .map((row) => row.gameType)
+      .filter((type): type is GameType => type !== null),
     attributes,
   };
 }

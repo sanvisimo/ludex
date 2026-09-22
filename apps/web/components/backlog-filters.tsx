@@ -1,6 +1,11 @@
 'use client';
 
-import type { BacklogStatus, Store, UserTagKind } from '@repo/contracts';
+import type {
+  BacklogStatus,
+  GameType,
+  Store,
+  UserTagKind,
+} from '@repo/contracts';
 import { attributeKindValues, backlogStatusValues } from '@repo/contracts';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -18,7 +23,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toggle, useBacklogFilter } from '@/lib/backlog-filter';
-import { useStatusLabels, useStoreLabels } from '@/lib/labels';
+import {
+  useGameTypeLabels,
+  useStatusLabels,
+  useStoreLabels,
+} from '@/lib/labels';
 import { api } from '@/lib/orpc';
 
 /**
@@ -32,6 +41,7 @@ export function BacklogFilters() {
   const t = useTranslations('filters');
   const statusLabels = useStatusLabels();
   const storeLabels = useStoreLabels();
+  const gameTypeLabels = useGameTypeLabels();
   const attributeKindLabels = useTranslations('attributeKind');
 
   const { filter, setFilter, reset, activeCount } = useBacklogFilter();
@@ -155,6 +165,27 @@ export function BacklogFilters() {
               })
             }
             empty={t('noStores')}
+          />
+
+          {/* In OR, al contrario di tutto il resto del pannello: un gioco ha
+              esattamente un tipo, quindi «DLC e Espansione» non esiste. */}
+          <CheckList
+            label={t('gameTypesLabel')}
+            hint={t('oneOfThem')}
+            items={(options.data?.gameTypes ?? []).map((type) => ({
+              value: type,
+              label: gameTypeLabels[type],
+            }))}
+            selected={filter.gameTypes}
+            onToggle={(value) =>
+              setFilter({
+                gameTypes: toggle<GameType>(
+                  filter.gameTypes,
+                  value as GameType,
+                ),
+              })
+            }
+            empty={t('noGameTypes')}
           />
 
           {attributeKindValues.map((kind) => {

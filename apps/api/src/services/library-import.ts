@@ -458,7 +458,7 @@ export async function resolveByName(
         releaseYear: hit.releaseYear,
         // `rankCandidates` butta i DLC, ma li riconosce da questa stringa: la
         // ricerca IGDB rende l'etichetta leggibile, non il codice.
-        type: hit.gameType === 'DLC' ? 'dlc' : null,
+        type: hit.gameType === 'dlc' ? 'dlc' : null,
         igdbId: hit.igdbId,
         totalRatingCount: hit.totalRatingCount,
       })),

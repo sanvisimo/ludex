@@ -5,6 +5,7 @@ import {
   backlogSortValues,
   backlogStatusValues,
   linkableStoreValues,
+  gameTypeValues,
   hiddenKindValues,
   mediumValues,
   scoreSourceValues,
@@ -23,6 +24,7 @@ export const StoreAccountStatusSchema = z.enum(storeAccountStatusValues);
 export const SubscriptionSchema = z.enum(subscriptionValues);
 export const MediumSchema = z.enum(mediumValues);
 export const HiddenKindSchema = z.enum(hiddenKindValues);
+export const GameTypeSchema = z.enum(gameTypeValues);
 export const ScoreSourceSchema = z.enum(scoreSourceValues);
 export const UserTagKindSchema = z.enum(userTagKindValues);
 
@@ -77,6 +79,10 @@ export const GameSchema = z.object({
   // senza campagna ha comunque un `hltbMainMinutes` — le 143 ore di
   // Counter-Strike 2 — che però è tempo investito, non una durata.
   hltbHasSolo: z.boolean().nullable(),
+  // Che cos'è la scheda secondo IGDB: serve a dire «DLC» o «Bundle» accanto al
+  // titolo, dove altrimenti sembrerebbe un gioco come gli altri. Null finché
+  // l'enrichment non è passato.
+  gameType: GameTypeSchema.nullable(),
   createdAt: z.date(),
 });
 
@@ -162,8 +168,9 @@ export const IgdbSearchHitSchema = z.object({
   releaseYear: z.number().int().nullable(),
   developer: z.string().nullable(),
   cover: z.string().nullable(),
-  // Valorizzato solo quando non è un gioco principale: "Port", "Remake"…
-  gameType: z.string().nullable(),
+  // Che cos'è la scheda. Un valore e non un'etichetta: il nome da mostrare lo
+  // sceglie il client, che è l'unico che sa in che lingua parlare.
+  gameType: GameTypeSchema.nullable(),
   // Quante recensioni aggregate ha la scheda IGDB. Viaggia fino al client
   // perché la lista di scelta manuale ha lo stesso problema dell'import: fra
   // tre schede intitolate «Inside» quella vera è quella vissuta.
@@ -348,6 +355,12 @@ export const BacklogFilterSchema = z.object({
   // che `game_attributes` referenzia davvero, e il client li riceve da
   // `backlog.filterOptions` senza doverli comporre.
   attributes: z.array(z.number().int().positive()).max(20).optional(),
+  // Che cos'è la scheda: gioco, DLC, bundle… **In OR fra loro**, come lo stato
+  // e al contrario di tutto il resto: una riga ha esattamente un tipo, quindi
+  // l'AND darebbe sempre zero risultati. Un gioco senza tipo — non ancora
+  // arricchito — non corrisponde a nessuna spunta: null vuol dire «non lo so»,
+  // e «non lo so» non è «è un gioco».
+  gameTypes: z.array(GameTypeSchema).max(15).optional(),
   // Per id e non per nome, al contrario della scrittura: là l'utente scrive una
   // parola e non deve sapere se esiste, qui la spunta da una lista che esiste.
   tags: z.array(z.uuid()).max(20).optional(),
@@ -410,6 +423,7 @@ export const FilterAttributeSchema = z.object({
 export const BacklogFilterOptionsSchema = z.object({
   platforms: z.array(PlatformSchema),
   stores: z.array(StoreSchema),
+  gameTypes: z.array(GameTypeSchema),
   attributes: z.array(FilterAttributeSchema),
 });
 

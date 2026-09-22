@@ -4,6 +4,7 @@ import type { BacklogQueryInput, BacklogStatus } from '@repo/contracts';
 import {
   backlogSortValues,
   backlogStatusValues,
+  gameTypeValues,
   sortDirectionValues,
   storeValues,
 } from '@repo/contracts';
@@ -47,6 +48,9 @@ export const filterParsers = {
   platforms: parseAsArrayOf(parseAsString).withDefault([]),
   stores: parseAsArrayOf(parseAsStringLiteral(storeValues)).withDefault([]),
   attributes: parseAsArrayOf(parseAsInteger).withDefault([]),
+  gameTypes: parseAsArrayOf(parseAsStringLiteral(gameTypeValues)).withDefault(
+    [],
+  ),
   tags: parseAsArrayOf(parseAsString).withDefault([]),
   // I range restano `null` quando non sono impostati: `0` sarebbe un filtro
   // ("durata minima zero"), e su `durationMin` sarebbe pure un filtro diverso da
@@ -78,6 +82,7 @@ const criteri = [
   'status',
   'platforms',
   'stores',
+  'gameTypes',
   'attributes',
   'tags',
   'durationMin',
@@ -114,6 +119,7 @@ export function toQueryInput(
         : vuoto(filter.status),
     platforms: vuoto(filter.platforms),
     stores: vuoto(filter.stores),
+    gameTypes: vuoto(filter.gameTypes),
     attributes: vuoto(filter.attributes),
     tags: vuoto(filter.tags),
     durationMin: filter.durationMin ?? undefined,

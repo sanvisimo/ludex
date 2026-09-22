@@ -99,7 +99,10 @@
     "releasedTo": "al",
     "otherLabel": "Altro",
     "criticMin": "Voto critica minimo",
-    "neverPlayed": "Mai giocato"
+    "neverPlayed": "Mai giocato",
+    "gameTypesLabel": "Tipo",
+    "oneOfThem": "Basta uno dei valori spuntati.",
+    "noGameTypes": "Nessun tipo: i giochi non ancora arricchiti non ne hanno uno."
   },
   "addGame": {
     "trigger": "Aggiungi gioco",
@@ -229,6 +232,23 @@
     "played": "Finito",
     "dropped": "Abbandonato",
     "excluded": "Non mi interessa"
+  },
+  "gameType": {
+    "main_game": "Gioco",
+    "dlc": "DLC",
+    "expansion": "Espansione",
+    "standalone_expansion": "Espansione standalone",
+    "bundle": "Bundle",
+    "pack": "Pacchetto",
+    "episode": "Episodio",
+    "season": "Stagione",
+    "remake": "Remake",
+    "remaster": "Remaster",
+    "expanded_game": "Edizione estesa",
+    "port": "Port",
+    "mod": "Mod",
+    "fork": "Fork",
+    "update": "Aggiornamento"
   },
   "store": {
     "steam": "Steam",
@@ -361,7 +381,7 @@
       "hours": "{hours}h",
       "resolve": "Collega",
       "resolveTitle": "Collega al gioco giusto",
-      "resolveDescription": "Cerca su IGDB il gioco che corrisponde a «{name}». Puoi scrivere anche l'id IGDB o incollare l'URL della scheda.",
+      "resolveDescription": "Cerca su IGDB il gioco che corrisponde a «{name}» ({store}). Puoi scrivere anche l'id IGDB o incollare l'URL della scheda.",
       "searchLabel": "Cerca",
       "search": "Cerca",
       "searchFailed": "Ricerca non riuscita",

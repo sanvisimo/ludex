@@ -14,6 +14,7 @@ import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import { EntryTags } from '@/components/entry-tags';
 import { GameCover } from '@/components/game-cover';
 import { GameDuration } from '@/components/game-duration';
+import { GameTypeBadge } from '@/components/game-type-badge';
 import { OwnershipBadges } from '@/components/ownership-badges';
 import { RatingValue } from '@/components/rating-value';
 import { Button } from '@/components/ui/button';
@@ -189,12 +190,15 @@ export default function BacklogPage() {
                       />
                       <div className="flex flex-1 flex-wrap items-start justify-between gap-3">
                         <div className="grid gap-0.5">
-                          <Link
-                            href={`/games/${entry.game.id}`}
-                            className="font-medium underline-offset-4 hover:underline"
-                          >
-                            {entry.game.name}
-                          </Link>
+                          <span className="flex flex-wrap items-center gap-2">
+                            <Link
+                              href={`/games/${entry.game.id}`}
+                              className="font-medium underline-offset-4 hover:underline"
+                            >
+                              {entry.game.name}
+                            </Link>
+                            <GameTypeBadge type={entry.game.gameType} />
+                          </span>
                           {entry.game.firstReleaseDate && (
                             <span className="text-muted-foreground">
                               {entry.game.firstReleaseDate.getFullYear()}

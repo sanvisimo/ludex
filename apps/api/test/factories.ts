@@ -5,6 +5,7 @@ import type { IgdbGameMetadata } from '../src/external/igdb';
 import type { MetacriticGame } from '../src/external/metacritic';
 import type { OpenCriticGame } from '../src/external/opencritic';
 import type { SteamLibraryEntry } from '../src/external/steam';
+import type { GameType } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 
 // Fixture minime: scrivono la riga e restituiscono l'id. Niente builder
@@ -40,6 +41,9 @@ export async function createGame(
     // step 7, non la strada che il numero fa per arrivare in colonna. Chi
     // testa quella strada passa da `saveScores`.
     criticScore?: number | null;
+    // Che cos'è la scheda secondo IGDB. Nullo di default come gli altri campi
+    // dell'enrichment: è il caso che il filtro deve trattare bene.
+    gameType?: GameType | null;
   } = {},
 ) {
   const n = unique();
@@ -54,6 +58,7 @@ export async function createGame(
       hltbMainMinutes: values.hltbMainMinutes ?? null,
       hltbHasSolo: values.hltbHasSolo ?? null,
       criticScore: values.criticScore ?? null,
+      gameType: values.gameType ?? null,
     })
     .returning({ id: schema.games.id, igdbId: schema.games.igdbId });
   return row!;
@@ -105,6 +110,8 @@ export function igdbMetadata(
     coverWidth: null,
     coverHeight: null,
     slug: null,
+    gameType: 'main_game',
+    parentIgdbId: null,
     aggregatedRating: null,
     aggregatedRatingCount: null,
     attributes: [],

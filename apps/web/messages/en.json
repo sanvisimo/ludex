@@ -99,7 +99,10 @@
     "releasedTo": "to",
     "otherLabel": "Other",
     "criticMin": "Minimum critic rating",
-    "neverPlayed": "Never played"
+    "neverPlayed": "Never played",
+    "gameTypesLabel": "Type",
+    "oneOfThem": "Any one of the ticked values is enough.",
+    "noGameTypes": "No types yet: games that haven't been enriched don't have one."
   },
   "addGame": {
     "trigger": "Add game",
@@ -229,6 +232,23 @@
     "played": "Played",
     "dropped": "Dropped",
     "excluded": "Not interested"
+  },
+  "gameType": {
+    "main_game": "Game",
+    "dlc": "DLC",
+    "expansion": "Expansion",
+    "standalone_expansion": "Standalone expansion",
+    "bundle": "Bundle",
+    "pack": "Pack",
+    "episode": "Episode",
+    "season": "Season",
+    "remake": "Remake",
+    "remaster": "Remaster",
+    "expanded_game": "Expanded edition",
+    "port": "Port",
+    "mod": "Mod",
+    "fork": "Fork",
+    "update": "Update"
   },
   "store": {
     "steam": "Steam",
@@ -361,7 +381,7 @@
       "hours": "{hours}h",
       "resolve": "Link",
       "resolveTitle": "Link to the right game",
-      "resolveDescription": "Search IGDB for the game matching “{name}”. You can also type the IGDB id or paste the game page URL.",
+      "resolveDescription": "Search IGDB for the game matching “{name}”({store}). You can also type the IGDB id or paste the game page URL.",
       "searchLabel": "Search",
       "search": "Search",
       "searchFailed": "Search failed",

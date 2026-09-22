@@ -1,3 +1,4 @@
+import type { GameType } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -31,7 +32,7 @@ function hit(over: {
   igdbId: number;
   name: string;
   releaseYear?: number | null;
-  gameType?: string | null;
+  gameType?: GameType | null;
   totalRatingCount?: number | null;
 }) {
   return {
@@ -293,7 +294,7 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
 
   it('butta i DLC che la ricerca restituisce', async () => {
     mockedSearch.mockResolvedValue([
-      hit({ igdbId: 7, name: 'Inkulinati Goodies Pack', gameType: 'DLC' }),
+      hit({ igdbId: 7, name: 'Inkulinati Goodies Pack', gameType: 'dlc' }),
     ]);
 
     const report = await importLibrary(account, [

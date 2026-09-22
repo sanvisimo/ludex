@@ -42,6 +42,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useMediumLabels, useStatusLabels, useStoreLabels } from '@/lib/labels';
+import { useGameTypeLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 
 const NO_STORE = '__nessuno__';
@@ -68,6 +69,12 @@ const emptyRow = (): OwnershipRow => ({
 
 export function AddGameDialog() {
   const t = useTranslations('addGame');
+  // Il tipo di una scheda IGDB arriva come valore (`dlc`, `remaster`): il nome
+  // da mostrare lo mette il client, e su un gioco principale non si mostra —
+  // è la normalità, non un'informazione.
+  const gameTypeLabels = useGameTypeLabels();
+  const hitType = (type: IgdbSearchHit['gameType']) =>
+    type && type !== 'main_game' ? gameTypeLabels[type] : null;
   const statusLabels = useStatusLabels();
   const storeLabels = useStoreLabels();
   const mediumLabels = useMediumLabels();
@@ -259,7 +266,7 @@ export function AddGameDialog() {
                             {hit.releaseYear ? ` (${hit.releaseYear})` : ''}
                           </span>
                           <span className="block text-muted-foreground">
-                            {[hit.gameType, hit.developer]
+                            {[hitType(hit.gameType), hit.developer]
                               .filter(Boolean)
                               .join(' · ') || '—'}
                           </span>

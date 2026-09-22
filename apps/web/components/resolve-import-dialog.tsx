@@ -1,6 +1,6 @@
 'use client';
 
-import type { UnresolvedImport } from '@repo/contracts';
+import type { IgdbSearchHit, UnresolvedImport } from '@repo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -18,8 +18,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useApiErrorMessage } from '@/lib/api-error';
+import { useGameTypeLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
-import {GameCover} from "@/components/game-cover";
+import { GameCover } from '@/components/game-cover';
 
 /**
  * Sistema a mano una voce che l'import non ha saputo risolvere.
@@ -36,6 +37,12 @@ export function ResolveImportDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const t = useTranslations('account.unresolved');
+  // Il tipo di una scheda IGDB arriva come valore (`dlc`, `remaster`): il nome
+  // da mostrare lo mette il client, e su un gioco principale non si mostra —
+  // è la normalità, non un'informazione.
+  const gameTypeLabels = useGameTypeLabels();
+  const hitType = (type: IgdbSearchHit['gameType']) =>
+    type && type !== 'main_game' ? gameTypeLabels[type] : null;
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
 
@@ -81,7 +88,10 @@ export function ResolveImportDialog({
         <DialogHeader>
           <DialogTitle>{t('resolveTitle')}</DialogTitle>
           <DialogDescription>
-            {t('resolveDescription', { name: entry?.name ?? '' })}
+            {t('resolveDescription', {
+              name: entry?.name ?? '',
+              store: `${entry?.store}/${entry?.storeName}`,
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -119,7 +129,7 @@ export function ResolveImportDialog({
               ) : (
                 <ul className="grid gap-0.5 p-1">
                   {search.data?.map((hit) => (
-                    <li key={hit.igdbId} className='flex'>
+                    <li key={hit.igdbId} className="flex">
                       <GameCover imageId={hit.cover} name={hit.name} />
                       <button
                         type="button"
@@ -132,7 +142,7 @@ export function ResolveImportDialog({
                           {hit.releaseYear ? ` (${hit.releaseYear})` : ''}
                         </span>
                         <span className="block text-muted-foreground">
-                          {[hit.gameType, hit.developer]
+                          {[hitType(hit.gameType), hit.developer]
                             .filter(Boolean)
                             .join(' · ') || '—'}
                         </span>

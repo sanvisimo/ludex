@@ -91,6 +91,25 @@ describe('enrichGameFromIgdb', () => {
     expect((await sourceRow(game.id))?.syncedAt).toBeInstanceOf(Date);
   });
 
+  it('scrive che cos è la scheda, e a quale gioco è attaccata', async () => {
+    // Un DLC agganciato per sbaglio da un import sta in lista identico a un
+    // gioco: questa è l'unica cosa che permette di accorgersene.
+    const game = await createGame();
+    mockedFetch.mockResolvedValue(
+      igdbMetadata({
+        name: 'Phantom Liberty',
+        gameType: 'expansion',
+        parentIgdbId: 1877,
+      }),
+    );
+
+    await enrichGameFromIgdb(game.id);
+
+    expect(
+      await db.query.games.findFirst({ where: eq(schema.games.id, game.id) }),
+    ).toMatchObject({ gameType: 'expansion', parentIgdbId: 1877 });
+  });
+
   it("scrive gli id degli altri negozi, che è la prova d'identità per HLTB", async () => {
     // Fino allo step 9 l'appid Steam ce l'avevano solo i giochi arrivati da un
     // import Steam. Con GOG, Epic e Amazon ne è rimasto senza più di metà del

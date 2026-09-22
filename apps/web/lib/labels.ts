@@ -1,7 +1,12 @@
 'use client';
 
-import type { BacklogStatus, Medium, Store } from '@repo/contracts';
-import { backlogStatusValues, mediumValues, storeValues } from '@repo/contracts';
+import type { BacklogStatus, GameType, Medium, Store } from '@repo/contracts';
+import {
+  backlogStatusValues,
+  gameTypeValues,
+  mediumValues,
+  storeValues,
+} from '@repo/contracts';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
@@ -20,6 +25,16 @@ export function useStatusLabels(): Record<BacklogStatus, string> {
       Object.fromEntries(
         backlogStatusValues.map((value) => [value, t(value)]),
       ) as Record<BacklogStatus, string>,
+    [t],
+  );
+}
+
+export function useGameTypeLabels(): Record<GameType, string> {
+  const t = useTranslations('gameType');
+  return useMemo(
+    () =>
+      Object.fromEntries(gameTypeValues.map((value) => [value, t(value)])) as
+        Record<GameType, string>,
     [t],
   );
 }

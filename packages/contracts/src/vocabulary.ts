@@ -122,6 +122,35 @@ export const mediumValues = ['digital', 'physical'] as const;
 // Solo sugli scarti. Un gioco del backlog si nasconde senza tipo: lì nasconderlo
 // è una preferenza di vista, e il giudizio sul gioco ha già il suo posto in
 // `excluded`.
+// **Che cos'è** una scheda IGDB: un gioco, o qualcosa che a un gioco è
+// attaccato. Lo dichiara IGDB (`game_type`) e non l'utente: è un dato, non una
+// preferenza — per quella c'è `hiddenKindValues`.
+//
+// L'insieme è chiuso e ricalca i tipi di IGDB, tradotti una volta sola in
+// `gameTypeFromIgdb` dentro `external/igdb.ts`. Un tipo che IGDB aggiungesse
+// domani non sta qui e vale **null**, che è anche il valore di un gioco non
+// ancora arricchito: in entrambi i casi non sappiamo, e la UI non mostra niente.
+//
+// `main_game` c'è ed è esplicito, perché «è un gioco principale» e «non lo
+// sappiamo ancora» sono due cose diverse.
+export const gameTypeValues = [
+  'main_game',
+  'dlc',
+  'expansion',
+  'standalone_expansion',
+  'bundle',
+  'pack',
+  'episode',
+  'season',
+  'remake',
+  'remaster',
+  'expanded_game',
+  'port',
+  'mod',
+  'fork',
+  'update',
+] as const;
+
 export const hiddenKindValues = [
   'app',
   'dlc',
@@ -212,3 +241,4 @@ export type ScoreSource = (typeof scoreSourceValues)[number];
 export type Subscription = (typeof subscriptionValues)[number];
 export type Medium = (typeof mediumValues)[number];
 export type HiddenKind = (typeof hiddenKindValues)[number];
+export type GameType = (typeof gameTypeValues)[number];

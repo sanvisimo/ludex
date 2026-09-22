@@ -1,4 +1,4 @@
-import type { Store } from '@repo/contracts/vocabulary';
+import type { GameType, Store } from '@repo/contracts/vocabulary';
 
 import { chunk } from '../lib/chunk';
 
@@ -125,24 +125,36 @@ type IgdbGame = {
   }[];
 };
 
-// Da GET /v4/game_types. Il tipo si mostra solo quando NON è un gioco
-// principale: serve a distinguere port, remake e bundle nella lista di scelta.
-const GAME_TYPES: Record<number, string> = {
-  1: 'DLC',
-  2: 'Espansione',
-  3: 'Bundle',
-  4: 'Espansione standalone',
-  5: 'Mod',
-  6: 'Episodio',
-  7: 'Stagione',
-  8: 'Remake',
-  9: 'Remaster',
-  10: 'Edizione estesa',
-  11: 'Port',
-  12: 'Fork',
-  13: 'Pacchetto',
-  14: 'Aggiornamento',
+// Da GET /v4/game_types, tradotti nei nostri valori. **È l'unico punto** in cui
+// i numeri di IGDB diventano qualcosa che il resto del progetto capisce: prima
+// qui c'erano etichette italiane, cioè testo d'interfaccia dentro un client
+// HTTP, e il matcher dell'import confrontava un nome tradotto per riconoscere
+// un DLC. I nomi da mostrare stanno nelle traduzioni del web.
+//
+// Un tipo che IGDB aggiungesse dopo di noi non è qui e rende null: «non lo so»,
+// che è esattamente ciò che sappiamo.
+const GAME_TYPES: Record<number, GameType> = {
+  0: 'main_game',
+  1: 'dlc',
+  2: 'expansion',
+  3: 'bundle',
+  4: 'standalone_expansion',
+  5: 'mod',
+  6: 'episode',
+  7: 'season',
+  8: 'remake',
+  9: 'remaster',
+  10: 'expanded_game',
+  11: 'port',
+  12: 'fork',
+  13: 'pack',
+  14: 'update',
 };
+
+/** Il tipo di una scheda IGDB, o null se il numero non lo conosciamo. */
+export function gameTypeFromIgdb(value: number | undefined): GameType | null {
+  return value === undefined ? null : (GAME_TYPES[value] ?? null);
+}
 
 // Tipi esclusi dalla ricerca: non sono cose che si possiedono in una libreria.
 // Come fa Playnite, che cercando "Hollow Knight" non mostra mod.
@@ -185,7 +197,12 @@ export type IgdbSearchHit = {
   name: string;
   releaseYear: number | null;
   developer: string | null;
-  gameType: string | null;
+  /**
+   * Che cos'è la scheda. **Valorizzato sempre**, `main_game` compreso: chi
+   * mostra la lista sceglie se dirlo, e il matcher dell'import ha bisogno di
+   * distinguere «è un gioco» da «non lo so».
+   */
+  gameType: GameType | null;
   cover: string | null;
   /**
    * Quante recensioni aggregate ha la scheda. Non è un voto: è **quanto quella
@@ -211,7 +228,7 @@ function toHit(game: IgdbGame): IgdbSearchHit {
       : null,
     developer: developer ?? null,
     cover: game.cover?.image_id ?? null,
-    gameType: game.game_type ? (GAME_TYPES[game.game_type] ?? null) : null,
+    gameType: gameTypeFromIgdb(game.game_type),
     totalRatingCount: game.total_rating_count ?? null,
   };
 }
@@ -262,6 +279,9 @@ export async function findIgdbGameBySlug(
 
 const DETAIL_FIELDS = [
   'fields name, slug, summary, first_release_date, aggregated_rating, aggregated_rating_count,',
+  // Che cos'è la scheda, e — per DLC ed espansioni — a quale gioco è attaccata.
+  // Due campi su una chiamata che si fa comunque.
+  'game_type, parent_game,',
   'cover.image_id, cover.width, cover.height,',
   'genres.id, genres.name, themes.id, themes.name,',
   'game_modes.id, game_modes.name, player_perspectives.id, player_perspectives.name,',
@@ -278,6 +298,8 @@ type IgdbGameDetail = {
   slug?: string;
   summary?: string;
   first_release_date?: number;
+  game_type?: number;
+  parent_game?: number;
   aggregated_rating?: number;
   aggregated_rating_count?: number;
   cover?: { image_id?: string; width?: number; height?: number };
@@ -304,6 +326,10 @@ export type IgdbGameMetadata = {
   coverImageId: string | null;
   coverWidth: number | null;
   coverHeight: number | null;
+  /** Che cos'è la scheda: un gioco, un DLC, un bundle… Null se non lo sappiamo. */
+  gameType: GameType | null;
+  /** Per DLC ed espansioni, l'id IGDB del gioco a cui sono attaccati. */
+  parentIgdbId: number | null;
   aggregatedRating: number | null;
   aggregatedRatingCount: number | null;
   attributes: IgdbAttribute[];
@@ -360,6 +386,8 @@ export async function fetchIgdbGameMetadata(
     coverImageId: game.cover?.image_id ?? null,
     coverWidth: game.cover?.width ?? null,
     coverHeight: game.cover?.height ?? null,
+    gameType: gameTypeFromIgdb(game.game_type),
+    parentIgdbId: game.parent_game ?? null,
     aggregatedRating: game.aggregated_rating ?? null,
     aggregatedRatingCount: game.aggregated_rating_count ?? null,
     // Solo i negozi che sappiamo tradurre: IGDB rende anche GiantBomb, Twitch e
@@ -536,6 +564,47 @@ export async function findIgdbGamesByExternalIds(
   const source = igdbSourceFor(store);
   if (source === null) return new Map();
   return findIgdbGamesBySource(source, externalIds);
+}
+
+/**
+ * Il tipo di una manciata di schede, in blocco.
+ *
+ * Esiste per riempire i giochi che c'erano **prima** di questa colonna, senza
+ * spendere una richiesta per gioco: 500 id per volta, che su un catalogo vero
+ * sono una manciata di richieste invece di qualche migliaio. L'enrichment vero
+ * e proprio resta un job per gioco e non passa di qui — questa chiede due campi
+ * e nient'altro.
+ */
+export async function fetchIgdbGameTypes(
+  igdbIds: number[],
+): Promise<
+  Map<number, { gameType: GameType | null; parentIgdbId: number | null }>
+> {
+  const out = new Map<
+    number,
+    { gameType: GameType | null; parentIgdbId: number | null }
+  >();
+  if (igdbIds.length === 0) return out;
+
+  for (const page of chunk(igdbIds, EXTERNAL_PAGE)) {
+    const rows = await query<
+      { id: number; game_type?: number; parent_game?: number }[]
+    >(
+      'games',
+      `fields id, game_type, parent_game;` +
+        ` where id = (${page.map((id) => Math.trunc(id)).join(',')});` +
+        ` limit ${EXTERNAL_PAGE};`,
+    );
+
+    for (const row of rows) {
+      out.set(row.id, {
+        gameType: gameTypeFromIgdb(row.game_type),
+        parentIgdbId: row.parent_game ?? null,
+      });
+    }
+  }
+
+  return out;
 }
 
 /**
