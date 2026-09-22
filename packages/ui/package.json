@@ -5,13 +5,15 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./config": "./src/config.ts"
+    "./config": "./src/config.ts",
+    "./palettes": "./src/palettes.ts"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@tamagui/colors": "^2.7.0",
     "@tamagui/config": "^2.7.0",
     "@tamagui/core": "^2.7.0",
     "@tamagui/web": "^2.7.0",

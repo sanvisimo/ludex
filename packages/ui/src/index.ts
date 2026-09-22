@@ -17,3 +17,7 @@ export * from 'tamagui';
 
 export { config } from './config';
 export type { AppConfig } from './config';
+
+export { themes } from './themes';
+export { accenti, accentoPredefinito, base, stati } from './palettes';
+export type { Accento } from './palettes';
