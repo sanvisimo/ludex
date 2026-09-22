@@ -52,10 +52,11 @@ export function ownershipKey(ownership: DisplayedOwnership) {
 // vive nella tabella di riferimento. Lo si risolve qui invece di gonfiare il
 // contratto, tanto la lista è in cache e non cambia mai durante la sessione.
 //
-// `onRemove` è opzionale ed è ciò che distingue i due usi: senza, i possessi si
-// guardano e basta — togliere una piattaforma già salvata non è previsto, perché
-// il prossimo import la ricreerebbe. Con, sono le aggiunte ancora in sospeso, che
-// si possono disfare finché non si salva.
+// `onRemove` è opzionale: senza, i possessi si guardano e basta, ed è il caso
+// di ogni lista fuori dalla modifica. Con, c'è la x — e cosa faccia lo decide
+// chi la passa: sulle aggiunte in sospeso le toglie dalla coda, sui possessi
+// salvati chiama la rimozione vera, che lascia un rifiuto perché il prossimo
+// import non la rimetta.
 export function OwnershipBadges({
   ownerships,
   onRemove,

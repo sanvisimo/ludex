@@ -293,6 +293,41 @@ export async function addOwnershipToEntry(
   const store = ownership.store ?? null;
   const medium = ownership.medium ?? null;
 
+  // Dichiarare una copia cancella il rifiuto che la riguarda, ed è l'unico modo
+  // di tornare indietro da una rimozione — «annulla» compreso. Si cancellano i
+  // rifiuti **compatibili**, con la stessa regola con cui più sotto si cerca la
+  // riga da riusare: chi non dichiara il negozio o il supporto non sta dicendo
+  // «un'altra copia», sta dicendo «non lo so», e si riprende ciò che trova.
+  // L'account no, non entra nel confronto: a mano non si dichiara, e il rifiuto
+  // da togliere è quasi sempre quello di una riga che veniva da un import.
+  const rifiuti = await db
+    .select({
+      id: schema.ownershipRejections.id,
+      store: schema.ownershipRejections.store,
+      medium: schema.ownershipRejections.medium,
+    })
+    .from(schema.ownershipRejections)
+    .where(
+      and(
+        eq(schema.ownershipRejections.backlogId, id),
+        eq(schema.ownershipRejections.platformSlug, ownership.platformSlug),
+      ),
+    );
+
+  const daRipescare = rifiuti
+    .filter(
+      (riga) =>
+        (store === null || riga.store === store) &&
+        (medium === null || riga.medium === null || riga.medium === medium),
+    )
+    .map((riga) => riga.id);
+
+  if (daRipescare.length > 0) {
+    await db
+      .delete(schema.ownershipRejections)
+      .where(inArray(schema.ownershipRejections.id, daRipescare));
+  }
+
   const esistenti = await db
     .select({
       id: schema.ownerships.id,
@@ -344,6 +379,68 @@ export async function addOwnershipToEntry(
   }
 
   return owned;
+}
+
+/**
+ * Toglie una copia, e si ricorda di averlo fatto.
+ *
+ * La cancellazione da sola durerebbe fino al prossimo import — su PSN tre
+ * giorni — quindi accanto resta un rifiuto in `ownership_rejections`, che
+ * `ensureOwnerships` legge prima di scrivere. È la stessa lezione di `dismiss`
+ * sugli scarti: ciò che si cancella torna, ciò che si scrive sopravvive.
+ *
+ * L'ultimo possesso non si toglie, e non è una cautela: la piattaforma è il
+ * filtro hard di «stasera ho la Switch accesa», e una riga che non ne ha più
+ * nessuna resterebbe nel backlog invisibile a chiunque la cerchi. Chi vuole
+ * togliere tutto rimuove il gioco, che è un gesto suo e lo dice.
+ */
+export async function removeOwnershipFromEntry(
+  userId: string,
+  id: string,
+  ownershipId: string,
+): Promise<'ok' | 'not-found' | 'last'> {
+  const owned = await db.query.backlog.findFirst({
+    columns: { id: true },
+    // Come in `addOwnershipToEntry`: dal possesso si risale al backlog, che da
+    // solo non dice di chi sia la riga.
+    where: and(eq(schema.backlog.id, id), eq(schema.backlog.userId, userId)),
+  });
+  if (!owned) return 'not-found';
+
+  const possessi = await db
+    .select({
+      id: schema.ownerships.id,
+      platformSlug: schema.ownerships.platformSlug,
+      store: schema.ownerships.store,
+      storeAccountId: schema.ownerships.storeAccountId,
+      medium: schema.ownerships.medium,
+    })
+    .from(schema.ownerships)
+    .where(eq(schema.ownerships.backlogId, id));
+
+  const daTogliere = possessi.find((riga) => riga.id === ownershipId);
+  if (!daTogliere) return 'not-found';
+  if (possessi.length === 1) return 'last';
+
+  // Prima il rifiuto, poi la cancellazione: al contrario, un errore in mezzo
+  // lascerebbe il possesso tolto e l'import libero di rimetterlo, che è
+  // esattamente ciò che questa funzione esiste per impedire.
+  await db
+    .insert(schema.ownershipRejections)
+    .values({
+      backlogId: id,
+      platformSlug: daTogliere.platformSlug,
+      store: daTogliere.store,
+      storeAccountId: daTogliere.storeAccountId,
+      medium: daTogliere.medium,
+    })
+    .onConflictDoNothing();
+
+  await db
+    .delete(schema.ownerships)
+    .where(eq(schema.ownerships.id, ownershipId));
+
+  return 'ok';
 }
 
 export async function removeFromBacklog(userId: string, id: string) {
@@ -612,6 +709,39 @@ async function adottaPossessiMenoSpecifici(rows: OwnershipUpsert[]) {
 }
 
 /**
+ * Toglie dalle righe in arrivo quelle che l'utente ha già rifiutato.
+ *
+ * È l'unico punto in cui i rifiuti mordono, ed è voluto che sia uno solo: la
+ * riga rifiutata è stata cancellata davvero, quindi nessuna lettura dei
+ * possessi deve sapere che questa tabella esiste. Qui invece sì — è l'import,
+ * cioè ciò che la rimetterebbe.
+ *
+ * Il confronto è sulla chiave del vincolo, la stessa che decide se due copie
+ * sono la stessa: un rifiuto sul disco PS5 non ferma il diritto digitale sulla
+ * stessa console, perché sono due copie e l'utente ne ha tolta una.
+ */
+async function togliRifiutati(rows: OwnershipUpsert[]) {
+  const backlogIds = [...new Set(rows.map((row) => row.backlogId))];
+  if (backlogIds.length === 0) return rows;
+
+  const rifiuti = await db
+    .select({
+      backlogId: schema.ownershipRejections.backlogId,
+      platformSlug: schema.ownershipRejections.platformSlug,
+      store: schema.ownershipRejections.store,
+      storeAccountId: schema.ownershipRejections.storeAccountId,
+      medium: schema.ownershipRejections.medium,
+    })
+    .from(schema.ownershipRejections)
+    .where(inArray(schema.ownershipRejections.backlogId, backlogIds));
+
+  if (rifiuti.length === 0) return rows;
+
+  const rifiutate = new Set(rifiuti.map(chiavePossesso));
+  return rows.filter((row) => !rifiutate.has(chiavePossesso(row)));
+}
+
+/**
  * Scrive i possessi che mancano e aggiorna il tempo di gioco di quelli che ci sono.
  *
  * Idempotente per costruzione: la chiave è `(backlog, piattaforma, store,
@@ -629,12 +759,15 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
   let created = 0;
 
   for (const page of chunk(fondiDoppioni(rows), WRITE_CHUNK)) {
-    await adottaPossessiMenoSpecifici(page);
+    const scritte = await togliRifiutati(page);
+    if (scritte.length === 0) continue;
+
+    await adottaPossessiMenoSpecifici(scritte);
 
     const inserted = await db
       .insert(schema.ownerships)
       .values(
-        page.map((row) => ({
+        scritte.map((row) => ({
           backlogId: row.backlogId,
           platformSlug: row.platformSlug,
           store: row.store ?? null,

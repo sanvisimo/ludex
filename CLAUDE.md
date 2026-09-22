@@ -290,12 +290,12 @@ Le librerie importate aggiungono tre cose al modello, decise allo step 4:
   mano**, ai dischi che l'import stesso aveva dedotto da `service: other`.
 
   Il prezzo, che è vero e va accettato: niente cancella una riga che l'import
-  smette di emettere, e togliere un possesso oggi non si può. Un disco dedotto
-  male — quello prestato da un amico, *Astro's Playroom* che è preinstallato —
-  resta lì anche il giorno che compri il gioco in digitale. È il baratto
-  scelto: la chiave stretta non accumula mai righe false ma perde in silenzio
-  una copia che hai davvero, la larga sbaglia in un modo che si vede e che un
-  gesto di rimozione — prima o poi necessario — sistema.
+  smette di emettere. Un disco dedotto male — quello prestato da un amico,
+  *Astro's Playroom* che è preinstallato — resterebbe lì anche il giorno che
+  compri il gioco in digitale. È il baratto scelto: la chiave stretta non
+  accumula mai righe false ma perde in silenzio una copia che hai davvero, la
+  larga sbaglia in un modo che si vede e che un gesto di rimozione sistema.
+  Quel gesto adesso c'è: vedi «Togliere una copia» qui sotto.
 
   Da qui tre regole a valle. **`ensureOwnerships` non aggiorna più il
   supporto**: sta nella chiave, quindi su una riga trovata per conflitto è
@@ -420,6 +420,56 @@ Due cose che restano da decidere, e che chi arriva dopo deve trovare scritte:
   serve a poco: il prossimo import lo rimette. Per ora stanno tutti e due;
   limitare «Rimuovi» ai giochi senza possessi da import è un passo da
   decidere.
+
+##### Togliere una copia
+
+Nascondere risponde a «non voglio vederlo». Questa è l'altra domanda, e non è
+la stessa: **questa copia non ce l'ho** — il disco prestato da un amico che
+l'import ha dedotto da `service: other`, la piattaforma aggiunta per sbaglio.
+È un fatto sul possesso, non una preferenza di vista, e per questo non si
+risolve con `hidden_at`.
+
+Cancellare la riga e basta non funziona, per la stessa ragione di `dismiss`
+sugli scarti: il prossimo import la rimette, e su PSN l'aggiornamento
+automatico gira ogni tre giorni. Il numero che decide è questo, misurato sulla
+libreria di prova: **2390 possessi su 2392 vengono da un import**. Una
+rimozione senza memoria sarebbe un bottone che non fa niente.
+
+La memoria è **`ownership_rejections`**, una tabella a parte con la stessa
+chiave del vincolo sui possessi, `NULLS NOT DISTINCT` compreso. Sta lì e non su
+`ownerships` come un `removed_at`, e la ragione è la stessa per cui la chiave è
+quella: le due forme tengono lo stesso fatto, ma un flag andrebbe escluso da
+**ogni** lettura dei possessi — la ricerca, il pannello dei filtri, i conteggi
+dello scollegamento: dieci punti — e una lettura dimenticata mostrerebbe un
+possesso che l'utente ha tolto, cioè un bug che sembra del database. Con la
+tabella la riga non c'è davvero: nessuna di quelle letture cambia, e se il
+rifiuto non mordesse il danno sarebbe un possesso di troppo, che si vede e si
+toglie di nuovo.
+
+Quattro regole che ne discendono:
+
+- **il rifiuto morde in un punto solo**, `ensureOwnerships`, cioè l'import —
+  che è l'unica cosa che rimetterebbe la riga. Il confronto è sulla chiave del
+  vincolo, quindi rifiutare il disco PS5 non tocca il diritto digitale sulla
+  stessa console: sono due copie, e l'utente ne ha tolta una.
+- **si torna indietro dichiarando di nuovo la copia.** `addOwnershipToEntry`
+  cancella i rifiuti **compatibili** — chi non dichiara negozio o supporto sta
+  dicendo «non lo so», non «un'altra copia» — ed è anche ciò che fa l'«Annulla»
+  del toast. La riga rinasce senza account, e il prossimo import se la riprende
+  con l'adozione: il giro è lungo ma non inventa un secondo modo di scrivere un
+  possesso.
+- **l'ultimo possesso non si toglie.** La piattaforma è il filtro hard di
+  «stasera ho la Switch accesa», e una riga senza nessuna resterebbe nel
+  backlog invisibile a chi la cerca. È un `CONFLICT`, non un `BAD_REQUEST`: la
+  richiesta è scritta bene, è lo stato della riga a non permetterla. Lato web
+  la x non compare nemmeno, perché un bottone che fallisce sempre è peggio di
+  un bottone che non c'è.
+- **`store_account_id` è in `cascade`**, al contrario del `restrict` che porta
+  il possesso. Non è un'incoerenza: i possessi sopravvivono allo scollegamento
+  «tieni i giochi» perché sono roba dell'utente, e per quello la riga
+  dell'account resta; quando invece si cancella davvero, di quell'account non
+  resta niente da importare e un rifiuto che lo nomina non ha più nessuno da
+  fermare. Con `restrict` avrebbe bloccato lo scollegamento.
 
 ##### Come si chiama un account, quando ne hai due
 
@@ -1017,12 +1067,12 @@ la spazzata ci riprova per sempre.
      strutturati: l'utente non aggiunge un campo suo, i valori dei tag sì.
    - **possessi**: le mutazioni oRPC che espongono la scrittura già scritta allo
      step 4. Fino a qui l'unico modo di aggiungere una piattaforma era cancellare
-     la riga e rifarla. **Solo aggiunta**: togliere un possesso non basta a farlo
-     sparire, perché il prossimo import lo ricrea — per quello c'è il
-     nascondere, arrivato dopo il 9b: vedi «Ciò che non voglio vedere». Lo scollegamento di un account è
-     l'unico taglio che oggi regge, e regge proprio perché toglie *anche* la
-     fonte che ricreerebbe la riga (vedi «Il possesso sa da quale account
-     viene»).
+     la riga e rifarla. Nasce **solo aggiunta**, perché togliere un possesso non
+     bastava a farlo sparire — il prossimo import lo ricreava — e il taglio che
+     reggeva era solo lo scollegamento dell'account, che regge proprio perché
+     toglie *anche* la fonte che ricreerebbe la riga (vedi «Il possesso sa da
+     quale account viene»). La rimozione è arrivata dopo, quando il supporto
+     dentro la chiave l'ha resa necessaria: vedi «Togliere una copia».
 
      Si aggiunge anche **il supporto**, ed è l'unico campo del form che non è
      personale: dichiarare il disco è l'unico modo di non perderlo il giorno
@@ -1032,10 +1082,10 @@ la spazzata ci riprova per sempre.
      diritto digitale scrive una **seconda copia**. Vedi il supporto in «Import
      di librerie».
 
-     Qui «solo aggiunta» comincia a stringere: con due copie per console una
-     riga sbagliata — il disco prestato che l'import ha dedotto — non si toglie
-     più. Il gesto di rimozione non è in questo step, ma è la prima cosa che il
-     supporto dentro la chiave rende necessaria.
+     Ed è qui che «solo aggiunta» ha smesso di reggere: con due copie per
+     console una riga sbagliata — il disco prestato che l'import ha dedotto —
+     non si sarebbe più tolta. Il gesto di rimozione non nasce in questo step,
+     ma è il supporto dentro la chiave a renderlo necessario.
 
    Due cose che si erano immaginate qui e stanno **fuori**, ciascuna perché è uno
    step suo e non un campo in più nel form:

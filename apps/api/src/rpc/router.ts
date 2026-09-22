@@ -6,6 +6,7 @@ import {
   findEntryByGame,
   findEntryById,
   removeFromBacklog,
+  removeOwnershipFromEntry,
   setBacklogHidden,
   setBacklogStatus,
   updateBacklogEntry,
@@ -404,6 +405,29 @@ export const router = os.router({
         );
         if (!added)
           throw new ORPCError('NOT_FOUND', { message: 'Riga inesistente' });
+
+        const entry = await findEntryById(context.user.id, input.id);
+        if (!entry) throw new ORPCError('INTERNAL_SERVER_ERROR');
+        return entry;
+      }),
+
+    removeOwnership: os.backlog.removeOwnership
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const esito = await removeOwnershipFromEntry(
+          context.user.id,
+          input.id,
+          input.ownershipId,
+        );
+        if (esito === 'not-found')
+          throw new ORPCError('NOT_FOUND', { message: 'Possesso inesistente' });
+        // Un 409 e non un 400: la richiesta è scritta bene, è lo stato della
+        // riga a non permetterla, e il client la rifarà volentieri dopo aver
+        // aggiunto un'altra piattaforma.
+        if (esito === 'last')
+          throw new ORPCError('CONFLICT', {
+            message: 'Un gioco deve restare con almeno un possesso',
+          });
 
         const entry = await findEntryById(context.user.id, input.id);
         if (!entry) throw new ORPCError('INTERNAL_SERVER_ERROR');

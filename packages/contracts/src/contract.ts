@@ -291,6 +291,20 @@ export const contract = {
       .input(z.object({ id: z.uuid(), ownership: OwnershipInputSchema }))
       .output(BacklogEntrySchema),
 
+    // Toglie una copia: il disco che l'import ha dedotto male, la piattaforma
+    // aggiunta per sbaglio. **Non basta cancellare la riga** — il prossimo
+    // import la rimette, e su PSN gira da solo ogni tre giorni — quindi il
+    // rifiuto resta scritto accanto, in `ownership_rejections`, e l'import lo
+    // rispetta. Riaggiungere a mano quella copia lo cancella: è l'unico modo
+    // di tornare indietro, e vale anche come «annulla».
+    //
+    // L'ultimo possesso non si toglie, per la stessa ragione per cui `add` ne
+    // chiede almeno uno: un gioco senza piattaforma è invisibile al filtro
+    // hard del motore decisionale. Chi vuole togliere tutto rimuove il gioco.
+    removeOwnership: oc
+      .input(z.object({ id: z.uuid(), ownershipId: z.uuid() }))
+      .output(BacklogEntrySchema),
+
     // Nasconde il gioco dalla lista, o lo rimette. Il possesso resta: non è
     // «non ce l'ho», è «non lo voglio vedere». E non è `excluded`.
     setHidden: oc

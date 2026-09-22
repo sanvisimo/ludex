@@ -2,18 +2,16 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  createGame,
-  createUser,
-  linkStoreAccount,
-} from '../../test/factories';
+import { createGame, createUser, linkStoreAccount } from '../../test/factories';
 import {
   addOwnershipToEntry,
   addToBacklog,
   ensureOwnerships,
   findEntryById,
+  removeOwnershipFromEntry,
   updateBacklogEntry,
 } from './backlog';
+import { unlinkStoreAccount } from './store-accounts';
 import { deleteUserTag, listUserTags } from './tags';
 
 // Si testa ciò che rompendosi corrompe dati: la scrittura idempotente dei
@@ -526,5 +524,153 @@ describe('il supporto distingue due copie', () => {
     const ownerships = (await findEntryById(userId, entryId))?.ownerships ?? [];
     expect(ownerships).toHaveLength(1);
     expect(ownerships[0]).toMatchObject({ medium: 'physical' });
+  });
+});
+
+// Il caso vero è il disco dedotto: un giocato PSN con `service: other` entra
+// come copia fisica, e un disco prestato da un amico entra come fosse tuo.
+// Cancellare la riga non basta — l'import la rimette entro tre giorni — quindi
+// ciò che si prova qui è che il rifiuto sopravviva al reimport.
+describe('togliere una copia', () => {
+  let userId: string;
+  let entryId: string;
+  let account: { id: string };
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'psn');
+    const game = await createGame();
+    const [entry] = await db
+      .insert(schema.backlog)
+      .values({ userId, gameId: game.id, status: 'backlog' })
+      .returning({ id: schema.backlog.id });
+    entryId = entry!.id;
+  });
+
+  /** Le due copie PS5 di un gioco comprato su disco e poi finito nel Plus. */
+  async function importaDiscoEDigitale() {
+    await ensureOwnerships([
+      {
+        backlogId: entryId,
+        platformSlug: 'sony_playstation5',
+        store: 'psn',
+        storeAccountId: account.id,
+        medium: 'physical',
+      },
+      {
+        backlogId: entryId,
+        platformSlug: 'sony_playstation5',
+        store: 'psn',
+        storeAccountId: account.id,
+        medium: 'digital',
+        subscription: 'ps_plus',
+      },
+    ]);
+  }
+
+  async function possessi() {
+    return (await findEntryById(userId, entryId))?.ownerships ?? [];
+  }
+
+  it('il possesso tolto non torna al reimport', async () => {
+    await importaDiscoEDigitale();
+    const disco = (await possessi()).find((riga) => riga.medium === 'physical');
+
+    expect(await removeOwnershipFromEntry(userId, entryId, disco!.id)).toBe(
+      'ok',
+    );
+    expect(await possessi()).toHaveLength(1);
+
+    await importaDiscoEDigitale();
+
+    // La copia digitale resta: il rifiuto è sulla chiave del vincolo, e due
+    // copie sulla stessa console sono due righe.
+    const dopo = await possessi();
+    expect(dopo).toHaveLength(1);
+    expect(dopo[0]).toMatchObject({ medium: 'digital' });
+  });
+
+  it('riaggiungerlo a mano cancella il rifiuto', async () => {
+    await importaDiscoEDigitale();
+    const disco = (await possessi()).find((riga) => riga.medium === 'physical');
+    await removeOwnershipFromEntry(userId, entryId, disco!.id);
+
+    // È anche il gesto che disfa una rimozione sbagliata: la copia torna a
+    // mano, e il reimport se la riprende con il suo account.
+    await addOwnershipToEntry(userId, entryId, {
+      platformSlug: 'sony_playstation5',
+      medium: 'physical',
+    });
+    await importaDiscoEDigitale();
+
+    const dopo = await possessi();
+    expect(dopo).toHaveLength(2);
+    expect(dopo).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          medium: 'physical',
+          storeAccount: expect.objectContaining({ id: account.id }),
+        }),
+      ]),
+    );
+  });
+
+  it("l'ultimo possesso non si toglie", async () => {
+    await ensureOwnerships([
+      {
+        backlogId: entryId,
+        platformSlug: 'sony_playstation5',
+        store: 'psn',
+        storeAccountId: account.id,
+        medium: 'digital',
+      },
+    ]);
+    const solo = (await possessi())[0];
+
+    expect(await removeOwnershipFromEntry(userId, entryId, solo!.id)).toBe(
+      'last',
+    );
+    expect(await possessi()).toHaveLength(1);
+  });
+
+  it('un altro utente non tocca i possessi altrui', async () => {
+    await importaDiscoEDigitale();
+    const disco = (await possessi()).find((riga) => riga.medium === 'physical');
+    const altro = await createUser();
+
+    expect(await removeOwnershipFromEntry(altro, entryId, disco!.id)).toBe(
+      'not-found',
+    );
+    expect(await possessi()).toHaveLength(2);
+  });
+
+  it('lo scollegamento che cancella i giochi si porta via anche i rifiuti', async () => {
+    // Due account sullo stesso negozio, che è il caso per cui l'account sta
+    // nella chiave. Il rifiuto è sul primo: cancellandolo, la riga di backlog
+    // resta in piedi grazie al secondo, e il rifiuto se ne va da solo — con
+    // `restrict` avrebbe invece bloccato lo scollegamento.
+    const secondo = await linkStoreAccount(userId, 'psn');
+    await importaDiscoEDigitale();
+    await ensureOwnerships([
+      {
+        backlogId: entryId,
+        platformSlug: 'sony_playstation5',
+        store: 'psn',
+        storeAccountId: secondo.id,
+        medium: 'digital',
+      },
+    ]);
+
+    const disco = (await possessi()).find((riga) => riga.medium === 'physical');
+    await removeOwnershipFromEntry(userId, entryId, disco!.id);
+
+    await unlinkStoreAccount(userId, account.id, 'purge');
+
+    const rimasti = await db
+      .select()
+      .from(schema.ownershipRejections)
+      .where(eq(schema.ownershipRejections.backlogId, entryId));
+    expect(rimasti).toHaveLength(0);
+    expect(await possessi()).toHaveLength(1);
   });
 });

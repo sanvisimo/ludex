@@ -197,3 +197,67 @@ export const ownerships = pgTable(
     index('ownerships_backlog_id_idx').on(table.backlogId),
   ],
 );
+
+/**
+ * I possessi che l'utente ha tolto, e che l'import non deve rimettere.
+ *
+ * Cancellare una riga di `ownerships` da sola non basta, ed è la stessa
+ * lezione di `dismiss` sugli scarti: il prossimo import la ricrea, e su PSN
+ * l'aggiornamento automatico gira ogni tre giorni. Misurato sulla libreria di
+ * prova, 2390 possessi su 2392 vengono da un import — una rimozione senza
+ * memoria sarebbe un bottone che non fa niente.
+ *
+ * La memoria sta **qui e non su `ownerships`**, come una colonna `removed_at`
+ * su una riga che resta. Le due tengono lo stesso fatto, ma il flag andrebbe
+ * escluso da ogni lettura dei possessi — la ricerca, il pannello dei filtri, i
+ * conteggi dello scollegamento — e una lettura dimenticata mostrerebbe un
+ * possesso che l'utente ha tolto. Così invece la riga non c'è davvero: nessuna
+ * di quelle letture cambia, e se il rifiuto non mordesse il danno sarebbe un
+ * possesso di troppo, che si vede e si toglie di nuovo.
+ *
+ * Il caso per cui esiste sono i dischi dedotti: un giocato PSN con
+ * `service: other` entra come copia fisica, e un disco prestato da un amico
+ * entra come fosse tuo. È il prezzo dichiarato della chiave larga, e questo è
+ * il gesto che lo paga.
+ */
+export const ownershipRejections = pgTable(
+  'ownership_rejections',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    backlogId: uuid('backlog_id')
+      .notNull()
+      .references(() => backlog.id, { onDelete: 'cascade' }),
+    platformSlug: text('platform_slug')
+      .notNull()
+      .references(() => platforms.slug),
+    store: store('store'),
+    // `cascade` e non `restrict` come sul possesso, ed è la differenza fra
+    // ricordare una copia e ricordare di non volerla: i possessi sopravvivono
+    // allo scollegamento «tieni i giochi» perché sono roba dell'utente, e per
+    // quello la riga dell'account non si cancella. Quando invece si cancella
+    // davvero — lo scollegamento «cancella i giochi» — di quell'account non
+    // resta niente da importare, e un rifiuto che lo nomina non ha più nessuno
+    // da fermare.
+    storeAccountId: uuid('store_account_id').references(
+      () => storeAccounts.id,
+      { onDelete: 'cascade' },
+    ),
+    medium: medium('medium'),
+    ...timestamps,
+  },
+  (table) => [
+    // **La stessa chiave del vincolo sui possessi**, `NULLS NOT DISTINCT`
+    // compreso: un rifiuto che non combacia riga per riga non ferma niente, e
+    // la riga che deve fermare è quella che `ensureOwnerships` sta per
+    // scrivere.
+    unique('ownership_rejections_key')
+      .on(
+        table.backlogId,
+        table.platformSlug,
+        table.store,
+        table.storeAccountId,
+        table.medium,
+      )
+      .nullsNotDistinct(),
+  ],
+);

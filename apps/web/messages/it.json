@@ -178,7 +178,7 @@
     "noMedium": "Non dichiarato",
     "addPlatform": "Aggiungi",
     "pendingOwnerships": "{count, plural, one {# piattaforma da salvare} other {# piattaforme da salvare}}",
-    "ownershipHint": "Le piattaforme si aggiungono soltanto: per toglierne una, per ora, va rimosso e rifatto il gioco.",
+    "ownershipHint": "Una piattaforma si toglie dalla x sul suo riquadro, e l'ultima resta. Toglierla vale anche per i prossimi import: non tornerà finché non la dichiari di nuovo.",
     "save": "Salva",
     "saving": "Salvataggio…",
     "saved": "Modifiche salvate",
@@ -191,7 +191,10 @@
     "deleteTagYes": "Elimina",
     "deleteTagNo": "Annulla",
     "deleteTagFailed": "Non è stato possibile eliminare",
-    "removePlatform": "Togli {name}"
+    "removePlatform": "Togli {name}",
+    "ownershipRemoved": "Piattaforma tolta",
+    "removeOwnershipFailed": "Non è stato possibile toglierla",
+    "undo": "Annulla"
   },
   "attributeKind": {
     "genre": "Generi",

@@ -43,6 +43,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useMediumLabels, useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
+import { useRemoveOwnership } from '@/lib/remove-ownership';
 
 const NO_STORE = '__nessuno__';
 // Vedi `add-game-dialog`: non dichiarare il supporto vuol dire «non lo so», e
@@ -114,6 +115,8 @@ export function EditEntryDialog({
     ...api.tags.list.queryOptions(),
     enabled: entry !== null,
   });
+
+  const removeOwnership = useRemoveOwnership();
 
   const save = useMutation({
     mutationFn: async () => {
@@ -246,16 +249,31 @@ export function EditEntryDialog({
 
           <div className="grid gap-2">
             <Label>{t('ownershipLabel')}</Label>
-            <OwnershipBadges ownerships={entry?.ownerships ?? []} />
+            {/* La x c'è solo con più di una copia: l'ultima non si toglie —
+                un gioco senza piattaforma è invisibile al filtro hard — e un
+                bottone che fallisce sempre è peggio di un bottone che non c'è.
+                Togliere qui non è come disfare un'aggiunta in sospeso: scrive
+                un rifiuto, e serve a non ritrovarsi il prossimo import addosso. */}
+            <OwnershipBadges
+              ownerships={entry?.ownerships ?? []}
+              onRemove={
+                (entry?.ownerships.length ?? 0) > 1 &&
+                !removeOwnership.isPending
+                  ? (ownership) =>
+                      entry &&
+                      removeOwnership.mutate({ id: entry.id, ownership })
+                  : undefined
+              }
+            />
 
             {pending.length > 0 && (
               <div className="grid gap-1">
                 <span className="text-muted-foreground">
                   {t('pendingOwnerships', { count: pending.length })}
                 </span>
-                {/* Solo queste hanno la x: sono aggiunte non ancora scritte, e
-                    disfarle vuol dire non scriverle. Togliere un possesso già
-                    salvato è un'altra cosa e non c'è. */}
+                {/* Anche queste hanno la x, ma è un altro gesto: sono aggiunte
+                    non ancora scritte, e disfarle vuol dire solo non
+                    scriverle — niente da rimuovere, niente da rifiutare. */}
                 <OwnershipBadges
                   ownerships={pending}
                   onRemove={(row) =>

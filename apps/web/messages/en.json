@@ -178,7 +178,7 @@
     "noMedium": "Unspecified",
     "addPlatform": "Add",
     "pendingOwnerships": "{count, plural, one {# platform to save} other {# platforms to save}}",
-    "ownershipHint": "Platforms can only be added for now: to drop one, remove the game and add it again.",
+    "ownershipHint": "Drop a platform with the x on its chip; the last one stays. Dropping it also applies to future imports: it won't come back until you add it again.",
     "save": "Save",
     "saving": "Saving…",
     "saved": "Changes saved",
@@ -191,7 +191,10 @@
     "deleteTagYes": "Delete",
     "deleteTagNo": "Cancel",
     "deleteTagFailed": "Could not delete",
-    "removePlatform": "Remove {name}"
+    "removePlatform": "Remove {name}",
+    "ownershipRemoved": "Platform removed",
+    "removeOwnershipFailed": "I couldn't remove it",
+    "undo": "Undo"
   },
   "attributeKind": {
     "genre": "Genres",
