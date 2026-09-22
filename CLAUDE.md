@@ -416,10 +416,15 @@ Due cose che restano da decidere, e che chi arriva dopo deve trovare scritte:
 - **allo step 13 i nascosti escono dai candidati, ma non insegnano niente.** È la
   differenza con `excluded` portata sulla query: chi non vuole vedere un gioco
   non vuole nemmeno che gli venga proposto, ma non ha detto che non gli piace.
-- **«Rimuovi» accanto a «Nascondi» è ambiguo.** Su un gioco importato «Rimuovi»
-  serve a poco: il prossimo import lo rimette. Per ora stanno tutti e due;
-  limitare «Rimuovi» ai giochi senza possessi da import è un passo da
-  decidere.
+- **«Rimuovi» accanto a «Nascondi» era ambiguo**, e la risposta non è stata
+  togliere il bottone ma dire la verità prima di eseguirlo. Su un gioco
+  importato «Rimuovi» non dura — il prossimo import ricrea riga e possessi — e
+  ciò che **non** torna è la roba dell'utente, che la cascade si porta via:
+  l'unico effetto duraturo è cancellare voto, note e tag e lasciare il gioco.
+  Quindi il gesto passa da una conferma che elenca solo ciò che c'è davvero
+  («perderai il voto» su un gioco non votato insegna a non leggere i dialoghi)
+  e, dove il gioco tornerebbe, offre «Nascondi» accanto — accanto e non al
+  posto, perché la scelta resta di chi guarda.
 
 ##### Togliere una copia
 

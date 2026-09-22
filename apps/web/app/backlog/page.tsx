@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { AddGameDialog } from '@/components/add-game-dialog';
 import { BacklogFilters } from '@/components/backlog-filters';
 import { EditEntryDialog } from '@/components/edit-entry-dialog';
+import { RemoveEntryDialog } from '@/components/remove-entry-dialog';
 import { EntryTags } from '@/components/entry-tags';
 import { GameCover } from '@/components/game-cover';
 import { GameDuration } from '@/components/game-duration';
@@ -74,6 +75,7 @@ export default function BacklogPage() {
   const setHidden = useSetEntryHidden();
 
   const [editing, setEditing] = useState<BacklogEntry | null>(null);
+  const [removing, setRemoving] = useState<BacklogEntry | null>(null);
 
   // La riga in modifica si ripesca dalla lista fresca: dopo il salvataggio
   // `editing` sarebbe la copia vecchia, con i tag di prima.
@@ -92,16 +94,6 @@ export default function BacklogPage() {
     onSuccess: refresh,
     onError: (error) =>
       toast.error(errorMessage(error, { fallback: t('statusFailed') })),
-  });
-
-  const remove = useMutation({
-    mutationFn: (id: string) => client.backlog.remove({ id }),
-    onSuccess: async () => {
-      await refresh();
-      toast.success(t('removed'));
-    },
-    onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('removeFailed') })),
   });
 
   const entries = backlog.data?.entries ?? [];
@@ -264,8 +256,7 @@ export default function BacklogPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => remove.mutate(entry.id)}
-                        disabled={remove.isPending}
+                        onClick={() => setRemoving(entry)}
                       >
                         {t('remove')}
                       </Button>
@@ -288,6 +279,13 @@ export default function BacklogPage() {
           )}
         </>
       )}
+
+      <RemoveEntryDialog
+        entry={removing}
+        onOpenChange={(open) => {
+          if (!open) setRemoving(null);
+        }}
+      />
 
       <EditEntryDialog
         entry={editingEntry}

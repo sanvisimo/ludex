@@ -35,8 +35,6 @@
     "emptyTitle": "Your backlog is empty.",
     "emptyHint": "Add your first game: search the title, pick the platform you own it on, and it shows up here.",
     "remove": "Remove",
-    "removed": "Removed from the backlog",
-    "removeFailed": "I couldn't remove the game",
     "statusFailed": "I couldn't change the status",
     "edit": "Edit",
     "noMatchTitle": "No game matches.",
@@ -413,5 +411,19 @@
   "medium": {
     "digital": "Digital",
     "physical": "Physical"
+  },
+  "removeEntry": {
+    "title": "Remove this game?",
+    "ownerships": "{count, plural, one {Your single copy goes} other {All # of your copies go}} away, on every platform.",
+    "personal": "You also lose what you added yourself: {what}.",
+    "rating": "the rating",
+    "notes": "the notes",
+    "tags": "tags and categories",
+    "comesBack": "This game came from an import: the next library refresh will put it back in the list, but the rating, notes and tags won't come back. To stop seeing it, hide it.",
+    "hideInstead": "Hide",
+    "cancel": "Cancel",
+    "confirm": "Remove",
+    "removed": "Removed from your backlog",
+    "failed": "I couldn't remove the game"
   }
 }

@@ -35,8 +35,6 @@
     "emptyTitle": "Il backlog è vuoto.",
     "emptyHint": "Aggiungi il primo gioco: cerca il titolo, scegli su che piattaforma ce l'hai, e comparirà qui.",
     "remove": "Rimuovi",
-    "removed": "Rimosso dal backlog",
-    "removeFailed": "Non sono riuscito a rimuovere il gioco",
     "statusFailed": "Non sono riuscito a cambiare lo stato",
     "edit": "Modifica",
     "noMatchTitle": "Nessun gioco corrisponde.",
@@ -413,5 +411,19 @@
   "medium": {
     "digital": "Digitale",
     "physical": "Fisico"
+  },
+  "removeEntry": {
+    "title": "Rimuovere il gioco?",
+    "ownerships": "{count, plural, one {Se ne va il possesso che hai} other {Se ne vanno i # possessi che hai}}, su tutte le piattaforme.",
+    "personal": "Perdi anche quello che ci hai messo tu: {what}.",
+    "rating": "il voto",
+    "notes": "le note",
+    "tags": "tag e categorie",
+    "comesBack": "Questo gioco viene da un import: il prossimo aggiornamento della libreria lo rimetterà in lista, ma il voto, le note e i tag non torneranno. Per non vederlo più, nascondilo.",
+    "hideInstead": "Nascondi",
+    "cancel": "Annulla",
+    "confirm": "Rimuovi",
+    "removed": "Rimosso dal backlog",
+    "failed": "Non sono riuscito a rimuovere il gioco"
   }
 }
