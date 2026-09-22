@@ -6,18 +6,27 @@
  * `next/*`, né `@repo/contracts`, né `@repo/db`. Un componente che conoscesse
  * il tipo `BacklogEntry` smetterebbe di essere un pezzo di design system e
  * diventerebbe una schermata — e su React Native un import di `next/image`
- * romperebbe il bundle. La regola è scritta in `packages/eslint-config` al
- * passo 6, ma vale da adesso.
+ * romperebbe il bundle.
  *
- * I componenti di Tamagui si ri-esportano da qui, così le app importano da un
- * posto solo e il giorno che un pezzo va sostituito con una versione nostra
- * cambia questo file, non le schermate.
+ * **Niente `export * from 'tamagui'`**, ed è una scelta e non una dimenticanza:
+ * Tamagui esporta `Button`, `Card`, `Dialog`, `Input`, `Label`, `Select`,
+ * `Switch` e `TextArea`, cioè otto dei nostri quindici nomi. Con l'export
+ * generico `@repo/ui` ne esporterebbe due per ciascuno e a vincere sarebbe
+ * l'ultima riga del file — un modo eccellente di usare per mesi un componente
+ * diverso da quello che si crede. Qui si esporta **un** `Button`: il nostro.
+ * Chi ha bisogno del pezzo grezzo lo importa da `tamagui` *dentro* questo
+ * package, mai dalle app.
  */
-export * from 'tamagui';
 
+// I primitivi di Tamagui che le app usano così come sono.
+export * from './primitives';
+
+// I nostri componenti.
+export { Button, type ButtonProps } from './components/button';
+
+// Token, temi e configurazione.
 export { config } from './config';
 export type { AppConfig } from './config';
-
 export { themes } from './themes';
 export { accenti, accentoPredefinito, base, stati } from './palettes';
 export type { Accento } from './palettes';
