@@ -39,6 +39,16 @@ export {
   type CardProps,
 } from './components/card';
 export {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  type ComboboxInputProps,
+  type ComboboxProps,
+} from './components/combobox';
+export {
   Dialog,
   DialogClose,
   DialogContent,
