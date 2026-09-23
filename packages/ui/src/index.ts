@@ -25,6 +25,7 @@ export * from './primitives';
 export { Badge, type BadgeProps } from './components/badge';
 export { Button, type ButtonProps } from './components/button';
 export { Label, type LabelProps } from './components/label';
+export { Skeleton, type SkeletonProps } from './components/skeleton';
 
 // Le icone stanno in `@repo/ui/icons`, non qui: sono oltre millecinquecento
 // nomi e affogherebbero i componenti nell'autocompletamento.
