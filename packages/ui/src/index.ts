@@ -22,6 +22,7 @@
 export * from './primitives';
 
 // I nostri componenti.
+export { Badge, type BadgeProps } from './components/badge';
 export { Button, type ButtonProps } from './components/button';
 
 // Le icone stanno in `@repo/ui/icons`, non qui: sono oltre millecinquecento
