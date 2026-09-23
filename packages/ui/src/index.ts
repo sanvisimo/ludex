@@ -22,6 +22,12 @@
 export * from './primitives';
 
 // I nostri componenti.
+export {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  type AlertProps,
+} from './components/alert';
 export { Badge, type BadgeProps } from './components/badge';
 export { Button, type ButtonProps } from './components/button';
 export {
