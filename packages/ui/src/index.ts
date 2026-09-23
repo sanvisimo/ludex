@@ -39,6 +39,13 @@ export {
   type CardProps,
 } from './components/card';
 export { Input, type InputProps } from './components/input';
+export {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  type InputGroupProps,
+} from './components/input-group';
 export { Label, type LabelProps } from './components/label';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
 export { Textarea, type TextareaProps } from './components/textarea';
