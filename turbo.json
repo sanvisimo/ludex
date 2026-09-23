@@ -20,7 +20,8 @@
     "OPENCRITIC_API_KEY",
     "STORE_TOKEN_KEY",
     "METACRITIC_API_KEY",
-    "BULL_BOARD_PORT"
+    "BULL_BOARD_PORT",
+    "CHROMATIC_PROJECT_TOKEN"
   ],
   "globalDependencies": [".env"],
   "tasks": {

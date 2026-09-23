@@ -67,6 +67,7 @@ Tutto TypeScript/Node. Non introdurre altri linguaggi nello stack.
 | `packages/db`        | schema Drizzle + client, **unica fonte di verità**. Dipendenze Node |
 | `packages/auth`      | istanza Better Auth (server) + `authClient` per web e mobile        |
 | `packages/contracts` | router oRPC + schemi Zod condivisi                                  |
+| `packages/ui`        | Tamagui, design system condiviso fra web e mobile                   |
 
 Regole di confine:
 
@@ -78,9 +79,11 @@ Regole di confine:
 - **`apps/mobile` non importa mai `packages/db`**, o il driver Postgres finisce nel
   bundle React Native. Se serve un tipo derivato dallo schema, va ri-esportato come
   tipo puro da `packages/contracts`.
-- **Web e mobile non condividono componenti UI.** Sono due app distinte con UI
-  propria; si condividono solo tipi e client API. Non introdurre un layer di
-  componenti cross-platform senza una decisione esplicita.
+- **Web e mobile condividono i componenti UI tramite `packages/ui`** (Tamagui):
+  era escluso perché il framework web di allora non lo permetteva. Qualunque sia
+  il framework scelto per il web (la scelta è aperta), Tamagui compila anche su
+  `react-native-web`. Resta valido che `apps/mobile` non importa mai
+  `packages/db`.
 
 ## Fonti dati esterne
 
@@ -1218,6 +1221,14 @@ banali: se non è stata analizzata, non si scrive.
 
 In pratica: leggere il codice e il contesto esistente → esporre cosa si è trovato
 e le opzioni → attendere la decisione → solo a quel punto implementare.
+
+**I piani stanno in `plans/`**, uno per lotto, col nome del lotto
+(`12a-design-system.md`). La modalità piano li scrive altrove, fuori dal repo:
+a decisione presa il piano si sposta qui, e da qui si aggiorna mentre il lotto
+procede — le verifiche che rimandava, le cose misurate che l'hanno smentito,
+l'ordine cambiato in corsa. Un piano che vive solo nella cartella di Claude è
+un piano che nessun altro vede e che sparisce cambiando macchina; e siccome
+sta nel repo, i link ai file sono relativi a `plans/`, cioè `../`.
 
 ### Test
 

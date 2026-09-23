@@ -18,6 +18,10 @@ coverage
 # Turbo
 .turbo
 
+# Storybook
+storybook-static
+packages/*/build-storybook.log
+
 # Vercel
 .vercel
 

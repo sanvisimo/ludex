@@ -10,7 +10,11 @@
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "test": "vitest run",
+    "chromatic": "dotenv -e ../../.env -- chromatic"
   },
   "dependencies": {
     "@tamagui/colors": "^2.7.0",
@@ -25,15 +29,31 @@
     "react-native-web": "*"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^5.3.1",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/addon-themes": "^10.6.0",
+    "@storybook/addon-vitest": "^10.6.0",
+    "@storybook/react-native-web-vite": "^10.6.0",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
+    "@vitest/browser": "^4.1.11",
+    "@vitest/browser-playwright": "^4.1.11",
+    "@vitest/coverage-v8": "4.1.11",
+    "chromatic": "^18.9.4",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9.39.1",
+    "playwright": "^1.63.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-native": "^0.87.1",
     "react-native-web": "^0.21.0",
-    "typescript": "5.9.2"
+    "storybook": "^10.6.0",
+    "typescript": "5.9.2",
+    "vite": "^8.3.0",
+    "vitest": "^4.1.11"
   },
   "peerDependenciesMeta": {
     "react-native": {
