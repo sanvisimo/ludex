@@ -1,14 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
+import { Pencil, SlidersHorizontal, X } from '../icons';
 import { XStack, YStack, Text } from '../primitives';
 import { Button } from './button';
 
 const meta = {
-  title: 'Componenti/Button',
+  title: 'Components/Button',
   component: Button,
   args: {
-    children: 'Aggiungi un gioco',
+    children: 'Add Game',
     onPress: fn(),
   },
   argTypes: {
@@ -27,38 +28,42 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Predefinito: Story = {};
+export const Default: Story = {
+  args: {
+    disabled: false,
+  },
+};
 
 /**
  * Le cinque varianti una accanto all'altra: è l'unico modo di accorgersi che
  * due si somigliano troppo, che è un difetto che guardandole una per volta non
  * si vede mai.
  */
-export const Varianti: Story = {
+export const Variants: Story = {
   render: () => (
     <XStack gap="$3" items="center" flexWrap="wrap">
-      <Button>Predefinito</Button>
-      <Button variant="outline">Contorno</Button>
-      <Button variant="secondary">Secondario</Button>
-      <Button variant="ghost">Silenzioso</Button>
-      <Button variant="destructive">Scollega</Button>
+      <Button>Default</Button>
+      <Button variant="outline">Outline</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="ghost">Ghost</Button>
+      <Button variant="destructive">Destructive</Button>
     </XStack>
   ),
 };
 
-export const Taglie: Story = {
+export const Sizes: Story = {
   render: () => (
     <XStack gap="$3" items="center">
-      <Button>Normale</Button>
-      <Button size="sm">Piccolo</Button>
+      <Button>Normal</Button>
+      <Button size="sm">small</Button>
       <Button size="icon" aria-label="Filtri">
-        ⚙
+        <SlidersHorizontal size={16} />
       </Button>
-      <Button size="icon-sm" variant="ghost" aria-label="Modifica">
-        ✎
+      <Button size="icon-sm" aria-label="Modifica">
+        <Pencil size={14} />
       </Button>
-      <Button size="icon-xs" variant="ghost" aria-label="Rimuovi">
-        ×
+      <Button size="icon-xs" aria-label="Rimuovi">
+        <X size={12} />
       </Button>
     </XStack>
   ),
@@ -69,21 +74,21 @@ export const Taglie: Story = {
  * un'opacità, e su `ghost` — che è già trasparente — bisogna guardare se resta
  * leggibile o se sparisce del tutto.
  */
-export const Disabilitato: Story = {
+export const Disabled: Story = {
   render: () => (
     <XStack gap="$3" items="center" flexWrap="wrap">
-      <Button disabled>Predefinito</Button>
+      <Button disabled>Default</Button>
       <Button variant="outline" disabled>
-        Contorno
+        Outline
       </Button>
       <Button variant="secondary" disabled>
-        Secondario
+        Secondary
       </Button>
       <Button variant="ghost" disabled>
-        Silenzioso
+        Ghost
       </Button>
       <Button variant="destructive" disabled>
-        Scollega
+        Destructive
       </Button>
     </XStack>
   ),
@@ -94,16 +99,16 @@ export const Disabilitato: Story = {
  * mostrare: lì se ne vede uno per volta, e le differenze di peso fra chiaro e
  * scuro si notano solo guardandoli insieme.
  */
-export const DueTemi: Story = {
+export const Themes: Story = {
   parameters: { theme: 'scuro' },
   render: () => (
     <XStack gap="$4" items="flex-start">
       <YStack gap="$2" bg="$background" p="$3" rounded="$4">
         <Text color="$color11" fontSize={12}>
-          scuro
+          Dark
         </Text>
-        <Button>Aggiungi</Button>
-        <Button variant="outline">Contorno</Button>
+        <Button>Add</Button>
+        <Button variant="outline">Outline</Button>
       </YStack>
     </XStack>
   ),
@@ -115,19 +120,19 @@ export const DueTemi: Story = {
  * react-native-web il bottone è un `div` con un gestore, non un `<button>`, e
  * «disabilitato» è una cosa che il componente deve fare per conto suo.
  */
-export const Interazione: Story = {
+export const Interaction: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByText('Aggiungi un gioco'));
+    await userEvent.click(canvas.getByText('Add Game'));
     await expect(args.onPress).toHaveBeenCalledTimes(1);
   },
 };
 
-export const DisabilitatoNonRisponde: Story = {
+export const DisabledNotRespond: Story = {
   args: { disabled: true },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByText('Aggiungi un gioco'));
+    await userEvent.click(canvas.getByText('Add Game'));
     await expect(args.onPress).not.toHaveBeenCalled();
   },
 };

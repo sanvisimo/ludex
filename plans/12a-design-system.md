@@ -210,6 +210,48 @@ Due cose da non rifare male, perché `chromatic init` le lascia così:
   Git», che è fuorviante — il repository c'è, è il lavoro che non è ancora
   dentro. Genera anche `build-storybook.log`, da ignorare.
 
+**Le icone sono lucide, e il pacchetto giusto ha un `-2` in fondo.**
+`@tamagui/lucide-icons-2` (2.7.7, stesso core del nostro) rende su entrambe le
+piattaforme. Esiste anche `@tamagui/lucide-icons` **senza** il `-2`, fermo a un
+`2.0.0-rc` di marzo che pinna un `@tamagui/core` diverso: due copie di core
+nello stesso bundle, e il contesto del tema si spacca. Stanno dietro
+`@repo/ui/icons`, un sottopercorso suo, perché sono oltre millecinquecento nomi
+e in `index.ts` affogherebbero i componenti.
+
+Su Vite chiedono **una riga di configurazione, e senza quella non rendono**:
+
+    import { tamaguiAliases } from '@tamagui/vite-plugin'
+    // in resolve.alias:
+    ...tamaguiAliases({ svg: true })
+
+`svg: true` sostituisce l'intero `react-native-svg` con
+`@tamagui/react-native-svg`, che disegna SVG del DOM. È la soluzione giusta per
+la ragione più semplice: **sul web quella libreria non serve**, il browser
+l'SVG ce l'ha già.
+
+Vale la pena tenere scritto cosa succede senza, perché l'errore non nomina né
+le icone né l'SVG e ci si perde un pomeriggio. `react-native-svg` tiene la sua
+versione per browser in file gemelli (`ReactNativeSVG.web.js` accanto a
+`ReactNativeSVG.js`); Metro e webpack sanno che sul web va preso il gemello,
+Vite no, e carica quello per telefoni, che chiede a React Native un registro di
+immagini che nel browser non esiste. Dirglielo a mano **non basta**: Vite 8
+prepara le librerie con rolldown, che ignora sia `resolve.alias` sia
+`resolve.extensions`; e spegnere quella preparazione scopre il difetto gemello,
+un parser in CommonJS in mezzo a file ESM che proprio quella preparazione
+traduceva. È una tenaglia senza uscita, ed è la ragione per cui la via è
+togliere di mezzo la libreria invece di configurarla.
+
+Due cose trovate per strada:
+
+- **`react-native-web@0.21.2` ha una dipendenza fantasma**: importa
+  `@react-native/assets-registry/registry` senza dichiararlo. Con npm o yarn
+  l'hoisting lo nasconde; con pnpm quel modulo non esiste e va installato a
+  parte.
+- **`tamaguiAliases` ha anche `rnwLite`**, che sostituisce `react-native-web`
+  con una versione ridotta di Tamagui. È la risposta alla domanda sul peso di
+  RNW lasciata al 12b: quando ci sarà un bundle vero da pesare, si prova quello
+  prima di rinunciare a `ScrollView` e `Spinner`.
+
 Due note minori ma da non riscoprire: `react-native` entra come devDependency
 di `packages/ui` (20 MB) perché il framework lo dichiara peer **non** opzionale,
 e resta un peer scontento — `react-native@0.87.1` vuole `react ^19.2.3` e il

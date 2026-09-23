@@ -42,13 +42,13 @@ export const base = { light: slate, dark: slateDark };
  * Teal e non viola: il viola e il magenta sono dappertutto sulle copertine, e
  * un accento che si confonde con le immagini smette di dire "questo si clicca".
  */
-export const accenti = {
+export const accents = {
   teal: { light: teal, dark: tealDark },
 } as const;
 
-export type Accento = keyof typeof accenti;
+export type Accent = keyof typeof accents;
 
-export const accentoPredefinito: Accento = 'teal';
+export const defaultAccent: Accent = 'teal';
 
 /**
  * I colori di stato, che restano gli stessi qualunque accento si scelga: sono
@@ -59,14 +59,16 @@ export const accentoPredefinito: Accento = 'teal';
  * Tre e non dodici: Tamagui ne genererebbe uno per ogni scala Radix, e gli
  * altri nove sarebbero temi che nessuna schermata chiede mai.
  */
-export const stati = {
+export const states = {
   red: { light: red, dark: redDark },
   green: { light: green, dark: greenDark },
   amber: { light: amber, dark: amberDark },
 } as const;
 
 /** Da scala Radix (`teal1`…`teal12`) alle chiavi che Tamagui vuole per l'accento. */
-export function toAccent(scala: Record<string, string>): Record<string, string> {
+export function toAccent(
+  scala: Record<string, string>,
+): Record<string, string> {
   return Object.fromEntries(
     Object.values(scala).map((valore, i) => [`accent${i + 1}`, valore]),
   );

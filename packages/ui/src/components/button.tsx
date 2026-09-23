@@ -62,25 +62,43 @@ export const Button = styled(ButtonBase, {
         hoverStyle: { bg: '$accent10' },
         pressStyle: { bg: '$accent8' },
       },
+      /**
+       * Il bordo è `$color9` e non `$borderColor`, ed è una scelta **misurata**:
+       * `$borderColor` è il passo 4 della scala, che contro lo sfondo dà 1.20
+       * nel tema scuro — un bordo che non c'è. Sotto quel numero le tre
+       * varianti senza tinta (questa, `secondary`, `ghost`) stavano tutte in
+       * 0.20 punti di contrasto, cioè erano lo stesso colore.
+       *
+       * `$color9` è l'unico passo grigio sopra la soglia WCAG di 3:1 in
+       * **entrambi** i temi (3.44 scuro, 3.15 chiaro), e per un bottone che il
+       * solo bordo identifica quella soglia è la regola giusta. Il prezzo
+       * accettato è un contorno più marcato di quello di partenza: le scale
+       * Radix mettono al passo 9 la tinta piena, non un filo.
+       */
       outline: {
         bg: '$background',
-        borderColor: '$borderColor',
+        borderColor: '$color9',
         color: '$color12',
-        hoverStyle: { bg: '$color3', borderColor: '$borderColorHover' },
-        pressStyle: { bg: '$color4' },
+        hoverStyle: { bg: '$color3', borderColor: '$color10' },
+        pressStyle: { bg: '$color4', borderColor: '$color10' },
       },
       secondary: {
-        bg: '$color3',
+        bg: '$color6',
         color: '$color12',
-        hoverStyle: { bg: '$color4' },
-        pressStyle: { bg: '$color5' },
+        // Sopra il base, non sotto: con `$color4` e `$color5` il bottone si
+        // **abbassava** al passaggio del mouse, che è il contrario di ciò che
+        // un rilievo deve fare.
+        hoverStyle: { bg: '$color7' },
+        pressStyle: { bg: '$color8' },
       },
       /** Il più usato: sta in silenzio finché non lo si sfiora. */
       ghost: {
         bg: 'transparent',
         color: '$color11',
-        hoverStyle: { bg: '$color3', color: '$color12' },
-        pressStyle: { bg: '$color4' },
+        hoverStyle: { bg: '$color6', color: '$color12' },
+        // Premendo deve succedere qualcosa: con lo stesso `$color6` dell'hover
+        // il clic non dava nessun ritorno.
+        pressStyle: { bg: '$color7', color: '$color12' },
       },
       /**
        * Tinta e non superficie piena, come prima: un rosso pieno accanto a

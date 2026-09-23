@@ -1,6 +1,6 @@
 import { createV5Theme } from '@tamagui/config/v5';
 
-import { accenti, accentoPredefinito, base, stati, toAccent } from './palettes';
+import { accents, defaultAccent, base, states, toAccent } from './palettes';
 
 /**
  * **Livello 2 — i semantici.**
@@ -21,16 +21,16 @@ import { accenti, accentoPredefinito, base, stati, toAccent } from './palettes';
  *   (`dark_Button`, `light_Input`…), che Tamagui stesso dichiara deprecati in
  *   favore degli stili sul componente: da soli erano due terzi del peso.
  */
-const accento = accenti[accentoPredefinito];
+const accent = accents[defaultAccent];
 
 export const themes = createV5Theme({
   lightPalette: Object.values(base.light),
   darkPalette: Object.values(base.dark),
   accent: {
-    light: toAccent(accento.light),
-    dark: toAccent(accento.dark),
+    light: toAccent(accent.light),
+    dark: toAccent(accent.dark),
   },
-  childrenThemes: stati,
+  childrenThemes: states,
   componentThemes: false,
 });
 

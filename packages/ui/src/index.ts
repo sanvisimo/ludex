@@ -24,9 +24,12 @@ export * from './primitives';
 // I nostri componenti.
 export { Button, type ButtonProps } from './components/button';
 
+// Le icone stanno in `@repo/ui/icons`, non qui: sono oltre millecinquecento
+// nomi e affogherebbero i componenti nell'autocompletamento.
+
 // Token, temi e configurazione.
 export { config } from './config';
 export type { AppConfig } from './config';
 export { themes } from './themes';
-export { accenti, accentoPredefinito, base, stati } from './palettes';
-export type { Accento } from './palettes';
+export { accents, defaultAccent, base, states } from './palettes';
+export type { Accent } from './palettes';

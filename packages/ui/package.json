@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./config": "./src/config.ts",
-    "./palettes": "./src/palettes.ts"
+    "./palettes": "./src/palettes.ts",
+    "./icons": "./src/icons.ts"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
@@ -20,16 +21,19 @@
     "@tamagui/colors": "^2.7.0",
     "@tamagui/config": "^2.7.0",
     "@tamagui/core": "^2.7.0",
+    "@tamagui/lucide-icons-2": "^2.7.7",
     "@tamagui/web": "^2.7.0",
     "tamagui": "^2.7.0"
   },
   "peerDependencies": {
     "react": ">=19",
     "react-native": "*",
+    "react-native-svg": "*",
     "react-native-web": "*"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.3.1",
+    "@react-native/assets-registry": "^0.87.1",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@storybook/addon-a11y": "^10.6.0",
@@ -37,6 +41,8 @@
     "@storybook/addon-themes": "^10.6.0",
     "@storybook/addon-vitest": "^10.6.0",
     "@storybook/react-native-web-vite": "^10.6.0",
+    "@tamagui/react-native-svg": "^2.7.7",
+    "@tamagui/vite-plugin": "^2.7.7",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "@vitest/browser": "^4.1.11",
@@ -49,6 +55,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-native": "^0.87.1",
+    "react-native-svg": "^15.15.5",
     "react-native-web": "^0.21.0",
     "storybook": "^10.6.0",
     "typescript": "5.9.2",
@@ -60,6 +67,9 @@
       "optional": true
     },
     "react-native-web": {
+      "optional": true
+    },
+    "react-native-svg": {
       "optional": true
     }
   }
