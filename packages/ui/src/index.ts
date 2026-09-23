@@ -50,6 +50,20 @@ export {
   type DialogContentProps,
   type DialogProps,
 } from './components/dialog';
+export {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  type DropdownMenuContentProps,
+  type DropdownMenuItemProps,
+  type DropdownMenuProps,
+} from './components/dropdown-menu';
 export { Input, type InputProps } from './components/input';
 export {
   InputGroup,
