@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { Pencil, SlidersHorizontal, X } from '../icons';
-import { XStack, YStack, Text } from '../primitives';
+import { Text, Theme, XStack, YStack } from '../primitives';
 import { Button } from './button';
 
 const meta = {
@@ -100,16 +100,19 @@ export const Disabled: Story = {
  * scuro si notano solo guardandoli insieme.
  */
 export const Themes: Story = {
-  parameters: { theme: 'scuro' },
   render: () => (
     <XStack gap="$4" items="flex-start">
-      <YStack gap="$2" bg="$background" p="$3" rounded="$4">
-        <Text color="$color11" fontSize={12}>
-          Dark
-        </Text>
-        <Button>Add</Button>
-        <Button variant="outline">Outline</Button>
-      </YStack>
+      {(['dark', 'light'] as const).map((name) => (
+        <Theme key={name} name={name}>
+          <YStack gap="$2" bg="$background" p="$3" rounded="$4">
+            <Text color="$color11" fontSize={12}>
+              {name === 'dark' ? 'Dark' : 'Light'}
+            </Text>
+            <Button>Add</Button>
+            <Button variant="outline">Outline</Button>
+          </YStack>
+        </Theme>
+      ))}
     </XStack>
   ),
 };

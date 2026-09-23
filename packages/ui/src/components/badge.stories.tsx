@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 
 import { X } from '../icons';
-import { XStack, YStack, Text } from '../primitives';
+import { Text, Theme, XStack, YStack } from '../primitives';
 import { Badge } from './badge';
 import { Button } from './button';
 
@@ -74,19 +74,22 @@ export const WithRemove: Story = {
 
 /** Chiaro e scuro affiancati, come per il Button. */
 export const Themes: Story = {
-  parameters: { theme: 'scuro' },
   render: () => (
     <XStack gap="$4" items="flex-start">
-      <YStack gap="$2" bg="$background" p="$3" rounded="$4">
-        <Text color="$color11" fontSize={12}>
-          Dark
-        </Text>
-        <XStack gap="$2">
-          <Badge>Default</Badge>
-          <Badge variant="secondary">Secondary</Badge>
-          <Badge variant="outline">Outline</Badge>
-        </XStack>
-      </YStack>
+      {(['dark', 'light'] as const).map((name) => (
+        <Theme key={name} name={name}>
+          <YStack gap="$2" bg="$background" p="$3" rounded="$4">
+            <Text color="$color11" fontSize={12}>
+              {name === 'dark' ? 'Dark' : 'Light'}
+            </Text>
+            <XStack gap="$2">
+              <Badge>Default</Badge>
+              <Badge variant="secondary">Secondary</Badge>
+              <Badge variant="outline">Outline</Badge>
+            </XStack>
+          </YStack>
+        </Theme>
+      ))}
     </XStack>
   ),
 };

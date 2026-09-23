@@ -1,0 +1,2210 @@
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '795ae945d13c93387f9ad6129db9d3d5f03759d5
+           d8742433675e8c5ede9b745f0005fd7b53064854' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: 'a8997fdd5bd46e4fe3715f8c2f7dbd796fe5e37a' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '0cb11841459e371e01b21bd9e2f9f00d50ff86b5' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: 'chromatic.config.json' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0
+           d6b91b31fd49583ffd968dee923b5508c527a8ae' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '56d1ee84c392bc102c23c293a74daee0b63076da' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: 'chromatic.config.json' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0
+           d6b91b31fd49583ffd968dee923b5508c527a8ae' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '56d1ee84c392bc102c23c293a74daee0b63076da' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: 'chromatic.config.json' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0
+           d6b91b31fd49583ffd968dee923b5508c527a8ae' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '56d1ee84c392bc102c23c293a74daee0b63076da' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: execGitCommand: git config --get remote.origin.url 
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git' 
+Chromatic: execGitCommand: git branch --show-current 
+Chromatic: execGitCommand result: 'main' 
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"  
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito' 
+Chromatic: execGitCommand: git config user.email 
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com' 
+Chromatic: execGitCommand: git rev-parse --show-toplevel 
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex' 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached 
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d 
+Chromatic: execGitCommand: git ls-files --others --exclude-standard 
+Chromatic: execGitCommand result: '' 
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx' 
+Chromatic: execGitCommand result: 'chromatic.config.json' 
+Chromatic: execGitCommand: git hash-object --stdin-paths 
+Chromatic: execGitCommand result: '125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0
+           d6b91b31fd49583ffd968dee923b5508c527a8ae' 
+Chromatic: execGitCommand: git hash-object --stdin 
+Chromatic: execGitCommand result: '56d1ee84c392bc102c23c293a74daee0b63076da' 
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository 
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter 
+Chromatic: Chromatic CLI v18.9.4
+           https://www.chromatic.com/docs/cli 
+Chromatic: Authenticating with Chromatic 
+Chromatic:     → Connecting to https://index.chromatic.com 
+Chromatic: Skipping update check
+Chromatic: execGitCommand: git config --get remote.origin.url
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git'
+Chromatic: execGitCommand: git branch --show-current
+Chromatic: execGitCommand result: 'main'
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito'
+Chromatic: execGitCommand: git config user.email
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com'
+Chromatic: execGitCommand: git rev-parse --show-toplevel
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex'
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d
+Chromatic: execGitCommand: git ls-files --others --exclude-standard
+Chromatic: execGitCommand result: ''
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx'
+Chromatic: execGitCommand result: 'chromatic.config.json
+           chromatic.log'
+Chromatic: execGitCommand: git hash-object --stdin-paths
+Chromatic: execGitCommand error: Command failed with exit code 128: git hash-object --stdin-paths
+           
+           125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0
+           d6b91b31fd49583ffd968dee923b5508c527a8ae
+           fatal: could not open 'chromatic.log' for reading: No such file or directory
+Chromatic: Authenticated with Chromatic
+Chromatic:     → Using project ID 'Project:6148977871d76f003ae03851' and user token
+Chromatic: Retrieving git information
+Chromatic: execGitCommand: git --version
+Chromatic: execGitCommand result: 'git version 2.43.0'
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito'
+Chromatic: execGitCommand: git branch --show-current
+Chromatic: execGitCommand result: 'main'
+Chromatic: execGitCommand: git --no-pager log -n 1 --skip=1 --format="%H"
+Chromatic: execGitCommand result: '3c8a2ec5981ec08a8160b3d175c41d89865a1bee'
+Chromatic: git info: {"commit":{"commit":"589e60714b38e62042df01e510186fc76a55a4f8","committedAt":1790160765000,"committerEmail":"sanvi.simo@gmail.com","committerName":"Simone Sanvito"},"branch":"main","fromCI":false}
+Chromatic: execGitCommand: git config user.email
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com'
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d
+Chromatic: execGitCommand: git ls-files --others --exclude-standard
+Chromatic: execGitCommand result: ''
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx'
+Chromatic: execGitCommand result: 'chromatic.config.json
+           chromatic.log'
+Chromatic: execGitCommand: git hash-object --stdin-paths
+Chromatic: execGitCommand error: Command failed with exit code 128: git hash-object --stdin-paths
+           
+           125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0
+           d6b91b31fd49583ffd968dee923b5508c527a8ae
+           fatal: could not open 'chromatic.log' for reading: No such file or directory
+Chromatic: Failed to retrieve uncommitted files hash {"shortMessage":"Command failed with exit code 128: git hash-object --stdin-paths","command":"git hash-object --stdin-paths","escapedCommand":"git hash-object --stdin-paths","cwd":"/home/sanvisimo/projects/sanvi/ludex/packages/ui","durationMs":8.819173,"failed":true,"timedOut":false,"isCanceled":false,"isGracefullyCanceled":false,"isTerminated":false,"isMaxBuffer":false,"isForcefullyTerminated":false,"exitCode":128,"stdout":"125c1ce7a7806efb7df3b35a066d1ec9ad7d378f\n70a2f47c899bf29ad0cefbdfc7957140bb3f95b0\nd6b91b31fd49583ffd968dee923b5508c527a8ae","stderr":"fatal: could not open 'chromatic.log' for reading: No such file or directory","all":"125c1ce7a7806efb7df3b35a066d1ec9ad7d378f\n70a2f47c899bf29ad0cefbdfc7957140bb3f95b0\nd6b91b31fd49583ffd968dee923b5508c527a8ae\nfatal: could not open 'chromatic.log' for reading: No such file or directory","stdio":[null,"125c1ce7a7806efb7df3b35a066d1ec9ad7d378f\n70a2f47c899bf29ad0cefbdfc7957140bb3f95b0\nd6b91b31fd49583ffd968dee923b5508c527a8ae","fatal: could not open 'chromatic.log' for reading: No such file or directory"],"ipcOutput":[],"pipedFrom":[]}
+Chromatic: execGitCommand: git rev-parse --show-toplevel
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex'
+Chromatic: execGitCommandOneLine: git log --reverse --format=%cd --date=iso
+Chromatic: execGitCommandOneLine: git log --follow --reverse --format=%cd --date=iso -- .storybook
+Chromatic: execGitCommandCountLines: git shortlog -sn --all --since="6 months ago"
+Chromatic: execGitCommandCountLines: git ls-files -- "*page*.js" "*page*.jsx" "*page*.ts" "*page*.tsx" "*Page*.js" "*Page*.jsx" "*Page*.ts" "*Page*.tsx" "*screen*.js" "*screen*.jsx" "*screen*.ts" "*screen*.tsx" "*Screen*.js" "*Screen*.jsx" "*Screen*.ts" "*Screen*.tsx"
+Chromatic: execGitCommand: git config --get remote.origin.url
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git'
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter
+Chromatic: Git clone type: {"cloneDepth":"full","cloneFilter":"full","shallowBoundaryCommitCount":0,"firstShallowBoundaryCommits":[]}
+Chromatic: App firstBuild: %o, lastBuild: %o {"committedAt":1790094413000} {"commit":"be59d4ed0319d22f79e65bb05f5da0ce73f4acd7","committedAt":1790154268000}
+Chromatic: execGitCommand: git cat-file -e "be59d4ed0319d22f79e65bb05f5da0ce73f4acd7^{commit}"
+Chromatic: execGitCommand result: ''
+Chromatic: Adding last branch build commit be59d4ed0319d22f79e65bb05f5da0ce73f4acd7 to commits with builds
+Chromatic: step: checking 20 up to 1790094413
+Chromatic: step: commitsWithBuilds: be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: step: commitsWithoutBuilds:
+Chromatic: execGitCommand: git rev-list HEAD       --since 1790094413       -n 20 --not be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8
+           3c8a2ec5981ec08a8160b3d175c41d89865a1bee'
+Chromatic: step: candidateCommits: 589e60714b38e62042df01e510186fc76a55a4f8,3c8a2ec5981ec08a8160b3d175c41d89865a1bee, visitedCommitsWithoutBuilds: 589e60714b38e62042df01e510186fc76a55a4f8,3c8a2ec5981ec08a8160b3d175c41d89865a1bee
+Chromatic: step: newCommitsWithBuilds:
+Chromatic: step: checking 40 up to 1790094413
+Chromatic: step: commitsWithBuilds: be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: step: commitsWithoutBuilds: 589e60714b38e62042df01e510186fc76a55a4f8,3c8a2ec5981ec08a8160b3d175c41d89865a1bee
+Chromatic: execGitCommand: git rev-list HEAD       --since 1790094413       -n 42 --not be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8
+           3c8a2ec5981ec08a8160b3d175c41d89865a1bee'
+Chromatic: step: candidateCommits: , visitedCommitsWithoutBuilds: 589e60714b38e62042df01e510186fc76a55a4f8,3c8a2ec5981ec08a8160b3d175c41d89865a1bee
+Chromatic: step: no candidateCommits; we are done
+Chromatic: execGitCommand: git config --get remote.origin.url
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git'
+Chromatic: execGitCommand: git branch --show-current
+Chromatic: execGitCommand result: 'main'
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito'
+Chromatic: execGitCommand: git config user.email
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com'
+Chromatic: execGitCommand: git rev-parse --show-toplevel
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex'
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d
+Chromatic: execGitCommand: git ls-files --others --exclude-standard
+Chromatic: execGitCommand result: ''
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx'
+Chromatic: execGitCommand result: 'chromatic.config.json
+           chromatic.log'
+Chromatic: execGitCommand: git hash-object --stdin-paths
+Chromatic: execGitCommand error: Command failed with exit code 128: git hash-object --stdin-paths
+           
+           125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0
+           d6b91b31fd49583ffd968dee923b5508c527a8ae
+           fatal: could not open 'chromatic.log' for reading: No such file or directory
+Chromatic: Final commitsWithBuilds: be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: execGitCommand: git rev-list be59d4ed0319d22f79e65bb05f5da0ce73f4acd7 --not "be59d4ed0319d22f79e65bb05f5da0ce73f4acd7^@"
+Chromatic: execGitCommand result: 'be59d4ed0319d22f79e65bb05f5da0ce73f4acd7'
+Chromatic: execGitCommand: git log --no-walk=unsorted --format=%H%x00%P%x00%s%x00 589e60714b38e62042df01e510186fc76a55a4f8 3c8a2ec5981ec08a8160b3d175c41d89865a1bee be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 3c8a2ec5981ec08a8160b3d175c41d89865a1bee feat(ui): add Badge component and stories 
+           3c8a2ec5981ec08a8160b3d175c41d89865a1bee be59d4ed0319d22f79e65bb05f5da0ce73f4acd7 feat(ui): integrate icons, update themes, and improve Button stories 
+           be59d4ed0319d22f79e65bb05f5da0ce73f4acd7 56671c5a15fa5ca424f0440b000a3afa7bbc65e6 refactor(ui): rename `storybook` script to `dev` '
+Chromatic: visitedCommits: total=3, withBuilds=1, mergePoints=0
+Chromatic: Found parentCommits: be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: Found baselineCommits: be59d4ed0319d22f79e65bb05f5da0ce73f4acd7, be59d4ed0319d22f79e65bb05f5da0ce73f4acd7, be59d4ed0319d22f79e65bb05f5da0ce73f4acd7, be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: execGitCommand: git --no-pager diff --name-only --no-relative be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: execGitCommand: git --no-pager diff --name-only --no-relative be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: execGitCommand: git --no-pager diff --name-only --no-relative be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: execGitCommand: git --no-pager diff --name-only --no-relative be59d4ed0319d22f79e65bb05f5da0ce73f4acd7
+Chromatic: execGitCommand: git config --get remote.origin.url
+Chromatic: execGitCommand result: 'packages/ui/.storybook/main.ts
+           packages/ui/package.json
+           packages/ui/src/colors.stories.tsx
+           packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/badge.tsx
+           packages/ui/src/components/button.stories.tsx
+           packages/ui/src/components/button.tsx
+           packages/ui/src/icons.ts
+           packages/ui/src/index.ts
+           packages/ui/src/palettes.ts
+           packages/ui/src/themes.ts
+           plans/12a-design-system.md
+           pnpm-lock.yaml'
+Chromatic: execGitCommand result: 'packages/ui/.storybook/main.ts
+           packages/ui/package.json
+           packages/ui/src/colors.stories.tsx
+           packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/badge.tsx
+           packages/ui/src/components/button.stories.tsx
+           packages/ui/src/components/button.tsx
+           packages/ui/src/icons.ts
+           packages/ui/src/index.ts
+           packages/ui/src/palettes.ts
+           packages/ui/src/themes.ts
+           plans/12a-design-system.md
+           pnpm-lock.yaml'
+Chromatic: execGitCommand result: 'packages/ui/.storybook/main.ts
+           packages/ui/package.json
+           packages/ui/src/colors.stories.tsx
+           packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/badge.tsx
+           packages/ui/src/components/button.stories.tsx
+           packages/ui/src/components/button.tsx
+           packages/ui/src/icons.ts
+           packages/ui/src/index.ts
+           packages/ui/src/palettes.ts
+           packages/ui/src/themes.ts
+           plans/12a-design-system.md
+           pnpm-lock.yaml'
+Chromatic: execGitCommand result: 'packages/ui/.storybook/main.ts
+           packages/ui/package.json
+           packages/ui/src/colors.stories.tsx
+           packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/badge.tsx
+           packages/ui/src/components/button.stories.tsx
+           packages/ui/src/components/button.tsx
+           packages/ui/src/icons.ts
+           packages/ui/src/index.ts
+           packages/ui/src/palettes.ts
+           packages/ui/src/themes.ts
+           plans/12a-design-system.md
+           pnpm-lock.yaml'
+Chromatic: Found 13 changed files:
+             packages/ui/.storybook/main.ts
+             packages/ui/package.json
+             packages/ui/src/colors.stories.tsx
+             packages/ui/src/components/badge.stories.tsx
+             packages/ui/src/components/badge.tsx
+             packages/ui/src/components/button.stories.tsx
+             packages/ui/src/components/button.tsx
+             packages/ui/src/icons.ts
+             packages/ui/src/index.ts
+             packages/ui/src/palettes.ts
+             packages/ui/src/themes.ts
+             plans/12a-design-system.md
+             pnpm-lock.yaml
+Chromatic: Retrieved git information
+Chromatic:     → Commit '589e607' on branch 'main'; found 1 parent build and 13 changed files
+Chromatic: Collecting Storybook metadata
+Chromatic: {"storybookV6error":{"code":"MODULE_NOT_FOUND","requireStack":["/home/sanvisimo/projects/sanvi/ludex/node_modules/.pnpm/chromatic@18.9.4/node_modules/chromatic/dist/projectFiles-BErzDcj6.cjs","/home/sanvisimo/projects/sanvi/ludex/node_modules/.pnpm/chromatic@18.9.4/node_modules/chromatic/dist/node-src-B3Zyu6y_.cjs","/home/sanvisimo/projects/sanvi/ludex/node_modules/.pnpm/chromatic@18.9.4/node_modules/chromatic/dist/node.cjs"]}}
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git'
+Chromatic: execGitCommand: git branch --show-current
+Chromatic: execGitCommand result: 'main'
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"
+Chromatic: {"configDirectory":"/home/sanvisimo/projects/sanvi/ludex/packages/ui/.storybook","mainConfig":{"code":"import type { StorybookConfig } from '@storybook/react-native-web-vite';\nimport { tamaguiAliases } from '@tamagui/vite-plugin';\n\n/**\n * Il banco di lavoro del design system.\n *\n * Sta in `packages/ui` e non in `apps/web` perché è qui che i componenti\n * vivono: un banco montato sull'app web non si aprirebbe senza Next, cioè\n * chiederebbe al design system universale esattamente la dipendenza che non\n * deve avere.\n *\n * Il framework è `react-native-web-vite`: le storie girano in\n * react-native-web, quindi **un solo** Storybook mostra i componenti che web e\n * mobile condividono, invece di due banchi che mostrano due verità.\n */\nconst config: StorybookConfig = {\n  stories: ['../src/**/*.stories.tsx'],\n\n  addons: [\n    // Controlla ogni storia con axe. Con `addon-vitest` acceso non è un\n    // pannello da guardare: è un test che fallisce.\n    '@storybook/addon-a11y',\n    // Il selettore chiaro/scuro in barra. I due temi sono i nostri, non quelli\n    // di Storybook: vedi `preview.tsx`.\n    '@storybook/addon-themes',\n    // Porta le storie dentro vitest, in un Chromium vero.\n    '@storybook/addon-vitest',\n    // Visual test: confronta i pixel fra una build e l'altra. È l'altra metà\n    // rispetto ad `addon-vitest`, che verifica comportamento e accessibilità\n    // ma non si accorgerebbe mai di un bottone diventato storto.\n    '@chromatic-com/storybook',\n    // La pagina di documentazione generata da ogni storia.\n    '@storybook/addon-docs',\n  ],\n\n  framework: {\n    name: '@storybook/react-native-web-vite',\n    options: {},\n  },\n\n  // Accesa di default: manda a Storybook quali addon e quale framework usiamo.\n  // Non è un dato che questo progetto abbia motivo di spedire fuori.\n  core: { disableTelemetry: true },\n\n  /**\n   * `react-native-svg` su Vite: lo risolve Tamagui, non noi.\n   *\n   * Le icone disegnano in SVG, che su React Native non esiste e lo porta\n   * `react-native-svg` — una libreria scritta per i telefoni. Sul web quella\n   * libreria **non va usata affatto**, perché il browser l'SVG ce l'ha già, ed\n   * è esattamente ciò che fa `svg: true`: sostituisce l'intero pacchetto con\n   * `@tamagui/react-native-svg`, che disegna SVG del DOM.\n   *\n   * Vale la pena sapere cosa succede senza, perché l'errore non nomina né le\n   * icone né l'SVG. `react-native-svg` tiene la sua versione per il browser in\n   * file gemelli (`ReactNativeSVG.web.js` accanto a `ReactNativeSVG.js`), e\n   * Vite — al contrario di Metro e webpack — non sa che sul web va preso il\n   * gemello: carica quello per telefoni, che chiede a React Native un registro\n   * di immagini inesistente nel browser. Dirglielo a mano non basta: **Vite 8\n   * prepara le librerie con rolldown**, che ignora sia `resolve.alias` sia\n   * `resolve.extensions`. E spegnere quella preparazione scopre il difetto\n   * gemello — dentro il pacchetto c'è un parser in CommonJS in mezzo a file\n   * ESM, e a tradurlo era proprio ciò che si è spento.\n   */\n  viteFinal: async (config) => {\n    config.resolve = config.resolve ?? {};\n    const alias = config.resolve.alias;\n    config.resolve.alias = [\n      ...tamaguiAliases({ svg: true }),\n      ...(Array.isArray(alias)\n        ? alias\n        : Object.entries(alias ?? {}).map(([find, replacement]) => ({\n            find,\n            replacement: replacement as string,\n          }))),\n    ];\n    return config;\n  },\n};\n\nexport default config;\n"}}
+Chromatic: No viewlayer package listed in dependencies. Checking transitive dependencies.
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito'
+Chromatic: execGitCommand: git config user.email
+Chromatic: [{"status":"rejected","reason":{}},{"status":"fulfilled","value":{"builder":{"name":"@storybook/react-native-web-vite","packageVersion":"10.6.0"}}},{"status":"fulfilled","value":{}}]
+Chromatic: Collected Storybook metadata
+Chromatic:     → Build metadata gathered
+Chromatic: Initializing build
+Chromatic: Got environment:
+           {}
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com'
+Chromatic: execGitCommand: git rev-parse --show-toplevel
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex'
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d
+Chromatic: execGitCommand: git ls-files --others --exclude-standard
+Chromatic: execGitCommand result: ''
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx'
+Chromatic: execGitCommand result: 'chromatic.config.json
+           chromatic.log'
+Chromatic: execGitCommand: git hash-object --stdin-paths
+Chromatic: execGitCommand error: Command failed with exit code 128: git hash-object --stdin-paths
+           
+           125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0
+           d6b91b31fd49583ffd968dee923b5508c527a8ae
+           fatal: could not open 'chromatic.log' for reading: No such file or directory
+Chromatic: [analytics] initializing Index analytics client
+Chromatic: Initialized build
+Chromatic:     → Build 6 initialized
+Chromatic: Building your Storybook
+Chromatic:     → Running command: pnpm run build-storybook --output-dir=/tmp/chromatic--216591-YQq47qSAARQt --webpack-stats-json=/tmp/chromatic--216591-YQq47qSAARQt
+Chromatic: Running build command: pnpm run build-storybook --output-dir=/tmp/chromatic--216591-YQq47qSAARQt --webpack-stats-json=/tmp/chromatic--216591-YQq47qSAARQt
+Chromatic: Runtime metadata: {
+             "nodePlatform": "linux",
+             "nodeVersion": "24.21.0",
+             "packageManager": "pnpm",
+             "packageManagerVersion": "12.4.1"
+           }
+Chromatic: Storybook built in 4 seconds
+Chromatic:     → View build log at /home/sanvisimo/projects/sanvi/ludex/packages/ui/build-storybook.log
+Chromatic: Prepare your built Storybook
+Chromatic:     → Validating Storybook files
+Chromatic: execGitCommand: git config --get remote.origin.url
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git'
+Chromatic: execGitCommand: git branch --show-current
+Chromatic: execGitCommand result: 'main'
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"
+Chromatic: Tracing changed files with TurboSnap v2
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito'
+Chromatic: execGitCommand: git config user.email
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com'
+Chromatic: execGitCommand: git rev-parse --show-toplevel
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex'
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d
+Chromatic: execGitCommand: git ls-files --others --exclude-standard
+Chromatic: execGitCommand result: ''
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx'
+Chromatic: execGitCommand result: 'chromatic.config.json
+           chromatic.log'
+Chromatic: execGitCommand: git hash-object --stdin-paths
+Chromatic: execGitCommand error: Command failed with exit code 128: git hash-object --stdin-paths
+           
+           125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0
+           d6b91b31fd49583ffd968dee923b5508c527a8ae
+           fatal: could not open 'chromatic.log' for reading: No such file or directory
+Chromatic: Found 3 story files from preview-stats.json
+Chromatic: Attributed 877 files to the preview config subtree
+Chromatic: Found 19 files in Storybook globals (files that could impact rendering across the entire Storybook)
+Chromatic: Hashed 0 static files in
+Chromatic: Hashed 2 storybook config files in /home/sanvisimo/projects/sanvi/ludex/packages/ui/.storybook
+Chromatic: Generated manifest for TurboSnap v2
+Chromatic: Wrote manifest for TurboSnap v2 to /tmp/chromatic--216591-YQq47qSAARQt/.chromatic/turbosnap-manifest.json
+Chromatic: Uploaded hashes for TurboSnap v2 to Chromatic
+Chromatic:     → Calculating file hashes
+Chromatic: Calculated file hashes in 22ms
+Chromatic: Preparation complete
+Chromatic:     → Storybook files validated and prepared for upload
+Chromatic: Publishing your built Storybook
+Chromatic:     → Starting publish
+Chromatic: Running uploadBuild batch 1 / 1
+Chromatic: Adding to zip archive: assets/Text-6flK61mR.js
+Chromatic: Adding to zip archive: assets/badge.stories-C5CDVJIY.js
+Chromatic: Adding to zip archive: assets/button-BHS02osx.js
+Chromatic: Adding to zip archive: assets/button.stories-r-bt9x6n.js
+Chromatic: Adding to zip archive: assets/colors.stories-BHP-qenF.js
+Chromatic: Adding to zip archive: assets/iframe-BtlsDt1i.js
+Chromatic: Adding to zip archive: assets/iframe-DqReh8YK.js
+Chromatic: Adding to zip archive: assets/react-18-Dhoa2u3t.js
+Chromatic: Adding to zip archive: iframe.html
+Chromatic: Adding to zip archive: index.json
+Chromatic: Adding to zip archive: project.json
+Chromatic: Finalizing zip archive
+Chromatic: Compression reduced upload size by 71%
+Chromatic: Uploading /.chromatic/storybook.zip (459.02 kB)
+Chromatic:     → 14%
+Chromatic: execGitCommand: git config --get remote.origin.url
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git'
+Chromatic: execGitCommand: git branch --show-current
+Chromatic: execGitCommand result: 'main'
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito'
+Chromatic: execGitCommand: git config user.email
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com'
+Chromatic: execGitCommand: git rev-parse --show-toplevel
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex'
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d
+Chromatic: execGitCommand: git ls-files --others --exclude-standard
+Chromatic: execGitCommand result: ''
+Chromatic: execGitCommand result: 'packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx'
+Chromatic: execGitCommand result: 'chromatic.config.json
+           chromatic.log'
+Chromatic: execGitCommand: git hash-object --stdin-paths
+Chromatic: execGitCommand error: Command failed with exit code 128: git hash-object --stdin-paths
+           
+           125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0
+           d6b91b31fd49583ffd968dee923b5508c527a8ae
+           fatal: could not open 'chromatic.log' for reading: No such file or directory
+Chromatic:     → 71%
+Chromatic: execGitCommand: git config --get remote.origin.url
+Chromatic: execGitCommand result: 'git@github.com:sanvisimo/ludex.git'
+Chromatic: execGitCommand: git branch --show-current
+Chromatic: execGitCommand result: 'main'
+Chromatic: execGitCommand: git --no-pager log -n 1 --format="%H ## %ct ## %ae ## %an"
+Chromatic: execGitCommand result: '589e60714b38e62042df01e510186fc76a55a4f8 ## 1790160765 ## sanvi.simo@gmail.com ## Simone Sanvito'
+Chromatic: execGitCommand: git config user.email
+Chromatic: execGitCommand result: 'sanvi.simo@gmail.com'
+Chromatic: execGitCommand: git rev-parse --show-toplevel
+Chromatic: execGitCommand result: '/home/sanvisimo/projects/sanvi/ludex'
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d --cached
+Chromatic: execGitCommand: git diff --name-only --no-relative --diff-filter=d
+Chromatic: execGitCommand: git ls-files --others --exclude-standard
+Chromatic: execGitCommand result: 'packages/ui/chromatic.config.json
+           packages/ui/chromatic.log'
+Chromatic: execGitCommand result: 'packages/ui/chromatic.log
+           packages/ui/src/components/badge.stories.tsx
+           packages/ui/src/components/button.stories.tsx'
+Chromatic: execGitCommand result: ''
+Chromatic: execGitCommand: git hash-object --stdin-paths
+Chromatic: execGitCommand result: 'd6b91b31fd49583ffd968dee923b5508c527a8ae
+           ed175e833562aa81bce72b26876610feaa1ddd98
+           ed175e833562aa81bce72b26876610feaa1ddd98
+           125c1ce7a7806efb7df3b35a066d1ec9ad7d378f
+           70a2f47c899bf29ad0cefbdfc7957140bb3f95b0'
+Chromatic: execGitCommand: git hash-object --stdin
+Chromatic: execGitCommand result: 'f31d4975b4f7d94126b7f29809b273f38a1e0fc7'
+Chromatic: execGitCommandOneLine: git rev-parse --is-shallow-repository
+Chromatic: execGitCommandOneLine: git config remote.origin.partialclonefilter
+Chromatic: Uploaded /.chromatic/storybook.zip (459.02 kB)
+Chromatic:     → Finalizing upload
+Chromatic: Waiting for 'files-copied.3830351389.txt' sentinel file to appear at https://chromatic-builds.s3.us-west-2.amazonaws.com/6148977871d76f003ae03851-ltfrpsgtfs/.chromatic/files-copied.3830351389.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAJVVEQEOBEEPXSNNQ%2F20260923%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260923T110120Z&X-Amz-Expires=1800&X-Amz-Signature=c281b4277d8827b79449d9ab87bc284b8989c6380c396e904c0476d4c4ac7aa5&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject
+Chromatic: Waiting for 'zip-unpacked.txt' sentinel file to appear at https://chromatic-builds.s3.us-west-2.amazonaws.com/6148977871d76f003ae03851-ltfrpsgtfs/.chromatic/zip-unpacked.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAJVVEQEOBEEPXSNNQ%2F20260923%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260923T110120Z&X-Amz-Expires=1980&X-Amz-Signature=4c2d036e677984fc1fc63db09c2e3ea12613ef6c0da361c31a543eb9415d6953&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject
