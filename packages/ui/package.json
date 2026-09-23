@@ -11,7 +11,7 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "storybook": "storybook dev -p 6006",
+    "dev": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "vitest run",
     "chromatic": "dotenv -e ../../.env -- chromatic"
