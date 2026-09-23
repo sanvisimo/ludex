@@ -93,6 +93,7 @@ export {
 } from './components/select';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
 export { Switch, type SwitchProps } from './components/switch';
+export { Toaster, toast, type ToasterProps } from './components/toast';
 export { Textarea, type TextareaProps } from './components/textarea';
 
 // Le icone stanno in `@repo/ui/icons`, non qui: sono oltre millecinquecento
