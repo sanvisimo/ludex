@@ -47,6 +47,14 @@ export {
   type InputGroupProps,
 } from './components/input-group';
 export { Label, type LabelProps } from './components/label';
+export {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  type SelectProps,
+} from './components/select';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
 export { Switch, type SwitchProps } from './components/switch';
 export { Textarea, type TextareaProps } from './components/textarea';
