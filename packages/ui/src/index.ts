@@ -48,6 +48,7 @@ export {
 } from './components/input-group';
 export { Label, type LabelProps } from './components/label';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
+export { Switch, type SwitchProps } from './components/switch';
 export { Textarea, type TextareaProps } from './components/textarea';
 
 // Le icone stanno in `@repo/ui/icons`, non qui: sono oltre millecinquecento
