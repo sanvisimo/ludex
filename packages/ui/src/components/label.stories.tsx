@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { expect, userEvent, within } from 'storybook/test';
-// Il campo grezzo di Tamagui, finché il nostro Input non c'è (step 6).
-import { Input } from 'tamagui';
 
 import { Text, Theme, XStack, YStack } from '../primitives';
+import { Input } from './input';
 import { Label } from './label';
 
 const meta = {
