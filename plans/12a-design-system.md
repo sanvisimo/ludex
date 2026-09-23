@@ -166,7 +166,7 @@ Quattro cose misurate montandolo, che valgono per chi lo rimonterà:
   precedente di questo piano: i componenti stanno lì, e un banco montato
   sull'app web non si aprirebbe senza Next — cioè chiederebbe al design system
   universale proprio la dipendenza che non deve avere. Il comando è
-  `pnpm --filter @repo/ui storybook`.
+  `pnpm --filter @repo/ui dev` (era `storybook`, rinominato in `be59d4e`).
 - **`turbo.json` non va toccato.** Il task `test` è già dichiarato in modo
   generico: basta lo script nel package, e `turbo run test --dry` mostra
   `@repo/ui#test -> vitest run`. La riga che prevedeva di dichiararlo era
@@ -302,6 +302,48 @@ Il banco prima, i componenti dentro il banco.
    solo semantici. L'app deve continuare a funzionare identica: `apps/web` monta
    il provider Tamagui nel layout, la build passa dalla CLI. Ogni componente
    nasce con la sua storia — che è anche il suo test.
+
+   **I componenti sono fatti** — un commit ciascuno, da `589e607` a `85ee8c7`,
+   16 file di storie e 66 test verdi. **Resta il passaggio delle schermate**:
+   provider nel layout, import da `@repo/ui`, build con la CLI.
+
+   Cosa si è scoperto per strada, e che il passaggio delle schermate deve
+   sapere:
+
+   - **La config non aveva animazioni.** `v5` non ne porta: va scelto un
+     driver. È `@tamagui/config/v5-css` — transizioni CSS sul web, React
+     Native sul telefono, niente reanimated. Senza, Skeleton, Dialog e menu non
+     si muovono.
+   - **Input e Textarea hanno il tipo forzato.** Passando da `styled()`
+     l'`onChange` perde il suo elemento, e `event.target.value` smette di
+     compilare; il TextArea di Tamagui poi dichiara quello dell'*input*, sbagliato
+     già alla fonte. Si riesporta col tipo giusto, e le storie `Typing`
+     verificano che a runtime l'evento sia quello vero.
+   - **Tre cambi nelle schermate, piccoli ma non zero**: `align` va su
+     `<DropdownMenu>` e non su `<DropdownMenuContent>` (in Tamagui il popper lo
+     governa la radice); le larghezze passano da `className` a props
+     (`maxW={576}` per `sm:max-w-xl`); lo `Switch` sta **accanto** al `Label`
+     con `id` / `htmlFor`, non dentro, perché il Label è un testo.
+   - **Dialog e DropdownMenu tengono `render={<Button>…}`** sul trigger: lì
+     dentro diventa l'`asChild` di Tamagui, e la riga delle schermate resta
+     com'è. Anche `onClick` sulle voci del menu resta: diventa `onSelect`.
+   - **Il Combobox è l'unico scritto da zero**, e sul `Popper`, non sul
+     Popover. Misurato: il Popover mette `role="dialog"` sulla tendina e
+     `aria-expanded` / `aria-haspopup="dialog"` sull'ancora — axe li boccia —
+     e si apre da solo quando il campo prende il fuoco. Il pattern è quello
+     ARIA del combobox con lista: il fuoco resta nel campo, le frecce muovono
+     `aria-activedescendant`.
+   - **Il toast v2 ha l'API di sonner**, ma sta in `@tamagui/toast/v2`, che
+     `tamagui` non riesporta. `@tamagui/toast` è quindi una dipendenza diretta
+     di `packages/ui`, fissata a `2.7.7` esatta: con un intervallo potrebbe
+     portarsi dietro un secondo core, lo stesso guaio di
+     `@tamagui/lucide-icons`. Le schermate cambiano `from 'sonner'` in
+     `from '@repo/ui'` e basta.
+   - **Nessuno li ha ancora guardati aperti.** I test verificano
+     comportamento, posizione e axe, ma axe probabilmente non entra nei
+     portali — dialog e tendine aperte — perché guarda il contenitore della
+     storia. E il foglio dal basso del Select su touch lo proverà solo lo
+     scheletro Expo.
 5. **Scheletro `apps/mobile`** con Expo, una schermata che importa
    `packages/ui`: la prova che l'universale è universale.
 6. **Le regole che tengono il confine**, in
@@ -315,8 +357,9 @@ Il banco prima, i componenti dentro il banco.
 ## Verifica
 
 - `pnpm lint` e `pnpm check-types` puliti sul monorepo. ✔ al passo 3.
-- `pnpm --filter @repo/ui storybook` apre il banco, `pnpm --filter @repo/ui test`
+- `pnpm --filter @repo/ui dev` apre il banco, `pnpm --filter @repo/ui test`
   fa passare ogni storia in Chromium con axe. ✔ al passo 3: 7 storie, 7 verdi.
+  ✔ al passo 4: 16 file, 66 test verdi.
 - `pnpm build` su `apps/web` con la CLI Tamagui nel mezzo.
 - `pnpm --filter mobile start` apre lo scheletro Expo e mostra gli stessi
   componenti.
