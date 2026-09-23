@@ -24,6 +24,14 @@ export * from './primitives';
 // I nostri componenti.
 export { Badge, type BadgeProps } from './components/badge';
 export { Button, type ButtonProps } from './components/button';
+export {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  type CardProps,
+} from './components/card';
 export { Label, type LabelProps } from './components/label';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
 
