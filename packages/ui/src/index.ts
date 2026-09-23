@@ -38,6 +38,18 @@ export {
   CardTitle,
   type CardProps,
 } from './components/card';
+export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  type DialogContentProps,
+  type DialogProps,
+} from './components/dialog';
 export { Input, type InputProps } from './components/input';
 export {
   InputGroup,
