@@ -464,10 +464,23 @@ Il banco prima, i componenti dentro il banco.
 6. **Le regole che tengono il confine**, in
    [packages/eslint-config](../packages/eslint-config): dentro `packages/ui` sono
    vietati `next/*`, `@repo/contracts` e `@repo/db`.
+
+   **Fatto** (`6a26907`), in [boundaries.js](../packages/eslint-config/boundaries.js):
+   `no-restricted-imports`, senza plugin. Già che c'era vale anche per
+   `apps/mobile` la regola che il CLAUDE.md scriveva da sempre: niente
+   `@repo/db` né `next/*`, `@repo/contracts` sì. Provata con un file che
+   importa tutti e tre: il lint si rompe. Escono come avvisi, per via di
+   `only-warn`, ma `--max-warnings 0` li rende fatali.
 7. **CLAUDE.md**: riscrivere la regola su web e mobile con la decisione presa e
    il suo perché, aggiungere la sezione sul design system (Tamagui, i tre livelli
    di token con la loro invariante, le alternative scartate), la nota su come si
    costruisce con Turbopack e quella su Chromium in CI.
+
+   **Fatto**: la regola su web e mobile dice ora che si condividono i
+   componenti e non le schermate; nuova sezione «Design system» con i tre
+   livelli di token, l'export unico, la React sola, la build con la CLI e le
+   quattro cose che le schermate devono sapere; le alternative scartate stanno
+   con le altre; i test e i comandi di `packages/ui` e `apps/mobile`.
 
 ## Verifica
 
