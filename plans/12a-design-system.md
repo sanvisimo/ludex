@@ -407,8 +407,8 @@ Il banco prima, i componenti dentro il banco.
      misure.
    - **Il font è cambiato**: il `TamaguiProvider` avvolge l'app nella classe
      del font di Tamagui (lo stack di sistema della config v5), e Geist,
-     ancora caricato da `layout.tsx`, non si vede più. Da decidere: o Geist
-     entra nella config, o `next/font` esce.
+     ancora caricato da `layout.tsx`, non si vede più. Va bene così: Geist
+     era un segnaposto, e il font si sceglie con l'aspetto dell'app.
    - **La CLI impacchetta la config in `apps/web/.tamagui/`**, e da lì deve
      risolvere `@tamagui/core` e `@tamagui/web`: sono devDependency di
      `apps/web` per questo. La cartella è ignorata da git ed ESLint.
