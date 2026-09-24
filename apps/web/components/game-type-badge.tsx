@@ -1,8 +1,8 @@
 'use client';
 
 import type { GameType } from '@repo/contracts';
+import { Badge } from '@repo/ui';
 
-import { Badge } from '@/components/ui/badge';
 import { useGameTypeLabels } from '@/lib/labels';
 
 /**

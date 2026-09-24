@@ -1,13 +1,14 @@
 'use client';
 
 import { signOut, useSession } from '@repo/auth/client';
+import { Button } from '@repo/ui';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { ButtonLink } from '@/components/button-link';
 import { LocaleSwitcher } from '@/components/locale-switcher';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Button } from '@/components/ui/button';
 
 export function SiteNav() {
   const t = useTranslations('nav');
@@ -30,20 +31,12 @@ export function SiteNav() {
           {/* isPending evita che i bottoni da anonimo lampeggino al primo render. */}
           {isPending ? null : session ? (
             <>
-              <Button
-                variant="ghost"
-                nativeButton={false}
-                render={<Link href="/backlog" />}
-              >
+              <ButtonLink variant="ghost" href="/backlog">
                 {t('backlog')}
-              </Button>
-              <Button
-                variant="ghost"
-                nativeButton={false}
-                render={<Link href="/account" />}
-              >
+              </ButtonLink>
+              <ButtonLink variant="ghost" href="/account">
                 {t('account')}
-              </Button>
+              </ButtonLink>
               <Button
                 variant="outline"
                 onClick={async () => {
@@ -57,16 +50,10 @@ export function SiteNav() {
             </>
           ) : (
             <>
-              <Button
-                variant="ghost"
-                nativeButton={false}
-                render={<Link href="/login" />}
-              >
+              <ButtonLink variant="ghost" href="/login">
                 {t('signIn')}
-              </Button>
-              <Button nativeButton={false} render={<Link href="/register" />}>
-                {t('signUp')}
-              </Button>
+              </ButtonLink>
+              <ButtonLink href="/register">{t('signUp')}</ButtonLink>
             </>
           )}
         </div>

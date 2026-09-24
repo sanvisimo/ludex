@@ -1,18 +1,18 @@
 'use client';
 
-import { LanguagesIcon } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
-
-import { Button } from '@/components/ui/button';
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@repo/ui';
+import { LanguagesIcon } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
+
 import { locales } from '@/i18n/config';
 import { setLocale } from '@/i18n/locale';
 
@@ -34,7 +34,7 @@ export function LocaleSwitcher() {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu align="end">
       <DropdownMenuTrigger
         render={
           <Button
@@ -43,11 +43,11 @@ export function LocaleSwitcher() {
             aria-label={t('label')}
             disabled={pending}
           >
-            <LanguagesIcon />
+            <LanguagesIcon size={16} />
           </Button>
         }
       />
-      <DropdownMenuContent align="end" className="w-36">
+      <DropdownMenuContent width={144}>
         <DropdownMenuRadioGroup value={current} onValueChange={choose}>
           {locales.map((locale) => (
             <DropdownMenuRadioItem key={locale} value={locale}>

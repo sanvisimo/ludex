@@ -1,9 +1,9 @@
 'use client';
 
 import type { GameDetail } from '@repo/contracts';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { useTranslations } from 'next-intl';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDuration } from '@/lib/duration';
 
 /**
@@ -70,7 +70,7 @@ export function HltbTimes({ game }: { game: GameDetail }) {
       <CardHeader>
         <CardTitle>{t('title')}</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-2">
+      <CardContent gap={8}>
         {game.hltbSyncedAt === null ? (
           <p className="text-muted-foreground">{t('notFetched')}</p>
         ) : righe.length === 0 ? (

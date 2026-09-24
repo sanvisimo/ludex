@@ -2,9 +2,9 @@
 
 import type { GameDetail, GameScore } from '@repo/contracts';
 import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { useTranslations } from 'next-intl';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/orpc';
 
 /**
@@ -28,7 +28,9 @@ function Complessivo({ voto }: { voto: GameScore }) {
   const t = useTranslations('critic');
 
   const dettagli = [
-    voto.reviewCount !== null ? t('reviews', { count: voto.reviewCount }) : null,
+    voto.reviewCount !== null
+      ? t('reviews', { count: voto.reviewCount })
+      : null,
     // `tier` e `sentiment` sono i due modi in cui le fonti dicono a parole ciò
     // che il numero dice a cifre. Sono vocabolari loro e non si traducono: che
     // sia scritto "Mighty" è parte dell'informazione.
@@ -80,7 +82,7 @@ export function CriticScores({ game }: { game: GameDetail }) {
       <CardHeader>
         <CardTitle>{t('title')}</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-3">
+      <CardContent gap={12}>
         {complessivi.length === 0 ? (
           <p className="text-muted-foreground">{t('none')}</p>
         ) : (
