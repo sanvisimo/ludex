@@ -56,6 +56,17 @@ Tutto TypeScript/Node. Non introdurre altri linguaggi nello stack.
   perderebbero i tipi condivisi con il frontend, che è vincolato a TypeScript.
   Eccezione ammessa: un microservizio Python isolato allo step 13 _solo_ se servissero
   modelli di embedding locali.
+- **Base UI + registry shadcn** per il design system: era la strada di prima ed
+  esce per un motivo solo, insuperabile — è DOM, e su React Native non gira. Il
+  prezzo accettato è riscriversi i componenti che il registry dava pronti.
+- **react-strict-dom** (fermo a `0.0.x`), **NativeWind** (solo styling, i
+  componenti restano da scrivere) e **gluestack-ui** (fermo): valutati come
+  alternative a Tamagui per un design system universale, nessuno è maturo quanto
+  serve.
+- **Panda CSS** e una pipeline **DTCG / Style Dictionary** per i token: Panda è
+  solo web, e DTCG risolve il problema di tenere gli stessi valori in due sistemi
+  di styling diversi, che con Tamagui su entrambe le piattaforme non c'è. Torna in
+  discussione il giorno che entra Figma o un designer.
 
 ## Struttura del monorepo
 
@@ -79,11 +90,84 @@ Regole di confine:
 - **`apps/mobile` non importa mai `packages/db`**, o il driver Postgres finisce nel
   bundle React Native. Se serve un tipo derivato dallo schema, va ri-esportato come
   tipo puro da `packages/contracts`.
-- **Web e mobile condividono i componenti UI tramite `packages/ui`** (Tamagui):
-  era escluso perché il framework web di allora non lo permetteva. Qualunque sia
-  il framework scelto per il web (la scelta è aperta), Tamagui compila anche su
-  `react-native-web`. Resta valido che `apps/mobile` non importa mai
-  `packages/db`.
+- **Web e mobile condividono i componenti UI tramite `packages/ui`** (Tamagui),
+  e condividono i componenti, **non le schermate**: sidebar, tabella densa e
+  pannello dei filtri su un telefono diventano bottom tab, lista a schede e
+  bottom sheet. `packages/ui` dipende da React e Tamagui e da nient'altro: niente
+  `next/*`, che su React Native non esiste, e niente `@repo/contracts` né
+  `@repo/db`, perché un componente che conosce `BacklogEntry` è una schermata e
+  sta nell'app.
+
+Le due regole su `packages/ui` e `apps/mobile` non sono solo scritte qui: le fa
+rispettare `pnpm lint`, con `no-restricted-imports` in
+`packages/eslint-config/boundaries.js`.
+
+## Design system
+
+`packages/ui` è su **Tamagui**: compila a CSS atomico sul web e a stili nativi su
+mobile, con token type-safe condivisi. Il piano con le misure e le scelte è
+[plans/12a-design-system.md](plans/12a-design-system.md); qui c'è ciò che va
+rispettato ogni volta che lo si tocca.
+
+**I token stanno su tre livelli**, e l'invariante è una: **nessun componente
+punta a un primitivo**.
+
+    primitivi (la scala: gray1…gray12, l'accento)
+      → semantici (background, color, borderColor, i temi)
+        → di componente (nei `styled()` dei nostri componenti)
+
+Un `teal9` scritto in un componente resterebbe teal il giorno che l'accento
+cambia; `$accent9` no. I file di token di Tamagui sono la sorgente unica: niente
+JSON intermedio.
+
+**`@repo/ui` esporta un solo `Button`, il nostro.** Niente `export * from
+'tamagui'`: Tamagui ha otto dei nostri quindici nomi, e con l'export generico
+vincerebbe l'ultima riga del file. Chi ha bisogno del pezzo grezzo lo importa da
+`tamagui` dentro `packages/ui`, mai dalle app. Le icone (lucide) stanno in
+`@repo/ui/icons`.
+
+**Una React sola in tutto il repo**, alla versione che fissa la SDK di Expo:
+`overrides` in `pnpm-workspace.yaml`. Metro compila il sorgente di `packages/ui`
+risolvendone gli import dalla sua cartella, e due versioni nel repo diventano due
+React nel bundle mobile, che rompono gli hook. Si alza insieme alla SDK.
+
+**Come si costruisce sul web.** Next 16 va su Turbopack, che plugin di bundler non
+ne accetta: il compilatore di Tamagui passa dalla CLI, che sta davanti a `next
+build` nello script `build` di `apps/web`, legge `apps/web/tamagui.build.ts`,
+riscrive i sorgenti sul posto e li rimette com'erano. La config impacchettata
+finisce in `apps/web/.tamagui/` (ignorata da git ed ESLint) e da lì risolve
+`@tamagui/core` e `@tamagui/web`, per questo devDependency di `apps/web`. In
+sviluppo non serve niente: `react-native` → `react-native-web` è un
+`turbopack.resolveAlias` in `next.config.js`.
+
+Quattro cose che le schermate devono sapere, perché si scoprono solo a vederle:
+
+- **un link che sembra un bottone è `ButtonLink`** (`apps/web/components`), non
+  `<Button render={<Link />}>`: su un `styled()` di Tamagui un `render` con un
+  componente passa al link le props di stile grezze, e il link esce nudo.
+- **le view di Tamagui non si restringono** (`flex-shrink: 0`, come su React
+  Native): un campo al 100% accanto a un bottone lo spinge fuori. Ci va `flex={1}`.
+- **la config vuole le abbreviazioni**: `shrink`, non `flexShrink`; `sm:` di
+  Tailwind è `$sm`.
+- **Tailwind convive fino alla fine dello step 12**, sui `div` delle schermate e
+  mai sui componenti di `@repo/ui`: gli stili di Tamagui stanno fuori da ogni
+  layer, quelli di Tailwind 4 dentro, e vince sempre Tamagui. Una classe su un
+  componente sparisce in silenzio.
+
+**Il banco è Storybook, dentro `packages/ui`**, non in `apps/web`: un banco
+montato sull'app web non si aprirebbe senza Next. Ogni componente nasce con la sua
+storia, che è anche il suo test: `addon-vitest` le monta in un **Chromium vero** e
+ci fa passare axe, con le violazioni che rompono il test. In CI Chromium va
+installato (`playwright install chromium`). **Chromatic** confronta i pixel fra
+una build e l'altra; il suo token sta in `.env` come `CHROMATIC_PROJECT_TOKEN`.
+
+**`apps/mobile` è per ora uno scheletro**: una schermata con i componenti di
+`@repo/ui`, la prova che l'universale è universale. L'app mobile vera viene dopo
+lo step 13.
+
+**Resta aperto chi serve il web**: Next com'è oggi, TanStack Start o Expo Router
+anche per il web. Va deciso prima del 12b, perché il guscio *è* routing; le
+ragioni sono nel piano del 12a. Il design system è lo stesso nei tre casi.
 
 ## Fonti dati esterne
 
@@ -1257,6 +1341,12 @@ Niente inseguimento della copertura: si testano le scritture idempotenti e la
 risoluzione dell'identità dei giochi, che sono le cose che rompendosi corrompono
 dati condivisi fra tutti gli utenti.
 
+`packages/ui` si testa diversamente, e per la ragione simmetrica: ciò che conta lì
+sono stili calcolati, focus da tastiera e contrasto, che jsdom non calcola. Quindi
+`pnpm --filter @repo/ui test` monta ogni storia in Chromium (vedi «Design
+system»). I test verificano comportamento e accessibilità, **non le misure**: uno
+Switch alto 29 invece di 18 li passava tutti. Per quello c'è Chromatic.
+
 ### Ambiente
 
 Node ≥ 24, pnpm 12, Docker. Primo avvio:
@@ -1289,6 +1379,9 @@ progetto, e server e worker lavorano su una coda vuota.
 | `pnpm db:migrate`                | applica le migration                      |
 | `pnpm db:studio`                 | Drizzle Studio                            |
 | `pnpm auth:generate`             | rigenera lo schema Better Auth            |
+| `pnpm --filter @repo/ui dev`     | Storybook, il banco del design system     |
+| `pnpm --filter @repo/ui test`    | le storie in Chromium, con axe            |
+| `pnpm --filter mobile start`     | Metro per lo scheletro Expo               |
 
 Tre arnesi che si lanciano a mano dal workspace `api` e non stanno fra i comandi
 di turbo, perché non fanno parte di nessuna pipeline:

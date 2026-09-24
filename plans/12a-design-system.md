@@ -418,13 +418,69 @@ Il banco prima, i componenti dentro il banco.
      prima — il server rende lo skeleton, il client ha già la sessione.
 5. **Scheletro `apps/mobile`** con Expo, una schermata che importa
    `packages/ui`: la prova che l'universale è universale.
+
+   **Il piano, deciso dopo aver guardato le versioni.** Expo 57 fissa React
+   19.2.3 e React Native 0.86.3; il monorepo era su React 19.2.0 e
+   `packages/ui` teneva React Native 0.87.1 per Storybook. Metro compila il
+   sorgente di `packages/ui` risolvendone gli import dalla sua cartella: con
+   versioni diverse nel bundle entrerebbero due React, e due React rompono
+   gli hook. Quindi, prima dello scheletro e in un commit a parte, React
+   19.2.3 ovunque e in `packages/ui` le versioni di Expo per `react-native` e
+   `react-native-svg`.
+
+   Poi lo scheletro, fatto a mano e senza `expo-router`: un `App.tsx` con il
+   `TamaguiProvider` della stessa `config` del web, un interruttore
+   chiaro/scuro e i quindici componenti in uno `ScrollView`. Solo lo script
+   `start` e niente `dev`, così `pnpm dev` non cambia. Qui si verifica con
+   `expo export` per Android e iOS ed `expo-doctor`; il giro vero è su un
+   telefono con Expo Go, e lo fa l'utente.
+
+   **Fatto qui, da provare sul telefono.** `e66998f` allinea le versioni,
+   `811a2a3` porta lo scheletro. Cosa si è misurato:
+
+   - **`^19.2.3` risolveva a 19.3.0**, e `better-auth` e i peer di Next
+     tiravano dentro anche la 19.2.0. La versione esatta non bastava: serve
+     l'`overrides` in `pnpm-workspace.yaml`, che si alza insieme alla SDK.
+   - **`expo export` per Android e iOS passa**, e la source map del bundle
+     ha una copia sola di React, React Native, `tamagui`, `@tamagui/core` e
+     `@tamagui/web`. La config di Metro è quella di default di Expo: nel
+     monorepo non è servito toccarla.
+   - **Il foglio del Select su telefono vuole `react-native-safe-area-context`**
+     e il suo `SafeAreaProvider` in cima all'albero. Tamagui non lo dichiara:
+     lo si scopre solo dall'errore di Metro.
+   - **`expo-doctor` segnala React Native due volte**: la seconda è la
+     variante di cartella sotto `react-native-reanimated@4.7.0`, che arriva
+     con `@tamagui/config` (via `@tamagui/animations-reanimated`) anche se il
+     driver è `v5-css`. Nel bundle non entra, quindi per Expo Go non conta.
+     Conterà il giorno di una build nativa, perché l'autolinking potrebbe
+     collegare una reanimated diversa dalla 4.5.1 di Expo: lì si decide se
+     fissarla con un override o toglierla.
+   - `expo-doctor` voleva anche `.expo/` ignorata: fatto. Due suoi controlli
+     falliscono per la rete del container, non per il progetto.
+
+   Resta il giro sul telefono: `pnpm --filter mobile start`, poi il QR con
+   Expo Go. Da guardare in particolare il Select (foglio dal basso), il
+   Dialog, il menu, il Combobox e il toast.
 6. **Le regole che tengono il confine**, in
    [packages/eslint-config](../packages/eslint-config): dentro `packages/ui` sono
    vietati `next/*`, `@repo/contracts` e `@repo/db`.
+
+   **Fatto** (`6a26907`), in [boundaries.js](../packages/eslint-config/boundaries.js):
+   `no-restricted-imports`, senza plugin. Già che c'era vale anche per
+   `apps/mobile` la regola che il CLAUDE.md scriveva da sempre: niente
+   `@repo/db` né `next/*`, `@repo/contracts` sì. Provata con un file che
+   importa tutti e tre: il lint si rompe. Escono come avvisi, per via di
+   `only-warn`, ma `--max-warnings 0` li rende fatali.
 7. **CLAUDE.md**: riscrivere la regola su web e mobile con la decisione presa e
    il suo perché, aggiungere la sezione sul design system (Tamagui, i tre livelli
    di token con la loro invariante, le alternative scartate), la nota su come si
    costruisce con Turbopack e quella su Chromium in CI.
+
+   **Fatto**: la regola su web e mobile dice ora che si condividono i
+   componenti e non le schermate; nuova sezione «Design system» con i tre
+   livelli di token, l'export unico, la React sola, la build con la CLI e le
+   quattro cose che le schermate devono sapere; le alternative scartate stanno
+   con le altre; i test e i comandi di `packages/ui` e `apps/mobile`.
 
 ## Verifica
 

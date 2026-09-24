@@ -34,6 +34,9 @@ dist
 # La config impacchettata che `tamagui build` scrive a ogni build.
 .tamagui/
 
+# Stato locale di Expo: dispositivi visti e impostazioni del server di sviluppo.
+.expo/
+
 # Output di un `tsc` lanciato a mano su un singolo file: ignora il tsconfig e
 # scrive il .js accanto al .ts. Gli unici .js legittimi stanno a radice di
 # package (le config di eslint, next, postcss) e queste righe non li toccano.

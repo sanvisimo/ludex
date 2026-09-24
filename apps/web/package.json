@@ -13,7 +13,7 @@
   "dependencies": {
     "@orpc/client": "^1.15.0",
     "@orpc/tanstack-query": "^1.15.0",
-    "@react-native/assets-registry": "^0.87.1",
+    "@react-native/assets-registry": "0.86.3",
     "@repo/auth": "workspace:*",
     "@repo/contracts": "workspace:*",
     "@repo/ui": "workspace:*",
@@ -25,8 +25,8 @@
     "next-intl": "^4.13.7",
     "next-themes": "^0.4.6",
     "nuqs": "^2.9.6",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-native-web": "^0.21.2",
     "tailwind-merge": "^3.6.0"
   },
