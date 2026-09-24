@@ -13,7 +13,23 @@ import {
   mediumValues,
   storeValues,
 } from '@repo/contracts';
-import { toast } from '@repo/ui';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+  toast,
+} from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -22,24 +38,6 @@ import { OwnershipBadges, ownershipKey } from '@/components/ownership-badges';
 import { PlatformCombobox } from '@/components/platform-combobox';
 import { RatingStars } from '@/components/rating-stars';
 import { TagPicker } from '@/components/tag-picker';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useMediumLabels, useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
@@ -184,7 +182,7 @@ export function EditEntryDialog({
 
   return (
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent maxW={576}>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{entry?.game.name ?? ''}</DialogDescription>
@@ -198,7 +196,7 @@ export function EditEntryDialog({
               value={status}
               onValueChange={(next) => setStatus(next as BacklogStatus)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger width="100%">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -302,7 +300,7 @@ export function EditEntryDialog({
                 value={store}
                 onValueChange={(next) => setStore(next as string)}
               >
-                <SelectTrigger className="w-40 shrink-0">
+                <SelectTrigger width={160} shrink={0}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -319,7 +317,7 @@ export function EditEntryDialog({
                 value={medium}
                 onValueChange={(next) => setMedium(next as string)}
               >
-                <SelectTrigger className="w-36 shrink-0">
+                <SelectTrigger width={144} shrink={0}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -334,7 +332,7 @@ export function EditEntryDialog({
               <Button
                 type="button"
                 variant="outline"
-                className="shrink-0"
+                shrink={0}
                 disabled={platformSlug === null}
                 onClick={addPending}
               >

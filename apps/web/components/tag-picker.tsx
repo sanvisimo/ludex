@@ -1,14 +1,12 @@
 'use client';
 
 import type { UserTag, UserTagKind } from '@repo/contracts';
-import { toast } from '@repo/ui';
+import { Button, Input, toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
@@ -121,6 +119,7 @@ export function TagPicker({
     <div className="grid gap-2">
       <div className="flex gap-2">
         <Input
+          flex={1}
           value={filter}
           onChange={(event) => setFilter(event.target.value)}
           onKeyDown={(event) => {
@@ -137,11 +136,11 @@ export function TagPicker({
         <Button
           type="button"
           variant="outline"
-          className="shrink-0"
+          shrink={0}
           disabled={!canCreate}
           onClick={create}
         >
-          <PlusIcon />
+          <PlusIcon size={16} />
           {t('addTag')}
         </Button>
       </div>
@@ -208,7 +207,7 @@ export function TagPicker({
                     aria-label={t('deleteTag', { name: row.name })}
                     onClick={() => setConfirming(row.id)}
                   >
-                    <Trash2Icon />
+                    <Trash2Icon size={16} />
                   </Button>
                 ))}
             </li>

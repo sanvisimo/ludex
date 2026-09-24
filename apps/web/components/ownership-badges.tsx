@@ -7,11 +7,11 @@ import type {
   Subscription,
 } from '@repo/contracts';
 import { storeAccountName } from '@repo/contracts';
+import { Badge } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { XIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { Badge } from '@/components/ui/badge';
 import { useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 
@@ -111,7 +111,7 @@ export function OwnershipBadges({
             // lista non ci sono due possessi con la stessa piattaforma e store.
             key={ownership.id ?? ownershipKey(ownership)}
             variant="secondary"
-            className={onRemove ? 'gap-1 pr-1' : undefined}
+            pr={onRemove ? 4 : undefined}
           >
             {label}
             {onRemove && (

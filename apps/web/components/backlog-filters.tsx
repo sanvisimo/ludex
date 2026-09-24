@@ -7,21 +7,22 @@ import type {
   UserTagKind,
 } from '@repo/contracts';
 import { attributeKindValues, backlogStatusValues } from '@repo/contracts';
-import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-import { debounce } from 'nuqs';
-import { useEffect, useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
+  Button,
+  Input,
+  type InputProps,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@repo/ui';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { debounce } from 'nuqs';
+import { useEffect, useState } from 'react';
+
 import { toggle, useBacklogFilter } from '@/lib/backlog-filter';
 import {
   useGameTypeLabels,
@@ -60,7 +61,7 @@ export function BacklogFilters() {
         <SearchField />
 
         <div className="flex items-center gap-2">
-          <Label htmlFor="sort" className="text-muted-foreground">
+          <Label htmlFor="sort" color="$color11">
             {t('sortLabel')}
           </Label>
           <Select
@@ -70,7 +71,7 @@ export function BacklogFilters() {
               setFilter({ sort: value as keyof ReturnType<typeof sortLabels> })
             }
           >
-            <SelectTrigger id="sort" className="w-44">
+            <SelectTrigger id="sort" width={176}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -100,7 +101,7 @@ export function BacklogFilters() {
           <Button
             variant="ghost"
             size="sm"
-            className="ml-auto"
+            ml="auto"
             onClick={() => void reset()}
           >
             {t('reset', { count: activeCount })}
@@ -379,7 +380,8 @@ function SearchField() {
         );
       }}
       placeholder={t('searchPlaceholder')}
-      className="w-full sm:w-64"
+      width="100%"
+      $sm={{ width: 256 }}
       maxLength={100}
     />
   );
@@ -468,7 +470,7 @@ function NumberField({
 }: {
   value: number | null;
   onChange: (value: number | null) => void;
-} & Omit<React.ComponentProps<'input'>, 'value' | 'onChange' | 'type'>) {
+} & Omit<InputProps, 'value' | 'onChange' | 'type'>) {
   return (
     <Input
       {...props}
@@ -496,7 +498,7 @@ function HoursField({
 }: {
   minutes: number | null;
   onChange: (minutes: number | null) => void;
-} & Omit<React.ComponentProps<'input'>, 'value' | 'onChange' | 'type'>) {
+} & Omit<InputProps, 'value' | 'onChange' | 'type'>) {
   return (
     <NumberField
       {...props}

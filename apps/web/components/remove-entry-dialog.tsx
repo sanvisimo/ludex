@@ -1,19 +1,19 @@
 'use client';
 
 import type { BacklogEntry } from '@repo/contracts';
-import { toast } from '@repo/ui';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-
-import { Button } from '@/components/ui/button';
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+  toast,
+} from '@repo/ui';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useSetEntryHidden } from '@/lib/hide-entry';
 import { api, client } from '@/lib/orpc';
@@ -76,7 +76,7 @@ export function RemoveEntryDialog({
 
   return (
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent maxW={512}>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{entry?.game.name ?? ''}</DialogDescription>
@@ -94,7 +94,7 @@ export function RemoveEntryDialog({
           )}
         </div>
 
-        <DialogFooter showCloseButton={false}>
+        <DialogFooter>
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
