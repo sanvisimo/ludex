@@ -1367,6 +1367,25 @@ Porte: web 8085, api 3005, dashboard delle code 3002, Postgres **5433** e Redis
 `REDIS_URL` rimasto sulla 6379 non dà errore: si collega al Redis dell'altro
 progetto, e server e worker lavorano su una coda vuota.
 
+**Lo scheletro mobile sul telefono** si apre con Expo Go, e Metro sta sulla
+8081. Sviluppando dentro WSL2 la rete locale non basta: WSL sta dietro un NAT e
+il telefono non vede il suo indirizzo. La strada è il **cavo USB**:
+
+```bash
+pnpm --filter mobile start:usb     # adb.exe reverse tcp:8081, poi expo start --localhost
+```
+
+`adb reverse` fa arrivare la 8081 del telefono al PC, e Windows la passa a WSL
+da solo; Expo Go apre `exp://127.0.0.1:8081`. Serve una volta sola: debug USB
+acceso sul telefono, e i *platform-tools* di Android su Windows con `adb.exe`
+nel `PATH` di WSL (o un altro `adb` indicato con `ADB=`). Senza cavo c'è
+`start:tunnel`, che passa da ngrok ed è più lento.
+
+Il cavo non è un ripiego ma la scelta, per quello che verrà: quando l'app
+chiamerà l'API basterà un secondo `adb reverse tcp:3005`, e il telefono la
+raggiungerà su `localhost:3005` come il browser, senza indirizzi di rete da
+configurare.
+
 ### Comandi
 
 | Comando                          | Cosa fa                                   |
@@ -1381,7 +1400,7 @@ progetto, e server e worker lavorano su una coda vuota.
 | `pnpm auth:generate`             | rigenera lo schema Better Auth            |
 | `pnpm --filter @repo/ui dev`     | Storybook, il banco del design system     |
 | `pnpm --filter @repo/ui test`    | le storie in Chromium, con axe            |
-| `pnpm --filter mobile start`     | Metro per lo scheletro Expo               |
+| `pnpm --filter mobile start:usb` | Metro per lo scheletro Expo, via USB      |
 
 Tre arnesi che si lanciano a mano dal workspace `api` e non stanno fra i comandi
 di turbo, perché non fanno parte di nessuna pipeline:
