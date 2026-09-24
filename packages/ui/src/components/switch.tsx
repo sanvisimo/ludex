@@ -26,6 +26,11 @@ export function Switch(props: SwitchProps) {
     <SwitchBase
       width={32}
       height={18}
+      // La variante `size` di Tamagui mette anche un `minHeight` (29 con la
+      // taglia di serie), e quello vince sull'altezza: il binario restava alto
+      // 29 e diventava una macchia tonda. I test non lo vedevano, perché
+      // guardano il comportamento e non le misure.
+      minH={18}
       p={1}
       borderWidth={0}
       bg="$color9"
