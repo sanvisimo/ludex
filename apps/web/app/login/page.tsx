@@ -1,22 +1,23 @@
 'use client';
 
 import { signIn } from '@repo/auth/client';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
-
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import {
+  Alert,
+  AlertDescription,
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+  Input,
+  Label,
+} from '@repo/ui';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+
 import { useAuthErrorMessage } from '@/lib/auth-error';
 
 /**
@@ -114,9 +115,9 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-svh items-center justify-center p-6">
-      <Card className="w-full max-w-sm">
+      <Card width="100%" maxW={384}>
         <CardHeader>
-          <CardTitle className="text-lg">{t('title')}</CardTitle>
+          <CardTitle fontSize={18} lineHeight={28}>{t('title')}</CardTitle>
           <CardDescription>{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>

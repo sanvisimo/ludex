@@ -127,3 +127,15 @@
     @apply font-sans;
     }
 }
+/*
+ * Transizione del 12a, da togliere con Tailwind. La Card di shadcn metteva
+ * `text-sm` su tutto il suo contenuto, e le schermate ci contano: il testo DOM
+ * dentro una scheda (i `<p>` con classi Tailwind) si aspetta 14 px. La Card di
+ * Tamagui non lo fa — i suoi testi hanno la loro misura — quindi la si
+ * restituisce qui, per ereditarietà, a ciò che non è un componente Tamagui.
+ * `is_Card` è la classe che Tamagui scrive col nome del componente.
+ */
+.is_Card {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
