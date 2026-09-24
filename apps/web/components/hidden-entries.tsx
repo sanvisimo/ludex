@@ -1,13 +1,12 @@
 'use client';
 
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { OwnershipBadges } from '@/components/ownership-badges';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSetEntryHidden } from '@/lib/hide-entry';
 import { api } from '@/lib/orpc';
 
@@ -45,7 +44,7 @@ export function HiddenEntries() {
       <CardHeader>
         <CardTitle>{t('title', { count: total })}</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-3">
+      <CardContent gap={12}>
         <p className="text-muted-foreground">{t('description')}</p>
         <ul className="grid gap-2">
           {entries.map((entry) => (

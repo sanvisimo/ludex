@@ -2,19 +2,22 @@
 
 import type { LinkableStore } from '@repo/contracts';
 import { linkableStoreValues } from '@repo/contracts';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-
-import { StoreLinkForm } from '@/components/store-link-form';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@repo/ui';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+
+import { StoreLinkForm } from '@/components/store-link-form';
 import { useStoreLabels } from '@/lib/labels';
 
 /**
@@ -37,7 +40,7 @@ export function AddStoreAccount() {
       <CardHeader>
         <CardTitle>{t('title')}</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-4">
+      <CardContent gap={16}>
         <p className="text-muted-foreground">{t('description')}</p>
 
         <div className="grid gap-2">
@@ -47,7 +50,7 @@ export function AddStoreAccount() {
             onValueChange={(value) => setStore(value as LinkableStore)}
             items={storeLabels}
           >
-            <SelectTrigger className="w-full sm:w-64">
+            <SelectTrigger width="100%" $sm={{ width: 256 }}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

@@ -1,22 +1,22 @@
 'use client';
 
 import type { IgdbSearchHit, UnresolvedImport } from '@repo/contracts';
-import { toast } from '@repo/ui';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-
-import { Button } from '@/components/ui/button';
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
+  Input,
+  Label,
+  Skeleton,
+  toast,
+} from '@repo/ui';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useGameTypeLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
@@ -84,7 +84,7 @@ export function ResolveImportDialog({
         onOpenChange(open);
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent maxW={512}>
         <DialogHeader>
           <DialogTitle>{t('resolveTitle')}</DialogTitle>
           <DialogDescription>
@@ -99,6 +99,7 @@ export function ResolveImportDialog({
           <Label htmlFor="cerca">{t('searchLabel')}</Label>
           <div className="flex gap-2">
             <Input
+              flex={1}
               id="cerca"
               value={query || (entry?.name ?? '')}
               onChange={(event) => setQuery(event.target.value)}
@@ -107,7 +108,7 @@ export function ResolveImportDialog({
             <Button
               type="button"
               variant="outline"
-              className="shrink-0"
+              shrink={0}
               onClick={() => setSubmitted(query || (entry?.name ?? ''))}
             >
               {t('search')}
@@ -119,7 +120,12 @@ export function ResolveImportDialog({
               {search.isFetching ? (
                 <div className="grid gap-2 p-2">
                   {Array.from({ length: 3 }).map((_, index) => (
-                    <Skeleton key={index} className="h-10 w-full rounded-md" />
+                    <Skeleton
+                      key={index}
+                      height={40}
+                      width="100%"
+                      rounded={6}
+                    />
                   ))}
                 </div>
               ) : search.error ? (

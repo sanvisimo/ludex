@@ -2,7 +2,15 @@
 
 import { useSession } from '@repo/auth/client';
 import type { StoreAccount, UnresolvedImport } from '@repo/contracts';
-import { toast } from '@repo/ui';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Skeleton,
+  toast,
+} from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -15,9 +23,6 @@ import { ResolveImportDialog } from '@/components/resolve-import-dialog';
 import { StoreAccountCard } from '@/components/store-account-card';
 import { UnresolvedImports } from '@/components/unresolved-imports';
 import { UnlinkAccountDialog } from '@/components/unlink-account-dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
@@ -60,7 +65,9 @@ export default function AccountPage() {
   const syncAll = useMutation({
     mutationFn: () => client.accounts.syncAll(),
     onSuccess: async ({ queued, needsReauth }) => {
-      await queryClient.invalidateQueries({ queryKey: api.accounts.list.key() });
+      await queryClient.invalidateQueries({
+        queryKey: api.accounts.list.key(),
+      });
       // Un account da ricollegare non ferma gli altri, ma va detto: la sua
       // scheda lo segnala già, il toast dice perché non è partito.
       if (queued > 0 || needsReauth === 0)
@@ -80,7 +87,7 @@ export default function AccountPage() {
   if (sessionPending || !session) {
     return (
       <main className="mx-auto grid max-w-4xl gap-6 p-6">
-        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton height={128} width="100%" rounded={12} />
       </main>
     );
   }
@@ -107,7 +114,7 @@ export default function AccountPage() {
         <CardHeader>
           <CardTitle>{t('profile.title')}</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-1">
+        <CardContent gap={4}>
           <p className="font-medium">{session.user.name}</p>
           <p className="text-muted-foreground">{session.user.email}</p>
         </CardContent>
@@ -123,7 +130,7 @@ export default function AccountPage() {
       )}
 
       {accounts.isPending || settings.isPending ? (
-        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton height={128} width="100%" rounded={12} />
       ) : (
         accounts.data?.map((account) => (
           <StoreAccountCard

@@ -1,14 +1,11 @@
 'use client';
 
 import type { LinkableStore } from '@repo/contracts';
-import { toast } from '@repo/ui';
+import { Button, Input, Label, toast } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
@@ -82,7 +79,9 @@ export function StoreLinkForm({
       await queryClient.invalidateQueries({
         queryKey: api.accounts.loginUrl.key(),
       });
-      await queryClient.invalidateQueries({ queryKey: api.accounts.list.key() });
+      await queryClient.invalidateQueries({
+        queryKey: api.accounts.list.key(),
+      });
       toast.success(t('linked'));
     },
     onError: (error) =>
@@ -100,7 +99,7 @@ export function StoreLinkForm({
       {loginUrl.data?.url && (
         <Button
           variant="outline"
-          className="justify-self-start"
+          width="max-content"
           onClick={() => {
             setOpenedState(loginUrl.data.state);
             window.open(loginUrl.data.url!, '_blank', 'noopener');
@@ -112,12 +111,18 @@ export function StoreLinkForm({
 
       <div className="grid gap-2">
         <Label htmlFor={`collega-${store}`}>
-          {loginUrl.data?.url ? t('pasteStep', { address: store === 'psn' ? t('pasteContent') : t('pasteAddress') }) : tStore('inputLabel')}
+          {loginUrl.data?.url
+            ? t('pasteStep', {
+                address:
+                  store === 'psn' ? t('pasteContent') : t('pasteAddress'),
+              })
+            : tStore('inputLabel')}
         </Label>
         <div className="flex flex-wrap gap-2">
           <Input
             id={`collega-${store}`}
-            className="min-w-64 flex-1"
+            minW={256}
+            flex={1}
             value={value}
             onChange={(event) => setValue(event.target.value)}
             placeholder={tStore('placeholder')}

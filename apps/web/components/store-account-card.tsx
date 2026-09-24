@@ -2,18 +2,24 @@
 
 import type { LinkableStore, Store, StoreAccount } from '@repo/contracts';
 import { linkableStoreValues, storeAccountName } from '@repo/contracts';
-import { toast } from '@repo/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Switch,
+  XStack,
+  toast,
+} from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useFormatter, useNow, useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { StoreLinkForm } from '@/components/store-link-form';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
@@ -58,6 +64,9 @@ export function StoreAccountCard({
   onUnlink: () => void;
 }) {
   const t = useTranslations('account.store');
+  // Lo Switch sta accanto al Label e non dentro: serve un id per legarli, e
+  // gli account in pagina sono più d'uno.
+  const autoSyncId = useId();
   const format = useFormatter();
   // Il riferimento di «X fa» è esplicito e avanza da sé: la pagina resta aperta
   // mentre l'import gira, e un «3 minuti fa» fermo diventerebbe falso.
@@ -84,7 +93,9 @@ export function StoreAccountCard({
       client.accounts.rename({ accountId: account.id, label: label ?? null }),
     onSuccess: async () => {
       setLabel(null);
-      await queryClient.invalidateQueries({ queryKey: api.accounts.list.key() });
+      await queryClient.invalidateQueries({
+        queryKey: api.accounts.list.key(),
+      });
       // Il nome dell'account compare anche sui possessi, nella scheda del gioco.
       await queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
     },
@@ -115,7 +126,9 @@ export function StoreAccountCard({
   const sync = useMutation({
     mutationFn: () => client.accounts.sync({ accountId: account.id }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: api.accounts.list.key() });
+      await queryClient.invalidateQueries({
+        queryKey: api.accounts.list.key(),
+      });
       toast.success(t('syncStarted'));
     },
     onError: (error) =>
@@ -134,7 +147,7 @@ export function StoreAccountCard({
       <CardHeader>
         <CardTitle>{storeLabels[account.store]}</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-4">
+      <CardContent gap={16}>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">{storeAccountName(account)}</Badge>
           {/* Il nome del negozio accanto all'etichetta: serve a ritrovare quale
@@ -168,21 +181,22 @@ export function StoreAccountCard({
           <Button
             onClick={() => sync.mutate()}
             disabled={busy || syncing || sync.isPending}
-            className="justify-self-start"
+            width="max-content"
           >
             {t('sync')}
           </Button>
         )}
 
         <div className="grid gap-2">
-          <Label className="gap-3">
+          <XStack items="center" gap={12}>
             <Switch
+              id={autoSyncId}
               checked={autoSyncChecked}
               onCheckedChange={(value) => autoSync.mutate(value)}
               disabled={!autoSyncLibrary || autoSync.isPending}
             />
-            {t('autoSync')}
-          </Label>
+            <Label htmlFor={autoSyncId}>{t('autoSync')}</Label>
+          </XStack>
           {!autoSyncLibrary ? (
             <p className="text-muted-foreground">{t('autoSyncOffGlobally')}</p>
           ) : (
@@ -201,14 +215,15 @@ export function StoreAccountCard({
           <Button
             variant="ghost"
             onClick={() => setLabel(account.label ?? '')}
-            className="justify-self-start"
+            width="max-content"
           >
             {account.label ? t('renameEdit') : t('renameAdd')}
           </Button>
         ) : (
           <div className="flex flex-wrap gap-2">
             <Input
-              className="min-w-48 flex-1"
+              minW={192}
+              flex={1}
               value={label}
               onChange={(event) => setLabel(event.target.value)}
               placeholder={t('labelPlaceholder')}
@@ -228,7 +243,7 @@ export function StoreAccountCard({
           variant="ghost"
           onClick={onUnlink}
           disabled={busy || syncing}
-          className="justify-self-start"
+          width="max-content"
         >
           {t('unlink')}
         </Button>

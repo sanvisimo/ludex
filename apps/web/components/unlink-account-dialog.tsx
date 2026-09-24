@@ -2,20 +2,20 @@
 
 import type { StoreAccount } from '@repo/contracts';
 import { storeAccountName } from '@repo/contracts';
-import { toast } from '@repo/ui';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-
-import { Button } from '@/components/ui/button';
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
+  Skeleton,
+  toast,
+} from '@repo/ui';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
@@ -84,7 +84,7 @@ export function UnlinkAccountDialog({
 
   return (
     <Dialog open={account !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent maxW={512}>
         <DialogHeader>
           <DialogTitle>
             {t('title', {
@@ -96,7 +96,7 @@ export function UnlinkAccountDialog({
 
         <div className="grid gap-2">
           {impact.isPending ? (
-            <Skeleton className="h-16 w-full rounded-lg" />
+            <Skeleton height={64} width="100%" rounded={8} />
           ) : impact.data ? (
             <div className="grid gap-1 rounded-lg bg-muted/50 px-3 py-2">
               <p>{t('summary', { count: impact.data.ownerships })}</p>
@@ -115,7 +115,7 @@ export function UnlinkAccountDialog({
           ) : null}
         </div>
 
-        <DialogFooter showCloseButton={false}>
+        <DialogFooter>
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
