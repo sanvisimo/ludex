@@ -2,11 +2,11 @@
 
 import { useSession } from '@repo/auth/client';
 import type { StoreAccount, UnresolvedImport } from '@repo/contracts';
+import { toast } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 
 import { AddStoreAccount } from '@/components/add-store-account';
 import { AutoSyncSettings } from '@/components/auto-sync-settings';

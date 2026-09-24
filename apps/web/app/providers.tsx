@@ -1,6 +1,6 @@
 'use client';
 
-import { config, TamaguiProvider } from '@repo/ui';
+import { config, TamaguiProvider, Toaster } from '@repo/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from 'next-themes';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
@@ -43,6 +43,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               quello è un componente server. */}
           <NuqsAdapter>{children}</NuqsAdapter>
         </QueryClientProvider>
+        <Toaster />
       </DesignSystem>
     </ThemeProvider>
   );

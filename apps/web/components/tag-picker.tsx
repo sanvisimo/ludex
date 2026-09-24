@@ -1,11 +1,11 @@
 'use client';
 
 import type { UserTag, UserTagKind } from '@repo/contracts';
+import { toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

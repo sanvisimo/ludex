@@ -12,11 +12,11 @@ import {
   mediumValues,
   storeValues,
 } from '@repo/contracts';
+import { toast } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { XIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 import { PlatformCombobox } from '@/components/platform-combobox';
 import { Badge } from '@/components/ui/badge';

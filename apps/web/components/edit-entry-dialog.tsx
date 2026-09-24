@@ -13,10 +13,10 @@ import {
   mediumValues,
   storeValues,
 } from '@repo/contracts';
+import { toast } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 
 import { OwnershipBadges, ownershipKey } from '@/components/ownership-badges';
 import { PlatformCombobox } from '@/components/platform-combobox';

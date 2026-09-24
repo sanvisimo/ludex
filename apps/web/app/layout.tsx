@@ -4,7 +4,6 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
 
 import { SiteNav } from '@/components/site-nav';
-import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 
 import { Providers } from './providers';
@@ -49,7 +48,6 @@ export default async function RootLayout({
           <Providers>
             <SiteNav />
             {children}
-            <Toaster />
           </Providers>
         </NextIntlClientProvider>
       </body>

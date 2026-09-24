@@ -2,10 +2,10 @@
 
 import type { HiddenKind, UnresolvedImport } from '@repo/contracts';
 import { hiddenKindValues } from '@repo/contracts';
+import { toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronDownIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

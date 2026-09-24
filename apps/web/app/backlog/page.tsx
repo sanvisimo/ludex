@@ -2,11 +2,11 @@
 
 import type { BacklogEntry, BacklogStatus } from '@repo/contracts';
 import { backlogStatusValues } from '@repo/contracts';
+import { toast } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
 import { AddGameDialog } from '@/components/add-game-dialog';
 import { BacklogFilters } from '@/components/backlog-filters';

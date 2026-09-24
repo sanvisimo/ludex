@@ -1,9 +1,9 @@
 'use client';
 
 import { AUTO_SYNC_EVERY_DAYS, type UserSettings } from '@repo/contracts';
+import { toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';

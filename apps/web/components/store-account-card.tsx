@@ -2,10 +2,10 @@
 
 import type { LinkableStore, Store, StoreAccount } from '@repo/contracts';
 import { linkableStoreValues, storeAccountName } from '@repo/contracts';
+import { toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useFormatter, useNow, useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 import { StoreLinkForm } from '@/components/store-link-form';
 import { Badge } from '@/components/ui/badge';
