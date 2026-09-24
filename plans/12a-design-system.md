@@ -418,6 +418,22 @@ Il banco prima, i componenti dentro il banco.
      prima — il server rende lo skeleton, il client ha già la sessione.
 5. **Scheletro `apps/mobile`** con Expo, una schermata che importa
    `packages/ui`: la prova che l'universale è universale.
+
+   **Il piano, deciso dopo aver guardato le versioni.** Expo 57 fissa React
+   19.2.3 e React Native 0.86.3; il monorepo era su React 19.2.0 e
+   `packages/ui` teneva React Native 0.87.1 per Storybook. Metro compila il
+   sorgente di `packages/ui` risolvendone gli import dalla sua cartella: con
+   versioni diverse nel bundle entrerebbero due React, e due React rompono
+   gli hook. Quindi, prima dello scheletro e in un commit a parte, React
+   19.2.3 ovunque e in `packages/ui` le versioni di Expo per `react-native` e
+   `react-native-svg`.
+
+   Poi lo scheletro, fatto a mano e senza `expo-router`: un `App.tsx` con il
+   `TamaguiProvider` della stessa `config` del web, un interruttore
+   chiaro/scuro e i quindici componenti in uno `ScrollView`. Solo lo script
+   `start` e niente `dev`, così `pnpm dev` non cambia. Qui si verifica con
+   `expo export` per Android e iOS ed `expo-doctor`; il giro vero è su un
+   telefono con Expo Go, e lo fa l'utente.
 6. **Le regole che tengono il confine**, in
    [packages/eslint-config](../packages/eslint-config): dentro `packages/ui` sono
    vietati `next/*`, `@repo/contracts` e `@repo/db`.

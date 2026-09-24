@@ -22,3 +22,11 @@ minimumReleaseAgeExclude:
   - '@better-auth/prisma-adapter@1.6.27'
   - '@better-auth/telemetry@1.6.27'
   - better-auth@1.6.27
+# Una React sola in tutto il repo, alla versione che Expo fissa per la sua SDK.
+# Metro compila il sorgente di `packages/ui` risolvendo gli import dalla sua
+# cartella: con due versioni nel monorepo il bundle mobile ne conterrebbe due, e
+# due React rompono gli hook. Senza override, `better-auth` e i peer di Next ne
+# tiravano dentro altre (19.2.0, 19.3.0). Si alza insieme alla SDK di Expo.
+overrides:
+  react: 19.2.3
+  react-dom: 19.2.3
