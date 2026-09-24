@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 8085",
-    "build": "next build",
+    "build": "tamagui build --target web . --exclude \"{node_modules,.next}/**\" -- next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit"
@@ -35,6 +35,8 @@
     "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@tamagui/cli": "2.7.7",
+    "@tamagui/core": "^2.7.7",
+    "@tamagui/web": "^2.7.7",
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
