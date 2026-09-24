@@ -1,13 +1,12 @@
 'use client';
 
+import { Card, CardContent, Skeleton } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { GameCover } from '@/components/game-cover';
 import { GameDuration } from '@/components/game-duration';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/orpc';
 
 // Catalogo pubblico: "questi giochi Ludex li conosce". Volutamente anonimo —
@@ -30,13 +29,13 @@ export default function CatalogPage() {
       ) : isPending ? (
         <div className="grid gap-2">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-16 w-full rounded-xl" />
+            <Skeleton key={index} height={64} width="100%" rounded={12} />
           ))}
         </div>
       ) : data.length === 0 ? (
         <Card>
-          <CardContent className="text-muted-foreground">
-            {t('empty')}
+          <CardContent>
+            <p className="text-muted-foreground">{t('empty')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -44,8 +43,8 @@ export default function CatalogPage() {
           {data.map((game) => (
             <li key={game.id}>
               <Link href={`/games/${game.id}`} className="block">
-                <Card className="transition-colors hover:bg-muted/50">
-                  <CardContent className="flex items-center gap-4">
+                <Card interactive>
+                  <CardContent flexDirection="row" items="center" gap={16}>
                     <GameCover imageId={game.coverImageId} name={game.name} />
                     <div className="grid gap-0.5">
                       <span className="font-medium">{game.name}</span>

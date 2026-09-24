@@ -2,11 +2,22 @@
 
 import type { BacklogEntry, BacklogStatus } from '@repo/contracts';
 import { backlogStatusValues } from '@repo/contracts';
+import {
+  Button,
+  Card,
+  CardContent,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Skeleton,
+  toast,
+} from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
 import { AddGameDialog } from '@/components/add-game-dialog';
 import { BacklogFilters } from '@/components/backlog-filters';
@@ -18,16 +29,6 @@ import { GameDuration } from '@/components/game-duration';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { OwnershipBadges } from '@/components/ownership-badges';
 import { RatingValue } from '@/components/rating-value';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { toQueryInput, useBacklogFilter } from '@/lib/backlog-filter';
 import { useSetEntryHidden } from '@/lib/hide-entry';
@@ -146,12 +147,12 @@ export default function BacklogPage() {
       ) : backlog.isPending ? (
         <div className="grid gap-2">
           {Array.from({ length: 3 }).map((_, index) => (
-            <Skeleton key={index} className="h-24 w-full rounded-xl" />
+            <Skeleton key={index} height={96} width="100%" rounded={12} />
           ))}
         </div>
       ) : entries.length === 0 ? (
         <Card>
-          <CardContent className="grid gap-2">
+          <CardContent gap={8}>
             {/* Vuoto perché non hai giochi e vuoto perché nessuno passa i
                 filtri sono due cose diverse, e la seconda ha una via d'uscita. */}
             <p className="font-medium">
@@ -174,7 +175,7 @@ export default function BacklogPage() {
             {entries.map((entry) => (
               <li key={entry.id}>
                 <Card>
-                  <CardContent className="grid gap-3">
+                  <CardContent gap={12}>
                     <div className="flex items-start gap-3">
                       <GameCover
                         imageId={entry.game.coverImageId}
@@ -216,7 +217,7 @@ export default function BacklogPage() {
                           })
                         }
                       >
-                        <SelectTrigger className="w-44">
+                        <SelectTrigger width={176}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -231,7 +232,7 @@ export default function BacklogPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="ml-auto"
+                        ml="auto"
                         onClick={() => setEditing(entry)}
                       >
                         {t('edit')}
@@ -270,7 +271,7 @@ export default function BacklogPage() {
           {entries.length < total && (
             <Button
               variant="outline"
-              className="justify-self-center"
+              mx="auto"
               disabled={backlog.isFetching}
               onClick={() => setLimit((current) => current + PAGINA)}
             >

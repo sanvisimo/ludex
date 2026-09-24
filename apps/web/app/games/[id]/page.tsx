@@ -1,23 +1,29 @@
 'use client';
 
 import type { GameAttribute } from '@repo/contracts';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Skeleton,
+  XStack,
+} from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import { use, useState } from 'react';
 
 import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import { EntryTags } from '@/components/entry-tags';
+import { ButtonLink } from '@/components/button-link';
 import { CriticScores } from '@/components/critic-scores';
 import { GameCover } from '@/components/game-cover';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { HltbTimes } from '@/components/hltb-times';
 import { OwnershipBadges } from '@/components/ownership-badges';
 import { RatingValue } from '@/components/rating-value';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useSetEntryHidden } from '@/lib/hide-entry';
 import { useStatusLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
@@ -78,8 +84,8 @@ export default function GamePage({
   if (isPending) {
     return (
       <main className="mx-auto grid max-w-3xl gap-4 p-6">
-        <Skeleton className="h-9 w-64" />
-        <Skeleton className="h-48 w-full rounded-xl" />
+        <Skeleton height={36} width={256} />
+        <Skeleton height={192} width="100%" rounded={12} />
       </main>
     );
   }
@@ -91,14 +97,9 @@ export default function GamePage({
           {t('notFoundTitle')}
         </h1>
         <p className="text-muted-foreground">{t('notFoundHint')}</p>
-        <Button
-          variant="outline"
-          className="w-fit"
-          nativeButton={false}
-          render={<Link href="/" />}
-        >
+        <ButtonLink variant="outline" width="max-content" href="/">
           {t('backToCatalog')}
-        </Button>
+        </ButtonLink>
       </main>
     );
   }
@@ -152,14 +153,14 @@ export default function GamePage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex flex-wrap items-center gap-2">
-            {entry ? t('inBacklog') : t('notInBacklog')}
+          <XStack flexWrap="wrap" items="center" gap={8}>
+            <CardTitle>{entry ? t('inBacklog') : t('notInBacklog')}</CardTitle>
             {entry?.hiddenAt && (
               <Badge variant="secondary">{tHidden('badge')}</Badge>
             )}
-          </CardTitle>
+          </XStack>
         </CardHeader>
-        <CardContent className="grid gap-3">
+        <CardContent gap={12}>
           {entry ? (
             <>
               {/* Ci si arriva da una ricerca o da un link: senza, il gioco
@@ -182,16 +183,11 @@ export default function GamePage({
               <EntryTags tags={entry.tags} />
               <OwnershipBadges ownerships={entry.ownerships} />
               <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  className="w-fit"
-                  onClick={() => setEditing(true)}
-                >
+                <Button variant="outline" onClick={() => setEditing(true)}>
                   {t('edit')}
                 </Button>
                 <Button
                   variant="ghost"
-                  className="w-fit"
                   onClick={() =>
                     setHidden.mutate({
                       id: entry.id,
@@ -204,14 +200,9 @@ export default function GamePage({
                     ? tHidden('hide')
                     : tHidden('unhide')}
                 </Button>
-                <Button
-                  variant="ghost"
-                  className="w-fit"
-                  nativeButton={false}
-                  render={<Link href="/backlog" />}
-                >
+                <ButtonLink variant="ghost" href="/backlog">
                   {t('goToBacklog')}
-                </Button>
+                </ButtonLink>
               </div>
             </>
           ) : (

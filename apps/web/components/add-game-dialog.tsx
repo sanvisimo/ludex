@@ -12,16 +12,9 @@ import {
   mediumValues,
   storeValues,
 } from '@repo/contracts';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { XIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-
-import { PlatformCombobox } from '@/components/platform-combobox';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
+  Badge,
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -29,17 +22,22 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+  Skeleton,
+  toast,
+} from '@repo/ui';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { XIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+
+import { PlatformCombobox } from '@/components/platform-combobox';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useMediumLabels, useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { useGameTypeLabels } from '@/lib/labels';
@@ -184,7 +182,7 @@ export function AddGameDialog() {
     >
       <DialogTrigger render={<Button>{t('trigger')}</Button>} />
 
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent maxW={576}>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{t('description')}</DialogDescription>
@@ -195,6 +193,7 @@ export function AddGameDialog() {
             <Label htmlFor="titolo">{t('titleLabel')}</Label>
             <div className="flex gap-2">
               <Input
+                flex={1}
                 id="titolo"
                 value={title}
                 onChange={(event) => editTitle(event.target.value)}
@@ -204,7 +203,7 @@ export function AddGameDialog() {
               <Button
                 type="button"
                 variant="outline"
-                className="shrink-0"
+                shrink={0}
                 disabled={title.trim().length < 2}
                 onClick={() => {
                   setSearchOpen(true);
@@ -242,7 +241,9 @@ export function AddGameDialog() {
                     {Array.from({ length: 3 }).map((_, index) => (
                       <Skeleton
                         key={index}
-                        className="h-10 w-full rounded-md"
+                        height={40}
+                        width="100%"
+                        rounded={6}
                       />
                     ))}
                   </div>
@@ -282,7 +283,7 @@ export function AddGameDialog() {
           <div className="grid gap-2">
             <Label>{t('ownershipLabel')}</Label>
             {platforms.isPending ? (
-              <Skeleton className="h-9 w-full rounded-lg" />
+              <Skeleton height={36} width="100%" rounded={8} />
             ) : (
               <div className="grid gap-2">
                 {rows.map((row, index) => (
@@ -321,7 +322,7 @@ export function AddGameDialog() {
                         )
                       }
                     >
-                      <SelectTrigger className="w-40 shrink-0">
+                      <SelectTrigger width={160} shrink={0}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -346,7 +347,7 @@ export function AddGameDialog() {
                         )
                       }
                     >
-                      <SelectTrigger className="w-36 shrink-0">
+                      <SelectTrigger width={144} shrink={0}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -372,7 +373,7 @@ export function AddGameDialog() {
                           )
                         }
                       >
-                        <XIcon />
+                        <XIcon size={16} />
                       </Button>
                     )}
                   </div>
@@ -380,7 +381,7 @@ export function AddGameDialog() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-fit"
+                  width="max-content"
                   onClick={() => setRows((current) => [...current, emptyRow()])}
                 >
                   {t('addPlatform')}
@@ -399,7 +400,7 @@ export function AddGameDialog() {
               value={status}
               onValueChange={(next) => setStatus(next as BacklogStatus)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger width="100%">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

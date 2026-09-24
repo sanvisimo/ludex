@@ -1,9 +1,6 @@
 'use client';
 
 import type { Platform } from '@repo/contracts';
-import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
-
 import {
   Combobox,
   ComboboxContent,
@@ -11,7 +8,9 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from '@/components/ui/combobox';
+} from '@repo/ui';
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
 // Le piattaforme sono 96: una tendina semplice sarebbe inusabile, serve un campo
 // che filtri mentre scrivi. Gli item sono gli slug, non oggetti, così il valore
@@ -47,7 +46,7 @@ export function PlatformCombobox({
     >
       {/* ComboboxInput È il campo: contiene già input e chevron. Non va dentro
           il popup, altrimenti il posizionamento perde l'ancora. */}
-      <ComboboxInput placeholder={t('placeholder')} className="w-full" />
+      <ComboboxInput placeholder={t('placeholder')} width="100%" />
       <ComboboxContent>
         <ComboboxEmpty>{t('empty')}</ComboboxEmpty>
         <ComboboxList>

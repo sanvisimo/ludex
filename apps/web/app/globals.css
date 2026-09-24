@@ -1,8 +1,6 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.t_dark *));
 
 @theme inline {
     --font-heading: var(--font-sans);
@@ -82,7 +80,7 @@
     --sidebar-ring: oklch(0.708 0 0);
 }
 
-.dark {
+.t_dark {
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.205 0 0);
@@ -126,4 +124,19 @@
   html {
     @apply font-sans;
     }
+}
+
+/*
+ * Transizione del 12a, da togliere con Tailwind. Card e dialogo di shadcn
+ * mettevano `text-sm` su tutto il loro contenuto, e le schermate ci contano: il
+ * testo DOM lì dentro (i `<p>` con classi Tailwind) si aspetta 14 px. Quelli di
+ * Tamagui non lo fanno — i loro testi hanno la loro misura — quindi la si
+ * restituisce qui, per ereditarietà, a ciò che non è un componente Tamagui.
+ * `is_Card` e `is_DialogContent` sono le classi che Tamagui scrive col nome del
+ * componente.
+ */
+.is_Card,
+.is_DialogContent {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
 }

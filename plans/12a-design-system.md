@@ -344,6 +344,78 @@ Il banco prima, i componenti dentro il banco.
      portali — dialog e tendine aperte — perché guarda il contenitore della
      storia. E il foglio dal basso del Select su touch lo proverà solo lo
      scheletro Expo.
+
+   **Il passaggio delle schermate**, deciso dopo averle contate: 25 file
+   (6 pagine, 17 componenti, 2 di `lib/`) e circa 50 punti dove una
+   schermata passa `className` a un componente che cambia. Quelli **non** si
+   portano dietro: gli stili atomici di Tamagui stanno fuori da ogni layer,
+   quelli di Tailwind 4 dentro `@layer utilities`, quindi vince sempre Tamagui
+   — un `grid gap-3` su `CardContent` sparirebbe in silenzio sotto il suo
+   `display: flex`. Si traducono in props. Sui `div` delle schermate Tailwind
+   resta.
+
+   In quattro commit, con l'app funzionante dopo ciascuno:
+
+   - **A. Infrastruttura**, senza toccare schermate: dipendenze in
+     `apps/web`, `transpilePackages` e `turbopack.resolveAlias`
+     (`react-native` → `react-native-web`, `react-native-svg` →
+     `@tamagui/react-native-svg`, cioè `tamaguiAliases({ svg: true })` scritto
+     per Turbopack), `TamaguiProvider` in `providers.tsx` con il CSS dei temi
+     inserito lato server. Il tema scuro: Tamagui lo legge da `t_dark`
+     sull'`<html>`, next-themes resta e scrive quella classe, e il
+     `@custom-variant dark` di Tailwind la segue — un interruttore per due
+     sistemi.
+   - **B. Le schermate**, a gruppi: login e registrazione; home e pagina
+     gioco; backlog con filtri e dialoghi; account.
+   - **C. Pulizia**: via `components/ui/`, `components.json`, `@base-ui/react`,
+     `class-variance-authority`, `sonner`, `shadcn`, `tw-animate-css`.
+   - **D. Build** con la CLI Tamagui davanti a `next build`.
+
+   Fuori, di proposito: le icone delle schermate restano `lucide-react` ed
+   escono con Tailwind; i token Tailwind restano i grigi di shadcn, quindi
+   fino al 12b–12g testo Tailwind e componenti Tamagui non combaciano del
+   tutto.
+
+   **Fatto**, da `76bb063` a `22d01e8`. Nessuna schermata importa più
+   `components/ui`, `pnpm build` passa con la CLI davanti (21 file, 35
+   componenti ottimizzati, 68 appiattiti), e il giro a mano — fatto con
+   Playwright su dati di prova, chiaro e scuro, in sviluppo e sulla build di
+   produzione — ha le stesse funzioni di prima: dialoghi, tendine, menu,
+   combobox, toast con «Annulla», interruttori, cambio tema.
+
+   Cosa si è scoperto facendolo, e che i lotti dopo devono sapere:
+
+   - **`render={<Link />}` sul Button non regge.** Il nostro `Button` è uno
+     `styled()` sopra quello di Tamagui, e un `render` con un *componente*
+     lo intercetta il livello esterno, che passa le props di stile grezze
+     invece delle classi: il link esce nudo. Con un tag (`render="a"`)
+     funziona. Da qui [ButtonLink](../apps/web/components/button-link.tsx):
+     l'`<a>` lo disegna Tamagui, la navigazione la fa `next/navigation`. Sta
+     in `apps/web` perché conosce Next.
+   - **Le view di Tamagui non si restringono**: `flex-shrink: 0` di serie,
+     come su React Native. Un `Input` al 100% accanto a un bottone lo spinge
+     fuori dal dialogo. Dove un campo divide la riga ci va `flex={1}`.
+   - **La config vuole le abbreviazioni**: `shrink`, non `flexShrink`; `w-fit`
+     in una griglia è `width="max-content"`, `sm:` è `$sm`.
+   - **Il testo DOM dentro Card e dialoghi era a 14 px per ereditarietà** dal
+     `text-sm` di shadcn. Lo restituisce una regola di transizione in
+     `globals.css` su `.is_Card` e `.is_DialogContent`, da togliere con
+     Tailwind.
+   - **Lo Switch era alto 29 invece di 18**: la variante `size` di Tamagui
+     mette un `minHeight` che vince sull'altezza. Corretto in `@repo/ui`
+     (`a74b558`); i test non lo vedevano, guardano il comportamento e non le
+     misure.
+   - **Il font è cambiato**: il `TamaguiProvider` avvolge l'app nella classe
+     del font di Tamagui (lo stack di sistema della config v5), e Geist,
+     ancora caricato da `layout.tsx`, non si vede più. Va bene così: Geist
+     era un segnaposto, e il font si sceglie con l'aspetto dell'app.
+   - **La CLI impacchetta la config in `apps/web/.tamagui/`**, e da lì deve
+     risolvere `@tamagui/core` e `@tamagui/web`: sono devDependency di
+     `apps/web` per questo. La cartella è ignorata da git ed ESLint.
+   - Restano due cose trovate e **non** toccate: l'avviso «No font size found
+     icon/default» in sviluppo, che viene dai nomi delle taglie del Button;
+     e un errore di idratazione su `/account` e `/backlog` che c'era già
+     prima — il server rende lo skeleton, il client ha già la sessione.
 5. **Scheletro `apps/mobile`** con Expo, una schermata che importa
    `packages/ui`: la prova che l'universale è universale.
 6. **Le regole che tengono il confine**, in

@@ -2,14 +2,12 @@
 
 import type { HiddenKind, UnresolvedImport } from '@repo/contracts';
 import { hiddenKindValues } from '@repo/contracts';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDownIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -17,7 +15,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  toast,
+} from '@repo/ui';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ChevronDownIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useHiddenKindLabels } from '@/lib/hide-entry';
 import { useStoreLabels } from '@/lib/labels';
@@ -69,7 +72,7 @@ export function UnresolvedImports({
       <CardHeader>
         <CardTitle>{t('title', { count: pending.length })}</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-3">
+      <CardContent gap={12}>
         {pending.length > 0 && (
           <>
             <p className="text-muted-foreground">{t('description')}</p>
@@ -83,7 +86,7 @@ export function UnresolvedImports({
                   >
                     {t('resolve')}
                   </Button>
-                  <DropdownMenu>
+                  <DropdownMenu align="end">
                     <DropdownMenuTrigger
                       render={
                         <Button
@@ -92,11 +95,11 @@ export function UnresolvedImports({
                           disabled={setHidden.isPending}
                         >
                           {tHidden('hide')}
-                          <ChevronDownIcon />
+                          <ChevronDownIcon size={16} />
                         </Button>
                       }
                     />
-                    <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuContent width={208}>
                       <DropdownMenuGroup>
                         <DropdownMenuLabel>{t('notAGame')}</DropdownMenuLabel>
                         {notAGame.map((kind) => (

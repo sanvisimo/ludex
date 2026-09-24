@@ -1,8 +1,7 @@
 'use client';
 
 import type { UserTag } from '@repo/contracts';
-
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@repo/ui';
 
 /**
  * Categorie e tag personali di una riga di backlog.
