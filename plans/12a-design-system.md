@@ -434,6 +434,33 @@ Il banco prima, i componenti dentro il banco.
    `start` e niente `dev`, così `pnpm dev` non cambia. Qui si verifica con
    `expo export` per Android e iOS ed `expo-doctor`; il giro vero è su un
    telefono con Expo Go, e lo fa l'utente.
+
+   **Fatto qui, da provare sul telefono.** `e66998f` allinea le versioni,
+   `811a2a3` porta lo scheletro. Cosa si è misurato:
+
+   - **`^19.2.3` risolveva a 19.3.0**, e `better-auth` e i peer di Next
+     tiravano dentro anche la 19.2.0. La versione esatta non bastava: serve
+     l'`overrides` in `pnpm-workspace.yaml`, che si alza insieme alla SDK.
+   - **`expo export` per Android e iOS passa**, e la source map del bundle
+     ha una copia sola di React, React Native, `tamagui`, `@tamagui/core` e
+     `@tamagui/web`. La config di Metro è quella di default di Expo: nel
+     monorepo non è servito toccarla.
+   - **Il foglio del Select su telefono vuole `react-native-safe-area-context`**
+     e il suo `SafeAreaProvider` in cima all'albero. Tamagui non lo dichiara:
+     lo si scopre solo dall'errore di Metro.
+   - **`expo-doctor` segnala React Native due volte**: la seconda è la
+     variante di cartella sotto `react-native-reanimated@4.7.0`, che arriva
+     con `@tamagui/config` (via `@tamagui/animations-reanimated`) anche se il
+     driver è `v5-css`. Nel bundle non entra, quindi per Expo Go non conta.
+     Conterà il giorno di una build nativa, perché l'autolinking potrebbe
+     collegare una reanimated diversa dalla 4.5.1 di Expo: lì si decide se
+     fissarla con un override o toglierla.
+   - `expo-doctor` voleva anche `.expo/` ignorata: fatto. Due suoi controlli
+     falliscono per la rete del container, non per il progetto.
+
+   Resta il giro sul telefono: `pnpm --filter mobile start`, poi il QR con
+   Expo Go. Da guardare in particolare il Select (foglio dal basso), il
+   Dialog, il menu, il Combobox e il toast.
 6. **Le regole che tengono il confine**, in
    [packages/eslint-config](../packages/eslint-config): dentro `packages/ui` sono
    vietati `next/*`, `@repo/contracts` e `@repo/db`.
