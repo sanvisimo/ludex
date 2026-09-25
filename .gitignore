@@ -34,6 +34,9 @@ dist
 # La config impacchettata che `tamagui build` scrive a ogni build.
 .tamagui/
 
+# File temporanei del plugin di TanStack Start.
+.tanstack/
+
 # Stato locale di Expo: dispositivi visti e impostazioni del server di sviluppo.
 .expo/
 

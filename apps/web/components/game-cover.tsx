@@ -1,7 +1,6 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 
 import { igdbCoverUrl, type CoverSize } from '@/lib/igdb-image';
 import { cn } from '@/lib/utils';
@@ -47,12 +46,18 @@ export function GameCover({
     );
   }
 
+  // Un `<img>` e basta: le taglie le fissa già la CDN di IGDB, e larghezza e
+  // altezza dichiarate tengono il posto finché l'immagine non arriva.
   return (
-    <Image
+    // Finché c'è Next il suo lint vorrebbe `next/image`: se ne va al passo 5.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={igdbCoverUrl(imageId, size)}
       alt={t('coverAlt', { name })}
       width={width}
       height={height}
+      loading="lazy"
+      decoding="async"
       className={cn('shrink-0 rounded-md object-cover', className)}
     />
   );

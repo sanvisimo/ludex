@@ -1,6 +1,7 @@
 # Step 12b — Il guscio, su TanStack Start
 
-**Bozza, da approvare.** Niente codice finché non è decisa.
+**Approvato il 25/09/2026.** Sotto ogni passo, cosa è stato fatto e cosa
+ha smentito.
 
 ## Contesto
 
@@ -74,7 +75,7 @@ continuano ad arrivare da react-query lato client, come oggi.
 | `next/link`, `useRouter` | `Link` e `useRouter`/`useNavigate` di TanStack Router |
 | `ButtonLink` | stessa forma, col `navigate` e il `preloadRoute` del nuovo router |
 | `next/image` | `<img>` con larghezza e altezza: le taglie le dà già la CDN di IGDB |
-| `next/font` (Geist) | `@fontsource-variable/geist` |
+| `next/font` (Geist) | niente: Geist era già coperto dal carattere di Tamagui, e il font si sceglie con l'aspetto dell'app (piano del 12a) |
 | CLI `tamagui build` + alias Turbopack | `@tamagui/vite-plugin` 2.7.7, la stessa versione del resto. Escono `tamagui.build.ts` e `.tamagui/` |
 | Tailwind con PostCSS | `@tailwindcss/vite`. Tailwind resta fino alla fine dello step 12, come già deciso |
 | `next-themes` | resta: non dipende da Next, solo dal DOM. Va verificato che lo script del tema giri prima del primo paint anche su Start |
@@ -125,6 +126,37 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    radice con i provider, `/` che mostra il catalogo. Qui si verificano le cose
    che non si sanno dalla documentazione: SSR di Tamagui, lo script del tema, e
    come si avvia la build in produzione (`start`).
+
+   **Fatto.** Start vive in `apps/web/src/` accanto ad `app/` di Next, sulla
+   stessa porta: `pnpm dev:start`, `build:start`, `serve:start` contro
+   `dev`, `build`, `start`, e se ne accende uno alla volta. Provato in
+   Chromium con l'API accesa: il catalogo arriva, tema chiaro e scuro giusti,
+   nessun errore in console, in sviluppo e in produzione. `next build`,
+   `lint` e `check-types` restano verdi con Start accanto.
+
+   Tre cose che la documentazione non diceva:
+
+   - **Tamagui sul server va fatto passare da Vite.** Lasciati a Node, i suoi
+     pacchetti importano il `react-native` vero, in Flow, e il render muore su
+     un `typeof`: `ssr.noExternal: [/tamagui/]`. Ma con quello gli alias del
+     plugin puntano ai build CommonJS (l'SVG delle icone), che passati da Vite
+     non trovano più `module`: il plugin va con `disableResolveConfig` e gli
+     alias li scriviamo noi, per nome nudo, così si prende l'ESM.
+     `react-native-web` invece resta a Node: passato da Vite si rompe
+     sull'interop di `inline-style-prefixer`.
+   - **In produzione non serve Nitro.** `vite build` produce un gestore
+     `fetch` in `dist/server/server.js`; la guida propone Nitro, che è ancora
+     una 3.0 beta. Lo serve `srvx` 1.0, stabile, con `--static` che è
+     **relativo alla cartella dell'entry** (`../client`, non `dist/client`).
+   - **`next-themes` regge così com'è**: lo script sta nell'HTML del server e
+     la classe `t_light`/`t_dark` è giusta prima dell'idratazione.
+
+   Tre ponti provvisori, ciascuno col passo che lo toglie: `next-intl` è un
+   alias di `use-intl` nella config di Vite e la radice ha la lingua fissa
+   (passo 2); il catalogo linka `/games/…` con un `<a>` perché quella rotta
+   in Start non c'è ancora (passo 3); in `src/` è spenta la regola ESLint di
+   Next su `<head>` (passo 5). `GameCover` è già un `<img>` e `favicon.ico`
+   sta in `public/`, che vanno bene a tutti e due.
 2. **i18n** con `use-intl`, lingua lato server, cambio lingua.
 3. **Le rotte**, una per una, con `proxy.ts` che diventa `beforeLoad`.
 4. **I filtri** da `nuqs` ai search params.
@@ -153,6 +185,7 @@ del guscio.
 
 ## Fonti
 
-Versioni da `npm view`, 25/09/2026: `@tanstack/react-start` 1.168.58,
+Versioni da `npm view`, 25/09/2026: `@tanstack/react-start` 1.168.58, `srvx`
+1.0.5, `nitro` 3.0.260903-beta,
 `@tanstack/react-router` 1.170.39, `vite` 8.3.1, `@tamagui/vite-plugin` 2.7.7,
 `use-intl` 4.14.7, `nuqs` 2.10.1 (README, sezione TanStack Router).
