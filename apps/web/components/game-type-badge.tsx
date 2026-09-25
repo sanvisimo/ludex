@@ -1,5 +1,3 @@
-'use client';
-
 import type { GameType } from '@repo/contracts';
 import { Badge } from '@repo/ui';
 

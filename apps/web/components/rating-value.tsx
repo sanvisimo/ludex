@@ -1,5 +1,3 @@
-'use client';
-
 import { StarIcon } from 'lucide-react';
 import { useTranslations } from 'use-intl';
 

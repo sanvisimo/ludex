@@ -1,5 +1,3 @@
-'use client';
-
 import type { HiddenKind } from '@repo/contracts';
 import { hiddenKindValues } from '@repo/contracts';
 import { toast } from '@repo/ui';

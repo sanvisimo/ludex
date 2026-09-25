@@ -1,5 +1,3 @@
-'use client';
-
 import type { Game } from '@repo/contracts';
 import { useTranslations } from 'use-intl';
 

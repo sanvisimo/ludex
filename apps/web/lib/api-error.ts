@@ -1,5 +1,3 @@
-'use client';
-
 import { ORPCError } from '@orpc/client';
 import { useTranslations } from 'use-intl';
 

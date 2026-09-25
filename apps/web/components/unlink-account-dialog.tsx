@@ -1,5 +1,3 @@
-'use client';
-
 import type { StoreAccount } from '@repo/contracts';
 import { storeAccountName } from '@repo/contracts';
 import {

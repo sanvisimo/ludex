@@ -10,7 +10,7 @@ import { Providers } from '@/components/providers';
 import { SiteNav } from '@/src/components/site-nav';
 import { getI18n } from '@/src/i18n';
 
-import globals from '../../app/globals.css?url';
+import globals from '../globals.css?url';
 
 export const Route = createRootRoute({
   // La lingua si decide una volta e poi resta: navigando non cambia, e senza

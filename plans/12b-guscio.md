@@ -273,6 +273,49 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    Lo stesso vale per la registrazione. Da decidere a parte.
 5. **Via Next**: dipendenze, config, ESLint, tsconfig, i file generati da
    `next dev`. Verifica di parità (sotto).
+
+   **Fatto.** Via `next`, `next-intl`, la CLI di Tamagui, PostCSS, `proxy.ts`,
+   `next.config.js`, `tamagui.build.ts`, il layout di Next, `i18n/request.ts`,
+   `AGENTS.md`/`CLAUDE.md`/`README.md` di `apps/web` (li scriveva
+   `create-next-app` o `next dev`) e le 31 righe `'use client'`, che fuori da
+   Next non dicono niente. `globals.css` è passato in `src/`. Gli script sono
+   tornati `dev`, `build`, `start`; `check-types` è `tsc` e basta.
+
+   - **ESLint**: `apps/web` usa la config `react-internal`, la stessa di
+     `packages/ui`; la config `next-js` e il suo plugin sono usciti da
+     `packages/eslint-config`. Le regole di confine vietavano `next/*` a
+     `packages/ui` e ad `apps/mobile`: ora vietano il router del web
+     (`@tanstack/react-router`, `@tanstack/react-start`), che è la stessa
+     regola detta del pacchetto che c'è.
+   - **tsconfig**: `nextjs.json` è diventato `vite.json`, senza il plugin di
+     Next e con `jsx: react-jsx`.
+   - **`NEXT_PUBLIC_API_URL` → `PUBLIC_API_URL`**, in `turbo.json`,
+     `.env.example`, `packages/auth`, `lib/orpc.ts` e nel `define` di Vite.
+     **Il `.env` di ognuno va aggiornato a mano**: senza, il web ripiega su
+     `localhost:3005`, che in sviluppo è comunque giusto.
+   - `turbo.json` mette in cache `dist/**` al posto di `.next/**`.
+   - Il nome del cookie della lingua resta `NEXT_LOCALE`: cambiarlo farebbe
+     perdere la lingua scelta a chi l'aveva.
+
+   Due cose che il piano non aveva previsto:
+
+   - **`@tamagui/core` e `@tamagui/web` restano devDependency di `apps/web`.**
+     Sembravano roba della CLI, e non lo sono: anche il plugin di Vite
+     impacchetta la config in `.tamagui/` e da lì le risolve. Tolte, **la
+     build passa lo stesso** ma l'estrazione salta in silenzio — si vede solo
+     da «Error bundling tamagui config» nel log. Rimesse, il CSS atomico esce
+     per rotta.
+   - **`@react-native/assets-registry` invece è uscito**: lo chiedeva il
+     `react-native-svg` vero, che su Vite è sostituito da quello di Tamagui.
+   - **`next` resta nel lockfile**, come peer opzionale di `better-auth` in
+     `packages/auth`: pnpm lo tiene perché la risoluzione precedente l'aveva
+     trovato. Nessun codice lo importa. Toglierlo vorrebbe un `pnpm dedupe`,
+     che però riscrive anche zod, vite e storybook: non vale il rischio dentro
+     questo passo, e sparirà alla prima risoluzione pulita di `better-auth`.
+
+   `method="post"` sui moduli di accesso e registrazione, chiesto dopo il
+   passo 4: con JavaScript spento l'invio resta su `/login`, senza credenziali
+   nell'URL (il server risponde alla POST ridisegnando la pagina).
 6. **I componenti** in `@repo/ui`, con storie e test.
 7. **Il guscio** e `Page`.
 8. **CLAUDE.md**: stack, tabella del monorepo e sezione «Design system» (come

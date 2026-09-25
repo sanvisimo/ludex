@@ -54,8 +54,8 @@ export default defineConfig(({ mode }) => {
     define: {
       // Letta da `lib/orpc.ts` e da `packages/auth`: sostituita qui a build,
       // così nessuno dei due deve sapere di Vite.
-      'process.env.NEXT_PUBLIC_API_URL': JSON.stringify(
-        env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3005',
+      'process.env.PUBLIC_API_URL': JSON.stringify(
+        env.PUBLIC_API_URL ?? 'http://localhost:3005',
       ),
     },
     plugins: [

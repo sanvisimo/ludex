@@ -26,12 +26,10 @@ packages/*/build-storybook.log
 .vercel
 
 # Build Outputs
-.next/
-out/
 build
 dist
 
-# La config impacchettata che `tamagui build` scrive a ogni build.
+# La config impacchettata che il compilatore di Tamagui scrive a ogni build.
 .tamagui/
 
 # File temporanei del plugin di TanStack Start.

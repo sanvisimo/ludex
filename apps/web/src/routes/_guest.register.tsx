@@ -55,7 +55,9 @@ function RegisterPage() {
           <CardDescription>{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="grid gap-4">
+          {/* `post` per la stessa ragione dell'accesso: un invio prima
+              dell'idratazione non deve mettere la password nell'URL. */}
+          <form method="post" onSubmit={onSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="name">{t('name')}</Label>
               <Input id="name" name="name" required autoComplete="name" />

@@ -20,7 +20,7 @@ const ONE_YEAR = 60 * 60 * 24 * 365;
  * Nessun prefisso di lingua negli URL: la lingua sta in un cookie, e in sua
  * assenza si segue il browser. Gli URL restano `/backlog`, `/login`.
  *
- * Il fuso è quello del server, com'era con next-intl: dichiararlo evita che
+ * Il fuso è quello del server, come faceva next-intl: dichiararlo evita che
  * server e browser formattino la stessa data in due modi diversi.
  */
 export const getI18n = createServerFn({ method: 'GET' }).handler(async () => {

@@ -1,5 +1,3 @@
-'use client';
-
 import { useTranslations } from 'use-intl';
 
 // Better Auth risponde con un messaggio in inglese e un codice stabile. Il

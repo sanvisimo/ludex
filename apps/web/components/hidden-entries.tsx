@@ -1,5 +1,3 @@
-'use client';
-
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';

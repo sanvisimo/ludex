@@ -1,5 +1,3 @@
-'use client';
-
 import type { Platform } from '@repo/contracts';
 import {
   Combobox,

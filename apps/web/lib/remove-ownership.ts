@@ -1,5 +1,3 @@
-'use client';
-
 import { toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'use-intl';

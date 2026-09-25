@@ -4,8 +4,8 @@ export type Locale = (typeof locales)[number];
 
 export const defaultLocale: Locale = 'it';
 
-// Nome convenzionale di next-intl: usarlo significa che eventuali utility della
-// libreria che leggono il cookie trovano già quello giusto.
+// Il nome viene da next-intl, che c'era prima di TanStack Start. Resta questo
+// perché cambiarlo farebbe perdere la lingua scelta a chi l'aveva già.
 export const localeCookie = 'NEXT_LOCALE';
 
 export function isLocale(value: string | null | undefined): value is Locale {

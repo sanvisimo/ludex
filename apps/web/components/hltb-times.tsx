@@ -1,5 +1,3 @@
-'use client';
-
 import type { GameDetail } from '@repo/contracts';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { useTranslations } from 'use-intl';

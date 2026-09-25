@@ -1,5 +1,3 @@
-'use client';
-
 import type { UserTag, UserTagKind } from '@repo/contracts';
 import { Button, Input, toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

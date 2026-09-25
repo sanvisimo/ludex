@@ -1,5 +1,3 @@
-'use client';
-
 import type { BacklogEntry } from '@repo/contracts';
 import {
   Button,

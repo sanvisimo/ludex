@@ -1,14 +1,11 @@
-'use client';
-
 import { config, TamaguiProvider, Toaster } from '@repo/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from 'next-themes';
 import { useState } from 'react';
 
 /**
- * Tema, design system e react-query: ciò che serve a ogni pagina, qualunque
- * sia il router che la serve. Durante il passaggio a TanStack Start lo montano
- * sia il layout di Next sia la radice di Start.
+ * Tema, design system e react-query: ciò che serve a ogni pagina. Lo monta la
+ * radice delle rotte.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   // Creato dentro lo stato e non a livello di modulo: a livello di modulo un

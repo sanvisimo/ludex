@@ -58,8 +58,12 @@ function LoginForm() {
     await router.navigate({ href: safeNext(next) });
   }
 
+  // `post` perché un invio fatto prima che React abbia idratato la pagina
+  // (JavaScript spento, rete lenta, un clic veloce) lo fa il browser da solo:
+  // in GET email e password finirebbero nell'URL, e da lì nella cronologia e
+  // nei log.
   return (
-    <form onSubmit={onSubmit} className="grid gap-4">
+    <form method="post" onSubmit={onSubmit} className="grid gap-4">
       <div className="grid gap-2">
         <Label htmlFor="email">{t('email')}</Label>
         <Input

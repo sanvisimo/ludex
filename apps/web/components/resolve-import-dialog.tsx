@@ -1,5 +1,3 @@
-'use client';
-
 import type { IgdbSearchHit, UnresolvedImport } from '@repo/contracts';
 import {
   Button,

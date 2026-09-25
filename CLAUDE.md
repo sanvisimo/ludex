@@ -17,7 +17,7 @@ Nasce dall'assenza di un equivalente mobile di Playnite.
   Hono si monta nativamente senza adapter. Vincolo fermo: gli utenti stanno **nel
   nostro Postgres** (per questo Clerk è escluso).
 - **Job queue**: BullMQ + Redis
-- **Web**: Next.js + React
+- **Web**: TanStack Start (Vite) + React
 - **Mobile**: Expo + React Native
 - **Monorepo**: pnpm + Turborepo
 - **LLM**: nessun provider vincolato (Anthropic, OpenAI, llama locale o altro). Il
@@ -73,7 +73,7 @@ Tutto TypeScript/Node. Non introdurre altri linguaggi nello stack.
 | Workspace            | Contenuto                                                           |
 | -------------------- | ------------------------------------------------------------------- |
 | `apps/api`           | Hono. Contiene **due entrypoint**: server HTTP e worker BullMQ      |
-| `apps/web`           | Next.js, applicazione web                                           |
+| `apps/web`           | TanStack Start (Vite), applicazione web                             |
 | `apps/mobile`        | Expo / React Native                                                 |
 | `packages/db`        | schema Drizzle + client, **unica fonte di verità**. Dipendenze Node |
 | `packages/auth`      | istanza Better Auth (server) + `authClient` per web e mobile        |
@@ -94,7 +94,8 @@ Regole di confine:
   e condividono i componenti, **non le schermate**: sidebar, tabella densa e
   pannello dei filtri su un telefono diventano bottom tab, lista a schede e
   bottom sheet. `packages/ui` dipende da React e Tamagui e da nient'altro: niente
-  `next/*`, che su React Native non esiste, e niente `@repo/contracts` né
+  router del web (`@tanstack/react-router`, `@tanstack/react-start`), che su
+  React Native non esiste, e niente `@repo/contracts` né
   `@repo/db`, perché un componente che conosce `BacklogEntry` è una schermata e
   sta nell'app.
 
@@ -131,18 +132,29 @@ vincerebbe l'ultima riga del file. Chi ha bisogno del pezzo grezzo lo importa da
 risolvendone gli import dalla sua cartella, e due versioni nel repo diventano due
 React nel bundle mobile, che rompono gli hook. Si alza insieme alla SDK.
 
-**Come si costruisce sul web.** Next 16 va su Turbopack, che plugin di bundler non
-ne accetta: il compilatore di Tamagui passa dalla CLI, che sta davanti a `next
-build` nello script `build` di `apps/web`, legge `apps/web/tamagui.build.ts`,
-riscrive i sorgenti sul posto e li rimette com'erano. La config impacchettata
-finisce in `apps/web/.tamagui/` (ignorata da git ed ESLint) e da lì risolve
-`@tamagui/core` e `@tamagui/web`, per questo devDependency di `apps/web`. In
-sviluppo non serve niente: `react-native` → `react-native-web` è un
-`turbopack.resolveAlias` in `next.config.js`.
+**Come si costruisce sul web.** `apps/web` è TanStack Start su Vite, e il
+compilatore di Tamagui è un plugin di Vite (`@tamagui/vite-plugin`) in
+`apps/web/vite.config.ts`. Tre cose di quella config che non si indovinano:
+
+- **gli alias li scriviamo noi**, non il plugin (`disableResolveConfig`):
+  `react-native` → `react-native-web` e l'SVG delle icone, per nome nudo. Quelli
+  del plugin puntano ai build CommonJS, che sul server non trovano `module`.
+- **Tamagui sul server passa da Vite** (`ssr.noExternal`): lasciato a Node,
+  importerebbe il `react-native` vero, in Flow. `react-native-web` invece resta
+  a Node.
+- **la config impacchettata** finisce in `apps/web/.tamagui/` (ignorata da git)
+  e da lì risolve `@tamagui/core` e `@tamagui/web`, per questo devDependency di
+  `apps/web`. Senza, la build passa lo stesso ma l'ottimizzazione salta in
+  silenzio: si vede solo dall'errore nel log.
+
+La build (`vite build`) produce un gestore `fetch` in `dist/server/server.js`,
+e in produzione lo serve `srvx` (`pnpm --filter web start`). Le liste nella
+query string sono separate da virgole e non in JSON, per `stringifySearch` in
+`apps/web/src/router.tsx`.
 
 Quattro cose che le schermate devono sapere, perché si scoprono solo a vederle:
 
-- **un link che sembra un bottone è `ButtonLink`** (`apps/web/components`), non
+- **un link che sembra un bottone è `ButtonLink`** (`apps/web/src/components`), non
   `<Button render={<Link />}>`: su un `styled()` di Tamagui un `render` con un
   componente passa al link le props di stile grezze, e il link esce nudo.
 - **le view di Tamagui non si restringono** (`flex-shrink: 0`, come su React
@@ -155,7 +167,7 @@ Quattro cose che le schermate devono sapere, perché si scoprono solo a vederle:
   componente sparisce in silenzio.
 
 **Il banco è Storybook, dentro `packages/ui`**, non in `apps/web`: un banco
-montato sull'app web non si aprirebbe senza Next. Ogni componente nasce con la sua
+montato sull'app web non si aprirebbe senza l'app. Ogni componente nasce con la sua
 storia, che è anche il suo test: `addon-vitest` le monta in un **Chromium vero** e
 ci fa passare axe, con le violazioni che rompono il test. In CI Chromium va
 installato (`playwright install chromium`). **Chromatic** confronta i pixel fra
@@ -165,10 +177,10 @@ una build e l'altra; il suo token sta in `.env` come `CHROMATIC_PROJECT_TOKEN`.
 `@repo/ui`, la prova che l'universale è universale. L'app mobile vera viene dopo
 lo step 13.
 
-**Il web passa a TanStack Start**, deciso prima del 12b: web e mobile
-condividono i componenti, non le rotte, e il grosso del progetto — `/backlog` e
-il guscio — su telefono è per forza un'altra schermata. Il conto e le ragioni
-sono nel piano del 12a. Fino al passaggio, il web resta su Next com'è.
+**Il web è su TanStack Start**, deciso prima del 12b e fatto nel 12b: web e
+mobile condividono i componenti, non le rotte, e il grosso del progetto —
+`/backlog` e il guscio — su telefono è per forza un'altra schermata. Il conto e
+le ragioni sono nel piano del 12a, il passaggio nel piano del 12b.
 
 ## Fonti dati esterne
 

@@ -1,5 +1,3 @@
-'use client';
-
 import { AUTO_SYNC_EVERY_DAYS, type UserSettings } from '@repo/contracts';
 import {
   Card,

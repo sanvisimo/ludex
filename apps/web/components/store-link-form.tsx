@@ -1,5 +1,3 @@
-'use client';
-
 import type { LinkableStore } from '@repo/contracts';
 import { Button, Input, Label, toast } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

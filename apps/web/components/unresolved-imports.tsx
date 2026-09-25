@@ -1,5 +1,3 @@
-'use client';
-
 import type { HiddenKind, UnresolvedImport } from '@repo/contracts';
 import { hiddenKindValues } from '@repo/contracts';
 import {

@@ -1,5 +1,3 @@
-'use client';
-
 import type { LinkableStore } from '@repo/contracts';
 import { linkableStoreValues } from '@repo/contracts';
 import {
