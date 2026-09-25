@@ -317,6 +317,52 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    passo 4: con JavaScript spento l'invio resta su `/login`, senza credenziali
    nell'URL (il server risponde alla POST ridisegnando la pagina).
 6. **I componenti** in `@repo/ui`, con storie e test.
+
+   **Fatto.** Quattro componenti nuovi, ognuno con le sue storie: 20 file e 76
+   test verdi in Chromium, axe compreso (erano 16 e 66).
+
+   - **`Separator` non si avvolge**: è già esportato così com'è da
+     `primitives.ts` e usa `$borderColor`, un semantico. Avvolgerlo sarebbe
+     stato un file per niente.
+   - **`Avatar`**: le iniziali su `$accent5`, l'immagine se c'è. Better Auth
+     un'immagine non ce l'ha, quindi di fatto sono sempre le iniziali.
+   - **`Tooltip`**: il testo sotto `aria-label`, non al suo posto.
+   - **`Sheet`**: il foglio dal basso, con un `label` obbligatorio.
+   - **`NavItem`**: un `<a href>` vero con `aria-current="page"` sulla voce
+     attiva. Non conosce il router: il clic lo intercetta chi lo monta.
+
+   Il foglio di Tamagui è solo un pannello che scorre, e le storie hanno
+   trovato tre cose che a un dialogo modale mancavano:
+
+   - **Esc non lo chiudeva**: lo ascolta il nostro componente, solo dove c'è
+     `document`.
+   - **il focus restava dietro il velo**: ora c'è `FocusScope`, lo stesso che
+     usa il Dialog (`@tamagui/focus-scope` 2.7.7, dipendenza nuova di
+     `@repo/ui`). Il focus entra, resta dentro col Tab e torna sul bottone
+     alla chiusura. Il contenitore ha `tabIndex={-1}`, perché all'apertura
+     `FocusScope` salta i link apposta e, se non trova altro, prova a
+     focalizzare lui.
+   - **da chiuso restava montato fuori schermo**, con i link ancora
+     raggiungibili col Tab: `unmountChildrenWhenHidden`.
+
+   Più una di Tamagui: il `role="dialog"` messo sul `Frame` finiva **due
+   volte** nel DOM, perché Tamagui ne copia le prop sulla copertura vuota
+   sotto il foglio. Ruolo e nome stanno su un contenitore dentro.
+
+   Sul `NavItem`: un `<a>` è sottolineato di suo, e i tipi della view non
+   accettano `textDecorationLine`. La sottolineatura la toglie uno `style`
+   sull'`<a>`, e la storia lo controlla. `ButtonLink` non ne soffriva: il
+   Button di Tamagui la toglie da sé (verificato sull'app).
+
+   **Non verificato qui, e rimandato al passo 7**: il Tooltip al focus da
+   tastiera. Tamagui lo apre solo su `:focus-visible`, e il focus spostato da
+   `userEvent.tab()` per Chromium non lo è; la storia verifica il passaggio
+   del mouse. La tastiera vera la dà Playwright, sulla barra vera.
+
+   Per far girare le storie in questo container serve un Chromium diverso da
+   quello che Playwright si aspetta: una config temporanea con
+   `launchOptions.executablePath`, non committata. Sulle macchine con
+   `playwright install chromium` non serve niente.
 7. **Il guscio** e `Page`.
 8. **CLAUDE.md**: stack, tabella del monorepo e sezione «Design system» (come
    si costruisce sul web, `ButtonLink`), e questo piano aggiornato con ciò che
