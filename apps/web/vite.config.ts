@@ -40,10 +40,6 @@ export default defineConfig(({ mode }) => {
           find: /^react-native-svg$/,
           replacement: '@tamagui/react-native-svg',
         },
-        // Passo 1 del 12b: i componenti condivisi con Next importano ancora
-        // `next-intl`, che fuori da Next è `use-intl` con la stessa API. Esce
-        // al passo 2, quando cambiano gli import.
-        { find: /^next-intl$/, replacement: 'use-intl' },
       ],
     },
     ssr: {

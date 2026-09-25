@@ -158,6 +158,36 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    Next su `<head>` (passo 5). `GameCover` è già un `<img>` e `favicon.ico`
    sta in `public/`, che vanno bene a tutti e due.
 2. **i18n** con `use-intl`, lingua lato server, cambio lingua.
+
+   **Fatto.** I 36 file client importano `use-intl`; `next-intl` resta solo
+   nel layout di Next e in `i18n/request.ts`, e se ne va con lui. Le chiavi
+   restano tipizzate: l'`AppConfig` in `global.d.ts` ora aumenta `use-intl`,
+   e un refuso resta un errore di compilazione. `fromAcceptLanguage` è
+   passata in `i18n/config.ts`, così Next e Start leggono il browser con la
+   stessa funzione.
+
+   Su Start la lingua la decide `getI18n` in [src/i18n.ts](../apps/web/src/i18n.ts)
+   (cookie, poi `Accept-Language`, poi l'italiano), chiamata dal loader della
+   radice con `staleTime: Infinity`: navigando non si richiede. Il selettore
+   scrive il cookie con la server function `setLocale` e fa
+   `router.invalidate()`. Provato in Chromium: la pagina cambia lingua senza
+   ricaricarsi, il catalogo resta, il cookie dura un anno e regge il
+   ricaricamento. Via curl: `en-US` dà inglese, `de` ripiega sull'italiano, il
+   cookie vince sul browser.
+
+   Una cosa che non si vedeva: **`next-intl` 4.13.7 si portava dietro una sua
+   `use-intl` 4.13.7**, accanto alla 4.14.7 installata per Start. Due copie
+   sono due contesti React, e i componenti con gli import nuovi non avrebbero
+   visto il provider di Next. Portato `next-intl` alla 4.14.7, la copia è una
+   sola e Next continua a funzionare (provato: `/` in inglese, con i dati).
+
+   Il fuso lo dichiara il server, com'era con next-intl, così server e browser
+   non formattano la stessa data in due modi.
+
+   Ponte nuovo, fino al passo 3: la radice di Start ha una barra provvisoria
+   con tema e lingua, e il selettore di Start sta in
+   `src/components/locale-switcher.tsx` accanto a quello di Next, che se ne va
+   con la barra di Next.
 3. **Le rotte**, una per una, con `proxy.ts` che diventa `beforeLoad`.
 4. **I filtri** da `nuqs` ai search params.
 5. **Via Next**: dipendenze, config, ESLint, tsconfig, i file generati da

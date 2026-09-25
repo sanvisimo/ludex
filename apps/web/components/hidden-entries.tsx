@@ -3,7 +3,7 @@
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { OwnershipBadges } from '@/components/ownership-badges';

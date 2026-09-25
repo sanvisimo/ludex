@@ -14,7 +14,7 @@ import {
   toast,
 } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';

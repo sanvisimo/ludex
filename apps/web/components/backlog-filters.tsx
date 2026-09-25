@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import { debounce } from 'nuqs';
 import { useEffect, useState } from 'react';
 

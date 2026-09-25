@@ -2,7 +2,7 @@
 
 import { signOut, useSession } from '@repo/auth/client';
 import { Button } from '@repo/ui';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 

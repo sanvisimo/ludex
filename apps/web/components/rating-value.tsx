@@ -1,7 +1,7 @@
 'use client';
 
 import { StarIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 /**
  * Il voto in sola lettura, per le liste.

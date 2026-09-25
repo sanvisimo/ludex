@@ -12,7 +12,7 @@ import {
   XStack,
 } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import { use, useState } from 'react';
 
 import { EditEntryDialog } from '@/components/edit-entry-dialog';

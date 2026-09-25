@@ -15,7 +15,7 @@ import {
   toast,
 } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 

@@ -19,7 +19,7 @@ import {
 } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronDownIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useHiddenKindLabels } from '@/lib/hide-entry';

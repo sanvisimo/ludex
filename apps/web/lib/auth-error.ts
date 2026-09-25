@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 // Better Auth risponde con un messaggio in inglese e un codice stabile. Il
 // messaggio non si può mostrare in un'interfaccia tradotta, il codice sì: è la

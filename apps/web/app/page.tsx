@@ -2,7 +2,7 @@
 
 import { Card, CardContent, Skeleton } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import Link from 'next/link';
 
 import { GameCover } from '@/components/game-cover';

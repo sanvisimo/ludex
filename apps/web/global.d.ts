@@ -5,7 +5,7 @@ import type messages from './messages/it.json';
 // refuso in `t("bakclog.title")` diventa un errore di compilazione, non una
 // stringa mancante scoperta a schermo. L'italiano fa da riferimento perché è la
 // lingua in cui si scrivono le stringhe nuove.
-declare module 'next-intl' {
+declare module 'use-intl' {
   interface AppConfig {
     Locale: Locale;
     Messages: typeof messages;
