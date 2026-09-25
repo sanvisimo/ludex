@@ -165,9 +165,10 @@ una build e l'altra; il suo token sta in `.env` come `CHROMATIC_PROJECT_TOKEN`.
 `@repo/ui`, la prova che l'universale è universale. L'app mobile vera viene dopo
 lo step 13.
 
-**Resta aperto chi serve il web**: Next com'è oggi, TanStack Start o Expo Router
-anche per il web. Va deciso prima del 12b, perché il guscio *è* routing; le
-ragioni sono nel piano del 12a. Il design system è lo stesso nei tre casi.
+**Il web passa a TanStack Start**, deciso prima del 12b: web e mobile
+condividono i componenti, non le rotte, e il grosso del progetto — `/backlog` e
+il guscio — su telefono è per forza un'altra schermata. Il conto e le ragioni
+sono nel piano del 12a. Fino al passaggio, il web resta su Next com'è.
 
 ## Fonti dati esterne
 
