@@ -1,6 +1,6 @@
 import { Card, CardContent, Skeleton } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
 
 import { GameCover } from '@/components/game-cover';
@@ -42,9 +42,7 @@ function CatalogPage() {
         <ul className="grid gap-2">
           {data.map((game) => (
             <li key={game.id}>
-              {/* Un `<a>` semplice finché `/games/$id` non passa a Start (passo 3):
-                  il `Link` del router vuole una rotta che esista. */}
-              <a href={`/games/${game.id}`} className="block">
+              <Link to="/games/$id" params={{ id: game.id }} className="block">
                 <Card interactive>
                   <CardContent flexDirection="row" items="center" gap={16}>
                     <GameCover imageId={game.coverImageId} name={game.name} />
@@ -64,7 +62,7 @@ function CatalogPage() {
                     </div>
                   </CardContent>
                 </Card>
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

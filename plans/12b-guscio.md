@@ -189,6 +189,48 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    `src/components/locale-switcher.tsx` accanto a quello di Next, che se ne va
    con la barra di Next.
 3. **Le rotte**, una per una, con `proxy.ts` che diventa `beforeLoad`.
+
+   **Fatto, tranne `/backlog`**, che passa al passo 4 insieme ai filtri: la
+   sua pagina sta in piedi su `nuqs`, e spostarla senza vorrebbe dire
+   spostarla rotta. Le altre sono passate con `git mv`, così la storia resta:
+   `/login` e `/register` sotto il layout `_guest`, `/games/$id`, `/account`,
+   e con loro la barra (`SiteNav`) e `ButtonLink` in `src/components`. Il `/`
+   di Next è cancellato. Next ora serve solo `/backlog`, senza barra.
+
+   Il rimbalzo da loggato su `/login` e `/register` è il `beforeLoad` di
+   `_guest`, che chiede `hasSession` ([src/session.ts](../apps/web/src/session.ts)):
+   una server function e non una lettura dal browser, perché il cookie di
+   sessione è `httpOnly`. Il controllo resta ottimistico come in `proxy.ts`.
+   Il rimbalzo da anonimo su `/backlog` arriva con la rotta, al passo 4.
+
+   Provato in Chromium un giro di nove passi, in sviluppo e sulla build di
+   produzione: home da anonimo, clic su un gioco, `/account` da anonimo che
+   rimbalza su `/login`, registrazione, `/login` da loggato che rimbalza,
+   `/account`, uscita, accesso con `?next=/account` che ci torna, `?next=`
+   verso un altro dominio ignorato.
+
+   Tre cose che il giro ha trovato:
+
+   - **Un errore di idratazione, una volta sì e una no.** La barra e
+     `/account` leggono la sessione con `useSession`: sul server è sempre
+     «in caricamento», nel browser a volte è già arrivata quando React
+     idrata, e i due render non combaciano. È una corsa, quindi sfugge a un
+     giro solo. [src/use-session.ts](../apps/web/src/use-session.ts) risponde
+     «in caricamento» finché l'idratazione non è finita (`useHydrated` del
+     router). Tre giri da loggato, zero errori.
+   - **L'uscita da `/account` finiva su `/login`.** Chiusa la sessione, la
+     pagina se ne accorgeva e rimbalzava da sé, e la navigazione verso `/`
+     arrivava tardi. Ora si va prima su `/` e poi si esce.
+   - **`ButtonLink` non precarica più al passaggio del mouse**: il
+     `preloadRoute` del router vuole una rotta tipizzata, e il bottone porta
+     anche a indirizzi con la query. I dati li porta comunque react-query.
+
+   Non servono più: la chiave `login.loading` (era il ripiego del confine di
+   Suspense che `useSearchParams` chiedeva a Next) e `i18n/locale.ts`, la
+   server action di Next.
+
+   Ponti fino al passo 4: in `hidden-entries.tsx` il link a
+   `/backlog?hidden=true` è un `<a>`, e su Start `/backlog` è un 404.
 4. **I filtri** da `nuqs` ai search params.
 5. **Via Next**: dipendenze, config, ESLint, tsconfig, i file generati da
    `next dev`. Verifica di parità (sotto).

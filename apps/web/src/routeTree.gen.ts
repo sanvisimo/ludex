@@ -10,33 +10,85 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuestRouteImport } from './routes/_guest'
+import { Route as AccountRouteImport } from './routes/account'
+import { Route as GuestLoginRouteImport } from './routes/_guest.login'
+import { Route as GuestRegisterRouteImport } from './routes/_guest.register'
+import { Route as GamesIdRouteImport } from './routes/games.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuestRoute = GuestRouteImport.update({
+  id: '/_guest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuestLoginRoute = GuestLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => GuestRoute,
+} as any)
+const GuestRegisterRoute = GuestRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => GuestRoute,
+} as any)
+const GamesIdRoute = GamesIdRouteImport.update({
+  id: '/games/$id',
+  path: '/games/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/login': typeof GuestLoginRoute
+  '/register': typeof GuestRegisterRoute
+  '/games/$id': typeof GamesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/login': typeof GuestLoginRoute
+  '/register': typeof GuestRegisterRoute
+  '/games/$id': typeof GamesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_guest': typeof GuestRouteWithChildren
+  '/account': typeof AccountRoute
+  '/_guest/login': typeof GuestLoginRoute
+  '/_guest/register': typeof GuestRegisterRoute
+  '/games/$id': typeof GamesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/account' | '/login' | '/register' | '/games/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/account' | '/login' | '/register' | '/games/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/_guest'
+    | '/account'
+    | '/_guest/login'
+    | '/_guest/register'
+    | '/games/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GuestRoute: typeof GuestRouteWithChildren
+  AccountRoute: typeof AccountRoute
+  GamesIdRoute: typeof GamesIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +100,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_guest': {
+      id: '/_guest'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof GuestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_guest/login': {
+      id: '/_guest/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof GuestLoginRouteImport
+      parentRoute: typeof GuestRoute
+    }
+    '/_guest/register': {
+      id: '/_guest/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof GuestRegisterRouteImport
+      parentRoute: typeof GuestRoute
+    }
+    '/games/$id': {
+      id: '/games/$id'
+      path: '/games/$id'
+      fullPath: '/games/$id'
+      preLoaderRoute: typeof GamesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface GuestRouteChildren {
+  GuestLoginRoute: typeof GuestLoginRoute
+  GuestRegisterRoute: typeof GuestRegisterRoute
+}
+
+const GuestRouteChildren: GuestRouteChildren = {
+  GuestLoginRoute: GuestLoginRoute,
+  GuestRegisterRoute: GuestRegisterRoute,
+}
+
+const GuestRouteWithChildren = GuestRoute._addFileChildren(GuestRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GuestRoute: GuestRouteWithChildren,
+  AccountRoute: AccountRoute,
+  GamesIdRoute: GamesIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

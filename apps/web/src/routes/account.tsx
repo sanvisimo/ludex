@@ -1,6 +1,3 @@
-'use client';
-
-import { useSession } from '@repo/auth/client';
 import type { StoreAccount, UnresolvedImport } from '@repo/contracts';
 import {
   Button,
@@ -13,7 +10,7 @@ import {
 } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'use-intl';
-import { useRouter } from 'next/navigation';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
 import { AddStoreAccount } from '@/components/add-store-account';
@@ -25,11 +22,14 @@ import { UnresolvedImports } from '@/components/unresolved-imports';
 import { UnlinkAccountDialog } from '@/components/unlink-account-dialog';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
+import { useSession } from '@/src/use-session';
 
-export default function AccountPage() {
+export const Route = createFileRoute('/account')({ component: AccountPage });
+
+function AccountPage() {
   const t = useTranslations('account');
   const errorMessage = useApiErrorMessage();
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: session, isPending: sessionPending } = useSession();
@@ -81,8 +81,9 @@ export default function AccountPage() {
 
   // La pagina non ha senso da anonimo: parla dell'account di chi la guarda.
   useEffect(() => {
-    if (!sessionPending && !session) router.replace('/login');
-  }, [sessionPending, session, router]);
+    if (!sessionPending && !session)
+      void navigate({ to: '/login', replace: true });
+  }, [sessionPending, session, navigate]);
 
   if (sessionPending || !session) {
     return (

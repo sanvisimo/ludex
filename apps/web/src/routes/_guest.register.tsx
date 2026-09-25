@@ -1,5 +1,3 @@
-'use client';
-
 import { signUp } from '@repo/auth/client';
 import {
   Alert,
@@ -14,13 +12,16 @@ import {
   Label,
 } from '@repo/ui';
 import { useTranslations } from 'use-intl';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { useAuthErrorMessage } from '@/lib/auth-error';
 
-export default function RegisterPage() {
+export const Route = createFileRoute('/_guest/register')({
+  component: RegisterPage,
+});
+
+function RegisterPage() {
   const t = useTranslations('register');
   const authErrorMessage = useAuthErrorMessage();
   const router = useRouter();
@@ -41,14 +42,16 @@ export default function RegisterPage() {
 
     setPending(false);
     if (error) setError(authErrorMessage(error, t('failed')));
-    else router.push('/');
+    else await router.navigate({ to: '/' });
   }
 
   return (
     <main className="flex min-h-svh items-center justify-center p-6">
       <Card width="100%" maxW={384}>
         <CardHeader>
-          <CardTitle fontSize={18} lineHeight={28}>{t('title')}</CardTitle>
+          <CardTitle fontSize={18} lineHeight={28}>
+            {t('title')}
+          </CardTitle>
           <CardDescription>{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -94,7 +97,7 @@ export default function RegisterPage() {
               {t.rich('hasAccount', {
                 link: (chunks) => (
                   <Link
-                    href="/login"
+                    to="/login"
                     className="text-foreground underline underline-offset-4"
                   >
                     {chunks}

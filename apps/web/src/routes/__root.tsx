@@ -7,8 +7,7 @@ import {
 import { IntlProvider } from 'use-intl';
 
 import { Providers } from '@/components/providers';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { LocaleSwitcher } from '@/src/components/locale-switcher';
+import { SiteNav } from '@/src/components/site-nav';
 import { getI18n } from '@/src/i18n';
 
 import globals from '../../app/globals.css?url';
@@ -50,12 +49,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="font-sans antialiased">
         <IntlProvider locale={locale} messages={messages} timeZone={timeZone}>
           <Providers>
-            {/* Provvisoria: tema e lingua, finché la barra di navigazione
-                non passa a Start al passo 3. */}
-            <header className="flex justify-end gap-2 px-6 py-3">
-              <ThemeToggle />
-              <LocaleSwitcher />
-            </header>
+            <SiteNav />
             {children}
           </Providers>
         </IntlProvider>

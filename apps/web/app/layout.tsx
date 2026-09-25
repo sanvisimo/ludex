@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
 
-import { SiteNav } from '@/components/site-nav';
 import { cn } from '@/lib/utils';
 
 import { Providers } from './providers';
@@ -46,7 +45,6 @@ export default async function RootLayout({
             lato server, così non si duplica il bundle delle traduzioni. */}
         <NextIntlClientProvider>
           <Providers>
-            <SiteNav />
             {children}
           </Providers>
         </NextIntlClientProvider>

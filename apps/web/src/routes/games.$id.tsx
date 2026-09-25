@@ -1,5 +1,3 @@
-'use client';
-
 import type { GameAttribute } from '@repo/contracts';
 import {
   Badge,
@@ -13,11 +11,11 @@ import {
 } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'use-intl';
-import { use, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
 
 import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import { EntryTags } from '@/components/entry-tags';
-import { ButtonLink } from '@/components/button-link';
 import { CriticScores } from '@/components/critic-scores';
 import { GameCover } from '@/components/game-cover';
 import { GameTypeBadge } from '@/components/game-type-badge';
@@ -27,6 +25,7 @@ import { RatingValue } from '@/components/rating-value';
 import { useSetEntryHidden } from '@/lib/hide-entry';
 import { useStatusLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
+import { ButtonLink } from '@/src/components/button-link';
 
 const KIND_ORDER: GameAttribute['kind'][] = [
   'genre',
@@ -62,17 +61,15 @@ function AttributeGroups({ attributes }: { attributes: GameAttribute[] }) {
 
 // Pagina auth/no-auth: il gioco si vede sempre, `entry` arriva popolata solo se
 // chi guarda è autenticato e ce l'ha nel backlog.
-export default function GamePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export const Route = createFileRoute('/games/$id')({ component: GamePage });
+
+function GamePage() {
   const t = useTranslations('game');
   const tHidden = useTranslations('hidden');
   const statusLabels = useStatusLabels();
   const setHidden = useSetEntryHidden();
 
-  const { id } = use(params);
+  const { id } = Route.useParams();
   const { data, isPending, error } = useQuery(
     api.games.byId.queryOptions({ input: { id } }),
   );
