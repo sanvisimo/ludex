@@ -1,9 +1,7 @@
-'use client';
-
 import type { LinkableStore } from '@repo/contracts';
 import { Button, Input, Label, toast } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import { useState } from 'react';
 
 import { useApiErrorMessage } from '@/lib/api-error';

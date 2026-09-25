@@ -1,5 +1,3 @@
-'use client';
-
 import type {
   BacklogEntry,
   BacklogStatus,
@@ -31,7 +29,7 @@ import {
   toast,
 } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import { useEffect, useState } from 'react';
 
 import { OwnershipBadges, ownershipKey } from '@/components/ownership-badges';

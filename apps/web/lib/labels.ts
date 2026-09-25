@@ -1,5 +1,3 @@
-'use client';
-
 import type { BacklogStatus, GameType, Medium, Store } from '@repo/contracts';
 import {
   backlogStatusValues,
@@ -7,7 +5,7 @@ import {
   mediumValues,
   storeValues,
 } from '@repo/contracts';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import { useMemo } from 'react';
 
 // Etichette del vocabolario condiviso. Stanno nel web e non in

@@ -1,6 +1,11 @@
-'use client';
-
-import type { BacklogQueryInput, BacklogStatus } from '@repo/contracts';
+import type {
+  BacklogQueryInput,
+  BacklogSort,
+  BacklogStatus,
+  GameType,
+  SortDirection,
+  Store,
+} from '@repo/contracts';
 import {
   backlogSortValues,
   backlogStatusValues,
@@ -8,15 +13,7 @@ import {
   sortDirectionValues,
   storeValues,
 } from '@repo/contracts';
-import {
-  parseAsArrayOf,
-  parseAsBoolean,
-  parseAsFloat,
-  parseAsInteger,
-  parseAsString,
-  parseAsStringLiteral,
-  useQueryStates,
-} from 'nuqs';
+import { getRouteApi } from '@tanstack/react-router';
 import { useCallback, useMemo } from 'react';
 
 /**
@@ -28,8 +25,8 @@ import { useCallback, useMemo } from 'react';
  * giorno che i salvataggi arriveranno, un filtro salvato sarà semplicemente
  * questa stringa messa da parte.
  *
- * `clearOnDefault` è attivo di default in nuqs: nell'URL compaiono soltanto i
- * criteri che l'utente ha davvero toccato.
+ * Lo legge e lo scrive il router: la rotta lo valida con `validateBacklogSearch`,
+ * e da lì arriva già tipizzato.
  */
 
 // Tutti gli stati tranne "non mi interessa". È l'unico default che restringe, e
@@ -40,41 +37,155 @@ export const defaultStatus: BacklogStatus[] = backlogStatusValues.filter(
   (value) => value !== 'excluded',
 );
 
-export const filterParsers = {
-  q: parseAsString.withDefault(''),
-  status: parseAsArrayOf(parseAsStringLiteral(backlogStatusValues)).withDefault(
-    defaultStatus,
-  ),
-  platforms: parseAsArrayOf(parseAsString).withDefault([]),
-  stores: parseAsArrayOf(parseAsStringLiteral(storeValues)).withDefault([]),
-  attributes: parseAsArrayOf(parseAsInteger).withDefault([]),
-  gameTypes: parseAsArrayOf(parseAsStringLiteral(gameTypeValues)).withDefault(
-    [],
-  ),
-  tags: parseAsArrayOf(parseAsString).withDefault([]),
+/**
+ * Un criterio: come si legge dall'URL e quanto vale quando nell'URL non c'è.
+ *
+ * `parse` è tollerante come lo era nuqs: un valore che non sa leggere lo
+ * scarta e il criterio torna al default, invece di rompere la pagina per un
+ * link scritto male.
+ */
+interface Field<T, F> {
+  parse: (raw: unknown) => T | undefined;
+  fallback: F;
+}
+
+function field<T, F>(
+  parse: (raw: unknown) => T | undefined,
+  fallback: F,
+): Field<T, F> {
+  return { parse, fallback };
+}
+
+const text = (raw: unknown) =>
+  typeof raw === 'string'
+    ? raw
+    : typeof raw === 'number'
+      ? String(raw)
+      : undefined;
+
+const integer = (raw: unknown) => {
+  const value = typeof raw === 'string' ? Number(raw) : raw;
+  return typeof value === 'number' && Number.isInteger(value)
+    ? value
+    : undefined;
+};
+
+const decimal = (raw: unknown) => {
+  const value = typeof raw === 'string' ? Number(raw) : raw;
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : undefined;
+};
+
+const flag = (raw: unknown) =>
+  raw === true || raw === 'true'
+    ? true
+    : raw === false || raw === 'false'
+      ? false
+      : undefined;
+
+const oneOf =
+  <T extends string>(values: readonly T[]) =>
+  (raw: unknown) =>
+    (values as readonly unknown[]).includes(raw) ? (raw as T) : undefined;
+
+/**
+ * Le liste nell'URL sono separate da virgole, com'erano con nuqs: i link
+ * salvati prima del passaggio continuano ad aprire lo stesso filtro. Un
+ * elemento che non si legge si scarta, gli altri restano.
+ */
+const listOf =
+  <T>(item: (raw: unknown) => T | undefined) =>
+  (raw: unknown) => {
+    const values = Array.isArray(raw)
+      ? raw
+      : typeof raw === 'string'
+        ? raw.split(',')
+        : raw === undefined
+          ? []
+          : [raw];
+    const parsed = values
+      .map(item)
+      .filter((value): value is T => value !== undefined);
+    return parsed.length > 0 ? parsed : undefined;
+  };
+
+const fields = {
+  q: field(text, ''),
+  status: field(listOf(oneOf(backlogStatusValues)), defaultStatus),
+  platforms: field(listOf(text), [] as string[]),
+  stores: field(listOf(oneOf(storeValues)), [] as Store[]),
+  attributes: field(listOf(integer), [] as number[]),
+  gameTypes: field(listOf(oneOf(gameTypeValues)), [] as GameType[]),
+  tags: field(listOf(text), [] as string[]),
   // I range restano `null` quando non sono impostati: `0` sarebbe un filtro
   // ("durata minima zero"), e su `durationMin` sarebbe pure un filtro diverso da
   // "non filtrare", perché escluderebbe i giochi senza durata.
-  durationMin: parseAsInteger,
-  durationMax: parseAsInteger,
-  ratingMin: parseAsFloat,
-  ratingMax: parseAsFloat,
-  criticMin: parseAsInteger,
-  releasedFrom: parseAsInteger,
-  releasedTo: parseAsInteger,
-  neverPlayed: parseAsBoolean.withDefault(false),
+  durationMin: field(integer, null),
+  durationMax: field(integer, null),
+  ratingMin: field(decimal, null),
+  ratingMax: field(decimal, null),
+  criticMin: field(integer, null),
+  releasedFrom: field(integer, null),
+  releasedTo: field(integer, null),
+  neverPlayed: field(flag, false),
   // La vista dei nascosti. **Non** sta fra i `criteri` qui sotto: è una vista,
   // non un filtro, quindi «azzera» non ti fa uscire dai nascosti e non conta fra
   // i filtri accesi.
-  hidden: parseAsBoolean.withDefault(false),
-  sort: parseAsStringLiteral(backlogSortValues).withDefault('addedAt'),
-  direction: parseAsStringLiteral(sortDirectionValues).withDefault('desc'),
+  hidden: field(flag, false),
+  sort: field(oneOf(backlogSortValues), 'addedAt' as BacklogSort),
+  direction: field(oneOf(sortDirectionValues), 'desc' as SortDirection),
 };
 
-// Derivato dall'hook e non riscritto a mano: i parser decidono già quali campi
-// sono nullabili e quali hanno un default, e una seconda dichiarazione si
+type Key = keyof typeof fields;
+type Value<X> = X extends Field<infer T, infer F> ? T | F : never;
+
+// Derivato dai criteri e non riscritto a mano: una seconda dichiarazione si
 // scollerebbe dalla prima al primo criterio aggiunto.
-export type BacklogFilterState = ReturnType<typeof useBacklogFilter>['filter'];
+export type BacklogFilterState = { [K in Key]: Value<(typeof fields)[K]> };
+
+/** Ciò che sta nell'URL: solo i criteri diversi dal loro default. */
+export type BacklogSearch = {
+  [K in Key]?: Exclude<Value<(typeof fields)[K]>, null>;
+};
+
+const keys = Object.keys(fields) as Key[];
+
+const sameValue = (a: unknown, b: unknown) =>
+  JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * Da stato a URL. Nell'URL compaiono soltanto i criteri che l'utente ha
+ * davvero toccato: un default o un `null` si toglie, come faceva il
+ * `clearOnDefault` di nuqs.
+ */
+function toSearch(state: Partial<Record<Key, unknown>>): BacklogSearch {
+  const search: Record<string, unknown> = {};
+  for (const key of keys) {
+    const value = state[key];
+    if (value === null || value === undefined) continue;
+    if (sameValue(value, fields[key].fallback)) continue;
+    search[key] = value;
+  }
+  return search as BacklogSearch;
+}
+
+/** Il `validateSearch` della rotta: legge l'URL e ci lascia solo ciò che vale. */
+export function validateBacklogSearch(
+  raw: Record<string, unknown>,
+): BacklogSearch {
+  return toSearch(
+    Object.fromEntries(keys.map((key) => [key, fields[key].parse(raw[key])])),
+  );
+}
+
+function fromSearch(search: BacklogSearch): BacklogFilterState {
+  return Object.fromEntries(
+    keys.map((key) => [key, search[key] ?? fields[key].fallback]),
+  ) as BacklogFilterState;
+}
+
+const route = getRouteApi('/_private/backlog');
 
 /** I criteri veri e propri: l'ordinamento non è un filtro e non si azzera con loro. */
 const criteri = [
@@ -93,7 +204,7 @@ const criteri = [
   'releasedFrom',
   'releasedTo',
   'neverPlayed',
-] as const;
+] as const satisfies readonly Key[];
 
 /**
  * Da stato dell'URL a input del contratto.
@@ -139,10 +250,22 @@ export function toQueryInput(
 }
 
 export function useBacklogFilter() {
-  const [filter, setFilter] = useQueryStates(filterParsers);
+  const search = route.useSearch();
+  const navigate = route.useNavigate();
+  const filter = useMemo(() => fromSearch(search), [search]);
 
-  // `null` su tutto: è così che nuqs toglie un parametro dall'URL e riporta il
-  // campo al suo default, compreso lo stato con `excluded` di nuovo nascosto.
+  // `null` toglie il criterio e lo riporta al suo default, compreso lo stato
+  // con `excluded` di nuovo nascosto. `replace` come faceva nuqs: cambiare un
+  // filtro non lascia una pagina nella cronologia a ogni spunta.
+  const setFilter = useCallback(
+    (patch: { [K in Key]?: BacklogFilterState[K] | null }) =>
+      navigate({
+        search: (prev) => toSearch({ ...fromSearch(prev), ...patch }),
+        replace: true,
+      }),
+    [navigate],
+  );
+
   const reset = useCallback(
     () =>
       setFilter(
@@ -191,7 +314,7 @@ export function toggle<T>(values: T[], value: T): T[] | null {
   const next = values.includes(value)
     ? values.filter((item) => item !== value)
     : [...values, value];
-  // `null` e non `[]`: è il modo di nuqs per togliere il parametro dall'URL
-  // invece di lasciarcelo vuoto.
+  // `null` e non `[]`: toglie il parametro dall'URL invece di lasciarcelo
+  // vuoto, e sullo stato rimette il default.
   return next.length > 0 ? next : null;
 }

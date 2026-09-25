@@ -1,10 +1,8 @@
-'use client';
-
 import type { UserTag, UserTagKind } from '@repo/contracts';
 import { Button, Input, toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import { useState } from 'react';
 
 import { useApiErrorMessage } from '@/lib/api-error';

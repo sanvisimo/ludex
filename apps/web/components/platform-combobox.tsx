@@ -1,5 +1,3 @@
-'use client';
-
 import type { Platform } from '@repo/contracts';
 import {
   Combobox,
@@ -9,7 +7,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@repo/ui';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import { useMemo } from 'react';
 
 // Le piattaforme sono 96: una tendina semplice sarebbe inusabile, serve un campo

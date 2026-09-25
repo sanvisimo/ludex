@@ -1,9 +1,11 @@
-import { nextJsConfig } from "@repo/eslint-config/next-js";
+import { config } from "@repo/eslint-config/react-internal";
 import { globalIgnores } from "eslint/config";
 
 /** @type {import("eslint").Linter.Config[]} */
 export default [
-  ...nextJsConfig,
-  // La config che `tamagui build` impacchetta a ogni build: generata, non nostra.
-  globalIgnores([".tamagui/**"]),
+  ...config,
+  // Generati, non nostri: la build, la config che il compilatore di Tamagui
+  // impacchetta a ogni build, e l'albero delle rotte che il plugin di TanStack
+  // Start riscrive da sé.
+  globalIgnores(["dist/**", ".tamagui/**", "src/routeTree.gen.ts"]),
 ];

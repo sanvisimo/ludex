@@ -1,5 +1,3 @@
-'use client';
-
 import {
   Button,
   DropdownMenu,
@@ -8,13 +6,13 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@repo/ui';
+import { useRouter } from '@tanstack/react-router';
 import { LanguagesIcon } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'use-intl';
 import { useTransition } from 'react';
 
 import { locales } from '@/i18n/config';
-import { setLocale } from '@/i18n/locale';
+import { setLocale } from '@/src/i18n';
 
 export function LocaleSwitcher() {
   const t = useTranslations('locale');
@@ -24,12 +22,11 @@ export function LocaleSwitcher() {
 
   function choose(next: string) {
     startTransition(async () => {
-      await setLocale(next);
-      // Il cookie da solo non ridisegna nulla: le stringhe sono già state
-      // risolte dal server per la richiesta precedente. `refresh` rifà quel
-      // passaggio con la lingua nuova, senza perdere lo stato dei client
-      // component né la cache di react-query.
-      router.refresh();
+      await setLocale({ data: next });
+      // Il cookie da solo non ridisegna nulla: lingua e messaggi li ha già
+      // letti il loader della radice. `invalidate` lo rifà con la lingua
+      // nuova, senza ricaricare la pagina né perdere la cache di react-query.
+      await router.invalidate();
     });
   }
 

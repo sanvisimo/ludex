@@ -1,10 +1,8 @@
-'use client';
-
 import type { HiddenKind } from '@repo/contracts';
 import { hiddenKindValues } from '@repo/contracts';
 import { toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';

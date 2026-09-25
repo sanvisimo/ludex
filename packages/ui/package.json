@@ -21,6 +21,7 @@
     "@tamagui/colors": "^2.7.0",
     "@tamagui/config": "^2.7.0",
     "@tamagui/core": "^2.7.0",
+    "@tamagui/focus-scope": "2.7.7",
     "@tamagui/lucide-icons-2": "^2.7.7",
     "@tamagui/toast": "2.7.7",
     "@tamagui/web": "^2.7.0",

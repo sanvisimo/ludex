@@ -1,5 +1,3 @@
-'use client';
-
 import { signIn } from '@repo/auth/client';
 import {
   Alert,
@@ -13,10 +11,9 @@ import {
   Input,
   Label,
 } from '@repo/ui';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { useTranslations } from 'use-intl';
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
+import { useState } from 'react';
 
 import { useAuthErrorMessage } from '@/lib/auth-error';
 
@@ -25,7 +22,7 @@ import { useAuthErrorMessage } from '@/lib/auth-error';
  * interni. Senza questo controllo `?next=https://sito-cattivo` o `?next=//host`
  * (protocol-relative) trasformerebbero il login in un redirect aperto.
  */
-function safeNext(value: string | null) {
+function safeNext(value: string | undefined) {
   if (!value) return '/';
   if (!value.startsWith('/') || value.startsWith('//')) return '/';
   return value;
@@ -35,7 +32,7 @@ function LoginForm() {
   const t = useTranslations('login');
   const authErrorMessage = useAuthErrorMessage();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { next } = Route.useSearch();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -56,13 +53,17 @@ function LoginForm() {
       return;
     }
 
-    // Il proxy scrive ?next=/percorso quando rimbalza un anonimo da una pagina
-    // privata: si torna lì invece che sulla home.
-    router.push(safeNext(searchParams.get('next')));
+    // Il rimbalzo da una pagina privata scrive ?next=/percorso: si torna lì
+    // invece che sulla home.
+    await router.navigate({ href: safeNext(next) });
   }
 
+  // `post` perché un invio fatto prima che React abbia idratato la pagina
+  // (JavaScript spento, rete lenta, un clic veloce) lo fa il browser da solo:
+  // in GET email e password finirebbero nell'URL, e da lì nella cronologia e
+  // nei log.
   return (
-    <form onSubmit={onSubmit} className="grid gap-4">
+    <form method="post" onSubmit={onSubmit} className="grid gap-4">
       <div className="grid gap-2">
         <Label htmlFor="email">{t('email')}</Label>
         <Input
@@ -98,7 +99,7 @@ function LoginForm() {
         {t.rich('noAccount', {
           link: (chunks) => (
             <Link
-              href="/register"
+              to="/register"
               className="text-foreground underline underline-offset-4"
             >
               {chunks}
@@ -110,24 +111,27 @@ function LoginForm() {
   );
 }
 
-export default function LoginPage() {
+export const Route = createFileRoute('/_guest/login')({
+  validateSearch: (search: Record<string, unknown>): { next?: string } => ({
+    next: typeof search.next === 'string' ? search.next : undefined,
+  }),
+  component: LoginPage,
+});
+
+function LoginPage() {
   const t = useTranslations('login');
 
   return (
     <main className="flex min-h-svh items-center justify-center p-6">
       <Card width="100%" maxW={384}>
         <CardHeader>
-          <CardTitle fontSize={18} lineHeight={28}>{t('title')}</CardTitle>
+          <CardTitle fontSize={18} lineHeight={28}>
+            {t('title')}
+          </CardTitle>
           <CardDescription>{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* useSearchParams richiede un confine di Suspense, o la pagina non
-              può restare prerenderizzata staticamente. */}
-          <Suspense
-            fallback={<p className="text-muted-foreground">{t('loading')}</p>}
-          >
-            <LoginForm />
-          </Suspense>
+          <LoginForm />
         </CardContent>
       </Card>
     </main>

@@ -1,8 +1,6 @@
-'use client';
-
 import type { GameDetail } from '@repo/contracts';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 import { useDuration } from '@/lib/duration';
 

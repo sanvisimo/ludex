@@ -1,5 +1,3 @@
-'use client';
-
 import type {
   Medium,
   OwnershipAccount,
@@ -10,7 +8,7 @@ import { storeAccountName } from '@repo/contracts';
 import { Badge } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { XIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 import { useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';

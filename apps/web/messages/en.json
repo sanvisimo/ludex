@@ -208,7 +208,6 @@
     "submit": "Sign in",
     "pending": "Hold on…",
     "failed": "Sign in failed",
-    "loading": "Loading…",
     "noAccount": "No account yet? <link>Sign up</link>"
   },
   "register": {
