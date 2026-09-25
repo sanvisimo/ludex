@@ -331,9 +331,6 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      nuqs:
-        specifier: ^2.9.6
-        version: 2.9.6(@tanstack/react-router@1.170.39(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(next@16.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@types/node@22.15.3)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
       react:
         specifier: 19.2.3
         version: 19.2.3
@@ -6931,27 +6928,6 @@ packages:
 
   nullthrows@1.1.1:
     resolution: {integrity: sha512-2vPPEi+Z7WqML2jZYddDIfy5Dqb0r2fze2zTxNNknZaFpVHU3mFB3R+DWeJWGVx0ecvttSGlJTI+WG+8Z4cDWw==}
-
-  nuqs@2.9.6:
-    resolution: {integrity: sha512-JexjSkA6mPV5HjobxyYMMIoItbPLLz5KcVKkMJLLJJDRfd07nFZ1gr40du30l8KnsOtZ+yubhYkqRyRCQiqVDg==}
-    peerDependencies:
-      '@remix-run/react': '>=2'
-      '@tanstack/react-router': ^1
-      next: '>=14.2.0'
-      react: 19.2.3
-      react-router: ^5 || ^6 || ^7 || ^8
-      react-router-dom: ^5 || ^6 || ^7
-    peerDependenciesMeta:
-      '@remix-run/react':
-        optional: true
-      '@tanstack/react-router':
-        optional: true
-      next:
-        optional: true
-      react-router:
-        optional: true
-      react-router-dom:
-        optional: true
 
   ob1@0.84.5:
     resolution: {integrity: sha512-aH9RkoZc7w/90HBamFxTw8ZLFr05wXS+iOnvmrgo53Ep8Pyrm5FieQSaPIVROkfFVQISeD/zo92fes26TOwe+A==}
@@ -16019,14 +15995,6 @@ snapshots:
       boolbase: 1.0.0
 
   nullthrows@1.1.1: {}
-
-  nuqs@2.9.6(@tanstack/react-router@1.170.39(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(next@16.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@types/node@22.15.3)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3):
-    dependencies:
-      '@standard-schema/spec': 1.1.0
-      react: 19.2.3
-    optionalDependencies:
-      '@tanstack/react-router': 1.170.39(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      next: 16.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@types/node@22.15.3)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
 
   ob1@0.84.5:
     dependencies:

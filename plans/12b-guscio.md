@@ -232,6 +232,45 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    Ponti fino al passo 4: in `hidden-entries.tsx` il link a
    `/backlog?hidden=true` è un `<a>`, e su Start `/backlog` è un 404.
 4. **I filtri** da `nuqs` ai search params.
+
+   **Fatto, insieme a `/backlog`**, che è passata qui (`git mv`) sotto il
+   layout `_private`: da anonimo rimbalza su `/login?next=/backlog`, come
+   faceva `proxy.ts`. `nuqs` è uscito dalle dipendenze, e con lui l'ultimo
+   pezzo di Next che faceva qualcosa: Next ora non serve più nessuna pagina.
+
+   [lib/backlog-filter.ts](../apps/web/lib/backlog-filter.ts) tiene la stessa
+   firma di prima (`filter`, `setFilter`, `reset`, `activeCount`, `toggle`),
+   quindi il pannello dei filtri non ha dovuto sapere niente. Sotto, ogni
+   criterio è un `parse` e un default: la rotta valida l'URL con
+   `validateBacklogSearch`, che scarta ciò che non sa leggere e lascia
+   nell'URL solo ciò che è diverso dal default, com'era il `clearOnDefault`
+   di nuqs. `setFilter` naviga con `replace`, come nuqs: una spunta non è una
+   pagina nella cronologia.
+
+   **Gli URL sono gli stessi di prima**, e non era gratis: il router scrive le
+   liste in JSON (`?status=%5B%22backlog%22…`). Con `stringifySearch` in
+   [src/router.tsx](../apps/web/src/router.tsx) le liste restano separate da
+   virgole (`?status=backlog,playing`), e i link ai filtri salvati prima
+   aprono ancora lo stesso filtro. È provato proprio su un link di quella
+   forma.
+
+   Il ritardo della ricerca, che era il `debounce` di nuqs, è un timer nel
+   campo: 350 ms dall'ultimo tasto, poi l'URL.
+
+   Provato in Chromium un giro di tredici passi, in sviluppo e in produzione:
+   rimbalzo da anonimo e ritorno dopo l'accesso, link nel vecchio formato,
+   una spunta di stato, ricaricamento con i filtri, ricerca (l'URL resta
+   fermo mentre si scrive e si aggiorna dopo, la cronologia non cresce),
+   azzera (campo compreso), ordinamento, vista dei nascosti e ritorno, stato
+   di una riga. Ripassato anche il giro del passo 3: tutto verde, e il 404 su
+   `/backlog` non c'è più.
+
+   **Trovato e non toccato**, perché c'era già su Next ed è fuori dal
+   passaggio: il modulo di accesso inviato **prima dell'idratazione** fa un
+   invio nativo in GET, e la password finisce nell'URL
+   (`/login?email=…&password=…`) — e quindi nella cronologia e nei log. Con
+   JavaScript spento succede sempre, con una rete lenta basta un clic veloce.
+   Lo stesso vale per la registrazione. Da decidere a parte.
 5. **Via Next**: dipendenze, config, ESLint, tsconfig, i file generati da
    `next dev`. Verifica di parità (sotto).
 6. **I componenti** in `@repo/ui`, con storie e test.

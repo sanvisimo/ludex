@@ -20,7 +20,6 @@ import {
 } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'use-intl';
-import { debounce } from 'nuqs';
 import { useEffect, useState } from 'react';
 
 import { toggle, useBacklogFilter } from '@/lib/backlog-filter';
@@ -353,10 +352,9 @@ function sortLabels(t: ReturnType<typeof useTranslations<'filters'>>) {
 /**
  * Il campo di ricerca.
  *
- * Ha uno stato locale perché lo stato dell'URL è **ritardato**: nuqs aggiorna
- * subito il valore ma può scrivere nell'URL più tardi, e qui serve il contrario
- * — la casella deve rispondere a ogni tasto, la ricerca no. Senza il ritardo si
- * partirebbe una richiesta per lettera.
+ * Ha uno stato locale perché l'URL si scrive **in ritardo**: la casella deve
+ * rispondere a ogni tasto, la ricerca no. Senza il ritardo partirebbe una
+ * richiesta per lettera, e una pagina nella cronologia del router per lettera.
  */
 function SearchField() {
   const t = useTranslations('filters');
@@ -367,18 +365,18 @@ function SearchField() {
   // un URL incollato. Senza, la casella resterebbe con dentro la vecchia parola.
   useEffect(() => setText(filter.q), [filter.q]);
 
+  // Il ritardo è sulla scrittura: lo stato — e quindi la query — segue l'URL,
+  // quindi ritardare l'uno ritarda l'altra. Ogni tasto riparte da capo.
+  useEffect(() => {
+    if (text === filter.q) return;
+    const timer = setTimeout(() => void setFilter({ q: text || null }), 350);
+    return () => clearTimeout(timer);
+  }, [text, filter.q, setFilter]);
+
   return (
     <Input
       value={text}
-      onChange={(event) => {
-        setText(event.target.value);
-        void setFilter(
-          { q: event.target.value || null },
-          // Il ritardo è sulla scrittura: lo stato — e quindi la query — segue
-          // l'URL, quindi ritardare l'uno ritarda l'altra.
-          { limitUrlUpdates: debounce(350) },
-        );
-      }}
+      onChange={(event) => setText(event.target.value)}
       placeholder={t('searchPlaceholder')}
       width="100%"
       $sm={{ width: 256 }}

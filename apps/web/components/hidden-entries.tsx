@@ -81,13 +81,13 @@ export function HiddenEntries() {
           ))}
         </ul>
         {total > entries.length && (
-          // Un `<a>` finché `/backlog` non passa a Start (passo 4 del 12b).
-          <a
-            href="/backlog?hidden=true"
+          <Link
+            to="/backlog"
+            search={{ hidden: true }}
             className="text-muted-foreground underline-offset-4 hover:underline"
           >
             {t('showAll', { count: total })}
-          </a>
+          </Link>
         )}
       </CardContent>
     </Card>

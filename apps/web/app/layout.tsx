@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 
 import { cn } from '@/lib/utils';
 
-import { Providers } from './providers';
+import { Providers } from '@/components/providers';
 import './globals.css';
 
 // Il preset Nova di shadcn si aspetta Geist su `--font-sans`. I .woff locali

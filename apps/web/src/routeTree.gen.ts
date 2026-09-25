@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuestRouteImport } from './routes/_guest'
+import { Route as PrivateRouteImport } from './routes/_private'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as GuestLoginRouteImport } from './routes/_guest.login'
 import { Route as GuestRegisterRouteImport } from './routes/_guest.register'
+import { Route as PrivateBacklogRouteImport } from './routes/_private.backlog'
 import { Route as GamesIdRouteImport } from './routes/games.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +25,10 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const GuestRoute = GuestRouteImport.update({
   id: '/_guest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivateRoute = PrivateRouteImport.update({
+  id: '/_private',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountRoute = AccountRouteImport.update({
@@ -40,6 +46,11 @@ const GuestRegisterRoute = GuestRegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => GuestRoute,
 } as any)
+const PrivateBacklogRoute = PrivateBacklogRouteImport.update({
+  id: '/backlog',
+  path: '/backlog',
+  getParentRoute: () => PrivateRoute,
+} as any)
 const GamesIdRoute = GamesIdRouteImport.update({
   id: '/games/$id',
   path: '/games/$id',
@@ -51,6 +62,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
+  '/backlog': typeof PrivateBacklogRoute
   '/games/$id': typeof GamesIdRoute
 }
 export interface FileRoutesByTo {
@@ -58,35 +70,42 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
+  '/backlog': typeof PrivateBacklogRoute
   '/games/$id': typeof GamesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_guest': typeof GuestRouteWithChildren
+  '/_private': typeof PrivateRouteWithChildren
   '/account': typeof AccountRoute
   '/_guest/login': typeof GuestLoginRoute
   '/_guest/register': typeof GuestRegisterRoute
+  '/_private/backlog': typeof PrivateBacklogRoute
   '/games/$id': typeof GamesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/account' | '/login' | '/register' | '/games/$id'
+  fullPaths:
+    '/' | '/account' | '/login' | '/register' | '/backlog' | '/games/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/login' | '/register' | '/games/$id'
+  to: '/' | '/account' | '/login' | '/register' | '/backlog' | '/games/$id'
   id:
     | '__root__'
     | '/'
     | '/_guest'
+    | '/_private'
     | '/account'
     | '/_guest/login'
     | '/_guest/register'
+    | '/_private/backlog'
     | '/games/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GuestRoute: typeof GuestRouteWithChildren
+  PrivateRoute: typeof PrivateRouteWithChildren
   AccountRoute: typeof AccountRoute
   GamesIdRoute: typeof GamesIdRoute
 }
@@ -105,6 +124,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof GuestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_private': {
+      id: '/_private'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PrivateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account': {
@@ -128,6 +154,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuestRegisterRouteImport
       parentRoute: typeof GuestRoute
     }
+    '/_private/backlog': {
+      id: '/_private/backlog'
+      path: '/backlog'
+      fullPath: '/backlog'
+      preLoaderRoute: typeof PrivateBacklogRouteImport
+      parentRoute: typeof PrivateRoute
+    }
     '/games/$id': {
       id: '/games/$id'
       path: '/games/$id'
@@ -150,9 +183,21 @@ const GuestRouteChildren: GuestRouteChildren = {
 
 const GuestRouteWithChildren = GuestRoute._addFileChildren(GuestRouteChildren)
 
+interface PrivateRouteChildren {
+  PrivateBacklogRoute: typeof PrivateBacklogRoute
+}
+
+const PrivateRouteChildren: PrivateRouteChildren = {
+  PrivateBacklogRoute: PrivateBacklogRoute,
+}
+
+const PrivateRouteWithChildren =
+  PrivateRoute._addFileChildren(PrivateRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GuestRoute: GuestRouteWithChildren,
+  PrivateRoute: PrivateRouteWithChildren,
   AccountRoute: AccountRoute,
   GamesIdRoute: GamesIdRoute,
 }
