@@ -1,7 +1,8 @@
 # Step 12 — L'identità
 
-**Bozza, da approvare.** Niente codice finché non sono prese le decisioni qui
-sotto.
+**Approvato il 27/09/2026**, con due decisioni prese: **Inter per il testo e
+Space Grotesk per titoli e nome**, e **l'accento resta teal**. Il simbolo si
+sceglie al passo 1, fra le tre proposte.
 
 ## Contesto
 
