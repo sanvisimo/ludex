@@ -597,9 +597,11 @@ export type OwnershipUpsert = {
  *
  * Cosa può essere adottato, e cosa no:
  *
- * - **mai una riga di un altro account** (`store_account_id is null`): due
- *   account Amazon sono due copie, ed è il caso per cui l'account sta nella
- *   chiave.
+ * - **mai una riga di un altro account**: due account Amazon sono due copie,
+ *   ed è il caso per cui l'account sta nella chiave. Una riga senza account
+ *   si adotta, e anche una dello **stesso** account: è lo scarto risolto a
+ *   mano, che sa da quale account viene ma non il supporto, e senza questo
+ *   il reimport di quell'account gli metteva accanto la copia `digital`.
  * - **mai una riga di un altro negozio**: «PC · GOG» scritto a mano non è la
  *   copia che sta arrivando da Steam.
  * - **mai una riga di un altro supporto**: è tutto il punto del disco dentro la
@@ -662,7 +664,8 @@ async function adottaPossessiMenoSpecifici(rows: OwnershipUpsert[]) {
           !prese.has(riga.id) &&
           riga.backlogId === row.backlogId &&
           riga.platformSlug === row.platformSlug &&
-          riga.storeAccountId === null &&
+          (riga.storeAccountId === null ||
+            riga.storeAccountId === (row.storeAccountId ?? null)) &&
           (riga.store === null || riga.store === (row.store ?? null)) &&
           (esatto
             ? riga.medium !== null && riga.medium === (row.medium ?? null)

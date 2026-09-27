@@ -482,6 +482,62 @@ describe('il supporto distingue due copie', () => {
     });
   });
 
+  // Lo scarto risolto a mano: il possesso sa da quale account viene, ma non il
+  // supporto. Adottandolo solo se senza account, il reimport di quell'account
+  // gli metteva accanto la copia `digital`, e la lista mostrava il gioco due
+  // volte con lo stesso badge.
+  it("l'import si prende la riga dello stesso account senza supporto", async () => {
+    await db.insert(schema.ownerships).values({
+      backlogId: entryId,
+      platformSlug: 'sony_playstation5',
+      store: 'psn',
+      storeAccountId: account.id,
+    });
+
+    await importa('digital');
+
+    const ownerships = (await findEntryById(userId, entryId))?.ownerships ?? [];
+    expect(ownerships).toHaveLength(1);
+    expect(ownerships[0]).toMatchObject({
+      medium: 'digital',
+      storeAccount: { id: account.id },
+    });
+  });
+
+  it('il doppione dello stesso account già scritto si cancella', async () => {
+    await importa('digital', { playtimeMinutes: 30 });
+    await db.insert(schema.ownerships).values({
+      backlogId: entryId,
+      platformSlug: 'sony_playstation5',
+      store: 'psn',
+      storeAccountId: account.id,
+    });
+
+    await importa('digital', { playtimeMinutes: 45 });
+
+    const ownerships = (await findEntryById(userId, entryId))?.ownerships ?? [];
+    expect(ownerships).toHaveLength(1);
+    expect(ownerships[0]).toMatchObject({
+      medium: 'digital',
+      playtimeMinutes: 45,
+    });
+  });
+
+  it('la riga senza supporto di un altro account non si tocca', async () => {
+    const altro = await linkStoreAccount(userId, 'psn', 'psn-2');
+    await db.insert(schema.ownerships).values({
+      backlogId: entryId,
+      platformSlug: 'sony_playstation5',
+      store: 'psn',
+      storeAccountId: altro.id,
+    });
+
+    await importa('digital');
+
+    const ownerships = (await findEntryById(userId, entryId))?.ownerships ?? [];
+    expect(ownerships).toHaveLength(2);
+  });
+
   it('dichiarare il disco dove c’è solo il digitale aggiunge una copia', async () => {
     await importa('digital');
     await addOwnershipToEntry(userId, entryId, {
