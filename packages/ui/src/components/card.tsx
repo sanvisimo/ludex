@@ -48,6 +48,8 @@ export const CardHeader = styled(YStack, {
 export const CardTitle = styled(Text, {
   name: 'CardTitle',
 
+  // I titoli parlano con la voce dell'app: Space Grotesk.
+  fontFamily: '$heading',
   fontSize: 16,
   lineHeight: 22,
   fontWeight: '500',

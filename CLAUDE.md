@@ -197,9 +197,26 @@ all'idratazione. Tre pezzi che una pagina nuova usa:
 - **`takeLinkClick`**: la regola dei modificatori (nuova scheda, tasto
   centrale) per ogni `<a href>` che naviga nell'app, `ButtonLink` compreso.
 
-L'**identità** — nome grafico, simbolo, carattere — è ancora un segnaposto:
-«Ludex» in testo, il font di sistema, l'accento teal. Ha un lotto suo dopo il
-12b, e va nei token di `@repo/ui`: il guscio la eredita senza essere toccato.
+L'**identità** è **Inter** per il testo, **Space Grotesk** per titoli e nome,
+l'accento **teal** e il simbolo di `Logo` (una tessera con la «L» e due
+copertine dietro). Le scelte e le misure sono nel piano,
+[plans/12-identita.md](plans/12-identita.md); qui ciò che si rompe se non lo
+si sa:
+
+- **i caratteri stanno in `packages/ui/src/fonts.ts`**, con due forme. Sul web
+  una famiglia variabile, caricata da `@fontsource-variable` nella radice di
+  `apps/web` e nel `preview` di Storybook. Su mobile un file per peso, con
+  `face`, caricato da `apps/mobile/App.tsx` con `useFonts` **sotto gli stessi
+  nomi**: un peso nuovo in un componente va aggiunto in tutti e due i posti.
+  Un titolo è `fontFamily="$heading"`.
+- **il simbolo ha i colori fissi**, unica eccezione alla regola dei token: è
+  un'immagine e non cambia col tema. Ne esistono copie — `favicon.svg`,
+  `favicon.ico` e `apple-touch-icon.png` in `apps/web/public`, icona e splash
+  in `apps/mobile/assets` — e ridisegnarlo vuol dire rifarle tutte.
+- **`Wordmark` non è un link**: il link alla home è del router, e sul web è
+  `HomeLink` in `app-shell.tsx`.
+- **`theme-color` sta nel `<head>` di `__root.tsx`** e non in `head()`: il
+  router tiene una sola `meta` per `name`, e quella del tema chiaro spariva.
 
 Due componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il perché
 sta nel loro commento:

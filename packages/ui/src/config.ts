@@ -2,15 +2,16 @@ import { defaultConfig } from '@tamagui/config/v5';
 import { animations } from '@tamagui/config/v5-css';
 import { createTamagui } from '@tamagui/core';
 
+import { fonts } from './fonts';
 import { themes } from './themes';
 
 /**
  * La configurazione del design system: token, temi, tipografia, breakpoint.
  *
- * Di `defaultConfig` si tiene tutto tranne i temi, che sono i nostri: le scale
- * di spazio, dimensione e raggio di Tamagui sono già coerenti fra loro e
- * rifarle a mano non porterebbe niente, mentre i colori sono l'identità e
- * quella è roba nostra.
+ * Di `defaultConfig` si tiene tutto tranne temi e caratteri, che sono i
+ * nostri: le scale di spazio, dimensione e raggio di Tamagui sono già coerenti
+ * fra loro e rifarle a mano non porterebbe niente, mentre colori e caratteri
+ * sono l'identità e quella è roba nostra.
  *
  * Le animazioni `v5` non le porta: vanno scelte. `v5-css` usa le transizioni
  * CSS sul web e ripiega su quelle di React Native sul telefono (il file
@@ -25,6 +26,7 @@ export const config = createTamagui({
   ...defaultConfig,
   animations,
   themes,
+  fonts,
 });
 
 export type AppConfig = typeof config;
