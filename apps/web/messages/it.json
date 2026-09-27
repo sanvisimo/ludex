@@ -49,7 +49,18 @@
     "hiddenViewTitle": "Giochi nascosti",
     "hiddenViewHint": "Non compaiono nella lista né fra i filtri, ma restano tuoi: il possesso non cambia. «Mostra di nuovo» li rimette in lista.",
     "backToList": "Torna alla lista",
-    "hiddenEmptyTitle": "Nessun gioco nascosto."
+    "hiddenEmptyTitle": "Nessun gioco nascosto.",
+    "statusOf": "Stato di {name}",
+    "actionsFor": "Azioni per {name}",
+    "columnTitle": "Titolo",
+    "columnPlatforms": "Piattaforme",
+    "columnDuration": "Durata",
+    "columnRating": "Voto",
+    "columnStatus": "Stato",
+    "view": "Vista",
+    "viewRows": "Righe",
+    "viewGrid": "Griglia",
+    "viewCompact": "Compatta"
   },
   "hidden": {
     "hide": "Nascondi",

@@ -1,46 +1,38 @@
 import type { BacklogEntry, BacklogStatus } from '@repo/contracts';
-import { backlogStatusValues } from '@repo/contracts';
 import {
   Button,
   Card,
   CardContent,
   Pagination,
   ScrollView,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Sheet,
   Skeleton,
   toast,
+  ToggleGroup,
+  ToggleGroupItem,
   XStack,
   YStack,
 } from '@repo/ui';
+import { LayoutGrid, List, Rows3 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { AddGameDialog } from '@/components/add-game-dialog';
 import { BacklogToolbar, FilterPanel } from '@/components/backlog-filters';
+import { BacklogEntries } from '@/components/backlog-views';
 import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import { RemoveEntryDialog } from '@/components/remove-entry-dialog';
-import { EntryTags } from '@/components/entry-tags';
-import { GameCover } from '@/components/game-cover';
-import { GameDuration } from '@/components/game-duration';
-import { GameTypeBadge } from '@/components/game-type-badge';
-import { OwnershipBadges } from '@/components/ownership-badges';
-import { RatingValue } from '@/components/rating-value';
 import { useApiErrorMessage } from '@/lib/api-error';
 import {
+  type BacklogView,
   PAGE_SIZE,
   toQueryInput,
   useBacklogFilter,
   validateBacklogSearch,
 } from '@/lib/backlog-filter';
 import { useSetEntryHidden } from '@/lib/hide-entry';
-import { useStatusLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 import { Page } from '@/src/components/page';
 import { takeLinkClick } from '@/src/link-click';
@@ -52,10 +44,8 @@ export const Route = createFileRoute('/_app/_private/backlog')({
 
 function BacklogPage() {
   const t = useTranslations('backlog');
-  const tHidden = useTranslations('hidden');
   const tFilters = useTranslations('filters');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const statusLabels = useStatusLabels();
   const errorMessage = useApiErrorMessage();
 
   const queryClient = useQueryClient();
@@ -160,7 +150,29 @@ function BacklogPage() {
         <p className="text-muted-foreground">{t('hiddenViewHint')}</p>
       )}
 
-      <BacklogToolbar onOpenFilters={() => setFiltersOpen(true)} />
+      <BacklogToolbar
+        onOpenFilters={() => setFiltersOpen(true)}
+        view={
+          <ToggleGroup
+            label={t('view')}
+            value={filter.view}
+            // La pagina resta: le viste mostrano gli stessi 48 giochi.
+            onValueChange={(view) =>
+              setFilter({ view: view as BacklogView, page: filter.page })
+            }
+          >
+            <ToggleGroupItem value="rows" aria-label={t('viewRows')}>
+              <Rows3 size={16} color="$color12" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="grid" aria-label={t('viewGrid')}>
+              <LayoutGrid size={16} color="$color12" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="compact" aria-label={t('viewCompact')}>
+              <List size={16} color="$color12" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        }
+      />
 
       <XStack gap={32} items="flex-start">
         {/* Due forme dello stesso pannello, e come nel guscio le sceglie il
@@ -208,103 +220,22 @@ function BacklogPage() {
             </Card>
           ) : (
             <>
-              <ul className="grid gap-2">
-                {entries.map((entry) => (
-                  <li key={entry.id}>
-                    <Card>
-                      <CardContent gap={12}>
-                        <div className="flex items-start gap-3">
-                          <GameCover
-                            imageId={entry.game.coverImageId}
-                            name={entry.game.name}
-                          />
-                          <div className="flex flex-1 flex-wrap items-start justify-between gap-3">
-                            <div className="grid gap-0.5">
-                              <span className="flex flex-wrap items-center gap-2">
-                                <Link
-                                  to="/games/$id"
-                                  params={{ id: entry.game.id }}
-                                  className="font-medium underline-offset-4 hover:underline"
-                                >
-                                  {entry.game.name}
-                                </Link>
-                                <GameTypeBadge type={entry.game.gameType} />
-                              </span>
-                              {entry.game.firstReleaseDate && (
-                                <span className="text-muted-foreground">
-                                  {entry.game.firstReleaseDate.getFullYear()}
-                                </span>
-                              )}
-                              <GameDuration game={entry.game} />
-                              <RatingValue value={entry.rating} />
-                            </div>
-                            <OwnershipBadges ownerships={entry.ownerships} />
-                          </div>
-                        </div>
-
-                        <EntryTags tags={entry.tags} />
-
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Select
-                            items={statusLabels}
-                            value={entry.status}
-                            onValueChange={(next) =>
-                              setStatus.mutate({
-                                id: entry.id,
-                                status: next as BacklogStatus,
-                              })
-                            }
-                          >
-                            <SelectTrigger width={176}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {backlogStatusValues.map((value) => (
-                                <SelectItem key={value} value={value}>
-                                  {statusLabels[value]}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            ml="auto"
-                            onClick={() => setEditing(entry)}
-                          >
-                            {t('edit')}
-                          </Button>
-
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setHidden.mutate({
-                                id: entry.id,
-                                hidden: entry.hiddenAt === null,
-                              })
-                            }
-                            disabled={setHidden.isPending}
-                          >
-                            {entry.hiddenAt === null
-                              ? tHidden('hide')
-                              : tHidden('unhide')}
-                          </Button>
-
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setRemoving(entry)}
-                          >
-                            {t('remove')}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </li>
-                ))}
-              </ul>
+              <BacklogEntries
+                view={filter.view}
+                entries={entries}
+                onStatus={(entry, status) =>
+                  setStatus.mutate({ id: entry.id, status })
+                }
+                onEdit={setEditing}
+                onToggleHidden={(entry) =>
+                  setHidden.mutate({
+                    id: entry.id,
+                    hidden: entry.hiddenAt === null,
+                  })
+                }
+                onRemove={setRemoving}
+                hidingDisabled={setHidden.isPending}
+              />
 
               <Pagination
                 page={filter.page}

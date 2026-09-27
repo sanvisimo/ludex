@@ -49,7 +49,18 @@
     "hiddenViewTitle": "Hidden games",
     "hiddenViewHint": "They don't show up in the list or the filters, but they're still yours: ownership doesn't change. “Show again” puts them back.",
     "backToList": "Back to the list",
-    "hiddenEmptyTitle": "No hidden games."
+    "hiddenEmptyTitle": "No hidden games.",
+    "statusOf": "Status of {name}",
+    "actionsFor": "Actions for {name}",
+    "columnTitle": "Title",
+    "columnPlatforms": "Platforms",
+    "columnDuration": "Length",
+    "columnRating": "Rating",
+    "columnStatus": "Status",
+    "view": "View",
+    "viewRows": "Rows",
+    "viewGrid": "Grid",
+    "viewCompact": "Compact"
   },
   "hidden": {
     "hide": "Hide",

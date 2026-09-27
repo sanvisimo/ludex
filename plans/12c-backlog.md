@@ -166,6 +166,29 @@ valgono anche lì.
    Tolte dai messaggi le chiavi del vecchio pannello (`more`, i «da»/«a» dei
    campi numerici, `directionLabel`).
 4. **Le tre viste** e il ToggleGroup, con le azioni nel menu.
+
+   **Fatto**, in [backlog-views.tsx](../apps/web/components/backlog-views.tsx).
+   Cambiare vista non cambia pagina. Tre scostamenti dal piano:
+   - **la compatta non ha la colonna della critica**: `BacklogEntry` non porta
+     il voto, e aggiungerlo voleva dire toccare contratto e query. Se serve,
+     arriva col 12d, che decide cosa sta sulla riga.
+   - **la griglia non chiude sempre le righe**: le colonne le decide lo spazio
+     (`auto-fill`, minimo 152 px), perché la stessa lista sta accanto al
+     pannello o da sola, e una media query sulla finestra non lo sa. Il 48
+     resta per il resto delle ragioni.
+   - **`GameCover` è uscita da Tailwind qui** e non al passo 5: le serviva una
+     variante che riempie la scheda (`fill`) e una larghezza a schermo
+     diversa dal file (`width`).
+
+   Tre cose trovate guardando, che i tipi non dicevano:
+   - le soglie di Tamagui guardano la **finestra**, e da `$md` il guscio se
+     ne prende 240: a 900 px la compatta aveva le colonne di una finestra
+     larga in 612 px, e i titoli ci passavano sopra. Le piattaforme ora
+     compaiono da `$lg` e dividono lo spazio col titolo.
+   - `flex={1}` in una colonna ha base 0, e Chrome ne ricava l'altezza delle
+     righe della griglia: schede alte pochi pixel. Serve `grow`.
+   - dentro un `<a>` in riga il testo non si tronca: il link del titolo è un
+     blocco.
 5. **Stato vuoto, Tailwind fuori**, verifica, CLAUDE.md e piano chiuso.
 
 Un commit per passo; i passi 1–2 si possono fondere se il 2 resta piccolo.

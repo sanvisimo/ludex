@@ -20,8 +20,11 @@ import { useDuration } from '@/lib/duration';
  */
 export function GameDuration({
   game,
+  short = false,
 }: {
   game: Pick<Game, 'hltbMainMinutes' | 'hltbHasSolo'>;
+  /** Solo il numero, senza «di storia»: la colonna della vista compatta. */
+  short?: boolean;
 }) {
   const t = useTranslations('hltb');
   const duration = useDuration();
@@ -30,7 +33,9 @@ export function GameDuration({
 
   return (
     <span className="text-muted-foreground">
-      {t('cardMain', { duration: duration(game.hltbMainMinutes) })}
+      {short
+        ? duration(game.hltbMainMinutes)
+        : t('cardMain', { duration: duration(game.hltbMainMinutes) })}
     </span>
   );
 }
