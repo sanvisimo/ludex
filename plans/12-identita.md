@@ -4,6 +4,12 @@
 Space Grotesk per titoli e nome**, e **l'accento resta teal**. Il simbolo si
 sceglie al passo 1, fra le tre proposte.
 
+**Chiuso il 27/09/2026**: tutti e cinque i passi fatti, il simbolo è F2. Ciò
+che va rispettato d'ora in poi sta nel CLAUDE.md, alla voce «L'identità»; qui
+restano le ragioni e le misure. Da verificare a mano resta solo il mobile, con
+Expo Go (caratteri e `Wordmark`) e con una build di sviluppo (icona e splash,
+che Expo Go non mostra).
+
 ## Contesto
 
 Il 12b ha costruito il guscio con un'identità **segnaposto**: «Ludex» in testo,
@@ -190,6 +196,10 @@ tua conferma.
    Space Grotesk 700. **Da verificare da te con Expo Go**: che il testo sia in
    Inter e i titoli in Space Grotesk, e che il `Wordmark` si veda.
 5. **CLAUDE.md** e questo piano chiuso.
+
+   **Fatto.** Il paragrafo sull'identità nel CLAUDE.md non dice più
+   «segnaposto»: dice dove stanno caratteri e simbolo e le quattro cose che
+   si rompono senza saperle.
 
 ## Verifica
 
