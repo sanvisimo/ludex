@@ -35,6 +35,8 @@
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.3.1",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/space-grotesk": "^5.3.0",
     "@react-native/assets-registry": "0.86.3",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",

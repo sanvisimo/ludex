@@ -9,6 +9,9 @@ import { IntlProvider } from 'use-intl';
 import { Providers } from '@/components/providers';
 import { getI18n } from '@/src/i18n';
 
+import inter from '@fontsource-variable/inter/index.css?url';
+import spaceGrotesk from '@fontsource-variable/space-grotesk/index.css?url';
+
 import globals from '../globals.css?url';
 
 export const Route = createRootRoute({
@@ -24,7 +27,14 @@ export const Route = createRootRoute({
       { title: loaderData?.messages.app.title },
       { name: 'description', content: loaderData?.messages.app.description },
     ],
-    links: [{ rel: 'stylesheet', href: globals }],
+    // I caratteri li serve l'app, non Google: `@fontsource` li mette nel
+    // bundle. Ogni file è diviso per alfabeto (`unicode-range`), e il browser
+    // scarica solo quello che la pagina usa.
+    links: [
+      { rel: 'stylesheet', href: inter },
+      { rel: 'stylesheet', href: spaceGrotesk },
+      { rel: 'stylesheet', href: globals },
+    ],
   }),
   shellComponent: RootDocument,
   component: () => <Outlet />,
@@ -38,9 +48,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     // la scrive uno script prima dell'idratazione, quindi il markup del server
     // non può combaciare. Vale solo per questo elemento, non per i figli.
     //
-    // Niente Geist: su Next lo caricava `next/font` ma non si vedeva più,
-    // coperto dal carattere di Tamagui. Il font si sceglie con l'aspetto
-    // dell'app (vedi il piano del 12a).
     <html lang={locale} suppressHydrationWarning>
       <head>
         <HeadContent />

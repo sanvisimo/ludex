@@ -131,6 +131,7 @@ export const DialogFooter = styled(XStack, {
 export const DialogTitle = styled(DialogBase.Title, {
   name: 'DialogTitle',
 
+  fontFamily: '$heading',
   fontSize: 16,
   lineHeight: 20,
   fontWeight: '500',

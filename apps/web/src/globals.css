@@ -46,6 +46,12 @@
 }
 
 :root {
+    /* Lo stesso carattere del `body` di Tamagui (packages/ui/src/fonts.ts):
+       il testo di Tailwind e quello dei componenti devono combaciare. Su Next
+       questa variabile la scriveva `next/font`; da allora nessuno la
+       definiva, e Tailwind ripiegava sul carattere di sistema. */
+    --font-sans: "Inter Variable", -apple-system, system-ui, BlinkMacSystemFont,
+        "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);

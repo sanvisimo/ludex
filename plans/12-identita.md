@@ -94,7 +94,56 @@ tua conferma.
 1. **Le proposte**: una pagina di prova con le tre coppie di caratteri su
    schermate vere (una riga del backlog, un titolo, la barra) e i tre simboli.
    Te le mando come immagini. **Qui ci si ferma e scegli.**
-2. **Il carattere**, in `@repo/ui` e sul web, con Storybook. Misura del peso
+
+   **Fatto, e scelto F2.** Le prime tre proposte (A monogramma, B dado a «L»,
+   C pila di copertine) hanno mostrato che solo A reggeva a 16 px; C diceva
+   «libreria» ma in piccolo si confondeva, e le sue copertine a trasparenza in
+   tema scuro sparivano. Da lì tre fusioni di A e C, a colori pieni: F1 la
+   tessera con una copertina dietro, F2 con due, F3 la «L» fatta di
+   copertine. **Scelta F2**: la tessera con la «L», e dietro due copertine due
+   passi più scuri della scala teal, che si vedono su tutti e due i fondi.
+
+   La geometria, in un quadrato 32×32, da riprendere identica al passo 3:
+
+   ```
+   copertina in fondo  x=13 y=1 w=17 h=19 rx=4    #1c6961 (tealDark 7)
+   copertina in mezzo  x=8  y=4 w=19 h=21 rx=5    #008573 (teal 11)
+   tessera             x=2  y=8 w=22 h=23 rx=5.5  #12a594 (teal 9)
+   «L»                 M7.5 13h4v10h7.5v4H7.5z     #1c2024 (slate 12)
+   ```
+2. **Il carattere**, in `@repo/ui` e sul web, con Storybook.
+   Su mobile la config resta sul carattere di sistema fino al passo 4: un
+   `fontFamily` che iOS non conosce è un errore, non un ripiego, e i file per
+   React Native arrivano lì.
+
+   **Fatto.** I caratteri stanno in
+   [packages/ui/src/fonts.ts](../packages/ui/src/fonts.ts): `body` in Inter,
+   `heading` in Space Grotesk, solo sul web; su mobile la famiglia resta
+   quella di sistema. Passano a `$heading` `CardTitle`, `DialogTitle`, il
+   titolo di `Page` e «Ludex» nella barra. Sul web li carica la radice da
+   `@fontsource-variable` (un file per famiglia, tutti i pesi dentro),
+   Storybook li importa nel `preview`, e `--font-sans` in `globals.css` fa sì
+   che il testo di Tailwind abbia lo stesso carattere di quello di Tamagui.
+
+   Misurato:
+
+   - **70 KB in tutto**: Inter 48 KB, Space Grotesk 22 KB, l'alfabeto latino
+     che la pagina scarica davvero. Gli altri alfabeti (cirillico, greco,
+     vietnamita) stanno nella build ma il browser non li chiede, grazie a
+     `unicode-range`.
+   - **Il carattere giusto dove deve**: titolo di pagina e «Ludex» in Space
+     Grotesk, voci della barra e testo di Tailwind in Inter.
+   - **Il layout regge**: righe del backlog, badge, bottoni e campi hanno le
+     stesse altezze di prima, confrontati sugli screenshot del passo 7.
+     Test di `@repo/ui` (76) e giro del guscio (13 passi) verdi.
+
+   Una cosa che il passaggio da Next si era lasciato dietro: **`--font-sans`
+   non era più definita** da quando `next/font` non c'era più, e il testo di
+   Tailwind ripiegava sul carattere di sistema. Ora la definisce `globals.css`.
+
+   Da guardare con te, non toccato: il titolo di pagina a 600 in Space Grotesk
+   pesa meno del grassetto di sistema di prima. Se lo vuoi più deciso, è un
+   `fontWeight` in `Page`. Misura del peso
    dei file e confronto prima/dopo sulle stesse pagine: un font diverso cambia
    le misure, e righe dense, badge e Switch vanno riguardati.
 3. **Simbolo e nome**: `Logo` e `Wordmark` in `@repo/ui`, favicon e icone per

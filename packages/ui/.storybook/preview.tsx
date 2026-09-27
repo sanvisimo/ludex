@@ -1,4 +1,7 @@
 import '@tamagui/core/reset.css';
+// Gli stessi caratteri dell'app, o il banco mostrerebbe un'altra app.
+import '@fontsource-variable/inter';
+import '@fontsource-variable/space-grotesk';
 
 import { withThemeFromJSXProvider } from '@storybook/addon-themes';
 import type { Preview, ReactRenderer } from '@storybook/react-native-web-vite';

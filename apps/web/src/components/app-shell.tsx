@@ -87,12 +87,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-/** «Ludex» in testo: il segnaposto dell'identità, che ha un lotto suo. */
+/** «Ludex» in testo: il simbolo arriva col passo 3 del piano dell'identità. */
 export function Wordmark() {
   return (
     <Link to="/" className="no-underline">
       <Text
         px={8}
+        fontFamily="$heading"
         fontSize={18}
         lineHeight={28}
         fontWeight="600"

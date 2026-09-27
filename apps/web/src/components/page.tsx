@@ -36,6 +36,7 @@ export function Page({
           <YStack gap={4} shrink={1}>
             <Text
               render="h1"
+              fontFamily="$heading"
               fontSize={24}
               lineHeight={32}
               fontWeight="600"
