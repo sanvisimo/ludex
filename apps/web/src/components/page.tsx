@@ -39,7 +39,7 @@ export function Page({
               fontFamily="$heading"
               fontSize={24}
               lineHeight={32}
-              fontWeight="600"
+              fontWeight="700"
               color="$color12"
             >
               {title}

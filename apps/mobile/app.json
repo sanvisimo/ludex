@@ -2,6 +2,22 @@
   "expo": {
     "name": "Ludex",
     "slug": "ludex",
-    "userInterfaceStyle": "automatic"
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#f9f9fb",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#18191b"
+          }
+        }
+      ]
+    ]
   }
 }

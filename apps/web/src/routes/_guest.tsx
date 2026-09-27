@@ -2,7 +2,7 @@ import { XStack, YStack } from '@repo/ui';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Wordmark } from '@/src/components/app-shell';
+import { HomeLink } from '@/src/components/app-shell';
 import { LocaleSwitcher } from '@/src/components/locale-switcher';
 import { hasSession } from '@/src/session';
 
@@ -26,7 +26,7 @@ function GuestLayout() {
         px={12}
         py={8}
       >
-        <Wordmark />
+        <HomeLink />
         <XStack gap={4}>
           <ThemeToggle />
           <LocaleSwitcher />

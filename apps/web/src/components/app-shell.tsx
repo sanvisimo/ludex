@@ -2,8 +2,8 @@ import {
   Button,
   Separator,
   Sheet,
-  Text,
   Tooltip,
+  Wordmark,
   XStack,
   YStack,
 } from '@repo/ui';
@@ -50,7 +50,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         borderRightWidth={1}
         borderColor="$borderColor"
       >
-        <Wordmark />
+        <HomeLink />
         <Navigation fill />
       </YStack>
 
@@ -65,7 +65,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           borderBottomWidth={1}
           borderColor="$borderColor"
         >
-          <Wordmark />
+          <HomeLink />
           <Tooltip content={t('menu')} placement="bottom">
             <Button
               variant="ghost"
@@ -87,20 +87,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-/** «Ludex» in testo: il simbolo arriva col passo 3 del piano dell'identità. */
-export function Wordmark() {
+/** Simbolo e nome, che riportano al catalogo. */
+export function HomeLink() {
   return (
     <Link to="/" className="no-underline">
-      <Text
-        px={8}
-        fontFamily="$heading"
-        fontSize={18}
-        lineHeight={28}
-        fontWeight="600"
-        color="$color12"
-      >
-        Ludex
-      </Text>
+      <XStack px={8} py={2}>
+        <Wordmark />
+      </XStack>
     </Link>
   );
 }

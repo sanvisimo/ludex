@@ -141,13 +141,36 @@ tua conferma.
    non era più definita** da quando `next/font` non c'era più, e il testo di
    Tailwind ripiegava sul carattere di sistema. Ora la definisce `globals.css`.
 
-   Da guardare con te, non toccato: il titolo di pagina a 600 in Space Grotesk
-   pesa meno del grassetto di sistema di prima. Se lo vuoi più deciso, è un
-   `fontWeight` in `Page`. Misura del peso
-   dei file e confronto prima/dopo sulle stesse pagine: un font diverso cambia
-   le misure, e righe dense, badge e Switch vanno riguardati.
+   Il titolo di pagina a 600 in Space Grotesk pesava meno del grassetto di
+   sistema di prima: **passato a 700**, al passo 3.
 3. **Simbolo e nome**: `Logo` e `Wordmark` in `@repo/ui`, favicon e icone per
    il web, icona e splash per Expo.
+
+   **Fatto.** `Logo` e `Wordmark` stanno in
+   [packages/ui/src/components/logo.tsx](../packages/ui/src/components/logo.tsx),
+   disegnati con `react-native-svg` come le icone, con la loro storia. Il
+   simbolo ha i **colori fissi** e non i token: è un'immagine, la stessa della
+   favicon, e non cambia col tema. Da solo è decorativo (`aria-hidden`): il
+   nome lo dice il testo accanto. Il link alla home resta al web
+   (`HomeLink` in `app-shell.tsx`), perché il router in `@repo/ui` non entra.
+
+   - **Web**, in `apps/web/public`: `favicon.svg`, `favicon.ico` (16, 32 e 48,
+     al posto di quello di `create-next-app`) e `apple-touch-icon.png` da 180
+     px su fondo pieno. `theme-color` per chiaro e scuro, col fondo vero
+     dell'app — misurato, è il passo 2 della scala slate, `#f9f9fb` e
+     `#18191b`, non il passo 1. Le due `meta` stanno nel `<head>` di
+     `__root.tsx` e non in `head()`: il router tiene una `meta` sola per
+     `name`, e la seconda spariva.
+   - **Mobile**, in `apps/mobile/assets`: `icon.png` a 1024 px e
+     `splash-icon.png`, in `app.json`. La splash passa da
+     `expo-splash-screen`, aggiunto: con la SDK 57 la chiave `splash` di
+     `app.json` vale solo per le PWA.
+   - I PNG sono ricavati dall'SVG con Chromium: il disegno ha una copia sola,
+     scritta tre volte (componente, `favicon.svg`, i PNG).
+
+   Verificato: test di `@repo/ui` (79) e giro del guscio (13 passi) verdi, i
+   tre file serviti col tipo giusto, «Ludex» è il nome del link in tutte e due
+   le forme della barra, nessun errore in console.
 4. **Mobile**: i font con `expo-font`.
 5. **CLAUDE.md** e questo piano chiuso.
 
