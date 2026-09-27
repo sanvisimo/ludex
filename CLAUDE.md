@@ -182,6 +182,36 @@ mobile condividono i componenti, non le rotte, e il grosso del progetto —
 `/backlog` e il guscio — su telefono è per forza un'altra schermata. Il conto e
 le ragioni sono nel piano del 12a, il passaggio nel piano del 12b.
 
+**Il guscio** è il layout `_app` (`apps/web/src/routes/_app.tsx`), che avvolge
+tutte le rotte tranne accesso e registrazione: quelle stanno sotto `_guest`, a
+pagina piena. `AppShell` disegna **due forme della stessa navigazione** —
+barra laterale da `$md` in su, barra in alto col menu che apre lo `Sheet` sotto
+— e **le sceglie il CSS**, non JavaScript: tutte e due sono nell'HTML del
+server, e leggere la larghezza darebbe un primo render sbagliato da correggere
+all'idratazione. Tre pezzi che una pagina nuova usa:
+
+- **`Page`** (`apps/web/src/components`): `<main>`, larghezza massima,
+  titolo, sottotitolo e azioni. Una pagina non scrive più il suo contenitore.
+- **`NavLink`**: `NavItem` di `@repo/ui` legato al router. Una voce nuova
+  della barra passa da qui, e `NavTarget` dice quali pagine la barra conosce.
+- **`takeLinkClick`**: la regola dei modificatori (nuova scheda, tasto
+  centrale) per ogni `<a href>` che naviga nell'app, `ButtonLink` compreso.
+
+L'**identità** — nome grafico, simbolo, carattere — è ancora un segnaposto:
+«Ludex» in testo, il font di sistema, l'accento teal. Ha un lotto suo dopo il
+12b, e va nei token di `@repo/ui`: il guscio la eredita senza essere toccato.
+
+Due componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il perché
+sta nel loro commento:
+
+- **`Tooltip` si apre da sé al focus da tastiera**: quello di Tamagui 2.7.7
+  non lo fa, nemmeno su un `<button>` nudo. Si toglie quando Tamagui lo
+  sistema. Le storie non possono provarlo — `userEvent.tab()` non produce
+  `:focus-visible` — e lo prova la tastiera vera di Playwright sull'app.
+- **`Sheet` è un dialogo modale**, che quello di Tamagui non è: Esc lo chiude,
+  il focus entra, resta dentro e torna al bottone (`FocusScope`), e da chiuso
+  non è montato.
+
 ## Fonti dati esterne
 
 - **IGDB** — metadata primario

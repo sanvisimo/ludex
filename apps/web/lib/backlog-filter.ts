@@ -185,7 +185,7 @@ function fromSearch(search: BacklogSearch): BacklogFilterState {
   ) as BacklogFilterState;
 }
 
-const route = getRouteApi('/_private/backlog');
+const route = getRouteApi('/_app/_private/backlog');
 
 /** I criteri veri e propri: l'ordinamento non è un filtro e non si azzera con loro. */
 const criteri = [

@@ -8,7 +8,10 @@
     "signOut": "Sign out",
     "signIn": "Sign in",
     "signUp": "Sign up",
-    "account": "Account"
+    "account": "Account",
+    "catalog": "Catalogue",
+    "menu": "Menu",
+    "navigation": "Navigation"
   },
   "theme": {
     "label": "Theme",

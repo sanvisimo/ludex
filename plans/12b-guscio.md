@@ -112,6 +112,17 @@ tooltip.
 
 Tema e lingua restano raggiungibili da anonimo, come oggi.
 
+**Due decisioni prese prima del passo 7** (27/09/2026):
+
+- **l'identità è un segnaposto.** Il guscio nasce con «Ludex» in testo, il
+  carattere di sistema e l'accento teal. Nome grafico, simbolo e font sono un
+  lotto suo, subito dopo il 12b e prima del 12c: vanno nei token di
+  `@repo/ui`, e il guscio li eredita senza essere toccato.
+- **accesso e registrazione stanno fuori dal guscio**: pagina piena con «Ludex»,
+  tema e lingua in alto, e il modulo. Da anonimo una barra laterale con una
+  voce sola non porterebbe da nessuna parte. In pratica il guscio è un layout
+  `_app` che avvolge tutte le rotte tranne quelle di `_guest`.
+
 ## Fuori dal 12b
 
 - il ridisegno di `/backlog`, dei filtri e della paginazione, compreso il
@@ -364,24 +375,83 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    `launchOptions.executablePath`, non committata. Sulle macchine con
    `playwright install chromium` non serve niente.
 7. **Il guscio** e `Page`.
+
+   **Fatto.** Le rotte col guscio stanno sotto un layout `_app`
+   ([src/routes/_app.tsx](../apps/web/src/routes/_app.tsx)); `_guest` resta
+   fuori, con «Ludex», tema e lingua in alto e il modulo a pagina piena. Il
+   guscio è [app-shell.tsx](../apps/web/src/components/app-shell.tsx):
+
+   - **barra laterale da `$md` in su** (`<aside>`, 240 px, ferma mentre la
+     pagina scorre): «Ludex», le voci, e in fondo l'utente. Da anonimo solo
+     Catalogo, poi Accedi, Registrati, tema e lingua.
+   - **barra in alto sotto `$md`**, col bottone Menu che apre la stessa
+     navigazione nello `Sheet`, che si chiude dopo il clic su una voce.
+   - **la forma la sceglie il CSS**, non JavaScript: tutte e due stanno
+     nell'HTML del server e le media query decidono quale si vede, così non
+     c'è un primo render sbagliato da correggere all'idratazione.
+   - **il menu utente** ([user-menu.tsx](../apps/web/src/components/user-menu.tsx))
+     tiene tema, lingua ed esci. Il nome visibile è il nome del bottone.
+   - **`NavLink`** lega `NavItem` al router: il catalogo è attivo solo su `/`
+     esatto, le altre voci anche sotto di sé, e la pagina di un gioco non ne
+     accende nessuna — ci si arriva dal catalogo come dal backlog.
+   - **`Page`** ([page.tsx](../apps/web/src/components/page.tsx)): `<main>`,
+     larghezza massima, titolo, sottotitolo e azioni. Le quattro pagine lo
+     usano; la pagina del gioco non passa il titolo, perché la sua
+     intestazione ha la copertina accanto.
+   - il gestore del clic sui link (`takeLinkClick`) è uno solo per
+     `ButtonLink` e per le voci della barra.
+
+   Provato in Chromium, in sviluppo e sulla build di produzione, un giro di
+   tredici passi: voce attiva, clic senza ricaricare, nessuna voce accesa
+   sulla pagina di un gioco, un solo `<main>`, `<nav>` e `<aside>`, tema e
+   lingua e uscita dal menu utente, barra laterale nascosta sul telefono,
+   Tooltip col Tab vero, foglio aperto con Invio e focus dentro, Esc che lo
+   chiude e riporta il focus su Menu, navigazione dal foglio che lo chiude,
+   accesso fuori dal guscio. Ripassati i giri dei passi 3 e 4: verdi.
+
+   Due cose che il giro ha trovato:
+
+   - **Il foglio si apriva alto zero.** La navigazione ha `flex: 1` nella
+     barra laterale, per spingere l'utente in fondo; nel foglio, alto quanto
+     il contenuto, lo stesso `flex` la schiacciava. Ora `fill` è acceso solo
+     nella barra.
+   - **Il Tooltip di Tamagui 2.7.7 non si apre al focus da tastiera**, nemmeno
+     su un `<button>` nudo: col mouse sì. Il passo 6 non poteva vederlo, perché
+     `userEvent.tab()` non produce `:focus-visible`; la tastiera vera di
+     Playwright sì. Il nostro `Tooltip` ora lo apre da sé al focus da tastiera
+     e lo chiude all'uscita del focus e con Esc; il mouse resta a Tamagui.
+     Quando Tamagui lo sistemerà, quel pezzo si toglie.
 8. **CLAUDE.md**: stack, tabella del monorepo e sezione «Design system» (come
    si costruisce sul web, `ButtonLink`), e questo piano aggiornato con ciò che
    i passi 1–7 hanno smentito.
+
+   **Fatto**, in due tempi. Stack, tabella del monorepo, regole di confine e
+   «come si costruisce sul web» sono stati corretti già al passo 5, perché
+   tolto Next erano diventati falsi. Qui si aggiunge il guscio: il layout
+   `_app` e `_guest`, le due forme scelte dal CSS, `Page`, `NavLink` e
+   `takeLinkClick`, l'identità ancora segnaposto, e i due componenti di
+   `@repo/ui` che fanno più del Tamagui che avvolgono (`Tooltip` al focus,
+   `Sheet` modale).
 
 I passi 1–5 finiscono con l'app identica a prima. Si possono fondere lì, prima
 del guscio.
 
 ## Verifica
 
-- `pnpm lint`, `pnpm check-types`, `pnpm --filter @repo/ui test` puliti.
-- `pnpm build` di `apps/web` e l'avvio della build.
-- Dopo il passo 5, un giro a mano su `/`, `/login`, `/register`, `/backlog`
-  (filtri nell'URL, ricarica con i filtri, «carica altri», nascosti),
-  `/games/[id]` e `/account`, da anonimo e da loggato: **stesse funzioni**.
-  Anche il rimbalzo con `?next=`, il cambio di lingua senza perdere lo stato e
-  il tema senza lampo al caricamento.
+- `pnpm lint`, `pnpm check-types`, `pnpm --filter @repo/ui test` puliti. ✔
+  (lint e typecheck pacchetto per pacchetto: in questo container turbo non
+  riesce ad avviare i processi; le storie con un Chromium indicato a mano.)
+- `pnpm build` di `apps/web` e l'avvio della build. ✔
+- Dopo il passo 5, un giro su `/`, `/login`, `/register`, `/backlog` (filtri
+  nell'URL, ricarica con i filtri, «carica altri», nascosti), `/games/[id]` e
+  `/account`, da anonimo e da loggato: **stesse funzioni**. Anche il rimbalzo
+  con `?next=`, il cambio di lingua senza perdere lo stato e il tema senza
+  lampo al caricamento. ✔ In Chromium con Playwright, in sviluppo e in
+  produzione. «Carica altri» provato per ultimo, al passo 8, con 63 giochi:
+  50, poi 63, e il bottone sparisce.
 - Dopo il passo 7: il guscio a larghezza piena e stretta, da tastiera, in tema
-  chiaro e scuro.
+  chiaro e scuro. ✔ Tredici passi, compreso il Tab vero sul Tooltip e sul
+  foglio.
 
 ## Fonti
 
