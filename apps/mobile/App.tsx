@@ -48,12 +48,21 @@ import {
   Textarea,
   toast,
   Toaster,
+  Wordmark,
   XStack,
   YStack,
 } from '@repo/ui';
 import { X } from '@repo/ui/icons';
+import { Inter_400Regular } from '@expo-google-fonts/inter/400Regular';
+import { Inter_500Medium } from '@expo-google-fonts/inter/500Medium';
+import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
+import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
+import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk/600SemiBold';
+import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk/700Bold';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -70,9 +79,34 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
  * Il `TamaguiProvider` monta la stessa `config` di `apps/web`: un colore
  * cambiato in `packages/ui` cambia su entrambe.
  */
+// La schermata iniziale resta finché i caratteri non sono arrivati: senza,
+// il primo disegno sarebbe col carattere di sistema, e subito dopo un salto.
+void SplashScreen.preventAutoHideAsync();
+
 export function App() {
   const system = useColorScheme();
   const [dark, setDark] = useState(system === 'dark');
+
+  // Le chiavi sono i nomi delle famiglie, e devono essere **quelli** di `face`
+  // in `packages/ui/src/fonts.ts`. Un file per peso, e solo i pesi che i
+  // componenti usano: l'indice del pacchetto li porterebbe tutti e diciotto.
+  const [fontsLoaded, fontError] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    SpaceGrotesk_600SemiBold,
+    SpaceGrotesk_700Bold,
+  });
+  const ready = fontsLoaded || fontError !== null;
+
+  useEffect(() => {
+    if (ready) void SplashScreen.hideAsync();
+  }, [ready]);
+
+  // Se un file non si carica si va avanti lo stesso: meglio un carattere
+  // sbagliato di una schermata iniziale che non se ne va.
+  if (!ready) return null;
 
   return (
     // Il foglio dal basso del Select legge gli ingombri dello schermo (notch,
@@ -83,8 +117,9 @@ export function App() {
         <YStack flex={1} bg="$background">
           <ScrollView contentContainerStyle={{ p: 16, pt: 64 }}>
             <YStack gap={24}>
+              <Wordmark />
               <XStack items="center" justify="space-between">
-                <H3>Ludex · design system</H3>
+                <H3>Design system</H3>
                 <XStack items="center" gap={8}>
                   <Label htmlFor="tema">Scuro</Label>
                   <Switch id="tema" checked={dark} onCheckedChange={setDark} />

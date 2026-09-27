@@ -172,6 +172,23 @@ tua conferma.
    tre file serviti col tipo giusto, «Ludex» è il nome del link in tutte e due
    le forme della barra, nessun errore in console.
 4. **Mobile**: i font con `expo-font`.
+
+   **Fatto.** In [packages/ui/src/fonts.ts](../packages/ui/src/fonts.ts) la
+   parte native ha una famiglia per peso, dichiarata con `face`: Tamagui
+   sostituisce la famiglia e toglie `fontWeight`. Solo i pesi che i componenti
+   usano — Inter 400, 500, 600, 700 e Space Grotesk 600, 700 — e quelli in
+   mezzo li riempie `createFont` col precedente. `apps/mobile/App.tsx` li
+   carica con `useFonts` sotto **gli stessi nomi**, un file per peso
+   (`@expo-google-fonts/inter/400Regular`, non l'indice, che li porterebbe
+   tutti e diciotto), e tiene su la schermata iniziale finché non sono
+   arrivati. Nello scheletro c'è anche il `Wordmark`, la prova che il simbolo
+   è universale.
+
+   Misurato: il bundle iOS (`expo export`) si costruisce e porta i sei file,
+   **1,8 MB**; Inter pesa 340 KB a peso perché il `.ttf` statico ha tutti gli
+   alfabeti. Web invariato: test di `@repo/ui` (79) verdi, titoli ancora in
+   Space Grotesk 700. **Da verificare da te con Expo Go**: che il testo sia in
+   Inter e i titoli in Space Grotesk, e che il `Wordmark` si veda.
 5. **CLAUDE.md** e questo piano chiuso.
 
 ## Verifica
