@@ -5,9 +5,9 @@ import type {
   Subscription,
 } from '@repo/contracts';
 import { storeAccountName } from '@repo/contracts';
-import { Badge } from '@repo/ui';
+import { Badge, XStack } from '@repo/ui';
+import { X } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
-import { XIcon } from 'lucide-react';
 import { useTranslations } from 'use-intl';
 
 import { useStoreLabels } from '@/lib/labels';
@@ -85,7 +85,7 @@ export function OwnershipBadges({
   }
 
   return (
-    <div className="flex flex-wrap gap-1">
+    <XStack flexWrap="wrap" gap={4}>
       {ownerships.map((ownership) => {
         const account =
           ownership.store &&
@@ -110,21 +110,37 @@ export function OwnershipBadges({
             key={ownership.id ?? ownershipKey(ownership)}
             variant="secondary"
             pr={onRemove ? 4 : undefined}
+            // Mai più largo di chi lo contiene: su un telefono «PS5 ·
+            // PlayStation Store · PS Plus» non ci sta, e senza usciva dalla
+            // scheda invece di tagliarsi al suo bordo.
+            maxW="100%"
+            overflow="hidden"
           >
             {label}
             {onRemove && (
-              <button
-                type="button"
+              <XStack
+                render="button"
                 aria-label={t('removePlatform', { name: label })}
-                onClick={() => onRemove(ownership)}
-                className="opacity-50 hover:opacity-100"
+                onPress={() => onRemove(ownership)}
+                bg="transparent"
+                borderWidth={0}
+                p={0}
+                cursor="pointer"
+                opacity={0.5}
+                hoverStyle={{ opacity: 1 }}
+                focusVisibleStyle={{
+                  opacity: 1,
+                  outlineColor: '$outlineColor',
+                  outlineStyle: 'solid',
+                  outlineWidth: 2,
+                }}
               >
-                <XIcon className="size-3" />
-              </button>
+                <X size={12} color="$color12" />
+              </XStack>
             )}
           </Badge>
         );
       })}
-    </div>
+    </XStack>
   );
 }

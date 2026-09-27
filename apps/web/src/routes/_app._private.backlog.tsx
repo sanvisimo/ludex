@@ -1,48 +1,48 @@
 import type { BacklogEntry, BacklogStatus } from '@repo/contracts';
-import { backlogStatusValues } from '@repo/contracts';
 import {
   Button,
-  Card,
-  CardContent,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  EmptyState,
+  Pagination,
+  ScrollView,
+  Sheet,
   Skeleton,
+  Text,
   toast,
+  ToggleGroup,
+  ToggleGroupItem,
+  XStack,
+  YStack,
 } from '@repo/ui';
+import {
+  EyeOff,
+  Gamepad2,
+  LayoutGrid,
+  List,
+  Rows3,
+  SearchX,
+} from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { AddGameDialog } from '@/components/add-game-dialog';
-import { BacklogFilters } from '@/components/backlog-filters';
+import { BacklogToolbar, FilterPanel } from '@/components/backlog-filters';
+import { BacklogEntries } from '@/components/backlog-views';
 import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import { RemoveEntryDialog } from '@/components/remove-entry-dialog';
-import { EntryTags } from '@/components/entry-tags';
-import { GameCover } from '@/components/game-cover';
-import { GameDuration } from '@/components/game-duration';
-import { GameTypeBadge } from '@/components/game-type-badge';
-import { OwnershipBadges } from '@/components/ownership-badges';
-import { RatingValue } from '@/components/rating-value';
 import { useApiErrorMessage } from '@/lib/api-error';
 import {
+  type BacklogView,
+  PAGE_SIZE,
   toQueryInput,
   useBacklogFilter,
   validateBacklogSearch,
 } from '@/lib/backlog-filter';
 import { useSetEntryHidden } from '@/lib/hide-entry';
-import { useStatusLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 import { Page } from '@/src/components/page';
-
-// Quanti giochi per volta. "Carica altri" alza questo numero invece di
-// accumulare pagine: su una libreria personale rileggere qualche centinaio di
-// righe non costa niente, e in cambio non c'è nessuna cache di pagine da tenere
-// coerente quando si cambia un filtro.
-const PAGINA = 50;
+import { takeLinkClick } from '@/src/link-click';
 
 export const Route = createFileRoute('/_app/_private/backlog')({
   validateSearch: validateBacklogSearch,
@@ -51,21 +51,16 @@ export const Route = createFileRoute('/_app/_private/backlog')({
 
 function BacklogPage() {
   const t = useTranslations('backlog');
-  const tHidden = useTranslations('hidden');
-  const statusLabels = useStatusLabels();
+  const tFilters = useTranslations('filters');
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const errorMessage = useApiErrorMessage();
 
   const queryClient = useQueryClient();
-  const { filter, setFilter, activeCount } = useBacklogFilter();
+  const { filter, setFilter, reset, activeCount, goToPage, pageHref } =
+    useBacklogFilter();
   const inHidden = filter.hidden;
 
-  const [limit, setLimit] = useState(PAGINA);
-  const input = useMemo(() => toQueryInput(filter, limit), [filter, limit]);
-
-  // Cambiato un filtro si torna alla prima schermata: restare a "carica altri"
-  // premuto tre volte su un insieme diverso non vuol dire niente.
-  const criteri = JSON.stringify({ ...input, limit: 0 });
-  useEffect(() => setLimit(PAGINA), [criteri]);
+  const input = useMemo(() => toQueryInput(filter), [filter]);
 
   const backlog = useQuery({
     ...api.backlog.list.queryOptions({ input }),
@@ -107,9 +102,27 @@ function BacklogPage() {
 
   const entries = backlog.data?.entries ?? [];
   const total = backlog.data?.total ?? 0;
+  const pageCount = Math.ceil(total / PAGE_SIZE);
+
+  // Una pagina oltre l'ultima — un link vecchio, o un gioco nascosto
+  // dall'ultima pagina che aveva solo lui — torna alla prima invece di dire
+  // «nessun gioco» con dei giochi che ci sono. Alla prima e non all'ultima
+  // perché l'ultima non la sappiamo: `total` viene da `count(*) over()`, che
+  // senza righe restituite non c'è, e il server risponde zero.
+  const outOfRange =
+    backlog.data !== undefined &&
+    !backlog.isPlaceholderData &&
+    entries.length === 0 &&
+    filter.page > 1;
+  useEffect(() => {
+    if (outOfRange) void setFilter({ page: null });
+  }, [outOfRange, setFilter]);
 
   return (
     <Page
+      // Più larga delle altre: da `$xl` il pannello dei filtri sta accanto
+      // alla lista, e la lista non deve restringersi per fargli posto.
+      maxW={1280}
       title={inHidden ? t('hiddenViewTitle') : t('title')}
       // Uno spazio e non niente mentre carica: la riga del conteggio tiene il
       // suo posto, e il titolo non salta quando arriva.
@@ -141,150 +154,132 @@ function BacklogPage() {
       }
     >
       {inHidden && (
-        <p className="text-muted-foreground">{t('hiddenViewHint')}</p>
+        <Text fontSize={14} lineHeight={20} color="$color11">
+          {t('hiddenViewHint')}
+        </Text>
       )}
 
-      <BacklogFilters />
+      <BacklogToolbar
+        onOpenFilters={() => setFiltersOpen(true)}
+        view={
+          <ToggleGroup
+            label={t('view')}
+            value={filter.view}
+            // La pagina resta: le viste mostrano gli stessi 48 giochi.
+            onValueChange={(view) =>
+              setFilter({ view: view as BacklogView, page: filter.page })
+            }
+          >
+            <ToggleGroupItem value="rows" aria-label={t('viewRows')}>
+              <Rows3 size={16} color="$color12" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="grid" aria-label={t('viewGrid')}>
+              <LayoutGrid size={16} color="$color12" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="compact" aria-label={t('viewCompact')}>
+              <List size={16} color="$color12" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        }
+      />
 
-      {backlog.error ? (
-        <p className="text-destructive">{t('error')}</p>
-      ) : backlog.isPending ? (
-        <div className="grid gap-2">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Skeleton key={index} height={96} width="100%" rounded={12} />
-          ))}
-        </div>
-      ) : entries.length === 0 ? (
-        <Card>
-          <CardContent gap={8}>
-            {/* Vuoto perché non hai giochi e vuoto perché nessuno passa i
-                filtri sono due cose diverse, e la seconda ha una via d'uscita. */}
-            <p className="font-medium">
-              {activeCount > 0
-                ? t('noMatchTitle')
-                : inHidden
-                  ? t('hiddenEmptyTitle')
-                  : t('emptyTitle')}
-            </p>
-            {(activeCount > 0 || !inHidden) && (
-              <p className="text-muted-foreground">
-                {activeCount > 0 ? t('noMatchHint') : t('emptyHint')}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <ul className="grid gap-2">
-            {entries.map((entry) => (
-              <li key={entry.id}>
-                <Card>
-                  <CardContent gap={12}>
-                    <div className="flex items-start gap-3">
-                      <GameCover
-                        imageId={entry.game.coverImageId}
-                        name={entry.game.name}
-                      />
-                      <div className="flex flex-1 flex-wrap items-start justify-between gap-3">
-                        <div className="grid gap-0.5">
-                          <span className="flex flex-wrap items-center gap-2">
-                            <Link
-                              to="/games/$id"
-                              params={{ id: entry.game.id }}
-                              className="font-medium underline-offset-4 hover:underline"
-                            >
-                              {entry.game.name}
-                            </Link>
-                            <GameTypeBadge type={entry.game.gameType} />
-                          </span>
-                          {entry.game.firstReleaseDate && (
-                            <span className="text-muted-foreground">
-                              {entry.game.firstReleaseDate.getFullYear()}
-                            </span>
-                          )}
-                          <GameDuration game={entry.game} />
-                          <RatingValue value={entry.rating} />
-                        </div>
-                        <OwnershipBadges ownerships={entry.ownerships} />
-                      </div>
-                    </div>
+      <XStack gap={32} items="flex-start">
+        {/* Due forme dello stesso pannello, e come nel guscio le sceglie il
+            CSS: di lato da `$xl`, nel foglio sotto. Da `$lg` la barra del
+            guscio si prende già 240 px, e accanto a lei una colonna di
+            filtri lascerebbe alla lista meno di 500. */}
+        <YStack
+          render="aside"
+          aria-label={tFilters('panelLabel')}
+          width={256}
+          shrink={0}
+          display="none"
+          $xl={{ display: 'flex' }}
+        >
+          <FilterPanel />
+        </YStack>
 
-                    <EntryTags tags={entry.tags} />
+        <YStack flex={1} minW={0} gap={16}>
+          {backlog.error ? (
+            <Text fontSize={14} color="$red11">
+              {t('error')}
+            </Text>
+          ) : backlog.isPending ? (
+            <YStack gap={8}>
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} height={96} width="100%" rounded={12} />
+              ))}
+            </YStack>
+          ) : entries.length === 0 ? (
+            // Vuoto perché non hai giochi e vuoto perché nessuno passa i
+            // filtri sono due cose diverse, e la seconda ha una via d'uscita.
+            activeCount > 0 ? (
+              <EmptyState
+                icon={<SearchX size={24} color="$color11" />}
+                title={t('noMatchTitle')}
+                description={t('noMatchHint')}
+                action={
+                  <Button variant="outline" onClick={() => void reset()}>
+                    {tFilters('reset', { count: activeCount })}
+                  </Button>
+                }
+              />
+            ) : inHidden ? (
+              <EmptyState
+                icon={<EyeOff size={24} color="$color11" />}
+                title={t('hiddenEmptyTitle')}
+              />
+            ) : (
+              <EmptyState
+                icon={<Gamepad2 size={24} color="$color11" />}
+                title={t('emptyTitle')}
+                description={t('emptyHint')}
+              />
+            )
+          ) : (
+            <>
+              <BacklogEntries
+                view={filter.view}
+                entries={entries}
+                onStatus={(entry, status) =>
+                  setStatus.mutate({ id: entry.id, status })
+                }
+                onEdit={setEditing}
+                onToggleHidden={(entry) =>
+                  setHidden.mutate({
+                    id: entry.id,
+                    hidden: entry.hiddenAt === null,
+                  })
+                }
+                onRemove={setRemoving}
+                hidingDisabled={setHidden.isPending}
+              />
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Select
-                        items={statusLabels}
-                        value={entry.status}
-                        onValueChange={(next) =>
-                          setStatus.mutate({
-                            id: entry.id,
-                            status: next as BacklogStatus,
-                          })
-                        }
-                      >
-                        <SelectTrigger width={176}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {backlogStatusValues.map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {statusLabels[value]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        ml="auto"
-                        onClick={() => setEditing(entry)}
-                      >
-                        {t('edit')}
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setHidden.mutate({
-                            id: entry.id,
-                            hidden: entry.hiddenAt === null,
-                          })
-                        }
-                        disabled={setHidden.isPending}
-                      >
-                        {entry.hiddenAt === null
-                          ? tHidden('hide')
-                          : tHidden('unhide')}
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setRemoving(entry)}
-                      >
-                        {t('remove')}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </li>
-            ))}
-          </ul>
-
-          {entries.length < total && (
-            <Button
-              variant="outline"
-              mx="auto"
-              disabled={backlog.isFetching}
-              onClick={() => setLimit((current) => current + PAGINA)}
-            >
-              {t('loadMore', { count: total - entries.length })}
-            </Button>
+              <Pagination
+                page={filter.page}
+                pageCount={pageCount}
+                href={pageHref}
+                onNavigate={(page, event) => {
+                  if (takeLinkClick(event)) void goToPage(page);
+                }}
+                label={t('pages')}
+                previousLabel={t('previousPage')}
+                nextLabel={t('nextPage')}
+              />
+            </>
           )}
-        </>
-      )}
+        </YStack>
+      </XStack>
+
+      <Sheet
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        label={tFilters('panelLabel')}
+      >
+        <ScrollView maxH="75vh">
+          <FilterPanel />
+        </ScrollView>
+      </Sheet>
 
       <RemoveEntryDialog
         entry={removing}

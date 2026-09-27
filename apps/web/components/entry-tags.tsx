@@ -1,5 +1,5 @@
 import type { UserTag } from '@repo/contracts';
-import { Badge } from '@repo/ui';
+import { Badge, XStack } from '@repo/ui';
 
 /**
  * Categorie e tag personali di una riga di backlog.
@@ -14,7 +14,7 @@ export function EntryTags({ tags }: { tags: UserTag[] }) {
   const plain = tags.filter((tag) => tag.kind === 'tag');
 
   return (
-    <div className="flex flex-wrap gap-1">
+    <XStack flexWrap="wrap" gap={4}>
       {categories.map((tag) => (
         <Badge key={tag.id}>{tag.name}</Badge>
       ))}
@@ -23,6 +23,6 @@ export function EntryTags({ tags }: { tags: UserTag[] }) {
           {tag.name}
         </Badge>
       ))}
-    </div>
+    </XStack>
   );
 }

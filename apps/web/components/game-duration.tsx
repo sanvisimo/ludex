@@ -1,4 +1,5 @@
 import type { Game } from '@repo/contracts';
+import { Text } from '@repo/ui';
 import { useTranslations } from 'use-intl';
 
 import { useDuration } from '@/lib/duration';
@@ -20,8 +21,11 @@ import { useDuration } from '@/lib/duration';
  */
 export function GameDuration({
   game,
+  short = false,
 }: {
   game: Pick<Game, 'hltbMainMinutes' | 'hltbHasSolo'>;
+  /** Solo il numero, senza «di storia»: la colonna della vista compatta. */
+  short?: boolean;
 }) {
   const t = useTranslations('hltb');
   const duration = useDuration();
@@ -29,8 +33,10 @@ export function GameDuration({
   if (game.hltbMainMinutes === null || game.hltbHasSolo === false) return null;
 
   return (
-    <span className="text-muted-foreground">
-      {t('cardMain', { duration: duration(game.hltbMainMinutes) })}
-    </span>
+    <Text fontSize={14} lineHeight={20} color="$color11">
+      {short
+        ? duration(game.hltbMainMinutes)
+        : t('cardMain', { duration: duration(game.hltbMainMinutes) })}
+    </Text>
   );
 }

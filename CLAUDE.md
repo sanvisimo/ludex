@@ -152,15 +152,32 @@ e in produzione lo serve `srvx` (`pnpm --filter web start`). Le liste nella
 query string sono separate da virgole e non in JSON, per `stringifySearch` in
 `apps/web/src/router.tsx`.
 
-Quattro cose che le schermate devono sapere, perché si scoprono solo a vederle:
+**`/backlog` tiene tutto nell'URL** (`apps/web/lib/backlog-filter.ts`): i
+filtri, l'ordinamento, la vista (`view`: righe, griglia, compatta) e la pagina
+(`page`, 48 giochi alla volta). Ogni `setFilter` riporta a pagina 1 e non
+lascia voci nella cronologia; `goToPage` sì, perché «indietro» deve tornare
+alla pagina di prima. Una pagina oltre la fine torna alla prima e non
+all'ultima: con `count(*) over()` e nessuna riga restituita il server risponde
+`total: 0`, e l'ultima non la sa.
+
+Sette cose che le schermate devono sapere, perché si scoprono solo a vederle:
 
 - **un link che sembra un bottone è `ButtonLink`** (`apps/web/src/components`), non
   `<Button render={<Link />}>`: su un `styled()` di Tamagui un `render` con un
   componente passa al link le props di stile grezze, e il link esce nudo.
 - **le view di Tamagui non si restringono** (`flex-shrink: 0`, come su React
   Native): un campo al 100% accanto a un bottone lo spinge fuori. Ci va `flex={1}`.
-- **la config vuole le abbreviazioni**: `shrink`, non `flexShrink`; `sm:` di
-  Tailwind è `$sm`.
+- **la config vuole le abbreviazioni**: `shrink`, non `flexShrink`; `grow`, non
+  `flexGrow`; `sm:` di Tailwind è `$sm`.
+- **`flex={1}` in una colonna ha base 0**, e dove l'altezza la decide il
+  contenuto — una riga di griglia — Chrome la calcola da lì: schede alte pochi
+  pixel. Per crescere senza schiacciare ci va `grow={1}`.
+- **le soglie guardano la finestra, non la pagina**: da `$md` il guscio se ne
+  prende 240, quindi a 900 px una pagina ha lo spazio di una finestra da 612.
+  Il pannello dei filtri del backlog sta di lato da `$xl` per questo.
+- **una media query su un componente di `@repo/ui` si risolve a runtime**, e
+  server e browser scrivono due classi diverse: l'idratazione non torna. Va su
+  un `XStack` o `YStack` intorno, come fa il guscio.
 - **Tailwind convive fino alla fine dello step 12**, sui `div` delle schermate e
   mai sui componenti di `@repo/ui`: gli stili di Tamagui stanno fuori da ogni
   layer, quelli di Tailwind 4 dentro, e vince sempre Tamagui. Una classe su un
@@ -218,8 +235,8 @@ si sa:
 - **`theme-color` sta nel `<head>` di `__root.tsx`** e non in `head()`: il
   router tiene una sola `meta` per `name`, e quella del tema chiaro spariva.
 
-Due componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il perché
-sta nel loro commento:
+Cinque componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il
+perché sta nel loro commento:
 
 - **`Tooltip` si apre da sé al focus da tastiera**: quello di Tamagui 2.7.7
   non lo fa, nemmeno su un `<button>` nudo. Si toglie quando Tamagui lo
@@ -228,6 +245,14 @@ sta nel loro commento:
 - **`Sheet` è un dialogo modale**, che quello di Tamagui non è: Esc lo chiude,
   il focus entra, resta dentro e torna al bottone (`FocusScope`), e da chiuso
   non è montato.
+- **`Accordion` tiene lui l'id del contenuto**: quello di Tamagui 2.7.7 lo
+  nomina in `aria-controls` ma non lo mette sul contenuto, e axe lo boccia.
+- **`ToggleGroup` rimette `aria-pressed`**: a scelta singola Tamagui lo toglie
+  e non mette niente al suo posto.
+- **`Slider` non usa `disabledStyle`**, che su Tamagui 2.7.7 vale sempre, e
+  centra il binario a mano. Calcola le maniglie misurando il binario, quindi
+  **sul server non c'è**: chi lo monta in una pagina renderizzata dal server
+  lo monta dopo l'idratazione (vedi `RangeFilter` in `backlog-filters.tsx`).
 
 ## Fonti dati esterne
 
