@@ -1,9 +1,7 @@
-'use client';
-
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { Link } from '@tanstack/react-router';
+import { useTranslations } from 'use-intl';
 
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { OwnershipBadges } from '@/components/ownership-badges';
@@ -55,7 +53,8 @@ export function HiddenEntries() {
               <div className="grid flex-1 gap-0.5">
                 <span className="flex flex-wrap items-center gap-2">
                   <Link
-                    href={`/games/${entry.game.id}`}
+                    to="/games/$id"
+                    params={{ id: entry.game.id }}
                     className="font-medium underline-offset-4 hover:underline"
                   >
                     {entry.game.name}
@@ -81,7 +80,8 @@ export function HiddenEntries() {
         </ul>
         {total > entries.length && (
           <Link
-            href="/backlog?hidden=true"
+            to="/backlog"
+            search={{ hidden: true }}
             className="text-muted-foreground underline-offset-4 hover:underline"
           >
             {t('showAll', { count: total })}

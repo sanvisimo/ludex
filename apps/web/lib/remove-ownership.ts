@@ -1,8 +1,6 @@
-'use client';
-
 import { toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 import type { DisplayedOwnership } from '@/components/ownership-badges';
 import { useApiErrorMessage } from '@/lib/api-error';

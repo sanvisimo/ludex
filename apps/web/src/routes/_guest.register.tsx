@@ -1,5 +1,3 @@
-'use client';
-
 import { signUp } from '@repo/auth/client';
 import {
   Alert,
@@ -13,14 +11,17 @@ import {
   Input,
   Label,
 } from '@repo/ui';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'use-intl';
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { useAuthErrorMessage } from '@/lib/auth-error';
 
-export default function RegisterPage() {
+export const Route = createFileRoute('/_guest/register')({
+  component: RegisterPage,
+});
+
+function RegisterPage() {
   const t = useTranslations('register');
   const authErrorMessage = useAuthErrorMessage();
   const router = useRouter();
@@ -41,18 +42,22 @@ export default function RegisterPage() {
 
     setPending(false);
     if (error) setError(authErrorMessage(error, t('failed')));
-    else router.push('/');
+    else await router.navigate({ to: '/' });
   }
 
   return (
     <main className="flex min-h-svh items-center justify-center p-6">
       <Card width="100%" maxW={384}>
         <CardHeader>
-          <CardTitle fontSize={18} lineHeight={28}>{t('title')}</CardTitle>
+          <CardTitle fontSize={18} lineHeight={28}>
+            {t('title')}
+          </CardTitle>
           <CardDescription>{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="grid gap-4">
+          {/* `post` per la stessa ragione dell'accesso: un invio prima
+              dell'idratazione non deve mettere la password nell'URL. */}
+          <form method="post" onSubmit={onSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="name">{t('name')}</Label>
               <Input id="name" name="name" required autoComplete="name" />
@@ -94,7 +99,7 @@ export default function RegisterPage() {
               {t.rich('hasAccount', {
                 link: (chunks) => (
                   <Link
-                    href="/login"
+                    to="/login"
                     className="text-foreground underline underline-offset-4"
                   >
                     {chunks}

@@ -1,10 +1,9 @@
-'use client';
-
 import { Button, type ButtonProps } from '@repo/ui';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@tanstack/react-router';
 
 /**
- * Un bottone che porta a un'altra pagina: `<a href>` vero, navigazione di Next.
+ * Un bottone che porta a un'altra pagina: `<a href>` vero, navigazione del
+ * router.
  *
  * Con shadcn era `<Button render={<Link />}>`. Su Tamagui quella forma non
  * regge: il nostro `Button` è uno `styled()` sopra il Button di Tamagui, e un
@@ -17,8 +16,9 @@ import { useRouter } from 'next/navigation';
  * semplice resta nell'app, mentre con un modificatore (nuova scheda, nuova
  * finestra) o col tasto centrale decide il browser, come farebbe `Link`.
  *
- * Sta qui e non in `@repo/ui` perché conosce `next/navigation`, che il design
- * system non deve importare.
+ * Sta qui e non in `@repo/ui` perché conosce il router, che il design system
+ * non deve importare. `href` è una stringa e non una rotta tipizzata: il router
+ * la accetta così com'è, e un bottone porta anche a indirizzi con la query.
  */
 export function ButtonLink({
   href,
@@ -33,7 +33,6 @@ export function ButtonLink({
       // `href` arriva all'`<a>`, ma i tipi del Button non lo conoscono: sono
       // quelli di un bottone, anche quando è reso come link.
       {...({ href } as object)}
-      onMouseEnter={() => router.prefetch(href)}
       onClick={(raw) => {
         // Tamagui lo tipizza come l'evento di React Native, ma sul web è il
         // clic del DOM: `preventDefault` e i modificatori ci sono davvero.
@@ -49,7 +48,7 @@ export function ButtonLink({
           return;
         }
         event.preventDefault();
-        router.push(href);
+        void router.navigate({ href });
       }}
     />
   );

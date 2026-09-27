@@ -1,7 +1,5 @@
-'use client';
-
 import { ORPCError } from '@orpc/client';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 // I messaggi che l'API mette in `ORPCError` sono testo per chi sviluppa, non
 // interfaccia: non sono tradotti e non vanno mostrati così come sono. Qui si

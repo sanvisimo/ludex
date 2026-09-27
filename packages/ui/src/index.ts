@@ -2,10 +2,11 @@
  * Il design system, **universale**: gli stessi componenti per `apps/web` e
  * `apps/mobile`.
  *
- * Regola di confine, e non è una formalità: qui dentro non entrano né
- * `next/*`, né `@repo/contracts`, né `@repo/db`. Un componente che conoscesse
- * il tipo `BacklogEntry` smetterebbe di essere un pezzo di design system e
- * diventerebbe una schermata — e su React Native un import di `next/image`
+ * Regola di confine, e non è una formalità: qui dentro non entrano né il
+ * router del web (`@tanstack/react-router`, `@tanstack/react-start`), né
+ * `@repo/contracts`, né `@repo/db`. Un componente che conoscesse il tipo
+ * `BacklogEntry` smetterebbe di essere un pezzo di design system e
+ * diventerebbe una schermata — e su React Native un import del router del web
  * romperebbe il bundle.
  *
  * **Niente `export * from 'tamagui'`**, ed è una scelta e non una dimenticanza:
@@ -28,6 +29,7 @@ export {
   AlertTitle,
   type AlertProps,
 } from './components/alert';
+export { Avatar, initials, type AvatarProps } from './components/avatar';
 export { Badge, type BadgeProps } from './components/badge';
 export { Button, type ButtonProps } from './components/button';
 export {
@@ -83,6 +85,7 @@ export {
   type InputGroupProps,
 } from './components/input-group';
 export { Label, type LabelProps } from './components/label';
+export { NavItem, type NavItemProps } from './components/nav-item';
 export {
   Select,
   SelectContent,
@@ -91,10 +94,12 @@ export {
   SelectValue,
   type SelectProps,
 } from './components/select';
+export { Sheet, type SheetProps } from './components/sheet';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
 export { Switch, type SwitchProps } from './components/switch';
 export { Toaster, toast, type ToasterProps } from './components/toast';
 export { Textarea, type TextareaProps } from './components/textarea';
+export { Tooltip, type TooltipProps } from './components/tooltip';
 
 // Le icone stanno in `@repo/ui/icons`, non qui: sono oltre millecinquecento
 // nomi e affogherebbero i componenti nell'autocompletamento.

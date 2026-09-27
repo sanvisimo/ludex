@@ -1,9 +1,7 @@
-'use client';
-
 import { Card, CardContent, Skeleton } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useTranslations } from 'use-intl';
 
 import { GameCover } from '@/components/game-cover';
 import { GameDuration } from '@/components/game-duration';
@@ -11,7 +9,9 @@ import { api } from '@/lib/orpc';
 
 // Catalogo pubblico: "questi giochi Ludex li conosce". Volutamente anonimo —
 // non dice chi li ha aggiunti, solo che esistono.
-export default function CatalogPage() {
+export const Route = createFileRoute('/')({ component: CatalogPage });
+
+function CatalogPage() {
   const t = useTranslations('catalog');
   const { data, isPending, error } = useQuery(
     api.games.latest.queryOptions({ input: {} }),
@@ -42,7 +42,7 @@ export default function CatalogPage() {
         <ul className="grid gap-2">
           {data.map((game) => (
             <li key={game.id}>
-              <Link href={`/games/${game.id}`} className="block">
+              <Link to="/games/$id" params={{ id: game.id }} className="block">
                 <Card interactive>
                   <CardContent flexDirection="row" items="center" gap={16}>
                     <GameCover imageId={game.coverImageId} name={game.name} />

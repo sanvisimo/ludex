@@ -1,5 +1,3 @@
-'use client';
-
 import type { LinkableStore } from '@repo/contracts';
 import { linkableStoreValues } from '@repo/contracts';
 import {
@@ -14,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/ui';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import { useState } from 'react';
 
 import { StoreLinkForm } from '@/components/store-link-form';

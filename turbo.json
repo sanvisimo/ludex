@@ -8,7 +8,7 @@
     "BETTER_AUTH_URL",
     "WEB_URL",
     "API_PORT",
-    "NEXT_PUBLIC_API_URL",
+    "PUBLIC_API_URL",
     "REDIS_URL",
     "IGDB_CLIENT_ID",
     "IGDB_CLIENT_SECRET",
@@ -28,7 +28,7 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
+      "outputs": ["dist/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]

@@ -1,5 +1,3 @@
-'use client';
-
 import type { BacklogEntry, BacklogStatus } from '@repo/contracts';
 import { backlogStatusValues } from '@repo/contracts';
 import {
@@ -15,8 +13,8 @@ import {
   toast,
 } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useTranslations } from 'use-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { AddGameDialog } from '@/components/add-game-dialog';
@@ -30,7 +28,11 @@ import { GameTypeBadge } from '@/components/game-type-badge';
 import { OwnershipBadges } from '@/components/ownership-badges';
 import { RatingValue } from '@/components/rating-value';
 import { useApiErrorMessage } from '@/lib/api-error';
-import { toQueryInput, useBacklogFilter } from '@/lib/backlog-filter';
+import {
+  toQueryInput,
+  useBacklogFilter,
+  validateBacklogSearch,
+} from '@/lib/backlog-filter';
 import { useSetEntryHidden } from '@/lib/hide-entry';
 import { useStatusLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
@@ -41,7 +43,12 @@ import { api, client } from '@/lib/orpc';
 // coerente quando si cambia un filtro.
 const PAGINA = 50;
 
-export default function BacklogPage() {
+export const Route = createFileRoute('/_private/backlog')({
+  validateSearch: validateBacklogSearch,
+  component: BacklogPage,
+});
+
+function BacklogPage() {
   const t = useTranslations('backlog');
   const tHidden = useTranslations('hidden');
   const statusLabels = useStatusLabels();
@@ -185,7 +192,8 @@ export default function BacklogPage() {
                         <div className="grid gap-0.5">
                           <span className="flex flex-wrap items-center gap-2">
                             <Link
-                              href={`/games/${entry.game.id}`}
+                              to="/games/$id"
+                              params={{ id: entry.game.id }}
                               className="font-medium underline-offset-4 hover:underline"
                             >
                               {entry.game.name}

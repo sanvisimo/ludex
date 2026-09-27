@@ -1,5 +1,3 @@
-'use client';
-
 import { ORPCError } from '@orpc/client';
 import type {
   BacklogStatus,
@@ -34,7 +32,7 @@ import {
 } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { XIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import { useState } from 'react';
 
 import { PlatformCombobox } from '@/components/platform-combobox';

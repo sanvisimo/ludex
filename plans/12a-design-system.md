@@ -495,7 +495,47 @@ Il banco prima, i componenti dentro il banco.
   **stesse funzioni di prima**, aspetto nuovo. Una differenza di comportamento è
   un errore del 12a, non una feature.
 
-## Rimasto aperto: chi serve il web
+## Chi serve il web: TanStack Start
+
+**Deciso il 25/09/2026, dopo il 12a e prima del 12b: TanStack Start.** Web su
+Vite con il suo router, mobile Expo a parte, `@repo/ui` in comune. Si
+condividono i componenti, non le rotte.
+
+A decidere è stato il conto che la sezione qui sotto chiedeva: quante schermate
+reggerebbero lo stesso codice su web e telefono, senza `.web.tsx` e
+`.native.tsx`. Contate sul codice di oggi più ciò che i lotti 12b–12g
+aggiungono:
+
+| Schermata | Righe, coi suoi componenti | Su mobile | Perché |
+| --- | --- | --- | --- |
+| `/login` | 135 | uguale | un form |
+| `/register` | 110 | uguale | un form |
+| `/` catalogo | 72 | uguale | lista di card, virtualizzata |
+| `/games/[id]` | ~450 | quasi uguale | le card impilate reggono; divergono l'anteprima al passaggio (niente hover), il carosello e l'impaginazione del 12d |
+| `/account` | ~1100 | quasi uguale | diverge solo `StoreLinkForm`: incollare l'URL sul web, la WebView su mobile |
+| `/backlog` | ~1300 | diversa | pannello filtri → bottom sheet, tabella densa → lista a schede, paginazione → scorrimento, azioni di riga → swipe o menu; lo stato nell'URL (`nuqs`) è un concetto web |
+| guscio | 63 | diverso | barra laterale sul web, bottom tab sul telefono |
+
+I dialoghi non contano: il foglio dal basso su mobile lo decide il componente
+di `@repo/ui`, come già il Select, e la schermata non lo sa.
+
+Tre uguali, due quasi, due diverse — ma pesate in righe il conto si rovescia:
+le uguali sono le più piccole (~320 righe), e le diverse sono **esattamente**
+ciò che fanno il 12b e il 12c. Il grosso del progetto sta su `/backlog`, e lì
+le viste sono per forza due. Il routing condiviso risparmierebbe su login e
+registrazione e costerebbe la biforcazione dove si lavora. In più l'app mobile
+vera viene dopo lo step 13: Expo Router adesso vorrebbe dire rifare il web
+dentro Expo per schermate mobili che nessuno ha ancora disegnato.
+
+Il conto è una stima dalla lettura del codice, non una misura: il «diverso» si
+appoggia a ciò che CLAUDE.md dice del telefono, perché un disegno mobile non
+c'è ancora.
+
+Resta vero ciò che è scritto sotto: esce `next-intl` (il 12b si porta dietro
+Paraglide o Lingui) e `nuqs` lascia il posto ai search params validati con Zod,
+lavoro del 12c.
+
+### Le ragioni, com'erano scritte prima di decidere
 
 Da decidere **dopo il 12a e prima del 12b**, perché il guscio *è* routing e
 farlo due volte è l'unico spreco possibile. Con il design system universale,

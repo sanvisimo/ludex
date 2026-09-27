@@ -1,5 +1,3 @@
-'use client';
-
 import type { LinkableStore, Store, StoreAccount } from '@repo/contracts';
 import { linkableStoreValues, storeAccountName } from '@repo/contracts';
 import {
@@ -16,7 +14,7 @@ import {
   toast,
 } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useFormatter, useNow, useTranslations } from 'next-intl';
+import { useFormatter, useNow, useTranslations } from 'use-intl';
 import { useId, useState } from 'react';
 
 import { StoreLinkForm } from '@/components/store-link-form';

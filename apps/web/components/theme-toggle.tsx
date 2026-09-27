@@ -1,5 +1,3 @@
-'use client';
-
 import {
   Button,
   DropdownMenu,
@@ -9,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@repo/ui';
 import { MoonIcon, SunIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 import { useTheme } from 'next-themes';
 
 export function ThemeToggle() {

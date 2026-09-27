@@ -208,7 +208,6 @@
     "submit": "Accedi",
     "pending": "Attendi…",
     "failed": "Accesso fallito",
-    "loading": "Caricamento…",
     "noAccount": "Non hai un account? <link>Registrati</link>"
   },
   "register": {

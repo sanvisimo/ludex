@@ -1,7 +1,5 @@
-'use client';
-
 import type { Game } from '@repo/contracts';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 import { useDuration } from '@/lib/duration';
 

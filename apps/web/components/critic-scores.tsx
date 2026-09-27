@@ -1,9 +1,7 @@
-'use client';
-
 import type { GameDetail, GameScore } from '@repo/contracts';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'use-intl';
 
 import { api } from '@/lib/orpc';
 

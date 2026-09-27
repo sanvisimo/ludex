@@ -27,8 +27,9 @@ function forbid(groups) {
 /**
  * `packages/ui`: il design system universale.
  *
- * - `next/*` perché gira anche su React Native, dove quel modulo non esiste e
- *   il bundle si romperebbe.
+ * - il router del web (`@tanstack/react-router`, `@tanstack/react-start`)
+ *   perché gira anche su React Native, dove quel router non c'è e il bundle si
+ *   romperebbe. Chi conosce le rotte è una schermata, e sta in `apps/web`.
  * - `@repo/contracts` e `@repo/db` perché un componente che conosce
  *   `BacklogEntry` smette di essere design system e diventa una schermata.
  *
@@ -37,9 +38,9 @@ function forbid(groups) {
 export const designSystemBoundary = [
   forbid([
     {
-      names: ["next"],
+      names: ["@tanstack/react-router", "@tanstack/react-start"],
       message:
-        "packages/ui gira anche su React Native: niente next/*. Ciò che conosce Next sta in apps/web.",
+        "packages/ui gira anche su React Native: niente router del web. Ciò che conosce le rotte sta in apps/web.",
     },
     {
       names: ["@repo/contracts", "@repo/db"],
@@ -55,7 +56,9 @@ export const designSystemBoundary = [
  * - `@repo/db` porterebbe il driver Postgres nel bundle. Se serve un tipo
  *   derivato dallo schema, lo si ri-esporta come tipo puro da
  *   `@repo/contracts`.
- * - `next/*` non esiste su React Native.
+ * - il router e le server function del web (`@tanstack/react-router`,
+ *   `@tanstack/react-start`) sono di `apps/web`: su React Native le rotte le
+ *   fa Expo.
  *
  * @type {import("eslint").Linter.Config[]}
  */
@@ -67,8 +70,9 @@ export const mobileBoundary = [
         "apps/mobile non importa mai @repo/db: il driver Postgres finirebbe nel bundle. I tipi passano da @repo/contracts.",
     },
     {
-      names: ["next"],
-      message: "next/* non esiste su React Native.",
+      names: ["@tanstack/react-router", "@tanstack/react-start"],
+      message:
+        "Il router del web sta in apps/web: su React Native le rotte le fa Expo.",
     },
   ]),
 ];
