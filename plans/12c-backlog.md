@@ -136,6 +136,17 @@ valgono anche lì.
 2. **Le pagine**: `page` nell'URL, `offset` al server, via «carica altri».
    È il pezzo che ripara un guasto, e va per primo sulla pagina anche prima
    del ridisegno.
+
+   **Fatto.** `page` è un campo di `backlog-filter.ts` come gli altri, fuori
+   dai criteri: ogni `setFilter` lo azzera, `goToPage` invece lascia una voce
+   nella cronologia. Provato sulla libreria vera: 42 pagine (41 × 48 + 11),
+   «indietro» torna alla pagina di prima, la ricerca riporta alla prima, il
+   link di ogni pagina porta i filtri con sé.
+
+   Una cosa che il piano non sapeva: una pagina oltre la fine
+   (`?page=999`) non si può riportare sull'**ultima**, perché il server lì
+   risponde `total: 0` — il conteggio viene da `count(*) over()`, che senza
+   righe restituite non c'è. Torna alla prima.
 3. **Barra e pannello dei filtri**, con i filtri attivi a chip.
 4. **Le tre viste** e il ToggleGroup, con le azioni nel menu.
 5. **Stato vuoto, Tailwind fuori**, verifica, CLAUDE.md e piano chiuso.

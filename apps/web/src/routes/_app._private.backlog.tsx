@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CardContent,
+  Pagination,
   Select,
   SelectContent,
   SelectItem,
@@ -29,6 +30,7 @@ import { OwnershipBadges } from '@/components/ownership-badges';
 import { RatingValue } from '@/components/rating-value';
 import { useApiErrorMessage } from '@/lib/api-error';
 import {
+  PAGE_SIZE,
   toQueryInput,
   useBacklogFilter,
   validateBacklogSearch,
@@ -37,12 +39,7 @@ import { useSetEntryHidden } from '@/lib/hide-entry';
 import { useStatusLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 import { Page } from '@/src/components/page';
-
-// Quanti giochi per volta. "Carica altri" alza questo numero invece di
-// accumulare pagine: su una libreria personale rileggere qualche centinaio di
-// righe non costa niente, e in cambio non c'è nessuna cache di pagine da tenere
-// coerente quando si cambia un filtro.
-const PAGINA = 50;
+import { takeLinkClick } from '@/src/link-click';
 
 export const Route = createFileRoute('/_app/_private/backlog')({
   validateSearch: validateBacklogSearch,
@@ -56,16 +53,11 @@ function BacklogPage() {
   const errorMessage = useApiErrorMessage();
 
   const queryClient = useQueryClient();
-  const { filter, setFilter, activeCount } = useBacklogFilter();
+  const { filter, setFilter, activeCount, goToPage, pageHref } =
+    useBacklogFilter();
   const inHidden = filter.hidden;
 
-  const [limit, setLimit] = useState(PAGINA);
-  const input = useMemo(() => toQueryInput(filter, limit), [filter, limit]);
-
-  // Cambiato un filtro si torna alla prima schermata: restare a "carica altri"
-  // premuto tre volte su un insieme diverso non vuol dire niente.
-  const criteri = JSON.stringify({ ...input, limit: 0 });
-  useEffect(() => setLimit(PAGINA), [criteri]);
+  const input = useMemo(() => toQueryInput(filter), [filter]);
 
   const backlog = useQuery({
     ...api.backlog.list.queryOptions({ input }),
@@ -107,6 +99,21 @@ function BacklogPage() {
 
   const entries = backlog.data?.entries ?? [];
   const total = backlog.data?.total ?? 0;
+  const pageCount = Math.ceil(total / PAGE_SIZE);
+
+  // Una pagina oltre l'ultima — un link vecchio, o un gioco nascosto
+  // dall'ultima pagina che aveva solo lui — torna alla prima invece di dire
+  // «nessun gioco» con dei giochi che ci sono. Alla prima e non all'ultima
+  // perché l'ultima non la sappiamo: `total` viene da `count(*) over()`, che
+  // senza righe restituite non c'è, e il server risponde zero.
+  const outOfRange =
+    backlog.data !== undefined &&
+    !backlog.isPlaceholderData &&
+    entries.length === 0 &&
+    filter.page > 1;
+  useEffect(() => {
+    if (outOfRange) void setFilter({ page: null });
+  }, [outOfRange, setFilter]);
 
   return (
     <Page
@@ -273,16 +280,17 @@ function BacklogPage() {
             ))}
           </ul>
 
-          {entries.length < total && (
-            <Button
-              variant="outline"
-              mx="auto"
-              disabled={backlog.isFetching}
-              onClick={() => setLimit((current) => current + PAGINA)}
-            >
-              {t('loadMore', { count: total - entries.length })}
-            </Button>
-          )}
+          <Pagination
+            page={filter.page}
+            pageCount={pageCount}
+            href={pageHref}
+            onNavigate={(page, event) => {
+              if (takeLinkClick(event)) void goToPage(page);
+            }}
+            label={t('pages')}
+            previousLabel={t('previousPage')}
+            nextLabel={t('nextPage')}
+          />
         </>
       )}
 

@@ -13,7 +13,7 @@ import {
   sortDirectionValues,
   storeValues,
 } from '@repo/contracts';
-import { getRouteApi } from '@tanstack/react-router';
+import { getRouteApi, useRouter } from '@tanstack/react-router';
 import { useCallback, useMemo } from 'react';
 
 /**
@@ -68,6 +68,11 @@ const integer = (raw: unknown) => {
   return typeof value === 'number' && Number.isInteger(value)
     ? value
     : undefined;
+};
+
+const pageNumber = (raw: unknown) => {
+  const value = integer(raw);
+  return value !== undefined && value >= 1 ? value : undefined;
 };
 
 const decimal = (raw: unknown) => {
@@ -135,7 +140,16 @@ const fields = {
   hidden: field(flag, false),
   sort: field(oneOf(backlogSortValues), 'addedAt' as BacklogSort),
   direction: field(oneOf(sortDirectionValues), 'desc' as SortDirection),
+  // La pagina, da 1. Non è un criterio e non conta fra i filtri accesi, ma
+  // ogni altro cambiamento la riporta a 1: vedi `setFilter`.
+  page: field(pageNumber, 1),
 };
+
+/**
+ * Quanti giochi per pagina. 48 perché si divide per 2, 3, 4 e 6: la griglia
+ * chiude le righe a ogni larghezza.
+ */
+export const PAGE_SIZE = 48;
 
 type Key = keyof typeof fields;
 type Value<X> = X extends Field<infer T, infer F> ? T | F : never;
@@ -214,10 +228,7 @@ const criteri = [
  * contratto è un campo **assente**. Mandare `q: ''` o `platforms: []` al server
  * significherebbe chiedergli di filtrare per niente, e lo schema li rifiuterebbe.
  */
-export function toQueryInput(
-  filter: BacklogFilterState,
-  limit: number,
-): BacklogQueryInput {
+export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
   const vuoto = <T>(value: T[]) => (value.length > 0 ? value : undefined);
 
   return {
@@ -244,26 +255,52 @@ export function toQueryInput(
     hidden: filter.hidden || undefined,
     sort: filter.sort,
     direction: filter.direction,
-    limit,
-    offset: 0,
+    limit: PAGE_SIZE,
+    offset: (filter.page - 1) * PAGE_SIZE,
   };
 }
 
 export function useBacklogFilter() {
   const search = route.useSearch();
   const navigate = route.useNavigate();
+  const router = useRouter();
   const filter = useMemo(() => fromSearch(search), [search]);
 
   // `null` toglie il criterio e lo riporta al suo default, compreso lo stato
   // con `excluded` di nuovo nascosto. `replace` come faceva nuqs: cambiare un
   // filtro non lascia una pagina nella cronologia a ogni spunta.
+  //
+  // Qualunque cambiamento riporta a pagina 1, se non dice lui quale: la
+  // pagina 7 di un insieme diverso non vuol dire niente.
   const setFilter = useCallback(
     (patch: { [K in Key]?: BacklogFilterState[K] | null }) =>
       navigate({
-        search: (prev) => toSearch({ ...fromSearch(prev), ...patch }),
+        search: (prev) =>
+          toSearch({ ...fromSearch(prev), page: null, ...patch }),
         replace: true,
       }),
     [navigate],
+  );
+
+  // Cambiare pagina invece **lascia** una voce nella cronologia, al contrario
+  // dei filtri: «indietro» deve tornare alla pagina di prima.
+  const goToPage = useCallback(
+    (page: number) =>
+      navigate({
+        search: (prev) => toSearch({ ...fromSearch(prev), page }),
+      }),
+    [navigate],
+  );
+
+  // L'indirizzo di una pagina, per i link della paginazione: «apri in una
+  // nuova scheda» deve aprire quella pagina con gli stessi filtri.
+  const pageHref = useCallback(
+    (page: number) =>
+      router.buildLocation({
+        to: '/backlog',
+        search: toSearch({ ...filter, page }),
+      }).href,
+    [router, filter],
   );
 
   const reset = useCallback(
@@ -300,7 +337,7 @@ export function useBacklogFilter() {
     [filter],
   );
 
-  return { filter, setFilter, reset, activeCount };
+  return { filter, setFilter, reset, activeCount, goToPage, pageHref };
 }
 
 /**
