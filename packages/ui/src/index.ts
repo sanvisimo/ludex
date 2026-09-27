@@ -24,6 +24,13 @@ export * from './primitives';
 
 // I nostri componenti.
 export {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  type AccordionProps,
+} from './components/accordion';
+export {
   Alert,
   AlertDescription,
   AlertTitle,
@@ -40,6 +47,7 @@ export {
   CardTitle,
   type CardProps,
 } from './components/card';
+export { Checkbox, type CheckboxProps } from './components/checkbox';
 export {
   Combobox,
   ComboboxContent,
@@ -76,6 +84,7 @@ export {
   type DropdownMenuItemProps,
   type DropdownMenuProps,
 } from './components/dropdown-menu';
+export { EmptyState, type EmptyStateProps } from './components/empty-state';
 export { Input, type InputProps } from './components/input';
 export {
   InputGroup,
@@ -88,6 +97,11 @@ export { Label, type LabelProps } from './components/label';
 export { Logo, Wordmark, type LogoProps, type WordmarkProps } from './components/logo';
 export { NavItem, type NavItemProps } from './components/nav-item';
 export {
+  Pagination,
+  pageRange,
+  type PaginationProps,
+} from './components/pagination';
+export {
   Select,
   SelectContent,
   SelectItem,
@@ -97,9 +111,15 @@ export {
 } from './components/select';
 export { Sheet, type SheetProps } from './components/sheet';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
+export { Slider, type SliderProps } from './components/slider';
 export { Switch, type SwitchProps } from './components/switch';
 export { Toaster, toast, type ToasterProps } from './components/toast';
 export { Textarea, type TextareaProps } from './components/textarea';
+export {
+  ToggleGroup,
+  ToggleGroupItem,
+  type ToggleGroupProps,
+} from './components/toggle-group';
 export { Tooltip, type TooltipProps } from './components/tooltip';
 
 // Le icone stanno in `@repo/ui/icons`, non qui: sono oltre millecinquecento
