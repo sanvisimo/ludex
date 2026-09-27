@@ -179,7 +179,7 @@ function Facts({ entry }: { entry: BacklogEntry }) {
   return (
     <XStack flexWrap="wrap" items="center" columnGap={12} rowGap={2}>
       {entry.game.firstReleaseDate && (
-        <Text fontSize={13} color="$color11">
+        <Text fontSize={14} lineHeight={20} color="$color11">
           {entry.game.firstReleaseDate.getFullYear()}
         </Text>
       )}

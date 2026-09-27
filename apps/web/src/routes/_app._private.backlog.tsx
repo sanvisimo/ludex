@@ -1,19 +1,26 @@
 import type { BacklogEntry, BacklogStatus } from '@repo/contracts';
 import {
   Button,
-  Card,
-  CardContent,
+  EmptyState,
   Pagination,
   ScrollView,
   Sheet,
   Skeleton,
+  Text,
   toast,
   ToggleGroup,
   ToggleGroupItem,
   XStack,
   YStack,
 } from '@repo/ui';
-import { LayoutGrid, List, Rows3 } from '@repo/ui/icons';
+import {
+  EyeOff,
+  Gamepad2,
+  LayoutGrid,
+  List,
+  Rows3,
+  SearchX,
+} from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
@@ -49,7 +56,7 @@ function BacklogPage() {
   const errorMessage = useApiErrorMessage();
 
   const queryClient = useQueryClient();
-  const { filter, setFilter, activeCount, goToPage, pageHref } =
+  const { filter, setFilter, reset, activeCount, goToPage, pageHref } =
     useBacklogFilter();
   const inHidden = filter.hidden;
 
@@ -147,7 +154,9 @@ function BacklogPage() {
       }
     >
       {inHidden && (
-        <p className="text-muted-foreground">{t('hiddenViewHint')}</p>
+        <Text fontSize={14} lineHeight={20} color="$color11">
+          {t('hiddenViewHint')}
+        </Text>
       )}
 
       <BacklogToolbar
@@ -192,32 +201,41 @@ function BacklogPage() {
 
         <YStack flex={1} minW={0} gap={16}>
           {backlog.error ? (
-            <p className="text-destructive">{t('error')}</p>
+            <Text fontSize={14} color="$red11">
+              {t('error')}
+            </Text>
           ) : backlog.isPending ? (
-            <div className="grid gap-2">
+            <YStack gap={8}>
               {Array.from({ length: 3 }).map((_, index) => (
                 <Skeleton key={index} height={96} width="100%" rounded={12} />
               ))}
-            </div>
+            </YStack>
           ) : entries.length === 0 ? (
-            <Card>
-              <CardContent gap={8}>
-                {/* Vuoto perché non hai giochi e vuoto perché nessuno passa i
-                filtri sono due cose diverse, e la seconda ha una via d'uscita. */}
-                <p className="font-medium">
-                  {activeCount > 0
-                    ? t('noMatchTitle')
-                    : inHidden
-                      ? t('hiddenEmptyTitle')
-                      : t('emptyTitle')}
-                </p>
-                {(activeCount > 0 || !inHidden) && (
-                  <p className="text-muted-foreground">
-                    {activeCount > 0 ? t('noMatchHint') : t('emptyHint')}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            // Vuoto perché non hai giochi e vuoto perché nessuno passa i
+            // filtri sono due cose diverse, e la seconda ha una via d'uscita.
+            activeCount > 0 ? (
+              <EmptyState
+                icon={<SearchX size={24} color="$color11" />}
+                title={t('noMatchTitle')}
+                description={t('noMatchHint')}
+                action={
+                  <Button variant="outline" onClick={() => void reset()}>
+                    {tFilters('reset', { count: activeCount })}
+                  </Button>
+                }
+              />
+            ) : inHidden ? (
+              <EmptyState
+                icon={<EyeOff size={24} color="$color11" />}
+                title={t('hiddenEmptyTitle')}
+              />
+            ) : (
+              <EmptyState
+                icon={<Gamepad2 size={24} color="$color11" />}
+                title={t('emptyTitle')}
+                description={t('emptyHint')}
+              />
+            )
           ) : (
             <>
               <BacklogEntries

@@ -1,7 +1,9 @@
 # Step 12c — Il backlog
 
-**Approvato il 27/09/2026.** Sotto ogni passo, cosa è stato fatto e cosa
-ha smentito.
+**Approvato il 27/09/2026. Chiuso il 27/09/2026**: tutti e cinque i passi
+fatti. Ciò che va rispettato d'ora in poi sta nel CLAUDE.md, alla voce
+«Design system»; qui restano le ragioni e le misure. Sotto ogni passo, cosa è
+stato fatto e cosa ha smentito.
 
 ## Contesto
 
@@ -190,6 +192,16 @@ valgono anche lì.
    - dentro un `<a>` in riga il testo non si tronca: il link del titolo è un
      blocco.
 5. **Stato vuoto, Tailwind fuori**, verifica, CLAUDE.md e piano chiuso.
+
+   **Fatto.** I tre vuoti sono `EmptyState`, e quello dei filtri porta
+   «Azzera». Nessuna classe Tailwind resta nella rotta, nel pannello, nelle
+   viste e nei cinque componenti della riga. Il badge di un possesso non esce
+   più dalla scheda su un telefono: si taglia al bordo.
+
+   Le altre pagine che usano quei componenti, fotografate prima e dopo a
+   1280 px: dialogo di modifica e scheda del gioco identici al byte; nel
+   catalogo la riga della durata scende di un pixel, perché l'altezza di riga
+   ora è scritta e non ereditata. Nessun errore in console in nessun giro.
 
 Un commit per passo; i passi 1–2 si possono fondere se il 2 resta piccolo.
 
