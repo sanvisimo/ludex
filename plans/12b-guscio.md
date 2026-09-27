@@ -425,20 +425,33 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    si costruisce sul web, `ButtonLink`), e questo piano aggiornato con ciò che
    i passi 1–7 hanno smentito.
 
+   **Fatto**, in due tempi. Stack, tabella del monorepo, regole di confine e
+   «come si costruisce sul web» sono stati corretti già al passo 5, perché
+   tolto Next erano diventati falsi. Qui si aggiunge il guscio: il layout
+   `_app` e `_guest`, le due forme scelte dal CSS, `Page`, `NavLink` e
+   `takeLinkClick`, l'identità ancora segnaposto, e i due componenti di
+   `@repo/ui` che fanno più del Tamagui che avvolgono (`Tooltip` al focus,
+   `Sheet` modale).
+
 I passi 1–5 finiscono con l'app identica a prima. Si possono fondere lì, prima
 del guscio.
 
 ## Verifica
 
-- `pnpm lint`, `pnpm check-types`, `pnpm --filter @repo/ui test` puliti.
-- `pnpm build` di `apps/web` e l'avvio della build.
-- Dopo il passo 5, un giro a mano su `/`, `/login`, `/register`, `/backlog`
-  (filtri nell'URL, ricarica con i filtri, «carica altri», nascosti),
-  `/games/[id]` e `/account`, da anonimo e da loggato: **stesse funzioni**.
-  Anche il rimbalzo con `?next=`, il cambio di lingua senza perdere lo stato e
-  il tema senza lampo al caricamento.
+- `pnpm lint`, `pnpm check-types`, `pnpm --filter @repo/ui test` puliti. ✔
+  (lint e typecheck pacchetto per pacchetto: in questo container turbo non
+  riesce ad avviare i processi; le storie con un Chromium indicato a mano.)
+- `pnpm build` di `apps/web` e l'avvio della build. ✔
+- Dopo il passo 5, un giro su `/`, `/login`, `/register`, `/backlog` (filtri
+  nell'URL, ricarica con i filtri, «carica altri», nascosti), `/games/[id]` e
+  `/account`, da anonimo e da loggato: **stesse funzioni**. Anche il rimbalzo
+  con `?next=`, il cambio di lingua senza perdere lo stato e il tema senza
+  lampo al caricamento. ✔ In Chromium con Playwright, in sviluppo e in
+  produzione. «Carica altri» provato per ultimo, al passo 8, con 63 giochi:
+  50, poi 63, e il bottone sparisce.
 - Dopo il passo 7: il guscio a larghezza piena e stretta, da tastiera, in tema
-  chiaro e scuro.
+  chiaro e scuro. ✔ Tredici passi, compreso il Tab vero sul Tooltip e sul
+  foglio.
 
 ## Fonti
 
