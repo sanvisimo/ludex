@@ -36,6 +36,7 @@ import {
 import { useSetEntryHidden } from '@/lib/hide-entry';
 import { useStatusLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
+import { Page } from '@/src/components/page';
 
 // Quanti giochi per volta. "Carica altri" alza questo numero invece di
 // accumulare pagine: su una libreria personale rileggere qualche centinaio di
@@ -43,7 +44,7 @@ import { api, client } from '@/lib/orpc';
 // coerente quando si cambia un filtro.
 const PAGINA = 50;
 
-export const Route = createFileRoute('/_private/backlog')({
+export const Route = createFileRoute('/_app/_private/backlog')({
   validateSearch: validateBacklogSearch,
   component: BacklogPage,
 });
@@ -108,17 +109,13 @@ function BacklogPage() {
   const total = backlog.data?.total ?? 0;
 
   return (
-    <main className="mx-auto grid max-w-4xl gap-6 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="grid gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {inHidden ? t('hiddenViewTitle') : t('title')}
-          </h1>
-          <p className="text-muted-foreground">
-            {backlog.data ? t('count', { count: total }) : ' '}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+    <Page
+      title={inHidden ? t('hiddenViewTitle') : t('title')}
+      // Uno spazio e non niente mentre carica: la riga del conteggio tiene il
+      // suo posto, e il titolo non salta quando arriva.
+      subtitle={backlog.data ? t('count', { count: total }) : ' '}
+      actions={
+        <>
           {/* Il posto dove ripensarci. Senza, un gioco nascosto per sbaglio
               sparirebbe per sempre: è l'unico pezzo di interfaccia che il
               nascondere richiede davvero. Compare solo se c'è qualcosa. */}
@@ -140,9 +137,9 @@ function BacklogPage() {
             )
           )}
           <AddGameDialog />
-        </div>
-      </header>
-
+        </>
+      }
+    >
       {inHidden && (
         <p className="text-muted-foreground">{t('hiddenViewHint')}</p>
       )}
@@ -302,6 +299,6 @@ function BacklogPage() {
           if (!open) setEditing(null);
         }}
       />
-    </main>
+    </Page>
   );
 }

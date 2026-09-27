@@ -26,6 +26,7 @@ import { useSetEntryHidden } from '@/lib/hide-entry';
 import { useStatusLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 import { ButtonLink } from '@/src/components/button-link';
+import { Page } from '@/src/components/page';
 
 const KIND_ORDER: GameAttribute['kind'][] = [
   'genre',
@@ -61,7 +62,9 @@ function AttributeGroups({ attributes }: { attributes: GameAttribute[] }) {
 
 // Pagina auth/no-auth: il gioco si vede sempre, `entry` arriva popolata solo se
 // chi guarda è autenticato e ce l'ha nel backlog.
-export const Route = createFileRoute('/games/$id')({ component: GamePage });
+export const Route = createFileRoute('/_app/games/$id')({
+  component: GamePage,
+});
 
 function GamePage() {
   const t = useTranslations('game');
@@ -80,24 +83,20 @@ function GamePage() {
 
   if (isPending) {
     return (
-      <main className="mx-auto grid max-w-3xl gap-4 p-6">
+      <Page maxW={768}>
         <Skeleton height={36} width={256} />
         <Skeleton height={192} width="100%" rounded={12} />
-      </main>
+      </Page>
     );
   }
 
   if (error) {
     return (
-      <main className="mx-auto grid max-w-3xl gap-4 p-6">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {t('notFoundTitle')}
-        </h1>
-        <p className="text-muted-foreground">{t('notFoundHint')}</p>
+      <Page maxW={768} title={t('notFoundTitle')} subtitle={t('notFoundHint')}>
         <ButtonLink variant="outline" width="max-content" href="/">
           {t('backToCatalog')}
         </ButtonLink>
-      </main>
+      </Page>
     );
   }
 
@@ -105,7 +104,7 @@ function GamePage() {
   const year = game.firstReleaseDate?.getFullYear() ?? null;
 
   return (
-    <main className="mx-auto grid max-w-3xl gap-6 p-6">
+    <Page maxW={768}>
       <header className="flex flex-wrap gap-6">
         <GameCover
           imageId={game.coverImageId}
@@ -212,6 +211,6 @@ function GamePage() {
         entry={editing ? entry : null}
         onOpenChange={setEditing}
       />
-    </main>
+    </Page>
   );
 }

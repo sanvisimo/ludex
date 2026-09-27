@@ -7,7 +7,6 @@ import {
 import { IntlProvider } from 'use-intl';
 
 import { Providers } from '@/components/providers';
-import { SiteNav } from '@/src/components/site-nav';
 import { getI18n } from '@/src/i18n';
 
 import globals from '../globals.css?url';
@@ -48,10 +47,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="font-sans antialiased">
         <IntlProvider locale={locale} messages={messages} timeZone={timeZone}>
-          <Providers>
-            <SiteNav />
-            {children}
-          </Providers>
+          <Providers>{children}</Providers>
         </IntlProvider>
         <Scripts />
       </body>

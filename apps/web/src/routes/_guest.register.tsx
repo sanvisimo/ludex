@@ -46,7 +46,7 @@ function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-svh items-center justify-center p-6">
+    <main className="flex flex-1 items-center justify-center p-6">
       <Card width="100%" maxW={384}>
         <CardHeader>
           <CardTitle fontSize={18} lineHeight={28}>

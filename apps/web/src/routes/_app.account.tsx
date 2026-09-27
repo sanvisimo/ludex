@@ -22,9 +22,12 @@ import { UnresolvedImports } from '@/components/unresolved-imports';
 import { UnlinkAccountDialog } from '@/components/unlink-account-dialog';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
+import { Page } from '@/src/components/page';
 import { useSession } from '@/src/use-session';
 
-export const Route = createFileRoute('/account')({ component: AccountPage });
+export const Route = createFileRoute('/_app/account')({
+  component: AccountPage,
+});
 
 function AccountPage() {
   const t = useTranslations('account');
@@ -87,20 +90,20 @@ function AccountPage() {
 
   if (sessionPending || !session) {
     return (
-      <main className="mx-auto grid max-w-4xl gap-6 p-6">
+      <Page>
         <Skeleton height={128} width="100%" rounded={12} />
-      </main>
+      </Page>
     );
   }
 
   return (
-    <main className="mx-auto grid max-w-4xl gap-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        {/* Con un account solo farebbe la stessa cosa del bottone sulla sua
-            scheda. Spento mentre qualcosa importa: la coda deduplica per
-            account, ma un bottone che non fa niente è peggio di uno spento. */}
-        {(accounts.data?.length ?? 0) >= 2 && (
+    <Page
+      title={t('title')}
+      // Con un account solo farebbe la stessa cosa del bottone sulla sua
+      // scheda. Spento mentre qualcosa importa: la coda deduplica per
+      // account, ma un bottone che non fa niente è peggio di uno spento.
+      actions={
+        (accounts.data?.length ?? 0) >= 2 && (
           <Button
             variant="outline"
             onClick={() => syncAll.mutate()}
@@ -108,9 +111,9 @@ function AccountPage() {
           >
             {t('store.syncAll')}
           </Button>
-        )}
-      </div>
-
+        )
+      }
+    >
       <Card>
         <CardHeader>
           <CardTitle>{t('profile.title')}</CardTitle>
@@ -166,6 +169,6 @@ function AccountPage() {
           if (!open) setResolving(null);
         }}
       />
-    </main>
+    </Page>
   );
 }
