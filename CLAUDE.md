@@ -450,8 +450,9 @@ Le librerie importate aggiungono tre cose al modello, decise allo step 4:
   cadono sulla stessa chiave ce l'hanno uguale, e il disco PSN con un codice
   diverso dall'acquisto sulla stessa console — che prima diventava una riga
   sola — resta quello che è, due copie. E **l'adozione si allarga**: una riga
-  meno specifica (senza account, senza negozio, senza supporto) se la prende
-  l'import, ma mai una che dichiari un supporto *diverso*. Ciò che non dichiara
+  meno specifica (senza account o dello stesso account, senza negozio, senza
+  supporto) se la prende l'import, ma mai una che dichiari un supporto
+  *diverso* o un altro account. Ciò che non dichiara
   niente dice «non lo so», non «un'altra»: è la forma di ogni possesso scritto
   a mano prima che il campo esistesse, e si fa adottare. Dove la riga di
   destinazione esiste già — l'import era passato e quella a mano è rimasta lì
@@ -667,9 +668,13 @@ ricerca dello step 7.
 L'account entra anche **nella chiave del vincolo**, e questo ha una conseguenza
 da tenere a mente: un possesso «PC / Amazon» scritto a mano e lo stesso portato
 dall'import sarebbero due righe. Per questo `ensureOwnerships` prima **adotta**
-il possesso senza account invece di sdoppiarlo — l'adozione è ristretta a
-`store_account_id is null`, perché una riga che porta già l'id di un *altro*
-account è il caso vero dei due Amazon e non si tocca.
+il possesso senza account invece di sdoppiarlo. Una riga che porta l'id di un
+*altro* account è il caso vero dei due Amazon e non si tocca; una dello
+**stesso** account invece sì, se non dichiara il supporto. È lo scarto risolto
+a mano, che sa da quale account viene ma non se è un disco: finché l'adozione
+guardava solo `store_account_id is null`, il reimport di quell'account gli
+metteva accanto la copia `digital`, e la lista mostrava lo stesso gioco con due
+badge identici.
 
 **Scollegare è una domanda, non un bottone**, ed è l'unica risposta al buco che
 il CLAUDE.md dichiarava aperto sui possessi. Le due strade non sono la stessa
@@ -705,6 +710,16 @@ collegamento resta lo stesso gesto per tutti (si incolla l'URL del profilo, lo
 SteamID64 o il nome scelto — lo SteamID su Steam non è in vista da nessuna
 parte). Che un import sia in corso si legge **dalla coda** e non da
 `last_sync_at`, che al primo giro è ancora nullo e non avrebbe niente da dire.
+
+**Da fare: quale import gira, e a che punto è.** Oggi `syncing` è un booleano
+per account, letto dalla chiave di deduplicazione (`isImportRunning`): vale
+tanto per un job **in coda** quanto per uno **in lavorazione**, e con
+`concurrency: 1` sugli import la differenza conta — con cinque account dovuti
+dall'aggiornamento automatico uno lavora e quattro aspettano, e `/account` li
+mostra tutti uguali. E non c'è avanzamento: un import Epic sono 705 ricerche
+IGDB, minuti in cui la pagina dice solo «in corso». Servono tutte e due le
+cose: **quale** account è in lavorazione e quali in fila, e **quanto manca**
+(BullMQ ha `job.updateProgress`, che oggi nessun import chiama).
 
 L'ordine dei passi dell'import è esso stesso una regola: **prima il nostro DB**
 (gli appid già in `external_ids` non costano niente), **poi IGDB** e solo per il
