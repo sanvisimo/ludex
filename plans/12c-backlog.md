@@ -148,6 +148,23 @@ valgono anche lì.
    risponde `total: 0` — il conteggio viene da `count(*) over()`, che senza
    righe restituite non c'è. Torna alla prima.
 3. **Barra e pannello dei filtri**, con i filtri attivi a chip.
+
+   **Fatto**, con una correzione al piano: la colonna dei filtri sta **da
+   `$xl`** (1280) e non da `$lg`. A 1024 la barra del guscio si prende già
+   240 px, e accanto alla colonna la lista restava sotto i 500. Sotto `$xl`
+   il pannello si apre nello `Sheet`, dentro uno `ScrollView` alto al massimo
+   tre quarti dello schermo.
+
+   Due cose scoperte all'idratazione, e scritte nel codice:
+   - una media query su un componente di `@repo/ui` (il bottone «Filtri»)
+     Tamagui la risolve a runtime, e server e browser scrivevano due classi
+     diverse. Va su un contenitore, come nel guscio.
+   - lo Slider calcola le maniglie misurando il binario, che sul server non
+     esiste: si monta solo nel browser, con lo stesso spazio vuoto al suo
+     posto.
+
+   Tolte dai messaggi le chiavi del vecchio pannello (`more`, i «da»/«a» dei
+   campi numerici, `directionLabel`).
 4. **Le tre viste** e il ToggleGroup, con le azioni nel menu.
 5. **Stato vuoto, Tailwind fuori**, verifica, CLAUDE.md e piano chiuso.
 

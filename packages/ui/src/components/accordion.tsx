@@ -95,7 +95,16 @@ export function AccordionTrigger({
       >
         {({ open }: { open: boolean }) => (
           <>
-            <Text flex={1} fontSize={14} fontWeight="500" color="$color12">
+            {/* A sinistra e nel carattere del testo: dentro un `<button>` il
+                browser centra, e l'`h3` intorno porta quello dei titoli. */}
+            <Text
+              flex={1}
+              text="left"
+              fontFamily="$body"
+              fontSize={14}
+              fontWeight="500"
+              color="$color12"
+            >
               {children}
             </Text>
             {/* Un contenitore suo: il Badge si allinea da sé in alto
