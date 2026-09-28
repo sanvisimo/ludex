@@ -1,0 +1,13 @@
+# Le dipendenze le installa l'immagine, e quelle dell'host sono di un'altra
+# piattaforma. Il .env è dello sviluppo: in un'immagine pubblica non ci va.
+**/node_modules
+.env
+.env.*
+.git
+**/.turbo
+**/dist
+**/.tamagui
+**/.tanstack
+**/storybook-static
+.idea
+.claude

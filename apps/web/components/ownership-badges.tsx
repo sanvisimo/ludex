@@ -73,24 +73,11 @@ export function OwnershipBadges({
 
   const nameBySlug = new Map((platforms ?? []).map((p) => [p.slug, p.name]));
 
-  // Il nome dell'account si mostra **solo dove serve a distinguere**: se dello
-  // stesso negozio c'è una copia sola, «Amazon» basta e «Amazon (simone)»
-  // sarebbe rumore. Con due account lo stesso badge ripetuto non direbbe da
-  // quale dei due si lancia, che è l'unica ragione per cui l'account è a
-  // schermo.
-  const perNegozio = new Map<string, number>();
-  for (const ownership of ownerships) {
-    if (!ownership.store) continue;
-    perNegozio.set(ownership.store, (perNegozio.get(ownership.store) ?? 0) + 1);
-  }
-
   return (
     <XStack flexWrap="wrap" gap={4}>
       {ownerships.map((ownership) => {
         const account =
-          ownership.store &&
-          (perNegozio.get(ownership.store) ?? 0) > 1 &&
-          ownership.storeAccount
+          ownership.store && ownership.storeAccount
             ? storeAccountName(ownership.storeAccount)
             : null;
 
