@@ -7,7 +7,7 @@ alla piattaforma che hai accesa e all'umore.
 Nasce dall'assenza di un equivalente mobile di Playnite.
 
 Le decisioni di progetto — perché Hono e non NestJS, perché Drizzle e non
-Prisma, come è fatto il modello dati e perché — stanno in [CLAUDE.md](CLAUDE.md).
+Prisma, come è fatto il modello dati e perché — stanno in [CLAUDE.md](CLAUDE.md) e in [docs/](docs/).
 Questo file serve a metterlo in piedi.
 
 ## A che punto è
