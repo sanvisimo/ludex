@@ -156,7 +156,7 @@ const fields = {
  * Quanti giochi per pagina. 48 perché si divide per 2, 3, 4 e 6: la griglia
  * chiude le righe a ogni larghezza.
  */
-export const PAGE_SIZE = 48;
+export const PAGE_SIZE = 15;
 
 type Key = keyof typeof fields;
 type Value<X> = X extends Field<infer T, infer F> ? T | F : never;
