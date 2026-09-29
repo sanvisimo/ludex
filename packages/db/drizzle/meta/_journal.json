@@ -169,6 +169,13 @@
       "when": 1790697009955,
       "tag": "0023_friendly_skin",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1790698773599,
+      "tag": "0024_lean_archangel",
+      "breakpoints": true
     }
   ]
 }

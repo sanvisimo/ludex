@@ -78,7 +78,8 @@ export const backlog = pgTable(
     // stesso istante per mille giochi.
     //
     // La scrive l'import dove il negozio la dà (Epic, Amazon, GOG), sempre come
-    // `least` con quella che c'è: fra due negozi vince il primo acquisto, e una
+    // `least` fra quella che c'è e la più vecchia delle copie
+    // (`ownerships.acquiredAt`): fra due negozi vince il primo acquisto, e una
     // correzione a mano più vecchia sopravvive al reimport. Dove il negozio non
     // la dà (Steam, PSN) resta quella dell'import, e si corregge dal form.
     addedAt: timestamp('added_at').defaultNow().notNull(),
@@ -146,6 +147,14 @@ export const ownerships = pgTable(
     // `played` allo step 12 pesa.
     playtimeMinutes: integer('playtime_minutes'),
     lastPlayedAt: timestamp('last_played_at'),
+    // Quando **questa copia** è entrata nella libreria del negozio: lo stesso
+    // gioco su GOG nel 2019 e su Epic nel 2022 ha due date, una per riga.
+    // `backlog.addedAt` è la più vecchia fra queste e la sua, vedi
+    // `advanceAddedAt`.
+    //
+    // Nulla dove il negozio non la dà (Steam, PSN) e sugli inserimenti manuali.
+    // Un reimport la porta solo indietro, come quella del gioco.
+    acquiredAt: timestamp('acquired_at'),
     // **Questa copia è tua, o ce l'hai finché paghi?**
     //
     // Nullo = comprata, che è il caso normale. Valorizzato = il diritto viene da

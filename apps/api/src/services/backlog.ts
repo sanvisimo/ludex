@@ -516,47 +516,38 @@ export async function ensureBacklogEntries(
 }
 
 /**
- * Porta `addedAt` **indietro** alla data d'acquisto che il negozio dichiara, mai
- * avanti.
+ * Porta `addedAt` **indietro** alla copia più vecchia, mai avanti.
  *
- * Il `least` è tutta la regola: fra due negozi vince il primo acquisto, un
- * reimport non sposta niente, e una data corretta a mano più vecchia di quella
- * del negozio sopravvive. Il rovescio è voluto: una correzione a mano *più
- * recente* il reimport la riporta alla data del negozio, che sa quando l'hai
- * preso.
+ * La data d'acquisto sta sulle copie (`ownerships.acquiredAt`), una per
+ * negozio; quella del gioco è la più vecchia fra loro e la sua. Il `least` è
+ * tutta la regola: fra due negozi vince il primo acquisto, un reimport non
+ * sposta niente, e una data corretta a mano più vecchia di quella del negozio
+ * sopravvive. Il rovescio è voluto: una correzione a mano *più recente* il
+ * reimport la riporta alla data del negozio, che sa quando l'hai preso.
+ *
+ * Va chiamata dopo `ensureOwnerships`, che le date delle copie le scrive.
  *
  * SQL a mano e non il query builder, quindi `updatedAt` si scrive qui: il suo
  * `$onUpdate` lo applicherebbe solo Drizzle.
  */
-export async function advanceAddedAt(
-  rows: { backlogId: string; addedAt: Date }[],
-) {
-  // Due voci della stessa libreria sullo stesso gioco: la più vecchia, prima di
-  // arrivare al database, o lo stesso id comparirebbe due volte nel VALUES.
-  const byBacklogId = new Map<string, Date>();
-  for (const { backlogId, addedAt } of rows) {
-    const prima = byBacklogId.get(backlogId);
-    if (!prima || addedAt < prima) byBacklogId.set(backlogId, addedAt);
-  }
-
-  for (const page of chunk([...byBacklogId], WRITE_CHUNK)) {
-    // ISO in UTC e il cast a `timestamp`: la colonna è senza fuso, e Postgres
-    // del fuso scritto nella stringa non tiene conto. È la stessa convenzione
-    // con cui Drizzle scrive e rilegge quella colonna.
-    const values = sql.join(
-      page.map(
-        ([id, addedAt]) =>
-          sql`(${id}::uuid, ${addedAt.toISOString()}::timestamp)`,
-      ),
+export async function advanceAddedAt(backlogIds: string[]) {
+  for (const page of chunk([...new Set(backlogIds)], WRITE_CHUNK)) {
+    const ids = sql.join(
+      page.map((id) => sql`${id}::uuid`),
       sql`, `,
     );
 
     await db.execute(sql`
       update ${schema.backlog}
-         set added_at = v.added_at, updated_at = now()
-        from (values ${values}) as v(id, added_at)
-       where ${schema.backlog.id} = v.id
-         and v.added_at < ${schema.backlog.addedAt}
+         set added_at = o.acquired_at, updated_at = now()
+        from (
+          select backlog_id, min(acquired_at) as acquired_at
+            from ${schema.ownerships}
+           where backlog_id in (${ids})
+           group by backlog_id
+        ) as o
+       where ${schema.backlog.id} = o.backlog_id
+         and o.acquired_at < ${schema.backlog.addedAt}
     `);
   }
 }
@@ -601,6 +592,11 @@ function fondiDoppioni(rows: OwnershipUpsert[]) {
         [gia.lastPlayedAt, row.lastPlayedAt]
           .filter((date): date is Date => date instanceof Date)
           .sort((a, b) => b.getTime() - a.getTime())[0] ?? null,
+      // La più vecchia, come fa il database fra un import e l'altro.
+      acquiredAt:
+        [gia.acquiredAt, row.acquiredAt]
+          .filter((date): date is Date => date instanceof Date)
+          .sort((a, b) => a.getTime() - b.getTime())[0] ?? null,
     });
   }
 
@@ -631,6 +627,8 @@ export type OwnershipUpsert = {
   storeAccountId?: string | null;
   playtimeMinutes?: number | null;
   lastPlayedAt?: Date | null;
+  /** Nulla = il negozio non la dà. Vedi la colonna omonima su `ownerships`. */
+  acquiredAt?: Date | null;
   /** Nullo = comprato. Vedi la colonna omonima su `ownerships`. */
   subscription?: Subscription | null;
   /** Nullo = non dichiarato. Vedi la colonna omonima su `ownerships`. */
@@ -829,6 +827,7 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           storeAccountId: row.storeAccountId ?? null,
           playtimeMinutes: row.playtimeMinutes ?? null,
           lastPlayedAt: row.lastPlayedAt ?? null,
+          acquiredAt: row.acquiredAt ?? null,
           subscription: row.subscription ?? null,
           medium: row.medium ?? null,
         })),
@@ -846,6 +845,9 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           // ore, restano quelle che c'erano.
           playtimeMinutes: sql`coalesce(excluded.playtime_minutes, ${schema.ownerships.playtimeMinutes})`,
           lastPlayedAt: sql`coalesce(excluded.last_played_at, ${schema.ownerships.lastPlayedAt})`,
+          // Solo indietro: `least` in Postgres ignora i NULL, quindi un import
+          // che la data non la porta non cancella quella che c'era.
+          acquiredAt: sql`least(excluded.acquired_at, ${schema.ownerships.acquiredAt})`,
           // **Non** in COALESCE, al contrario delle ore, ed è una differenza
           // voluta: il negozio è l'unica autorità su come possiedi quella copia,
           // e il caso che conta è quello in cui il valore **sparisce** — compri

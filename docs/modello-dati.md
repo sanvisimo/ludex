@@ -85,15 +85,23 @@ possesso. Conseguenze:
   è nata la riga, e su una libreria importata è lo stesso istante per mille
   giochi. `added_at` è quando il gioco è entrato nella libreria: la scrive
   l'import dove il negozio la dà (quali, in [negozi](negozi.md#la-data-dacquisto)),
-  altrimenti resta quella dell'import, e l'utente la corregge dal form. È una
-  sola per gioco, non per copia: il form ne modifica una, e l'ordinamento
-  «aggiunto» vuole una data sola.
+  altrimenti resta quella dell'import, e l'utente la corregge dal form.
 
-  L'import la scrive **solo all'indietro**, `least(added_at, data del negozio)`
-  (`advanceAddedAt`): fra due negozi vince il primo acquisto, un reimport non
-  sposta niente, e una correzione a mano più vecchia sopravvive. Il rovescio è
-  voluto: una correzione a mano *più recente* della data del negozio il
-  reimport la riporta indietro, perché il negozio sa quando l'hai preso.
+  **Le date sono due livelli**: una per copia, `ownerships.acquired_at`, e una
+  per gioco, `backlog.added_at`. Lo stesso gioco su GOG nel 2019 e su Epic nel
+  2022 tiene tutte e due le date, ognuna sulla sua copia; quella del gioco è
+  la più vecchia fra le copie e la sua. Il form e l'ordinamento «aggiunto»
+  usano solo quella del gioco. La data della copia è nulla dove il negozio non
+  la dà e sugli inserimenti manuali.
+
+  L'import le scrive **solo all'indietro**: sulla copia
+  `least(acquired_at, data del negozio)`, sul gioco
+  `least(added_at, min(acquired_at delle copie))` (`advanceAddedAt`). Fra due
+  negozi vince il primo acquisto, un reimport non sposta niente, e una
+  correzione a mano più vecchia sopravvive. Il rovescio è voluto: una
+  correzione a mano *più recente* della data del negozio il reimport la
+  riporta indietro, perché il negozio sa quando l'hai preso. Togliere una
+  copia non ricalcola la data del gioco.
 
 ## I voti della critica stanno in `game_scores`, non su `games`
 
