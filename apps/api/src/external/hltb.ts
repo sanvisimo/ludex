@@ -67,14 +67,21 @@ function searchUrl() {
 // lo stesso, non serve fingersi un browser.
 const USER_AGENT = 'Ludex/0.1';
 
-// HLTB non pubblica un limite. Tre richieste al secondo è la stima prudente che
-// usa anche RomM, e sopra non ci si va: il lavoro qui non ha fretta.
-const MIN_INTERVAL_MS = 334;
+// HLTB non pubblica un limite. Tre richieste al secondo, la stima di RomM, a
+// settembre 2026 sul server prendevano 429 a raffica: una al secondo, e il
+// lavoro qui non ha fretta — una libreria intera resta sotto le due ore.
+const MIN_INTERVAL_MS = 1000;
+
+// Dopo un 429 si fermano **tutte** le richieste, non solo quella respinta:
+// senza, il job fallito si ritira e i successivi continuano a battere al
+// ritmo di prima, tenendo acceso da soli il limite che li respinge.
+const RATE_LIMIT_PAUSE_MS = 60_000;
 
 type Session = { token: string; hpKey?: string; hpVal?: string };
 
 let session: Session | null = null;
 let lastRequestAt = 0;
+let pausedUntil = 0;
 let gate: Promise<void> = Promise.resolve();
 
 /**
@@ -90,12 +97,22 @@ let gate: Promise<void> = Promise.resolve();
  */
 function acquire(): Promise<void> {
   const mine = gate.then(async () => {
-    const wait = MIN_INTERVAL_MS - (Date.now() - lastRequestAt);
+    const now = Date.now();
+    const wait = Math.max(
+      MIN_INTERVAL_MS - (now - lastRequestAt),
+      pausedUntil - now,
+    );
     if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
     lastRequestAt = Date.now();
   });
   gate = mine.catch(() => undefined);
   return mine;
+}
+
+/** Passa la risposta com'è; se è un 429, mette in pausa il client. */
+function watch(response: Response) {
+  if (response.status === 429) pausedUntil = Date.now() + RATE_LIMIT_PAUSE_MS;
+  return response;
 }
 
 function baseHeaders() {
@@ -154,7 +171,9 @@ async function mint(url: string) {
   // ritmatore delle ricerche, o un rinnovo si infilerebbe fra due richieste
   // distanziate.
   await acquire();
-  return fetch(`${url}/init?t=${Date.now()}`, { headers: baseHeaders() });
+  return watch(
+    await fetch(`${url}/init?t=${Date.now()}`, { headers: baseHeaders() }),
+  );
 }
 
 async function fetchSession(): Promise<Session> {
@@ -183,14 +202,14 @@ function getSession() {
   return session ? Promise.resolve(session) : fetchSession();
 }
 
-function send(
+async function send(
   payload: Record<string, unknown>,
   current: Session,
   url = searchUrl(),
 ) {
   const { hpKey, hpVal } = current;
   const hp = hpKey && hpVal ? { hpKey, hpVal } : null;
-  return fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       ...baseHeaders(),
@@ -203,6 +222,7 @@ function send(
     // cambia col rinnovo.
     body: JSON.stringify(hp ? { ...payload, [hp.hpKey]: hp.hpVal } : payload),
   });
+  return watch(response);
 }
 
 /** Una ricerca con la sessione che c'è, rinnovandola una volta sola se scaduta. */
@@ -398,9 +418,11 @@ export async function fetchHltbGameDetail(
   hltbId: number,
 ): Promise<HltbGameDetail | null> {
   await acquire();
-  const response = await fetch(`${BASE_URL}/game/${Math.trunc(hltbId)}`, {
-    headers: baseHeaders(),
-  });
+  const response = watch(
+    await fetch(`${BASE_URL}/game/${Math.trunc(hltbId)}`, {
+      headers: baseHeaders(),
+    }),
+  );
 
   if (response.status === 404) return null;
   if (!response.ok) {

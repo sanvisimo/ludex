@@ -157,7 +157,7 @@ const worker = new Worker<EnrichmentJob>(
   {
     connection: redisConnection,
     // Basso di proposito: il collo di bottiglia è il rate limit delle fonti —
-    // 4 richieste al secondo su IGDB, 3 su HLTB — che i client gia' rispettano
+    // 4 richieste al secondo su IGDB, 1 su HLTB — che i client gia' rispettano
     // serializzando. Alzare qui non farebbe andare piu' veloce, farebbe solo
     // accumulare attese.
     concurrency: 2,
