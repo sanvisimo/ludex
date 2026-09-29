@@ -284,6 +284,21 @@ describe('ordinamento e paginazione', () => {
     ]);
   });
 
+  it('«aggiunto» ordina per la data di aggiunta, non per quando è nata la riga', async () => {
+    await aggiungi(userId, { name: 'Vecchio' });
+    const corretto = await aggiungi(userId, { name: 'Nuovo' });
+    // Nato dopo, ma entrato in libreria anni prima: è il caso di ogni import.
+    await updateBacklogEntry(userId, {
+      id: corretto,
+      addedAt: new Date('2010-01-01Z'),
+    });
+
+    expect(await nomi(userId, { sort: 'addedAt', direction: 'desc' })).toEqual([
+      'Vecchio',
+      'Nuovo',
+    ]);
+  });
+
   it('il totale è quello prima del limite', async () => {
     for (const name of ['a', 'b', 'c', 'd', 'e']) {
       await aggiungi(userId, { name });

@@ -281,6 +281,9 @@ export const contract = {
           rating: RatingSchema.nullish(),
           notes: NotesSchema.nullish(),
           tags: z.array(UserTagInputSchema).max(50).optional(),
+          // Solo assente o una data: la colonna non è mai vuota, e «togli la
+          // data» non vuol dire niente.
+          addedAt: z.date().optional(),
         }),
       )
       .output(BacklogEntrySchema),

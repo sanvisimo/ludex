@@ -302,11 +302,15 @@ export type AmazonLibraryEntry = {
   /** L'id del prodotto: `amzn1.adg.product.<uuid>`. */
   externalId: string;
   name: string;
+  /** Quando Amazon ha dato il diritto, cioè quando è entrato in libreria. */
+  acquiredAt: Date | null;
 };
 
 type EntitlementsResponse = {
   entitlements?: {
     product?: { id?: string; title?: string; productLine?: string };
+    /** Millisecondi dall'epoch, **come stringa**: `"1719588703128"`. */
+    entitlementDateFromEpoch?: string | number;
   }[];
   nextToken?: string | null;
 };
@@ -379,9 +383,11 @@ export async function fetchAmazonLibrary(
       if (!product?.id || !product.title) continue;
       if (product.productLine === 'Twitch:FuelEntitlement') continue;
 
+      const ms = Number(row.entitlementDateFromEpoch);
       entries.push({
         externalId: product.id,
         name: stripEdition(product.title),
+        acquiredAt: ms > 0 ? new Date(ms) : null,
       });
     }
 

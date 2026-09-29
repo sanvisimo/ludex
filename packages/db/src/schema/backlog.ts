@@ -73,6 +73,15 @@ export const backlog = pgTable(
     // niente. Sopravvive ai reimport da solo, perché `ensureBacklogEntries` le
     // righe esistenti non le tocca.
     hiddenAt: timestamp('hidden_at'),
+    // Quando il gioco è entrato nella libreria dell'utente, che non è quando
+    // l'import ha scritto la riga: `createdAt` su una libreria importata è lo
+    // stesso istante per mille giochi.
+    //
+    // La scrive l'import dove il negozio la dà (Epic, Amazon, GOG), sempre come
+    // `least` con quella che c'è: fra due negozi vince il primo acquisto, e una
+    // correzione a mano più vecchia sopravvive al reimport. Dove il negozio non
+    // la dà (Steam, PSN) resta quella dell'import, e si corregge dal form.
+    addedAt: timestamp('added_at').defaultNow().notNull(),
 
     ...timestamps,
   },

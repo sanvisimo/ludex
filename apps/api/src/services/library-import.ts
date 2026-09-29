@@ -11,7 +11,11 @@ import {
 } from '../external/igdb';
 import { chunk } from '../lib/chunk';
 import { enqueueEnrichment, enqueuePostImport } from '../queue/enrichment';
-import { ensureBacklogEntries, ensureOwnerships } from './backlog';
+import {
+  advanceAddedAt,
+  ensureBacklogEntries,
+  ensureOwnerships,
+} from './backlog';
 import type { StoreAccountRow } from './store-accounts';
 import {
   type ExternalGameLink,
@@ -89,6 +93,12 @@ export type LibraryEntry = {
    * fatta di diritti digitali; lo dichiara solo chi porta dischi, cioè PSN.
    */
   medium?: Medium | null;
+  /**
+   * Quando la voce è entrata nella libreria del negozio, per i negozi che lo
+   * dicono: Epic, Amazon e GOG sì, Steam e PSN no. Diventa `backlog.addedAt`,
+   * vedi `advanceAddedAt`.
+   */
+  acquiredAt?: Date | null;
   /**
    * Un id che IGDB conosce **diverso** dall'id esterno, con la sua sorgente.
    *
@@ -619,6 +629,21 @@ export async function importLibrary(
       subscription: entry.subscription ?? null,
       medium: entry.medium ?? 'digital',
     })),
+  );
+
+  await advanceAddedAt(
+    resolved.flatMap((entry) =>
+      entry.acquiredAt
+        ? [
+            {
+              backlogId: byGameId.get(
+                gameIdByExternalId.get(entry.externalId)!,
+              )!,
+              addedAt: entry.acquiredAt,
+            },
+          ]
+        : [],
+    ),
   );
 
   // Solo i giochi nati adesso: gli altri l'enrichment ce l'hanno già, o ce

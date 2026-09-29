@@ -19,6 +19,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Input,
   Label,
   Select,
   SelectContent,
@@ -45,6 +46,16 @@ const NO_STORE = '__nessuno__';
 // Vedi `add-game-dialog`: non dichiarare il supporto vuol dire «non lo so», e
 // una riga che non lo sa se la prende il primo import che passa.
 const NO_MEDIUM = '__nessuno__';
+
+/**
+ * `YYYY-MM-DD` nel fuso di chi guarda, la forma che vuole `<input type="date">`.
+ * Non `toISOString`, che è in UTC: a mezzanotte e mezza in Italia darebbe il
+ * giorno prima.
+ */
+function toDateInput(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
 
 function namesOf(entry: BacklogEntry | null, kind: UserTagKind) {
   return (entry?.tags ?? [])
@@ -79,6 +90,7 @@ export function EditEntryDialog({
   const [status, setStatus] = useState<BacklogStatus>('backlog');
   const [rating, setRating] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
+  const [addedAt, setAddedAt] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [pending, setPending] = useState<OwnershipInput[]>([]);
@@ -94,6 +106,7 @@ export function EditEntryDialog({
     setStatus(entry.status);
     setRating(entry.rating);
     setNotes(entry.notes ?? '');
+    setAddedAt(toDateInput(entry.addedAt));
     setTags(namesOf(entry, 'tag'));
     setCategories(namesOf(entry, 'category'));
     setPending([]);
@@ -118,6 +131,12 @@ export function EditEntryDialog({
     mutationFn: async () => {
       if (!entry) return;
 
+      // Solo se il giorno è cambiato: rimandarlo sempre troncherebbe a
+      // mezzanotte l'ora esatta che ha scritto il negozio. Vuoto non si manda,
+      // perché la data non si toglie.
+      const addedAtChanged =
+        addedAt !== '' && addedAt !== toDateInput(entry.addedAt);
+
       await client.backlog.update({
         id: entry.id,
         status,
@@ -127,6 +146,8 @@ export function EditEntryDialog({
           ...tags.map((name) => ({ kind: 'tag' as const, name })),
           ...categories.map((name) => ({ kind: 'category' as const, name })),
         ],
+        // Mezzanotte locale: si rilegge con `toDateInput` sullo stesso giorno.
+        ...(addedAtChanged ? { addedAt: new Date(`${addedAt}T00:00`) } : {}),
       });
 
       // In sequenza e non in parallelo: scrivono tutte sulla stessa riga di
@@ -240,6 +261,18 @@ export function EditEntryDialog({
               value={tags}
               suggestions={suggestions.data ?? []}
               onChange={setTags}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="added-at">{t('addedAtLabel')}</Label>
+            <Input
+              id="added-at"
+              type="date"
+              value={addedAt}
+              max={toDateInput(new Date())}
+              onChange={(event) => setAddedAt(event.target.value)}
+              width={176}
             />
           </div>
 

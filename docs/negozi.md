@@ -358,3 +358,49 @@ risposta di oggi non si estende da sola.
 **`store_account_id` non è quella risposta**, e non va scambiato per tale: dice
 di chi è la copia, non se è tua — e ora nemmeno `subscription` va scambiata per
 la stessa cosa, perché dice a che titolo ce l'hai, non di chi è l'abbonamento.
+
+## La data d'acquisto
+
+Diventa `backlog.added_at`, con la regola scritta in
+[modello-dati](modello-dati.md). Misurata sulle librerie vere il 29/09/2026:
+
+| Negozio | Dove sta | Copertura |
+| --- | --- | --- |
+| Epic | `acquisitionDate` sul record di `library/api/public/items`, nella risposta che già si scarica | 888/888 record |
+| Amazon | `entitlementDateFromEpoch` sull'entitlement: millisecondi, **come stringa** | 95/95 |
+| GOG | **non** in `getFilteredProducts`: sta nella libreria di Galaxy, `galaxy-library.gog.com/users/{galaxyUserId}/releases`, stesso token, 500 per pagina con `next_page_token` | 442/442 |
+| Steam | niente in `GetOwnedGames`. C'è nella pagina delle licenze, che vuole il login: 9f | — |
+| PSN | niente fra gli acquisti: vedi sotto | — |
+
+Su Epic un prodotto ha più record — i DLC hanno lo stesso `productId` — e vale
+il più vecchio. Su GOG le date sono due e non valgono uguale: `owned_since` è
+quella vera ma c'è su 344 giochi su 442; `date_created` c'è sempre ma non va
+prima del **20/04/2019**, il giorno in cui Galaxy ha registrato gli acquisti
+vecchi (23 giochi su quel giorno solo). Si prende la prima, e la seconda dove
+manca. Galaxy porta anche i giochi degli altri negozi che integra: di quelli
+non si tiene niente, la loro data è quando Galaxy li ha visti. E Galaxy **non
+blocca** l'import: se non risponde, i giochi entrano lo stesso, senza data.
+
+**PSN: le date ci sono, ma non le prendiamo.** Stanno nello storico
+transazioni del PlayStation Store, e ci si arriva solo con la sessione del sito:
+
+1. l'npsso come cookie su `web.np.playstation.com/api/session/v1/signin`,
+   seguendo a mano i redirect (otto, fra `ca.account.sony.com` e
+   `io.playstation.com`) fino al cookie **`pdccws_p`**;
+2. con quello, `GET /api/graphql/v1/transact/transaction/history` con
+   `startDate`, `endDate` (in `+0000`, non `Z`), `limit=25`, `includePurged` e
+   `transactionTypes`; si pagina con `nextEndDate` finché `hasMore`;
+3. ogni ordine porta `transactionDate` e gli articoli con lo `skuId`
+   (`EP0900-PPSA03234_00-…-E003`), che si lega all'`entitlementId`
+   dell'acquisto sulle prime due parti, editore e titleId.
+
+La v2 (`/api/transactions/v2/history`) accetta il nostro token ma vuole lo
+scope `transaction:history.get`, e il client mobile che usiamo **non lo può
+avere**: `invalid_scope`. Misurato: 312 transazioni dal 2018, **308 acquisti su
+347** con una data (260 per editore e titleId, 48 per nome, cioè le copie PS4
+del cross-buy); dei 67 comprati davvero, 66. Scartato per il prezzo, non per la
+resa: vorrebbe dire conservare l'npsso, che è la sessione intera dell'account,
+pagamenti compresi, e ricavare la data da una risposta che porta anche IP e
+metodi di pagamento. Il primo giocato (`firstPlayedDateTime`, su `gamelist/v2`)
+non è un ripiego: copre 40 acquisti su 347, ed è un'altra informazione.
+

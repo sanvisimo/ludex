@@ -72,6 +72,17 @@ describe('campi personali', () => {
     ).rejects.toThrow();
   });
 
+  it("la data di aggiunta si corregge, e assente resta dov'era", async () => {
+    const giorno = new Date('2016-11-20T00:00:00Z');
+    await updateBacklogEntry(userId, { id: entryId, addedAt: giorno });
+    await updateBacklogEntry(userId, { id: entryId, rating: 4 });
+
+    expect(await findEntryById(userId, entryId)).toMatchObject({
+      addedAt: giorno,
+      rating: 4,
+    });
+  });
+
   it('non tocca la riga di un altro utente', async () => {
     const altro = await createUser();
 

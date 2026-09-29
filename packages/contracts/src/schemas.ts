@@ -239,6 +239,10 @@ export const BacklogEntrySchema = z.object({
   // Nascosto dalla lista: il gioco resta tuo, solo non lo vuoi vedere. Non è
   // `excluded`, che è un giudizio sul gioco.
   hiddenAt: z.date().nullable(),
+  // Quando il gioco è entrato in libreria: la data del negozio dove c'è, quella
+  // dell'import altrimenti, e l'utente la corregge. `createdAt` resta quando è
+  // nata la riga, che su un import è lo stesso istante per mille giochi.
+  addedAt: z.date(),
   createdAt: z.date(),
 });
 
