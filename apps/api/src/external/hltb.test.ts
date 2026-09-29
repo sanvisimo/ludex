@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { hltbSearchCandidates, parseSession } from './hltb';
+import {
+  fetchHltbGameDetail,
+  hltbSearchCandidates,
+  parseSession,
+} from './hltb';
 
 // Puro: nessuna rete, nessun database. È la metà della scoperta che si può
 // provare — l'altra ha bisogno che HLTB risponda, e quella la prova
@@ -65,5 +69,32 @@ describe('parseSession', () => {
   it('senza token non c’è sessione', () => {
     expect(parseSession({ hpKey: 'k', hpVal: 'v' })).toBeNull();
     expect(parseSession(null)).toBeNull();
+  });
+});
+
+describe('pausa su 429', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('dopo un 429 nessuna richiesta parte per un minuto', async () => {
+    // Qui `fetch` si stubba davvero: ciò che si prova è il ritmatore del
+    // client, che sta fra il job e la rete.
+    vi.useFakeTimers();
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(new Response('', { status: 429 })),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchHltbGameDetail(1)).rejects.toThrow('429');
+    const next = fetchHltbGameDetail(2).catch(() => undefined);
+
+    await vi.advanceTimersByTimeAsync(59_000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await next;
   });
 });
