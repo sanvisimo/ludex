@@ -95,8 +95,9 @@ export type LibraryEntry = {
   medium?: Medium | null;
   /**
    * Quando la voce è entrata nella libreria del negozio, per i negozi che lo
-   * dicono: Epic, Amazon e GOG sì, Steam e PSN no. Diventa `backlog.addedAt`,
-   * vedi `advanceAddedAt`.
+   * dicono: Epic, Amazon e GOG sì, Steam e PSN no. Diventa
+   * `ownerships.acquiredAt` della copia, e la più vecchia delle copie
+   * `backlog.addedAt`: vedi `advanceAddedAt`.
    */
   acquiredAt?: Date | null;
   /**
@@ -626,25 +627,13 @@ export async function importLibrary(
       storeAccountId,
       playtimeMinutes: entry.playtimeMinutes ?? null,
       lastPlayedAt: entry.lastPlayedAt ?? null,
+      acquiredAt: entry.acquiredAt ?? null,
       subscription: entry.subscription ?? null,
       medium: entry.medium ?? 'digital',
     })),
   );
 
-  await advanceAddedAt(
-    resolved.flatMap((entry) =>
-      entry.acquiredAt
-        ? [
-            {
-              backlogId: byGameId.get(
-                gameIdByExternalId.get(entry.externalId)!,
-              )!,
-              addedAt: entry.acquiredAt,
-            },
-          ]
-        : [],
-    ),
-  );
+  await advanceAddedAt([...byGameId.values()]);
 
   // Solo i giochi nati adesso: gli altri l'enrichment ce l'hanno già, o ce
   // l'hanno vecchio e ci pensa la spazzata.

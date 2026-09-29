@@ -361,8 +361,8 @@ la stessa cosa, perché dice a che titolo ce l'hai, non di chi è l'abbonamento.
 
 ## La data d'acquisto
 
-Diventa `backlog.added_at`, con la regola scritta in
-[modello-dati](modello-dati.md). Misurata sulle librerie vere il 29/09/2026:
+Diventa `ownerships.acquired_at` della copia, e la più vecchia delle copie
+`backlog.added_at`, con la regola scritta in [modello-dati](modello-dati.md). Misurata sulle librerie vere il 29/09/2026:
 
 | Negozio | Dove sta | Copertura |
 | --- | --- | --- |

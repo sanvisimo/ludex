@@ -42,6 +42,8 @@ Dove il negozio non la dà, la data si corregge a mano dal form di modifica.
 - **Una colonna sola, `backlog.added_at`**, non nulla, default `now()`. Non per
   copia su `ownerships`: il form modifica *una* data, e una per copia vorrebbe
   una UI per copia che non serve.
+  **Superata dal passo 7**: la data resta anche per copia, su
+  `ownerships.acquired_at`. Il form continua a modificarne una sola.
 - **L'import scrive `least(added_at, acquiredAt)`.** Le righe già importate
   prendono la data vera al primo reimport; un gioco entrato oggi da Steam
   prende quella di Epic se su Epic c'è; una data corretta a mano più vecchia
@@ -155,10 +157,32 @@ perché è stata scartata. I due file non passano prettier già da prima (corsiv
 con `*`, tabelle non allineate): le aggiunte seguono il loro stile e non li
 riformattano.
 
-## Aperto: due librerie, due date
+## Passo 7 — una data per copia
+
+Approvato e fatto il 29/09/2026, sul branch `claude/elegant-rubin-suzk14`.
 
 Lo stesso gioco in due librerie ha **due date di aggiunta**, una per copia: su
-GOG nel 2019, su Epic nel 2022. Oggi se ne tiene una sola, la più vecchia, in
-`backlog.added_at`, e l'altra si perde. Tenerle tutte e due vuol dire una data
-per copia su `ownerships`, accanto a quella del gioco, e decidere come si
-mostrano e quale si corregge dal form. Da decidere prima di scriverlo.
+GOG nel 2019, su Epic nel 2022. Fino al passo 6 se ne teneva una sola, la più
+vecchia, in `backlog.added_at`, e l'altra si perdeva.
+
+- **Schema**: `ownerships.acquired_at`, può essere nulla (Steam, PSN, inserimenti
+  manuali).
+  Migration [0024_lean_archangel.sql](../packages/db/drizzle/0024_lean_archangel.sql),
+  senza backfill: le date per copia non erano salvate da nessuna parte, le
+  copie esistenti le prendono al primo reimport.
+- **Copia**: `ensureOwnerships` la scrive e, sul conflitto, fa
+  `least(excluded.acquired_at, acquired_at)`, che ignora i NULL: un reimport
+  non la sposta avanti e uno senza data non la cancella. `fondiDoppioni` tiene
+  la più vecchia.
+- **Gioco**: `advanceAddedAt` ora prende gli id di backlog e legge dalle copie:
+  `added_at = least(added_at, min(ownerships.acquired_at))`. Le regole del
+  passo 3 non cambiano.
+- **Non cambiano**: contratto, API e form. La data per copia non si mostra,
+  e togliere una copia non ricalcola quella del gioco.
+
+Verifica: i test della data di aggiunta in `library-import.test.ts` ora
+controllano anche la data di ogni copia (GOG 2022 ed Epic 2019 restano
+entrambe, e il gioco prende il 2019; un reimport senza data non la cancella).
+`pnpm --filter api test` 338 verdi; typecheck e lint verdi pacchetto per
+pacchetto (`pnpm -r`), perché turbo in quell'ambiente non avviava i processi.
+Non ancora provato su un import vero.

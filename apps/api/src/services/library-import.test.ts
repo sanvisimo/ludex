@@ -729,6 +729,22 @@ describe('importLibrary: la data di aggiunta', () => {
     return row!.addedAt;
   };
 
+  // La data di ogni copia, per negozio.
+  const acquiredAtByStore = async () => {
+    const rows = await db
+      .select({
+        store: schema.ownerships.store,
+        acquiredAt: schema.ownerships.acquiredAt,
+      })
+      .from(schema.ownerships)
+      .innerJoin(
+        schema.backlog,
+        eq(schema.backlog.id, schema.ownerships.backlogId),
+      )
+      .where(eq(schema.backlog.userId, userId));
+    return Object.fromEntries(rows.map((row) => [row.store, row.acquiredAt]));
+  };
+
   beforeEach(async () => {
     userId = await createUser();
     account = await linkStoreAccount(userId, 'gog');
@@ -750,6 +766,8 @@ describe('importLibrary: la data di aggiunta', () => {
     const prima = new Date();
     await importLibrary(account, [{ externalId: '1', name: 'Hades' }]);
 
+    expect(await acquiredAtByStore()).toEqual({ gog: null });
+
     expect((await addedAtOf()).getTime()).toBeGreaterThanOrEqual(
       prima.getTime() - 1000,
     );
@@ -766,9 +784,10 @@ describe('importLibrary: la data di aggiunta', () => {
     await importLibrary(account, [{ externalId: '1', name: 'Hades' }]);
 
     expect(await addedAtOf()).toEqual(acquiredAt);
+    expect(await acquiredAtByStore()).toEqual({ gog: acquiredAt });
   });
 
-  it('fra due negozi vince il primo acquisto', async () => {
+  it('fra due negozi ogni copia tiene la sua, e il gioco il primo acquisto', async () => {
     const epic = await linkStoreAccount(userId, 'epic');
     await importLibrary(account, [
       { externalId: '1', name: 'Hades', acquiredAt: new Date('2022-03-01Z') },
@@ -778,6 +797,10 @@ describe('importLibrary: la data di aggiunta', () => {
     ]);
 
     expect(await addedAtOf()).toEqual(new Date('2019-12-10Z'));
+    expect(await acquiredAtByStore()).toEqual({
+      gog: new Date('2022-03-01Z'),
+      epic: new Date('2019-12-10Z'),
+    });
   });
 
   it('due voci dello stesso gioco nella stessa libreria: la più vecchia', async () => {
@@ -795,6 +818,9 @@ describe('importLibrary: la data di aggiunta', () => {
     ]);
 
     expect(await addedAtOf()).toEqual(new Date('2021-05-05Z'));
+    expect(await acquiredAtByStore()).toEqual({
+      gog: new Date('2021-05-05Z'),
+    });
   });
 
   it('una correzione a mano più vecchia sopravvive al reimport', async () => {
