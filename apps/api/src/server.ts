@@ -7,6 +7,7 @@ import { auth } from '@repo/auth';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
+import { startEventRelay } from './lib/events';
 import { router } from './rpc/router';
 
 const webUrl = process.env.WEB_URL ?? 'http://localhost:8085';
@@ -58,6 +59,9 @@ app.use('/rpc/*', async (c, next) => {
 });
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
+
+// Gli eventi del worker, smistati alle pagine aperte: vedi lib/events.ts.
+startEventRelay();
 
 serve({ fetch: app.fetch, port }, ({ port }) => {
   console.log(`api in ascolto su http://localhost:${port}`);

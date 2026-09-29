@@ -20,29 +20,35 @@ import Redis from 'ioredis';
 const ERROR_LOG_INTERVAL_MS = 60 * 1000;
 
 let client: Redis | null = null;
-let lastErrorLoggedAt = 0;
 
-function redis() {
-  if (client) return client;
+export const redisUrl = () => process.env.REDIS_URL ?? 'redis://localhost:6380';
 
-  client = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6380', {
-    lazyConnect: true,
-    maxRetriesPerRequest: 1,
-    commandTimeout: 1000,
-  });
-
-  // Senza un ascoltatore, ioredis stampa «Unhandled error event» a **ogni**
-  // tentativo di riconnessione: con Redis giù sono decine di righe al minuto
-  // che seppelliscono tutto il resto. Il guasto lo raccontano già cacheGet e
-  // cacheSet nel momento in cui qualcuno chiede davvero qualcosa; qui serve
-  // solo che la riconnessione resti accesa e in silenzio.
-  client.on('error', (error: unknown) => {
+/**
+ * Senza un ascoltatore, ioredis stampa «Unhandled error event» a **ogni**
+ * tentativo di riconnessione: con Redis giù sono decine di righe al minuto che
+ * seppelliscono tutto il resto. Il guasto lo racconta già chi chiede davvero
+ * qualcosa; qui serve solo che la riconnessione resti accesa e in silenzio.
+ */
+export function logErrorsQuietly(connection: Redis, name: string) {
+  let lastErrorLoggedAt = 0;
+  connection.on('error', (error: unknown) => {
     const now = Date.now();
     if (now - lastErrorLoggedAt < ERROR_LOG_INTERVAL_MS) return;
 
     lastErrorLoggedAt = now;
-    console.log(`redis: connessione in errore: ${String(error)}`);
+    console.log(`redis: ${name} in errore: ${String(error)}`);
   });
+}
+
+function redis() {
+  if (client) return client;
+
+  client = new Redis(redisUrl(), {
+    lazyConnect: true,
+    maxRetriesPerRequest: 1,
+    commandTimeout: 1000,
+  });
+  logErrorsQuietly(client, 'connessione');
 
   return client;
 }
@@ -69,5 +75,18 @@ export async function cacheSet(key: string, value: string, ttlSeconds: number) {
     await redis().set(key, value, 'EX', ttlSeconds);
   } catch (error) {
     console.log(`redis: scrittura di ${key} fallita: ${String(error)}`);
+  }
+}
+
+/**
+ * Pubblica su un canale. Come la cache, un Redis giù non ferma chi pubblica:
+ * un evento perso costa una pagina che si aggiorna al prossimo, non un job
+ * fallito.
+ */
+export async function redisPublish(channel: string, message: string) {
+  try {
+    await redis().publish(channel, message);
+  } catch (error) {
+    console.log(`redis: pubblicazione su ${channel} fallita: ${String(error)}`);
   }
 }

@@ -314,10 +314,21 @@ export async function isSourceDue(source: EnrichmentSource, gameId: string) {
  * - l'ordinamento non è cosmetico. Se i candidati sono più del limite, senza
  *   ORDER BY Postgres può restituire le stesse righe a ogni giro e lasciarne
  *   altre a digiuno per sempre. `nulls first` mette davanti i mai sincronizzati.
+ *
+ * `onlyLinked` tiene solo i giochi che l'id sulla fonte ce l'hanno già. Serve
+ * a OpenCritic dopo un import: un gioco agganciato costa una richiesta (200 al
+ * giorno), uno da cercare una ricerca (25), e quelle restano della spazzata.
  */
-export function findGamesNeedingSource(source: EnrichmentSource, limit = 100) {
+export function findGamesNeedingSource(
+  source: EnrichmentSource,
+  limit = 100,
+  { onlyLinked = false }: { onlyLinked?: boolean } = {},
+) {
   return (
-    selectGamesDue(source)
+    selectGamesDue(
+      source,
+      onlyLinked ? isNotNull(schema.gameSources.externalId) : undefined,
+    )
       // `sql` grezzo e non `asc()`: quello avvolge l'espressione e produrrebbe
       // `synced_at nulls first asc`, che Postgres rifiuta.
       .orderBy(sql`${schema.gameSources.syncedAt} asc nulls first`)

@@ -111,6 +111,27 @@ describe('findGamesNeedingSource', () => {
     await createGame({ igdbId: null });
     await expect(findGamesNeedingSource('igdb')).resolves.toEqual([]);
   });
+
+  it('con onlyLinked prende solo chi sulla fonte ha già un id', async () => {
+    // Dopo un import OpenCritic parte solo sui giochi agganciati: uno senza id
+    // costerebbe una ricerca, e quelle restano della spazzata.
+    const agganciato = await createGame();
+    const daCercare = await createGame();
+    for (const game of [agganciato, daCercare])
+      await setSource({ gameId: game.id, status: 'ok', syncedAt: new Date() });
+    await setSource({
+      gameId: agganciato.id,
+      source: 'opencritic',
+      status: 'pending',
+      externalId: '4002',
+    });
+
+    await expect(
+      findGamesNeedingSource('opencritic', 100, { onlyLinked: true }),
+    ).resolves.toEqual([{ id: agganciato.id }]);
+    // Senza, la spazzata li vede tutti e due.
+    await expect(findGamesNeedingSource('opencritic')).resolves.toHaveLength(2);
+  });
 });
 
 describe('findGamesNeedingSource, dipendenze fra fonti', () => {
