@@ -6,11 +6,12 @@ import { redisConnection } from './connection';
 export const ENRICHMENT_QUEUE = 'enrichment';
 
 /**
- * Tre tipi di job sulla stessa coda:
+ * Quattro tipi di job sulla stessa coda:
  *
  * - `enrich`: arricchisce un gioco preciso da una fonte precisa
  * - `sweep`: passa in rassegna i giochi da (ri)arricchire e accoda i primi
  * - `resolve`: aggancia in blocco gli id OpenCritic da Wikidata
+ * - `post-import`: dopo un import, l'aggancio e poi OpenCritic per chi ha l'id
  *
  * Solo il primo fa lavoro pesante. La spazzata accoda e basta, cosi' il rate
  * limit resta governato da un punto solo; l'aggancio parla con Wikidata, non
@@ -23,7 +24,8 @@ export const ENRICHMENT_QUEUE = 'enrichment';
 export type EnrichmentJob =
   | { type: 'enrich'; source: EnrichmentSource; gameId: string }
   | { type: 'sweep' }
-  | { type: 'resolve' };
+  | { type: 'resolve' }
+  | { type: 'post-import' };
 
 export const enrichmentQueue = new Queue<EnrichmentJob>(ENRICHMENT_QUEUE, {
   connection: redisConnection,
@@ -88,6 +90,17 @@ const RESOLVE_SCHEDULER_ID = 'opencritic-resolve';
 // che è la strada che c'era prima.
 const RESOLVE_EVERY_MS = 7 * 24 * 60 * 60 * 1000;
 
+// Tentativi diradati sull'ora, invece dei cinque secondi che valgono per tutti
+// gli altri job. Non è prudenza generica: WDQS ha risposto 502 al primo giro
+// vero, e per un lavoro che torna **fra una settimana** tre tentativi in
+// quindici secondi vogliono dire che un pomeriggio storto costa sette giorni di
+// ritardo. Un'ora abbondante di pazienza copre le interruzioni che quel
+// servizio ha davvero. Vale per tutti i job che parlano con Wikidata.
+const WIKIDATA_JOB_OPTS = {
+  attempts: 5,
+  backoff: { type: 'exponential', delay: 60_000 },
+} as const;
+
 /**
  * Registra la spazzata periodica.
  *
@@ -112,13 +125,40 @@ export async function scheduleOpenCriticResolve() {
     {
       name: 'resolve',
       data: { type: 'resolve' },
-      // Tentativi diradati sull'ora, invece dei cinque secondi che valgono per
-      // tutti gli altri job. Non è prudenza generica: WDQS ha risposto 502 al
-      // primo giro vero, e per un lavoro che torna **fra una settimana** tre
-      // tentativi in quindici secondi vogliono dire che un pomeriggio storto
-      // costa sette giorni di ritardo. Un'ora abbondante di pazienza copre le
-      // interruzioni che quel servizio ha davvero.
-      opts: { attempts: 5, backoff: { type: 'exponential', delay: 60_000 } },
+      opts: WIKIDATA_JOB_OPTS,
     },
   );
+}
+
+/**
+ * Accoda il seguito di un import: l'aggancio Wikidata e poi OpenCritic.
+ *
+ * Va chiamata **dopo** aver accodato gli IGDB dei giochi nuovi, ed è l'ordine a
+ * fare il lavoro: la coda è FIFO, quindi questo job parte quando tutti quegli
+ * IGDB sono partiti, e l'aggancio trova gli slug che IGDB ha appena scritto.
+ * Senza, i giochi di un import aspettavano l'aggancio settimanale per avere un
+ * id, e nel frattempo la spazzata li cercava per nome — 25 ricerche al giorno.
+ *
+ * Un IGDB in ritentativo perde il giro: lo riprendono l'aggancio settimanale e
+ * la spazzata, come prima. Aspettare ogni singolo job costerebbe molto più
+ * codice per un caso raro.
+ *
+ * Non deduplicato: un secondo import accodato dietro al primo porta i suoi
+ * IGDB dopo questo job, e ha bisogno del proprio giro.
+ */
+export async function enqueuePostImport() {
+  try {
+    await enrichmentQueue.add(
+      'post-import',
+      { type: 'post-import' },
+      WIKIDATA_JOB_OPTS,
+    );
+  } catch (error) {
+    // Come `enqueueEnrichment`: l'import è riuscito, e un seguito perso lo
+    // recuperano aggancio settimanale e spazzata.
+    console.error(
+      '[enrichment] accodamento post-import fallito:',
+      error instanceof Error ? error.message : error,
+    );
+  }
 }

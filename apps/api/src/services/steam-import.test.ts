@@ -12,7 +12,7 @@ import {
 } from '../../test/factories';
 import { findIgdbGamesByExternalIds, searchIgdbGames } from '../external/igdb';
 import { fetchSteamLibrary } from '../external/steam';
-import { enqueueEnrichment } from '../queue/enrichment';
+import { enqueueEnrichment, enqueuePostImport } from '../queue/enrichment';
 import { importSteamLibrary } from './steam-import';
 
 vi.mock('../external/steam', () => ({ fetchSteamLibrary: vi.fn() }));
@@ -24,12 +24,16 @@ vi.mock('../external/igdb', () => ({
   searchIgdbGames: vi.fn(),
   igdbSourceFor: () => 1,
 }));
-vi.mock('../queue/enrichment', () => ({ enqueueEnrichment: vi.fn() }));
+vi.mock('../queue/enrichment', () => ({
+  enqueueEnrichment: vi.fn(),
+  enqueuePostImport: vi.fn(),
+}));
 
 const mockedLibrary = vi.mocked(fetchSteamLibrary);
 const mockedResolve = vi.mocked(findIgdbGamesByExternalIds);
 const mockedSearch = vi.mocked(searchIgdbGames);
 const mockedEnqueue = vi.mocked(enqueueEnrichment);
+const mockedPostImport = vi.mocked(enqueuePostImport);
 
 /** Fa finta che IGDB conosca questi appid, con un igdbId derivato dall'appid. */
 function igdbKnows(
@@ -303,6 +307,7 @@ describe('importSteamLibrary', () => {
     igdbKnows([{ externalId: '220', igdbId: 233 }]);
     await importSteamLibrary(suoAccount);
     mockedEnqueue.mockClear();
+    mockedPostImport.mockClear();
 
     mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
     igdbKnows([{ externalId: '220', igdbId: 233 }]);
@@ -312,6 +317,8 @@ describe('importSteamLibrary', () => {
     // col numero di utenti.
     expect(await db.select().from(schema.games)).toHaveLength(1);
     expect(mockedEnqueue).not.toHaveBeenCalled();
+    // Nessun gioco nuovo, niente da agganciare: il seguito non parte.
+    expect(mockedPostImport).not.toHaveBeenCalled();
     expect(report).toMatchObject({ newGames: 0, newEntries: 1 });
   });
 
@@ -325,9 +332,16 @@ describe('importSteamLibrary', () => {
       { externalId: '70', igdbId: 231 },
     ]);
 
+    mockedPostImport.mockClear();
     await importSteamLibrary(account);
 
     expect(mockedEnqueue).toHaveBeenCalledTimes(2);
+    // Uno per import e non uno per gioco, e dopo gli IGDB: è l'ordine della
+    // coda che gli fa trovare gli slug appena scritti.
+    expect(mockedPostImport).toHaveBeenCalledTimes(1);
+    expect(mockedPostImport.mock.invocationCallOrder[0]).toBeGreaterThan(
+      mockedEnqueue.mock.invocationCallOrder[1]!,
+    );
   });
 
   it("segna l'ultima sincronizzazione sull'account collegato", async () => {

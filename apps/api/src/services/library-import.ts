@@ -10,7 +10,7 @@ import {
   searchIgdbGames,
 } from '../external/igdb';
 import { chunk } from '../lib/chunk';
-import { enqueueEnrichment } from '../queue/enrichment';
+import { enqueueEnrichment, enqueuePostImport } from '../queue/enrichment';
 import { ensureBacklogEntries, ensureOwnerships } from './backlog';
 import type { StoreAccountRow } from './store-accounts';
 import {
@@ -624,6 +624,9 @@ export async function importLibrary(
   // Solo i giochi nati adesso: gli altri l'enrichment ce l'hanno già, o ce
   // l'hanno vecchio e ci pensa la spazzata.
   for (const gameId of createdGameIds) await enqueueEnrichment('igdb', gameId);
+  // Dietro gli IGDB, non prima: è l'ordine della coda che gli fa trovare gli
+  // slug appena scritti. Vedi `enqueuePostImport`.
+  if (createdGameIds.length > 0) await enqueuePostImport();
 
   await db
     .update(schema.storeAccounts)

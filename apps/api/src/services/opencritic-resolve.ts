@@ -43,9 +43,15 @@ export type ResolveReport = {
  * la fonte: è la regola del CLAUDE.md — un `not_found` si riapre per evento,
  * quando cambia l'identificativo del gioco su quella fonte — e questo è
  * esattamente quell'evento.
+ *
+ * Senza `limit` li prende tutti, ed è il caso normale. Un tetto fisso qui smette
+ * di funzionare senza dirlo: i giochi che Wikidata non collega restano
+ * candidati per sempre e, ordinati dal più vecchio, stanno in testa. Passato il
+ * tetto riempiono la finestra da soli e il giro non arriva più ai giochi nuovi.
+ * Il costo di prenderli tutti è qualche gruppo in più nella VALUES.
  */
-function findGamesNeedingOpenCriticId(limit: number) {
-  return db
+function findGamesNeedingOpenCriticId(limit?: number) {
+  const query = db
     .select({ id: schema.games.id, slug: schema.games.igdbSlug })
     .from(schema.games)
     .leftJoin(
@@ -62,11 +68,13 @@ function findGamesNeedingOpenCriticId(limit: number) {
       ),
     )
     .orderBy(sql`${schema.games.createdAt} asc`)
-    .limit(limit);
+    .$dynamic();
+
+  return limit === undefined ? query : query.limit(limit);
 }
 
 export async function resolveOpenCriticIds(
-  limit = 500,
+  limit?: number,
 ): Promise<ResolveReport> {
   const giochi = await findGamesNeedingOpenCriticId(limit);
   const report: ResolveReport = {

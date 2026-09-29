@@ -84,7 +84,7 @@ function sweepLimit(source: EnrichmentSource) {
 const worker = new Worker<EnrichmentJob>(
   ENRICHMENT_QUEUE,
   async (job) => {
-    if (job.data.type === 'resolve') {
+    if (job.data.type === 'resolve' || job.data.type === 'post-import') {
       // Non arricchisce e non parla con le fonti: chiede a Wikidata gli id
       // OpenCritic dei giochi che non ne hanno uno e li scrive. È quello che
       // evita di spendere le 25 ricerche al giorno per l'identità dei giochi.
@@ -94,7 +94,24 @@ const worker = new Worker<EnrichmentJob>(
           `${report.conMappa} noti a Wikidata, ${report.agganciati} scritti` +
           (report.conflitti > 0 ? `, ${report.conflitti} in conflitto` : ''),
       );
-      return report;
+      if (job.data.type === 'resolve') return report;
+
+      // Dopo un import: i giochi appena agganciati prendono il voto adesso e
+      // non alla prossima spazzata. Solo chi l'id ce l'ha, cioè una richiesta
+      // a testa e mai una ricerca, e non oltre il budget del giorno — è la
+      // ragione per cui OpenCritic non segue IGDB come HLTB e Metacritic.
+      const limit = sweepLimit('opencritic');
+      const games =
+        limit > 0
+          ? await findGamesNeedingSource('opencritic', limit, {
+              onlyLinked: true,
+            })
+          : [];
+      for (const game of games) await enqueueEnrichment('opencritic', game.id);
+      console.log(
+        `[enrichment] dopo l'import: ${games.length} giochi accodati su opencritic`,
+      );
+      return { ...report, enqueued: games.length };
     }
 
     if (job.data.type === 'sweep') {

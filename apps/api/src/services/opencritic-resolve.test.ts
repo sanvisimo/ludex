@@ -86,6 +86,23 @@ describe('resolveOpenCriticIds', () => {
     });
   });
 
+  it('senza limite prende tutti i candidati, non i primi 500', async () => {
+    // Il tetto di 500 riempito dai giochi vecchi che Wikidata non collega era
+    // il modo in cui il giro settimanale smetteva di arrivare ai nuovi.
+    // In blocco e non con `createGame`: 501 insert uno alla volta sforano il
+    // timeout del test.
+    const slugs = Array.from({ length: 501 }, (_, i) => `gioco-${i}`);
+    await db
+      .insert(schema.games)
+      .values(slugs.map((slug) => ({ name: slug, igdbSlug: slug })));
+    mockedWikidata.mockResolvedValue(new Map());
+
+    const report = await resolveOpenCriticIds();
+
+    expect(report.candidati).toBe(501);
+    expect(mockedWikidata).toHaveBeenCalledWith(expect.arrayContaining(slugs));
+  });
+
   it('non tocca chi un indirizzo ce l\'ha già', async () => {
     const game = await createGame({ name: 'Hollow Knight' });
     await withSlug(game.id, 'hollow-knight');

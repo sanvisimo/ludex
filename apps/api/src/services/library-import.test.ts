@@ -20,7 +20,10 @@ vi.mock('../external/igdb', () => ({
   searchIgdbGames: vi.fn(),
   igdbSourceFor: vi.fn(),
 }));
-vi.mock('../queue/enrichment', () => ({ enqueueEnrichment: vi.fn() }));
+vi.mock('../queue/enrichment', () => ({
+  enqueueEnrichment: vi.fn(),
+  enqueuePostImport: vi.fn(),
+}));
 
 const mockedById = vi.mocked(findIgdbGamesByExternalIds);
 const mockedSearch = vi.mocked(searchIgdbGames);
