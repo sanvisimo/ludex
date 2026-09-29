@@ -83,6 +83,14 @@ export const GameSchema = z.object({
   // titolo, dove altrimenti sembrerebbe un gioco come gli altri. Null finché
   // l'enrichment non è passato.
   gameType: GameTypeSchema.nullable(),
+  // Il voto scelto per precedenza, con la fonte da cui viene. È quello su cui
+  // filtra e ordina lo step 7, e sta anche nelle liste perché la card lo mostra
+  // quando l'utente non ha votato. La precedenza la decide il server: se la
+  // rifacesse il client, due punti del sistema potrebbero rispondere in modo
+  // diverso alla stessa domanda. La fonte viaggia col numero perché OpenCritic
+  // e Metacritic non stanno sulla stessa scala.
+  criticScore: z.number().nullable(),
+  criticScoreSource: ScoreSourceSchema.nullable(),
   createdAt: z.date(),
 });
 
@@ -141,12 +149,8 @@ export const GameDetailSchema = GameSchema.extend({
   summary: z.string().nullable(),
   coverWidth: z.number().int().nullable(),
   coverHeight: z.number().int().nullable(),
-  // Il voto scelto per precedenza, con la fonte da cui viene. È quello su cui
-  // filtra e ordina lo step 7, e viaggia insieme a `scores` perché la
-  // precedenza la decide il server: se la rifacesse il client, due punti del
-  // sistema potrebbero rispondere in modo diverso alla stessa domanda.
-  criticScore: z.number().nullable(),
-  criticScoreSource: ScoreSourceSchema.nullable(),
+  // Tutti i voti, fonte per fonte: quello scelto per precedenza sta già su
+  // `GameSchema` (`criticScore`).
   scores: z.array(GameScoreSchema),
   attributes: z.array(GameAttributeSchema),
   ...HltbTimesSchema.shape,

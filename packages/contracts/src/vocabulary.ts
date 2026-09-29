@@ -12,6 +12,8 @@ export const backlogStatusValues = [
   'backlog',
   'playing',
   'played',
+  // Il 100%, il platinato: oltre `played`, che resta «finito».
+  'completed',
   'dropped',
   'excluded',
 ] as const;

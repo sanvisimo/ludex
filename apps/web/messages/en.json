@@ -43,14 +43,16 @@
     "noMatchTitle": "No game matches.",
     "noMatchHint": "Try loosening the filters: ticks within the same criterion add up, so two tags together mean the games that have both.",
     "pages": "Pages",
-    "previousPage": "Previous",
-    "nextPage": "Next",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "goToPage": "Go to page",
+    "pageSize": "Per page",
     "showHidden": "Hidden ({count})",
     "hiddenViewTitle": "Hidden games",
     "hiddenViewHint": "They don't show up in the list or the filters, but they're still yours: ownership doesn't change. “Show again” puts them back.",
     "backToList": "Back to the list",
     "hiddenEmptyTitle": "No hidden games.",
-    "statusOf": "Status of {name}",
+    "statusOf": "Status of {name}: {status}",
     "actionsFor": "Actions for {name}",
     "columnTitle": "Title",
     "columnPlatforms": "Platforms",
@@ -109,6 +111,7 @@
     "noGameTypes": "No types yet: games that haven't been enriched don't have one.",
     "filtersButton": "{count, plural, =0 {Filters} other {Filters (#)}}",
     "panelLabel": "Filters",
+    "closePanel": "Close filters",
     "any": "Any",
     "removeChip": "Remove the filter {label}",
     "rangeBoth": "{min}–{max}",
@@ -254,6 +257,7 @@
     "backlog": "Backlog",
     "playing": "Playing",
     "played": "Played",
+    "completed": "Completed",
     "dropped": "Dropped",
     "excluded": "Not interested"
   },
@@ -431,7 +435,8 @@
     "recommended": "{percent}% recommend it",
     "opencritic": "OpenCritic",
     "metacritic": "Metacritic",
-    "igdb": "IGDB"
+    "igdb": "IGDB",
+    "scoreOf": "{source}: {value}"
   },
   "subscription": {
     "ps_plus": "PS Plus"

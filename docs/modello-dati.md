@@ -75,9 +75,12 @@ possesso. Conseguenze:
   `backlog`. Così ogni query su `backlog` resta semplice. Comprato il gioco, la
   riga migra. Anche i giochi in wishlist puntano a `games` e vanno arricchiti:
   durata e voti servono _prima_ dell'acquisto. È lo **step 15**.
-- **stato**: `backlog` / `playing` / `played` / `dropped` / `excluded`. `excluded`
-  ("non voglio giocarlo") è uno stato, non una tabella: è un segnale negativo
-  esplicito e allo step 13 vale più di molte valutazioni positive.
+- **stato**: `backlog` / `playing` / `played` / `completed` / `dropped` /
+  `excluded`. `completed` è il 100%, il platinato: `played` resta «finito», e
+  «completato» dice di più (12d). Lo sceglie solo l'utente: dedurlo dai trofei
+  PSN è un'altra storia. `excluded` ("non voglio giocarlo") è uno stato, non una
+  tabella: è un segnale negativo esplicito e allo step 13 vale più di molte
+  valutazioni positive.
 
 ## I voti della critica stanno in `game_scores`, non su `games`
 

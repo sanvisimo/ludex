@@ -13,7 +13,14 @@ export function RatingValue({ value }: { value: number | null }) {
   if (value === null) return null;
 
   return (
-    <XStack items="center" gap={4} aria-label={t('ratingOf', { value })}>
+    // `role="img"`: un `aria-label` su un `div` senza ruolo axe lo boccia
+    // (aria-prohibited-attr), e un lettore di schermo può ignorarlo.
+    <XStack
+      role="img"
+      items="center"
+      gap={4}
+      aria-label={t('ratingOf', { value })}
+    >
       <Star size={14} color="$accent9" fill="currentColor" />
       <Text fontSize={14} lineHeight={20} color="$color11" aria-hidden>
         {value}

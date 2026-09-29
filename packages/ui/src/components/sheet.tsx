@@ -11,8 +11,8 @@ export type SheetProps = {
 };
 
 /**
- * Il foglio che sale dal basso: la navigazione sulle finestre strette del web,
- * e domani il pannello dei filtri.
+ * Il foglio che sale dal basso: la navigazione sulle finestre strette del web.
+ * I filtri del backlog, lunghi più dello schermo, stanno nel `Drawer`.
  *
  * È lo stesso foglio che il Select apre su un dispositivo touch, qui usato da
  * solo. Alto quanto il contenuto (`snapPointsMode="fit"`), si chiude

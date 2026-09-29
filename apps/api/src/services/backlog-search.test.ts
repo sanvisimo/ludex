@@ -199,6 +199,53 @@ describe('voto della critica', () => {
       await nomi(userId, { sort: 'criticRating', direction: 'desc' }),
     ).toEqual(['Acclamato', 'Mediocre', 'Senza voto']);
   });
+
+  it('la lista porta il voto scelto con la sua fonte, e il nullo resta nullo', async () => {
+    // La card lo mostra quando l'utente non ha votato: senza la fonte il
+    // numero non si legge, perché OpenCritic e Metacritic non stanno sulla
+    // stessa scala.
+    await aggiungi(userId, {
+      name: 'Acclamato',
+      criticScore: 92,
+      criticScoreSource: 'opencritic',
+    });
+    await aggiungi(userId, { name: 'Senza voto' });
+
+    const { entries } = await search(userId, {
+      sort: 'name',
+      direction: 'asc',
+    });
+    expect(
+      entries.map(({ game }) => [
+        game.name,
+        game.criticScore,
+        game.criticScoreSource,
+      ]),
+    ).toEqual([
+      ['Acclamato', 92, 'opencritic'],
+      ['Senza voto', null, null],
+    ]);
+  });
+});
+
+describe('stato completato', () => {
+  it('si salva e si filtra come gli altri stati', async () => {
+    // Il valore è arrivato con una migration su un enum di Postgres: se non
+    // fosse applicata, l'inserimento fallirebbe qui.
+    const userId = await createUser();
+    const game = await createGame({ name: 'Platinato' });
+    await addToBacklog({
+      userId,
+      gameId: game.id,
+      status: 'completed',
+      ownerships: [{ platformSlug: 'pc_windows' }],
+    });
+    await aggiungi(userId, { name: 'Da giocare' });
+
+    expect(await nomi(userId, { status: ['completed'] })).toEqual([
+      'Platinato',
+    ]);
+  });
 });
 
 describe('ordinamento e paginazione', () => {

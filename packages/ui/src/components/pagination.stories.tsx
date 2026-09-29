@@ -21,7 +21,7 @@ const meta: Meta<PaginationProps> = {
 export default meta;
 type Story = StoryObj<PaginationProps>;
 
-/** La prima pagina: «Precedente» c'è ma è spenta. */
+/** La prima pagina: la freccia indietro c'è ma è spenta. */
 export const First: Story = {};
 
 /** In mezzo: la prima, l'ultima, e la aperta con le due vicine. */
@@ -93,5 +93,52 @@ export const Single: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.queryByRole('navigation')).toBeNull();
+  },
+};
+
+/** Con «vai a pagina»: il campo dopo le frecce. */
+export const GoTo: Story = {
+  args: { page: 20, goToLabel: 'Vai a pagina', onGoTo: fn() },
+};
+
+/**
+ * Un numero e Invio: oltre l'ultima va all'ultima, sotto la prima alla prima,
+ * e ciò che non è un numero non fa niente. Dopo il salto il campo si svuota.
+ */
+export const GoToClamps: Story = {
+  ...GoTo,
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const field = canvas.getByLabelText('Vai a pagina');
+
+    await userEvent.type(field, '999{Enter}');
+    await expect(args.onGoTo).toHaveBeenLastCalledWith(42);
+    await expect(field).toHaveValue('');
+
+    await userEvent.type(field, '0{Enter}');
+    await expect(args.onGoTo).toHaveBeenLastCalledWith(1);
+
+    await userEvent.type(field, '7{Enter}');
+    await expect(args.onGoTo).toHaveBeenLastCalledWith(7);
+
+    await userEvent.type(field, 'abc{Enter}');
+    await expect(args.onGoTo).toHaveBeenCalledTimes(3);
+  },
+};
+
+/** Le frecce non hanno testo a vista: il nome sta in `aria-label`. */
+export const ArrowNames: Story = {
+  args: { page: 20 },
+  play: async ({ canvasElement }) => {
+    const nav = within(canvasElement).getByRole('navigation', {
+      name: 'Pagine',
+    });
+    await expect(
+      within(nav).getByRole('link', { name: 'Precedente' }),
+    ).toHaveAttribute('href', '?page=19');
+    await expect(
+      within(nav).getByRole('link', { name: 'Successiva' }),
+    ).toHaveAttribute('href', '?page=21');
+    await expect(within(nav).queryByText('Precedente')).toBeNull();
   },
 };
