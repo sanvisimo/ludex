@@ -181,6 +181,21 @@ banali: se non è stata analizzata, non si scrive.
 In pratica: leggere il codice e il contesto esistente → esporre cosa si è trovato
 e le opzioni → attendere la decisione → solo a quel punto implementare.
 
+**Una schermata nuova o rifatta si vede prima del codice.** Correggere una
+schermata già scritta vuol dire riscriverla, quindi la struttura si decide
+prima, dove costa poco:
+
+1. si parte dalla schermata che c'è e dai commenti dell'utente, con uno
+   screenshot;
+2. una proposta scritta, punto per punto sui commenti, e un **wireframe a bassa
+   fedeltà** (Excalidraw: rettangoli ed etichette, niente stile). Si corregge
+   lì finché la struttura non è approvata;
+3. il codice, una volta sola. L'aspetto si rifinisce sulla pagina vera, senza
+   rimettere in discussione la struttura.
+
+Il Design canvas, cioè i mockup ad alta fedeltà, solo se l'utente lo chiede:
+costa quanto il codice.
+
 **I piani stanno in `plans/`**, uno per lotto, col nome del lotto
 (`12a-design-system.md`). La modalità piano li scrive altrove, fuori dal repo:
 a decisione presa il piano si sposta qui, e da qui si aggiorna mentre il lotto
