@@ -41,29 +41,16 @@ function AccountPage() {
   // dialogo la fa, dopo aver contato cosa porta via.
   const [unlinking, setUnlinking] = useState<StoreAccount | null>(null);
 
-  const accounts = useQuery({
-    ...api.accounts.list.queryOptions(),
-    // Durante l'import la pagina si aggiorna da sola: il job dura decine di
-    // secondi e lasciare l'utente a premere F5 sarebbe scortese.
-    refetchInterval: (query) =>
-      query.state.data?.some((row) => row.syncing) ? 3000 : false,
-  });
+  // Durante l'import la pagina si aggiorna da sola, e anche dopo: a dirle
+  // quando rileggere sono gli eventi del guscio (`useLiveUpdates`).
+  const accounts = useQuery(api.accounts.list.queryOptions());
 
   const unresolved = useQuery(api.imports.unresolved.queryOptions());
   const settings = useQuery(api.settings.get.queryOptions());
 
-  // Basta che UN negozio stia importando perché backlog e scarti cambino sotto
-  // i piedi: la pagina non deve sapere quale.
+  // Basta che UN negozio stia importando perché il bottone «aggiorna tutti»
+  // resti spento: la pagina non deve sapere quale.
   const syncing = accounts.data?.some((row) => row.syncing) ?? false;
-
-  // Finito l'import, backlog e scarti sono cambiati sotto i piedi.
-  useEffect(() => {
-    if (syncing) return;
-    void queryClient.invalidateQueries({
-      queryKey: api.imports.unresolved.key(),
-    });
-    void queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
-  }, [syncing, queryClient]);
 
   const syncAll = useMutation({
     mutationFn: () => client.accounts.syncAll(),

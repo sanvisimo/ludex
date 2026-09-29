@@ -299,6 +299,25 @@ export const SyncAllResultSchema = z.object({
   needsReauth: z.number().int(),
 });
 
+// Ciò che il server spinge al browser quando il worker cambia i dati. Non
+// porta i dati, dice **quali query sono vecchie**: rileggerle resta compito del
+// client, con le stesse procedure di sempre.
+export const LiveEventSchema = z.discriminatedUnion('type', [
+  // Un tentativo d'import è partito o finito. `finished` vale anche per un
+  // tentativo fallito che BullMQ riproverà: l'account resta `syncing`, e
+  // rileggerlo lo dice.
+  z.object({
+    type: z.literal('import'),
+    phase: z.enum(['started', 'finished']),
+    storeAccountId: z.uuid(),
+  }),
+  // L'enrichment ha scritto questi giochi: copertina, durata, voti.
+  z.object({
+    type: z.literal('games'),
+    gameIds: z.array(z.uuid()),
+  }),
+]);
+
 // Le preferenze dell'utente. Complete in uscita anche per chi non ha mai
 // cambiato niente: i default li mette il server, il client non li conosce.
 export const UserSettingsSchema = z.object({
@@ -440,6 +459,7 @@ export type UserTag = z.infer<typeof UserTagSchema>;
 export type UserTagInput = z.infer<typeof UserTagInputSchema>;
 export type BacklogEntry = z.infer<typeof BacklogEntrySchema>;
 export type StoreAccount = z.infer<typeof StoreAccountSchema>;
+export type LiveEvent = z.infer<typeof LiveEventSchema>;
 
 /**
  * Come chiamare un account a schermo, in un punto solo.

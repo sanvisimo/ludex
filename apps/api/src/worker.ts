@@ -4,9 +4,14 @@ import { storeAccountName } from '@repo/contracts';
 import type { Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
-import { UnrecoverableError, Worker } from 'bullmq';
+import { UnrecoverableError, Worker, type Job } from 'bullmq';
 
 import { openCriticQuota } from './external/opencritic';
+import {
+  flushGameChanges,
+  notifyGameChanged,
+  publishEvent,
+} from './lib/events';
 import { redisConnection } from './queue/connection';
 import {
   ENRICHMENT_QUEUE,
@@ -134,6 +139,9 @@ const worker = new Worker<EnrichmentJob>(
     const { source, gameId } = job.data;
     const outcome = await enrichers[source](gameId);
     console.log(`[enrichment] ${source} ${gameId} -> ${outcome.status}`);
+    // Solo `ok` cambia ciò che una pagina mostra: un `not_found` scrive lo
+    // stato della fonte, che nessuna schermata legge.
+    if (outcome.status === 'ok') notifyGameChanged(gameId);
     return outcome;
   },
   {
@@ -241,8 +249,50 @@ const importsWorker = new Worker<ImportJob | ImportsSweepJob>(
   },
 );
 
+/**
+ * Avvisa il proprietario dell'account che un tentativo d'import è partito o
+ * finito.
+ *
+ * Negli eventi del worker e non nel `finally` del processore, ed è il punto:
+ * `completed` e `failed` arrivano dopo che BullMQ ha chiuso il job e liberato
+ * la chiave di deduplicazione, cioè quando `syncing` è già falso. Un avviso
+ * mandato prima farebbe rileggere un account ancora `syncing`, e nessun evento
+ * dopo verrebbe a smentirlo.
+ */
+async function publishImportEvent(
+  job: Job<ImportJob | ImportsSweepJob> | undefined,
+  phase: 'started' | 'finished',
+) {
+  if (!job || isImportsSweep(job.data)) return;
+  const { storeAccountId } = job.data;
+  try {
+    const account = await db.query.storeAccounts.findFirst({
+      columns: { userId: true },
+      where: eq(schema.storeAccounts.id, storeAccountId),
+    });
+    if (account)
+      await publishEvent({
+        type: 'import',
+        phase,
+        storeAccountId,
+        userId: account.userId,
+      });
+  } catch (error) {
+    console.error(
+      `[import] avviso ${phase} non mandato per ${storeAccountId}:`,
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
+importsWorker.on('active', (job) => void publishImportEvent(job, 'started'));
+importsWorker.on(
+  'completed',
+  (job) => void publishImportEvent(job, 'finished'),
+);
 importsWorker.on('failed', (job, error) => {
   console.error(`[import] job ${job?.id} fallito:`, error.message);
+  void publishImportEvent(job, 'finished');
 });
 
 // La spazzata era registrata come `igdb-sweep` quando IGDB era l'unica fonte.
@@ -260,6 +310,8 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, async () => {
     console.log(`\n${signal}: chiudo i worker…`);
     await Promise.all([worker.close(), importsWorker.close()]);
+    // L'ultimo blocco di giochi non aspetta il suo timer: il processo muore.
+    await flushGameChanges();
     process.exit(0);
   });
 }

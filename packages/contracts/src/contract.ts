@@ -1,4 +1,4 @@
-import { oc } from '@orpc/contract';
+import { eventIterator, oc } from '@orpc/contract';
 import { z } from 'zod';
 
 import {
@@ -12,6 +12,7 @@ import {
   HiddenKindSchema,
   IgdbSearchHitSchema,
   LinkableStoreSchema,
+  LiveEventSchema,
   NotesSchema,
   OwnershipInputSchema,
   PlatformSchema,
@@ -312,5 +313,13 @@ export const contract = {
       .output(BacklogEntrySchema),
 
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+  },
+
+  events: {
+    // Gli aggiornamenti in push: una connessione che resta aperta (SSE sulla
+    // stessa /rpc) e porta un evento ogni volta che il worker cambia qualcosa
+    // che la pagina mostra. Chi si riconnette rilegge tutto: gli eventi persi
+    // nel frattempo non si recuperano.
+    subscribe: oc.output(eventIterator(LiveEventSchema)),
   },
 };

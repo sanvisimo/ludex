@@ -46,6 +46,7 @@ import {
   setUnresolvedImportHidden,
 } from '../services/unresolved-imports';
 import { getUserSettings, updateUserSettings } from '../services/user-settings';
+import { eventForUser, liveEvents } from '../lib/events';
 import { enqueueImport, isImportRunning } from '../queue/imports';
 import { authed, maybeAuthed, os } from './context';
 
@@ -456,6 +457,19 @@ export const router = os.router({
         const removed = await removeFromBacklog(context.user.id, input.id);
         if (!removed)
           throw new ORPCError('NOT_FOUND', { message: 'Riga inesistente' });
+      }),
+  },
+
+  events: {
+    // Resta aperta finché la pagina è aperta: `signal` scatta quando il
+    // browser chiude la connessione, e con lui finisce l'abbonamento.
+    subscribe: os.events.subscribe
+      .use(authed)
+      .handler(async function* ({ context, signal }) {
+        for await (const event of liveEvents.subscribe('event', { signal })) {
+          const visible = eventForUser(event, context.user.id);
+          if (visible) yield visible;
+        }
       }),
   },
 });

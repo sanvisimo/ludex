@@ -1,7 +1,7 @@
 # Import a cascata
 
-**Approvati il 29/09/2026 i passi 0, 1 e 2, e fatti lo stesso giorno.** Il 3
-è in discussione.
+**Approvati il 29/09/2026 i passi 0, 1 e 2, e fatti lo stesso giorno.** Il 3,
+in push, approvato lo stesso giorno. Branch `feat/import-a-cascata`, PR #11.
 
 ## Contesto
 
@@ -72,17 +72,69 @@ tentativi dello scheduler settimanale `WIKIDATA_JOB_OPTS`; il filtro è
 in `enrichment.test.ts`; in `steam-import.test.ts` che il seguito parte una
 volta, dopo gli IGDB, e non parte senza giochi nuovi. 320 test su 320.
 
-## Passo 3 — il backlog si aggiorna su qualunque pagina (in discussione)
+## Passo 3 — gli aggiornamenti in push
 
 Oggi la lista si aggiorna a fine import solo se si resta su `/account`: uscendo,
 la query degli account smette di interrogare e, con `staleTime: Infinity`, il
-backlog resta vecchio fino al reload.
+backlog resta vecchio fino al reload. E nessuna pagina vede i dati che
+l'enrichment scrive dopo, né gli import automatici.
 
-Proposta: l'osservazione dell'import in corso sale nel guscio `_app` (ping ogni
-3 s **solo mentre un import è in corso**), e al passaggio da in corso a finito
-si invalidano backlog e scarti.
+Scartato il ping ristretto al guscio: copriva solo gli import lanciati a mano.
 
-Alternativa sollevata: push via eventi. Richiede di portare l'evento dal worker
-al server HTTP (`QueueEvents` su Redis) e da lì al browser (SSE con gli event
-iterator di oRPC), più il proxy del minipc senza buffering. Si ripaga solo se
-deve coprire anche gli import automatici e l'arrivo dei dati dell'enrichment.
+Il percorso di un evento:
+
+1. **il worker**, che è chi cambia i dati, pubblica su un canale Redis
+   (`ludex:events`);
+2. **il server HTTP** tiene una sottoscrizione sola a quel canale e smista in
+   memoria con `EventPublisher` di oRPC;
+3. **il browser** si abbona con una procedura oRPC `events.subscribe`
+   autenticata (event iterator, cioè SSE sulla stessa `/rpc`, keep-alive ogni
+   5 s di default) e invalida le query.
+
+| Evento | Chi lo emette | A chi arriva | Cosa si aggiorna nel web |
+| --- | --- | --- | --- |
+| `import` (`started` / `finished`) | worker, a inizio e fine di ogni tentativo d'import, manuale o automatico | solo al proprietario dell'account | `accounts`; a fine anche `backlog` e `imports` |
+| `games` (id) | worker, dopo ogni enrichment `ok` | tutti i connessi: `games` è condivisa, gli id non sono privati | `backlog`, `games.latest`, `games.byId` di quegli id |
+
+- **Raffica**: il worker raccoglie gli id e pubblica al massimo un messaggio
+  ogni 5 s.
+- **`finished` dopo che BullMQ ha chiuso il job**, cioè negli eventi
+  `completed`/`failed` del worker e non nel `finally` del processore: prima la
+  chiave di deduplicazione non è ancora liberata, e `syncing` risulterebbe
+  ancora vero senza più eventi a smentirlo.
+- **Riconnessione** con backoff, e a ogni riconnessione si invalida tutto ciò
+  che gli eventi coprono: niente storico degli eventi persi.
+- `/account` perde il ping ogni 3 s e l'effetto di fine import.
+
+Fuori, di proposito: le modifiche da un altro dispositivo o scheda. Passano dal
+server HTTP e non dal worker; l'app mobile non esiste ancora. Si aggiungono
+pubblicando sullo stesso canale.
+
+Verifica: test sul filtro per utente; `pnpm check-types`, `pnpm lint`,
+`pnpm test`; a mano, import lanciato e poi `/backlog`, dove compaiono i giochi e
+poi le copertine. **Sul minipc**: il proxy davanti a `ludex.sanvisimo.tech` (non
+è nel repo) non deve bufferizzare lo stream né chiuderlo sotto i 5 s di
+silenzio.
+
+**Fatto**, da verificare a mano nel browser e sul minipc. Dove sta:
+
+- contratto: `LiveEventSchema` in
+  [schemas.ts](../packages/contracts/src/schemas.ts), `events.subscribe` in
+  [contract.ts](../packages/contracts/src/contract.ts);
+- [lib/events.ts](../apps/api/src/lib/events.ts): pubblicazione (worker),
+  blocco dei giochi ogni 5 s, sottoscrizione e smistamento (server), filtro
+  per utente; `redisPublish` e `logErrorsQuietly` in
+  [lib/redis.ts](../apps/api/src/lib/redis.ts);
+- [worker.ts](../apps/api/src/worker.ts): `games` dopo ogni enrichment `ok`,
+  `import` su `active` / `completed` / `failed`, l'ultimo blocco svuotato alla
+  chiusura;
+- web: [use-live-updates.ts](../apps/web/src/use-live-updates.ts), montato in
+  [_app.tsx](../apps/web/src/routes/_app.tsx); `/account` senza più ping.
+
+La riconnessione è un ciclo scritto a mano e non il `ClientRetryPlugin`: il
+plugin vuole il suo contesto nel tipo del client, che sta in
+`packages/contracts`, e per un abbonamento solo non valeva la dipendenza.
+
+Misurato: `pnpm lint`, `pnpm check-types`, 323 test su 323 (3 nuovi sul
+filtro). Server avviato a parte: `events.subscribe` senza sessione risponde
+401, e `ludex:events` compare fra i canali di Redis.
