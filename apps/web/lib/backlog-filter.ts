@@ -17,6 +17,14 @@ import { getRouteApi, useRouter } from '@tanstack/react-router';
 
 export const backlogViewValues = ['rows', 'grid', 'compact'] as const;
 export type BacklogView = (typeof backlogViewValues)[number];
+
+/**
+ * Quanti giochi per pagina si possono chiedere. 15 di default, e tutti sotto il
+ * `max(200)` del contratto. Una scelta fissa e non un numero libero: un link
+ * con `size=7` non deve aprire una pagina che nessun menu sa rifare.
+ */
+export const pageSizeValues = [15, 30, 60, 120] as const;
+export type PageSize = (typeof pageSizeValues)[number];
 import { useCallback, useMemo } from 'react';
 
 /**
@@ -76,6 +84,13 @@ const integer = (raw: unknown) => {
 const pageNumber = (raw: unknown) => {
   const value = integer(raw);
   return value !== undefined && value >= 1 ? value : undefined;
+};
+
+const pageSize = (raw: unknown) => {
+  const value = integer(raw);
+  return (pageSizeValues as readonly number[]).includes(value ?? -1)
+    ? (value as PageSize)
+    : undefined;
 };
 
 const decimal = (raw: unknown) => {
@@ -150,13 +165,11 @@ const fields = {
   // La pagina, da 1. Non è un criterio e non conta fra i filtri accesi, ma
   // ogni altro cambiamento la riporta a 1: vedi `setFilter`.
   page: field(pageNumber, 1),
+  // Quanti giochi per pagina. Come la vista: nell'URL, non un filtro, e non
+  // ricordata fra una visita e l'altra. Cambiarla riporta a pagina 1, perché
+  // la pagina 7 da 15 e la pagina 7 da 60 sono giochi diversi.
+  size: field(pageSize, 15 as PageSize),
 };
-
-/**
- * Quanti giochi per pagina. 48 perché si divide per 2, 3, 4 e 6: la griglia
- * chiude le righe a ogni larghezza.
- */
-export const PAGE_SIZE = 15;
 
 type Key = keyof typeof fields;
 type Value<X> = X extends Field<infer T, infer F> ? T | F : never;
@@ -262,8 +275,8 @@ export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
     hidden: filter.hidden || undefined,
     sort: filter.sort,
     direction: filter.direction,
-    limit: PAGE_SIZE,
-    offset: (filter.page - 1) * PAGE_SIZE,
+    limit: filter.size,
+    offset: (filter.page - 1) * filter.size,
   };
 }
 

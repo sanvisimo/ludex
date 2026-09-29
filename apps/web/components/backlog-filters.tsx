@@ -36,6 +36,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'use-intl';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 
+import { statusIcons } from '@/components/status-icon';
 import { toggle, useBacklogFilter } from '@/lib/backlog-filter';
 import {
   useGameTypeLabels,
@@ -64,11 +65,12 @@ const RELEASED_MIN = 1970;
 const RELEASED_MAX = new Date().getFullYear();
 
 /**
- * La barra: ricerca, ordinamento, il bottone che apre il pannello sulle
- * finestre strette, lo stato, e i filtri accesi a chip.
+ * La barra: ricerca, il bottone che apre il pannello, la vista, e sotto lo
+ * stato e i filtri accesi a chip. L'ordinamento sta nel pannello (12d): su un
+ * telefono la barra con lui andava su tre righe.
  *
- * I chip ci sono perché il pannello, chiuso o fuori schermo, non dice niente:
- * prima l'unico segno di un filtro acceso era il numero su «azzera».
+ * I chip ci sono perché il pannello, chiuso, non dice niente: prima l'unico
+ * segno di un filtro acceso era il numero su «azzera».
  */
 export function BacklogToolbar({
   onOpenFilters,
@@ -84,13 +86,78 @@ export function BacklogToolbar({
 
   return (
     <YStack gap={12}>
-      <XStack flexWrap="wrap" items="center" gap={8}>
-        <SearchField />
+      {/* Una riga sola anche su un telefono: la ricerca prende lo spazio che
+          resta, fino a 320. */}
+      <XStack items="center" gap={8}>
+        <YStack flex={1} minW={0} maxW={320}>
+          <SearchField />
+        </YStack>
+        <Button variant="outline" onClick={onOpenFilters}>
+          <SlidersHorizontal size={16} color="$color12" />
+          {t('filtersButton', { count: activeCount })}
+        </Button>
+        {view && <XStack ml="auto">{view}</XStack>}
+      </XStack>
 
-        <XStack items="center" gap={8}>
-          <Label htmlFor="sort" color="$color11">
-            {t('sortLabel')}
-          </Label>
+      {/* Lo stato è l'unico criterio a valore singolo per riga: le spunte sono
+          in OR fra loro, non in AND come tutto il resto del pannello.
+          Togliere l'ultima rimette il default — tutti tranne "non mi
+          interessa" — invece di lasciare una selezione vuota, che non
+          mostrerebbe niente e sembrerebbe un guasto. */}
+      {/* Le stesse icone del bottone di stato. Da `$sm` icona ed etichetta,
+          sotto solo l'icona: sei etichette su un telefono andavano su due
+          righe. Il nome del bottone è l'etichetta in tutti e due i casi. */}
+      <XStack flexWrap="wrap" gap={4}>
+        {backlogStatusValues.map((status) => {
+          const active = filter.status.includes(status);
+          const Icon = statusIcons[status];
+          const color = active ? '$black1' : '$color12';
+          return (
+            <Button
+              key={status}
+              type="button"
+              size="sm"
+              variant={active ? 'default' : 'outline'}
+              aria-pressed={active}
+              aria-label={statusLabels[status]}
+              onClick={() =>
+                setFilter({
+                  status: toggle<BacklogStatus>(filter.status, status),
+                })
+              }
+            >
+              <Icon size={14} color={color} />
+              <XStack display="none" $sm={{ display: 'flex' }} aria-hidden>
+                <Text fontSize={13} fontWeight="500" color={color}>
+                  {statusLabels[status]}
+                </Text>
+              </XStack>
+            </Button>
+          );
+        })}
+      </XStack>
+
+      <ActiveChips />
+    </YStack>
+  );
+}
+
+/**
+ * L'ordinamento, in cima al pannello: criterio e direzione. Non è un filtro,
+ * quindi sta fuori dalle sezioni e non conta fra i filtri accesi.
+ */
+function SortControl() {
+  const t = useTranslations('filters');
+  const { filter, setFilter } = useBacklogFilter();
+  const id = useId();
+
+  return (
+    <YStack gap={8}>
+      <Label htmlFor={id} color="$color11">
+        {t('sortLabel')}
+      </Label>
+      <XStack items="center" gap={8}>
+        <YStack flex={1} minW={0}>
           <Select
             items={sortLabels(t)}
             value={filter.sort}
@@ -98,7 +165,7 @@ export function BacklogToolbar({
               setFilter({ sort: value as keyof ReturnType<typeof sortLabels> })
             }
           >
-            <SelectTrigger id="sort" width={176}>
+            <SelectTrigger id={id} width="100%">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -109,69 +176,26 @@ export function BacklogToolbar({
               ))}
             </SelectContent>
           </Select>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() =>
-              setFilter({
-                direction: filter.direction === 'asc' ? 'desc' : 'asc',
-              })
-            }
-            aria-label={t(
-              filter.direction === 'asc' ? 'ascending' : 'descending',
-            )}
-          >
-            {filter.direction === 'asc' ? (
-              <ArrowUpNarrowWide size={16} color="$color12" />
-            ) : (
-              <ArrowDownWideNarrow size={16} color="$color12" />
-            )}
-          </Button>
-        </XStack>
-
-        {/* Sulle finestre larghe il pannello sta già a vista, di lato. La
-            media query sta su un contenitore e non sul bottone: su un
-            componente di `@repo/ui` Tamagui la risolve a runtime, e il
-            server e il browser scrivevano due classi diverse. */}
-        <XStack $xl={{ display: 'none' }}>
-          <Button variant="outline" onClick={onOpenFilters}>
-            <SlidersHorizontal size={16} color="$color12" />
-            {t('filtersButton', { count: activeCount })}
-          </Button>
-        </XStack>
-
-        {view && <XStack ml="auto">{view}</XStack>}
+        </YStack>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() =>
+            setFilter({
+              direction: filter.direction === 'asc' ? 'desc' : 'asc',
+            })
+          }
+          aria-label={t(
+            filter.direction === 'asc' ? 'ascending' : 'descending',
+          )}
+        >
+          {filter.direction === 'asc' ? (
+            <ArrowUpNarrowWide size={16} color="$color12" />
+          ) : (
+            <ArrowDownWideNarrow size={16} color="$color12" />
+          )}
+        </Button>
       </XStack>
-
-      {/* Lo stato è l'unico criterio a valore singolo per riga: le spunte sono
-          in OR fra loro, non in AND come tutto il resto del pannello.
-          Togliere l'ultima rimette il default — tutti tranne "non mi
-          interessa" — invece di lasciare una selezione vuota, che non
-          mostrerebbe niente e sembrerebbe un guasto. */}
-      <XStack flexWrap="wrap" gap={4}>
-        {backlogStatusValues.map((status) => {
-          const active = filter.status.includes(status);
-          return (
-            <Button
-              key={status}
-              type="button"
-              size="sm"
-              variant={active ? 'default' : 'outline'}
-              aria-pressed={active}
-              onClick={() =>
-                setFilter({
-                  status: toggle<BacklogStatus>(filter.status, status),
-                })
-              }
-            >
-              {statusLabels[status]}
-            </Button>
-          );
-        })}
-      </XStack>
-
-      <ActiveChips />
     </YStack>
   );
 }
@@ -219,7 +243,6 @@ function SearchField() {
       placeholder={t('searchPlaceholder')}
       aria-label={t('searchPlaceholder')}
       width="100%"
-      $sm={{ width: 256 }}
       maxLength={100}
     />
   );
@@ -354,12 +377,12 @@ function ActiveChips() {
 }
 
 /**
- * Il pannello: una sezione per criterio, con quanti valori sono accesi
- * accanto al titolo anche a sezione chiusa.
+ * Il pannello: l'ordinamento in cima, poi una sezione per criterio, con
+ * quanti valori sono accesi accanto al titolo anche a sezione chiusa, e in
+ * fondo «azzera». Sta nel `Drawer`, a ogni larghezza.
  *
- * Lo stesso componente sta di lato sulle finestre larghe e nel foglio su
- * quelle strette: due istanze, e per questo gli id delle spunte portano un
- * prefisso suo.
+ * Gli id delle spunte portano un prefisso suo (`useId`): è montato solo a
+ * drawer aperto, ma due pannelli in pagina non devono scontrarsi.
  */
 export function FilterPanel() {
   const t = useTranslations('filters');
@@ -367,7 +390,7 @@ export function FilterPanel() {
   const gameTypeLabels = useGameTypeLabels();
   const attributeKindLabels = useTranslations('attributeKind');
   const range = useRangeText();
-  const { filter, setFilter } = useBacklogFilter();
+  const { filter, setFilter, reset, activeCount } = useBacklogFilter();
   const { options, tags } = useFilterOptions();
   const prefix = useId();
 
@@ -608,22 +631,32 @@ export function FilterPanel() {
   });
 
   return (
-    <Accordion value={open} onValueChange={setOpen}>
-      {sections.map((section) => (
-        <AccordionItem key={section.value} value={section.value}>
-          <AccordionTrigger
-            hint={
-              section.active > 0 ? (
-                <Badge variant="secondary">{String(section.active)}</Badge>
-              ) : undefined
-            }
-          >
-            {section.label}
-          </AccordionTrigger>
-          <AccordionContent>{section.body}</AccordionContent>
-        </AccordionItem>
-      ))}
-    </Accordion>
+    <YStack gap={16}>
+      <SortControl />
+      <Accordion value={open} onValueChange={setOpen}>
+        {sections.map((section) => (
+          <AccordionItem key={section.value} value={section.value}>
+            <AccordionTrigger
+              hint={
+                section.active > 0 ? (
+                  <Badge variant="secondary">{String(section.active)}</Badge>
+                ) : undefined
+              }
+            >
+              {section.label}
+            </AccordionTrigger>
+            <AccordionContent>{section.body}</AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+      {activeCount > 0 && (
+        <XStack>
+          <Button variant="outline" onClick={() => void reset()}>
+            {t('reset', { count: activeCount })}
+          </Button>
+        </XStack>
+      )}
+    </YStack>
   );
 }
 

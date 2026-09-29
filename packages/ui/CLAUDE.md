@@ -49,7 +49,7 @@ si sa:
 - **`Wordmark` non è un link**: il link alla home è del router, e sul web è
   `HomeLink` in `app-shell.tsx`.
 
-Cinque componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il
+Sei componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il
 perché sta nel loro commento:
 
 - **`Tooltip` si apre da sé al focus da tastiera**: quello di Tamagui 2.7.7
@@ -59,6 +59,10 @@ perché sta nel loro commento:
 - **`Sheet` è un dialogo modale**, che quello di Tamagui non è: Esc lo chiude,
   il focus entra, resta dentro e torna al bottone (`FocusScope`), e da chiuso
   non è montato.
+- **`Drawer` rimette il focus e blocca lui lo scorrimento**: il Dialog di
+  Tamagui sotto rimanda il focus solo al suo `Dialog.Trigger`, che un drawer
+  aperto da fuori non ha, e il suo blocco (`scrollbar-gutter: stable`) lascia
+  una striscia vuota fra il pannello e il bordo destro.
 - **`Accordion` tiene lui l'id del contenuto**: quello di Tamagui 2.7.7 lo
   nomina in `aria-controls` ma non lo mette sul contenuto, e axe lo boccia.
 - **`ToggleGroup` rimette `aria-pressed`**: a scelta singola Tamagui lo toglie

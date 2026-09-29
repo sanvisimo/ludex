@@ -1,10 +1,15 @@
 import type { BacklogEntry, BacklogStatus } from '@repo/contracts';
 import {
   Button,
+  Drawer,
   EmptyState,
+  Label,
   Pagination,
-  ScrollView,
-  Sheet,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Skeleton,
   Text,
   toast,
@@ -24,7 +29,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 
 import { AddGameDialog } from '@/components/add-game-dialog';
 import { BacklogToolbar, FilterPanel } from '@/components/backlog-filters';
@@ -34,7 +39,8 @@ import { RemoveEntryDialog } from '@/components/remove-entry-dialog';
 import { useApiErrorMessage } from '@/lib/api-error';
 import {
   type BacklogView,
-  PAGE_SIZE,
+  pageSizeValues,
+  type PageSize,
   toQueryInput,
   useBacklogFilter,
   validateBacklogSearch,
@@ -102,7 +108,7 @@ function BacklogPage() {
 
   const entries = backlog.data?.entries ?? [];
   const total = backlog.data?.total ?? 0;
-  const pageCount = Math.ceil(total / PAGE_SIZE);
+  const pageCount = Math.ceil(total / filter.size);
 
   // Una pagina oltre l'ultima — un link vecchio, o un gioco nascosto
   // dall'ultima pagina che aveva solo lui — torna alla prima invece di dire
@@ -120,8 +126,8 @@ function BacklogPage() {
 
   return (
     <Page
-      // Più larga delle altre: da `$xl` il pannello dei filtri sta accanto
-      // alla lista, e la lista non deve restringersi per fargli posto.
+      // Più larga delle altre: la griglia e la compatta vivono di colonne, e
+      // su uno schermo largo le righe non devono stare in un corridoio.
       maxW={1280}
       title={inHidden ? t('hiddenViewTitle') : t('title')}
       // Uno spazio e non niente mentre carica: la riga del conteggio tiene il
@@ -183,78 +189,81 @@ function BacklogPage() {
         }
       />
 
-      <XStack gap={32} items="flex-start">
-        {/* Due forme dello stesso pannello, e come nel guscio le sceglie il
-            CSS: di lato da `$xl`, nel foglio sotto. Da `$lg` la barra del
-            guscio si prende già 240 px, e accanto a lei una colonna di
-            filtri lascerebbe alla lista meno di 500. */}
-        <YStack
-          render="aside"
-          aria-label={tFilters('panelLabel')}
-          width={256}
-          shrink={0}
-          display="none"
-          $xl={{ display: 'flex' }}
-        >
-          <FilterPanel />
-        </YStack>
-
-        <YStack flex={1} minW={0} gap={16}>
-          {backlog.error ? (
-            <Text fontSize={14} color="$red11">
-              {t('error')}
-            </Text>
-          ) : backlog.isPending ? (
-            <YStack gap={8}>
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton key={index} height={96} width="100%" rounded={12} />
-              ))}
-            </YStack>
-          ) : entries.length === 0 ? (
-            // Vuoto perché non hai giochi e vuoto perché nessuno passa i
-            // filtri sono due cose diverse, e la seconda ha una via d'uscita.
-            activeCount > 0 ? (
-              <EmptyState
-                icon={<SearchX size={24} color="$color11" />}
-                title={t('noMatchTitle')}
-                description={t('noMatchHint')}
-                action={
-                  <Button variant="outline" onClick={() => void reset()}>
-                    {tFilters('reset', { count: activeCount })}
-                  </Button>
-                }
-              />
-            ) : inHidden ? (
-              <EmptyState
-                icon={<EyeOff size={24} color="$color11" />}
-                title={t('hiddenEmptyTitle')}
-              />
-            ) : (
-              <EmptyState
-                icon={<Gamepad2 size={24} color="$color11" />}
-                title={t('emptyTitle')}
-                description={t('emptyHint')}
-              />
-            )
+      {/* Tutta la larghezza alla lista: i filtri stanno nel drawer, anche
+          sul desktop, dove una colonna fissa accanto alla barra del guscio
+          sembrava un secondo menu. */}
+      <YStack gap={16}>
+        {backlog.error ? (
+          <Text fontSize={14} color="$red11">
+            {t('error')}
+          </Text>
+        ) : backlog.isPending ? (
+          <YStack gap={8}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Skeleton key={index} height={96} width="100%" rounded={12} />
+            ))}
+          </YStack>
+        ) : entries.length === 0 ? (
+          // Vuoto perché non hai giochi e vuoto perché nessuno passa i
+          // filtri sono due cose diverse, e la seconda ha una via d'uscita.
+          activeCount > 0 ? (
+            <EmptyState
+              icon={<SearchX size={24} color="$color11" />}
+              title={t('noMatchTitle')}
+              description={t('noMatchHint')}
+              action={
+                <Button variant="outline" onClick={() => void reset()}>
+                  {tFilters('reset', { count: activeCount })}
+                </Button>
+              }
+            />
+          ) : inHidden ? (
+            <EmptyState
+              icon={<EyeOff size={24} color="$color11" />}
+              title={t('hiddenEmptyTitle')}
+            />
           ) : (
-            <>
-              <BacklogEntries
-                view={filter.view}
-                entries={entries}
-                onStatus={(entry, status) =>
-                  setStatus.mutate({ id: entry.id, status })
-                }
-                onEdit={setEditing}
-                onToggleHidden={(entry) =>
-                  setHidden.mutate({
-                    id: entry.id,
-                    hidden: entry.hiddenAt === null,
-                  })
-                }
-                onRemove={setRemoving}
-                hidingDisabled={setHidden.isPending}
-              />
+            <EmptyState
+              icon={<Gamepad2 size={24} color="$color11" />}
+              title={t('emptyTitle')}
+              description={t('emptyHint')}
+            />
+          )
+        ) : (
+          <>
+            <BacklogEntries
+              view={filter.view}
+              entries={entries}
+              onStatus={(entry, status) =>
+                setStatus.mutate({ id: entry.id, status })
+              }
+              onEdit={setEditing}
+              onToggleHidden={(entry) =>
+                setHidden.mutate({
+                  id: entry.id,
+                  hidden: entry.hiddenAt === null,
+                })
+              }
+              onRemove={setRemoving}
+              hidingDisabled={setHidden.isPending}
+            />
 
+            {/* Quanti per pagina a sinistra, le pagine e «vai a» a destra; su
+                un telefono vanno a capo. La scelta c'è anche con una pagina
+                sola, se i giochi sono più di 15: chi ha scelto 120 su 50
+                giochi deve poter tornare indietro. */}
+            <XStack
+              flexWrap="wrap"
+              items="center"
+              justify="space-between"
+              gap={16}
+            >
+              {total > pageSizeValues[0] && (
+                <PageSizeSelect
+                  value={filter.size}
+                  onChange={(size) => void setFilter({ size })}
+                />
+              )}
               <Pagination
                 page={filter.page}
                 pageCount={pageCount}
@@ -265,21 +274,22 @@ function BacklogPage() {
                 label={t('pages')}
                 previousLabel={t('previousPage')}
                 nextLabel={t('nextPage')}
+                goToLabel={t('goToPage')}
+                onGoTo={(page) => void goToPage(page)}
               />
-            </>
-          )}
-        </YStack>
-      </XStack>
+            </XStack>
+          </>
+        )}
+      </YStack>
 
-      <Sheet
+      <Drawer
         open={filtersOpen}
         onOpenChange={setFiltersOpen}
-        label={tFilters('panelLabel')}
+        title={tFilters('panelLabel')}
+        closeLabel={tFilters('closePanel')}
       >
-        <ScrollView maxH="75vh">
-          <FilterPanel />
-        </ScrollView>
-      </Sheet>
+        <FilterPanel />
+      </Drawer>
 
       <RemoveEntryDialog
         entry={removing}
@@ -295,5 +305,43 @@ function BacklogPage() {
         }}
       />
     </Page>
+  );
+}
+
+/** Quanti giochi per pagina: una tendina stretta, accanto alla paginazione. */
+function PageSizeSelect({
+  value,
+  onChange,
+}: {
+  value: PageSize;
+  onChange: (size: PageSize) => void;
+}) {
+  const t = useTranslations('backlog');
+  const id = useId();
+  const items = Object.fromEntries(
+    pageSizeValues.map((size) => [String(size), String(size)]),
+  );
+  return (
+    <XStack items="center" gap={8}>
+      <Label htmlFor={id} color="$color11" fontWeight="400">
+        {t('pageSize')}
+      </Label>
+      <Select
+        items={items}
+        value={String(value)}
+        onValueChange={(next) => onChange(Number(next) as PageSize)}
+      >
+        <SelectTrigger id={id} width={80}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {pageSizeValues.map((size) => (
+            <SelectItem key={size} value={String(size)}>
+              {String(size)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </XStack>
   );
 }

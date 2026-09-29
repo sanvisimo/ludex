@@ -34,6 +34,8 @@ export const gameColumns = {
   hltbMainMinutes: true,
   hltbHasSolo: true,
   gameType: true,
+  criticScore: true,
+  criticScoreSource: true,
   createdAt: true,
 } as const;
 
@@ -80,8 +82,6 @@ export async function findGameDetailById(id: string) {
       summary: true,
       coverWidth: true,
       coverHeight: true,
-      criticScore: true,
-      criticScoreSource: true,
       hltbMainMinutes: true,
       hltbPlusMinutes: true,
       hltbCompletionistMinutes: true,

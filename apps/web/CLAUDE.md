@@ -23,8 +23,9 @@ query string sono separate da virgole e non in JSON, per `stringifySearch` in
 `apps/web/src/router.tsx`.
 
 **`/backlog` tiene tutto nell'URL** (`apps/web/lib/backlog-filter.ts`): i
-filtri, l'ordinamento, la vista (`view`: righe, griglia, compatta) e la pagina
-(`page`, 48 giochi alla volta). Ogni `setFilter` riporta a pagina 1 e non
+filtri, l'ordinamento, la vista (`view`: righe, griglia, compatta), la pagina
+(`page`) e quanti giochi per pagina (`size`: 15, 30, 60 o 120, di default 15).
+Ogni `setFilter` riporta a pagina 1 e non
 lascia voci nella cronologia; `goToPage` sì, perché «indietro» deve tornare
 alla pagina di prima. Una pagina oltre la fine torna alla prima e non
 all'ultima: con `count(*) over()` e nessuna riga restituita il server risponde
@@ -44,7 +45,6 @@ Sette cose che le schermate devono sapere, perché si scoprono solo a vederle:
   pixel. Per crescere senza schiacciare ci va `grow={1}`.
 - **le soglie guardano la finestra, non la pagina**: da `$md` il guscio se ne
   prende 240, quindi a 900 px una pagina ha lo spazio di una finestra da 612.
-  Il pannello dei filtri del backlog sta di lato da `$xl` per questo.
 - **una media query su un componente di `@repo/ui` si risolve a runtime**, e
   server e browser scrivono due classi diverse: l'idratazione non torna. Va su
   un `XStack` o `YStack` intorno, come fa il guscio.

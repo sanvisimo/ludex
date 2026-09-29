@@ -6,13 +6,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Text,
   XStack,
   YStack,
@@ -27,7 +24,8 @@ import { GameCover } from '@/components/game-cover';
 import { GameDuration } from '@/components/game-duration';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { OwnershipBadges } from '@/components/ownership-badges';
-import { RatingValue } from '@/components/rating-value';
+import { EntryScore } from '@/components/entry-score';
+import { statusIcons } from '@/components/status-icon';
 import type { BacklogView } from '@/lib/backlog-filter';
 import { useStatusLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
@@ -40,7 +38,8 @@ import { api } from '@/lib/orpc';
  * che ancora mancano.
  *
  * In tutte e tre lo stato si cambia a vista, perché è il gesto più
- * frequente; modifica, nascondi e rimuovi stanno in un menu.
+ * frequente: un bottone con l'icona dello stato, come su Trakt, che apre la
+ * scelta. Modifica, nascondi e rimuovi stanno in un menu accanto.
  */
 
 export type EntryHandlers = {
@@ -62,37 +61,69 @@ export function BacklogEntries({
   return <RowsView entries={entries} {...handlers} />;
 }
 
-function StatusSelect({
+/**
+ * Lo stato alla Trakt: un bottone quadrato con l'icona dello stato, che premuto
+ * apre la scelta. Prende il posto della tendina larga 176, che su un telefono
+ * si mangiava mezza riga.
+ *
+ * Il nome del bottone dice anche lo stato attuale («Stato di Vane: Da
+ * giocare»): a vista c'è solo l'icona, e senza il lettore di schermo non
+ * saprebbe cosa c'è scritto sopra. Nel menu ogni voce ha icona ed etichetta,
+ * ed è lì che le icone si imparano.
+ */
+function StatusButton({
   entry,
   onStatus,
-  width = 176,
 }: {
   entry: BacklogEntry;
   onStatus: EntryHandlers['onStatus'];
-  width?: number | '100%';
 }) {
   const t = useTranslations('backlog');
   const statusLabels = useStatusLabels();
+  const Icon = statusIcons[entry.status];
   return (
-    <Select
-      items={statusLabels}
-      value={entry.status}
-      onValueChange={(next) => onStatus(entry, next as BacklogStatus)}
-    >
-      <SelectTrigger
-        width={width}
-        aria-label={t('statusOf', { name: entry.game.name })}
-      >
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {backlogStatusValues.map((value) => (
-          <SelectItem key={value} value={value}>
-            {statusLabels[value]}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <DropdownMenu align="end">
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label={t('statusOf', {
+              name: entry.game.name,
+              status: statusLabels[entry.status],
+            })}
+          >
+            <Icon size={16} color="$color12" />
+          </Button>
+        }
+      />
+      <DropdownMenuContent width={200}>
+        <DropdownMenuRadioGroup
+          value={entry.status}
+          onValueChange={(next) => onStatus(entry, next as BacklogStatus)}
+        >
+          {backlogStatusValues.map((value) => {
+            const ItemIcon = statusIcons[value];
+            return (
+              // `textValue`: con l'icona dentro la voce non è più un testo
+              // solo, e il typeahead del menu non saprebbe cosa cercare.
+              <DropdownMenuRadioItem
+                key={value}
+                value={value}
+                textValue={statusLabels[value]}
+              >
+                <XStack items="center" gap={8}>
+                  <ItemIcon size={14} color="$color11" />
+                  <Text fontSize={14} lineHeight={20} color="$color12">
+                    {statusLabels[value]}
+                  </Text>
+                </XStack>
+              </DropdownMenuRadioItem>
+            );
+          })}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -174,7 +205,10 @@ function GameLink({
   );
 }
 
-/** Anno, durata e voto, in fila: le tre cose che si leggono a colpo d'occhio. */
+/**
+ * Anno, durata e voto, in fila: le tre cose che si leggono a colpo d'occhio.
+ * Il voto è il tuo, o quello della critica se non hai votato.
+ */
 function Facts({ entry }: { entry: BacklogEntry }) {
   return (
     <XStack flexWrap="wrap" items="center" columnGap={12} rowGap={2}>
@@ -184,7 +218,7 @@ function Facts({ entry }: { entry: BacklogEntry }) {
         </Text>
       )}
       <GameDuration game={entry.game} />
-      <RatingValue value={entry.rating} />
+      <EntryScore rating={entry.rating} game={entry.game} />
     </XStack>
   );
 }
@@ -226,7 +260,7 @@ function RowsView({
                     <Facts entry={entry} />
                   </YStack>
                   <XStack items="center" gap={4}>
-                    <StatusSelect entry={entry} onStatus={handlers.onStatus} />
+                    <StatusButton entry={entry} onStatus={handlers.onStatus} />
                     <EntryActions entry={entry} {...handlers} />
                   </XStack>
                 </XStack>
@@ -244,7 +278,7 @@ function RowsView({
 /**
  * La griglia: la copertina prima di tutto, sotto titolo, anno e durata, e lo
  * stato. Le colonne le decide lo spazio (`auto-fill`), non una media query:
- * la stessa lista sta accanto al pannello dei filtri o da sola.
+ * la lista sta dentro la pagina, e la finestra non dice quanto è larga.
  */
 function GridView({
   entries,
@@ -282,13 +316,16 @@ function GridView({
                   <EntryActions entry={entry} {...handlers} />
                 </XStack>
                 <GameTypeBadge type={entry.game.gameType} />
-                <Facts entry={entry} />
               </YStack>
-              <StatusSelect
-                entry={entry}
-                onStatus={handlers.onStatus}
-                width="100%"
-              />
+              {/* Lo stato in fondo, accanto ad anno e durata, e non vicino al
+                  titolo: su una scheda da 152 px due bottoni lassù gli
+                  lasciavano 60 px. */}
+              <XStack items="center" justify="space-between" gap={4}>
+                <YStack flex={1} minW={0}>
+                  <Facts entry={entry} />
+                </YStack>
+                <StatusButton entry={entry} onStatus={handlers.onStatus} />
+              </XStack>
             </YStack>
           </Card>
         </YStack>
@@ -373,7 +410,7 @@ function CompactView({
         >
           {header(t('columnRating'))}
         </XStack>
-        <XStack role="columnheader" width={188}>
+        <XStack role="columnheader" width={72}>
           {header(t('columnStatus'))}
         </XStack>
       </XStack>
@@ -440,14 +477,10 @@ function CompactView({
               display="none"
               $md={{ display: 'flex' }}
             >
-              <RatingValue value={entry.rating} />
+              <EntryScore rating={entry.rating} game={entry.game} />
             </XStack>
-            <XStack role="cell" width={188} items="center" gap={4}>
-              <StatusSelect
-                entry={entry}
-                onStatus={handlers.onStatus}
-                width={148}
-              />
+            <XStack role="cell" width={72} items="center" gap={4}>
+              <StatusButton entry={entry} onStatus={handlers.onStatus} />
               <EntryActions entry={entry} {...handlers} />
             </XStack>
           </XStack>

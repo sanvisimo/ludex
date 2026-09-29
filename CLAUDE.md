@@ -133,8 +133,9 @@ e [docs/import-librerie.md](docs/import-librerie.md). Queste valgono sempre:
 - **`backlog` = possesso**: una riga per gioco e utente, con stato e voto. Le
   copie stanno in `ownerships` (piattaforma, negozio, account, supporto,
   abbonamento). La wishlist è una tabella a parte (step 15).
-- **Stati**: `backlog` / `playing` / `played` / `dropped` / `excluded`.
-  `excluded` è un giudizio sul gioco; nascondere (`hidden_at`) è una preferenza di
+- **Stati**: `backlog` / `playing` / `played` / `completed` / `dropped` /
+  `excluded`. `completed` è il 100%, il platinato, oltre `played`; nessun import
+  lo imposta. `excluded` è un giudizio sul gioco; nascondere (`hidden_at`) è una preferenza di
   vista. Non vanno fusi.
 - **Niente si cancella per non vederlo**: il prossimo import lo ricreerebbe. Si
   nasconde con `hidden_at`, e una copia tolta si ricorda in

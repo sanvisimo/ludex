@@ -155,6 +155,13 @@
       "when": 1790074867426,
       "tag": "0021_rich_namorita",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1790691603807,
+      "tag": "0022_backlog_status_completed",
+      "breakpoints": true
     }
   ]
 }

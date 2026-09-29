@@ -1,0 +1,1 @@
+ALTER TYPE "public"."backlog_status" ADD VALUE 'completed' BEFORE 'dropped';

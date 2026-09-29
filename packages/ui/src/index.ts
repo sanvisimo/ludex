@@ -70,6 +70,7 @@ export {
   type DialogContentProps,
   type DialogProps,
 } from './components/dialog';
+export { Drawer, type DrawerProps } from './components/drawer';
 export {
   DropdownMenu,
   DropdownMenuContent,

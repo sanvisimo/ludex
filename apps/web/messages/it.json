@@ -43,14 +43,16 @@
     "noMatchTitle": "Nessun gioco corrisponde.",
     "noMatchHint": "Prova ad allargare i filtri: le spunte dello stesso criterio si sommano, quindi due tag insieme vogliono i giochi che li hanno entrambi.",
     "pages": "Pagine",
-    "previousPage": "Precedente",
-    "nextPage": "Successiva",
+    "previousPage": "Pagina precedente",
+    "nextPage": "Pagina successiva",
+    "goToPage": "Vai a pagina",
+    "pageSize": "Per pagina",
     "showHidden": "Nascosti ({count})",
     "hiddenViewTitle": "Giochi nascosti",
     "hiddenViewHint": "Non compaiono nella lista né fra i filtri, ma restano tuoi: il possesso non cambia. «Mostra di nuovo» li rimette in lista.",
     "backToList": "Torna alla lista",
     "hiddenEmptyTitle": "Nessun gioco nascosto.",
-    "statusOf": "Stato di {name}",
+    "statusOf": "Stato di {name}: {status}",
     "actionsFor": "Azioni per {name}",
     "columnTitle": "Titolo",
     "columnPlatforms": "Piattaforme",
@@ -109,6 +111,7 @@
     "noGameTypes": "Nessun tipo: i giochi non ancora arricchiti non ne hanno uno.",
     "filtersButton": "{count, plural, =0 {Filtri} other {Filtri (#)}}",
     "panelLabel": "Filtri",
+    "closePanel": "Chiudi i filtri",
     "any": "Qualsiasi",
     "removeChip": "Togli il filtro {label}",
     "rangeBoth": "{min}–{max}",
@@ -254,6 +257,7 @@
     "backlog": "Da giocare",
     "playing": "In corso",
     "played": "Finito",
+    "completed": "Completato",
     "dropped": "Abbandonato",
     "excluded": "Non mi interessa"
   },
@@ -431,7 +435,8 @@
     "recommended": "{percent}% lo consiglia",
     "opencritic": "OpenCritic",
     "metacritic": "Metacritic",
-    "igdb": "IGDB"
+    "igdb": "IGDB",
+    "scoreOf": "{source}: {value}"
   },
   "subscription": {
     "ps_plus": "PS Plus"
