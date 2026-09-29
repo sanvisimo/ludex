@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { hltbSearchCandidates } from './hltb';
+import { hltbSearchCandidates, parseSession } from './hltb';
 
 // Puro: nessuna rete, nessun database. È la metà della scoperta che si può
 // provare — l'altra ha bisogno che HLTB risponda, e quella la prova
@@ -45,5 +45,25 @@ describe('hltbSearchCandidates', () => {
   it('non restituisce niente se il manifest non ha nessun mint', () => {
     // Il caso in cui HLTB smette di usare la sessione: non si tira a indovinare.
     expect(hltbSearchCandidates('"/api/user" "/api/logout"')).toEqual([]);
+  });
+});
+
+describe('parseSession', () => {
+  it('accetta una sessione col solo token', () => {
+    // Il formato di /init da settembre 2026: la coppia hp non c'è più.
+    expect(parseSession({ token: 't' })).toEqual({ token: 't' });
+  });
+
+  it('tiene la coppia hp quando /init la manda', () => {
+    expect(parseSession({ token: 't', hpKey: 'k', hpVal: 'v' })).toEqual({
+      token: 't',
+      hpKey: 'k',
+      hpVal: 'v',
+    });
+  });
+
+  it('senza token non c’è sessione', () => {
+    expect(parseSession({ hpKey: 'k', hpVal: 'v' })).toBeNull();
+    expect(parseSession(null)).toBeNull();
   });
 });

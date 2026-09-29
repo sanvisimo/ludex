@@ -38,6 +38,19 @@ let queue: Promise<unknown> = Promise.resolve();
  */
 let quota: OpenCriticQuota = { requests: null, searches: null };
 
+/**
+ * `ENABLE_OPENCRITIC=0` spegne le chiamate: serve in sviluppo, dove ogni giro
+ * della spazzata mangerebbe lo stesso budget giornaliero del server. Accesa se
+ * manca, così il server non deve dichiararla.
+ *
+ * Spenta vuol dire **non chiamare**, non fallire: una chiave vuota porterebbe
+ * ogni gioco in `failed` e lo farebbe ritentare ogni giorno.
+ */
+export function openCriticEnabled() {
+  const flag = process.env.ENABLE_OPENCRITIC?.trim().toLowerCase();
+  return flag !== '0' && flag !== 'false';
+}
+
 export type OpenCriticQuota = {
   requests: number | null;
   searches: number | null;
