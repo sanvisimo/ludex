@@ -716,3 +716,100 @@ describe('importLibrary: ciò che si è nascosto resta nascosto', () => {
     expect(righe[0]!.hiddenAt).toBeInstanceOf(Date);
   });
 });
+
+describe('importLibrary: la data di aggiunta', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  const addedAtOf = async () => {
+    const [row] = await db
+      .select({ addedAt: schema.backlog.addedAt })
+      .from(schema.backlog)
+      .where(eq(schema.backlog.userId, userId));
+    return row!.addedAt;
+  };
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'gog');
+    mockedById.mockResolvedValue(new Map());
+    mockedSource.mockReturnValue(5);
+    mockedSearch.mockResolvedValue([hit({ igdbId: 4321, name: 'Hades' })]);
+  });
+
+  it('scrive la data del negozio al posto di quella dell import', async () => {
+    const acquiredAt = new Date('2020-06-18T10:30:00Z');
+    await importLibrary(account, [
+      { externalId: '1', name: 'Hades', acquiredAt },
+    ]);
+
+    expect(await addedAtOf()).toEqual(acquiredAt);
+  });
+
+  it('senza data resta quella dell import', async () => {
+    const prima = new Date();
+    await importLibrary(account, [{ externalId: '1', name: 'Hades' }]);
+
+    expect((await addedAtOf()).getTime()).toBeGreaterThanOrEqual(
+      prima.getTime() - 1000,
+    );
+  });
+
+  it('un reimport non la sposta in avanti, e uno senza data non la tocca', async () => {
+    const acquiredAt = new Date('2020-06-18T10:30:00Z');
+    await importLibrary(account, [
+      { externalId: '1', name: 'Hades', acquiredAt },
+    ]);
+    await importLibrary(account, [
+      { externalId: '1', name: 'Hades', acquiredAt: new Date('2024-01-01Z') },
+    ]);
+    await importLibrary(account, [{ externalId: '1', name: 'Hades' }]);
+
+    expect(await addedAtOf()).toEqual(acquiredAt);
+  });
+
+  it('fra due negozi vince il primo acquisto', async () => {
+    const epic = await linkStoreAccount(userId, 'epic');
+    await importLibrary(account, [
+      { externalId: '1', name: 'Hades', acquiredAt: new Date('2022-03-01Z') },
+    ]);
+    await importLibrary(epic, [
+      { externalId: 'e1', name: 'Hades', acquiredAt: new Date('2019-12-10Z') },
+    ]);
+
+    expect(await addedAtOf()).toEqual(new Date('2019-12-10Z'));
+  });
+
+  it('due voci dello stesso gioco nella stessa libreria: la più vecchia', async () => {
+    // Per id e non per nome: due voci con lo stesso nome il matcher non le
+    // aggancia, è la regola sulle etichette.
+    mockedById.mockResolvedValue(
+      new Map([
+        ['1', { igdbId: 4321, name: 'Hades' }],
+        ['2', { igdbId: 4321, name: 'Hades' }],
+      ]),
+    );
+    await importLibrary(account, [
+      { externalId: '1', name: 'Hades', acquiredAt: new Date('2022-03-01Z') },
+      { externalId: '2', name: 'Hades', acquiredAt: new Date('2021-05-05Z') },
+    ]);
+
+    expect(await addedAtOf()).toEqual(new Date('2021-05-05Z'));
+  });
+
+  it('una correzione a mano più vecchia sopravvive al reimport', async () => {
+    await importLibrary(account, [
+      { externalId: '1', name: 'Hades', acquiredAt: new Date('2020-06-18Z') },
+    ]);
+    await db
+      .update(schema.backlog)
+      .set({ addedAt: new Date('2015-01-01Z') })
+      .where(eq(schema.backlog.userId, userId));
+
+    await importLibrary(account, [
+      { externalId: '1', name: 'Hades', acquiredAt: new Date('2020-06-18Z') },
+    ]);
+
+    expect(await addedAtOf()).toEqual(new Date('2015-01-01Z'));
+  });
+});

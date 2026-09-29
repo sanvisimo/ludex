@@ -267,3 +267,67 @@ export async function fetchGogLibrary(
 
   return entries;
 }
+
+type GalaxyReleasesResponse = {
+  items?: {
+    /** `gog`, ma anche `steam`, `epic`, `psn`…: Galaxy integra gli altri negozi. */
+    platform_id?: string;
+    /** Il product id, lo stesso di `getFilteredProducts`. */
+    external_id?: string | number;
+    /** Secondi dall'epoch. */
+    owned_since?: number | null;
+    date_created?: number | null;
+  }[];
+  next_page_token?: string | null;
+};
+
+/**
+ * Quando ogni gioco è entrato nella libreria, per product id.
+ *
+ * `getFilteredProducts` non lo dice: lo dice la libreria di **Galaxy**, un'altra
+ * API con lo stesso token. Porta anche i giochi degli altri negozi che Galaxy
+ * integra, e di quelli qui non si tiene niente: la loro data è quando Galaxy li
+ * ha visti, non quando li hai comprati.
+ *
+ * Le date sono due, e misurate non valgono uguale. `owned_since` è la data vera
+ * ma c'è su 344 giochi su 442; `date_created` c'è sempre ma non va prima del
+ * 20/04/2019, quando Galaxy ha registrato gli acquisti vecchi — 23 giochi su
+ * quel giorno solo. Quindi la prima, e la seconda dove la prima manca.
+ */
+export async function fetchGogAcquiredDates(
+  accessToken: string,
+  galaxyUserId: string,
+): Promise<Map<string, Date>> {
+  const dates = new Map<string, Date>();
+  let pageToken: string | null = null;
+
+  do {
+    const url = new URL(
+      `https://galaxy-library.gog.com/users/${galaxyUserId}/releases`,
+    );
+    if (pageToken) url.searchParams.set('page_token', pageToken);
+
+    const response: Response = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (response.status === 401) {
+      throw new GogAuthError('GOG ha rifiutato il token di accesso');
+    }
+    if (!response.ok) {
+      throw new Error(`GOG galaxy-library: ${response.status}`);
+    }
+
+    const body = (await response.json()) as GalaxyReleasesResponse;
+
+    for (const item of body.items ?? []) {
+      if (item.platform_id !== 'gog' || item.external_id == null) continue;
+      const seconds = item.owned_since || item.date_created;
+      if (!seconds) continue;
+      dates.set(String(item.external_id), new Date(seconds * 1000));
+    }
+
+    pageToken = body.next_page_token || null;
+  } while (pageToken);
+
+  return dates;
+}

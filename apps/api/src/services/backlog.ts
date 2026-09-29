@@ -24,6 +24,7 @@ export const entryQuery = {
     rating: true,
     notes: true,
     hiddenAt: true,
+    addedAt: true,
     createdAt: true,
   },
   with: {
@@ -211,6 +212,7 @@ export async function updateBacklogEntry(
     rating?: number | null;
     notes?: string | null;
     tags?: UserTagInput[];
+    addedAt?: Date;
   },
 ) {
   const owned = await db.query.backlog.findFirst({
@@ -243,6 +245,10 @@ export async function updateBacklogEntry(
         // Il campo svuotato dalla UI arriva come stringa vuota: vale "nessuna
         // nota", non "una nota vuota".
         ...(input.notes !== undefined ? { notes: input.notes || null } : {}),
+        // Scritta com'è, anche più recente di quella del negozio: è una
+        // correzione dell'utente. Il reimport la riporterà indietro solo in
+        // quel caso, vedi `advanceAddedAt`.
+        ...(input.addedAt !== undefined ? { addedAt: input.addedAt } : {}),
       })
       .where(eq(schema.backlog.id, input.id));
 
@@ -507,6 +513,52 @@ export async function ensureBacklogEntries(
   }
 
   return { byGameId, created };
+}
+
+/**
+ * Porta `addedAt` **indietro** alla data d'acquisto che il negozio dichiara, mai
+ * avanti.
+ *
+ * Il `least` è tutta la regola: fra due negozi vince il primo acquisto, un
+ * reimport non sposta niente, e una data corretta a mano più vecchia di quella
+ * del negozio sopravvive. Il rovescio è voluto: una correzione a mano *più
+ * recente* il reimport la riporta alla data del negozio, che sa quando l'hai
+ * preso.
+ *
+ * SQL a mano e non il query builder, quindi `updatedAt` si scrive qui: il suo
+ * `$onUpdate` lo applicherebbe solo Drizzle.
+ */
+export async function advanceAddedAt(
+  rows: { backlogId: string; addedAt: Date }[],
+) {
+  // Due voci della stessa libreria sullo stesso gioco: la più vecchia, prima di
+  // arrivare al database, o lo stesso id comparirebbe due volte nel VALUES.
+  const byBacklogId = new Map<string, Date>();
+  for (const { backlogId, addedAt } of rows) {
+    const prima = byBacklogId.get(backlogId);
+    if (!prima || addedAt < prima) byBacklogId.set(backlogId, addedAt);
+  }
+
+  for (const page of chunk([...byBacklogId], WRITE_CHUNK)) {
+    // ISO in UTC e il cast a `timestamp`: la colonna è senza fuso, e Postgres
+    // del fuso scritto nella stringa non tiene conto. È la stessa convenzione
+    // con cui Drizzle scrive e rilegge quella colonna.
+    const values = sql.join(
+      page.map(
+        ([id, addedAt]) =>
+          sql`(${id}::uuid, ${addedAt.toISOString()}::timestamp)`,
+      ),
+      sql`, `,
+    );
+
+    await db.execute(sql`
+      update ${schema.backlog}
+         set added_at = v.added_at, updated_at = now()
+        from (values ${values}) as v(id, added_at)
+       where ${schema.backlog.id} = v.id
+         and v.added_at < ${schema.backlog.addedAt}
+    `);
+  }
 }
 
 /**

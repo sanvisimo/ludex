@@ -162,6 +162,13 @@
       "when": 1790691603807,
       "tag": "0022_backlog_status_completed",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1790697009955,
+      "tag": "0023_friendly_skin",
+      "breakpoints": true
     }
   ]
 }

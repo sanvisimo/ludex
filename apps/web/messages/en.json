@@ -198,6 +198,7 @@
     "tagsLabel": "Tags",
     "tagPlaceholder": "e.g. when I'm tired",
     "addTag": "Add",
+    "addedAtLabel": "Added on",
     "ownershipLabel": "Platforms",
     "noStore": "No store",
     "noMedium": "Unspecified",

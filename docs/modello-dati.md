@@ -81,6 +81,19 @@ possesso. Conseguenze:
   PSN è un'altra storia. `excluded` ("non voglio giocarlo") è uno stato, non una
   tabella: è un segnale negativo esplicito e allo step 13 vale più di molte
   valutazioni positive.
+- **la data di aggiunta è `added_at`, non `created_at`**. `created_at` è quando
+  è nata la riga, e su una libreria importata è lo stesso istante per mille
+  giochi. `added_at` è quando il gioco è entrato nella libreria: la scrive
+  l'import dove il negozio la dà (quali, in [negozi](negozi.md#la-data-dacquisto)),
+  altrimenti resta quella dell'import, e l'utente la corregge dal form. È una
+  sola per gioco, non per copia: il form ne modifica una, e l'ordinamento
+  «aggiunto» vuole una data sola.
+
+  L'import la scrive **solo all'indietro**, `least(added_at, data del negozio)`
+  (`advanceAddedAt`): fra due negozi vince il primo acquisto, un reimport non
+  sposta niente, e una correzione a mano più vecchia sopravvive. Il rovescio è
+  voluto: una correzione a mano *più recente* della data del negozio il
+  reimport la riporta indietro, perché il negozio sa quando l'hai preso.
 
 ## I voti della critica stanno in `game_scores`, non su `games`
 

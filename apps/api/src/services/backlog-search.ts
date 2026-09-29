@@ -260,7 +260,7 @@ function sortExpression(sort: BacklogQuery['sort']): SQL {
     case 'lastPlayed':
       return sql`(select max(${schema.ownerships.lastPlayedAt}) from ${schema.ownerships} where ${schema.ownerships.backlogId} = ${schema.backlog.id})`;
     case 'addedAt':
-      return sql`${schema.backlog.createdAt}`;
+      return sql`${schema.backlog.addedAt}`;
   }
 }
 

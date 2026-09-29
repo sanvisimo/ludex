@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { gogLoginUrl, parseGogAuthCode } from './gog';
+import { fetchGogAcquiredDates, gogLoginUrl, parseGogAuthCode } from './gog';
 
 // Puro: nessuna rete, nessun database. È il punto in cui il gesto dell'utente
 // — «incolla quello che hai sotto mano» — diventa un codice, e sbagliarlo
@@ -56,5 +56,63 @@ describe('gogLoginUrl', () => {
     );
     expect(url.searchParams.get('response_type')).toBe('code');
     expect(url.searchParams.get('client_id')).toBeTruthy();
+  });
+});
+
+describe('fetchGogAcquiredDates', () => {
+  // Qui la rete c'è, e si stubba `fetch`: per questo client è il confine vero,
+  // senza rate limiter né token in cache.
+  const fetchMock = vi.fn();
+
+  beforeEach(() => vi.stubGlobal('fetch', fetchMock));
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    fetchMock.mockReset();
+  });
+
+  const page = (body: unknown) =>
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => body,
+    });
+
+  it('tiene solo GOG, preferisce owned_since e segue le pagine', async () => {
+    page({
+      items: [
+        // owned_since c'è: è la data vera, date_created è quando l'ha vista Galaxy.
+        {
+          platform_id: 'gog',
+          external_id: '1207658924',
+          owned_since: 1513036800,
+          date_created: 1555718400,
+        },
+        // Un gioco Steam integrato in Galaxy: la sua data non dice niente.
+        { platform_id: 'steam', external_id: '570', date_created: 1600000000 },
+      ],
+      next_page_token: 'due',
+    });
+    page({
+      items: [
+        // owned_since manca: si ripiega su date_created.
+        {
+          platform_id: 'gog',
+          external_id: 1453375253,
+          owned_since: null,
+          date_created: 1609542452,
+        },
+      ],
+      next_page_token: null,
+    });
+
+    const dates = await fetchGogAcquiredDates('token', '48628349957132247');
+
+    expect(dates).toEqual(
+      new Map([
+        ['1207658924', new Date(1513036800 * 1000)],
+        ['1453375253', new Date(1609542452 * 1000)],
+      ]),
+    );
+    expect(String(fetchMock.mock.calls[1]![0])).toContain('page_token=due');
   });
 });

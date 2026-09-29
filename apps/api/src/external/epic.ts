@@ -208,6 +208,12 @@ export type EpicLibraryEntry = {
    */
   externalId: string;
   name: string;
+  /**
+   * Quando è entrato nella libreria: la più vecchia fra le `acquisitionDate`
+   * dei record del prodotto, perché un DLC comprato dopo è un record in più
+   * con la sua data.
+   */
+  acquiredAt: Date | null;
 };
 
 type LibraryRecord = {
@@ -217,6 +223,8 @@ type LibraryRecord = {
   productId?: string;
   sandboxName?: string;
   sandboxType?: string;
+  /** ISO 8601. Misurato: c'è su tutti i record, 888 su 888. */
+  acquisitionDate?: string;
 };
 
 type LibraryResponse = {
@@ -274,6 +282,7 @@ export async function fetchEpicLibrary(
   accessToken: string,
 ): Promise<EpicLibraryEntry[]> {
   const perProdotto = new Map<string, LibraryRecord>();
+  const acquisto = new Map<string, Date>();
   let cursor: string | undefined;
 
   do {
@@ -301,8 +310,17 @@ export async function fetchEpicLibrary(
       if (record.namespace === 'ue') continue;
       if (record.sandboxType === 'PRIVATE') continue;
 
+      const data = record.acquisitionDate
+        ? new Date(record.acquisitionDate)
+        : null;
+      if (data && !Number.isNaN(data.getTime())) {
+        const prima = acquisto.get(record.productId);
+        if (!prima || data < prima) acquisto.set(record.productId, data);
+      }
+
       // Vince la prima voce del prodotto: le successive sono i suoi DLC, che
-      // portano lo stesso titolo e non aggiungono niente.
+      // portano lo stesso titolo e non aggiungono niente oltre alla data,
+      // già presa qui sopra.
       if (perProdotto.has(record.productId)) continue;
 
       perProdotto.set(record.productId, record);
@@ -319,6 +337,7 @@ export async function fetchEpicLibrary(
     .map((record) => ({
       externalId: record.productId!,
       name: titoli.get(record.catalogItemId!)!,
+      acquiredAt: acquisto.get(record.productId!) ?? null,
     }));
 }
 

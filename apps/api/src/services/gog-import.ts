@@ -1,4 +1,8 @@
-import { fetchGogLibrary, GogAuthError } from '../external/gog';
+import {
+  fetchGogAcquiredDates,
+  fetchGogLibrary,
+  GogAuthError,
+} from '../external/gog';
 import { type ImportReport, importLibrary } from './library-import';
 import {
   requireReauth,
@@ -38,5 +42,24 @@ export async function importGogLibrary(
     throw error;
   }
 
-  return importLibrary(account, library);
+  // Le date d'acquisto stanno su un'altra API, e **non sono bloccanti**: se
+  // Galaxy non risponde l'import va avanti senza, e le scrive il prossimo.
+  // `externalAccountId` è già il `galaxyUserId` (vedi `fetchGogUsername`).
+  let acquired = new Map<string, Date>();
+  try {
+    acquired = await fetchGogAcquiredDates(
+      accessToken,
+      account.externalAccountId,
+    );
+  } catch (error) {
+    console.warn("[import] gog: date d'acquisto non lette", error);
+  }
+
+  return importLibrary(
+    account,
+    library.map((entry) => ({
+      ...entry,
+      acquiredAt: acquired.get(entry.externalId) ?? null,
+    })),
+  );
 }
