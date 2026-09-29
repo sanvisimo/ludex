@@ -8,8 +8,10 @@
 //
 // Due cose che questo client fa e quello di IGDB non deve fare:
 //
-// - **la sessione**. `/init` restituisce un token più una coppia chiave/valore
-//   che vanno rimandati sia negli header sia nel corpo. Il token è legato
+// - **la sessione**. `/init` restituisce un token, e fino a settembre 2026 anche
+//   una coppia chiave/valore da rimandare sia negli header sia nel corpo: ora
+//   non la manda più, e la ricerca passa col solo token. La coppia si rimanda
+//   se c'è, e la sua assenza non è un errore. Il token è legato
 //   all'indirizzo IP e allo User-Agent di chi l'ha chiesto: l'UA dev'essere lo
 //   stesso fra `/init` e la ricerca, o si prende un 403. Per lo stesso motivo
 //   **il token non va mai loggato**: decodificato contiene l'IP pubblico del
@@ -69,7 +71,7 @@ const USER_AGENT = 'Ludex/0.1';
 // usa anche RomM, e sopra non ci si va: il lavoro qui non ha fretta.
 const MIN_INTERVAL_MS = 334;
 
-type Session = { token: string; hpKey: string; hpVal: string };
+type Session = { token: string; hpKey?: string; hpVal?: string };
 
 let session: Session | null = null;
 let lastRequestAt = 0;
@@ -128,9 +130,15 @@ function sessionFailure(status: number) {
 
 type SessionBody = Partial<{ token: string; hpKey: string; hpVal: string }>;
 
-function parseSession(body: unknown): Session | null {
+/**
+ * Il token è l'unica parte obbligatoria. Pretendere anche la coppia hp ha
+ * fermato ogni job il giorno in cui HLTB ha smesso di mandarla, con la ricerca
+ * che intanto funzionava benissimo senza.
+ */
+export function parseSession(body: unknown): Session | null {
   const { token, hpKey, hpVal } = (body ?? {}) as SessionBody;
-  return token && hpKey && hpVal ? { token, hpKey, hpVal } : null;
+  if (!token) return null;
+  return hpKey && hpVal ? { token, hpKey, hpVal } : { token };
 }
 
 /**
@@ -180,18 +188,20 @@ function send(
   current: Session,
   url = searchUrl(),
 ) {
+  const { hpKey, hpVal } = current;
+  const hp = hpKey && hpVal ? { hpKey, hpVal } : null;
   return fetch(url, {
     method: 'POST',
     headers: {
       ...baseHeaders(),
       'Content-Type': 'application/json',
       'x-auth-token': current.token,
-      'x-hp-key': current.hpKey,
-      'x-hp-val': current.hpVal,
+      ...(hp && { 'x-hp-key': hp.hpKey, 'x-hp-val': hp.hpVal }),
     },
-    // La coppia va anche nel corpo, non solo negli header. Si ricompone a ogni
-    // invio invece di accumularla nel payload: la chiave cambia col rinnovo.
-    body: JSON.stringify({ ...payload, [current.hpKey]: current.hpVal }),
+    // La coppia, quando c'è, va anche nel corpo, non solo negli header. Si
+    // ricompone a ogni invio invece di accumularla nel payload: la chiave
+    // cambia col rinnovo.
+    body: JSON.stringify(hp ? { ...payload, [hp.hpKey]: hp.hpVal } : payload),
   });
 }
 
