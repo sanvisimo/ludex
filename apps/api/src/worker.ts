@@ -6,7 +6,7 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { UnrecoverableError, Worker, type Job } from 'bullmq';
 
-import { openCriticQuota } from './external/opencritic';
+import { openCriticEnabled, openCriticQuota } from './external/opencritic';
 import {
   flushGameChanges,
   notifyGameChanged,
@@ -79,9 +79,12 @@ const enrichers = {
  * `null` vuol dire che il budget non lo sappiamo ancora — nessuna risposta è
  * ancora arrivata da quando il worker è partito — e lì si prova: la prima
  * risposta ce lo dirà.
+ *
+ * Con `ENABLE_OPENCRITIC=0` il budget è zero per definizione.
  */
 function sweepLimit(source: EnrichmentSource) {
   if (source !== 'opencritic') return 100;
+  if (!openCriticEnabled()) return 0;
   const { requests } = openCriticQuota();
   return requests === null ? 100 : Math.max(0, Math.min(100, requests));
 }
@@ -137,6 +140,13 @@ const worker = new Worker<EnrichmentJob>(
     }
 
     const { source, gameId } = job.data;
+    // La spazzata spenta non basta: `backfill` e `catchup` accodano da fuori, e
+    // un job può essere in coda da prima. Si chiude senza toccare
+    // `game_sources`, così alla riaccensione il gioco risulta ancora dovuto.
+    if (source === 'opencritic' && !openCriticEnabled()) {
+      console.log(`[enrichment] opencritic ${gameId} -> saltato (spento)`);
+      return { status: 'disabled' };
+    }
     const outcome = await enrichers[source](gameId);
     console.log(`[enrichment] ${source} ${gameId} -> ${outcome.status}`);
     // Solo `ok` cambia ciò che una pagina mostra: un `not_found` scrive lo
