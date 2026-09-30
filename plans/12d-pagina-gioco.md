@@ -1,9 +1,9 @@
 # Step 12d — La pagina del gioco
 
-**In approvazione**: struttura non ancora decisa. Si corregge sul wireframe
+**Struttura approvata il 30/09/2026** sul wireframe
 ([12d-pagina-gioco.excalidraw](12d-pagina-gioco.excalidraw): si apre
-trascinandolo su excalidraw.com) finché non è approvata; poi l'ordine dei
-passi, poi il codice.
+trascinandolo su excalidraw.com), con la parte desktop corretta dall'utente.
+**Ordine dei passi in approvazione**; poi il codice.
 
 ## Contesto
 
@@ -58,6 +58,13 @@ trama, attributi, voti della critica, tempi HLTB, il blocco del backlog.
    pagina del gioco su quel negozio.
 4. **Ogni fonte ha il suo link, con l'icona**: HLTB, OpenCritic, Metacritic e
    IGDB, per correttezza verso chi il dato l'ha prodotto.
+5. **Il riferimento alla pagina del negozio sta sulla copia**, in una colonna
+   di `ownerships`, col pezzo che il negozio dà; l'URL intero si compone al
+   momento di mostrarlo. Non `external_ids`: per PSN lì c'è il `titleId`, che
+   nessuna pagina usa.
+6. **GOG senza `url`** porta a `https://www.gog.com/en/account`, la libreria
+   dell'utente.
+7. **Epic: niente link**, l'icona e basta.
 
 ## La proposta (schizzo v1)
 
@@ -97,10 +104,10 @@ Misurati col probe del 30/09/2026, i risultati stanno in
 | Copia | Da dove viene il link | Se manca |
 | --- | --- | --- |
 | Steam | l'appid | — |
-| GOG | `url` di `getFilteredProducts`, **non** `slug` | link di ricerca |
+| GOG | `url` di `getFilteredProducts`, **non** `slug` | `https://www.gog.com/en/account` |
 | PSN, dagli acquisti | `productId` → `/product/{productId}` | — |
 | PSN, dai giocati (i dischi) | `concept.id` → `/concept/{conceptId}` | — |
-| Epic | lo slug non sta nei nostri dati | link di ricerca, da provare a mano |
+| Epic | lo slug non sta nei nostri dati | icona senza link |
 | Amazon | nessuna pagina pubblica per gioco | icona senza link |
 | Disco dichiarato, aggiunta a mano | nessuno | icona senza link |
 
@@ -108,17 +115,45 @@ GOG e PSN il dato lo mandano già, ma oggi lo buttiamo: va letto e salvato
 all'import. Le copie importate finora prendono il link al prossimo import
 dell'account.
 
-## Da decidere
+## In che ordine
 
-- **Dove si salva il riferimento alla pagina del negozio.** Proposta: una
-  colonna sulla copia (`ownerships`), col pezzo che il negozio dà (`/en/game/…`
-  per GOG, `product/…` o `concept/…` per PSN), e l'URL intero composto al
-  momento di mostrarlo, come per le copertine IGDB. Non `external_ids`: per
-  PSN lì c'è il `titleId`, che una pagina non ce l'ha.
+1. **I dati IGDB.** Nella chiamata di dettaglio entrano `artworks`,
+   `screenshots`, `videos`, `involved_companies` (sviluppo ed editore),
+   `remakes`, `remasters` e `similar_games` con nome e copertina. Dove vanno:
+   - su `games`, perché sono del gioco e uguali per tutti: gli `image_id` di
+     artwork e screenshot, i video (id YouTube e nome), sviluppatori ed
+     editori. Si mostrano e basta, nessuno ci filtra: array, non tabelle;
+   - in una tabella nuova, `game_related` (gioco, tipo, `igdbId`, nome,
+     copertina), perché remake e simili possono non essere in `games` e «ce
+     l'hai» è una JOIN su `igdbId` → `games` → `backlog`. L'enrichment la
+     riscrive intera a ogni giro, dentro la sua transazione.
 
-## Da verificare prima del piano dei passi
-
-- Quanti giochi della libreria di prova hanno artwork, screenshot, video,
-  remake e simili su IGDB: decide quanto spesso la hero ripiega e quanto
-  spesso le sezioni restano vuote.
-- Quanto dura il backfill sulle ~2000 righe di prova col rate limit di IGDB.
+   Il test è sulla riscrittura idempotente di `game_related`. Per i giochi
+   già arricchiti un arnese sul modello di `igdb:types`, 500 id per
+   richiesta: sulle ~2000 righe di prova sono quattro richieste. Stampa anche
+   quanti giochi hanno artwork, screenshot, video, remake e simili: è la
+   misura di quanto spesso la hero ripiega e le sezioni restano vuote. Va
+   lanciato in locale, dove ci sono le credenziali IGDB.
+2. **I link ai negozi.** La colonna su `ownerships`, scritta dagli import di
+   Steam (l'appid), GOG (`url`) e PSN (`product/…` dagli acquisti,
+   `concept/…` dai giocati), e **riscritta al reimport**, o le copie di oggi
+   non la prenderebbero mai. La composizione dell'URL è una funzione pura in
+   `@repo/contracts`, che serve uguale a web e mobile. Test: l'import la
+   scrive, il reimport la aggiorna senza toccare il resto della copia.
+3. **Il contratto.** `games.byId` porta i dati nuovi, il gioco padre di un
+   DLC (nome, e l'id se è in `games`), remake e simili col «ce l'hai» di chi
+   guarda, e i riferimenti delle quattro fonti per i loro link (id HLTB, id
+   OpenCritic, slug Metacritic, slug IGDB). Il formato di ciascun link va
+   verificato a mano su un gioco vero prima di scriverlo.
+4. **I componenti in `@repo/ui`**: la gallery (immagine grande, miniature,
+   frecce, a tutto schermo; su telefono scorre di lato), la fila che scorre
+   di lato per remake e simili, le icone dei marchi. Per le icone va deciso
+   da dove vengono: Simple Icons (CC0) copre i negozi, ma per HLTB e
+   OpenCritic va verificato che ci siano e con che licenza.
+5. **La pagina**, riscritta sullo schizzo: hero coi badge, colonna
+   principale, colonna laterale con durata e critica, il dialog «Dettagli»,
+   il blocco del backlog; su telefono una colonna nello stesso ordine.
+   Tailwind esce da questa pagina, come dalle altre dello step 12.
+6. **Chiusura**: screenshot a 375, 900 e 1440 px, `docs/modello-dati.md`
+   (le colonne nuove e `game_related`), `apps/web/CLAUDE.md`, questo piano.
+   Il lotto si chiude quando l'utente dice che la pagina è pronta.
