@@ -103,7 +103,7 @@ describe('resolveOpenCriticIds', () => {
     expect(mockedWikidata).toHaveBeenCalledWith(expect.arrayContaining(slugs));
   });
 
-  it('non tocca chi un indirizzo ce l\'ha già', async () => {
+  it("non tocca chi un indirizzo ce l'ha già", async () => {
     const game = await createGame({ name: 'Hollow Knight' });
     await withSlug(game.id, 'hollow-knight');
     await setSource({

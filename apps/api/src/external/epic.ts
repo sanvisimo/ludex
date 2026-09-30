@@ -127,7 +127,9 @@ async function requestToken(
     body: new URLSearchParams({ ...params, token_type: 'eg1' }),
   });
 
-  const body = (await response.json().catch(() => null)) as TokenResponse | null;
+  const body = (await response
+    .json()
+    .catch(() => null)) as TokenResponse | null;
 
   // Epic segnala gli errori nel corpo con `errorCode`, e non sempre con uno
   // stato HTTP di errore: guardare solo `response.ok` lascerebbe passare un

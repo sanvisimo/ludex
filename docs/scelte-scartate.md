@@ -2,7 +2,6 @@
 
 Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli altri file: [modello-dati](modello-dati.md), [import-librerie](import-librerie.md), [negozi](negozi.md), [ordine-sviluppo](ordine-sviluppo.md), [scelte-scartate](scelte-scartate.md).
 
-
 - **NestJS** (con adapter Fastify o Express): scartato in favore di Hono. La
   struttura che offre pesa più di quanto renda su un progetto portato avanti da una
   persona sola, e l'integrazione Better Auth su Nest + Fastify è in beta mentre su

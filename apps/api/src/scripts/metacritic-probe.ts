@@ -38,7 +38,11 @@ const colonne = {
 };
 
 let giochi: Riga[] = cercaTitolo
-  ? await db.select(colonne).from(schema.games).where(eq(schema.games.name, arg)).limit(1)
+  ? await db
+      .select(colonne)
+      .from(schema.games)
+      .where(eq(schema.games.name, arg))
+      .limit(1)
   : await db
       .select(colonne)
       .from(schema.games)

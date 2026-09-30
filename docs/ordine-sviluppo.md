@@ -26,7 +26,7 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
      la riga e rifarla. Nasce **solo aggiunta**, perché togliere un possesso non
      bastava a farlo sparire — il prossimo import lo ricreava — e il taglio che
      reggeva era solo lo scollegamento dell'account, che regge proprio perché
-     toglie *anche* la fonte che ricreerebbe la riga (vedi «Il possesso sa da
+     toglie _anche_ la fonte che ricreerebbe la riga (vedi «Il possesso sa da
      quale account viene»). La rimozione è arrivata dopo, quando il supporto
      dentro la chiave l'ha resa necessaria: vedi «Togliere una copia».
 
@@ -67,29 +67,29 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 8. **OpenCritic** — i voti della critica, e con loro **Metacritic**: sono la
    stessa schermata e lo stesso modello, e separarli avrebbe voluto dire
    scrivere due volte la stessa tabella. Porta `game_scores` (vedi sotto).
-9.  **Altre librerie** — gli altri negozi, in sei tempi. L'ordine non è per
-    simpatia: è per quanto dura il credenziale e per quanto costa risolvere
-    l'identità (vedi «Le altre librerie» sotto).
-    - **9a — GOG, Epic, Amazon**: tutti PC, tutti un gesto solo che non si
-      ripete. Qui si costruiscono i token cifrati, e la forma del provider si
-      estrae da tre casi veri invece che da Steam più le ipotesi.
-    - **9b — PSN**: prima console, ed è quella che ha smentito due delle sue
-      tre premesse. La piattaforma per riga sì, ed è entrata nel modello. Il
-      possesso «vero» no: **274 righe su 336 vengono da PS Plus**. E l'id
-      risolvibile nemmeno — vedi «PSN» qui sotto. I **dischi fisici**, che fra
-      gli acquisti non compaiono, entrano dall'elenco dei giocati
-      (`service: other`) risolti per concept, e il possesso lo dice
-      (`medium`). Il rinnovo entro dieci giorni, perché il collegamento non
-      muoia da solo, lo fa l'aggiornamento automatico.
-    - **9c — EA**: non un account collegato ma un'**importazione una tantum**.
-    - **9d — Nintendo**: barattolo di cookie, nessun id che IGDB conosca.
-    - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
-      prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
-      librerie», e per ora è volutamente aperta.
-    - **9f — Steam con login e Family**: il login Steam al posto del solo
-      profilo pubblico, e con lui la libreria della famiglia. Ha la stessa
-      domanda di Xbox — un gioco della libreria di tuo fratello è tuo? — e va
-      fatto per ultimo.
+9. **Altre librerie** — gli altri negozi, in sei tempi. L'ordine non è per
+   simpatia: è per quanto dura il credenziale e per quanto costa risolvere
+   l'identità (vedi «Le altre librerie» sotto).
+   - **9a — GOG, Epic, Amazon**: tutti PC, tutti un gesto solo che non si
+     ripete. Qui si costruiscono i token cifrati, e la forma del provider si
+     estrae da tre casi veri invece che da Steam più le ipotesi.
+   - **9b — PSN**: prima console, ed è quella che ha smentito due delle sue
+     tre premesse. La piattaforma per riga sì, ed è entrata nel modello. Il
+     possesso «vero» no: **274 righe su 336 vengono da PS Plus**. E l'id
+     risolvibile nemmeno — vedi «PSN» qui sotto. I **dischi fisici**, che fra
+     gli acquisti non compaiono, entrano dall'elenco dei giocati
+     (`service: other`) risolti per concept, e il possesso lo dice
+     (`medium`). Il rinnovo entro dieci giorni, perché il collegamento non
+     muoia da solo, lo fa l'aggiornamento automatico.
+   - **9c — EA**: non un account collegato ma un'**importazione una tantum**.
+   - **9d — Nintendo**: barattolo di cookie, nessun id che IGDB conosca.
+   - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
+     prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
+     librerie», e per ora è volutamente aperta.
+   - **9f — Steam con login e Family**: il login Steam al posto del solo
+     profilo pubblico, e con lui la libreria della famiglia. Ha la stessa
+     domanda di Xbox — un gioco della libreria di tuo fratello è tuo? — e va
+     fatto per ultimo.
 10. **Import da file** — importazione di giochi da file CSV. **In analisi.**
     Il file di prova è un export di Playnite, in
     `apps/api/test/fixtures/playnite-export-2026-08.csv`.
@@ -109,10 +109,11 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
       quel gioco lì, e romperne altri due.
     - **gestione degli utenti**.
 
-    La riapertura *automatica* di un `not_found` non sta qui: è enrichment, e
+    La riapertura _automatica_ di un `not_found` non sta qui: è enrichment, e
     la sua regola sta scritta lassù. Qui c'è solo ciò che va deciso da un umano.
-12. **Ui** — layout e design dell'applicazione. 
-13. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding. 
+
+12. **Ui** — layout e design dell'applicazione.
+13. **AI** — layer di raccomandazione, scelta del provider LLM ed embedding.
 14. **Gestione abbonamenti** — PS Plus, Game Pass e chi verrà. Nasce dal 9b,
     dove si è scoperto che l'abbonamento non è un caso di frontiera: su una
     libreria PSN vera è l'**81%** delle righe. Oggi quei giochi entrano in
@@ -133,7 +134,7 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
     distinzione lì dentro non c'è, e nessuna colonna nostra può inventarla.
 
     E ce n'è una terza, peggiore delle due: `PS_PLUS` può coprire un **disco**.
-    *God of War* (2018) comprato su disco e poi arrivato nel Plus è marcato
+    _God of War_ (2018) comprato su disco e poi arrivato nel Plus è marcato
     abbonamento su entrambi gli elenchi. Cancellarlo alla fine del Plus
     toglierebbe dal backlog un gioco che sta sullo scaffale.
 
@@ -144,6 +145,7 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
     somigliano, e la differenza si scopre il giorno in cui è troppo tardi. Se
     questo step decidesse di cancellare, dovrebbe **chiedere prima** — è
     l'unico momento in cui l'utente ha l'informazione e noi no.
+
 15. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
     posseduti.
 

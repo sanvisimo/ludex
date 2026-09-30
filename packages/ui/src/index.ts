@@ -95,7 +95,12 @@ export {
   type InputGroupProps,
 } from './components/input-group';
 export { Label, type LabelProps } from './components/label';
-export { Logo, Wordmark, type LogoProps, type WordmarkProps } from './components/logo';
+export {
+  Logo,
+  Wordmark,
+  type LogoProps,
+  type WordmarkProps,
+} from './components/logo';
 export { NavItem, type NavItemProps } from './components/nav-item';
 export {
   Pagination,

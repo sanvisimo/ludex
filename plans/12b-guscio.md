@@ -69,18 +69,18 @@ continuano ad arrivare da react-query lato client, come oggi.
 
 **Il resto, uno per uno:**
 
-| Oggi | Dopo |
-| --- | --- |
-| `proxy.ts` | `beforeLoad` su un layout delle rotte private e su uno di quelle da ospite, che legge il cookie da una server function. Stesso controllo ottimistico, stesso `?next=` |
-| `next/link`, `useRouter` | `Link` e `useRouter`/`useNavigate` di TanStack Router |
-| `ButtonLink` | stessa forma, col `navigate` e il `preloadRoute` del nuovo router |
-| `next/image` | `<img>` con larghezza e altezza: le taglie le dà già la CDN di IGDB |
-| `next/font` (Geist) | niente: Geist era già coperto dal carattere di Tamagui, e il font si sceglie con l'aspetto dell'app (piano del 12a) |
-| CLI `tamagui build` + alias Turbopack | `@tamagui/vite-plugin` 2.7.7, la stessa versione del resto. Escono `tamagui.build.ts` e `.tamagui/` |
-| Tailwind con PostCSS | `@tailwindcss/vite`. Tailwind resta fino alla fine dello step 12, come già deciso |
-| `next-themes` | resta: non dipende da Next, solo dal DOM. Va verificato che lo script del tema giri prima del primo paint anche su Start |
-| `NEXT_PUBLIC_API_URL` | `PUBLIC_API_URL`, sostituita a build da un `define` di Vite, così `packages/auth` non si lega a `import.meta.env`. Rinominata anche in `turbo.json` e `.env.example` |
-| ESLint `next-js`, tsconfig `nextjs.json` | una config React per Vite, stesse regole senza il plugin Next. Il `routeTree.gen.ts` generato va ignorato da lint e prettier |
+| Oggi                                     | Dopo                                                                                                                                                                  |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `proxy.ts`                               | `beforeLoad` su un layout delle rotte private e su uno di quelle da ospite, che legge il cookie da una server function. Stesso controllo ottimistico, stesso `?next=` |
+| `next/link`, `useRouter`                 | `Link` e `useRouter`/`useNavigate` di TanStack Router                                                                                                                 |
+| `ButtonLink`                             | stessa forma, col `navigate` e il `preloadRoute` del nuovo router                                                                                                     |
+| `next/image`                             | `<img>` con larghezza e altezza: le taglie le dà già la CDN di IGDB                                                                                                   |
+| `next/font` (Geist)                      | niente: Geist era già coperto dal carattere di Tamagui, e il font si sceglie con l'aspetto dell'app (piano del 12a)                                                   |
+| CLI `tamagui build` + alias Turbopack    | `@tamagui/vite-plugin` 2.7.7, la stessa versione del resto. Escono `tamagui.build.ts` e `.tamagui/`                                                                   |
+| Tailwind con PostCSS                     | `@tailwindcss/vite`. Tailwind resta fino alla fine dello step 12, come già deciso                                                                                     |
+| `next-themes`                            | resta: non dipende da Next, solo dal DOM. Va verificato che lo script del tema giri prima del primo paint anche su Start                                              |
+| `NEXT_PUBLIC_API_URL`                    | `PUBLIC_API_URL`, sostituita a build da un `define` di Vite, così `packages/auth` non si lega a `import.meta.env`. Rinominata anche in `turbo.json` e `.env.example`  |
+| ESLint `next-js`, tsconfig `nextjs.json` | una config React per Vite, stesse regole senza il plugin Next. Il `routeTree.gen.ts` generato va ignorato da lint e prettier                                          |
 
 La porta resta 8085, `WEB_URL` resta com'è.
 
@@ -146,7 +146,6 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    `lint` e `check-types` restano verdi con Start accanto.
 
    Tre cose che la documentazione non diceva:
-
    - **Tamagui sul server va fatto passare da Vite.** Lasciati a Node, i suoi
      pacchetti importano il `react-native` vero, in Flow, e il render muore su
      un `typeof`: `ssr.noExternal: [/tamagui/]`. Ma con quello gli alias del
@@ -168,6 +167,7 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    in Start non c'è ancora (passo 3); in `src/` è spenta la regola ESLint di
    Next su `<head>` (passo 5). `GameCover` è già un `<img>` e `favicon.ico`
    sta in `public/`, che vanno bene a tutti e due.
+
 2. **i18n** con `use-intl`, lingua lato server, cambio lingua.
 
    **Fatto.** I 36 file client importano `use-intl`; `next-intl` resta solo
@@ -199,6 +199,7 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    con tema e lingua, e il selettore di Start sta in
    `src/components/locale-switcher.tsx` accanto a quello di Next, che se ne va
    con la barra di Next.
+
 3. **Le rotte**, una per una, con `proxy.ts` che diventa `beforeLoad`.
 
    **Fatto, tranne `/backlog`**, che passa al passo 4 insieme ai filtri: la
@@ -221,7 +222,6 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    verso un altro dominio ignorato.
 
    Tre cose che il giro ha trovato:
-
    - **Un errore di idratazione, una volta sì e una no.** La barra e
      `/account` leggono la sessione con `useSession`: sul server è sempre
      «in caricamento», nel browser a volte è già arrivata quando React
@@ -242,6 +242,7 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
 
    Ponti fino al passo 4: in `hidden-entries.tsx` il link a
    `/backlog?hidden=true` è un `<a>`, e su Start `/backlog` è un 404.
+
 4. **I filtri** da `nuqs` ai search params.
 
    **Fatto, insieme a `/backlog`**, che è passata qui (`git mv`) sotto il
@@ -282,6 +283,7 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    (`/login?email=…&password=…`) — e quindi nella cronologia e nei log. Con
    JavaScript spento succede sempre, con una rete lenta basta un clic veloce.
    Lo stesso vale per la registrazione. Da decidere a parte.
+
 5. **Via Next**: dipendenze, config, ESLint, tsconfig, i file generati da
    `next dev`. Verifica di parità (sotto).
 
@@ -291,7 +293,6 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    `create-next-app` o `next dev`) e le 31 righe `'use client'`, che fuori da
    Next non dicono niente. `globals.css` è passato in `src/`. Gli script sono
    tornati `dev`, `build`, `start`; `check-types` è `tsc` e basta.
-
    - **ESLint**: `apps/web` usa la config `react-internal`, la stessa di
      `packages/ui`; la config `next-js` e il suo plugin sono usciti da
      `packages/eslint-config`. Le regole di confine vietavano `next/*` a
@@ -309,7 +310,6 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
      perdere la lingua scelta a chi l'aveva.
 
    Due cose che il piano non aveva previsto:
-
    - **`@tamagui/core` e `@tamagui/web` restano devDependency di `apps/web`.**
      Sembravano roba della CLI, e non lo sono: anche il plugin di Vite
      impacchetta la config in `.tamagui/` e da lì le risolve. Tolte, **la
@@ -327,11 +327,11 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    `method="post"` sui moduli di accesso e registrazione, chiesto dopo il
    passo 4: con JavaScript spento l'invio resta su `/login`, senza credenziali
    nell'URL (il server risponde alla POST ridisegnando la pagina).
+
 6. **I componenti** in `@repo/ui`, con storie e test.
 
    **Fatto.** Quattro componenti nuovi, ognuno con le sue storie: 20 file e 76
    test verdi in Chromium, axe compreso (erano 16 e 66).
-
    - **`Separator` non si avvolge**: è già esportato così com'è da
      `primitives.ts` e usa `$borderColor`, un semantico. Avvolgerlo sarebbe
      stato un file per niente.
@@ -344,7 +344,6 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
 
    Il foglio di Tamagui è solo un pannello che scorre, e le storie hanno
    trovato tre cose che a un dialogo modale mancavano:
-
    - **Esc non lo chiudeva**: lo ascolta il nostro componente, solo dove c'è
      `document`.
    - **il focus restava dietro il velo**: ora c'è `FocusScope`, lo stesso che
@@ -374,13 +373,13 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    quello che Playwright si aspetta: una config temporanea con
    `launchOptions.executablePath`, non committata. Sulle macchine con
    `playwright install chromium` non serve niente.
+
 7. **Il guscio** e `Page`.
 
    **Fatto.** Le rotte col guscio stanno sotto un layout `_app`
-   ([src/routes/_app.tsx](../apps/web/src/routes/_app.tsx)); `_guest` resta
+   ([src/routes/\_app.tsx](../apps/web/src/routes/_app.tsx)); `_guest` resta
    fuori, con «Ludex», tema e lingua in alto e il modulo a pagina piena. Il
    guscio è [app-shell.tsx](../apps/web/src/components/app-shell.tsx):
-
    - **barra laterale da `$md` in su** (`<aside>`, 240 px, ferma mentre la
      pagina scorre): «Ludex», le voci, e in fondo l'utente. Da anonimo solo
      Catalogo, poi Accedi, Registrati, tema e lingua.
@@ -410,7 +409,6 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
    accesso fuori dal guscio. Ripassati i giri dei passi 3 e 4: verdi.
 
    Due cose che il giro ha trovato:
-
    - **Il foglio si apriva alto zero.** La navigazione ha `flex: 1` nella
      barra laterale, per spingere l'utente in fondo; nel foglio, alto quanto
      il contenuto, lo stesso `flex` la schiacciava. Ora `fill` è acceso solo
@@ -421,6 +419,7 @@ Tema e lingua restano raggiungibili da anonimo, come oggi.
      Playwright sì. Il nostro `Tooltip` ora lo apre da sé al focus da tastiera
      e lo chiude all'uscita del focus e con Esc; il mouse resta a Tamagui.
      Quando Tamagui lo sistemerà, quel pezzo si toglie.
+
 8. **CLAUDE.md**: stack, tabella del monorepo e sezione «Design system» (come
    si costruisce sul web, `ButtonLink`), e questo piano aggiornato con ciò che
    i passi 1–7 hanno smentito.

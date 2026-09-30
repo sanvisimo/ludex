@@ -29,7 +29,6 @@ ci fa passare axe, con le violazioni che rompono il test. In CI Chromium va
 installato (`playwright install chromium`). **Chromatic** confronta i pixel fra
 una build e l'altra; il suo token sta in `.env` come `CHROMATIC_PROJECT_TOKEN`.
 
-
 L'**identità** è **Inter** per il testo, **Space Grotesk** per titoli e nome,
 l'accento **teal** e il simbolo di `Logo` (una tessera con la «L» e due
 copertine dietro). Le scelte e le misure sono nel piano,

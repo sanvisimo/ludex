@@ -5,7 +5,7 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 Le librerie importate aggiungono tre cose al modello, decise allo step 4:
 
 - **`store_accounts`**: l'account dell'utente su un negozio, uno per `(utente,
-  negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
+negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
   vero, e ci sono utenti con due Steam. Non è una colonna su `user` perché
   `auth.ts` è generato e viene riscritto. Allo step 4 teneva solo l'identità
   pubblica dell'account, perché a Steam basta uno SteamID64; dallo step 9 tiene
@@ -14,8 +14,8 @@ Le librerie importate aggiungono tre cose al modello, decise allo step 4:
   Vedi «un gioco a cui puoi giocare stasera ma che non è tuo», più sotto: è la
   risposta parziale che il 9b ha dovuto dare, non un campo in più.
 - **supporto su `ownerships`**: `medium`, `digital` o `physical`, nullo quando
-  nessuno l'ha dichiarato. Gemello di `subscription`: quello dice *a che
-  titolo* hai la copia, questo *che cosa* hai in mano. L'import lo scrive
+  nessuno l'ha dichiarato. Gemello di `subscription`: quello dice _a che
+  titolo_ hai la copia, questo _che cosa_ hai in mano. L'import lo scrive
   sempre — `digital` per ogni libreria di negozio, `physical` per i dischi PSN
   — e dallo step 5 lo scrive anche l'utente, che è l'unica fonte possibile per
   un disco coperto da un diritto digitale: per il negozio quel gioco è
@@ -32,13 +32,13 @@ Le librerie importate aggiungono tre cose al modello, decise allo step 4:
   negozio — mentre un disco che l'import non vede più non è un disco che non
   hai, è un disco che Sony non ha modo di dichiarare. Con la chiave stretta
   l'arrivo di un diritto digitale riscriveva la riga in COALESCE e il disco
-  spariva: è la storia di *God of War* (2018), comprato su disco e poi finito
+  spariva: è la storia di _God of War_ (2018), comprato su disco e poi finito
   nel Plus, e succedeva **anche senza che nessuno avesse scritto niente a
   mano**, ai dischi che l'import stesso aveva dedotto da `service: other`.
 
   Il prezzo, che è vero e va accettato: niente cancella una riga che l'import
   smette di emettere. Un disco dedotto male — quello prestato da un amico,
-  *Astro's Playroom* che è preinstallato — resterebbe lì anche il giorno che
+  _Astro's Playroom_ che è preinstallato — resterebbe lì anche il giorno che
   compri il gioco in digitale. È il baratto scelto: la chiave stretta non
   accumula mai righe false ma perde in silenzio una copia che hai davvero, la
   larga sbaglia in un modo che si vede e che un gesto di rimozione sistema.
@@ -52,11 +52,12 @@ Le librerie importate aggiungono tre cose al modello, decise allo step 4:
   sola — resta quello che è, due copie. E **l'adozione si allarga**: una riga
   meno specifica (senza account o dello stesso account, senza negozio, senza
   supporto) se la prende l'import, ma mai una che dichiari un supporto
-  *diverso* o un altro account. Ciò che non dichiara
+  _diverso_ o un altro account. Ciò che non dichiara
   niente dice «non lo so», non «un'altra»: è la forma di ogni possesso scritto
   a mano prima che il campo esistesse, e si fa adottare. Dove la riga di
   destinazione esiste già — l'import era passato e quella a mano è rimasta lì
   accanto — adottare violerebbe il vincolo, e la meno specifica si cancella.
+
 - **ore giocate su `ownerships`**, non su `backlog`: sono una proprietà di
   _quella copia_, e lo stesso gioco su GOG avrebbe le sue. Sono dato oggettivo
   del negozio, non un campo personale dello step 5. **Non si usano per indovinare
@@ -88,7 +89,7 @@ Sono due gesti su due oggetti diversi, e vanno tenuti distinti:
 
 - **una voce che non è un gioco** — Netflix. Sta in `unresolved_imports` e lì
   resta; si vuole solo che smetta di comparire fra i «da sistemare».
-- **un gioco vero che non voglio in lista** — *Horizon Forbidden West*, finito e
+- **un gioco vero che non voglio in lista** — _Horizon Forbidden West_, finito e
   archiviato. Sta in `backlog`, il possesso è suo, e domani si può volerlo
   rivedere.
 
@@ -269,7 +270,7 @@ L'account entra anche **nella chiave del vincolo**, e questo ha una conseguenza
 da tenere a mente: un possesso «PC / Amazon» scritto a mano e lo stesso portato
 dall'import sarebbero due righe. Per questo `ensureOwnerships` prima **adotta**
 il possesso senza account invece di sdoppiarlo. Una riga che porta l'id di un
-*altro* account è il caso vero dei due Amazon e non si tocca; una dello
+_altro_ account è il caso vero dei due Amazon e non si tocca; una dello
 **stesso** account invece sì, se non dichiara il supporto. È lo scarto risolto
 a mano, che sa da quale account viene ma non se è un disco: finché l'adozione
 guardava solo `store_account_id is null`, il reimport di quell'account gli

@@ -91,10 +91,10 @@ Il percorso di un evento:
    autenticata (event iterator, cioè SSE sulla stessa `/rpc`, keep-alive ogni
    5 s di default) e invalida le query.
 
-| Evento | Chi lo emette | A chi arriva | Cosa si aggiorna nel web |
-| --- | --- | --- | --- |
-| `import` (`started` / `finished`) | worker, a inizio e fine di ogni tentativo d'import, manuale o automatico | solo al proprietario dell'account | `accounts`; a fine anche `backlog` e `imports` |
-| `games` (id) | worker, dopo ogni enrichment `ok` | tutti i connessi: `games` è condivisa, gli id non sono privati | `backlog`, `games.latest`, `games.byId` di quegli id |
+| Evento                            | Chi lo emette                                                            | A chi arriva                                                   | Cosa si aggiorna nel web                             |
+| --------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------- | ---------------------------------------------------- |
+| `import` (`started` / `finished`) | worker, a inizio e fine di ogni tentativo d'import, manuale o automatico | solo al proprietario dell'account                              | `accounts`; a fine anche `backlog` e `imports`       |
+| `games` (id)                      | worker, dopo ogni enrichment `ok`                                        | tutti i connessi: `games` è condivisa, gli id non sono privati | `backlog`, `games.latest`, `games.byId` di quegli id |
 
 - **Raffica**: il worker raccoglie gli id e pubblica al massimo un messaggio
   ogni 5 s.
@@ -129,7 +129,7 @@ silenzio.
   `import` su `active` / `completed` / `failed`, l'ultimo blocco svuotato alla
   chiusura;
 - web: [use-live-updates.ts](../apps/web/src/use-live-updates.ts), montato in
-  [_app.tsx](../apps/web/src/routes/_app.tsx); `/account` senza più ping.
+  [\_app.tsx](../apps/web/src/routes/_app.tsx); `/account` senza più ping.
 
 La riconnessione è un ciclo scritto a mano e non il `ClientRetryPlugin`: il
 plugin vuole il suo contesto nel tipo del client, che sta in

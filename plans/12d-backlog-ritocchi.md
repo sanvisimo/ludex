@@ -28,7 +28,7 @@ wireframe a bassa fedeltà (Excalidraw, due giri), poi il codice.
 
 - **La colonna dei filtri** è larga 256 px, a vista da `$xl`, accanto ai 240
   della barra del guscio
-  ([_app._private.backlog.tsx](../apps/web/src/routes/_app._private.backlog.tsx)).
+  ([\_app.\_private.backlog.tsx](../apps/web/src/routes/_app._private.backlog.tsx)).
   Sotto `$xl` lo stesso `FilterPanel` si apre nello `Sheet`, che in
   `@repo/ui` sale solo dal basso.
 - **La barra** ([backlog-filters.tsx](../apps/web/components/backlog-filters.tsx))
@@ -63,17 +63,18 @@ wireframe a bassa fedeltà (Excalidraw, due giri), poi il codice.
 2. **Lo stato alla Trakt, e un sesto stato.**
    - **Un'icona per stato**, in un punto solo dell'app:
 
-     | Stato | Icona (lucide) |
-     | --- | --- |
-     | Da giocare (`backlog`) | `Bookmark` |
-     | In corso (`playing`) | `Play` |
-     | Finito (`played`) | `Check` |
-     | Completato (`completed`, nuovo) | `Trophy` |
-     | Abbandonato (`dropped`) | `CircleStop` |
-     | Non mi interessa (`excluded`) | `Ban` |
+     | Stato                           | Icona (lucide) |
+     | ------------------------------- | -------------- |
+     | Da giocare (`backlog`)          | `Bookmark`     |
+     | In corso (`playing`)            | `Play`         |
+     | Finito (`played`)               | `Check`        |
+     | Completato (`completed`, nuovo) | `Trophy`       |
+     | Abbandonato (`dropped`)         | `CircleStop`   |
+     | Non mi interessa (`excluded`)   | `Ban`          |
 
      Abbandonato non usa la x: confondeva. Lo stop fa coppia col play di
      In corso.
+
    - **Il bottone**: la tendina diventa un bottone quadrato con l'icona dello
      stato; premuto apre un `DropdownMenu` a scelta singola
      (`DropdownMenuRadioGroup`, che c'è già) con icona ed etichetta. Uguale
@@ -140,6 +141,7 @@ wireframe a bassa fedeltà (Excalidraw, due giri), poi il codice.
    [backlog-search.test.ts](../apps/api/src/services/backlog-search.test.ts):
    la lista porta voto e fonte, e `completed` si salva e si filtra — che
    prova anche la migration applicata.
+
 2. **I componenti in `@repo/ui`**: `Drawer` e le modifiche a `Pagination`,
    ognuno con la sua storia e i test axe.
 
@@ -168,6 +170,7 @@ wireframe a bassa fedeltà (Excalidraw, due giri), poi il codice.
 
    Il commento dello `Sheet` dice ancora che un giorno terrà i filtri: va
    corretto al passo 4, quando i filtri passano al drawer.
+
 3. **Lo stato alla Trakt**: la mappa delle icone, il bottone nelle tre viste,
    le icone negli stati della barra.
 
@@ -191,6 +194,7 @@ wireframe a bassa fedeltà (Excalidraw, due giri), poi il codice.
      60 px.
    - **nella compatta la colonna dello stato passa da 188 a 72 px**, e lo
      spazio torna al titolo.
+
 4. **Barra e drawer**: l'ordinamento nel pannello, il pannello nel `Drawer`,
    la colonna di lato tolta.
 
@@ -206,6 +210,7 @@ wireframe a bassa fedeltà (Excalidraw, due giri), poi il codice.
    falso da subito: la riga di `apps/web/CLAUDE.md` sul pannello di lato da
    `$xl`, il commento dello `Sheet` («domani il pannello dei filtri»), quelli
    del pannello e della griglia.
+
 5. **Le pagine**: `size` nell'URL, la scelta accanto alla paginazione, «vai a
    pagina».
 
@@ -222,6 +227,7 @@ wireframe a bassa fedeltà (Excalidraw, due giri), poi il codice.
    «Pagina successiva»: «Precedente» da solo, letto fuori contesto, non
    diceva di cosa. Corretta anche la riga di `apps/web/CLAUDE.md` che diceva
    48 giochi alla volta.
+
 6. **Il voto sulla card**, con la regola del punto 5.
 
    **Fatto**, da guardare sulla pagina vera.
@@ -242,6 +248,7 @@ wireframe a bassa fedeltà (Excalidraw, due giri), poi il codice.
      un `div` senza ruolo, che axe boccia (`aria-prohibited-attr`) e un
      lettore di schermo può ignorare. Ora tutti e due hanno `role="img"`,
      il modo standard di dare un nome a un voto mostrato.
+
 7. **Chiusura**: `apps/web/CLAUDE.md` (il pannello non sta più di lato da
    `$xl`, le pagine non sono più da 48), il commento di `PAGE_SIZE`,
    screenshot a 375, 900 e 1440 px, piano chiuso.

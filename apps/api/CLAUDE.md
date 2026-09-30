@@ -3,11 +3,11 @@
 Prima di toccare un argomento, leggi il suo file in `docs/`: lì stanno le
 regole complete, le ragioni e le misure.
 
-| Se tocchi… | Leggi |
-| --- | --- |
-| `games`, `backlog`, `game_type`, `game_scores`, tag | [docs/modello-dati.md](../../docs/modello-dati.md) |
-| import, possessi, `store_accounts`, scarti, nascondere, rifiuti | [docs/import-librerie.md](../../docs/import-librerie.md) |
-| un negozio (GOG, Epic, Amazon, PSN…), token, aggiornamento automatico | [docs/negozi.md](../../docs/negozi.md) |
+| Se tocchi…                                                            | Leggi                                                    |
+| --------------------------------------------------------------------- | -------------------------------------------------------- |
+| `games`, `backlog`, `game_type`, `game_scores`, tag                   | [docs/modello-dati.md](../../docs/modello-dati.md)       |
+| import, possessi, `store_accounts`, scarti, nascondere, rifiuti       | [docs/import-librerie.md](../../docs/import-librerie.md) |
+| un negozio (GOG, Epic, Amazon, PSN…), token, aggiornamento automatico | [docs/negozi.md](../../docs/negozi.md)                   |
 
 ## Fonti dati esterne
 
@@ -35,8 +35,7 @@ regole complete, le ragioni e le misure.
   su richiesta utente. (ROMM gestisce le [API HLTB](https://github.com/rommapp/romm/blob/master/backend/handler/metadata/hltb_handler.py))
 
   Il path dell'endpoint di ricerca **ruota senza preavviso** — `/api/find`,
-  `/api/bleed`, oggi `/api/search/site` — e quando succede ogni job risponde
-  404. Non è una variabile da rimettere a mano: il client legge le route dal
+  `/api/bleed`, oggi `/api/search/site` — e quando succede ogni job risponde 404. Non è una variabile da rimettere a mano: il client legge le route dal
   `_buildManifest.js` del sito, prende quella che ha una sorella `/init` e la
   promuove **solo dopo una ricerca vera** di cui controlla la forma. Che la
   ricerca sia vera è il punto: una route che risponde 200 e restituisce altro
@@ -82,6 +81,7 @@ regole complete, le ragioni e le misure.
   regola sta in `reopenSourcesForNewExternalIds`. Per lo stesso motivo HLTB e
   Metacritic, dopo IGDB, si accodano **solo se dovuti**: accodarli sempre li
   rifaceva al ritmo di IGDB (30 giorni) invece che al loro.
+
 - A runtime si embedda **solo la query dell'utente** (stringa breve) per la
   similarity search.
 
@@ -90,16 +90,16 @@ regole complete, le ragioni e le misure.
 Si lanciano a mano e non stanno fra i comandi di turbo, perché non fanno parte
 di nessuna pipeline:
 
-| Comando                                     | Cosa fa                                                                                                                                                       |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm --filter api platforms:audit [--all]` | confronta la tabella `platforms` con l'elenco vero di IGDB. Segnala, non scrive: le correzioni vanno in una migration                                         |
-| `pnpm --filter api steam:probe [steamid64]` | giro a vuoto dell'import Steam: legge la libreria e prova a risolverla senza toccare il DB                                                                    |
-| `pnpm --filter api hltb:probe [n\|titolo]`  | giro a vuoto del match HLTB: cerca e punteggia senza scrivere. La riga che conta è quella dei "da sistemare"                                                  |
-| `pnpm --filter api hltb:endpoint`           | ritrova il path dell'endpoint di ricerca HLTB dalle route del sito e lo valida con una ricerca vera. Non scrive: stampa. Lo stesso che il client fa da sé sul 404 |
-| `pnpm --filter api opencritic:resolve [n]`  | aggancia in blocco gli id OpenCritic chiedendoli a Wikidata. Non chiama OpenCritic e non spende budget: scrive solo dove guardare                             |
-| `pnpm --filter api igdb:types [n]`          | riempie `game_type` e `parent_igdb_id` sui giochi che c'erano prima di quelle colonne. 500 id per richiesta; da lì in poi li scrive l'enrichment               |
-| `pnpm --filter api metacritic:probe [n\|titolo]` | giro a vuoto del match Metacritic. Mostra anche se il link della scheda Steam regge e quali piattaforme non sappiamo tradurre                            |
-| `pnpm --filter api psn:probe [npsso]`       | giro a vuoto dell'import PSN: identità, libreria, piattaforme e ore, senza toccare il DB. Vuole l'npsso (o `PSN_TEST_NPSSO`) e usa `resolveByName`, cioè il matcher vero  |
-| `pnpm --filter api backfill [n]`            | accoda l'enrichment di ciò che è dovuto. Non forza: rispetta le soglie di freschezza                                                                          |
-| `pnpm --filter api catchup [--resolve]`     | il `backfill` dei giorni col worker spento: accoda il dovuto delle altre fonti, poi spende il budget OpenCritic a blocchi e si ferma quando è finito. Vuole il worker acceso. `--resolve` fa prima l'aggancio Wikidata |
-| `pnpm --filter api queues`                  | dashboard Bull Board sulle code, su `localhost:3002`. Ascolta solo su localhost: non c'è ruolo admin e non lo si inventa qui, da remoto si passa da un tunnel |
+| Comando                                          | Cosa fa                                                                                                                                                                                                                |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm --filter api platforms:audit [--all]`      | confronta la tabella `platforms` con l'elenco vero di IGDB. Segnala, non scrive: le correzioni vanno in una migration                                                                                                  |
+| `pnpm --filter api steam:probe [steamid64]`      | giro a vuoto dell'import Steam: legge la libreria e prova a risolverla senza toccare il DB                                                                                                                             |
+| `pnpm --filter api hltb:probe [n\|titolo]`       | giro a vuoto del match HLTB: cerca e punteggia senza scrivere. La riga che conta è quella dei "da sistemare"                                                                                                           |
+| `pnpm --filter api hltb:endpoint`                | ritrova il path dell'endpoint di ricerca HLTB dalle route del sito e lo valida con una ricerca vera. Non scrive: stampa. Lo stesso che il client fa da sé sul 404                                                      |
+| `pnpm --filter api opencritic:resolve [n]`       | aggancia in blocco gli id OpenCritic chiedendoli a Wikidata. Non chiama OpenCritic e non spende budget: scrive solo dove guardare                                                                                      |
+| `pnpm --filter api igdb:types [n]`               | riempie `game_type` e `parent_igdb_id` sui giochi che c'erano prima di quelle colonne. 500 id per richiesta; da lì in poi li scrive l'enrichment                                                                       |
+| `pnpm --filter api metacritic:probe [n\|titolo]` | giro a vuoto del match Metacritic. Mostra anche se il link della scheda Steam regge e quali piattaforme non sappiamo tradurre                                                                                          |
+| `pnpm --filter api psn:probe [npsso]`            | giro a vuoto dell'import PSN: identità, libreria, piattaforme e ore, senza toccare il DB. Vuole l'npsso (o `PSN_TEST_NPSSO`) e usa `resolveByName`, cioè il matcher vero                                               |
+| `pnpm --filter api backfill [n]`                 | accoda l'enrichment di ciò che è dovuto. Non forza: rispetta le soglie di freschezza                                                                                                                                   |
+| `pnpm --filter api catchup [--resolve]`          | il `backfill` dei giorni col worker spento: accoda il dovuto delle altre fonti, poi spende il budget OpenCritic a blocchi e si ferma quando è finito. Vuole il worker acceso. `--resolve` fa prima l'aggancio Wikidata |
+| `pnpm --filter api queues`                       | dashboard Bull Board sulle code, su `localhost:3002`. Ascolta solo su localhost: non c'è ruolo admin e non lo si inventa qui, da remoto si passa da un tunnel                                                          |

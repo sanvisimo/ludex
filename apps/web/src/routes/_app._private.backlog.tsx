@@ -255,7 +255,8 @@ function BacklogPage() {
             <XStack
               flexWrap="wrap"
               items="center"
-              justify="space-between"
+              justify="center"
+              $sm={{ justify: 'space-between' }}
               gap={16}
             >
               {total > pageSizeValues[0] && (

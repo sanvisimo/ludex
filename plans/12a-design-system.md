@@ -25,14 +25,14 @@ Cosa c'è oggi, misurato:
 
 Cosa chiedono i lotti 12b–12g, ricavato dal piano e dal codice:
 
-| Lotto | Chiede |
-| --- | --- |
-| 12b guscio | navigazione laterale, sheet mobile, separator, avatar, tooltip |
+| Lotto       | Chiede                                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| 12b guscio  | navigazione laterale, sheet mobile, separator, avatar, tooltip                                                                 |
 | 12c backlog | toggle di vista (righe/griglia/compatta), paginazione, lista densa, popover, checkbox, slider di range, accordion, stato vuoto |
-| 12d gioco | tabs, barre dei voti, carosello screenshot, anteprima al passaggio |
-| 12e home | card, list item |
-| 12f ricerca | campo con ricerca asincrona e risultati a tendina |
-| 12g account | tabs, liste, dialoghi, menu |
+| 12d gioco   | tabs, barre dei voti, carosello screenshot, anteprima al passaggio                                                             |
+| 12e home    | card, list item                                                                                                                |
+| 12f ricerca | campo con ricerca asincrona e risultati a tendina                                                                              |
+| 12g account | tabs, liste, dialoghi, menu                                                                                                    |
 
 Tamagui copre Dialog, AlertDialog, Popover, Sheet, Tooltip, Toast, Select,
 Accordion, Tabs, Group, Avatar, Card, Image, ListItem, Form, Input, Checkbox,
@@ -100,7 +100,7 @@ valori.
 
 DTCG risolve il problema di tenere gli stessi valori in **due sistemi di
 styling diversi** — web in Tailwind, mobile in StyleSheet. Con Tamagui su
-entrambe le piattaforme quel problema non c'è: il file dei token di Tamagui *è*
+entrambe le piattaforme quel problema non c'è: il file dei token di Tamagui _è_
 la sorgente unica, e un JSON sopra sarebbe la stessa cosa scritta due volte con
 uno step di build che può sfasarsi. **Cambia il giorno che entra Figma o un
 designer**: lì DTCG è il ponte fra strumento di design e codice, ed è il suo
@@ -282,7 +282,7 @@ nascono nel lotto che li usa.
 **L'ordine è cambiato in corsa, e vale la pena dire perché**: Storybook era il
 passo 4, dopo i quindici componenti. È diventato il 3. Con quindici componenti
 da guardare, renderizzarli uno a uno — come è stato fatto per il Button, con uno
-script di SSR usa e getta — sarebbe diventato *il lavoro* invece della verifica.
+script di SSR usa e getta — sarebbe diventato _il lavoro_ invece della verifica.
 Il banco prima, i componenti dentro il banco.
 
 1. ~~**`packages/ui` universale**~~ — **fatto**. Workspace nuovo con
@@ -309,14 +309,13 @@ Il banco prima, i componenti dentro il banco.
 
    Cosa si è scoperto per strada, e che il passaggio delle schermate deve
    sapere:
-
    - **La config non aveva animazioni.** `v5` non ne porta: va scelto un
      driver. È `@tamagui/config/v5-css` — transizioni CSS sul web, React
      Native sul telefono, niente reanimated. Senza, Skeleton, Dialog e menu non
      si muovono.
    - **Input e Textarea hanno il tipo forzato.** Passando da `styled()`
      l'`onChange` perde il suo elemento, e `event.target.value` smette di
-     compilare; il TextArea di Tamagui poi dichiara quello dell'*input*, sbagliato
+     compilare; il TextArea di Tamagui poi dichiara quello dell'_input_, sbagliato
      già alla fonte. Si riesporta col tipo giusto, e le storie `Typing`
      verificano che a runtime l'evento sia quello vero.
    - **Tre cambi nelle schermate, piccoli ma non zero**: `align` va su
@@ -355,7 +354,6 @@ Il banco prima, i componenti dentro il banco.
    resta.
 
    In quattro commit, con l'app funzionante dopo ciascuno:
-
    - **A. Infrastruttura**, senza toccare schermate: dipendenze in
      `apps/web`, `transpilePackages` e `turbopack.resolveAlias`
      (`react-native` → `react-native-web`, `react-native-svg` →
@@ -384,9 +382,8 @@ Il banco prima, i componenti dentro il banco.
    combobox, toast con «Annulla», interruttori, cambio tema.
 
    Cosa si è scoperto facendolo, e che i lotti dopo devono sapere:
-
    - **`render={<Link />}` sul Button non regge.** Il nostro `Button` è uno
-     `styled()` sopra quello di Tamagui, e un `render` con un *componente*
+     `styled()` sopra quello di Tamagui, e un `render` con un _componente_
      lo intercetta il livello esterno, che passa le props di stile grezze
      invece delle classi: il link esce nudo. Con un tag (`render="a"`)
      funziona. Da qui [ButtonLink](../apps/web/components/button-link.tsx):
@@ -416,6 +413,7 @@ Il banco prima, i componenti dentro il banco.
      icon/default» in sviluppo, che viene dai nomi delle taglie del Button;
      e un errore di idratazione su `/account` e `/backlog` che c'era già
      prima — il server rende lo skeleton, il client ha già la sessione.
+
 5. **Scheletro `apps/mobile`** con Expo, una schermata che importa
    `packages/ui`: la prova che l'universale è universale.
 
@@ -437,7 +435,6 @@ Il banco prima, i componenti dentro il banco.
 
    **Fatto qui, da provare sul telefono.** `e66998f` allinea le versioni,
    `811a2a3` porta lo scheletro. Cosa si è misurato:
-
    - **`^19.2.3` risolveva a 19.3.0**, e `better-auth` e i peer di Next
      tiravano dentro anche la 19.2.0. La versione esatta non bastava: serve
      l'`overrides` in `pnpm-workspace.yaml`, che si alza insieme alla SDK.
@@ -461,6 +458,7 @@ Il banco prima, i componenti dentro il banco.
    Resta il giro sul telefono: `pnpm --filter mobile start`, poi il QR con
    Expo Go. Da guardare in particolare il Select (foglio dal basso), il
    Dialog, il menu, il Combobox e il toast.
+
 6. **Le regole che tengono il confine**, in
    [packages/eslint-config](../packages/eslint-config): dentro `packages/ui` sono
    vietati `next/*`, `@repo/contracts` e `@repo/db`.
@@ -471,6 +469,7 @@ Il banco prima, i componenti dentro il banco.
    `@repo/db` né `next/*`, `@repo/contracts` sì. Provata con un file che
    importa tutti e tre: il lint si rompe. Escono come avvisi, per via di
    `only-warn`, ma `--max-warnings 0` li rende fatali.
+
 7. **CLAUDE.md**: riscrivere la regola su web e mobile con la decisione presa e
    il suo perché, aggiungere la sezione sul design system (Tamagui, i tre livelli
    di token con la loro invariante, le alternative scartate), la nota su come si
@@ -506,15 +505,15 @@ reggerebbero lo stesso codice su web e telefono, senza `.web.tsx` e
 `.native.tsx`. Contate sul codice di oggi più ciò che i lotti 12b–12g
 aggiungono:
 
-| Schermata | Righe, coi suoi componenti | Su mobile | Perché |
-| --- | --- | --- | --- |
-| `/login` | 135 | uguale | un form |
-| `/register` | 110 | uguale | un form |
-| `/` catalogo | 72 | uguale | lista di card, virtualizzata |
-| `/games/[id]` | ~450 | quasi uguale | le card impilate reggono; divergono l'anteprima al passaggio (niente hover), il carosello e l'impaginazione del 12d |
-| `/account` | ~1100 | quasi uguale | diverge solo `StoreLinkForm`: incollare l'URL sul web, la WebView su mobile |
-| `/backlog` | ~1300 | diversa | pannello filtri → bottom sheet, tabella densa → lista a schede, paginazione → scorrimento, azioni di riga → swipe o menu; lo stato nell'URL (`nuqs`) è un concetto web |
-| guscio | 63 | diverso | barra laterale sul web, bottom tab sul telefono |
+| Schermata     | Righe, coi suoi componenti | Su mobile    | Perché                                                                                                                                                                 |
+| ------------- | -------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/login`      | 135                        | uguale       | un form                                                                                                                                                                |
+| `/register`   | 110                        | uguale       | un form                                                                                                                                                                |
+| `/` catalogo  | 72                         | uguale       | lista di card, virtualizzata                                                                                                                                           |
+| `/games/[id]` | ~450                       | quasi uguale | le card impilate reggono; divergono l'anteprima al passaggio (niente hover), il carosello e l'impaginazione del 12d                                                    |
+| `/account`    | ~1100                      | quasi uguale | diverge solo `StoreLinkForm`: incollare l'URL sul web, la WebView su mobile                                                                                            |
+| `/backlog`    | ~1300                      | diversa      | pannello filtri → bottom sheet, tabella densa → lista a schede, paginazione → scorrimento, azioni di riga → swipe o menu; lo stato nell'URL (`nuqs`) è un concetto web |
+| guscio        | 63                         | diverso      | barra laterale sul web, bottom tab sul telefono                                                                                                                        |
 
 I dialoghi non contano: il foglio dal basso su mobile lo decide il componente
 di `@repo/ui`, come già il Select, e la schermata non lo sa.
@@ -537,7 +536,7 @@ lavoro del 12c.
 
 ### Le ragioni, com'erano scritte prima di decidere
 
-Da decidere **dopo il 12a e prima del 12b**, perché il guscio *è* routing e
+Da decidere **dopo il 12a e prima del 12b**, perché il guscio _è_ routing e
 farlo due volte è l'unico spreco possibile. Con il design system universale,
 Next non ha più molto da offrire qui — gli RSC non si usano, `next/image` serve
 poco a copertine che la CDN IGDB dà già in taglie fisse — quindi la scelta è
@@ -550,7 +549,7 @@ fra due:
   routing condivisi.
 
 **Parere: TanStack Start**, per una ragione che viene dal 12 stesso.
-Condividere i *componenti* non è condividere le *schermate*: sidebar, tabella
+Condividere i _componenti_ non è condividere le _schermate_: sidebar, tabella
 densa, pannello filtri e paginazione su un telefono diventano bottom tab, lista
 a schede e bottom sheet. Con il routing condiviso si finirebbe con `.web.tsx` e
 `.native.tsx` sparsi ovunque, cioè a pagare la condivisione senza incassarla.

@@ -103,7 +103,9 @@ export const CloseButton: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByText('Filtri'));
     const drawer = await screen.findByRole('dialog', { name: 'Filtri' });
-    await userEvent.click(within(drawer).getByRole('button', { name: 'Chiudi' }));
+    await userEvent.click(
+      within(drawer).getByRole('button', { name: 'Chiudi' }),
+    );
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Filtri' })).toBeNull(),
     );

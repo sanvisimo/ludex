@@ -161,16 +161,18 @@ export const router = os.router({
       return { ...account, syncing: true };
     }),
 
-    rename: os.accounts.rename.use(authed).handler(async ({ input, context }) => {
-      const account = await renameStoreAccount(
-        context.user.id,
-        input.accountId,
-        input.label ?? null,
-      );
-      if (!account)
-        throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
-      return { ...account, syncing: await isImportRunning(account.id) };
-    }),
+    rename: os.accounts.rename
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const account = await renameStoreAccount(
+          context.user.id,
+          input.accountId,
+          input.label ?? null,
+        );
+        if (!account)
+          throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+        return { ...account, syncing: await isImportRunning(account.id) };
+      }),
 
     unlinkImpact: os.accounts.unlinkImpact
       .use(authed)
@@ -184,7 +186,10 @@ export const router = os.router({
     unlink: os.accounts.unlink
       .use(authed)
       .handler(async ({ input, context }) => {
-        const account = await findStoreAccount(context.user.id, input.accountId);
+        const account = await findStoreAccount(
+          context.user.id,
+          input.accountId,
+        );
         if (!account || account.status === 'unlinked')
           throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
 
@@ -463,14 +468,15 @@ export const router = os.router({
   events: {
     // Resta aperta finché la pagina è aperta: `signal` scatta quando il
     // browser chiude la connessione, e con lui finisce l'abbonamento.
-    subscribe: os.events.subscribe
-      .use(authed)
-      .handler(async function* ({ context, signal }) {
-        for await (const event of liveEvents.subscribe('event', { signal })) {
-          const visible = eventForUser(event, context.user.id);
-          if (visible) yield visible;
-        }
-      }),
+    subscribe: os.events.subscribe.use(authed).handler(async function* ({
+      context,
+      signal,
+    }) {
+      for await (const event of liveEvents.subscribe('event', { signal })) {
+        const visible = eventForUser(event, context.user.id);
+        if (visible) yield visible;
+      }
+    }),
   },
 });
 

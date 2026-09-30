@@ -117,6 +117,7 @@ tua conferma.
    tessera             x=2  y=8 w=22 h=23 rx=5.5  #12a594 (teal 9)
    «L»                 M7.5 13h4v10h7.5v4H7.5z     #1c2024 (slate 12)
    ```
+
 2. **Il carattere**, in `@repo/ui` e sul web, con Storybook.
    Su mobile la config resta sul carattere di sistema fino al passo 4: un
    `fontFamily` che iOS non conosce è un errore, non un ripiego, e i file per
@@ -132,7 +133,6 @@ tua conferma.
    che il testo di Tailwind abbia lo stesso carattere di quello di Tamagui.
 
    Misurato:
-
    - **70 KB in tutto**: Inter 48 KB, Space Grotesk 22 KB, l'alfabeto latino
      che la pagina scarica davvero. Gli altri alfabeti (cirillico, greco,
      vietnamita) stanno nella build ma il browser non li chiede, grazie a
@@ -149,6 +149,7 @@ tua conferma.
 
    Il titolo di pagina a 600 in Space Grotesk pesava meno del grassetto di
    sistema di prima: **passato a 700**, al passo 3.
+
 3. **Simbolo e nome**: `Logo` e `Wordmark` in `@repo/ui`, favicon e icone per
    il web, icona e splash per Expo.
 
@@ -159,7 +160,6 @@ tua conferma.
    favicon, e non cambia col tema. Da solo è decorativo (`aria-hidden`): il
    nome lo dice il testo accanto. Il link alla home resta al web
    (`HomeLink` in `app-shell.tsx`), perché il router in `@repo/ui` non entra.
-
    - **Web**, in `apps/web/public`: `favicon.svg`, `favicon.ico` (16, 32 e 48,
      al posto di quello di `create-next-app`) e `apple-touch-icon.png` da 180
      px su fondo pieno. `theme-color` per chiaro e scuro, col fondo vero
@@ -177,6 +177,7 @@ tua conferma.
    Verificato: test di `@repo/ui` (79) e giro del guscio (13 passi) verdi, i
    tre file serviti col tipo giusto, «Ludex» è il nome del link in tutte e due
    le forme della barra, nessun errore in console.
+
 4. **Mobile**: i font con `expo-font`.
 
    **Fatto.** In [packages/ui/src/fonts.ts](../packages/ui/src/fonts.ts) la
@@ -195,6 +196,7 @@ tua conferma.
    alfabeti. Web invariato: test di `@repo/ui` (79) verdi, titoli ancora in
    Space Grotesk 700. **Da verificare da te con Expo Go**: che il testo sia in
    Inter e i titoli in Space Grotesk, e che il `Wordmark` si veda.
+
 5. **CLAUDE.md** e questo piano chiuso.
 
    **Fatto.** Il paragrafo sull'identità nel CLAUDE.md non dice più

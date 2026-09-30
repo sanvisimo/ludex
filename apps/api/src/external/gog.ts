@@ -85,7 +85,9 @@ async function requestToken(
   }
 
   const response = await fetch(url);
-  const body = (await response.json().catch(() => null)) as TokenResponse | null;
+  const body = (await response
+    .json()
+    .catch(() => null)) as TokenResponse | null;
 
   if (!response.ok) {
     // `invalid_grant` è definitivo: il codice è scaduto o già speso, oppure il
@@ -181,7 +183,10 @@ export function exchangeGogCode(code: string) {
 
 /** Rinnovo silenzioso: è ciò che rende il copia-incolla un gesto solo. */
 export function refreshGogTokens(refreshToken: string) {
-  return requestToken({ grant_type: 'refresh_token', refresh_token: refreshToken });
+  return requestToken({
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+  });
 }
 
 export type GogLibraryEntry = {

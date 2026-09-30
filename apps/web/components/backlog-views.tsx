@@ -189,6 +189,10 @@ function GameLink({
         display: 'block',
         minWidth: 0,
         overflow: 'hidden',
+        ...(lines === 1 && {
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }),
       }}
     >
       <Text
@@ -239,7 +243,7 @@ function RowsView({
           {/* `py={0}`: la Card ha già il suo respiro verticale, e sommato al
               nostro lasciava una fascia vuota in fondo a ogni riga. */}
           <Card py={0}>
-            <XStack p={12} gap={12} items="flex-start">
+            <XStack p={8} gap={8} $md={{ gap: 12, p: 12 }} items="flex-start">
               <GameCover
                 imageId={entry.game.coverImageId}
                 name={entry.game.name}
@@ -253,18 +257,26 @@ function RowsView({
                   gap={8}
                 >
                   <YStack gap={4} flex={1} minW={200}>
-                    <XStack flexWrap="wrap" items="center" gap={8}>
-                      <GameLink entry={entry} />
-                      <GameTypeBadge type={entry.game.gameType} />
+                    <XStack justify="space-between" gap={8}>
+                      <XStack flex={1} minW={0} items="center" gap={8}>
+                        <GameLink entry={entry} lines={1} />
+                        <GameTypeBadge
+                          type={entry.game.gameType}
+                          $max-sm={{ display: 'none' }}
+                        />
+                      </XStack>
+                      <XStack items="center" gap={4}>
+                        <StatusButton
+                          entry={entry}
+                          onStatus={handlers.onStatus}
+                        />
+                        <EntryActions entry={entry} {...handlers} />
+                      </XStack>
                     </XStack>
                     <Facts entry={entry} />
                   </YStack>
-                  <XStack items="center" gap={4}>
-                    <StatusButton entry={entry} onStatus={handlers.onStatus} />
-                    <EntryActions entry={entry} {...handlers} />
-                  </XStack>
                 </XStack>
-                <OwnershipBadges ownerships={entry.ownerships} />
+                <OwnershipBadges ownerships={entry.ownerships} compact />
                 <EntryTags tags={entry.tags} />
               </YStack>
             </XStack>

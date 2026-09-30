@@ -31,8 +31,9 @@ export function useGameTypeLabels(): Record<GameType, string> {
   const t = useTranslations('gameType');
   return useMemo(
     () =>
-      Object.fromEntries(gameTypeValues.map((value) => [value, t(value)])) as
-        Record<GameType, string>,
+      Object.fromEntries(
+        gameTypeValues.map((value) => [value, t(value)]),
+      ) as Record<GameType, string>,
     [t],
   );
 }

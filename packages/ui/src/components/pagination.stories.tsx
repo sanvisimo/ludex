@@ -36,8 +36,9 @@ export const Few: Story = { args: { page: 2, pageCount: 4 } };
 export const Range: Story = {
   args: { page: 3, pageCount: 42 },
   play: async () => {
-    await expect(pageRange(1, 42)).toEqual([1, 2, null, 42]);
+    await expect(pageRange(1, 42)).toEqual([1, 2, null, 41, 42]);
     await expect(pageRange(20, 42)).toEqual([1, null, 19, 20, 21, null, 42]);
+    await expect(pageRange(42, 42)).toEqual([1, 2, null, 41, 42]);
     // Un buco di una pagina sola si riempie con la pagina.
     await expect(pageRange(3, 42)).toEqual([1, 2, 3, 4, null, 42]);
     await expect(pageRange(2, 3)).toEqual([1, 2, 3]);
@@ -103,26 +104,36 @@ export const GoTo: Story = {
 
 /**
  * Un numero e Invio: oltre l'ultima va all'ultima, sotto la prima alla prima,
- * e ciò che non è un numero non fa niente. Dopo il salto il campo si svuota.
+ * e ciò che non è un numero non fa niente. Il campo è la pagina aperta: dopo
+ * Invio mostra il numero già tenuto fra 1 e l'ultima, o torna alla pagina
+ * aperta se non era un numero.
  */
 export const GoToClamps: Story = {
   ...GoTo,
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     const field = canvas.getByLabelText('Vai a pagina');
+    await expect(field).toHaveAttribute('aria-current', 'page');
+    await expect(field).toHaveValue('20');
 
+    await userEvent.clear(field);
     await userEvent.type(field, '999{Enter}');
     await expect(args.onGoTo).toHaveBeenLastCalledWith(42);
-    await expect(field).toHaveValue('');
+    await expect(field).toHaveValue('42');
 
+    await userEvent.clear(field);
     await userEvent.type(field, '0{Enter}');
     await expect(args.onGoTo).toHaveBeenLastCalledWith(1);
+    await expect(field).toHaveValue('1');
 
+    await userEvent.clear(field);
     await userEvent.type(field, '7{Enter}');
     await expect(args.onGoTo).toHaveBeenLastCalledWith(7);
 
+    await userEvent.clear(field);
     await userEvent.type(field, 'abc{Enter}');
     await expect(args.onGoTo).toHaveBeenCalledTimes(3);
+    await expect(field).toHaveValue('20');
   },
 };
 
