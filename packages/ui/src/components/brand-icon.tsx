@@ -6,8 +6,9 @@ import { Path, Rect, Svg } from 'react-native-svg';
  * Da **Simple Icons** (CC0, simpleicons.org) Steam, GOG, Epic Games, EA,
  * Battle.net, PlayStation, IGDB, OpenCritic e Metacritic, disegnati in un
  * quadrato da 24; da **IGDB** (`igdb.com/icons`) Xbox e Nintendo, che Simple
- * Icons ha tolto su richiesta dei proprietari, in un quadrato da 20. Amazon
- * non c'è in nessuno dei due, e chi lo mostra ripiega sul nome.
+ * Icons ha tolto su richiesta dei proprietari, in un quadrato da 20; da
+ * **PCGamingWiki** HowLongToBeat. Amazon non c'è da nessuna parte, e chi lo
+ * mostra ripiega sul nome.
  *
  * I colori sono **fissi**, come quelli di `Logo`: un marchio è un'immagine e
  * non cambia col tema.
@@ -67,6 +68,15 @@ const BRANDS = {
     box: 24,
     path: 'M11.99 0A12 12 0 1 0 24 12v-.014A12 12 0 0 0 11.99 0Zm-.055 2.564a9.399 9.399 0 0 1 9.407 9.389v.01a9.399 9.399 0 1 1-9.408-9.399Zm-1.61 17.198 2.046-2.046-3.94-3.94c-.165-.166-.345-.373-.442-.608-.221-.47-.318-1.203.221-1.742.664-.664 1.548-.387 2.406.47l3.788 3.788 2.046-2.046-3.954-3.954a2.48 2.48 0 0 1-.456-.622c-.263-.539-.25-1.216.235-1.7.677-.678 1.562-.429 2.544.553l3.677 3.677 2.046-2.046-3.982-3.982c-2.018-2.018-3.912-1.949-5.212-.65-.498.499-.802 1.024-.954 1.618a4.026 4.026 0 0 0-.055 1.686l-.027.028c-.996-.414-2.13-.166-3 .705-1.162 1.161-1.12 2.392-.982 3.11l-.042.043-1.009-.816-1.77 1.77a64.1 64.1 0 0 1 2.213 2.1z',
   },
+  hltb: {
+    title: 'HowLongToBeat',
+    color: '#000000',
+    // L'originale sta in 150 con molto margine: se ne prende il quadrato da
+    // 110 che parte da 20, così la «H» ha la misura degli altri glifi.
+    box: 110,
+    origin: 20,
+    path: 'M50 29L50 122L71 122L71 103L79 103L79 122L100 122L100 29L79 29L79 84L71 84L71 29L50 29z',
+  },
   xbox: {
     title: 'Xbox',
     color: '#107c10',
@@ -111,7 +121,9 @@ const INSET = (TILE - GLYPH) / 2;
  * che sul tema scuro altrimenti sparirebbero nel fondo; sul chiaro non si vede.
  */
 export function BrandIcon({ brand, size = 20, label }: BrandIconProps) {
-  const { color, box, path } = BRANDS[brand];
+  const entry: { color: string; box: number; path: string; origin?: number } =
+    BRANDS[brand];
+  const { color, box, path, origin = 0 } = entry;
   const scale = GLYPH / box;
 
   return (
@@ -136,7 +148,7 @@ export function BrandIcon({ brand, size = 20, label }: BrandIconProps) {
       <Path
         d={path}
         fill="#ffffff"
-        transform={`translate(${INSET} ${INSET}) scale(${scale})`}
+        transform={`translate(${INSET} ${INSET}) scale(${scale}) translate(${-origin} ${-origin})`}
       />
     </Svg>
   );
