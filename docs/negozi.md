@@ -403,3 +403,70 @@ resa: vorrebbe dire conservare l'npsso, che è la sessione intera dell'account,
 pagamenti compresi, e ricavare la data da una risposta che porta anche IP e
 metodi di pagamento. Il primo giocato (`firstPlayedDateTime`, su `gamelist/v2`)
 non è un ripiego: copre 40 acquisti su 347, ed è un'altra informazione.
+
+## Il link alla pagina del gioco
+
+Misurato il 30/09/2026 sulle librerie vere, in sola lettura, per sapere se dai
+dati che già scarichiamo si può costruire il link alla pagina del negozio. Vale
+per GOG e PSN, che rispondono; per Epic lo slug non c'è nei nostri dati.
+
+**Un 200 non prova niente.** GOG con uno slug sbagliato rimanda a `/en/games`,
+PSN con un id inesistente a `/it-it/error?…`, e in tutti e due i casi il codice
+è 200. Il controllo va fatto sull'**URL finale** e sul titolo della pagina.
+
+| Negozio | Campo                                         | Dove sta                                 | Presenza                    | Link                                                              |
+| ------- | --------------------------------------------- | ---------------------------------------- | --------------------------- | ----------------------------------------------------------------- |
+| GOG     | **`url`**, es. `/en/game/bioshock_remastered` | ogni prodotto di `getFilteredProducts`   | 7 su 8; apre 5 su 5 provati | `https://www.gog.com` + `url`                                     |
+| GOG     | `slug`, es. `bioshock_remastered_game`        | lo stesso prodotto                       | 8 su 8; apre 4 su 5 provati | **non usarlo**: non è il percorso della pagina                    |
+| Epic    | nessuno                                       | `library/api/public/items`, `bulk/items` | 0 su 5                      | `https://store.epicgames.com/p/{slug}`, ma lo slug non lo abbiamo |
+| PSN     | `productId`                                   | `getPurchasedGameList` (gli acquisti)    | 50 su 50; apre 5 su 5       | `https://store.playstation.com/it-it/product/{productId}`         |
+| PSN     | `concept.id`                                  | `gamelist/v2` (i giocati)                | 49 su 49; apre 5 su 5       | `https://store.playstation.com/it-it/concept/{conceptId}`         |
+| PSN     | `conceptId`                                   | `getPurchasedGameList`                   | **0 su 50**, sempre `null`  | —                                                                 |
+
+**GOG: `url`, non `slug`.** I due coincidono quasi sempre, e per questo
+sembrano lo stesso campo. Non lo sono: BioShock Remastered ha `slug`
+`bioshock_remastered_game` e `url` `/en/game/bioshock_remastered`, e il link
+costruito dallo slug finisce sull'elenco dei giochi. Su un secondo campione,
+non aperto, `death_knights_of_krynn` ha `url` `/en/game/dungeons_dragons_krynn_series`,
+e `alders_blood_prologue` **non ha `url`**: per i prodotti senza serve un
+ripiego, per esempio un link di ricerca. Il campione è di 8 prodotti presi a
+caso dalla prima pagina, non l'intera libreria.
+
+**Epic: lo slug non sta nei nostri dati.** `bulk/items` rende `id`, `title`,
+`namespace`, `categories`, `customAttributes`, `releaseInfo`, `developer` e
+poco altro: né `productSlug`, né `urlSlug`, né `catalogNs.mappings.pageSlug`, e
+`customAttributes` ha solo `FolderName`, `PresenceId` e simili. `graphql.epicgames.com`,
+col bearer token, ha risposto `404 Gone` per tutti e 5 i namespace provati; il
+GraphQL di `store.epicgames.com` e le pagine `/p/…` rispondono con una sfida
+Cloudflare (403) a chi non è un browser, quindi da terminale **nessun link Epic
+è stato aperto**.
+
+Gli slug delle pagine hanno la forma **`{titolo}-{sei cifre esadecimali}`**:
+
+- `https://store.epicgames.com/p/astrea-six-sided-oracles-33c949`
+- `https://store.epicgames.com/p/mechabellum-88a843`
+- `https://store.epicgames.com/p/control-resonant-3568d3`
+
+Il suffisso non si deduce dal titolo, e **non si deduce nemmeno dagli id che
+abbiamo**. Astrea (`-33c949`) e Mechabellum (`-88a843`) sono in libreria su
+Epic, e per loro si è confrontato il suffisso con tutti gli id del record e del
+catalogo — `productId`, `namespace`, `catalogItemId`, `appName`, `entitlementName`
+— come testo e come inizio o fine dell'hash md5, sha1 e sha256 di ciascuno:
+
+| Gioco       | `productId`                        | `namespace`                        | Suffisso |
+| ----------- | ---------------------------------- | ---------------------------------- | -------- |
+| Astrea      | `4515173972ae4444a2582bc690c150bd` | `a940fa38f001486a9884640924119576` | `33c949` |
+| Mechabellum | `131adc2288294d74aaff6a2f02b51d59` | `36074aa6badf45698cced1a44e837fa2` | `88a843` |
+
+Nessun riscontro. `control-resonant` non è in libreria (c'è solo Control, con
+`productId` `prod-calluna`), quindi il terzo esempio non si è potuto provare.
+Lo slug sta con ogni probabilità nella pagina del negozio o in un endpoint che
+oggi non chiamiamo, non in un calcolo che possiamo rifare. Finché non si trova
+dove, per Epic resta il link di ricerca
+`https://store.epicgames.com/browse?q={titolo}`, da provare a mano.
+
+**PSN: due link, per due elenchi che non si incrociano.** Gli acquisti portano
+il `productId` e mai il `conceptId`; i giocati portano il `concept.id` e mai il
+`productId`. Su 49 giocati, **nessuno** ha lo stesso `titleId` di un acquisto
+nella prima pagina, quindi non c'è una copia che li abbia tutti e due: il link
+di una copia viene da ciò da cui la copia è nata, `/product/` o `/concept/`.
