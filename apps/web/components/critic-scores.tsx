@@ -1,6 +1,6 @@
 import type { GameDetail, GameScore } from '@repo/contracts';
 import { useQuery } from '@tanstack/react-query';
-import { XStack, YStack } from '@repo/ui';
+import { BrandIcon, XStack, YStack } from '@repo/ui';
 import { useTranslations } from 'use-intl';
 
 import { DetailTitle, Muted, Strong } from '@/components/detail-text';
@@ -42,8 +42,12 @@ function Complessivo({ voto }: { voto: GameScore }) {
   ].filter(Boolean);
 
   return (
-    <XStack flexWrap="wrap" items="baseline" columnGap={8}>
-      <Muted render="dt">{t(voto.source)}</Muted>
+    <XStack flexWrap="wrap" items="center" columnGap={8}>
+      {/* L'icona dentro il `dt`: in un `dl` le righe portano solo `dt` e `dd`. */}
+      <XStack render="dt" items="center" gap={8}>
+        <BrandIcon brand={voto.source} size={16} />
+        <Muted>{t(voto.source)}</Muted>
+      </XStack>
       <Strong render="dd">{Math.round(voto.score)}</Strong>
       {dettagli.length > 0 && (
         <Muted render="dd" fontSize={13}>

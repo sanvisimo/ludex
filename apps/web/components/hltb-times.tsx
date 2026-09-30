@@ -1,5 +1,5 @@
 import type { GameDetail } from '@repo/contracts';
-import { XStack, YStack } from '@repo/ui';
+import { BrandIcon, XStack, YStack } from '@repo/ui';
 import { useTranslations } from 'use-intl';
 
 import { DetailTitle, Muted, Strong } from '@/components/detail-text';
@@ -68,7 +68,10 @@ export function HltbTimes({ game }: { game: GameDetail }) {
 
   return (
     <YStack gap={8}>
-      <DetailTitle>{t('title')}</DetailTitle>
+      <XStack items="center" gap={8}>
+        <BrandIcon brand="hltb" size={18} />
+        <DetailTitle>{t('title')}</DetailTitle>
+      </XStack>
       {game.hltbSyncedAt === null ? (
         <Muted>{t('notFetched')}</Muted>
       ) : righe.length === 0 ? (

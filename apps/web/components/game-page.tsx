@@ -62,27 +62,58 @@ const STORE_BRAND: Partial<Record<Store, Brand>> = {
   nintendo: 'nintendo',
 };
 
-/** Un link che esce dall'app, in una scheda nuova. */
-function ExternalLink({
+/**
+ * Una riga che, se c'è dove portare, è tutta un link che esce dall'app:
+ * icona e testo insieme, non la sola icona. Senza `href` è la stessa riga,
+ * ferma.
+ */
+function LinkRow({
   href,
-  label,
+  title,
   children,
+  items = 'center',
 }: {
-  href: string;
-  label: string;
+  href: string | null;
+  /** Il suggerimento al passaggio, es. «Apri su GOG». */
+  title: string;
   children: ReactNode;
+  items?: 'center' | 'flex-start';
 }) {
+  if (!href) {
+    return (
+      <XStack items={items} gap={10}>
+        {children}
+      </XStack>
+    );
+  }
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={label}
-      title={label}
-      style={{ display: 'inline-flex', lineHeight: 0 }}
+    <XStack
+      render="a"
+      // Come in `NavItem`: gli attributi del link arrivano all'`<a>`, ma i
+      // tipi della view non li conoscono.
+      {...({
+        href,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        title,
+        style: { textDecoration: 'none', color: 'inherit' },
+      } as object)}
+      items={items}
+      gap={10}
+      mx={-6}
+      px={6}
+      py={2}
+      rounded={6}
+      cursor="pointer"
+      hoverStyle={{ bg: '$color4' }}
+      focusVisibleStyle={{
+        outlineColor: '$outlineColor',
+        outlineStyle: 'solid',
+        outlineWidth: 2,
+      }}
     >
       {children}
-    </a>
+    </XStack>
   );
 }
 
@@ -212,16 +243,6 @@ export function GameHero({ game }: { game: GameDetail }) {
               </XStack>
             )}
           </YStack>
-          {game.links.igdb && (
-            <YStack self="flex-start">
-              <ExternalLink
-                href={game.links.igdb}
-                label={t('openOn', { name: 'IGDB' })}
-              >
-                <BrandIcon brand="igdb" size={24} />
-              </ExternalLink>
-            </YStack>
-          )}
         </XStack>
       </YStack>
     </Theme>
@@ -380,17 +401,13 @@ export function DurationAndCritics({
 
   return (
     <Panel>
-      <XStack items="center" justify="space-between" gap={8}>
+      <LinkRow
+        href={game.links.hltb}
+        title={t('openOn', { name: 'HowLongToBeat' })}
+      >
+        <BrandIcon brand="hltb" size={20} />
         <PanelTitle>{tHltb('title')}</PanelTitle>
-        {game.links.hltb && (
-          <ExternalLink
-            href={game.links.hltb}
-            label={t('openOn', { name: 'HowLongToBeat' })}
-          >
-            <BrandIcon brand="hltb" size={20} />
-          </ExternalLink>
-        )}
-      </XStack>
+      </LinkRow>
       {times.length === 0 ? (
         <Muted>
           {game.hltbSyncedAt === null ? tHltb('notFetched') : tHltb('noTimes')}
@@ -424,21 +441,16 @@ export function DurationAndCritics({
       ) : (
         <YStack gap={6}>
           {scores.map(({ source, score, link }) => (
-            <XStack key={source} items="center" gap={8}>
-              {link ? (
-                <ExternalLink
-                  href={link}
-                  label={t('openOn', { name: tCritic(source) })}
-                >
-                  <BrandIcon brand={source} size={20} />
-                </ExternalLink>
-              ) : (
-                <BrandIcon brand={source} size={20} />
-              )}
+            <LinkRow
+              key={source}
+              href={link}
+              title={t('openOn', { name: tCritic(source) })}
+            >
+              <BrandIcon brand={source} size={20} />
               <Muted flex={1}>{tCritic(source)}</Muted>
               {score!.tier && <Muted fontSize={13}>{score!.tier}</Muted>}
               <Strong>{Math.round(score!.score)}</Strong>
-            </XStack>
+            </LinkRow>
           ))}
         </YStack>
       )}
@@ -535,18 +547,14 @@ export function BacklogPanel({
           ].filter(Boolean);
 
           return (
-            <XStack key={ownership.id} gap={10} items="flex-start">
+            <LinkRow
+              key={ownership.id}
+              href={url}
+              title={t('openOn', { name: storeName ?? '' })}
+              items="flex-start"
+            >
               <YStack width={24} pt={2}>
-                {icon && url && storeName ? (
-                  <ExternalLink
-                    href={url}
-                    label={t('openOn', { name: storeName })}
-                  >
-                    {icon}
-                  </ExternalLink>
-                ) : (
-                  icon
-                )}
+                {icon}
               </YStack>
               <YStack flex={1} minW={0}>
                 <Strong fontWeight="500">
@@ -567,7 +575,7 @@ export function BacklogPanel({
                   <Muted fontSize={13}>{facts.join(' · ')}</Muted>
                 )}
               </YStack>
-            </XStack>
+            </LinkRow>
           );
         })}
       </YStack>
