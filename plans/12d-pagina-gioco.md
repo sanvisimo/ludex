@@ -233,6 +233,28 @@ dell'account.
    a capo intere; «ultima partita» è una data e non «3 mesi fa», che server e
    browser avrebbero scritto diversi.
 
+5b. **Le icone delle piattaforme**, dopo aver visto la pagina (30/09/2026).
+Il nome della piattaforma sulle copie diventa un'icona, quelle di RomM:
+disegni colorati dell'hardware, non loghi, e ci sono anche per Windows e
+DOS, che nessuna raccolta di loghi ha. L'abbinamento si fa con la tabella
+di RomM che lega le sue piattaforme agli id IGDB, che `platforms` ha su 87
+righe su 96; più otto a mano. Si convertono in PNG da 96 px, gli ICO come
+gli SVG, perché React Native gli ICO non li legge, e stanno in
+`apps/web/public/platforms/` con la licenza: **RomM è AGPL-3.0**, e una
+parte delle icone viene da Libretro, **CC BY 4.0**, con l'obbligo di
+citarla. Il componente è `PlatformIcon` in `@repo/ui`, su un cerchio
+chiaro fisso perché alcune icone sono scure. Dove l'icona manca resta il
+nome.
+
+**Fatto.** 83 icone su 96 piattaforme: 75 abbinate dall'id IGDB, 8 a
+mano (Flash, Game & Watch, Mega Duck, PC-FX, SuperGrafx, Switch 2, Sega
+CD, TIC-80, e Xbox One per nome); le 13 senza sono piattaforme rare.
+336 KB in tutto. Provenienza, commit di RomM e licenza file per file in
+`apps/web/public/platforms/LICENSE.md` (9 da Libretro, CC BY 4.0; 74 da
+RomM, AGPL-3.0). L'elenco di chi ha l'icona è in
+`apps/web/lib/platform-icons.ts`. Sulle copie il nome della piattaforma
+sparisce dove c'è l'icona, e resta nel suo `aria-label`.
+
 6. **Chiusura**: screenshot a 375, 900 e 1440 px, `docs/modello-dati.md`
    (le colonne nuove e `game_related`), `apps/web/CLAUDE.md`, questo piano.
    Il lotto si chiude quando l'utente dice che la pagina è pronta.

@@ -108,6 +108,10 @@ export {
 } from './components/gallery';
 export { Label, type LabelProps } from './components/label';
 export {
+  PlatformIcon,
+  type PlatformIconProps,
+} from './components/platform-icon';
+export {
   Logo,
   Wordmark,
   type LogoProps,

@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogTitle,
   Gallery,
+  PlatformIcon,
   ScrollView,
   Text,
   Theme,
@@ -38,6 +39,7 @@ import { HltbTimes } from '@/components/hltb-times';
 import { RatingValue } from '@/components/rating-value';
 import { useDuration } from '@/lib/duration';
 import { igdbImageUrl } from '@/lib/igdb-image';
+import { platformIconUrl } from '@/lib/platform-icons';
 import { useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 
@@ -522,6 +524,9 @@ export function BacklogPanel({
             : null;
           const url = storePageUrl(ownership.store, ownership.storePage);
           const icon = brand ? <BrandIcon brand={brand} size={24} /> : null;
+          const platformName =
+            nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug;
+          const platformIcon = platformIconUrl(ownership.platformSlug);
 
           const facts = [
             ownership.playtimeMinutes
@@ -546,6 +551,19 @@ export function BacklogPanel({
               : null,
           ].filter(Boolean);
 
+          const label = [
+            // Con l'icona il nome si toglie: resta nel suo
+            // `aria-label` e al passaggio del mouse.
+            !platformIcon && platformName,
+            // Senza icona il negozio si scrive: è il caso di Amazon.
+            !brand && storeName,
+            ownership.storeAccount?.label,
+            ownership.subscription && tSubscription(ownership.subscription),
+            ownership.medium === 'physical' && tMedium('physical'),
+          ]
+            .filter(Boolean)
+            .join(' · ');
+
           return (
             <LinkRow
               key={ownership.id}
@@ -553,24 +571,14 @@ export function BacklogPanel({
               title={t('openOn', { name: storeName ?? '' })}
               items="flex-start"
             >
-              <YStack width={24} pt={2}>
+              <XStack gap={6} pt={2} shrink={0}>
                 {icon}
-              </YStack>
+                {platformIcon && (
+                  <PlatformIcon src={platformIcon} label={platformName} />
+                )}
+              </XStack>
               <YStack flex={1} minW={0}>
-                <Strong fontWeight="500">
-                  {[
-                    nameBySlug.get(ownership.platformSlug) ??
-                      ownership.platformSlug,
-                    // Senza icona il negozio si scrive: è il caso di Amazon.
-                    !brand && storeName,
-                    ownership.storeAccount?.label,
-                    ownership.subscription &&
-                      tSubscription(ownership.subscription),
-                    ownership.medium === 'physical' && tMedium('physical'),
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </Strong>
+                {label && <Strong fontWeight="500">{label}</Strong>}
                 {facts.length > 0 && (
                   <Muted fontSize={13}>{facts.join(' · ')}</Muted>
                 )}
