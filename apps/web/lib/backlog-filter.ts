@@ -23,7 +23,7 @@ export type BacklogView = (typeof backlogViewValues)[number];
  * `max(200)` del contratto. Una scelta fissa e non un numero libero: un link
  * con `size=7` non deve aprire una pagina che nessun menu sa rifare.
  */
-export const pageSizeValues = [15, 30, 60, 120] as const;
+export const pageSizeValues = [6, 15, 24, 48, 99] as const;
 export type PageSize = (typeof pageSizeValues)[number];
 import { useCallback, useMemo } from 'react';
 

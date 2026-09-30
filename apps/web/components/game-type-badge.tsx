@@ -1,5 +1,5 @@
 import type { GameType } from '@repo/contracts';
-import { Badge } from '@repo/ui';
+import { Badge, type BadgeProps } from '@repo/ui';
 
 import { useGameTypeLabels } from '@/lib/labels';
 
@@ -13,8 +13,15 @@ import { useGameTypeLabels } from '@/lib/labels';
  * Serve perché un DLC agganciato per sbaglio dall'import sta in lista identico a
  * un gioco, e da fuori non c'è modo di accorgersene.
  */
-export function GameTypeBadge({ type }: { type: GameType | null }) {
+export function GameTypeBadge({
+  type,
+  ...props
+}: { type: GameType | null } & Omit<BadgeProps, 'children'>) {
   const labels = useGameTypeLabels();
   if (type === null || type === 'main_game') return null;
-  return <Badge variant="secondary">{labels[type]}</Badge>;
+  return (
+    <Badge variant="secondary" {...props}>
+      {labels[type]}
+    </Badge>
+  );
 }

@@ -30,7 +30,6 @@ const BadgeFrame = styled(XStack, {
   gap: 4,
   rounded: 999,
   items: 'center',
-  self: 'flex-start',
   borderWidth: 1,
   borderColor: 'transparent',
 

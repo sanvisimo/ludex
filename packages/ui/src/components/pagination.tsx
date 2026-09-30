@@ -1,22 +1,30 @@
-import { Fragment, useId, useState, type ReactNode } from 'react';
+import { Fragment, useState, useLayoutEffect, type ReactNode } from 'react';
 import { Text, XStack, styled } from 'tamagui';
-
 import { ChevronLeft, ChevronRight } from '../icons';
 import { Input } from './input';
-import { Label } from './label';
 
 /**
  * Le pagine da mostrare: la prima, l'ultima, quella aperta con le due
- * vicine, e `null` dove ne mancano. Un buco di una pagina sola si riempie con
- * la pagina, perché «…» al posto di un numero solo occupa lo stesso spazio e
- * dice meno.
+ * vicine, e `null` dove ne mancano. Agli estremi (prima o ultima pagina) si
+ * aggiunge la seconda dal lato opposto, così i due estremi si somigliano. Un
+ * buco di una pagina sola si riempie con la pagina, perché «…» al posto di un
+ * numero solo occupa lo stesso spazio e dice meno.
  *
- *     pageRange(1, 40)  → 1 2 3 … 40
+ *     pageRange(1, 40)  → 1 2 … 39 40
  *     pageRange(20, 40) → 1 … 19 20 21 … 40
+ *     pageRange(40, 40) → 1 2 … 39 40
  */
 export function pageRange(page: number, count: number): (number | null)[] {
   const wanted = new Set(
-    [1, page - 1, page, page + 1, count].filter((n) => n >= 1 && n <= count),
+    [
+      1,
+      page - 1,
+      page,
+      page + 1,
+      count,
+      ...(page === 1 ? [count - 1] : []),
+      ...(page === count ? [2] : []),
+    ].filter((n) => n >= 1 && n <= count),
   );
   const sorted = [...wanted].sort((a, b) => a - b);
   const range: (number | null)[] = [];
@@ -130,6 +138,11 @@ export function Pagination({
   goToLabel,
   onGoTo,
 }: PaginationProps) {
+  const [text, setText] = useState(page.toString());
+  useLayoutEffect(() => {
+    setText(page.toString());
+  }, [page]);
+
   if (pageCount <= 1) return null;
 
   const link = (target: number, content: ReactNode, extra: object = {}) => (
@@ -162,6 +175,17 @@ export function Pagination({
       </PageFrame>
     );
 
+  const go = () => {
+    const value = Number.parseInt(text, 10);
+    if (Number.isNaN(value)) {
+      setText(page.toString());
+      return;
+    }
+    const target = Math.min(Math.max(value, 1), pageCount);
+    setText(target.toString());
+    onGoTo?.(target);
+  };
+
   return (
     // `maxW`: le view di Tamagui non si restringono, e su un telefono il `nav`
     // restava largo quanto il suo contenuto invece di andare a capo — «vai a
@@ -189,9 +213,23 @@ export function Pagination({
           </PageFrame>
         ) : (
           <Fragment key={n}>
-            {link(n, <PageText current={n === page}>{n}</PageText>, {
-              'aria-current': n === page ? 'page' : undefined,
-            })}
+            {n === page && !!onGoTo ? (
+              <Input
+                aria-label={goToLabel}
+                aria-current="page"
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                onSubmitEditing={go}
+                inputMode="numeric"
+                enterKeyHint="go"
+                width={50}
+                text="center"
+              />
+            ) : (
+              link(n, <PageText current={n === page}>{n}</PageText>, {
+                'aria-current': n === page ? 'page' : undefined,
+              })
+            )}
           </Fragment>
         ),
       )}
@@ -201,57 +239,6 @@ export function Pagination({
         nextLabel,
         <ChevronRight size={16} color="$color11" />,
       )}
-      {goToLabel && onGoTo && (
-        <GoToPage label={goToLabel} pageCount={pageCount} onGoTo={onGoTo} />
-      )}
-    </XStack>
-  );
-}
-
-/**
- * Il campo «vai a pagina»: un numero e Invio.
- *
- * Il numero si tiene fra 1 e l'ultima invece di rifiutarlo: chi scrive 999 su
- * 42 pagine vuole l'ultima, non un errore. Un campo vuoto o non numerico non
- * fa niente. Dopo il salto il campo si svuota: la pagina aperta la dicono già
- * i numeri accanto.
- *
- * Un campo e non un `<form>`: `onSubmitEditing` è l'Invio sul web e il tasto
- * di invio della tastiera su mobile, e il form su React Native non esiste.
- */
-function GoToPage({
-  label,
-  pageCount,
-  onGoTo,
-}: {
-  label: string;
-  pageCount: number;
-  onGoTo: (page: number) => void;
-}) {
-  const id = useId();
-  const [text, setText] = useState('');
-
-  const go = () => {
-    const value = Number.parseInt(text, 10);
-    if (Number.isNaN(value)) return;
-    onGoTo(Math.min(Math.max(value, 1), pageCount));
-    setText('');
-  };
-
-  return (
-    <XStack items="center" gap={8} ml={8}>
-      <Label htmlFor={id} color="$color11" fontWeight="400">
-        {label}
-      </Label>
-      <Input
-        id={id}
-        value={text}
-        onChange={(event) => setText(event.target.value)}
-        onSubmitEditing={go}
-        inputMode="numeric"
-        enterKeyHint="go"
-        width={64}
-      />
     </XStack>
   );
 }

@@ -4,7 +4,6 @@ import type {
   Store,
   Subscription,
 } from '@repo/contracts';
-import { storeAccountName } from '@repo/contracts';
 import { Badge, XStack } from '@repo/ui';
 import { X } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
@@ -55,12 +54,21 @@ export function ownershipKey(ownership: DisplayedOwnership) {
 // chi la passa: sulle aggiunte in sospeso le toglie dalla coda, sui possessi
 // salvati chiama la rimozione vera, che lascia un rifiuto perché il prossimo
 // import non la rimetta.
+//
+// `compact`: sotto i 640 px un badge per negozio e basta, senza doppioni — su
+// un telefono «Sony PlayStation 4 · PlayStation Store» non ci sta. Sono due
+// elenchi e non uno solo accorciato, perché raggruppare vuol dire togliere
+// badge, e scegliere quale mostrare in JavaScript darebbe un errore di
+// idratazione: il server non sa quanto è larga la finestra. Si alternano col
+// CSS. Senza `compact` il componente è quello di sempre.
 export function OwnershipBadges({
   ownerships,
   onRemove,
+  compact,
 }: {
   ownerships: DisplayedOwnership[];
   onRemove?: (ownership: DisplayedOwnership) => void;
+  compact?: boolean;
 }) {
   const t = useTranslations('editEntry');
   const tSubscription = useTranslations('subscription');
@@ -73,13 +81,25 @@ export function OwnershipBadges({
 
   const nameBySlug = new Map((platforms ?? []).map((p) => [p.slug, p.name]));
 
-  return (
-    <XStack flexWrap="wrap" gap={4}>
+  // Il negozio, o la piattaforma per una copia che non ne ha (un disco).
+  const storeNames = [
+    ...new Set(
+      ownerships.map((ownership) =>
+        ownership.store
+          ? storeLabels[ownership.store]
+          : (nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug),
+      ),
+    ),
+  ];
+
+  const full = (
+    <XStack
+      flexWrap="wrap"
+      gap={4}
+      $max-sm={compact ? { display: 'none' } : undefined}
+    >
       {ownerships.map((ownership) => {
-        const account =
-          ownership.store && ownership.storeAccount
-            ? storeAccountName(ownership.storeAccount)
-            : null;
+        const account = ownership.storeAccount?.label;
 
         const label =
           (nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug) +
@@ -129,5 +149,20 @@ export function OwnershipBadges({
         );
       })}
     </XStack>
+  );
+
+  if (!compact) return full;
+
+  return (
+    <>
+      {full}
+      <XStack flexWrap="wrap" gap={4} $sm={{ display: 'none' }}>
+        {storeNames.map((name) => (
+          <Badge key={name} variant="secondary" maxW="100%" overflow="hidden">
+            {name}
+          </Badge>
+        ))}
+      </XStack>
+    </>
   );
 }
