@@ -3,6 +3,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   real,
@@ -76,6 +77,26 @@ export const games = pgTable(
     coverImageId: text('cover_image_id'),
     coverWidth: integer('cover_width'),
     coverHeight: integer('cover_height'),
+
+    // --- media e autori, per la pagina del gioco (12d) ---
+    //
+    // Array e non tabelle: si mostrano e basta, nessuno ci filtra o ci
+    // ordina. Generi e temi hanno una tabella perché alimentano i filtri;
+    // questi no.
+    //
+    // Null vuol dire «non ancora chiesto a IGDB», la lista vuota «IGDB non ne
+    // ha»: è la stessa distinzione degli altri metadati, e su questi due stati
+    // lavora l'arnese che li riempie sui giochi arricchiti prima delle colonne.
+    //
+    // Gli `image_id` come per la copertina: l'URL si compone al momento di
+    // mostrarlo, scegliendo la dimensione.
+    artworkImageIds: text('artwork_image_ids').array(),
+    screenshotImageIds: text('screenshot_image_ids').array(),
+    // I video sono di YouTube: l'id è quello del video, il nome è come IGDB
+    // lo chiama («Trailer», «Gameplay»…), e può mancare.
+    videos: jsonb('videos').$type<{ videoId: string; name: string | null }[]>(),
+    developers: text('developers').array(),
+    publishers: text('publishers').array(),
 
     // --- voto della critica: il numero su cui si filtra e si ordina ---
     //

@@ -7,6 +7,7 @@ export * from './platforms';
 export * from './games';
 export * from './backlog';
 export * from './attributes';
+export * from './related';
 export * from './data-source';
 export * from './sources';
 export * from './scores';

@@ -176,6 +176,13 @@
       "when": 1790698773599,
       "tag": "0024_lean_archangel",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1790775999697,
+      "tag": "0025_tired_abomination",
+      "breakpoints": true
     }
   ]
 }

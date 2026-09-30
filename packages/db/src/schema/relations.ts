@@ -4,6 +4,7 @@ import { gameAttributes, igdbAttributes } from './attributes';
 import { backlog, ownerships } from './backlog';
 import { externalIds, games } from './games';
 import { platforms } from './platforms';
+import { gameRelated } from './related';
 import { storeAccounts, unresolvedImports } from './imports';
 import { gameScores } from './scores';
 import { gameSources } from './sources';
@@ -22,6 +23,11 @@ export const gamesRelations = relations(games, ({ many }) => ({
   attributes: many(gameAttributes),
   sources: many(gameSources),
   scores: many(gameScores),
+  related: many(gameRelated),
+}));
+
+export const gameRelatedRelations = relations(gameRelated, ({ one }) => ({
+  game: one(games, { fields: [gameRelated.gameId], references: [games.id] }),
 }));
 
 export const igdbAttributesRelations = relations(

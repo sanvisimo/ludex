@@ -179,6 +179,11 @@ export const attributeKindValues = [
   'player_perspective',
 ] as const;
 
+// Come un altro gioco è legato a questo, secondo IGDB: i suoi remake, i suoi
+// remaster, i giochi simili. Nella pagina del gioco sono tre file distinte, e
+// remake e remaster stanno insieme solo nel titolo della sezione.
+export const relatedKindValues = ['remake', 'remaster', 'similar'] as const;
+
 // Tag e categorie personali dell'utente. Sono due tipi della stessa cosa — una
 // parola che l'utente attacca a un gioco suo — e per questo stanno in una
 // tabella sola distinta da `kind`, come `igdb_attributes` fa con generi e temi.
@@ -236,6 +241,7 @@ export const AUTO_SYNC_EVERY_DAYS: Record<
 export type BacklogStatus = (typeof backlogStatusValues)[number];
 export type UserTagKind = (typeof userTagKindValues)[number];
 export type AttributeKind = (typeof attributeKindValues)[number];
+export type RelatedKind = (typeof relatedKindValues)[number];
 export type Store = (typeof storeValues)[number];
 export type LinkableStore = (typeof linkableStoreValues)[number];
 export type StoreAccountStatus = (typeof storeAccountStatusValues)[number];

@@ -3,7 +3,8 @@
 **Struttura approvata il 30/09/2026** sul wireframe
 ([12d-pagina-gioco.excalidraw](12d-pagina-gioco.excalidraw): si apre
 trascinandolo su excalidraw.com), con la parte desktop corretta dall'utente.
-**Ordine dei passi in approvazione**; poi il codice.
+**Ordine dei passi approvato** lo stesso giorno. Sotto ogni passo, man mano,
+cosa è stato fatto e cosa l'ha smentito.
 
 ## Contesto
 
@@ -13,7 +14,7 @@ pagina avrà tutti i suoi dati, scegliendo fra quelli cosa sale sulla card.
 Qui c'è la pagina.
 
 La pagina di oggi
-([_app.games.$id.tsx](../apps/web/src/routes/_app.games.$id.tsx), 216 righe)
+([\_app.games.$id.tsx](../apps/web/src/routes/_app.games.$id.tsx), 216 righe)
 è ancora quella di prima dello step 12: una colonna di card, copertina e
 trama, attributi, voti della critica, tempi HLTB, il blocco del backlog.
 
@@ -49,7 +50,11 @@ trama, attributi, voti della critica, tempi HLTB, il blocco del backlog.
    la loro pagina; gli altri mostrano solo copertina e nome. Per questo nome e
    copertina si salvano anche per i giochi che non sono in `games`. **A
    tendere** da lì si aggiungeranno al backlog o alla wishlist: è lo step 15,
-   non questo.
+   non questo. **Non si popola `games` coi giochi legati** (30/09/2026): una
+   decina di simili per gioco sono migliaia di righe che nessuno possiede,
+   ciascuna col suo enrichment e il budget OpenCritic, e una riga di `games`
+   non si cancella. La riga si creerà quando l'utente ci clicca; fino ad
+   allora `game_related` tiene l'`igdbId`, e la JOIN lo ritrova da sola.
 2. **La card in sospeso**, vedi sopra.
 3. **Lo schizzo desktop corretto dall'utente** (commit `b733fd4`): generi e
    temi diventano badge sotto il titolo, nella hero, come su GOG e Steam; nella
@@ -101,15 +106,15 @@ Misurati col probe del 30/09/2026, i risultati stanno in
 [negozi.md](../docs/negozi.md), «Il link alla pagina del gioco». Il link è
 **della copia**: viene da ciò da cui la copia è nata.
 
-| Copia | Da dove viene il link | Se manca |
-| --- | --- | --- |
-| Steam | l'appid | — |
-| GOG | `url` di `getFilteredProducts`, **non** `slug` | `https://www.gog.com/en/account` |
-| PSN, dagli acquisti | `productId` → `/product/{productId}` | — |
-| PSN, dai giocati (i dischi) | `concept.id` → `/concept/{conceptId}` | — |
-| Epic | lo slug non sta nei nostri dati | icona senza link |
-| Amazon | nessuna pagina pubblica per gioco | icona senza link |
-| Disco dichiarato, aggiunta a mano | nessuno | icona senza link |
+| Copia                             | Da dove viene il link                          | Se manca                         |
+| --------------------------------- | ---------------------------------------------- | -------------------------------- |
+| Steam                             | l'appid                                        | —                                |
+| GOG                               | `url` di `getFilteredProducts`, **non** `slug` | `https://www.gog.com/en/account` |
+| PSN, dagli acquisti               | `productId` → `/product/{productId}`           | —                                |
+| PSN, dai giocati (i dischi)       | `concept.id` → `/concept/{conceptId}`          | —                                |
+| Epic                              | lo slug non sta nei nostri dati                | icona senza link                 |
+| Amazon                            | nessuna pagina pubblica per gioco              | icona senza link                 |
+| Disco dichiarato, aggiunta a mano | nessuno                                        | icona senza link                 |
 
 GOG e PSN il dato lo mandano già, ma oggi lo buttiamo: va letto e salvato
 all'import. Le copie importate finora prendono il link al prossimo import
@@ -134,6 +139,22 @@ dell'account.
    quanti giochi hanno artwork, screenshot, video, remake e simili: è la
    misura di quanto spesso la hero ripiega e le sezioni restano vuote. Va
    lanciato in locale, dove ci sono le credenziali IGDB.
+
+   **Fatto**, tranne il giro vero dell'arnese. Migration `0025`: le cinque
+   colonne su `games` (null = mai chiesto, lista vuota = IGDB non ne ha) e
+   `game_related` con l'enum `related_kind`. La scrittura dell'enrichment è
+   diventata `saveIgdbMetadata`, la stessa per il job e per l'arnese, che
+   scrive tutto ciò che IGDB sa e non solo i campi nuovi: così le due strade
+   non lasciano un gioco in uno stato che l'altra non produce. L'arnese è
+   `pnpm --filter api igdb:media`. Una correzione al piano: **100 id per
+   richiesta, non 500**, perché ogni gioco si porta dietro screenshot, simili
+   e id dei negozi espansi; sulle ~2000 righe di prova sono venti richieste,
+   cinque secondi. Test: media e autori scritti, `game_related` riscritta
+   senza accumulare e senza tenere ciò che IGDB ha tolto, l'arnese che
+   riempie, non richiede due volte e lascia candidato chi IGDB non conosce.
+   **Resta da fare**: lanciare `igdb:media` in locale e scrivere qui la
+   copertura che stampa.
+
 2. **I link ai negozi.** La colonna su `ownerships`, scritta dagli import di
    Steam (l'appid), GOG (`url`) e PSN (`product/…` dagli acquisti,
    `concept/…` dai giocati), e **riscritta al reimport**, o le copie di oggi
