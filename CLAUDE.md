@@ -195,6 +195,10 @@ prima, dove costa poco:
 Il Design canvas, cioè i mockup ad alta fedeltà, solo se l'utente lo chiede:
 costa quanto il codice.
 
+**Un lotto si chiude quando l'utente dice che è pronto**, non quando sono
+fatti i passi del piano. I commenti che arrivano vedendolo in uso sono ancora
+quel lotto: si aggiungono al suo piano, non ne aprono uno nuovo.
+
 **I piani stanno in `plans/`**, uno per lotto, col nome del lotto
 (`12a-design-system.md`). La modalità piano li scrive altrove, fuori dal repo:
 a decisione presa il piano si sposta qui, e da qui si aggiorna mentre il lotto

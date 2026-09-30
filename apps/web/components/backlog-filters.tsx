@@ -66,8 +66,8 @@ const RELEASED_MAX = new Date().getFullYear();
 
 /**
  * La barra: ricerca, il bottone che apre il pannello, la vista, e sotto lo
- * stato e i filtri accesi a chip. L'ordinamento sta nel pannello (12d): su un
- * telefono la barra con lui andava su tre righe.
+ * stato e i filtri accesi a chip. L'ordinamento sta nel pannello (ritocchi
+ * del 12c): su un telefono la barra con lui andava su tre righe.
  *
  * I chip ci sono perché il pannello, chiuso, non dice niente: prima l'unico
  * segno di un filtro acceso era il numero su «azzera».

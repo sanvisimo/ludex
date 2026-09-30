@@ -77,7 +77,7 @@ possesso. Conseguenze:
   durata e voti servono _prima_ dell'acquisto. È lo **step 15**.
 - **stato**: `backlog` / `playing` / `played` / `completed` / `dropped` /
   `excluded`. `completed` è il 100%, il platinato: `played` resta «finito», e
-  «completato» dice di più (12d). Lo sceglie solo l'utente: dedurlo dai trofei
+  «completato» dice di più (12c). Lo sceglie solo l'utente: dedurlo dai trofei
   PSN è un'altra storia. `excluded` ("non voglio giocarlo") è uno stato, non una
   tabella: è un segnale negativo esplicito e allo step 13 vale più di molte
   valutazioni positive.
