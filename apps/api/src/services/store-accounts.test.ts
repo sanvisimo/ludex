@@ -174,7 +174,9 @@ describe('account di negozio', () => {
     // `games` non si tocca mai: il catalogo è condiviso, e il prossimo utente
     // che importa quel gioco non deve ripagarne l'enrichment perché qualcun
     // altro ha scollegato un account.
-    const catalogo = await db.select({ id: schema.games.id }).from(schema.games);
+    const catalogo = await db
+      .select({ id: schema.games.id })
+      .from(schema.games);
     expect(catalogo.map((row) => row.id).sort()).toEqual(
       [solo.gameId, anche.gameId].sort(),
     );
@@ -261,7 +263,11 @@ describe('account di negozio', () => {
       .set({ displayName: 'Simone' })
       .where(eq(schema.storeAccounts.id, account.id));
 
-    const rinominato = await renameStoreAccount(userId, account.id, ' di famiglia ');
+    const rinominato = await renameStoreAccount(
+      userId,
+      account.id,
+      ' di famiglia ',
+    );
 
     expect(rinominato).toMatchObject({
       label: 'di famiglia',

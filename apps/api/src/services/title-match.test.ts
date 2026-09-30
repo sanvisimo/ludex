@@ -144,7 +144,7 @@ describe('rankHltbCandidates', () => {
   });
 });
 
-describe('tolleranza sull\'anno', () => {
+describe("tolleranza sull'anno", () => {
   it('si può allargare per le fonti che datano la piattaforma capofila', async () => {
     // Mafia: IGDB la data 2002 (il PC), Metacritic 2004 (il port Xbox, che è
     // la loro riga principale). Con la tolleranza stretta il gioco giusto

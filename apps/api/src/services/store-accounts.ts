@@ -261,9 +261,7 @@ async function upsertAccount(input: {
         displayName: input.displayName ?? null,
         // L'etichetta è dell'utente, non del negozio: ricollegare non deve
         // cancellargliela. Si sovrascrive solo se ne ha scritta una nuova.
-        label: input.label
-          ? input.label
-          : sql`${schema.storeAccounts.label}`,
+        label: input.label ? input.label : sql`${schema.storeAccounts.label}`,
         credentials,
         credentialsExpireAt: input.expiresAt ?? null,
         status: 'ok',
@@ -601,7 +599,7 @@ export async function linkAmazonAccount(
 export class PsnNpssoError extends Error {
   constructor() {
     super(
-      'Non trovo l\'npsso: incolla la risposta della pagina ssocookie, o il solo valore',
+      "Non trovo l'npsso: incolla la risposta della pagina ssocookie, o il solo valore",
     );
     this.name = 'PsnNpssoError';
   }
@@ -632,9 +630,7 @@ export async function linkPsnAccount(
   const npsso = parseNpsso(pasted);
   if (!npsso) throw new PsnNpssoError();
 
-  const credentials = await exchangePsnCode(
-    await exchangeNpssoForCode(npsso),
-  );
+  const credentials = await exchangePsnCode(await exchangeNpssoForCode(npsso));
 
   return upsertAccount({
     userId,

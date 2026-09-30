@@ -53,7 +53,6 @@ Sette cose che le schermate devono sapere, perché si scoprono solo a vederle:
   layer, quelli di Tailwind 4 dentro, e vince sempre Tamagui. Una classe su un
   componente sparisce in silenzio.
 
-
 **Il web è su TanStack Start**, deciso prima del 12b e fatto nel 12b: web e
 mobile condividono i componenti, non le rotte, e il grosso del progetto —
 `/backlog` e il guscio — su telefono è per forza un'altra schermata. Il conto e
@@ -73,7 +72,6 @@ all'idratazione. Tre pezzi che una pagina nuova usa:
   della barra passa da qui, e `NavTarget` dice quali pagine la barra conosce.
 - **`takeLinkClick`**: la regola dei modificatori (nuova scheda, tasto
   centrale) per ogni `<a href>` che naviga nell'app, `ButtonLink` compreso.
-
 
 Dall'identità, la parte che è del web:
 

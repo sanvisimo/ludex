@@ -47,7 +47,7 @@ insieme:
   non essere ancora in `games`, e una FK verso una riga che non c'è impedirebbe
   di scrivere il figlio.
 
-Nessuno nasconde né esclude i DLC da solo: un'espansione come *Phantom Liberty*
+Nessuno nasconde né esclude i DLC da solo: un'espansione come _Phantom Liberty_
 si gioca eccome. Il tipo si **mostra** — un badge accanto al titolo quando non è
 un gioco principale — e si **filtra**, ma nessun filtro è acceso di default.
 
@@ -99,7 +99,7 @@ possesso. Conseguenze:
   `least(added_at, min(acquired_at delle copie))` (`advanceAddedAt`). Fra due
   negozi vince il primo acquisto, un reimport non sposta niente, e una
   correzione a mano più vecchia sopravvive. Il rovescio è voluto: una
-  correzione a mano *più recente* della data del negozio il reimport la
+  correzione a mano _più recente_ della data del negozio il reimport la
   riporta indietro, perché il negozio sa quando l'hai preso. Togliere una
   copia non ricalcola la data del gioco.
 
@@ -134,13 +134,13 @@ di punta e sta sistematicamente qualche punto sotto Metacritic. La scheda del
 gioco li mostra tutti, con la fonte accanto.
 
 E non si media nemmeno **dentro** la stessa fonte, perché capita che una fonte si
-contraddica: su *Alien Breed* la stessa pagina Metacritic elenca due volte
+contraddica: su _Alien Breed_ la stessa pagina Metacritic elenca due volte
 `playstation-vita`, stesso nome e stesse nove recensioni, con voti diversi (64 e
 68). Quella piattaforma si **scarta**, il resto della scheda si scrive. È la
 stessa regola del giudice dei titoli — davanti a due candidati appaiati non si
 sceglie — e le alternative sono peggiori: mediarli darebbe un 66 che nessuno ha
 pubblicato, tenere il primo lascerebbe decidere all'ordine del loro JSON. Un
-doppione *identico* invece non è una contraddizione: si tiene una riga sola.
+doppione _identico_ invece non è una contraddizione: si tiene una riga sola.
 
 La deduplicazione è obbligatoria, non un'accortezza: Postgres rifiuta una
 `ON CONFLICT DO UPDATE` che tocchi la stessa riga due volte nello stesso comando,

@@ -37,9 +37,9 @@ describe('parseEpicAuthCode', () => {
     expect(parseEpicAuthCode('   ')).toBe(null);
     // Un codice GOG: lungo, ma non 32 esadecimali. Incollare quello di un altro
     // negozio nel campo sbagliato è un errore che si fa davvero.
-    expect(parseEpicAuthCode('GxRJzadTmNNIAmbXUdn0Y-5gsBlF4llYEkWAO_sEywg')).toBe(
-      null,
-    );
+    expect(
+      parseEpicAuthCode('GxRJzadTmNNIAmbXUdn0Y-5gsBlF4llYEkWAO_sEywg'),
+    ).toBe(null);
   });
 });
 
@@ -47,7 +47,9 @@ describe('epicLoginUrl', () => {
   it('manda al login con il redirect che restituisce il codice', () => {
     const url = new URL(epicLoginUrl());
 
-    expect(url.origin + url.pathname).toBe('https://www.epicgames.com/id/login');
+    expect(url.origin + url.pathname).toBe(
+      'https://www.epicgames.com/id/login',
+    );
 
     // Il redirect è una pagina di Epic, non nostra: come GOG e Amazon, la lista
     // dei redirect è legata al client_id del launcher. È composto da noi e non

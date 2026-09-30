@@ -218,7 +218,10 @@ const APP_DETAILS_URL = 'https://store.steampowered.com/api/appdetails';
 
 type AppDetailsResponse = Record<
   string,
-  { success?: boolean; data?: { metacritic?: { url?: string; score?: number } } }
+  {
+    success?: boolean;
+    data?: { metacritic?: { url?: string; score?: number } };
+  }
 >;
 
 /**

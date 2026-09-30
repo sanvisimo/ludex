@@ -8,7 +8,10 @@ import {
   metacriticGame,
   setSource,
 } from '../../test/factories';
-import { fetchMetacriticGame, searchMetacriticGames } from '../external/metacritic';
+import {
+  fetchMetacriticGame,
+  searchMetacriticGames,
+} from '../external/metacritic';
 import { fetchSteamMetacriticSlug } from '../external/steam';
 import { enrichGameFromMetacritic } from './metacritic-enrichment';
 
@@ -119,7 +122,9 @@ describe('enrichGameFromMetacritic', () => {
     const righe = await scoreRows(game.id);
     // La Vita non c'è: fra due voti discordi non tocca a noi scegliere, e
     // mediarli darebbe un 66 che nessuno ha pubblicato.
-    expect(righe.find((riga) => riga.platformSlug === 'sony_vita')).toBeUndefined();
+    expect(
+      righe.find((riga) => riga.platformSlug === 'sony_vita'),
+    ).toBeUndefined();
     // Ma il complessivo e il PC sì: il dato rotto è di quella piattaforma sola.
     expect(righe.find((riga) => riga.platformSlug === null)).toMatchObject({
       score: 90,

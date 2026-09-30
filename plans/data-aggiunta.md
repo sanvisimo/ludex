@@ -13,13 +13,13 @@ stesso istante per tutti i giochi: come ordinamento non dice niente.
 La data giusta è quella in cui il gioco è entrato nella libreria del negozio.
 Misurata con un probe sulle librerie vere il 29/09/2026:
 
-| Negozio | Dove sta | Copertura |
-| --- | --- | --- |
-| Epic | `acquisitionDate` sul record di `library/api/public/items`, che già scarichiamo | 888/888 record |
-| Amazon | `entitlementDateFromEpoch` (ms, stringa) sull'entitlement, che già scarichiamo | 95/95 |
-| GOG | **non** in `getFilteredProducts`: sta su Galaxy, `galaxy-library.gog.com/users/{galaxyUserId}/releases`, paginata a 500 con `next_page_token` | 442/442 |
-| PSN | nessun campo data fra gli acquisti | — |
-| Steam | nessun campo data in `GetOwnedGames` | — |
+| Negozio | Dove sta                                                                                                                                      | Copertura      |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| Epic    | `acquisitionDate` sul record di `library/api/public/items`, che già scarichiamo                                                               | 888/888 record |
+| Amazon  | `entitlementDateFromEpoch` (ms, stringa) sull'entitlement, che già scarichiamo                                                                | 95/95          |
+| GOG     | **non** in `getFilteredProducts`: sta su Galaxy, `galaxy-library.gog.com/users/{galaxyUserId}/releases`, paginata a 500 con `next_page_token` | 442/442        |
+| PSN     | nessun campo data fra gli acquisti                                                                                                            | —              |
+| Steam   | nessun campo data in `GetOwnedGames`                                                                                                          | —              |
 
 Su GOG le date sono due: `date_created` c'è sempre ma non va prima del
 20/04/2019, quando Galaxy ha registrato gli acquisti vecchi (23 giochi su quel
@@ -40,14 +40,14 @@ Dove il negozio non la dà, la data si corregge a mano dal form di modifica.
 ## Scelte
 
 - **Una colonna sola, `backlog.added_at`**, non nulla, default `now()`. Non per
-  copia su `ownerships`: il form modifica *una* data, e una per copia vorrebbe
+  copia su `ownerships`: il form modifica _una_ data, e una per copia vorrebbe
   una UI per copia che non serve.
   **Superata dal passo 7**: la data resta anche per copia, su
   `ownerships.acquired_at`. Il form continua a modificarne una sola.
 - **L'import scrive `least(added_at, acquiredAt)`.** Le righe già importate
   prendono la data vera al primo reimport; un gioco entrato oggi da Steam
   prende quella di Epic se su Epic c'è; una data corretta a mano più vecchia
-  sopravvive. Il rovescio, accettato: una data corretta a mano *più recente*
+  sopravvive. Il rovescio, accettato: una data corretta a mano _più recente_
   di quella del negozio il reimport la riporta indietro.
 - **Gli scarti non portano la data**: risolti, l'import successivo li aggancia
   per id e la scrive.

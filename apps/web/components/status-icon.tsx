@@ -1,12 +1,5 @@
 import type { BacklogStatus } from '@repo/contracts';
-import {
-  Ban,
-  Bookmark,
-  Check,
-  CircleStop,
-  Play,
-  Trophy,
-} from '@repo/ui/icons';
+import { Ban, Bookmark, Check, CircleStop, Play, Trophy } from '@repo/ui/icons';
 
 /**
  * L'icona di ogni stato, in un punto solo: il bottone di stato delle viste e

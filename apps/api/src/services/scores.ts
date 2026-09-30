@@ -147,7 +147,10 @@ export async function saveScores(
         eq(schema.gameScores.gameId, gameId),
         eq(schema.gameScores.source, source),
         chiavi.length > 0
-          ? notInArray(sql`coalesce(${schema.gameScores.platformSlug}, '')`, chiavi)
+          ? notInArray(
+              sql`coalesce(${schema.gameScores.platformSlug}, '')`,
+              chiavi,
+            )
           : undefined,
       ),
     );

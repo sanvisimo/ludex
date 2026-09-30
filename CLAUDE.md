@@ -33,7 +33,6 @@ I due usi dell'LLM **non sono sostituibili allo stesso modo**:
 
 Tutto TypeScript/Node. Non introdurre altri linguaggi nello stack.
 
-
 **Scelte già scartate, da non riproporre**: NestJS, Express, tRPC (sostituito da
 oRPC), Prisma, backend Python, fine-tuning, Base UI + shadcn, react-strict-dom,
 NativeWind, gluestack-ui, Panda CSS, DTCG / Style Dictionary. Le ragioni sono in
@@ -49,13 +48,13 @@ Questo file tiene solo ciò che serve sempre. Il resto:
   [packages/ui](packages/ui/CLAUDE.md) (design system, identità, componenti).
 - **`docs/`, da leggere prima di toccare l'argomento**:
 
-| Argomento | File |
-| --- | --- |
-| `games`, `backlog`, `game_type`, voti della critica, tag | [docs/modello-dati.md](docs/modello-dati.md) |
+| Argomento                                                         | File                                               |
+| ----------------------------------------------------------------- | -------------------------------------------------- |
+| `games`, `backlog`, `game_type`, voti della critica, tag          | [docs/modello-dati.md](docs/modello-dati.md)       |
 | import, possessi, account, scarti, nascondere, togliere una copia | [docs/import-librerie.md](docs/import-librerie.md) |
-| i singoli negozi, token, aggiornamento automatico | [docs/negozi.md](docs/negozi.md) |
-| gli step, uno per uno, con cosa contengono | [docs/ordine-sviluppo.md](docs/ordine-sviluppo.md) |
-| le scelte tecniche scartate | [docs/scelte-scartate.md](docs/scelte-scartate.md) |
+| i singoli negozi, token, aggiornamento automatico                 | [docs/negozi.md](docs/negozi.md)                   |
+| gli step, uno per uno, con cosa contengono                        | [docs/ordine-sviluppo.md](docs/ordine-sviluppo.md) |
+| le scelte tecniche scartate                                       | [docs/scelte-scartate.md](docs/scelte-scartate.md) |
 
 ## Struttura del monorepo
 
@@ -91,7 +90,6 @@ Regole di confine:
 Le due regole su `packages/ui` e `apps/mobile` non sono solo scritte qui: le fa
 rispettare `pnpm lint`, con `no-restricted-imports` in
 `packages/eslint-config/boundaries.js`.
-
 
 **Una React sola in tutto il repo**, alla versione che fissa la SDK di Expo:
 `overrides` in `pnpm-workspace.yaml`. Metro compila il sorgente di `packages/ui`

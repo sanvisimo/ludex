@@ -28,7 +28,7 @@ l'utente non lo rivede più.
 Conseguenza di disegno da rispettare: **la mutazione che collega un account non
 deve sapere chi le ha portato il codice.** Dal web lo incolla l'utente, da
 `apps/mobile` una `WebView` nativa lo prenderà da sola, che è esattamente ciò che
-fa Playnite. Se il collegamento viene disegnato *intorno* al copia-incolla, il
+fa Playnite. Se il collegamento viene disegnato _intorno_ al copia-incolla, il
 mobile poi lo trova incastrato.
 
 `store_accounts` cresce di conseguenza: access token, refresh token, scadenza,
@@ -121,22 +121,22 @@ Due pezzi collegati, anche loro da valutare:
 Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 **quanto costa risolvere l'identità**. Misurate su una libreria vera:
 
-| Negozio | Credenziale | Id su IGDB | Ore |
-| --------- | ------------------------------- | ------------------------------------------------- | --- |
-| GOG | refresh token, non scade in pratica | product id, sorgente 5 — **94,5% su 435 giochi** | no |
-| Epic | refresh token | **nessuno**: vedi sotto | no |
-| Amazon | refresh token | **nessuno**: sorgente 23 ha 678 righe in tutto | no |
-| PSN | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto | parziali |
-| EA | sessione corta, si sgancia sempre | nessuno | sì |
-| Nintendo | cookie di sessione | nessuno | no |
-| Xbox | chiave OpenXBL, o XSTS in proprio | `titleId` → ProductId via `displaycatalog`, sorgente 11 | sì |
+| Negozio  | Credenziale                                                        | Id su IGDB                                                       | Ore      |
+| -------- | ------------------------------------------------------------------ | ---------------------------------------------------------------- | -------- |
+| GOG      | refresh token, non scade in pratica                                | product id, sorgente 5 — **94,5% su 435 giochi**                 | no       |
+| Epic     | refresh token                                                      | **nessuno**: vedi sotto                                          | no       |
+| Amazon   | refresh token                                                      | **nessuno**: sorgente 23 ha 678 righe in tutto                   | no       |
+| PSN      | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto | parziali |
+| EA       | sessione corta, si sgancia sempre                                  | nessuno                                                          | sì       |
+| Nintendo | cookie di sessione                                                 | nessuno                                                          | no       |
+| Xbox     | chiave OpenXBL, o XSTS in proprio                                  | `titleId` → ProductId via `displaycatalog`, sorgente 11          | sì       |
 
 Le prime due colonne sono state scritte **prima** di provare, e il 9b ha
 smentito quella su PSN in tutte e due i campi — e poi ha smentito la sua stessa
 smentita sull'id, che c'è ma non dove lo si cercava. Restano qui corrette e non
 riscritte in silenzio, perché il modo in cui ci si sbaglia su un negozio è esso
-stesso un'informazione: si sbaglia guardando cosa l'API *espone*, invece di
-guardare cosa *restituisce*.
+stesso un'informazione: si sbaglia guardando cosa l'API _espone_, invece di
+guardare cosa _restituisce_.
 
 Dove l'id c'è l'import costa nulla: i 435 giochi GOG si risolvono in **tre**
 richieste da 200 id, e il matcher per nome ne recupera altri 16, per un 98,2%
@@ -157,12 +157,12 @@ condividono il `productId`, che è ciò che li fa collassare: 836 voci diventano
 
 **PSN è Epic una seconda volta, e stavolta la trappola era scritta nel campo
 giusto.** IGDB ha una sorgente PS Store con quindicimila righe, e i suoi uid
-sono i `conceptId` numerici dello store — *Dying Light 2* è `232374`. La
+sono i `conceptId` numerici dello store — _Dying Light 2_ è `232374`. La
 libreria dell'utente porta invece `titleId` come `CUSA12555_00`, che lì dentro
 non esiste. Il `conceptId` **c'è** fra i campi che la risposta di Sony dichiara,
 ed è per questo che sembrava risolvibile: arriva `null` su ogni riga, 336 su
 336, misurato. Esiste un'altra operazione GraphQL (`getUserGameList`) che quel
-campo lo popola davvero, ma è una *persisted query* il cui hash non è pubblico —
+campo lo popola davvero, ma è una _persisted query_ il cui hash non è pubblico —
 si cattura solo dal traffico del browser — e un job non si appoggia a una cosa
 del genere. Quindi PSN si risolve **per nome**, come Epic e Amazon: 88% su 256
 nomi distinti, e metà degli irrisolti sono Netflix, Spotify e YouTube, che
@@ -172,18 +172,18 @@ giochi non sono e che nessun campo dell'API distingue da un gioco.
 (`gamelist/v2`, REST e non una persisted query) porta su **ogni** riga un
 oggetto `concept` con `id` e `titleIds` — tutte le edizioni di quel gioco, PS4 e
 PS5, di ogni regione. Provati sulla sorgente 36 di IGDB: **46 su 47** trovano il
-gioco giusto, e l'unico che manca è *FIFA 19*. Vale solo per ciò che si è
+gioco giusto, e l'unico che manca è _FIFA 19_. Vale solo per ciò che si è
 avviato su PS4 o PS5 — 49 titoli contro 342 acquisti — ma dove c'è è un id
 esatto: niente ricerca, e niente titolo in italiano da far combaciare con quello
 inglese di IGDB.
 
 **Ma il concept è la scheda del negozio, non il gioco**, e per questo risolve
-**solo i dischi**. La *Master Collection* di Metal Gear sono cinque acquisti —
+**solo i dischi**. La _Master Collection_ di Metal Gear sono cinque acquisti —
 MGS 1, 2 e 3, Metal Gear 1 e 2, i contenuti bonus — che si installano e si
 giocano uno per uno, e fra i giocati stanno **tutti** sotto il concept della
-raccolta, che su IGDB è *Master Collection: Volume 1*. Per nome ciascuno trova
+raccolta, che su IGDB è _Master Collection: Volume 1_. Per nome ciascuno trova
 il suo gioco, con la sua durata; per concept diventerebbero una voce sola. Lo
-stesso concept di *Horizon Zero Dawn* elenca fra le sue edizioni anche
+stesso concept di _Horizon Zero Dawn_ elenca fra le sue edizioni anche
 l'artbook. E in cambio, sulla libreria vera, il concept non recuperava nessun
 acquisto che il nome perdesse: i titoli in italiano rimasti fuori sono giochi
 mai avviati, che fra i giocati non ci sono. Quindi gli acquisti restano **per
@@ -226,7 +226,7 @@ Sempre di PSN, quattro cose che si pagano care se si scoprono tardi:
   freschezza dei dati ma di tenere vivo il collegamento.
 
 **I dischi fisici non stanno fra gli acquisti, ed è la parte che manca al 9b.**
-L'elenco degli acquisti è l'elenco dei *diritti digitali*: un gioco comprato su
+L'elenco degli acquisti è l'elenco dei _diritti digitali_: un gioco comprato su
 disco non ne ha uno, e lì non compare. L'unica traccia che lascia è nell'elenco
 dei giocati, e solo se lo si è avviato su PS4 o PS5.
 
@@ -234,12 +234,12 @@ Lì lo si **riconosce**, ed è misurato: ogni riga dei giocati porta `service`,
 che vale `ps_plus`, `none(purchased)` — o `none_purchased` sulle righe più
 vecchie, stessa cosa scritta in due modi — oppure **`other`**, cioè avviato
 senza nessun diritto digitale sull'account. Dei 18 giocati e non posseduti, 14
-sono `other`, e i quattro controllati uno per uno sono dischi: *Horizon
-Forbidden West*, *Demon's Souls*, *Wild Hearts*, *Spider-Man: Miles Morales*.
-L'eccezione nota è *Astro's Playroom*, `other` perché preinstallato sulla PS5 —
+sono `other`, e i quattro controllati uno per uno sono dischi: _Horizon
+Forbidden West_, _Demon's Souls_, _Wild Hearts_, _Spider-Man: Miles Morales_.
+L'eccezione nota è _Astro's Playroom_, `other` perché preinstallato sulla PS5 —
 non è un disco, ma sulla console c'è davvero, e farlo entrare non è un errore.
 Gli altri quattro dei 18 sono `none_purchased`: comprati, ma assenti dagli
-acquisti attivi — *FIFA 19* e *WWE 2K18* sono stati tolti dal negozio, e il
+acquisti attivi — _FIFA 19_ e _WWE 2K18_ sono stati tolti dal negozio, e il
 sospetto, non verificato, è che il diritto sia decaduto con loro.
 
 **Ed entrano.** Un giocato `other` che fra gli acquisti non c'è diventa un
@@ -258,12 +258,12 @@ un acquisto sparito dal negozio non sappiamo abbastanza.
 
 Tre cose che `service` **non** dice, da tenere presenti:
 
-- **è il diritto di adesso, non quello della prima partita.** *God of War*
+- **è il diritto di adesso, non quello della prima partita.** _God of War_
   (2018) è un disco comprato quell'anno e giocato da allora, ma è arrivato poi
   nel Plus: oggi è `ps_plus` fra i giocati e `PS_PLUS` fra gli acquisti, e il
   disco non si vede più. Il gioco entra lo stesso, ma come abbonamento — ed è
   esattamente il caso che lo step 14 rischia di cancellare.
-- **un diritto digitale copre il disco.** *God of War Ragnarök* sembrava un
+- **un diritto digitale copre il disco.** _God of War Ragnarök_ sembrava un
   disco ed era un voucher: `none(purchased)` e comprato, correttamente. Un gioco
   che si ha sia su disco sia in digitale entra come digitale, e non c'è niente
   da recuperare.
@@ -289,13 +289,13 @@ Quattro dettagli che si pagano se si scoprono tardi:
 - **Amazon decora i titoli con l'edizione** (`- CE` per le Collector's Edition):
   nove dei tredici irrisolti sono quello. Toglierlo prima di cercare è una regola
   per `shortenTitle`, non un caso particolare.
-- **GOG marca `isGame: true` anche i *goodies***, gli artbook e il REDkit di The
+- **GOG marca `isGame: true` anche i _goodies_**, gli artbook e il REDkit di The
   Witcher 3. Non c'è un campo per filtrarli e non serve: cadono da soli negli
   irrisolti, che è dove devono stare.
 
 La piattaforma resta **`pc_windows` fissa** su tutti i negozi PC, come per Steam,
 e l'utente la corregge dalla schermata dello step 5. GOG dichiarerebbe anche
-Mac e Linux in `worksOn`, ma sapere su cosa *girerebbe* non è sapere su cosa ci
+Mac e Linux in `worksOn`, ma sapere su cosa _girerebbe_ non è sapere su cosa ci
 giochi. Per le console la piattaforma la dice la fonte, riga per riga: dal 9b
 `LibraryEntry` la porta, e `platformFor` è diventata il ripiego per chi non ce
 l'ha invece che la regola. Continua ad alzare per i negozi che non hanno né
@@ -325,7 +325,7 @@ a nessuno.
 
 Steam Family, quando si farà (9f), legge la libreria con lo stesso
 `GetOwnedGames` chiamato su N SteamID64. Qui c'era scritto che **non porta
-credenziali nuove**, e va verificato prima di crederci: sapere *chi* sta nella
+credenziali nuove**, e va verificato prima di crederci: sapere _chi_ sta nella
 famiglia probabilmente richiede il token di un membro, cioè il login Steam che
 il 9f porta con sé. La parte che resta certa è l'altra: è un problema di
 modello, e lo stesso di Xbox.
@@ -364,13 +364,13 @@ la stessa cosa, perché dice a che titolo ce l'hai, non di chi è l'abbonamento.
 Diventa `ownerships.acquired_at` della copia, e la più vecchia delle copie
 `backlog.added_at`, con la regola scritta in [modello-dati](modello-dati.md). Misurata sulle librerie vere il 29/09/2026:
 
-| Negozio | Dove sta | Copertura |
-| --- | --- | --- |
-| Epic | `acquisitionDate` sul record di `library/api/public/items`, nella risposta che già si scarica | 888/888 record |
-| Amazon | `entitlementDateFromEpoch` sull'entitlement: millisecondi, **come stringa** | 95/95 |
-| GOG | **non** in `getFilteredProducts`: sta nella libreria di Galaxy, `galaxy-library.gog.com/users/{galaxyUserId}/releases`, stesso token, 500 per pagina con `next_page_token` | 442/442 |
-| Steam | niente in `GetOwnedGames`. C'è nella pagina delle licenze, che vuole il login: 9f | — |
-| PSN | niente fra gli acquisti: vedi sotto | — |
+| Negozio | Dove sta                                                                                                                                                                   | Copertura      |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| Epic    | `acquisitionDate` sul record di `library/api/public/items`, nella risposta che già si scarica                                                                              | 888/888 record |
+| Amazon  | `entitlementDateFromEpoch` sull'entitlement: millisecondi, **come stringa**                                                                                                | 95/95          |
+| GOG     | **non** in `getFilteredProducts`: sta nella libreria di Galaxy, `galaxy-library.gog.com/users/{galaxyUserId}/releases`, stesso token, 500 per pagina con `next_page_token` | 442/442        |
+| Steam   | niente in `GetOwnedGames`. C'è nella pagina delle licenze, che vuole il login: 9f                                                                                          | —              |
+| PSN     | niente fra gli acquisti: vedi sotto                                                                                                                                        | —              |
 
 Su Epic un prodotto ha più record — i DLC hanno lo stesso `productId` — e vale
 il più vecchio. Su GOG le date sono due e non valgono uguale: `owned_since` è
@@ -403,4 +403,3 @@ resa: vorrebbe dire conservare l'npsso, che è la sessione intera dell'account,
 pagamenti compresi, e ricavare la data da una risposta che porta anche IP e
 metodi di pagamento. Il primo giocato (`firstPlayedDateTime`, su `gamelist/v2`)
 non è un ripiego: copre 40 acquisti su 347, ed è un'altra informazione.
-

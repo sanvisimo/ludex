@@ -18,7 +18,7 @@ quella schermata userà, non la schermata.
 
 ## Com'è oggi, misurato
 
-- **La rotta** ([_app._private.backlog.tsx](../apps/web/src/routes/_app._private.backlog.tsx),
+- **La rotta** ([\_app.\_private.backlog.tsx](../apps/web/src/routes/_app._private.backlog.tsx),
   304 righe) disegna ogni gioco come una `Card` alta: copertina, titolo, anno,
   durata, voto, possessi, tag, e sotto una riga con la tendina dello stato e
   **tre bottoni** (Modifica, Nascondi, Rimuovi). Una vista sola.
@@ -135,6 +135,7 @@ valgono anche lì.
 
    I test non guardano le misure: slider e badge storti li hanno visti gli
    screenshot, non loro.
+
 2. **Le pagine**: `page` nell'URL, `offset` al server, via «carica altri».
    È il pezzo che ripara un guasto, e va per primo sulla pagina anche prima
    del ridisegno.
@@ -149,6 +150,7 @@ valgono anche lì.
    (`?page=999`) non si può riportare sull'**ultima**, perché il server lì
    risponde `total: 0` — il conteggio viene da `count(*) over()`, che senza
    righe restituite non c'è. Torna alla prima.
+
 3. **Barra e pannello dei filtri**, con i filtri attivi a chip.
 
    **Fatto**, con una correzione al piano: la colonna dei filtri sta **da
@@ -167,6 +169,7 @@ valgono anche lì.
 
    Tolte dai messaggi le chiavi del vecchio pannello (`more`, i «da»/«a» dei
    campi numerici, `directionLabel`).
+
 4. **Le tre viste** e il ToggleGroup, con le azioni nel menu.
 
    **Fatto**, in [backlog-views.tsx](../apps/web/components/backlog-views.tsx).
@@ -191,6 +194,7 @@ valgono anche lì.
      righe della griglia: schede alte pochi pixel. Serve `grow`.
    - dentro un `<a>` in riga il testo non si tronca: il link del titolo è un
      blocco.
+
 5. **Stato vuoto, Tailwind fuori**, verifica, CLAUDE.md e piano chiuso.
 
    **Fatto.** I tre vuoti sono `EmptyState`, e quello dei filtri porta

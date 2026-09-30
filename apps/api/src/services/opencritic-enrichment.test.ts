@@ -68,7 +68,11 @@ describe('enrichGameFromOpenCritic', () => {
 
     const esito = await enrichGameFromOpenCritic(game.id);
 
-    expect(esito).toMatchObject({ status: 'ok', openCriticId: 4002, via: 'id' });
+    expect(esito).toMatchObject({
+      status: 'ok',
+      openCriticId: 4002,
+      via: 'id',
+    });
     // È il punto di tutto lo step: l'aggancio da Wikidata costa zero ricerche.
     expect(mockedSearch).not.toHaveBeenCalled();
     expect(await scoreRows(game.id)).toMatchObject([
@@ -86,7 +90,7 @@ describe('enrichGameFromOpenCritic', () => {
     });
   });
 
-  it('cerca per nome solo quando un id non ce l\'ha', async () => {
+  it("cerca per nome solo quando un id non ce l'ha", async () => {
     const game = await createGame({
       name: 'Hollow Knight',
       firstReleaseDate: anno(2017),
@@ -180,7 +184,7 @@ describe('enrichGameFromOpenCritic', () => {
     expect(await sourceRow(game.id)).toBeUndefined();
   });
 
-  it("rifiuta un id già agganciato a un altro gioco", async () => {
+  it('rifiuta un id già agganciato a un altro gioco', async () => {
     const primo = await createGame({ name: 'Gioco Uno' });
     await setSource({
       gameId: primo.id,
@@ -222,7 +226,7 @@ describe('enrichGameFromOpenCritic, sui giochi vecchi', () => {
     expect((await sourceRow(game.id))?.error).toContain('1998');
   });
 
-  it('cerca comunque quando l\'anno non lo sappiamo', async () => {
+  it("cerca comunque quando l'anno non lo sappiamo", async () => {
     const game = await createGame({ name: 'Gioco Senza Data' });
     mockedSearch.mockResolvedValue([]);
 
