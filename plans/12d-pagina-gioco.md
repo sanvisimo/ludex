@@ -70,6 +70,13 @@ trama, attributi, voti della critica, tempi HLTB, il blocco del backlog.
 6. **GOG senza `url`** porta a `https://www.gog.com/en/account`, la libreria
    dell'utente.
 7. **Epic: niente link**, l'icona e basta.
+8. **Il trailer: `iframe` sul web, app di YouTube su mobile.** Un componente
+   con due file gemelli in `@repo/ui`: `.web.tsx` monta l'`iframe`
+   (`youtube-nocookie.com`) solo quando si preme «play», e fino ad allora
+   mostra la miniatura, così aprire la pagina non carica gli script di
+   YouTube; quello nativo apre il video nell'app. Le icone dei marchi sono
+   tessere col colore del marchio: Simple Icons (CC0), Xbox e Nintendo dalle
+   icone di IGDB, HowLongToBeat da PCGamingWiki; Amazon resta col nome.
 
 ## La proposta (schizzo v1)
 
@@ -196,6 +203,16 @@ dell'account.
    di lato per remake e simili, le icone dei marchi. Per le icone va deciso
    da dove vengono: Simple Icons (CC0) copre i negozi, ma per HLTB e
    OpenCritic va verificato che ci siano e con che licenza.
+
+   **Fatto.** `BrandIcon`: dodici tessere col colore del marchio e il glifo
+   bianco, con un bordo chiaro sottile perché le nere (Steam, EA,
+   Metacritic, HLTB) restino visibili sul tema scuro. `Gallery`: elemento
+   scelto in grande, miniature che scorrono, frecce spente agli estremi,
+   immagine a tutto schermo nel `Dialog`. `YoutubeVideo` coi due gemelli.
+   **Per remake e simili nessun componente nuovo**: la fila è lo
+   `ScrollView` orizzontale che `@repo/ui` esporta già. Storie con axe in
+   Chromium, 120 in tutto.
+
 5. **La pagina**, riscritta sullo schizzo: hero coi badge, colonna
    principale, colonna laterale con durata e critica, il dialog «Dettagli»,
    il blocco del backlog; su telefono una colonna nello stesso ordine.
