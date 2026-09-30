@@ -386,6 +386,11 @@ export type PsnLibraryEntry = {
   /** Come Sony identifica il diritto. Tenuto perché è da qui che esce il titleId. */
   entitlementId: string | null;
   /**
+   * La voce a catalogo del negozio: è ciò che serve per il link alla pagina
+   * (`/product/{productId}`). Presente su tutti gli acquisti provati, 50 su 50.
+   */
+  productId: string | null;
+  /**
    * Da dove viene il diritto di giocarci: `NONE` è un acquisto, il resto è un
    * abbonamento (PS Plus Extra/Premium). Oggi entrano tutti in libreria; è lo
    * step 14 a doverne fare qualcosa.
@@ -550,6 +555,7 @@ export async function fetchPsnLibrary(
         titleId:
           game.titleId ?? titleIdFromEntitlement(game.entitlementId ?? null),
         entitlementId: game.entitlementId ?? null,
+        productId: game.productId ?? null,
         subscription: game.subscriptionService ?? null,
       });
     }

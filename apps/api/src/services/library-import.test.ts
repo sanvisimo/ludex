@@ -493,6 +493,35 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
     ]);
   });
 
+  it('scrive la pagina del negozio, e il reimport la dà alle copie che non l avevano', async () => {
+    mockedSearch.mockResolvedValue([hit({ igdbId: 9, name: "Death's Door" })]);
+    const entry = {
+      externalId: 'PPSA05304_00',
+      name: "Death's Door",
+      platformSlug: 'sony_playstation5',
+    };
+    const pagina = async () =>
+      (
+        await db
+          .select({ storePage: schema.ownerships.storePage })
+          .from(schema.ownerships)
+      ).map((row) => row.storePage);
+
+    // La copia importata prima che la colonna ci fosse.
+    await importLibrary(account, [entry]);
+    expect(await pagina()).toEqual([null]);
+
+    // Il reimport la porta: è così che le copie di prima prendono il link.
+    await importLibrary(account, [
+      { ...entry, storePage: 'product/EP1234-PPSA05304_00-DEATHSDOOR' },
+    ]);
+    expect(await pagina()).toEqual(['product/EP1234-PPSA05304_00-DEATHSDOOR']);
+
+    // Una scrittura che non la porta non cancella quella che c'era.
+    await importLibrary(account, [entry]);
+    expect(await pagina()).toEqual(['product/EP1234-PPSA05304_00-DEATHSDOOR']);
+  });
+
   it('risolve per concept la voce che lo porta, senza cercare per nome', async () => {
     mockedBySource.mockResolvedValue(
       new Map([['10000886', { igdbId: 1234, name: 'Horizon Forbidden West' }]]),

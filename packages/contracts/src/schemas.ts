@@ -214,6 +214,10 @@ export const OwnershipSchema = z.object({
   // stessa ragione dell'abbonamento: un disco si avvia inserendolo, e il badge
   // del possesso deve poterlo dire.
   medium: MediumSchema.nullable(),
+  // Il pezzo di indirizzo della pagina del gioco sul negozio, da cui
+  // `storePageUrl` compone il link. Nullo dove il negozio non lo dà o la copia
+  // è stata scritta a mano.
+  storePage: z.string().nullable(),
 });
 
 export const OwnershipInputSchema = z.object({

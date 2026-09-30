@@ -12,6 +12,7 @@ function acquisto(over: Partial<PsnLibraryEntry> = {}): PsnLibraryEntry {
     platform: 'PS5',
     titleId: 'PPSA05304_00',
     entitlementId: null,
+    productId: null,
     subscription: 'NONE',
     ...over,
   };
@@ -46,7 +47,24 @@ describe('buildPsnEntries', () => {
         medium: 'physical',
         // Risolto per concept, non per nome: è un id esatto.
         igdbLookup: { source: 36, uid: '10000886' },
+        // Il disco non ha un `productId`: il link va alla scheda del concept.
+        storePage: 'concept/10000886',
       },
+    ]);
+  });
+
+  it("un acquisto porta la pagina del prodotto, che è l'edizione comprata", () => {
+    const { entries } = buildPsnEntries(
+      [
+        acquisto({ productId: 'EP1234-PPSA05304_00-DEATHSDOORPS5000' }),
+        acquisto({ titleId: 'CUSA11111_00', productId: null }),
+      ],
+      [],
+    );
+
+    expect(entries.map((entry) => entry.storePage)).toEqual([
+      'product/EP1234-PPSA05304_00-DEATHSDOORPS5000',
+      null,
     ]);
   });
 

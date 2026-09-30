@@ -161,6 +161,18 @@ dell'account.
    non la prenderebbero mai. La composizione dell'URL è una funzione pura in
    `@repo/contracts`, che serve uguale a web e mobile. Test: l'import la
    scrive, il reimport la aggiorna senza toccare il resto della copia.
+
+   **Fatto.** Migration `0026`: `ownerships.store_page`. Steam scrive
+   `app/{appid}`, GOG l'`url` del prodotto (solo se comincia con `/`), PSN
+   `product/{productId}` sugli acquisti e `concept/{conceptId}` sui dischi. Al
+   conflitto va in COALESCE come le ore: il reimport la dà alle copie di prima,
+   una scrittura che non la porta non la cancella. `storePageUrl` sta in
+   `packages/contracts/src/store-links.ts`, e `OwnershipSchema` porta
+   `storePage`. **Limite noto**: il link PSN è fisso sulla regione `it-it`,
+   l'unica provata; la regione dell'account PSN non la salviamo. Test: il
+   reimport che dà la pagina a una copia che non l'aveva e non la toglie a
+   chi l'ha, e le due forme PSN in `buildPsnEntries`.
+
 3. **Il contratto.** `games.byId` porta i dati nuovi, il gioco padre di un
    DLC (nome, e l'id se è in `games`), remake e simili col «ce l'hai» di chi
    guarda, e i riferimenti delle quattro fonti per i loro link (id HLTB, id

@@ -202,6 +202,16 @@ export type GogLibraryEntry = {
    * l'anno vero, mentre IGDB dice 1998.
    */
   releaseYear: number | null;
+  /**
+   * Il percorso della pagina del gioco sul sito, es. `/en/game/bioshock_remastered`.
+   *
+   * È l'`url` del prodotto e **non** lo `slug`: i due coincidono quasi
+   * sempre, ma non sempre — BioShock Remastered ha `slug`
+   * `bioshock_remastered_game`, e il link costruito da lì finisce sull'elenco
+   * dei giochi. Qualche prodotto l'`url` non ce l'ha: nullo, e il link porta
+   * alla libreria dell'utente. Misurato in `docs/negozi.md`.
+   */
+  storePage: string | null;
 };
 
 type FilteredProductsResponse = {
@@ -209,6 +219,7 @@ type FilteredProductsResponse = {
   products?: {
     id: number;
     title?: string;
+    url?: string;
     isGame?: boolean;
     isMovie?: boolean;
     // Non un timestamp: `{ date: "2018-12-13 00:00:00.000000", … }`.
@@ -266,6 +277,8 @@ export async function fetchGogLibrary(
         externalId: String(product.id),
         name: product.title?.trim() || `GOG ${product.id}`,
         releaseYear: releaseYearOf(product),
+        // `url` e non `slug`: vedi `storePage` qui sopra.
+        storePage: product.url?.startsWith('/') ? product.url : null,
       });
     }
   }
