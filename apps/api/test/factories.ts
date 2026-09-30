@@ -117,6 +117,12 @@ export function igdbMetadata(
     aggregatedRating: null,
     aggregatedRatingCount: null,
     attributes: [],
+    artworkImageIds: [],
+    screenshotImageIds: [],
+    videos: [],
+    developers: [],
+    publishers: [],
+    related: [],
     ...over,
   };
 }

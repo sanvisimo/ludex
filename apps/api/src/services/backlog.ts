@@ -38,6 +38,8 @@ export const entryQuery = {
         lastPlayedAt: true,
         subscription: true,
         medium: true,
+        acquiredAt: true,
+        storePage: true,
       },
       // Da quale account viene la copia: è ciò che permette alla scheda di
       // scrivere «Amazon — secondo account» invece di due volte «Amazon».
@@ -597,6 +599,7 @@ function fondiDoppioni(rows: OwnershipUpsert[]) {
         [gia.acquiredAt, row.acquiredAt]
           .filter((date): date is Date => date instanceof Date)
           .sort((a, b) => a.getTime() - b.getTime())[0] ?? null,
+      storePage: gia.storePage ?? row.storePage ?? null,
     });
   }
 
@@ -633,6 +636,8 @@ export type OwnershipUpsert = {
   subscription?: Subscription | null;
   /** Nullo = non dichiarato. Vedi la colonna omonima su `ownerships`. */
   medium?: Medium | null;
+  /** Nullo = il negozio non lo dà. Vedi la colonna omonima su `ownerships`. */
+  storePage?: string | null;
 };
 
 /**
@@ -802,9 +807,10 @@ async function togliRifiutati(rows: OwnershipUpsert[]) {
  * nessuno store" si potrebbe inserire due volte perché in Postgres i NULL sono
  * tutti diversi fra loro.
  *
- * Sul conflitto aggiorna **solo** le ore e l'abbonamento: il supporto sta nella
- * chiave, quindi una riga non lo cambia mai — cambiarlo vorrebbe dire che è
- * un'altra copia, e un'altra copia è un'altra riga.
+ * Sul conflitto aggiorna **solo** le ore, l'abbonamento, la data d'acquisto e
+ * la pagina del negozio: il supporto sta nella chiave, quindi una riga non lo
+ * cambia mai — cambiarlo vorrebbe dire che è un'altra copia, e un'altra copia
+ * è un'altra riga.
  */
 export async function ensureOwnerships(rows: OwnershipUpsert[]) {
   if (rows.length === 0) return { created: 0 };
@@ -830,6 +836,7 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           acquiredAt: row.acquiredAt ?? null,
           subscription: row.subscription ?? null,
           medium: row.medium ?? null,
+          storePage: row.storePage ?? null,
         })),
       )
       .onConflictDoUpdate({
@@ -856,6 +863,10 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           // sempre. Le ore sono il caso opposto: un import che non le porta non
           // deve cancellare quelle che un altro aveva scritto.
           subscription: sql`excluded.subscription`,
+          // In COALESCE come le ore: il reimport lo riscrive, ed è così che le
+          // copie importate prima della colonna prendono il link; una
+          // scrittura che non lo porta non cancella quello che c'era.
+          storePage: sql`coalesce(excluded.store_page, ${schema.ownerships.storePage})`,
           // Il supporto **non c'è**, e prima c'era: è entrato nella chiave, e su
           // una riga trovata per conflitto è uguale per definizione. Il giorno
           // che il disco lo compri anche in digitale non cambia questa riga,

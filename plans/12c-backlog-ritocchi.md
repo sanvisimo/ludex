@@ -1,9 +1,11 @@
-# Step 12d — Ritocchi al backlog
+# Step 12c — Ritocchi al backlog
 
-**Struttura approvata il 29/09/2026. Chiuso il 29/09/2026**: tutti e sette i
-passi fatti. Ciò che va rispettato d'ora in poi sta nei CLAUDE.md; qui restano
-le ragioni e le misure. Approvata sul wireframe v2
-([12d-backlog-ritocchi.excalidraw](12d-backlog-ritocchi.excalidraw): si apre
+Seconda parte del 12c, non un lotto a sé: sono i commenti sul backlog visto in
+uso, e il backlog non era finito. **Struttura approvata il 29/09/2026**, tutti
+e sette i passi fatti. Il 12c resta aperto finché l'utente non dice che il
+backlog è pronto. Ciò che va rispettato d'ora in poi sta nei CLAUDE.md; qui
+restano le ragioni e le misure. Approvata sul wireframe v2
+([12c-backlog-ritocchi.excalidraw](12c-backlog-ritocchi.excalidraw): si apre
 trascinandolo su excalidraw.com). Sotto ogni passo, man mano, cosa è stato
 fatto e cosa l'ha smentito.
 

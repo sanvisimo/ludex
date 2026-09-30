@@ -189,6 +189,18 @@ export const ownerships = pgTable(
     // spariva dal database: è la storia di God of War (2018), comprato su
     // disco e poi finito nel catalogo Plus.
     medium: medium('medium'),
+    // Dove sta **questa copia** sul negozio: il pezzo di indirizzo che il
+    // negozio dà, e non l'URL intero, che si compone al momento di mostrarlo
+    // (`storePageUrl` in `@repo/contracts`). Steam `app/{appid}`, GOG l'`url`
+    // del prodotto, PSN `product/{id}` per gli acquisti e `concept/{id}` per i
+    // dischi, che arrivano dall'elenco dei giocati.
+    //
+    // Sta qui e non su `external_ids` perché il link è della copia e viene da
+    // ciò da cui la copia è nata: su PSN `external_ids` tiene il `titleId`, che
+    // nessuna pagina del negozio usa. Nullo sugli inserimenti manuali, su Epic
+    // e Amazon, e sulle copie importate prima della colonna finché il loro
+    // account non si reimporta.
+    storePage: text('store_page'),
     ...timestamps,
   },
   (table) => [

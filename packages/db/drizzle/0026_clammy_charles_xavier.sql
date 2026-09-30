@@ -1,0 +1,1 @@
+ALTER TABLE "ownerships" ADD COLUMN "store_page" text;

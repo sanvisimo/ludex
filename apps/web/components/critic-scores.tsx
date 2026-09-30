@@ -1,12 +1,14 @@
 import type { GameDetail, GameScore } from '@repo/contracts';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
+import { BrandIcon, XStack, YStack } from '@repo/ui';
 import { useTranslations } from 'use-intl';
 
+import { DetailTitle, Muted, Strong } from '@/components/detail-text';
 import { api } from '@/lib/orpc';
 
 /**
- * I voti della critica sulla scheda del gioco.
+ * I voti della critica, fonte per fonte e per piattaforma: la sezione del
+ * dialog «Dettagli» della pagina del gioco (12d).
  *
  * Si mostrano **tutti**, con la fonte scritta accanto, e non solo quello che ha
  * vinto la precedenza: OpenCritic e Metacritic non stanno sulla stessa scala —
@@ -40,15 +42,19 @@ function Complessivo({ voto }: { voto: GameScore }) {
   ].filter(Boolean);
 
   return (
-    <div className="flex flex-wrap items-baseline gap-x-2">
-      <dt className="text-muted-foreground">{t(voto.source)}</dt>
-      <dd className="font-medium">{Math.round(voto.score)}</dd>
+    <XStack flexWrap="wrap" items="center" columnGap={8}>
+      {/* L'icona dentro il `dt`: in un `dl` le righe portano solo `dt` e `dd`. */}
+      <XStack render="dt" items="center" gap={8}>
+        <BrandIcon brand={voto.source} size={16} />
+        <Muted>{t(voto.source)}</Muted>
+      </XStack>
+      <Strong render="dd">{Math.round(voto.score)}</Strong>
       {dettagli.length > 0 && (
-        <dd className="text-muted-foreground text-sm">
+        <Muted render="dd" fontSize={13}>
           {dettagli.join(' · ')}
-        </dd>
+        </Muted>
       )}
-    </div>
+    </XStack>
   );
 }
 
@@ -76,47 +82,55 @@ export function CriticScores({ game }: { game: GameDetail }) {
   const nameBySlug = new Map((platforms ?? []).map((p) => [p.slug, p.name]));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
-      </CardHeader>
-      <CardContent gap={12}>
-        {complessivi.length === 0 ? (
-          <p className="text-muted-foreground">{t('none')}</p>
-        ) : (
-          <dl className="grid gap-1">
-            {complessivi.map((voto) => (
-              <Complessivo key={voto.source} voto={voto} />
-            ))}
-          </dl>
-        )}
+    <YStack gap={12}>
+      <DetailTitle>{t('title')}</DetailTitle>
+      {complessivi.length === 0 ? (
+        <Muted>{t('none')}</Muted>
+      ) : (
+        <YStack render="dl" gap={4} m={0}>
+          {complessivi.map((voto) => (
+            <Complessivo key={voto.source} voto={voto} />
+          ))}
+        </YStack>
+      )}
 
-        {perPiattaforma.length > 0 && (
-          <div className="grid gap-1">
-            <span className="text-muted-foreground text-sm">
-              {t('byPlatform')}
-            </span>
-            <dl className="grid gap-1 text-sm">
-              {perPiattaforma.map((voto) => (
-                <div
-                  key={`${voto.source}-${voto.platformSlug}`}
-                  className="flex flex-wrap items-baseline gap-x-2"
-                >
-                  <dt className="text-muted-foreground">
-                    {nameBySlug.get(voto.platformSlug!) ?? voto.platformSlug}
-                  </dt>
-                  <dd className="font-medium">{Math.round(voto.score)}</dd>
-                  {voto.reviewCount !== null && (
-                    <dd className="text-muted-foreground">
-                      {t('reviews', { count: voto.reviewCount })}
-                    </dd>
-                  )}
-                </div>
-              ))}
-            </dl>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {perPiattaforma.length > 0 && (
+        <YStack gap={4}>
+          <Muted fontSize={13}>{t('byPlatform')}</Muted>
+          <YStack render="dl" gap={4} m={0}>
+            {perPiattaforma.map((voto) => (
+              <XStack
+                key={`${voto.source}-${voto.platformSlug}`}
+                flexWrap="wrap"
+                items="baseline"
+                columnGap={8}
+              >
+                <Muted render="dt" fontSize={13}>
+                  {nameBySlug.get(voto.platformSlug!) ?? voto.platformSlug}
+                </Muted>
+                <Strong render="dd" fontSize={13}>
+                  {Math.round(voto.score)}
+                </Strong>
+                {/* Positive, miste e negative: le dà solo Metacritic. */}
+                {voto.positiveCount !== null && (
+                  <Muted render="dd" fontSize={13}>
+                    {t('split', {
+                      positive: voto.positiveCount,
+                      mixed: voto.neutralCount ?? 0,
+                      negative: voto.negativeCount ?? 0,
+                    })}
+                  </Muted>
+                )}
+                {voto.positiveCount === null && voto.reviewCount !== null && (
+                  <Muted render="dd" fontSize={13}>
+                    {t('reviews', { count: voto.reviewCount })}
+                  </Muted>
+                )}
+              </XStack>
+            ))}
+          </YStack>
+        </YStack>
+      )}
+    </YStack>
   );
 }

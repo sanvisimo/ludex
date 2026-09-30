@@ -1,7 +1,12 @@
 import { db, schema } from '@repo/db';
 import { eq, sql } from '@repo/db/orm';
 
-import { fetchIgdbGameMetadata, type IgdbAttribute } from '../external/igdb';
+import {
+  fetchIgdbGameMetadata,
+  type IgdbAttribute,
+  type IgdbGameMetadata,
+  type IgdbRelated,
+} from '../external/igdb';
 import { enqueueEnrichment } from '../queue/enrichment';
 import {
   isSourceDue,
@@ -19,7 +24,8 @@ import { saveScores } from './scores';
  * - **per singola fonte**: questo tocca solo IGDB e solo la riga `game_sources`
  *   di IGDB. HLTB ha la sua funzione e non si intralciano.
  * - **idempotente**: rieseguirlo porta allo stesso stato, non ne accumula. Gli
- *   attributi si riscrivono in blocco, i campi si sovrascrivono.
+ *   attributi e i giochi legati si riscrivono in blocco, i campi si
+ *   sovrascrivono.
  */
 
 /** Inserisce gli attributi mancanti nel vocabolario e restituisce i loro id. */
@@ -40,6 +46,38 @@ async function upsertAttributes(attributes: IgdbAttribute[]) {
     .returning({ id: schema.igdbAttributes.id });
 
   return rows.map((row) => row.id);
+}
+
+/**
+ * Le righe di `game_related`, una per (tipo, gioco), con la posizione.
+ *
+ * La posizione si conta **dentro il tipo**: i simili vanno in fila nell'ordine
+ * di IGDB, e i remake contano per conto loro. Un doppione nello stesso tipo
+ * violerebbe la chiave: si tiene il primo.
+ */
+function relatedRows(gameId: string, related: IgdbRelated[]) {
+  const seen = new Set<string>();
+  const positions = new Map<string, number>();
+
+  return related.flatMap((row) => {
+    const key = `${row.kind}:${row.igdbId}`;
+    if (seen.has(key)) return [];
+    seen.add(key);
+
+    const position = positions.get(row.kind) ?? 0;
+    positions.set(row.kind, position + 1);
+
+    return [
+      {
+        gameId,
+        kind: row.kind,
+        igdbId: row.igdbId,
+        name: row.name,
+        coverImageId: row.coverImageId,
+        position,
+      },
+    ];
+  });
 }
 
 /**
@@ -91,100 +129,7 @@ export async function enrichGameFromIgdb(
       return { status: 'not_found' };
     }
 
-    const attributeIds = await upsertAttributes(metadata.attributes);
-
-    await db.transaction(async (tx) => {
-      await tx
-        .update(schema.games)
-        .set({
-          name: metadata.name,
-          igdbSlug: metadata.slug,
-          summary: metadata.summary,
-          firstReleaseDate: metadata.firstReleaseDate,
-          coverImageId: metadata.coverImageId,
-          coverWidth: metadata.coverWidth,
-          coverHeight: metadata.coverHeight,
-          gameType: metadata.gameType,
-          parentIgdbId: metadata.parentIgdbId,
-        })
-        .where(eq(schema.games.id, gameId));
-
-      // Il voto sta in `game_scores` come quelli di OpenCritic e Metacritic, e
-      // non in una colonna sua: sono tre numeri della stessa natura, e tenerne
-      // uno a parte era ciò che rendeva impossibile confrontarli. La lista
-      // vuota quando IGDB non ha un voto non è un caso da saltare — è la
-      // cancellazione di un voto che c'era e non c'è più.
-      await saveScores(
-        gameId,
-        'igdb',
-        metadata.aggregatedRating === null
-          ? []
-          : [
-              {
-                score: metadata.aggregatedRating,
-                reviewCount: metadata.aggregatedRatingCount,
-              },
-            ],
-        tx,
-      );
-
-      // Gli id del gioco sugli altri negozi, così come IGDB li conosce.
-      //
-      // Serve soprattutto **l'appid Steam**, che è la prova d'identità su cui
-      // poggiano HLTB e Metacritic: la pagina HLTB dichiara un appid, la scheda
-      // del negozio Steam dichiara lo slug Metacritic. Fino allo step 9 l'appid
-      // ce l'avevano solo i giochi arrivati da un import Steam; con GOG, Epic e
-      // Amazon ne è rimasto senza più di metà del catalogo, e con lui senza
-      // quelle due strade — restava il nome, che sull'anno si affonda da solo
-      // ("Undying" è 2021 per HLTB e 2023 per IGDB, ed è lo stesso gioco).
-      //
-      // È **identità e non possesso**: dire che questo gioco su Steam si chiama
-      // 638990 non dice che qualcuno ce l'abbia. Il possesso sta in
-      // `ownerships`, e questa tabella non lo riguarda.
-      //
-      // `onConflictDoNothing` perché la mappatura può già esserci — scritta da
-      // un import, o da un altro utente: `external_ids` è condivisa. Chi c'era
-      // prima ha ragione: quello viene da una libreria vera, questo da IGDB.
-      //
-      // Le righe davvero nuove tornano dal RETURNING, ed è su quelle che si
-      // riaprono i `not_found`: un appid arrivato adesso è la prova che mancava
-      // quando HLTB o Metacritic hanno detto di no. Nella stessa transazione,
-      // o un crash fra le due scritture lascerebbe l'appid scritto e la fonte
-      // chiusa — e al giro dopo l'insert non tornerebbe più come nuovo.
-      if (metadata.storeIds.length > 0) {
-        const inserted = await tx
-          .insert(schema.externalIds)
-          .values(
-            metadata.storeIds.map((row) => ({
-              gameId,
-              source: row.store,
-              externalId: row.externalId,
-            })),
-          )
-          .onConflictDoNothing({
-            target: [schema.externalIds.source, schema.externalIds.externalId],
-          })
-          .returning({
-            gameId: schema.externalIds.gameId,
-            source: schema.externalIds.source,
-          });
-        await reopenSourcesForNewExternalIds(inserted, tx);
-      }
-
-      // Riscrittura in blocco invece di un diff: è cio' che rende la funzione
-      // idempotente, e gestisce da solo gli attributi tolti da IGDB.
-      await tx
-        .delete(schema.gameAttributes)
-        .where(eq(schema.gameAttributes.gameId, gameId));
-
-      if (attributeIds.length > 0) {
-        await tx
-          .insert(schema.gameAttributes)
-          .values(attributeIds.map((attributeId) => ({ gameId, attributeId })));
-      }
-    });
-
-    await markSource({ gameId, source: 'igdb', status: 'ok' });
+    const attributes = await saveIgdbMetadata(gameId, metadata);
 
     // HLTB e Metacritic aspettano questo momento: prima di adesso il gioco non
     // aveva né il titolo canonico né l'anno, e senza quei due il match sbaglia.
@@ -195,17 +140,13 @@ export async function enrichGameFromIgdb(
     // sempre voleva dire rifare HLTB a ogni rinfresco IGDB — ogni 30 giorni
     // invece dei suoi 180 — e riprovare ogni mese anche i `not_found`, che
     // devono riaprirsi per evento e non per calendario. L'evento c'è: è la
-    // riapertura qui sopra, che li rimette dovuti.
+    // riapertura dentro `saveIgdbMetadata`, che li rimette dovuti.
     for (const source of FOLLOW_IGDB) {
       if (await isSourceDue(source, gameId))
         await enqueueEnrichment(source, gameId);
     }
 
-    return {
-      status: 'ok',
-      name: metadata.name,
-      attributes: attributeIds.length,
-    };
+    return { status: 'ok', name: metadata.name, attributes };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await markSource({
@@ -217,4 +158,131 @@ export async function enrichGameFromIgdb(
     // Rilanciato: è BullMQ a decidere se e quando riprovare.
     throw error;
   }
+}
+
+/**
+ * Scrive ciò che IGDB sa di un gioco e segna la fonte sincronizzata.
+ *
+ * È la metà dell'enrichment che non chiama IGDB: la usa il job per gioco, e la
+ * usa l'arnese che chiede il dettaglio in blocco per i giochi arricchiti prima
+ * dei campi del 12d. Una scrittura sola per i due, così non possono divergere.
+ *
+ * Restituisce quanti attributi ha scritto.
+ */
+export async function saveIgdbMetadata(
+  gameId: string,
+  metadata: IgdbGameMetadata,
+): Promise<number> {
+  const attributeIds = await upsertAttributes(metadata.attributes);
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(schema.games)
+      .set({
+        name: metadata.name,
+        igdbSlug: metadata.slug,
+        summary: metadata.summary,
+        firstReleaseDate: metadata.firstReleaseDate,
+        coverImageId: metadata.coverImageId,
+        coverWidth: metadata.coverWidth,
+        coverHeight: metadata.coverHeight,
+        gameType: metadata.gameType,
+        parentIgdbId: metadata.parentIgdbId,
+        artworkImageIds: metadata.artworkImageIds,
+        screenshotImageIds: metadata.screenshotImageIds,
+        videos: metadata.videos,
+        developers: metadata.developers,
+        publishers: metadata.publishers,
+      })
+      .where(eq(schema.games.id, gameId));
+
+    // Il voto sta in `game_scores` come quelli di OpenCritic e Metacritic, e
+    // non in una colonna sua: sono tre numeri della stessa natura, e tenerne
+    // uno a parte era ciò che rendeva impossibile confrontarli. La lista
+    // vuota quando IGDB non ha un voto non è un caso da saltare — è la
+    // cancellazione di un voto che c'era e non c'è più.
+    await saveScores(
+      gameId,
+      'igdb',
+      metadata.aggregatedRating === null
+        ? []
+        : [
+            {
+              score: metadata.aggregatedRating,
+              reviewCount: metadata.aggregatedRatingCount,
+            },
+          ],
+      tx,
+    );
+
+    // Gli id del gioco sugli altri negozi, così come IGDB li conosce.
+    //
+    // Serve soprattutto **l'appid Steam**, che è la prova d'identità su cui
+    // poggiano HLTB e Metacritic: la pagina HLTB dichiara un appid, la scheda
+    // del negozio Steam dichiara lo slug Metacritic. Fino allo step 9 l'appid
+    // ce l'avevano solo i giochi arrivati da un import Steam; con GOG, Epic e
+    // Amazon ne è rimasto senza più di metà del catalogo, e con lui senza
+    // quelle due strade — restava il nome, che sull'anno si affonda da solo
+    // ("Undying" è 2021 per HLTB e 2023 per IGDB, ed è lo stesso gioco).
+    //
+    // È **identità e non possesso**: dire che questo gioco su Steam si chiama
+    // 638990 non dice che qualcuno ce l'abbia. Il possesso sta in
+    // `ownerships`, e questa tabella non lo riguarda.
+    //
+    // `onConflictDoNothing` perché la mappatura può già esserci — scritta da
+    // un import, o da un altro utente: `external_ids` è condivisa. Chi c'era
+    // prima ha ragione: quello viene da una libreria vera, questo da IGDB.
+    //
+    // Le righe davvero nuove tornano dal RETURNING, ed è su quelle che si
+    // riaprono i `not_found`: un appid arrivato adesso è la prova che mancava
+    // quando HLTB o Metacritic hanno detto di no. Nella stessa transazione,
+    // o un crash fra le due scritture lascerebbe l'appid scritto e la fonte
+    // chiusa — e al giro dopo l'insert non tornerebbe più come nuovo.
+    if (metadata.storeIds.length > 0) {
+      const inserted = await tx
+        .insert(schema.externalIds)
+        .values(
+          metadata.storeIds.map((row) => ({
+            gameId,
+            source: row.store,
+            externalId: row.externalId,
+          })),
+        )
+        .onConflictDoNothing({
+          target: [schema.externalIds.source, schema.externalIds.externalId],
+        })
+        .returning({
+          gameId: schema.externalIds.gameId,
+          source: schema.externalIds.source,
+        });
+      await reopenSourcesForNewExternalIds(inserted, tx);
+    }
+
+    // Riscrittura in blocco invece di un diff: è cio' che rende la funzione
+    // idempotente, e gestisce da solo gli attributi tolti da IGDB.
+    await tx
+      .delete(schema.gameAttributes)
+      .where(eq(schema.gameAttributes.gameId, gameId));
+
+    if (attributeIds.length > 0) {
+      await tx
+        .insert(schema.gameAttributes)
+        .values(attributeIds.map((attributeId) => ({ gameId, attributeId })));
+    }
+
+    // I giochi legati, con lo stesso criterio: IGDB può togliere un simile o
+    // cambiarne l'ordine, e un diff dovrebbe saperlo fare.
+    await tx
+      .delete(schema.gameRelated)
+      .where(eq(schema.gameRelated.gameId, gameId));
+
+    const related = relatedRows(gameId, metadata.related);
+    if (related.length > 0) {
+      await tx.insert(schema.gameRelated).values(related);
+    }
+  });
+
+  await markSource({ gameId, source: 'igdb', status: 'ok' });
+
+  return attributeIds.length;
 }

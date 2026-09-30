@@ -1,4 +1,4 @@
-import type { GameType, Store } from '@repo/contracts/vocabulary';
+import type { GameType, RelatedKind, Store } from '@repo/contracts/vocabulary';
 
 import { chunk } from '../lib/chunk';
 
@@ -287,10 +287,29 @@ const DETAIL_FIELDS = [
   'game_modes.id, game_modes.name, player_perspectives.id, player_perspectives.name,',
   // Gli id che il gioco ha sugli altri negozi. Non costano una richiesta in
   // più: sono due campi su una chiamata che si fa comunque.
-  'external_games.uid, external_games.external_game_source;',
+  'external_games.uid, external_games.external_game_source,',
+  // Per la pagina del gioco (12d): media, autori, e i giochi legati con nome e
+  // copertina — questi ultimi possono non essere in `games`, e senza nome non
+  // si potrebbero mostrare.
+  'artworks.image_id, screenshots.image_id, videos.video_id, videos.name,',
+  'involved_companies.developer, involved_companies.publisher, involved_companies.company.name,',
+  'remakes.name, remakes.cover.image_id, remasters.name, remasters.cover.image_id,',
+  'similar_games.name, similar_games.cover.image_id;',
 ].join(' ');
 
+// Quanti giochi per richiesta nel dettaglio in blocco. IGDB ne accetta 500, ma
+// qui ogni gioco si porta dietro screenshot, simili e id dei negozi espansi, e
+// una risposta da 500 schede è inutilmente grossa: con 100 una libreria di
+// duemila giochi sono comunque venti richieste.
+const DETAIL_PAGE = 100;
+
 type IgdbNamed = { id: number; name: string };
+
+type IgdbRelatedGame = {
+  id: number;
+  name?: string;
+  cover?: { image_id?: string };
+};
 
 type IgdbGameDetail = {
   id: number;
@@ -308,6 +327,24 @@ type IgdbGameDetail = {
   game_modes?: IgdbNamed[];
   player_perspectives?: IgdbNamed[];
   external_games?: { uid?: string; external_game_source?: number }[];
+  artworks?: { image_id?: string }[];
+  screenshots?: { image_id?: string }[];
+  videos?: { video_id?: string; name?: string }[];
+  involved_companies?: {
+    developer?: boolean;
+    publisher?: boolean;
+    company?: { name?: string };
+  }[];
+  remakes?: IgdbRelatedGame[];
+  remasters?: IgdbRelatedGame[];
+  similar_games?: IgdbRelatedGame[];
+};
+
+export type IgdbRelated = {
+  kind: RelatedKind;
+  igdbId: number;
+  name: string;
+  coverImageId: string | null;
 };
 
 export type IgdbAttribute = {
@@ -346,7 +383,52 @@ export type IgdbGameMetadata = {
    * dice che l'utente ce l'abbia. Il possesso sta in `ownerships`.
    */
   storeIds: { store: Store; externalId: string }[];
+  /** Gli `image_id` degli artwork: il primo fa da sfondo alla hero. */
+  artworkImageIds: string[];
+  screenshotImageIds: string[];
+  /** Video YouTube: l'id del video e il nome che IGDB gli dà. */
+  videos: { videoId: string; name: string | null }[];
+  developers: string[];
+  publishers: string[];
+  /** Remake, remaster e simili, nell'ordine in cui IGDB li elenca. */
+  related: IgdbRelated[];
 };
+
+function imageIds(entries: { image_id?: string }[] | undefined): string[] {
+  return (entries ?? []).flatMap((entry) =>
+    entry.image_id ? [entry.image_id] : [],
+  );
+}
+
+/** I nomi delle aziende col ruolo chiesto, senza doppioni e nell'ordine di IGDB. */
+function companies(
+  entries: IgdbGameDetail['involved_companies'],
+  role: 'developer' | 'publisher',
+): string[] {
+  const names = (entries ?? []).flatMap((entry) =>
+    entry[role] && entry.company?.name ? [entry.company.name] : [],
+  );
+  return [...new Set(names)];
+}
+
+function related(
+  kind: RelatedKind,
+  entries: IgdbRelatedGame[] | undefined,
+): IgdbRelated[] {
+  // Senza nome non c'è niente da mostrare: la riga non si scrive.
+  return (entries ?? []).flatMap((entry) =>
+    entry.name
+      ? [
+          {
+            kind,
+            igdbId: entry.id,
+            name: entry.name,
+            coverImageId: entry.cover?.image_id ?? null,
+          },
+        ]
+      : [],
+  );
+}
 
 function collect(
   kind: IgdbAttribute['kind'],
@@ -373,8 +455,34 @@ export async function fetchIgdbGameMetadata(
   );
 
   const game = games[0];
-  if (!game) return null;
+  return game ? toMetadata(game) : null;
+}
 
+/**
+ * Lo stesso dettaglio di `fetchIgdbGameMetadata`, per tanti giochi in blocco.
+ *
+ * Serve all'arnese che riempie i campi nuovi sui giochi arricchiti prima che
+ * esistessero: una richiesta ogni cento giochi invece di una per gioco.
+ * L'enrichment di tutti i giorni resta un job per gioco e non passa di qui.
+ */
+export async function fetchIgdbGamesMetadata(
+  igdbIds: number[],
+): Promise<Map<number, IgdbGameMetadata>> {
+  const out = new Map<number, IgdbGameMetadata>();
+
+  for (const page of chunk(igdbIds, DETAIL_PAGE)) {
+    const games = await query<IgdbGameDetail[]>(
+      'games',
+      `where id = (${page.map((id) => Math.trunc(id)).join(',')});` +
+        ` ${DETAIL_FIELDS} limit ${DETAIL_PAGE};`,
+    );
+    for (const game of games) out.set(game.id, toMetadata(game));
+  }
+
+  return out;
+}
+
+function toMetadata(game: IgdbGameDetail): IgdbGameMetadata {
   return {
     igdbId: game.id,
     name: game.name,
@@ -404,6 +512,20 @@ export async function fetchIgdbGameMetadata(
       ...collect('theme', game.themes),
       ...collect('game_mode', game.game_modes),
       ...collect('player_perspective', game.player_perspectives),
+    ],
+    artworkImageIds: imageIds(game.artworks),
+    screenshotImageIds: imageIds(game.screenshots),
+    videos: (game.videos ?? []).flatMap((video) =>
+      video.video_id
+        ? [{ videoId: video.video_id, name: video.name ?? null }]
+        : [],
+    ),
+    developers: companies(game.involved_companies, 'developer'),
+    publishers: companies(game.involved_companies, 'publisher'),
+    related: [
+      ...related('remake', game.remakes),
+      ...related('remaster', game.remasters),
+      ...related('similar', game.similar_games),
     ],
   };
 }

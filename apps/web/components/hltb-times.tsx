@@ -1,11 +1,14 @@
 import type { GameDetail } from '@repo/contracts';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
+import { BrandIcon, XStack, YStack } from '@repo/ui';
 import { useTranslations } from 'use-intl';
 
+import { DetailTitle, Muted, Strong } from '@/components/detail-text';
 import { useDuration } from '@/lib/duration';
 
 /**
- * Le durate di HowLongToBeat sulla scheda del gioco.
+ * Le durate di HowLongToBeat, tutte e quattro con le segnalazioni: la sezione
+ * del dialog «Dettagli» della pagina del gioco (12d), dove sulla pagina c'è
+ * solo il riepilogo.
  *
  * Lo step 6 si ferma qui: mostrare il dato. Filtrare per durata è lo step 7 e
  * vive sul backlog — questa resta la schermata che dice se il dato c'è e se ci
@@ -64,41 +67,50 @@ export function HltbTimes({ game }: { game: GameDetail }) {
     game.hltbHasSolo === false && (game.hltbHasVersus || game.hltbHasCoop);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
-      </CardHeader>
-      <CardContent gap={8}>
-        {game.hltbSyncedAt === null ? (
-          <p className="text-muted-foreground">{t('notFetched')}</p>
-        ) : righe.length === 0 ? (
-          <p className="text-muted-foreground">{t('noTimes')}</p>
-        ) : (
-          <>
-            {senzaFine && (
-              <p className="text-muted-foreground">{t('noEnding')}</p>
-            )}
-            <dl className="grid gap-1">
-              {righe.map((riga) => (
-                <div
-                  key={riga.chiave}
-                  className="flex flex-wrap items-baseline gap-x-2"
-                >
-                  <dt className="text-muted-foreground">{t(riga.chiave)}</dt>
-                  <dd className="font-medium">{duration(riga.minuti!)}</dd>
-                  {riga.segnalazioni !== null && (
-                    <dd className="text-muted-foreground text-sm">
-                      {t('reports', { count: riga.segnalazioni })}
-                      {riga.segnalazioni < POCHE_SEGNALAZIONI &&
-                        ` · ${t('fewReports')}`}
-                    </dd>
-                  )}
-                </div>
-              ))}
-            </dl>
-          </>
-        )}
-      </CardContent>
-    </Card>
+    <YStack gap={8}>
+      <XStack items="center" gap={8}>
+        <BrandIcon brand="hltb" size={18} />
+        <DetailTitle>{t('title')}</DetailTitle>
+      </XStack>
+      {game.hltbSyncedAt === null ? (
+        <Muted>{t('notFetched')}</Muted>
+      ) : righe.length === 0 ? (
+        <Muted>{t('noTimes')}</Muted>
+      ) : (
+        <>
+          {senzaFine && <Muted>{t('noEnding')}</Muted>}
+          <YStack render="dl" gap={4} m={0}>
+            {righe.map((riga) => (
+              <XStack
+                key={riga.chiave}
+                flexWrap="wrap"
+                items="baseline"
+                columnGap={8}
+              >
+                <Muted render="dt">{t(riga.chiave)}</Muted>
+                <Strong render="dd">{duration(riga.minuti!)}</Strong>
+                {riga.segnalazioni !== null && (
+                  <Muted render="dd" fontSize={13}>
+                    {t('reports', { count: riga.segnalazioni })}
+                    {riga.segnalazioni < POCHE_SEGNALAZIONI &&
+                      ` · ${t('fewReports')}`}
+                  </Muted>
+                )}
+              </XStack>
+            ))}
+          </YStack>
+          {/* Solo, coop, versus: che tipo di tempi ha senso leggere. */}
+          <Muted fontSize={13}>
+            {[
+              game.hltbHasSolo && t('solo'),
+              game.hltbHasCoop && t('coop'),
+              game.hltbHasVersus && t('versus'),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </Muted>
+        </>
+      )}
+    </YStack>
   );
 }

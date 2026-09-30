@@ -109,6 +109,7 @@ export function buildPsnEntries(
           ? 'ps_plus'
           : null,
       medium: 'digital',
+      storePage: raw.productId ? `product/${raw.productId}` : null,
     });
   }
 
@@ -144,6 +145,9 @@ export function buildPsnEntries(
       igdbLookup: title.conceptId
         ? { source: IGDB_PS_STORE_SOURCE, uid: title.conceptId }
         : null,
+      // Un disco il `productId` non ce l'ha: viene dai giocati, che portano
+      // solo il concept. Il link va alla scheda del concept.
+      storePage: title.conceptId ? `concept/${title.conceptId}` : null,
     });
   }
 

@@ -349,6 +349,90 @@ describe('enrichGameFromIgdb', () => {
     expect(await attributeNames(primo.id)).toEqual([{ name: 'Strategia' }]);
   });
 
+  it('scrive media e autori per la pagina del gioco', async () => {
+    const game = await createGame();
+    mockedFetch.mockResolvedValue(
+      igdbMetadata({
+        artworkImageIds: ['ar1'],
+        screenshotImageIds: ['sc1', 'sc2'],
+        videos: [{ videoId: 'yt1', name: 'Trailer' }],
+        developers: ['CD Projekt RED'],
+        publishers: ['Bandai Namco'],
+      }),
+    );
+
+    await enrichGameFromIgdb(game.id);
+
+    expect(
+      await db.query.games.findFirst({ where: eq(schema.games.id, game.id) }),
+    ).toMatchObject({
+      artworkImageIds: ['ar1'],
+      screenshotImageIds: ['sc1', 'sc2'],
+      videos: [{ videoId: 'yt1', name: 'Trailer' }],
+      developers: ['CD Projekt RED'],
+      publishers: ['Bandai Namco'],
+    });
+  });
+
+  it('i giochi legati si riscrivono: rieseguito non accumula, e perde ciò che IGDB ha tolto', async () => {
+    // Remake e simili possono non essere in `games`: la riga tiene nome e
+    // copertina per mostrarli, e l'`igdbId` per ritrovarli se un giorno ci
+    // entrano. Come gli attributi, a ogni giro si riscrivono in blocco.
+    const game = await createGame();
+    const remake = {
+      kind: 'remake' as const,
+      igdbId: 500,
+      name: 'Castlevania Remake',
+      coverImageId: 'c500',
+    };
+    const simili = [
+      {
+        kind: 'similar' as const,
+        igdbId: 601,
+        name: 'Uno',
+        coverImageId: null,
+      },
+      {
+        kind: 'similar' as const,
+        igdbId: 602,
+        name: 'Due',
+        coverImageId: null,
+      },
+    ];
+    mockedFetch.mockResolvedValue(
+      igdbMetadata({ related: [remake, ...simili] }),
+    );
+
+    await enrichGameFromIgdb(game.id);
+    await enrichGameFromIgdb(game.id);
+
+    const righe = () =>
+      db
+        .select({
+          kind: schema.gameRelated.kind,
+          igdbId: schema.gameRelated.igdbId,
+          position: schema.gameRelated.position,
+        })
+        .from(schema.gameRelated)
+        .where(eq(schema.gameRelated.gameId, game.id))
+        .orderBy(schema.gameRelated.kind, schema.gameRelated.position);
+
+    // La posizione si conta dentro il tipo: il remake è il primo dei remake,
+    // e i simili ripartono da zero.
+    expect(await righe()).toEqual([
+      { kind: 'remake', igdbId: 500, position: 0 },
+      { kind: 'similar', igdbId: 601, position: 0 },
+      { kind: 'similar', igdbId: 602, position: 1 },
+    ]);
+
+    mockedFetch.mockResolvedValue(igdbMetadata({ related: [simili[1]!] }));
+    await enrichGameFromIgdb(game.id);
+
+    expect(await righe()).toEqual([
+      { kind: 'similar', igdbId: 602, position: 0 },
+    ]);
+  });
+
   it("segna not_found quando IGDB non conosce l'id, senza sollevare", async () => {
     const game = await createGame();
     mockedFetch.mockResolvedValue(null);

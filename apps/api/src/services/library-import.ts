@@ -110,6 +110,12 @@ export type LibraryEntry = {
    * `external_ids` e che il passo 1 rilegge — e questo serve solo a trovarlo.
    */
   igdbLookup?: { source: number; uid: string } | null;
+  /**
+   * Dove sta questa voce sul negozio, come pezzo di indirizzo: diventa
+   * `ownerships.storePage`, e il link lo compone `storePageUrl`. Solo per i
+   * negozi che lo danno: Steam, GOG e PSN.
+   */
+  storePage?: string | null;
 };
 
 /**
@@ -630,6 +636,7 @@ export async function importLibrary(
       acquiredAt: entry.acquiredAt ?? null,
       subscription: entry.subscription ?? null,
       medium: entry.medium ?? 'digital',
+      storePage: entry.storePage ?? null,
     })),
   );
 

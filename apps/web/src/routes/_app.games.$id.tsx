@@ -1,64 +1,26 @@
-import type { GameAttribute } from '@repo/contracts';
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Skeleton,
-  XStack,
-} from '@repo/ui';
-import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'use-intl';
+import type { BacklogStatus } from '@repo/contracts';
+import { Button, Skeleton, Text, XStack, YStack, toast } from '@repo/ui';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useTranslations } from 'use-intl';
 
+import { AddGameDialog } from '@/components/add-game-dialog';
+import { Muted } from '@/components/detail-text';
 import { EditEntryDialog } from '@/components/edit-entry-dialog';
-import { EntryTags } from '@/components/entry-tags';
-import { CriticScores } from '@/components/critic-scores';
-import { GameCover } from '@/components/game-cover';
-import { GameTypeBadge } from '@/components/game-type-badge';
-import { HltbTimes } from '@/components/hltb-times';
-import { OwnershipBadges } from '@/components/ownership-badges';
-import { RatingValue } from '@/components/rating-value';
+import {
+  BacklogPanel,
+  DurationAndCritics,
+  GameGallery,
+  GameHero,
+  RelatedRow,
+} from '@/components/game-page';
+import { useApiErrorMessage } from '@/lib/api-error';
 import { useSetEntryHidden } from '@/lib/hide-entry';
-import { useStatusLabels } from '@/lib/labels';
-import { api } from '@/lib/orpc';
+import { api, client } from '@/lib/orpc';
 import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
-
-const KIND_ORDER: GameAttribute['kind'][] = [
-  'genre',
-  'theme',
-  'game_mode',
-  'player_perspective',
-];
-
-function AttributeGroups({ attributes }: { attributes: GameAttribute[] }) {
-  const t = useTranslations('attributeKind');
-
-  return (
-    <div className="grid gap-3">
-      {KIND_ORDER.map((kind) => {
-        const items = attributes.filter((a) => a.kind === kind);
-        if (items.length === 0) return null;
-        return (
-          <div key={kind} className="grid gap-1">
-            <span className="text-muted-foreground">{t(kind)}</span>
-            <div className="flex flex-wrap gap-1">
-              {items.map((item) => (
-                <Badge key={`${item.kind}-${item.igdbId}`} variant="secondary">
-                  {item.name}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+import { useSession } from '@/src/use-session';
 
 // Pagina auth/no-auth: il gioco si vede sempre, `entry` arriva popolata solo se
 // chi guarda è autenticato e ce l'ha nel backlog.
@@ -69,8 +31,11 @@ export const Route = createFileRoute('/_app/games/$id')({
 function GamePage() {
   const t = useTranslations('game');
   const tHidden = useTranslations('hidden');
-  const statusLabels = useStatusLabels();
+  const tBacklog = useTranslations('backlog');
+  const errorMessage = useApiErrorMessage();
+  const queryClient = useQueryClient();
   const setHidden = useSetEntryHidden();
+  const session = useSession();
 
   const { id } = Route.useParams();
   const { data, isPending, error } = useQuery(
@@ -81,11 +46,23 @@ function GamePage() {
   // della query, non una copia congelata al momento del click.
   const [editing, setEditing] = useState(false);
 
+  const setStatus = useMutation({
+    mutationFn: (input: { id: string; status: BacklogStatus }) =>
+      client.backlog.setStatus(input),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: api.games.byId.key() }),
+        queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),
+      ]),
+    onError: (error) =>
+      toast.error(errorMessage(error, { fallback: tBacklog('statusFailed') })),
+  });
+
   if (isPending) {
     return (
-      <Page maxW={768}>
-        <Skeleton height={36} width={256} />
-        <Skeleton height={192} width="100%" rounded={12} />
+      <Page maxW={1200}>
+        <Skeleton height={300} width="100%" rounded={12} />
+        <Skeleton height={320} width="100%" rounded={12} />
       </Page>
     );
   }
@@ -101,111 +78,110 @@ function GamePage() {
   }
 
   const { game, entry } = data;
-  const year = game.firstReleaseDate?.getFullYear() ?? null;
+  const remakes = game.related.filter((row) => row.kind !== 'similar');
+  const similar = game.related.filter((row) => row.kind === 'similar');
 
   return (
-    <Page maxW={768}>
-      <header className="flex flex-wrap gap-6">
-        <GameCover
-          imageId={game.coverImageId}
-          name={game.name}
-          size="cover_big"
-        />
+    <Page maxW={1200}>
+      <GameHero game={game} />
 
-        <div className="grid flex-1 content-start gap-3">
-          <div className="grid gap-1">
-            <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight">
-              {game.name}
-              <GameTypeBadge type={game.gameType} />
-            </h1>
-            {year && <p className="text-muted-foreground">{year}</p>}
-          </div>
-
-          {game.summary && (
-            <p className="whitespace-pre-line">{game.summary}</p>
-          )}
-
-          {/* Il campo distingue "non ha generi" da "non ancora arricchito": senza,
-              una scheda vuota sembrerebbe un gioco senza metadati. */}
-          {game.igdbSyncedAt === null && (
-            <p className="text-muted-foreground">
-              {game.igdbId === null ? t('notLinked') : t('notEnriched')}
-            </p>
-          )}
-        </div>
-      </header>
-
-      {game.attributes.length > 0 && (
-        <Card>
-          <CardContent>
-            <AttributeGroups attributes={game.attributes} />
-          </CardContent>
-        </Card>
+      {/* Il campo distingue "non ha metadati" da "non ancora arricchito": senza,
+          una pagina vuota sembrerebbe un gioco senza niente da dire. */}
+      {game.igdbSyncedAt === null && (
+        <Muted>
+          {game.igdbId === null ? t('notLinked') : t('notEnriched')}
+        </Muted>
       )}
 
-      <CriticScores game={game} />
-
-      <HltbTimes game={game} />
-
-      <Card>
-        <CardHeader>
-          <XStack flexWrap="wrap" items="center" gap={8}>
-            <CardTitle>{entry ? t('inBacklog') : t('notInBacklog')}</CardTitle>
-            {entry?.hiddenAt && (
-              <Badge variant="secondary">{tHidden('badge')}</Badge>
-            )}
-          </XStack>
-        </CardHeader>
-        <CardContent gap={12}>
+      {/* La laterale sta **prima** nell'HTML, ed è l'ordine del telefono:
+          durata, critica e stato sono ciò che serve a decidere. Da `$lg` le
+          due colonne si affiancano, e `row-reverse` porta la principale a
+          sinistra. */}
+      <XStack
+        gap={24}
+        items="flex-start"
+        flexDirection="row-reverse"
+        $max-lg={{ flexDirection: 'column', items: 'stretch' }}
+      >
+        <YStack width={360} shrink={0} gap={16} $max-lg={{ width: '100%' }}>
+          <DurationAndCritics game={game} entry={entry} />
           {entry ? (
-            <>
-              {/* Ci si arriva da una ricerca o da un link: senza, il gioco
-                  sembrerebbe in lista e in lista non si trova. */}
-              {entry.hiddenAt && (
-                <p className="text-muted-foreground">{t('hiddenNotice')}</p>
-              )}
-              <p>
-                {t.rich('statusLine', {
-                  status: statusLabels[entry.status],
-                  value: (chunks) => (
-                    <span className="font-medium">{chunks}</span>
-                  ),
-                })}
-              </p>
-              <RatingValue value={entry.rating} />
-              {entry.notes && (
-                <p className="whitespace-pre-line">{entry.notes}</p>
-              )}
-              <EntryTags tags={entry.tags} />
-              <OwnershipBadges ownerships={entry.ownerships} />
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" onClick={() => setEditing(true)}>
-                  {t('edit')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() =>
-                    setHidden.mutate({
-                      id: entry.id,
-                      hidden: entry.hiddenAt === null,
-                    })
-                  }
-                  disabled={setHidden.isPending}
-                >
-                  {entry.hiddenAt === null
-                    ? tHidden('hide')
-                    : tHidden('unhide')}
-                </Button>
-                <ButtonLink variant="ghost" href="/backlog">
-                  {t('goToBacklog')}
-                </ButtonLink>
-              </div>
-            </>
+            <BacklogPanel
+              entry={entry}
+              onStatus={(row, status) =>
+                setStatus.mutate({ id: row.id, status })
+              }
+              hiddenNotice={
+                // Ci si arriva da una ricerca o da un link: senza, il gioco
+                // sembrerebbe in lista e in lista non si trova.
+                entry.hiddenAt && <Muted>{t('hiddenNotice')}</Muted>
+              }
+              actions={
+                <>
+                  <Button variant="outline" onPress={() => setEditing(true)}>
+                    {t('edit')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onPress={() =>
+                      setHidden.mutate({
+                        id: entry.id,
+                        hidden: entry.hiddenAt === null,
+                      })
+                    }
+                    disabled={setHidden.isPending}
+                  >
+                    {entry.hiddenAt === null
+                      ? tHidden('hide')
+                      : tHidden('unhide')}
+                  </Button>
+                </>
+              }
+            />
           ) : (
-            <p className="text-muted-foreground">{t('notInBacklogHint')}</p>
+            session.data && <AddGameDialog game={game} />
           )}
-        </CardContent>
-      </Card>
+        </YStack>
+
+        <YStack flex={1} minW={0} gap={24} $max-lg={{ width: '100%' }}>
+          <GameGallery game={game} />
+
+          {game.summary && (
+            <YStack gap={8} render="section">
+              <Text
+                render="h2"
+                fontFamily="$heading"
+                fontSize={16}
+                lineHeight={22}
+                fontWeight="600"
+                color="$color12"
+                m={0}
+              >
+                {t('description')}
+              </Text>
+              <Text
+                fontSize={15}
+                lineHeight={24}
+                color="$color12"
+                style={{ whiteSpace: 'pre-line' }}
+              >
+                {game.summary}
+              </Text>
+            </YStack>
+          )}
+
+          <RelatedRow title={t('remakes')} games={remakes} />
+          <RelatedRow title={t('similar')} games={similar} />
+        </YStack>
+      </XStack>
+
+      {entry && (
+        <XStack>
+          <ButtonLink variant="ghost" href="/backlog">
+            {t('goToBacklog')}
+          </ButtonLink>
+        </XStack>
+      )}
 
       <EditEntryDialog
         entry={editing ? entry : null}

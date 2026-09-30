@@ -20,5 +20,13 @@ export async function importSteamLibrary(
   account: StoreAccountRow,
 ): Promise<SteamImportReport> {
   const library = await fetchSteamLibrary(account.externalAccountId);
-  return importLibrary(account, library);
+  return importLibrary(
+    account,
+    // La pagina del negozio è l'appid stesso: `storePageUrl` ci mette davanti
+    // il dominio.
+    library.map((entry) => ({
+      ...entry,
+      storePage: `app/${entry.externalId}`,
+    })),
+  );
 }

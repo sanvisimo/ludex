@@ -94,7 +94,23 @@ export {
   InputGroupInput,
   type InputGroupProps,
 } from './components/input-group';
+export {
+  BrandIcon,
+  brandTitle,
+  brandValues,
+  type Brand,
+  type BrandIconProps,
+} from './components/brand-icon';
+export {
+  Gallery,
+  type GalleryItem,
+  type GalleryProps,
+} from './components/gallery';
 export { Label, type LabelProps } from './components/label';
+export {
+  PlatformIcon,
+  type PlatformIconProps,
+} from './components/platform-icon';
 export {
   Logo,
   Wordmark,
@@ -137,3 +153,8 @@ export type { AppConfig } from './config';
 export { themes } from './themes';
 export { accents, defaultAccent, base, states } from './palettes';
 export type { Accent } from './palettes';
+export {
+  YoutubeVideo,
+  youtubeThumbnail,
+  type YoutubeVideoProps,
+} from './components/youtube-video';
