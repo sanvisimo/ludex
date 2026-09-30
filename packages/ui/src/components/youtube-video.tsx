@@ -29,6 +29,9 @@ export function YoutubeVideo({ videoId, title, playLabel }: YoutubeVideoProps) {
           `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`,
         )
       }
+      // `relative`: la miniatura è assoluta, e senza si aggancerebbe al primo
+      // antenato posizionato — sul web usciva dal riquadro e copriva la pagina.
+      position="relative"
       width="100%"
       aspectRatio={16 / 9}
       overflow="hidden"
@@ -44,7 +47,9 @@ export function YoutubeVideo({ videoId, title, playLabel }: YoutubeVideoProps) {
         height="100%"
         objectFit="cover"
       />
-      <YStack bg="rgba(0,0,0,0.6)" rounded={999} p={14}>
+      {/* `relative`: un elemento posizionato si disegna sopra quelli che non
+          lo sono, e senza la miniatura copriva il simbolo. */}
+      <YStack position="relative" bg="rgba(0,0,0,0.6)" rounded={999} p={14}>
         <Play size={28} color="#ffffff" fill="#ffffff" />
       </YStack>
     </YStack>

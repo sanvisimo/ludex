@@ -63,7 +63,13 @@ const emptyRow = (): OwnershipRow => ({
   medium: NO_MEDIUM,
 });
 
-export function AddGameDialog() {
+/**
+ * Con `game` il gioco è già scelto — la pagina del gioco — e il dialogo chiede
+ * solo stato e copie: niente titolo da scrivere, niente ricerca su IGDB.
+ */
+export function AddGameDialog({
+  game,
+}: { game?: { id: string; name: string } } = {}) {
   const t = useTranslations('addGame');
   // Il tipo di una scheda IGDB arriva come valore (`dlc`, `remaster`): il nome
   // da mostrare lo mette il client, e su un gioco principale non si mostra —
@@ -125,19 +131,23 @@ export function AddGameDialog() {
   }
 
   const filledRows = rows.filter((row) => row.platformSlug !== null);
-  const canSubmit = title.trim().length > 0 && filledRows.length > 0;
+  const canSubmit =
+    (game !== undefined || title.trim().length > 0) && filledRows.length > 0;
 
   const add = useMutation({
     mutationFn: async () => {
       // Con un risultato IGDB si risolve la riga condivisa (creandola, o
       // riusando quella che un altro utente ha già importato). Senza, si crea un
       // gioco non risolto: `igdbId` resta null finché qualcuno non lo collega.
-      const game = linked
-        ? await client.games.fromIgdb({ igdbId: linked.igdbId })
-        : await client.games.create({ name: title.trim() });
+      const gameId = game
+        ? game.id
+        : (linked
+            ? await client.games.fromIgdb({ igdbId: linked.igdbId })
+            : await client.games.create({ name: title.trim() })
+          ).id;
 
       return client.backlog.add({
-        gameId: game.id,
+        gameId,
         status,
         ownerships: filledRows.map((row) => ({
           platformSlug: row.platformSlug as string,
@@ -149,6 +159,7 @@ export function AddGameDialog() {
     onSuccess: async (entry) => {
       await queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
       await queryClient.invalidateQueries({ queryKey: api.games.latest.key() });
+      await queryClient.invalidateQueries({ queryKey: api.games.byId.key() });
       toast.success(t('added', { name: entry.game.name }));
       setOpen(false);
       reset();
@@ -178,105 +189,111 @@ export function AddGameDialog() {
         if (!next) reset();
       }}
     >
-      <DialogTrigger render={<Button>{t('trigger')}</Button>} />
+      <DialogTrigger
+        render={<Button>{game ? t('triggerForGame') : t('trigger')}</Button>}
+      />
 
       <DialogContent maxW={576}>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
-          <DialogDescription>{t('description')}</DialogDescription>
+          <DialogDescription>
+            {game ? game.name : t('description')}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid max-h-[60vh] gap-4 overflow-y-auto pr-1">
-          <div className="grid gap-2">
-            <Label htmlFor="titolo">{t('titleLabel')}</Label>
-            <div className="flex gap-2">
-              <Input
-                flex={1}
-                id="titolo"
-                value={title}
-                onChange={(event) => editTitle(event.target.value)}
-                placeholder={t('titlePlaceholder')}
-                autoFocus
-              />
-              <Button
-                type="button"
-                variant="outline"
-                shrink={0}
-                disabled={title.trim().length < 2}
-                onClick={() => {
-                  setSearchOpen(true);
-                  setSubmitted(title);
-                }}
-              >
-                {t('search')}
-              </Button>
-            </div>
-
-            {linked ? (
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">
-                  IGDB {linked.igdbId}
-                  {linked.releaseYear ? ` · ${linked.releaseYear}` : ''}
-                  {linked.developer ? ` · ${linked.developer}` : ''}
-                </Badge>
+          {!game && (
+            <div className="grid gap-2">
+              <Label htmlFor="titolo">{t('titleLabel')}</Label>
+              <div className="flex gap-2">
+                <Input
+                  flex={1}
+                  id="titolo"
+                  value={title}
+                  onChange={(event) => editTitle(event.target.value)}
+                  placeholder={t('titlePlaceholder')}
+                  autoFocus
+                />
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setLinked(null)}
+                  variant="outline"
+                  shrink={0}
+                  disabled={title.trim().length < 2}
+                  onClick={() => {
+                    setSearchOpen(true);
+                    setSubmitted(title);
+                  }}
                 >
-                  {t('unlink')}
+                  {t('search')}
                 </Button>
               </div>
-            ) : (
-              <p className="text-muted-foreground">{t('noLinkHint')}</p>
-            )}
 
-            {searchOpen && (
-              <div className="max-h-56 overflow-y-auto rounded-lg ring-1 ring-foreground/10">
-                {search.isFetching ? (
-                  <div className="grid gap-2 p-2">
-                    {Array.from({ length: 3 }).map((_, index) => (
-                      <Skeleton
-                        key={index}
-                        height={40}
-                        width="100%"
-                        rounded={6}
-                      />
-                    ))}
-                  </div>
-                ) : search.error ? (
-                  <p className="p-3 text-destructive">{t('searchFailed')}</p>
-                ) : search.data?.length === 0 ? (
-                  <p className="p-3 text-muted-foreground">
-                    {t('noResults', { query: submitted ?? '' })}
-                  </p>
-                ) : (
-                  <ul className="grid gap-0.5 p-1">
-                    {search.data?.map((hit) => (
-                      <li key={hit.igdbId}>
-                        <button
-                          type="button"
-                          onClick={() => pick(hit)}
-                          className="w-full rounded-md px-3 py-2 text-left hover:bg-muted"
-                        >
-                          <span className="font-medium">
-                            {hit.name}
-                            {hit.releaseYear ? ` (${hit.releaseYear})` : ''}
-                          </span>
-                          <span className="block text-muted-foreground">
-                            {[hitType(hit.gameType), hit.developer]
-                              .filter(Boolean)
-                              .join(' · ') || '—'}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </div>
+              {linked ? (
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">
+                    IGDB {linked.igdbId}
+                    {linked.releaseYear ? ` · ${linked.releaseYear}` : ''}
+                    {linked.developer ? ` · ${linked.developer}` : ''}
+                  </Badge>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setLinked(null)}
+                  >
+                    {t('unlink')}
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">{t('noLinkHint')}</p>
+              )}
+
+              {searchOpen && (
+                <div className="max-h-56 overflow-y-auto rounded-lg ring-1 ring-foreground/10">
+                  {search.isFetching ? (
+                    <div className="grid gap-2 p-2">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <Skeleton
+                          key={index}
+                          height={40}
+                          width="100%"
+                          rounded={6}
+                        />
+                      ))}
+                    </div>
+                  ) : search.error ? (
+                    <p className="p-3 text-destructive">{t('searchFailed')}</p>
+                  ) : search.data?.length === 0 ? (
+                    <p className="p-3 text-muted-foreground">
+                      {t('noResults', { query: submitted ?? '' })}
+                    </p>
+                  ) : (
+                    <ul className="grid gap-0.5 p-1">
+                      {search.data?.map((hit) => (
+                        <li key={hit.igdbId}>
+                          <button
+                            type="button"
+                            onClick={() => pick(hit)}
+                            className="w-full rounded-md px-3 py-2 text-left hover:bg-muted"
+                          >
+                            <span className="font-medium">
+                              {hit.name}
+                              {hit.releaseYear ? ` (${hit.releaseYear})` : ''}
+                            </span>
+                            <span className="block text-muted-foreground">
+                              {[hitType(hit.gameType), hit.developer]
+                                .filter(Boolean)
+                                .join(' · ') || '—'}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid gap-2">
             <Label>{t('ownershipLabel')}</Label>

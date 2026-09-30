@@ -217,6 +217,22 @@ dell'account.
    principale, colonna laterale con durata e critica, il dialog «Dettagli»,
    il blocco del backlog; su telefono una colonna nello stesso ordine.
    Tailwind esce da questa pagina, come dalle altre dello step 12.
+
+   **Fatto**, e provato sulla pagina vera a 375, 900 e 1440 px con un gioco
+   di prova (le immagini IGDB e YouTube, che la rete del container blocca,
+   sostituite da segnaposti). I pezzi stanno in `apps/web/components/game-page.tsx`;
+   `HltbTimes` e `CriticScores` sono diventate le due sezioni del dialog
+   «Dettagli», in Tamagui. Le colonne si affiancano da `$lg`; sotto, una
+   colonna con la laterale **prima** nell'HTML, e `row-reverse` la rimette a
+   destra sul desktop. Metacritic mostra il voto della piattaforma su cui hai
+   il gioco, se c'è. `AddGameDialog` accetta un gioco già scelto, così dalla
+   pagina si aggiunge senza cercarlo. Nessuna classe Tailwind nei file della
+   pagina. Trovato sulla pagina vera e corretto: la miniatura del trailer
+   usciva dal riquadro e copriva il «play» (mancava `position: relative`);
+   a 375 px le caselle dei tempi spezzavano «Completionist» a metà, ora vanno
+   a capo intere; «ultima partita» è una data e non «3 mesi fa», che server e
+   browser avrebbero scritto diversi.
+
 6. **Chiusura**: screenshot a 375, 900 e 1440 px, `docs/modello-dati.md`
    (le colonne nuove e `game_related`), `apps/web/CLAUDE.md`, questo piano.
    Il lotto si chiude quando l'utente dice che la pagina è pronta.

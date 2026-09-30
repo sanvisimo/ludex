@@ -152,7 +152,8 @@
     "added": "{name} added to the backlog",
     "duplicate": "This game is already in your backlog",
     "failed": "I couldn't add the game",
-    "duplicateHidden": "You already have it, but it's hidden: you'll find it under “Hidden” in the backlog."
+    "duplicateHidden": "You already have it, but it's hidden: you'll find it under “Hidden” in the backlog.",
+    "triggerForGame": "Add to backlog"
   },
   "game": {
     "notFoundTitle": "Game not found",
@@ -167,7 +168,32 @@
     "notInBacklogHint": "This game isn't in your backlog. You can add it from the backlog page.",
     "coverAlt": "{name} cover",
     "edit": "Edit",
-    "hiddenNotice": "Hidden from your list: still yours, it just doesn't show up."
+    "hiddenNotice": "Hidden from your list: still yours, it just doesn't show up.",
+    "developers": "Developer",
+    "publishers": "Publisher",
+    "dlcOf": "DLC for <link>{name}</link>",
+    "description": "Description",
+    "remakes": "Remakes and remasters",
+    "similar": "Similar games",
+    "relatedRemake": "Remake",
+    "relatedRemaster": "Remaster",
+    "notOwned": "not in your library",
+    "durationAndCritics": "Length and reviews",
+    "details": "Details",
+    "openOn": "Open on {name}",
+    "copies": "Copies",
+    "played": "{duration} played",
+    "lastPlayed": "last played {date}",
+    "acquired": "added {date}",
+    "screenshotAlt": "Screenshot {index} of {name}",
+    "notes": "Notes",
+    "galleryPrevious": "Previous",
+    "galleryNext": "Next",
+    "galleryPlay": "Watch",
+    "galleryEnlarge": "Enlarge",
+    "galleryClose": "Close",
+    "galleryItem": "Item {index} of {total}",
+    "close": "Close"
   },
   "hltb": {
     "title": "How long it takes",
@@ -182,7 +208,10 @@
     "fewReports": "few reports",
     "noEnding": "This game has no ending: these are hours played, not a length.",
     "noTimes": "HowLongToBeat has no times for this game.",
-    "notFetched": "Times not fetched yet. Coming shortly."
+    "notFetched": "Times not fetched yet. Coming shortly.",
+    "solo": "solo",
+    "coop": "co-op",
+    "versus": "versus"
   },
   "editEntry": {
     "title": "Edit",
@@ -437,7 +466,8 @@
     "opencritic": "OpenCritic",
     "metacritic": "Metacritic",
     "igdb": "IGDB",
-    "scoreOf": "{source}: {value}"
+    "scoreOf": "{source}: {value}",
+    "split": "{positive} positive · {mixed} mixed · {negative} negative"
   },
   "subscription": {
     "ps_plus": "PS Plus"

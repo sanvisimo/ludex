@@ -152,7 +152,8 @@
     "added": "{name} aggiunto al backlog",
     "duplicate": "Questo gioco è già nel tuo backlog",
     "failed": "Non sono riuscito ad aggiungere il gioco",
-    "duplicateHidden": "Ce l'hai già, ma è fra i nascosti: lo trovi in «Nascosti», nel backlog."
+    "duplicateHidden": "Ce l'hai già, ma è fra i nascosti: lo trovi in «Nascosti», nel backlog.",
+    "triggerForGame": "Aggiungi al backlog"
   },
   "game": {
     "notFoundTitle": "Gioco non trovato",
@@ -167,7 +168,32 @@
     "notInBacklogHint": "Questo gioco non è nel tuo backlog. Puoi aggiungerlo dalla pagina del backlog.",
     "coverAlt": "Copertina di {name}",
     "edit": "Modifica",
-    "hiddenNotice": "Nascosto dalla tua lista: resta tuo, solo non compare."
+    "hiddenNotice": "Nascosto dalla tua lista: resta tuo, solo non compare.",
+    "developers": "Sviluppo",
+    "publishers": "Editore",
+    "dlcOf": "DLC di <link>{name}</link>",
+    "description": "Descrizione",
+    "remakes": "Remake e remaster",
+    "similar": "Giochi simili",
+    "relatedRemake": "Remake",
+    "relatedRemaster": "Remaster",
+    "notOwned": "non ce l'hai",
+    "durationAndCritics": "Durata e critica",
+    "details": "Dettagli",
+    "openOn": "Apri su {name}",
+    "copies": "Copie",
+    "played": "{duration} giocate",
+    "lastPlayed": "ultima partita {date}",
+    "acquired": "preso il {date}",
+    "screenshotAlt": "Screenshot {index} di {name}",
+    "notes": "Note",
+    "galleryPrevious": "Precedente",
+    "galleryNext": "Successiva",
+    "galleryPlay": "Guarda",
+    "galleryEnlarge": "Ingrandisci",
+    "galleryClose": "Chiudi",
+    "galleryItem": "Elemento {index} di {total}",
+    "close": "Chiudi"
   },
   "hltb": {
     "title": "Quanto dura",
@@ -182,7 +208,10 @@
     "fewReports": "poche segnalazioni",
     "noEnding": "Gioco senza una fine: questi sono tempi giocati, non una durata.",
     "noTimes": "HowLongToBeat non ha durate per questo gioco.",
-    "notFetched": "Durate non ancora recuperate. Arrivano a breve."
+    "notFetched": "Durate non ancora recuperate. Arrivano a breve.",
+    "solo": "in solitario",
+    "coop": "in cooperativa",
+    "versus": "competitivo"
   },
   "editEntry": {
     "title": "Modifica",
@@ -437,7 +466,8 @@
     "opencritic": "OpenCritic",
     "metacritic": "Metacritic",
     "igdb": "IGDB",
-    "scoreOf": "{source}: {value}"
+    "scoreOf": "{source}: {value}",
+    "split": "{positive} positive · {mixed} miste · {negative} negative"
   },
   "subscription": {
     "ps_plus": "PS Plus"

@@ -71,12 +71,12 @@ export function BacklogEntries({
  * saprebbe cosa c'è scritto sopra. Nel menu ogni voce ha icona ed etichetta,
  * ed è lì che le icone si imparano.
  */
-function StatusButton({
+export function StatusButton({
   entry,
   onStatus,
 }: {
   entry: BacklogEntry;
-  onStatus: EntryHandlers['onStatus'];
+  onStatus: (entry: BacklogEntry, status: BacklogStatus) => void;
 }) {
   const t = useTranslations('backlog');
   const statusLabels = useStatusLabels();
