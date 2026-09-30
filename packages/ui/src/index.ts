@@ -94,6 +94,13 @@ export {
   InputGroupInput,
   type InputGroupProps,
 } from './components/input-group';
+export {
+  BrandIcon,
+  brandTitle,
+  brandValues,
+  type Brand,
+  type BrandIconProps,
+} from './components/brand-icon';
 export { Label, type LabelProps } from './components/label';
 export {
   Logo,
