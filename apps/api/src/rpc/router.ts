@@ -81,7 +81,7 @@ export const router = os.router({
     ),
 
     byId: os.games.byId.use(maybeAuthed).handler(async ({ input, context }) => {
-      const game = await findGameDetailById(input.id);
+      const game = await findGameDetailById(input.id, context.user?.id ?? null);
       if (!game)
         throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
 

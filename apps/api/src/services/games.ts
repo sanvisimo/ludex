@@ -1,6 +1,6 @@
 import type { Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, desc, eq, inArray } from '@repo/db/orm';
+import { and, desc, eq, inArray, sql } from '@repo/db/orm';
 
 import {
   findIgdbGameById,
@@ -75,13 +75,23 @@ export function findGameById(id: string) {
  * perche' le fonti arrivano in momenti diversi: un gioco puo' avere i metadati
  * IGDB e non ancora le durate.
  */
-export async function findGameDetailById(id: string) {
+export async function findGameDetailById(
+  id: string,
+  viewerId: string | null = null,
+) {
   const game = await db.query.games.findFirst({
     columns: {
       ...gameColumns,
       summary: true,
       coverWidth: true,
       coverHeight: true,
+      igdbSlug: true,
+      parentIgdbId: true,
+      artworkImageIds: true,
+      screenshotImageIds: true,
+      videos: true,
+      developers: true,
+      publishers: true,
       hltbMainMinutes: true,
       hltbPlusMinutes: true,
       hltbCompletionistMinutes: true,
@@ -102,7 +112,7 @@ export async function findGameDetailById(id: string) {
           attribute: { columns: { kind: true, igdbId: true, name: true } },
         },
       },
-      sources: { columns: { source: true, syncedAt: true } },
+      sources: { columns: { source: true, syncedAt: true, externalId: true } },
       scores: {
         columns: { gameId: false, createdAt: false, updatedAt: false },
       },
@@ -111,7 +121,17 @@ export async function findGameDetailById(id: string) {
 
   if (!game) return null;
 
-  const { attributes, sources, scores, ...rest } = game;
+  const { attributes, sources, scores, igdbSlug, parentIgdbId, ...rest } = game;
+  const externalId = (source: string) =>
+    sources.find((row) => row.source === source)?.externalId ?? null;
+
+  const parent =
+    parentIgdbId === null
+      ? null
+      : ((await db.query.games.findFirst({
+          columns: { id: true, name: true },
+          where: eq(schema.games.igdbId, parentIgdbId),
+        })) ?? null);
 
   return {
     ...rest,
@@ -121,6 +141,81 @@ export async function findGameDetailById(id: string) {
       sources.find((row) => row.source === 'igdb')?.syncedAt ?? null,
     hltbSyncedAt:
       sources.find((row) => row.source === 'hltb')?.syncedAt ?? null,
+    parent,
+    related: await findRelatedGames(id, viewerId),
+    links: sourceLinks({
+      igdbSlug,
+      hltbId: externalId('hltb'),
+      openCriticId: externalId('opencritic'),
+      metacriticSlug: externalId('metacritic'),
+    }),
+  };
+}
+
+/**
+ * Remake, remaster e simili di un gioco, con ciò che serve a mostrarli: il
+ * nostro id se il gioco è in `games`, e se chi guarda ce l'ha nel backlog.
+ *
+ * Le due LEFT JOIN sono il motivo per cui `game_related` tiene l'`igdbId` e
+ * non una FK: un gioco legato che entra in `games` dopo — lo importa
+ * qualcuno — si ritrova qui senza che nessuno riscriva la riga.
+ */
+async function findRelatedGames(gameId: string, viewerId: string | null) {
+  const rows = await db
+    .select({
+      kind: schema.gameRelated.kind,
+      igdbId: schema.gameRelated.igdbId,
+      name: schema.gameRelated.name,
+      coverImageId: schema.gameRelated.coverImageId,
+      gameId: schema.games.id,
+      backlogId: schema.backlog.id,
+    })
+    .from(schema.gameRelated)
+    .leftJoin(schema.games, eq(schema.games.igdbId, schema.gameRelated.igdbId))
+    .leftJoin(
+      schema.backlog,
+      and(
+        eq(schema.backlog.gameId, schema.games.id),
+        // Da sloggati nessuno possiede niente: la condizione non trova righe.
+        viewerId ? eq(schema.backlog.userId, viewerId) : sql`false`,
+      ),
+    )
+    .where(eq(schema.gameRelated.gameId, gameId))
+    // L'ordine dell'enum è remake, remaster, simili: quello della pagina.
+    .orderBy(schema.gameRelated.kind, schema.gameRelated.position);
+
+  return rows.map(({ backlogId, ...row }) => ({
+    ...row,
+    owned: backlogId !== null,
+  }));
+}
+
+/**
+ * La pagina del gioco su ciascuna fonte, dai riferimenti che l'enrichment ha
+ * salvato. Le forme sono state provate a mano su giochi veri (12d):
+ *
+ * - IGDB e Metacritic per slug, che abbiamo;
+ * - HLTB per id;
+ * - OpenCritic vuole `/game/{id}/{slug}`, ma lo slug **non lo guarda**: senza
+ *   dà 404, con uno qualunque apre la pagina giusta. Il suo non lo salviamo, e
+ *   si usa quello IGDB, che quasi sempre coincide ed è ciò da cui l'aggancio a
+ *   OpenCritic passa (via Wikidata). Dove manca, uno fisso.
+ */
+export function sourceLinks(refs: {
+  igdbSlug: string | null;
+  hltbId: string | null;
+  openCriticId: string | null;
+  metacriticSlug: string | null;
+}) {
+  return {
+    igdb: refs.igdbSlug ? `https://www.igdb.com/games/${refs.igdbSlug}` : null,
+    hltb: refs.hltbId ? `https://howlongtobeat.com/game/${refs.hltbId}` : null,
+    opencritic: refs.openCriticId
+      ? `https://opencritic.com/game/${refs.openCriticId}/${refs.igdbSlug ?? 'game'}`
+      : null,
+    metacritic: refs.metacriticSlug
+      ? `https://www.metacritic.com/game/${refs.metacriticSlug}/`
+      : null,
   };
 }
 

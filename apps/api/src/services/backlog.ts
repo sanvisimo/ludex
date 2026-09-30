@@ -38,6 +38,7 @@ export const entryQuery = {
         lastPlayedAt: true,
         subscription: true,
         medium: true,
+        acquiredAt: true,
         storePage: true,
       },
       // Da quale account viene la copia: è ciò che permette alla scheda di

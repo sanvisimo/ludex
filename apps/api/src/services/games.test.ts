@@ -2,14 +2,19 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { describe, expect, it, vi } from 'vitest';
 
-import { createGame } from '../../test/factories';
+import { createGame, createUser, setSource } from '../../test/factories';
 import {
   findIgdbGameById,
   findIgdbGameBySlug,
   searchIgdbGames,
 } from '../external/igdb';
 import { enqueueEnrichment } from '../queue/enrichment';
-import { parseSearchTerm, resolveGameFromIgdb, searchGames } from './games';
+import {
+  findGameDetailById,
+  parseSearchTerm,
+  resolveGameFromIgdb,
+  searchGames,
+} from './games';
 
 vi.mock('../external/igdb', () => ({
   findIgdbGameById: vi.fn(),
@@ -126,5 +131,106 @@ describe('searchGames', () => {
     mockedSearch.mockResolvedValue([hit(5, '1942')]);
 
     expect(await searchGames('1942')).toEqual([hit(5, '1942')]);
+  });
+});
+
+describe('findGameDetailById: ciò che serve alla pagina del gioco (12d)', () => {
+  it('dice quali giochi legati hai: solo quelli sono cliccabili', async () => {
+    const userId = await createUser();
+    const game = await createGame({ igdbId: 10 });
+    // Il remake è in `games` ed è tuo; il simile è in `games` ma di nessuno;
+    // l'altro simile in `games` non c'è proprio.
+    const remake = await createGame({ igdbId: 20 });
+    const simile = await createGame({ igdbId: 30 });
+    await db.insert(schema.backlog).values({ userId, gameId: remake.id });
+    await db.insert(schema.gameRelated).values([
+      {
+        gameId: game.id,
+        kind: 'similar',
+        igdbId: 40,
+        name: 'Fuori',
+        position: 1,
+      },
+      {
+        gameId: game.id,
+        kind: 'similar',
+        igdbId: 30,
+        name: 'Simile',
+        position: 0,
+      },
+      {
+        gameId: game.id,
+        kind: 'remake',
+        igdbId: 20,
+        name: 'Remake',
+        position: 0,
+      },
+    ]);
+
+    const dettaglio = await findGameDetailById(game.id, userId);
+
+    expect(dettaglio?.related).toEqual([
+      expect.objectContaining({ igdbId: 20, gameId: remake.id, owned: true }),
+      expect.objectContaining({ igdbId: 30, gameId: simile.id, owned: false }),
+      expect.objectContaining({ igdbId: 40, gameId: null, owned: false }),
+    ]);
+
+    // Da sloggati nessuno possiede niente.
+    const anonimo = await findGameDetailById(game.id);
+    expect(anonimo?.related.map((row) => row.owned)).toEqual([
+      false,
+      false,
+      false,
+    ]);
+  });
+
+  it('trova il gioco padre di un DLC, se è in games', async () => {
+    const padre = await createGame({ igdbId: 1877, name: 'The Witcher 3' });
+    const dlc = await createGame({ igdbId: 2000 });
+    const orfano = await createGame({ igdbId: 2001 });
+    await db
+      .update(schema.games)
+      .set({ parentIgdbId: 1877 })
+      .where(eq(schema.games.id, dlc.id));
+    await db
+      .update(schema.games)
+      .set({ parentIgdbId: 9999 })
+      .where(eq(schema.games.id, orfano.id));
+
+    expect((await findGameDetailById(dlc.id))?.parent).toEqual({
+      id: padre.id,
+      name: 'The Witcher 3',
+    });
+    // Di un padre che non abbiamo non sappiamo nemmeno il nome.
+    expect((await findGameDetailById(orfano.id))?.parent).toBeNull();
+  });
+
+  it('compone i link delle fonti da ciò che hanno agganciato', async () => {
+    const game = await createGame();
+    await db
+      .update(schema.games)
+      .set({ igdbSlug: 'cyberpunk-2077' })
+      .where(eq(schema.games.id, game.id));
+    await setSource({
+      gameId: game.id,
+      source: 'hltb',
+      status: 'ok',
+      externalId: '2127',
+    });
+    await setSource({
+      gameId: game.id,
+      source: 'opencritic',
+      status: 'ok',
+      externalId: '8525',
+    });
+
+    expect((await findGameDetailById(game.id))?.links).toEqual({
+      igdb: 'https://www.igdb.com/games/cyberpunk-2077',
+      hltb: 'https://howlongtobeat.com/game/2127',
+      // Lo slug di OpenCritic non lo salviamo: quello IGDB va bene, perché
+      // OpenCritic guarda solo l'id.
+      opencritic: 'https://opencritic.com/game/8525/cyberpunk-2077',
+      metacritic: null,
+    });
   });
 });

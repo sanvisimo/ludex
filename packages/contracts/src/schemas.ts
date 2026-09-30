@@ -8,6 +8,7 @@ import {
   gameTypeValues,
   hiddenKindValues,
   mediumValues,
+  relatedKindValues,
   scoreSourceValues,
   sortDirectionValues,
   storeAccountStatusValues,
@@ -18,6 +19,7 @@ import {
 
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
 export const AttributeKindSchema = z.enum(attributeKindValues);
+export const RelatedKindSchema = z.enum(relatedKindValues);
 export const StoreSchema = z.enum(storeValues);
 export const LinkableStoreSchema = z.enum(linkableStoreValues);
 export const StoreAccountStatusSchema = z.enum(storeAccountStatusValues);
@@ -144,6 +146,24 @@ export const GameScoreSchema = z.object({
 
 export type GameScore = z.infer<typeof GameScoreSchema>;
 
+// Un gioco legato a questo — remake, remaster, simile — come lo mostra la
+// pagina del gioco. Può non essere in `games`: allora `gameId` è nullo, e di
+// lui ci sono solo nome e copertina.
+export const RelatedGameSchema = z.object({
+  kind: RelatedKindSchema,
+  igdbId: z.number().int(),
+  name: z.string(),
+  coverImageId: z.string().nullable(),
+  // Il nostro id, se il gioco è in `games`.
+  gameId: z.uuid().nullable(),
+  // Se chi guarda ce l'ha nel backlog. È ciò che lo rende cliccabile: la pagina
+  // apre solo i giochi tuoi (decisione del 12d), gli altri restano copertina e
+  // nome finché la wishlist non darà un posto dove metterli.
+  owned: z.boolean(),
+});
+
+export type RelatedGame = z.infer<typeof RelatedGameSchema>;
+
 // Scheda completa: quello che la lista non porta perché sarebbe peso inutile.
 export const GameDetailSchema = GameSchema.extend({
   summary: z.string().nullable(),
@@ -160,6 +180,28 @@ export const GameDetailSchema = GameSchema.extend({
   // avere i metadati IGDB e non ancora le durate.
   igdbSyncedAt: z.date().nullable(),
   hltbSyncedAt: z.date().nullable(),
+  // Media e autori per la pagina del gioco. Nulli = IGDB non è ancora passato
+  // coi campi del 12d, liste vuote = IGDB non ne ha.
+  artworkImageIds: z.array(z.string()).nullable(),
+  screenshotImageIds: z.array(z.string()).nullable(),
+  videos: z
+    .array(z.object({ videoId: z.string(), name: z.string().nullable() }))
+    .nullable(),
+  developers: z.array(z.string()).nullable(),
+  publishers: z.array(z.string()).nullable(),
+  // Il gioco a cui un DLC è attaccato, solo se è in `games`: di un padre che
+  // non abbiamo sappiamo l'id IGDB e nient'altro, nemmeno il nome.
+  parent: z.object({ id: z.uuid(), name: z.string() }).nullable(),
+  // Remake e remaster, poi i simili, ciascuno nell'ordine di IGDB.
+  related: z.array(RelatedGameSchema),
+  // La pagina del gioco su ciascuna fonte, per il link accanto al suo dato.
+  // Nulla dove la fonte non ha agganciato il gioco.
+  links: z.object({
+    igdb: z.string().nullable(),
+    hltb: z.string().nullable(),
+    opencritic: z.string().nullable(),
+    metacritic: z.string().nullable(),
+  }),
 });
 
 // Risultato di ricerca su IGDB: NON è una riga `games`, è un candidato da cui
@@ -214,6 +256,9 @@ export const OwnershipSchema = z.object({
   // stessa ragione dell'abbonamento: un disco si avvia inserendolo, e il badge
   // del possesso deve poterlo dire.
   medium: MediumSchema.nullable(),
+  // Quando questa copia è entrata nella libreria del negozio. Nulla dove il
+  // negozio non lo dice e sugli inserimenti manuali.
+  acquiredAt: z.date().nullable(),
   // Il pezzo di indirizzo della pagina del gioco sul negozio, da cui
   // `storePageUrl` compone il link. Nullo dove il negozio non lo dà o la copia
   // è stata scritta a mano.

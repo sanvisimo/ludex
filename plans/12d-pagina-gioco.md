@@ -178,6 +178,19 @@ dell'account.
    guarda, e i riferimenti delle quattro fonti per i loro link (id HLTB, id
    OpenCritic, slug Metacritic, slug IGDB). Il formato di ciascun link va
    verificato a mano su un gioco vero prima di scriverlo.
+
+   **Fatto.** `GameDetailSchema` porta media e autori, `parent` (id e nome,
+   solo se il padre è in `games`), `related` con `gameId` e `owned` di chi
+   guarda, e `links` delle quattro fonti composti dal server
+   (`sourceLinks` in `games.ts`). Le copie portano anche `acquiredAt`, che il
+   contratto non aveva. I formati li ha provati l'utente su Cyberpunk 2077 e
+   Control: HLTB `/game/{id}`, Metacritic `/game/{slug}/`, IGDB
+   `/games/{slug}`. **OpenCritic** vuole `/game/{id}/{slug}`: senza slug dà
+   404, con uno qualunque apre la pagina giusta. Il suo slug non lo salviamo
+   e si usa quello IGDB, che quasi sempre coincide. Test: il «ce l'hai» sui
+   correlati (tuo, in `games` ma non tuo, fuori da `games`, da sloggati), il
+   padre presente e assente, i link.
+
 4. **I componenti in `@repo/ui`**: la gallery (immagine grande, miniature,
    frecce, a tutto schermo; su telefono scorre di lato), la fila che scorre
    di lato per remake e simili, le icone dei marchi. Per le icone va deciso
