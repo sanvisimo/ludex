@@ -127,7 +127,15 @@ export function DropdownMenuItem({
   );
 }
 
-export const DropdownMenuRadioGroup = Menu.RadioGroup;
+/**
+ * Come il gruppo: senza `bg` il RadioGroup di Tamagui prende il fondo del
+ * tema, e nel tema scuro le voci stavano su una fascia più scura del menu.
+ */
+export function DropdownMenuRadioGroup(
+  props: GetProps<typeof Menu.RadioGroup>,
+) {
+  return <Menu.RadioGroup bg="transparent" {...props} />;
+}
 
 export function DropdownMenuRadioItem({
   children,

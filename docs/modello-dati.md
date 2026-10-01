@@ -60,6 +60,30 @@ stessa regola dei NULL che vale per la durata.
 Allo step 13 il tipo dirà se un DLC è un candidato a sé o solo insieme al suo
 gioco.
 
+### Media, autori e giochi legati
+
+Per la pagina del gioco (12d) l'enrichment IGDB scrive anche, dalla stessa
+chiamata di dettaglio e senza richieste in più:
+
+- **su `games`**, perché sono del gioco e uguali per tutti: gli `image_id` di
+  artwork e screenshot (`artwork_image_ids`, `screenshot_image_ids`), i video
+  di YouTube (`videos`: id e nome), sviluppatori ed editori (`developers`,
+  `publishers`). Si mostrano e basta, nessuno ci filtra: array, non tabelle.
+  **Null vuol dire «non ancora chiesto», la lista vuota «IGDB non ne ha»**:
+  l'arnese `pnpm --filter api igdb:media` riempie i giochi arricchiti prima
+  delle colonne, e lavora proprio su questa distinzione.
+- **in `game_related`** remake, remaster e giochi simili (`kind`), con
+  `igdb_id`, nome, copertina e posizione. Una tabella e non un array perché il
+  gioco legato **può non essere in `games`**, e non ci si aggiunge: una decina
+  di simili per gioco sono migliaia di righe che nessuno possiede, ciascuna col
+  suo enrichment, e una riga di `games` non si cancella. Niente FK su
+  `igdb_id`: il «ce l'hai» è una JOIN `igdb_id` → `games` → `backlog`, che
+  trova il gioco da sola quando un giorno entra. L'enrichment la riscrive
+  intera a ogni giro, dentro la sua transazione.
+
+Il link alla pagina del negozio invece è **della copia**, non del gioco:
+`ownerships.store_page`, in [import-librerie](import-librerie.md).
+
 ## `backlog` = possesso
 
 Se esiste la riga in `backlog`, l'utente possiede il gioco. Punto: nessun flag di
