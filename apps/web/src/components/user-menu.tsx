@@ -10,23 +10,89 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  NavItem,
+  Separator,
+  Sheet,
+  Text,
+  ToggleGroup,
+  ToggleGroupItem,
+  XStack,
+  YStack,
 } from '@repo/ui';
-import { useRouter } from '@tanstack/react-router';
+import { Library, LogOut, User } from '@repo/ui/icons';
+import { useMatchRoute, useRouter } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
+import { useState, type ComponentProps, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'use-intl';
 
 import { locales } from '@/i18n/config';
 import { useChangeLocale } from '@/src/components/locale-switcher';
+import { takeLinkClick } from '@/src/link-click';
 
 /**
  * Chi è collegato, a destra nella barra: l'avatar, e nel menu le sue pagine —
  * backlog e account — e le tre cose che sono sue e non di una pagina: tema,
  * lingua, uscita.
  *
- * Il nome non si legge sul bottone, solo le iniziali: per questo è il suo
- * `aria-label`, e la prima riga del menu.
+ * Due forme, scelte dal CSS come la posizione della barra: da `$md` un menu a
+ * tendina, sotto un foglio dal basso largo quanto lo schermo, che sul
+ * telefono si legge e si tocca meglio.
  */
 export function UserMenu({ name }: { name: string }) {
+  return (
+    <>
+      <XStack $max-md={{ display: 'none' }}>
+        <UserDropdown name={name} />
+      </XStack>
+      <XStack display="none" $max-md={{ display: 'flex' }}>
+        <UserSheet name={name} />
+      </XStack>
+    </>
+  );
+}
+
+/**
+ * Il bottone: le iniziali. Il nome non si legge, per questo è il suo
+ * `aria-label` e la prima riga del menu.
+ *
+ * Le altre props vanno al `Button`: il trigger del menu a tendina gli passa
+ * le sue (`asChild`), e senza il menu non si apre.
+ */
+function AvatarButton({
+  name,
+  ...props
+}: { name: string } & ComponentProps<typeof Button>) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      width={40}
+      height={40}
+      rounded={999}
+      aria-label={name}
+      {...props}
+    >
+      <Avatar name={name} size={32} />
+    </Button>
+  );
+}
+
+/**
+ * Prima via dalla pagina, poi fuori dalla sessione. Al contrario una pagina
+ * privata come `/account` vede la sessione sparire e rimbalza su `/login` per
+ * conto suo, e le due navigazioni si pestano.
+ */
+function useSignOut() {
+  const router = useRouter();
+  return async () => {
+    await router.navigate({ to: '/' });
+    await signOut();
+    // Chi guarda è cambiato: i loader rileggono da capo.
+    await router.invalidate();
+  };
+}
+
+function UserDropdown({ name }: { name: string }) {
   const t = useTranslations('nav');
   const tTheme = useTranslations('theme');
   const tLocale = useTranslations('locale');
@@ -34,23 +100,11 @@ export function UserMenu({ name }: { name: string }) {
   const { theme, setTheme } = useTheme();
   const locale = useLocale();
   const { change } = useChangeLocale();
+  const signOutAndLeave = useSignOut();
 
   return (
     <DropdownMenu align="end">
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon"
-            width={40}
-            height={40}
-            rounded={999}
-            aria-label={name}
-          >
-            <Avatar name={name} size={32} />
-          </Button>
-        }
-      />
+      <DropdownMenuTrigger render={<AvatarButton name={name} />} />
       <DropdownMenuContent width={224}>
         <DropdownMenuLabel
           fontSize={14}
@@ -95,21 +149,169 @@ export function UserMenu({ name }: { name: string }) {
           ))}
         </DropdownMenuRadioGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={async () => {
-            // Prima via dalla pagina, poi fuori dalla sessione. Al contrario
-            // una pagina privata come `/account` vede la sessione sparire e
-            // rimbalza su `/login` per conto suo, e le due navigazioni si
-            // pestano.
-            await router.navigate({ to: '/' });
-            await signOut();
-            // Chi guarda è cambiato: i loader rileggono da capo.
-            await router.invalidate();
-          }}
-        >
+        <DropdownMenuItem onClick={() => void signOutAndLeave()}>
           {t('signOut')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/**
+ * Lo stesso menu nel foglio. Le voci del menu a tendina vivono solo dentro il
+ * menu: qui le pagine sono `NavItem`, accese dove si è, e tema e lingua due
+ * file di bottoni. Il foglio si chiude dopo ogni voce che porta altrove.
+ */
+function UserSheet({ name }: { name: string }) {
+  const t = useTranslations('nav');
+  const tTheme = useTranslations('theme');
+  const tLocale = useTranslations('locale');
+  const [open, setOpen] = useState(false);
+  // Il contenuto del foglio si monta solo all'apertura: l'`undefined` di
+  // `theme` sul server non arriva mai al markup iniziale.
+  const { theme, setTheme } = useTheme();
+  const locale = useLocale();
+  const { change } = useChangeLocale();
+  const signOutAndLeave = useSignOut();
+  const close = () => setOpen(false);
+
+  return (
+    <>
+      <AvatarButton name={name} onPress={() => setOpen(true)} />
+      <Sheet open={open} onOpenChange={setOpen} label={name}>
+        <XStack items="center" gap={10} px={12} py={4}>
+          <Avatar name={name} size={32} />
+          <Text
+            fontSize={15}
+            lineHeight={20}
+            fontWeight="500"
+            color="$color12"
+            numberOfLines={1}
+            shrink={1}
+          >
+            {name}
+          </Text>
+        </XStack>
+        <YStack render="nav" aria-label={name} gap={4}>
+          <SheetLink
+            to="/backlog"
+            icon={<Library size={16} />}
+            onNavigate={close}
+          >
+            {t('backlog')}
+          </SheetLink>
+          <SheetLink to="/account" icon={<User size={16} />} onNavigate={close}>
+            {t('account')}
+          </SheetLink>
+        </YStack>
+        <Separator />
+        <SheetSetting label={tTheme('label')}>
+          {/* `theme`, non `resolvedTheme`: si sceglie la preferenza, e
+              «sistema» deve restare selezionabile come tale. */}
+          <ToggleGroup
+            value={theme ?? 'system'}
+            onValueChange={setTheme}
+            label={tTheme('label')}
+          >
+            <ToggleGroupItem value="light">
+              <OptionText>{tTheme('light')}</OptionText>
+            </ToggleGroupItem>
+            <ToggleGroupItem value="dark">
+              <OptionText>{tTheme('dark')}</OptionText>
+            </ToggleGroupItem>
+            <ToggleGroupItem value="system">
+              <OptionText>{tTheme('system')}</OptionText>
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </SheetSetting>
+        <SheetSetting label={tLocale('label')}>
+          <ToggleGroup
+            value={locale}
+            onValueChange={change}
+            label={tLocale('label')}
+          >
+            {locales.map((value) => (
+              <ToggleGroupItem key={value} value={value}>
+                <OptionText>{tLocale(value)}</OptionText>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </SheetSetting>
+        <Separator />
+        <Button
+          variant="ghost"
+          justify="flex-start"
+          gap={10}
+          px={12}
+          onPress={() => {
+            close();
+            void signOutAndLeave();
+          }}
+        >
+          <LogOut size={16} />
+          {t('signOut')}
+        </Button>
+      </Sheet>
+    </>
+  );
+}
+
+function SheetSetting({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <XStack items="center" justify="space-between" gap={12} px={12} py={4}>
+      <Text fontSize={14} lineHeight={20} color="$color11">
+        {label}
+      </Text>
+      {children}
+    </XStack>
+  );
+}
+
+/**
+ * Una pagina nel foglio, accesa se ci si è, anche sotto di sé. Tasto
+ * centrale e modificatori aprono una scheda nuova, come ogni link dell'app.
+ */
+function SheetLink({
+  to,
+  icon,
+  onNavigate,
+  children,
+}: {
+  to: '/backlog' | '/account';
+  icon: ReactNode;
+  onNavigate: () => void;
+  children: string;
+}) {
+  const router = useRouter();
+  const matchRoute = useMatchRoute();
+
+  return (
+    <NavItem
+      href={to}
+      active={matchRoute({ to, fuzzy: true }) !== false}
+      icon={icon}
+      onClick={(event) => {
+        if (!takeLinkClick(event)) return;
+        void router.navigate({ to });
+        onNavigate();
+      }}
+    >
+      {children}
+    </NavItem>
+  );
+}
+
+/** Il testo di un'opzione: dentro un `ToggleGroupItem` va in un `Text`. */
+function OptionText({ children }: { children: string }) {
+  return (
+    <Text fontSize={13} lineHeight={18} color="$color12">
+      {children}
+    </Text>
   );
 }

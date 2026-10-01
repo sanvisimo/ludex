@@ -279,7 +279,16 @@ in basso si apre verso l'alto da solo. Trovato e corretto: la colonna
 principale della pagina (gallery, descrizione, simili) sul telefono era alta
 zero, per la base 0 di `flex={1}` quando le colonne si impilano, e il
 contenuto le usciva sotto; prima non si vedeva perché dopo non c'era niente,
-col footer sì. **Da guardare dopo**: le soglie di `/backlog` (la colonna dei
+col footer sì.
+
+Dopo averlo visto sul telefono (01/10/2026): il menu a tendina dell'avatar
+lì si vedeva poco. **Sotto `$md` l'avatar apre lo `Sheet`** dal basso, largo
+quanto lo schermo come il drawer di prima: nome, «Il mio backlog» e
+«Account» come `NavItem` accesi dove si è, tema e lingua come `ToggleGroup`,
+«Esci». Da `$md` resta il menu a tendina; i due bottoni sono tutti e due
+nell'HTML e li sceglie il CSS. Trovato provandolo: un `ToggleGroupItem` col
+testo nudo dà errore (finora aveva solo icone), il testo va in un `Text`.
+**Da guardare dopo**: le soglie di `/backlog` (la colonna dei
 filtri da `$xl`) erano tarate sui 240 px della barra laterale, che ora non
 c'è: funziona, ma ora la pagina ha 240 px in più.
 
