@@ -8,12 +8,16 @@ import type { ReactNode } from 'react';
  * Sostituisce le copie di `mx-auto grid max-w-4xl gap-6 p-6` scritte a mano
  * in ogni pagina. Una pagina con un'intestazione sua — il gioco, con la
  * copertina accanto al titolo — non passa `title` e la scrive dentro.
+ *
+ * `hero` sta sopra, larga quanto la finestra e senza respiro: è l'immagine
+ * del gioco, che va da un bordo all'altro.
  */
 export function Page({
   title,
   subtitle,
   actions,
   maxW = 896,
+  hero,
   children,
 }: {
   title?: ReactNode;
@@ -21,43 +25,47 @@ export function Page({
   /** I bottoni a destra del titolo; un `false` non disegna niente. */
   actions?: ReactNode;
   maxW?: number;
+  hero?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <YStack render="main" width="100%" maxW={maxW} mx="auto" p={24} gap={24}>
-      {title !== undefined && (
-        <XStack
-          render="header"
-          flexWrap="wrap"
-          items="flex-end"
-          justify="space-between"
-          gap={16}
-        >
-          <YStack gap={4} shrink={1}>
-            <Text
-              render="h1"
-              fontFamily="$heading"
-              fontSize={24}
-              lineHeight={32}
-              fontWeight="700"
-              color="$color12"
-            >
-              {title}
-            </Text>
-            {subtitle ? (
-              <Text fontSize={14} lineHeight={20} color="$color11">
-                {subtitle}
+    <YStack render="main" width="100%">
+      {hero}
+      <YStack width="100%" maxW={maxW} mx="auto" p={24} gap={24}>
+        {title !== undefined && (
+          <XStack
+            render="header"
+            flexWrap="wrap"
+            items="flex-end"
+            justify="space-between"
+            gap={16}
+          >
+            <YStack gap={4} shrink={1}>
+              <Text
+                render="h1"
+                fontFamily="$heading"
+                fontSize={24}
+                lineHeight={32}
+                fontWeight="700"
+                color="$color12"
+              >
+                {title}
               </Text>
+              {subtitle ? (
+                <Text fontSize={14} lineHeight={20} color="$color11">
+                  {subtitle}
+                </Text>
+              ) : null}
+            </YStack>
+            {actions ? (
+              <XStack flexWrap="wrap" items="center" gap={8}>
+                {actions}
+              </XStack>
             ) : null}
-          </YStack>
-          {actions ? (
-            <XStack flexWrap="wrap" items="center" gap={8}>
-              {actions}
-            </XStack>
-          ) : null}
-        </XStack>
-      )}
-      {children}
+          </XStack>
+        )}
+        {children}
+      </YStack>
     </YStack>
   );
 }

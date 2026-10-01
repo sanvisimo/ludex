@@ -10,7 +10,6 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Text,
 } from '@repo/ui';
 import { useRouter } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
@@ -20,11 +19,12 @@ import { locales } from '@/i18n/config';
 import { useChangeLocale } from '@/src/components/locale-switcher';
 
 /**
- * Chi è collegato, in fondo alla barra, e le tre cose che sono sue e non di
- * una pagina: tema, lingua, uscita.
+ * Chi è collegato, a destra nella barra: l'avatar, e nel menu le sue pagine —
+ * backlog e account — e le tre cose che sono sue e non di una pagina: tema,
+ * lingua, uscita.
  *
- * Il nome visibile è anche il nome del bottone: niente `aria-label`, che lo
- * coprirebbe con un testo diverso da quello che si legge.
+ * Il nome non si legge sul bottone, solo le iniziali: per questo è il suo
+ * `aria-label`, e la prima riga del menu.
  */
 export function UserMenu({ name }: { name: string }) {
   const t = useTranslations('nav');
@@ -36,25 +36,41 @@ export function UserMenu({ name }: { name: string }) {
   const { change } = useChangeLocale();
 
   return (
-    <DropdownMenu align="start">
+    <DropdownMenu align="end">
       <DropdownMenuTrigger
         render={
           <Button
             variant="ghost"
-            width="100%"
-            height={44}
-            justify="flex-start"
-            gap={10}
-            px={8}
+            size="icon"
+            width={40}
+            height={40}
+            rounded={999}
+            aria-label={name}
           >
-            <Avatar name={name} size={28} />
-            <Text fontSize={14} color="$color12" numberOfLines={1} shrink={1}>
-              {name}
-            </Text>
+            <Avatar name={name} size={32} />
           </Button>
         }
       />
       <DropdownMenuContent width={224}>
+        <DropdownMenuLabel
+          fontSize={14}
+          lineHeight={20}
+          color="$color12"
+          numberOfLines={1}
+        >
+          {name}
+        </DropdownMenuLabel>
+        <DropdownMenuItem
+          onClick={() => void router.navigate({ to: '/backlog' })}
+        >
+          {t('backlog')}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => void router.navigate({ to: '/account' })}
+        >
+          {t('account')}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuLabel>{tTheme('label')}</DropdownMenuLabel>
         {/* `theme`, non `resolvedTheme`: si sceglie la preferenza, e
             «sistema» deve restare selezionabile come tale. */}

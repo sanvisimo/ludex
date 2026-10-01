@@ -11,6 +11,7 @@ import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import {
   BacklogPanel,
   DurationAndCritics,
+  GAME_PAGE_WIDTH,
   GameGallery,
   GameHero,
   RelatedRow,
@@ -60,8 +61,10 @@ function GamePage() {
 
   if (isPending) {
     return (
-      <Page maxW={1200}>
-        <Skeleton height={300} width="100%" rounded={12} />
+      <Page
+        maxW={GAME_PAGE_WIDTH}
+        hero={<Skeleton height={300} width="100%" rounded={0} />}
+      >
         <Skeleton height={320} width="100%" rounded={12} />
       </Page>
     );
@@ -82,9 +85,7 @@ function GamePage() {
   const similar = game.related.filter((row) => row.kind === 'similar');
 
   return (
-    <Page maxW={1200}>
-      <GameHero game={game} />
-
+    <Page maxW={GAME_PAGE_WIDTH} hero={<GameHero game={game} />}>
       {/* Il campo distingue "non ha metadati" da "non ancora arricchito": senza,
           una pagina vuota sembrerebbe un gioco senza niente da dire. */}
       {game.igdbSyncedAt === null && (
@@ -143,7 +144,15 @@ function GamePage() {
           )}
         </YStack>
 
-        <YStack flex={1} minW={0} gap={24} $max-lg={{ width: '100%' }}>
+        {/* Sotto `$lg` le colonne sono impilate, e la base 0 di `flex`
+            darebbe a questa un'altezza zero: il contenuto ne uscirebbe e
+            coprirebbe ciò che viene dopo. */}
+        <YStack
+          flex={1}
+          minW={0}
+          gap={24}
+          $max-lg={{ width: '100%', flexBasis: 'auto' }}
+        >
           <GameGallery game={game} />
 
           {game.summary && (

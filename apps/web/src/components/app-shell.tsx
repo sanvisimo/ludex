@@ -1,91 +1,56 @@
-import {
-  Button,
-  Separator,
-  Sheet,
-  Text,
-  Tooltip,
-  Wordmark,
-  XStack,
-  YStack,
-} from '@repo/ui';
-import { House, Library, Menu, User } from '@repo/ui/icons';
+import { Text, Wordmark, XStack, YStack } from '@repo/ui';
 import { Link, useRouter } from '@tanstack/react-router';
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ButtonLink } from '@/src/components/button-link';
 import { LocaleSwitcher } from '@/src/components/locale-switcher';
-import { NavLink } from '@/src/components/nav-link';
 import { takeLinkClick } from '@/src/link-click';
 import { UserMenu } from '@/src/components/user-menu';
 import { useSession } from '@/src/use-session';
 
+/** L'altezza della barra: sul telefono la pagina le lascia questo spazio sotto. */
+const BAR_HEIGHT = 56;
+
 /**
  * Il guscio: la cornice di tutte le pagine tranne accesso e registrazione.
  *
- * Due forme della stessa navigazione, scelte **dal CSS** e non da JavaScript:
- * da `$md` in su la barra laterale, sotto una barra in alto col menu che apre
- * lo `Sheet`. Tutte e due stanno nell'HTML del server e le media query
- * decidono quale si vede, così non c'è un primo render sbagliato da
- * correggere all'idratazione, come succederebbe leggendo la larghezza.
+ * Una barra sola, a ogni larghezza: il nome a sinistra, che porta al
+ * catalogo, e a destra chi è collegato, col menu che porta a backlog e
+ * account. Sul desktop sta in alto, sul telefono in basso, dove arriva il
+ * pollice e da dove si aprono i menu. Resta sempre visibile: ha lo stesso
+ * fondo della pagina, senza bordo, e il contenuto ci passa sotto.
+ *
+ * Le due posizioni le sceglie **il CSS**, non JavaScript: leggere la
+ * larghezza darebbe un primo render sbagliato da correggere all'idratazione.
  *
  * Sono le finestre strette del **web**: l'app mobile avrà le sue bottom tab.
  */
 export function AppShell({ children }: { children: ReactNode }) {
-  const t = useTranslations('nav');
-  const [menuOpen, setMenuOpen] = useState(false);
-
   return (
-    <XStack minH="100vh" bg="$background">
-      <YStack
-        render="aside"
-        display="none"
-        $md={{ display: 'flex' }}
-        width={240}
-        shrink={0}
-        height="100vh"
+    <YStack minH="100vh" bg="$background" $max-md={{ pb: BAR_HEIGHT }}>
+      <XStack
+        render="header"
         position="sticky"
         t={0}
-        p={12}
-        gap={16}
-        borderRightWidth={1}
-        borderColor="$borderColor"
+        z={10}
+        height={BAR_HEIGHT}
+        items="center"
+        justify="space-between"
+        gap={8}
+        px={12}
+        bg="$background"
+        $max-md={{ position: 'fixed', t: 'auto', b: 0, l: 0, r: 0 }}
       >
         <HomeLink />
-        <Navigation fill />
-      </YStack>
-
-      <YStack flex={1} minW={0}>
-        <XStack
-          render="header"
-          $md={{ display: 'none' }}
-          items="center"
-          justify="space-between"
-          px={12}
-          py={8}
-          borderBottomWidth={1}
-          borderColor="$borderColor"
-        >
-          <HomeLink />
-          <Tooltip content={t('menu')} placement="bottom">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('menu')}
-              onPress={() => setMenuOpen(true)}
-            >
-              <Menu size={18} />
-            </Button>
-          </Tooltip>
-        </XStack>
-        {children}
-      </YStack>
-
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen} label={t('navigation')}>
-        <Navigation onNavigate={() => setMenuOpen(false)} />
-      </Sheet>
-    </XStack>
+        <Account />
+      </XStack>
+      {/* `grow`, non `flex`: con base 0 il contenuto uscirebbe dalla colonna
+          e il footer gli finirebbe sopra. */}
+      <YStack grow={1}>{children}</YStack>
+      <Footer />
+    </YStack>
   );
 }
 
@@ -101,112 +66,71 @@ export function HomeLink() {
 }
 
 /**
- * Le voci e, in fondo, chi è collegato. La stessa nella barra laterale e nel
- * foglio: sul foglio `onNavigate` lo chiude dopo il clic.
- *
- * `fill` solo nella barra laterale, dove riempie l'altezza e spinge l'utente in
- * fondo. Nel foglio no: il foglio è alto quanto il contenuto, e un `flex` lì
- * dentro schiaccia tutto a zero.
+ * A destra nella barra: l'avatar di chi è collegato, o accesso e
+ * registrazione. Tema e lingua da anonimo stanno qui; da collegato sono nel
+ * menu dell'avatar.
  */
-function Navigation({
-  fill = false,
-  onNavigate,
-}: {
-  fill?: boolean;
-  onNavigate?: () => void;
-}) {
+function Account() {
   const t = useTranslations('nav');
   const { data: session, isPending } = useSession();
 
-  return (
-    <YStack flex={fill ? 1 : undefined} gap={16} justify="space-between">
-      <YStack render="nav" aria-label={t('navigation')} gap={4}>
-        <NavLink to="/" icon={<House size={16} />} onNavigate={onNavigate}>
-          {t('catalog')}
-        </NavLink>
-        {session && (
-          <>
-            <NavLink
-              to="/backlog"
-              icon={<Library size={16} />}
-              onNavigate={onNavigate}
-            >
-              {t('backlog')}
-            </NavLink>
-            <NavLink
-              to="/account"
-              icon={<User size={16} />}
-              onNavigate={onNavigate}
-            >
-              {t('account')}
-            </NavLink>
-          </>
-        )}
-      </YStack>
+  // `isPending` evita che i bottoni da anonimo lampeggino al primo render.
+  if (isPending) return null;
+  if (session) return <UserMenu name={session.user.name} />;
 
-      <YStack gap={12}>
-        {/* `isPending` evita che il fondo da anonimo lampeggi al primo render. */}
-        {isPending ? null : session ? (
-          <YStack gap={8}>
-            <Separator />
-            <UserMenu name={session.user.name} />
-          </YStack>
-        ) : (
-          <YStack gap={8}>
-            <Separator />
-            <ButtonLink href="/login" variant="outline">
-              {t('signIn')}
-            </ButtonLink>
-            <ButtonLink href="/register">{t('signUp')}</ButtonLink>
-            {/* Tema e lingua restano raggiungibili da anonimo: sono
-                preferenze del browser, non dell'account. */}
-            <XStack gap={4}>
-              <ThemeToggle />
-              <LocaleSwitcher />
-            </XStack>
-          </YStack>
-        )}
-        <Footer onNavigate={onNavigate} />
-      </YStack>
-    </YStack>
+  return (
+    <XStack items="center" gap={4}>
+      <ThemeToggle />
+      <LocaleSwitcher />
+      <ButtonLink href="/login" variant="ghost">
+        {t('signIn')}
+      </ButtonLink>
+      <ButtonLink href="/register">{t('signUp')}</ButtonLink>
+    </XStack>
   );
 }
 
 /**
- * In fondo a tutto, per chiunque: crediti, privacy, condizioni e la firma. Non
- * sono voci della barra — niente icona, niente voce accesa — perché sono pagine
- * di servizio e non cose che si fanno nell'app.
+ * In fondo a tutto, per chiunque: la firma, crediti, privacy e condizioni.
+ * Non sono voci della barra perché sono pagine di servizio e non cose che si
+ * fanno nell'app.
  */
-function Footer({ onNavigate }: { onNavigate?: () => void }) {
+function Footer() {
   const t = useTranslations('nav');
 
   return (
-    <YStack gap={2} px={8}>
-      <Text fontSize={12} lineHeight={16} color="$color10">
-        {t('madeWith')}
-      </Text>
-      <XStack flexWrap="wrap" columnGap={10}>
-        <FooterLink to="/credits" onNavigate={onNavigate}>
-          {t('credits')}
-        </FooterLink>
-        <FooterLink to="/privacy" onNavigate={onNavigate}>
-          {t('privacy')}
-        </FooterLink>
-        <FooterLink to="/terms" onNavigate={onNavigate}>
-          {t('terms')}
-        </FooterLink>
-      </XStack>
-    </YStack>
+    <XStack
+      render="footer"
+      flexWrap="wrap"
+      items="center"
+      justify="center"
+      columnGap={12}
+      rowGap={4}
+      px={24}
+      py={16}
+    >
+      <FooterText>© {new Date().getFullYear()} sanvisimo</FooterText>
+      <FooterText>{t('madeWith')}</FooterText>
+      <FooterLink to="/credits">{t('credits')}</FooterLink>
+      <FooterLink to="/privacy">{t('privacy')}</FooterLink>
+      <FooterLink to="/terms">{t('terms')}</FooterLink>
+    </XStack>
+  );
+}
+
+function FooterText({ children }: { children: ReactNode }) {
+  return (
+    <Text fontSize={12} lineHeight={16} color="$color10">
+      {children}
+    </Text>
   );
 }
 
 function FooterLink({
   to,
-  onNavigate,
   children,
 }: {
   to: '/credits' | '/privacy' | '/terms';
-  onNavigate?: () => void;
   children: string;
 }) {
   const router = useRouter();
@@ -221,11 +145,10 @@ function FooterLink({
         onClick: (event: unknown) => {
           if (!takeLinkClick(event)) return;
           void router.navigate({ to });
-          onNavigate?.();
         },
       } as object)}
-      fontSize={13}
-      lineHeight={18}
+      fontSize={12}
+      lineHeight={16}
       color="$color11"
       textDecorationLine="underline"
       cursor="pointer"

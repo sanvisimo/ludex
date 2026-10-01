@@ -137,7 +137,13 @@ function LinkRow({
  *
  * Il testo sta sempre su un fondo scuro — la sfumatura sopra l'immagine — e
  * per questo la hero è in tema scuro qualunque sia quello dell'app.
+ *
+ * L'immagine va da un bordo all'altro della finestra (`Page` la mette fuori
+ * dal suo respiro); il testo sopra resta allineato alla colonna della pagina,
+ * larga `GAME_PAGE_WIDTH`.
  */
+export const GAME_PAGE_WIDTH = 1200;
+
 export function GameHero({ game }: { game: GameDetail }) {
   const t = useTranslations('game');
   const year = game.firstReleaseDate?.getFullYear() ?? null;
@@ -163,7 +169,6 @@ export function GameHero({ game }: { game: GameDetail }) {
       <YStack
         position="relative"
         overflow="hidden"
-        rounded={12}
         bg="$color2"
         minH={300}
         justify="flex-end"
@@ -199,7 +204,15 @@ export function GameHero({ game }: { game: GameDetail }) {
           }}
         />
 
-        <XStack position="relative" p={20} gap={20} items="flex-end">
+        <XStack
+          position="relative"
+          width="100%"
+          maxW={GAME_PAGE_WIDTH}
+          mx="auto"
+          p={24}
+          gap={20}
+          items="flex-end"
+        >
           <YStack $max-sm={{ display: 'none' }}>
             <GameCover
               imageId={game.coverImageId}

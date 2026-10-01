@@ -255,6 +255,35 @@ RomM, AGPL-3.0). L'elenco di chi ha l'icona è in
 `apps/web/lib/platform-icons.ts`. Sulle copie il nome della piattaforma
 sparisce dove c'è l'icona, e resta nel suo `aria-label`.
 
-6. **Chiusura**: screenshot a 375, 900 e 1440 px, `docs/modello-dati.md`
-   (le colonne nuove e `game_related`), `apps/web/CLAUDE.md`, questo piano.
-   Il lotto si chiude quando l'utente dice che la pagina è pronta.
+5c. **La hero a tutta larghezza e il guscio nuovo**, dopo aver visto la
+pagina sul telefono (01/10/2026). La hero aveva i margini della pagina e gli
+angoli arrotondati, anche sul desktop; ora va da un bordo all'altro della
+finestra, e titolo e badge restano allineati alla colonna da 1200 px. Per
+farla arrivare ai bordi il guscio perde la barra laterale, e già che c'era
+l'utente l'ha ridisegnato (senza wireframe, per sua scelta):
+
+- **una barra sola**: a sinistra il nome, che porta al catalogo; a destra
+  l'avatar, sempre visibile, col menu di backlog, account, tema, lingua e
+  uscita. Da anonimo tema, lingua, «Accedi» e «Registrati»;
+- **in alto sul desktop, in basso sul telefono**, perché lì i menu si
+  aprono dal basso. Col fondo della pagina e senza bordo (fra «sopra la
+  hero» e «sopra la pagina» l'utente ha scelto la seconda);
+- **niente più drawer** né voce «Catalogo»: c'è il nome;
+- **un footer**: «© anno sanvisimo», «Made with ♥ in Italy & EU», crediti,
+  privacy, termini.
+
+**Fatto.** `Page` ha uno spazio `hero` sopra il suo contenitore; `NavLink`
+non serve più ed è tolto (`NavItem` resta in `@repo/ui`). Provato sulla
+pagina vera a 375 e 1440 px, da anonimo e da collegato: il menu dell'avatar
+in basso si apre verso l'alto da solo. Trovato e corretto: la colonna
+principale della pagina (gallery, descrizione, simili) sul telefono era alta
+zero, per la base 0 di `flex={1}` quando le colonne si impilano, e il
+contenuto le usciva sotto; prima non si vedeva perché dopo non c'era niente,
+col footer sì. **Da guardare dopo**: le soglie di `/backlog` (la colonna dei
+filtri da `$xl`) erano tarate sui 240 px della barra laterale, che ora non
+c'è: funziona, ma ora la pagina ha 240 px in più.
+
+6. **Chiusura**: `docs/modello-dati.md` (le colonne nuove e
+   `game_related`), `apps/web/CLAUDE.md`, questo piano. Gli screenshot di
+   chiusura no: la pagina la guarda l'utente, e qui le immagini IGDB sono
+   bloccate. Il lotto si chiude quando l'utente dice che la pagina è pronta.
