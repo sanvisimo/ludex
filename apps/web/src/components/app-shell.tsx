@@ -99,22 +99,17 @@ function Footer() {
   const t = useTranslations('nav');
 
   return (
-    <XStack
-      render="footer"
-      flexWrap="wrap"
-      items="center"
-      justify="center"
-      columnGap={12}
-      rowGap={4}
-      px={24}
-      py={16}
-    >
-      <FooterText>© {new Date().getFullYear()} sanvisimo</FooterText>
-      <FooterText>{t('madeWith')}</FooterText>
-      <FooterLink to="/credits">{t('credits')}</FooterLink>
-      <FooterLink to="/privacy">{t('privacy')}</FooterLink>
-      <FooterLink to="/terms">{t('terms')}</FooterLink>
-    </XStack>
+    <YStack render="footer" items="center" gap={4} px={24} py={16}>
+      <XStack flexWrap="wrap" justify="center" columnGap={12}>
+        <FooterText>© {new Date().getFullYear()} sanvisimo</FooterText>
+        <FooterText>{t('madeWith')}</FooterText>
+      </XStack>
+      <XStack flexWrap="wrap" justify="center" columnGap={12}>
+        <FooterLink to="/credits">{t('credits')}</FooterLink>
+        <FooterLink to="/privacy">{t('privacy')}</FooterLink>
+        <FooterLink to="/terms">{t('terms')}</FooterLink>
+      </XStack>
+    </YStack>
   );
 }
 
