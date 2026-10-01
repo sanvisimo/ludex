@@ -40,6 +40,10 @@ export { Avatar, initials, type AvatarProps } from './components/avatar';
 export { Badge, type BadgeProps } from './components/badge';
 export { Button, type ButtonProps } from './components/button';
 export {
+  CornerLabel,
+  type CornerLabelProps,
+} from './components/corner-label';
+export {
   Card,
   CardContent,
   CardDescription,

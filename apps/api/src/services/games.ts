@@ -168,7 +168,7 @@ async function findRelatedGames(gameId: string, viewerId: string | null) {
       name: schema.gameRelated.name,
       coverImageId: schema.gameRelated.coverImageId,
       gameId: schema.games.id,
-      backlogId: schema.backlog.id,
+      status: schema.backlog.status,
     })
     .from(schema.gameRelated)
     .leftJoin(schema.games, eq(schema.games.igdbId, schema.gameRelated.igdbId))
@@ -184,10 +184,7 @@ async function findRelatedGames(gameId: string, viewerId: string | null) {
     // L'ordine dell'enum è remake, remaster, simili: quello della pagina.
     .orderBy(schema.gameRelated.kind, schema.gameRelated.position);
 
-  return rows.map(({ backlogId, ...row }) => ({
-    ...row,
-    owned: backlogId !== null,
-  }));
+  return rows.map((row) => ({ ...row, owned: row.status !== null }));
 }
 
 /**
