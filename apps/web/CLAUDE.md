@@ -79,6 +79,14 @@ una pagina nuova usa:
 - **`takeLinkClick`**: la regola dei modificatori (nuova scheda, tasto
   centrale) per ogni `<a href>` che naviga nell'app, `ButtonLink` compreso.
 
+**La pagina del gioco** (`/games/$id`) ha i suoi pezzi in
+`apps/web/components/game-page.tsx`: la hero, che `Page` mette sopra il suo
+contenitore a tutta larghezza, la gallery, durata e critica col dialog
+«Dettagli», il blocco del backlog, remake e simili. Le colonne si affiancano
+da `$lg`; sotto, la laterale viene **prima** nell'HTML — durata, critica e
+stato sono ciò che serve a decidere — e `row-reverse` la rimette a destra sul
+desktop.
+
 **Le pagine di servizio** — `/credits`, `/privacy`, `/terms` — stanno sotto
 `_app` e sono pubbliche. Il loro link sta nel `Footer` di `app-shell.tsx`,
 con la firma, e non nel menu. I dati dei crediti (servizi,

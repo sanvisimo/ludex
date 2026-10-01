@@ -13,6 +13,14 @@ negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
 - **abbonamento su `ownerships`**: `subscription`, nullo se la copia è comprata.
   Vedi «un gioco a cui puoi giocare stasera ma che non è tuo», più sotto: è la
   risposta parziale che il 9b ha dovuto dare, non un campo in più.
+- **pagina del negozio su `ownerships`**: `store_page`, il pezzo di
+  indirizzo che il negozio dà (Steam `app/{appid}`, GOG l'`url` del prodotto,
+  PSN `product/{id}` o `concept/{id}`); l'URL intero lo compone
+  `storePageUrl` in `@repo/contracts`. È della copia perché viene da ciò da
+  cui la copia è nata. Al reimport va in COALESCE come le ore: le copie di
+  prima la prendono, una scrittura che non la porta non la cancella. Le
+  misure di cosa dà ogni negozio sono in
+  [negozi](negozi.md#il-link-alla-pagina-del-gioco).
 - **supporto su `ownerships`**: `medium`, `digital` o `physical`, nullo quando
   nessuno l'ha dichiarato. Gemello di `subscription`: quello dice _a che
   titolo_ hai la copia, questo _che cosa_ hai in mano. L'import lo scrive

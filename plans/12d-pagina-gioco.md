@@ -296,3 +296,10 @@ c'è: funziona, ma ora la pagina ha 240 px in più.
    `game_related`), `apps/web/CLAUDE.md`, questo piano. Gli screenshot di
    chiusura no: la pagina la guarda l'utente, e qui le immagini IGDB sono
    bloccate. Il lotto si chiude quando l'utente dice che la pagina è pronta.
+
+   **Fatto** (01/10/2026). `docs/modello-dati.md` ha «Media, autori e
+   giochi legati»; `docs/import-librerie.md` la riga su
+   `ownerships.store_page`; `apps/web/CLAUDE.md` il guscio nuovo e la pagina
+   del gioco. **Resta all'utente**, dal passo 1: lanciare
+   `pnpm --filter api igdb:media` in locale, dove ci sono le credenziali
+   IGDB, e scrivere qui la copertura che stampa.
