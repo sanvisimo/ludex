@@ -11,7 +11,12 @@ regole complete, le ragioni e le misure.
 
 ## Fonti dati esterne
 
-- **IGDB** — metadata primario
+- **IGDB** — metadata primario. **Gratis per uso non commerciale**, sotto il
+  Twitch Developer Services Agreement; salvare i dati in locale è permesso e
+  anzi preferito (FAQ di IGDB). Chiede un percorso chiaro verso la fonte dove
+  si mostrano i dati. **Se Ludex si monetizza in qualunque forma** serve un
+  accordo commerciale (`partner@igdb.com`), con attribuzione a IGDB.com visibile
+  agli utenti. Letto il 01/10/2026.
 - **STEAMGRIDDB** — copertine alternative, per sostituire quella di IGDB. Arriva
   allo **step 5**, con la modifica del gioco: non serve prima, perché prima non
   c'è nessun posto da cui scegliere.
@@ -19,6 +24,27 @@ regole complete, le ragioni e le misure.
   RapidAPI, e il piano gratuito dà **200 richieste e 25 ricerche al giorno**,
   dichiarate negli header di ogni risposta. Le ricerche sono la risorsa scarsa,
   e per questo l'identità dei giochi **non si cerca**: vedi Wikidata.
+
+  **Termini d'uso della chiave** (RapidAPI, letti il 01/10/2026). Vincolano
+  quello che le schermate mostrano, non solo il worker:
+  - **su ogni pagina che usa dati OpenCritic** un link do-follow a OpenCritic
+    lì vicino, e alla pagina del gioco se c'è. Se si mostra il **voto
+    complessivo** (Top Critic Average) il link alla pagina del gioco è
+    obbligatorio e va **vicino al voto**, con scritto «OpenCritic» o il logo
+    intero (nome compreso). Non vale il solo glifo.
+    Stato al 01/10/2026: la pagina del gioco e il dialog «Dettagli» lo
+    rispettano (nome come link, per ogni fonte); **le card del backlog non
+    mostrano OpenCritic** (`entry-score.tsx`), perché non c'è posto per nome e
+    link. Filtro e ordinamento per voto della critica lo usano ancora.
+  - **niente aggregatore concorrente**, e nessuna offerta dei loro dati
+    tramite una nostra API: l'API di Ludex serve solo le app di Ludex.
+  - **possono revocare la chiave e chiedere di cancellare tutti i loro dati**,
+    da eseguire entro 60 giorni. I voti stanno in `game_scores` per fonte:
+    cancellarli è una `delete where source = 'opencritic'`.
+  - **monetizzare in qualunque forma, o pubblicare l'app su uno store**,
+    richiede il piano commerciale («MEGA»); per lo store anche il credito a
+    OpenCritic nella descrizione dell'app. Vale per il mobile.
+
 - **Metacritic** — punteggi critica, **per piattaforma**. Nessuna API pubblica:
   stesso trattamento di HLTB, l'endpoint che usa il loro sito e il risultato
   sempre in DB. Lo slug si prende, quando c'è, dal link che la scheda Steam

@@ -11,7 +11,11 @@
     "account": "Account",
     "catalog": "Catalogo",
     "menu": "Menu",
-    "navigation": "Navigazione"
+    "navigation": "Navigazione",
+    "credits": "Crediti",
+    "privacy": "Privacy",
+    "terms": "Termini",
+    "madeWith": "Made with ♥ in Italy & EU"
   },
   "theme": {
     "label": "Tema",
@@ -277,6 +281,7 @@
     "submit": "Crea account",
     "pending": "Attendi…",
     "failed": "Registrazione fallita",
+    "notice": "Registrandoti accetti le <terms>condizioni d'uso</terms> e dichiari di aver letto <privacy>l'informativa sulla privacy</privacy>.",
     "hasAccount": "Hai già un account? <link>Accedi</link>"
   },
   "platform": {
@@ -489,5 +494,64 @@
     "confirm": "Rimuovi",
     "removed": "Rimosso dal backlog",
     "failed": "Non sono riuscito a rimuovere il gioco"
+  },
+  "credits": {
+    "title": "Crediti e licenze",
+    "subtitle": "Chi rende possibile Ludex: i dati, il software e le icone.",
+    "about": {
+      "text": "Ludex è software libero, nato per avere il proprio backlog sempre a portata di mano e gestirlo come si vuole. Suggerimenti e idee nuove sono benvenuti. Con affetto  ♥",
+      "source": "Codice sorgente",
+      "contact": "Suggerimenti e idee"
+    },
+    "services": {
+      "title": "Servizi e fonti dati",
+      "intro": "Ludex non inventa niente: i dati dei giochi e le librerie arrivano da questi servizi. Non siamo affiliati a nessuno di loro, e i nomi e i marchi appartengono ai rispettivi proprietari.",
+      "igdb": "Dati dei giochi forniti da IGDB.com: titoli, copertine, generi, piattaforme, giochi simili.",
+      "hltb": "Quanto ci vuole per finire un gioco.",
+      "opencritic": "Voti della critica.",
+      "metacritic": "Voti della critica, anche per singola piattaforma.",
+      "wikidata": "Identificativi che collegano lo stesso gioco fra una fonte e l'altra.",
+      "steam": "Importazione della libreria.",
+      "gog": "Importazione della libreria.",
+      "epic": "Importazione della libreria.",
+      "amazon": "Importazione della libreria.",
+      "psn": "Importazione della libreria."
+    },
+    "software": {
+      "title": "Software open source",
+      "intro": "Ludex è costruito su software libero. Queste sono le parti principali, ognuna con la sua licenza.",
+      "react": "L'interfaccia, sul web e sul telefono.",
+      "tanstack": "Il web: rotte, rendering sul server e dati.",
+      "vite": "Lo strumento di build del web.",
+      "tamagui": "Il design system condiviso fra web e mobile.",
+      "react-native-web": "Fa girare i componenti nativi nel browser.",
+      "react-native": "L'app mobile.",
+      "expo": "La piattaforma dell'app mobile.",
+      "hono": "Il server delle API.",
+      "orpc": "Il collegamento tipizzato fra client e server.",
+      "better-auth": "Registrazione e accesso.",
+      "drizzle": "L'accesso al database.",
+      "postgres": "Il driver PostgreSQL.",
+      "bullmq": "Le code dei lavori in background.",
+      "zod": "La validazione dei dati.",
+      "use-intl": "Le traduzioni.",
+      "inter": "Il carattere dei testi, distribuito da Fontsource.",
+      "interNote": "Licenza SIL Open Font.",
+      "space-grotesk": "Il carattere dei titoli, distribuito da Fontsource.",
+      "space-groteskNote": "Licenza SIL Open Font."
+    },
+    "icons": {
+      "title": "Icone",
+      "intro": "Le icone delle piattaforme e dei negozi non sono nostre.",
+      "romm": "Le icone delle piattaforme sono disegni di RomM, convertiti in PNG e rinominati. Restano sotto la licenza AGPL-3.0 di RomM.",
+      "libretro": "Alcune icone delle piattaforme, passate da RomM, vengono da Libretro / RetroArch.",
+      "libretroNote": "© Libretro / RetroArch. Icone convertite in PNG e rinominate.",
+      "simple-icons": "I glifi di molti negozi e fonti.",
+      "igdb-icons": "Le icone di Xbox e Nintendo.",
+      "pcgamingwiki": "L'icona di HowLongToBeat.",
+      "lucide": "Le icone dell'interfaccia.",
+      "trademarks": "I marchi appartengono ai rispettivi proprietari.",
+      "fullList": "Elenco completo, file per file"
+    }
   }
 }

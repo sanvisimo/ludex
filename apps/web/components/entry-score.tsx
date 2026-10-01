@@ -45,6 +45,11 @@ function CriticValue({
 }) {
   const t = useTranslations('critic');
   if (score === null || source === null) return null;
+  // OpenCritic vuole, accanto al voto complessivo, il suo nome e un link alla
+  // pagina del gioco, e su una card non c'è posto per nessuno dei due. Per ora
+  // non lo mostriamo: sulla pagina del gioco c'è, con tutto. Il filtro e
+  // l'ordinamento per voto della critica restano com'erano.
+  if (source === 'opencritic') return null;
 
   const value = Math.round(score);
   const label = t('scoreOf', { source: t(source), value });

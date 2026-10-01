@@ -55,6 +55,32 @@ export const Default: Story = {
   ),
 };
 
+/** Il titolo da pagina di testo: nel carattere dei titoli, più grande. */
+export const Heading: Story = {
+  render: () => (
+    <YStack width={480}>
+      <Accordion defaultValue={['services']}>
+        <AccordionItem value="services">
+          <AccordionTrigger variant="heading">Servizi</AccordionTrigger>
+          <AccordionContent>
+            <Text fontSize={15} lineHeight={22} color="$color12">
+              Chi ci dà i dati.
+            </Text>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="software">
+          <AccordionTrigger variant="heading">Software</AccordionTrigger>
+          <AccordionContent>
+            <Text fontSize={15} lineHeight={22} color="$color12">
+              Su cosa poggia.
+            </Text>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </YStack>
+  ),
+};
+
 /**
  * Aprire una sezione non chiude le altre: il pannello è a più sezioni
  * aperte. Il titolo è un bottone con `aria-expanded`.
