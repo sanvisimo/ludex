@@ -126,3 +126,13 @@ vincoli unique e predicati con LEFT JOIN, quindi mockare il database
 testerebbe il mock. Le fonti esterne si stubbano al confine del modulo di
 servizio. Il database dei test è `ludex_test`, nello stesso container: lo crea e
 lo migra il setup di vitest, non serve prepararlo a mano.
+
+## Licenza
+
+Ludex è software libero, sotto **GNU Affero General Public License v3.0**:
+il testo è in [LICENSE](LICENSE). Chi lo offre come servizio in rete deve
+dare ai suoi utenti il sorgente, con le proprie modifiche.
+
+Le icone delle piattaforme in `apps/web/public/platforms` non sono nostre e
+hanno la loro licenza: la provenienza, file per file, è in
+[LICENSE.md](apps/web/public/platforms/LICENSE.md).

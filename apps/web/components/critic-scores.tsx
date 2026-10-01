@@ -5,6 +5,7 @@ import { useTranslations } from 'use-intl';
 
 import { DetailTitle, Muted, Strong } from '@/components/detail-text';
 import { api } from '@/lib/orpc';
+import { ExternalLink } from '@/src/components/external-link';
 
 /**
  * I voti della critica, fonte per fonte e per piattaforma: la sezione del
@@ -24,7 +25,14 @@ import { api } from '@/lib/orpc';
 /** L'ordine in cui si leggono, che è quello della precedenza lato server. */
 const ORDINE: GameScore['source'][] = ['opencritic', 'metacritic', 'igdb'];
 
-function Complessivo({ voto }: { voto: GameScore }) {
+function Complessivo({
+  voto,
+  href,
+}: {
+  voto: GameScore;
+  /** La pagina del gioco sulla fonte, se la conosciamo. */
+  href: string | null;
+}) {
   const t = useTranslations('critic');
 
   const dettagli = [
@@ -46,7 +54,15 @@ function Complessivo({ voto }: { voto: GameScore }) {
       {/* L'icona dentro il `dt`: in un `dl` le righe portano solo `dt` e `dd`. */}
       <XStack render="dt" items="center" gap={8}>
         <BrandIcon brand={voto.source} size={16} />
-        <Muted>{t(voto.source)}</Muted>
+        {/* Il nome della fonte è il link alla sua pagina del gioco: OpenCritic
+            lo chiede accanto al voto, e per le altre è lo stesso gesto. */}
+        <Muted>
+          {href ? (
+            <ExternalLink href={href}>{t(voto.source)}</ExternalLink>
+          ) : (
+            t(voto.source)
+          )}
+        </Muted>
       </XStack>
       <Strong render="dd">{Math.round(voto.score)}</Strong>
       {dettagli.length > 0 && (
@@ -89,7 +105,11 @@ export function CriticScores({ game }: { game: GameDetail }) {
       ) : (
         <YStack render="dl" gap={4} m={0}>
           {complessivi.map((voto) => (
-            <Complessivo key={voto.source} voto={voto} />
+            <Complessivo
+              key={voto.source}
+              voto={voto}
+              href={game.links[voto.source]}
+            />
           ))}
         </YStack>
       )}

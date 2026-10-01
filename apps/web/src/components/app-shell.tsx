@@ -2,13 +2,14 @@ import {
   Button,
   Separator,
   Sheet,
+  Text,
   Tooltip,
   Wordmark,
   XStack,
   YStack,
 } from '@repo/ui';
 import { House, Library, Menu, User } from '@repo/ui/icons';
-import { Link } from '@tanstack/react-router';
+import { Link, useRouter } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
@@ -16,6 +17,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { ButtonLink } from '@/src/components/button-link';
 import { LocaleSwitcher } from '@/src/components/locale-switcher';
 import { NavLink } from '@/src/components/nav-link';
+import { takeLinkClick } from '@/src/link-click';
 import { UserMenu } from '@/src/components/user-menu';
 import { useSession } from '@/src/use-session';
 
@@ -142,27 +144,94 @@ function Navigation({
         )}
       </YStack>
 
-      {/* `isPending` evita che il fondo da anonimo lampeggi al primo render. */}
-      {isPending ? null : session ? (
-        <YStack gap={8}>
-          <Separator />
-          <UserMenu name={session.user.name} />
-        </YStack>
-      ) : (
-        <YStack gap={8}>
-          <Separator />
-          <ButtonLink href="/login" variant="outline">
-            {t('signIn')}
-          </ButtonLink>
-          <ButtonLink href="/register">{t('signUp')}</ButtonLink>
-          {/* Tema e lingua restano raggiungibili da anonimo: sono preferenze
-              del browser, non dell'account. */}
-          <XStack gap={4}>
-            <ThemeToggle />
-            <LocaleSwitcher />
-          </XStack>
-        </YStack>
-      )}
+      <YStack gap={12}>
+        {/* `isPending` evita che il fondo da anonimo lampeggi al primo render. */}
+        {isPending ? null : session ? (
+          <YStack gap={8}>
+            <Separator />
+            <UserMenu name={session.user.name} />
+          </YStack>
+        ) : (
+          <YStack gap={8}>
+            <Separator />
+            <ButtonLink href="/login" variant="outline">
+              {t('signIn')}
+            </ButtonLink>
+            <ButtonLink href="/register">{t('signUp')}</ButtonLink>
+            {/* Tema e lingua restano raggiungibili da anonimo: sono
+                preferenze del browser, non dell'account. */}
+            <XStack gap={4}>
+              <ThemeToggle />
+              <LocaleSwitcher />
+            </XStack>
+          </YStack>
+        )}
+        <Footer onNavigate={onNavigate} />
+      </YStack>
     </YStack>
+  );
+}
+
+/**
+ * In fondo a tutto, per chiunque: crediti, privacy, condizioni e la firma. Non
+ * sono voci della barra — niente icona, niente voce accesa — perché sono pagine
+ * di servizio e non cose che si fanno nell'app.
+ */
+function Footer({ onNavigate }: { onNavigate?: () => void }) {
+  const t = useTranslations('nav');
+
+  return (
+    <YStack gap={2} px={8}>
+      <Text fontSize={12} lineHeight={16} color="$color10">
+        {t('madeWith')}
+      </Text>
+      <XStack flexWrap="wrap" columnGap={10}>
+        <FooterLink to="/credits" onNavigate={onNavigate}>
+          {t('credits')}
+        </FooterLink>
+        <FooterLink to="/privacy" onNavigate={onNavigate}>
+          {t('privacy')}
+        </FooterLink>
+        <FooterLink to="/terms" onNavigate={onNavigate}>
+          {t('terms')}
+        </FooterLink>
+      </XStack>
+    </YStack>
+  );
+}
+
+function FooterLink({
+  to,
+  onNavigate,
+  children,
+}: {
+  to: '/credits' | '/privacy' | '/terms';
+  onNavigate?: () => void;
+  children: string;
+}) {
+  const router = useRouter();
+
+  return (
+    <Text
+      render="a"
+      // Come in `NavItem`: gli attributi del link arrivano all'`<a>`, ma i
+      // tipi del testo non li conoscono.
+      {...({
+        href: to,
+        onClick: (event: unknown) => {
+          if (!takeLinkClick(event)) return;
+          void router.navigate({ to });
+          onNavigate?.();
+        },
+      } as object)}
+      fontSize={13}
+      lineHeight={18}
+      color="$color11"
+      textDecorationLine="underline"
+      cursor="pointer"
+      hoverStyle={{ color: '$color12' }}
+    >
+      {children}
+    </Text>
   );
 }

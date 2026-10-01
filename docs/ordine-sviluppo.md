@@ -149,6 +149,21 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 15. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
     posseduti.
 
+16. **Cancellazione ed esportazione dell'account** — l'utente elimina il
+    proprio account e scarica i propri dati: i diritti di cancellazione e di
+    portabilità del GDPR (artt. 17 e 20), che oggi nessuna schermata offre.
+    Aggiunto in coda il 01/10/2026, dopo aver deciso la licenza (AGPL-3.0) e
+    visto cosa raccogliamo: nome, email, la libreria e i token dei negozi.
+    Da decidere quando si apre lo step, non prima:
+    - **cosa si porta via la cancellazione.** Le FK dell'utente sono in
+      cascade, ma `games` è condivisa e **non si cancella mai**: se ne vanno
+      backlog, possessi, tag, account dei negozi e i loro token, e restano i
+      giochi.
+    - **cosa contiene l'esportazione**: backlog, possessi, voti, note, tag,
+      senza i token.
+    - **fino ad allora** un'informativa privacy non può prometterli: o si
+      scrive un indirizzo a cui chiedere, o questo step viene prima.
+
 Ricerca ed enrichment sono due usi distinti di IGDB e non vanno confusi: lo step 2
 cerca e salva id e titolo, in modo sincrono e senza coda; lo step 3 scarica i
 metadata completi in job asincroni.

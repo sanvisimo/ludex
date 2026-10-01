@@ -95,6 +95,19 @@ function RegisterPage() {
               {pending ? t('pending') : t('submit')}
             </Button>
 
+            {/* Nuova scheda: aprire i testi non deve far perdere il modulo
+                compilato. L'avviso informa, non registra un'accettazione. */}
+            <p className="text-center text-muted-foreground">
+              {t.rich('notice', {
+                terms: (chunks) => (
+                  <LegalLink href="/terms">{chunks}</LegalLink>
+                ),
+                privacy: (chunks) => (
+                  <LegalLink href="/privacy">{chunks}</LegalLink>
+                ),
+              })}
+            </p>
+
             <p className="text-center text-muted-foreground">
               {t.rich('hasAccount', {
                 link: (chunks) => (
@@ -111,5 +124,24 @@ function RegisterPage() {
         </CardContent>
       </Card>
     </main>
+  );
+}
+
+function LegalLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-foreground underline underline-offset-4"
+    >
+      {children}
+    </a>
   );
 }

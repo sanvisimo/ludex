@@ -11,7 +11,11 @@
     "account": "Account",
     "catalog": "Catalogue",
     "menu": "Menu",
-    "navigation": "Navigation"
+    "navigation": "Navigation",
+    "credits": "Credits",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "madeWith": "Made with ♥ in Italy & EU"
   },
   "theme": {
     "label": "Theme",
@@ -277,6 +281,7 @@
     "submit": "Create account",
     "pending": "Hold on…",
     "failed": "Sign up failed",
+    "notice": "By signing up you accept the <terms>terms of use</terms> and confirm you have read the <privacy>privacy notice</privacy>.",
     "hasAccount": "Already have an account? <link>Sign in</link>"
   },
   "platform": {
@@ -489,5 +494,64 @@
     "confirm": "Remove",
     "removed": "Removed from your backlog",
     "failed": "I couldn't remove the game"
+  },
+  "credits": {
+    "title": "Credits and licences",
+    "subtitle": "Who makes Ludex possible: the data, the software and the icons.",
+    "about": {
+      "text": "Ludex is free software, born to keep your backlog always at hand and manage it the way you like. Suggestions and new ideas are welcome. With love  ♥",
+      "source": "Source code",
+      "contact": "Suggestions and ideas"
+    },
+    "services": {
+      "title": "Services and data sources",
+      "intro": "Ludex makes nothing up: game data and libraries come from these services. We are not affiliated with any of them, and names and trademarks belong to their respective owners.",
+      "igdb": "Game data provided by IGDB.com: titles, covers, genres, platforms, similar games.",
+      "hltb": "How long a game takes to finish.",
+      "opencritic": "Critic scores.",
+      "metacritic": "Critic scores, also per platform.",
+      "wikidata": "Identifiers that tie the same game together across sources.",
+      "steam": "Library import.",
+      "gog": "Library import.",
+      "epic": "Library import.",
+      "amazon": "Library import.",
+      "psn": "Library import."
+    },
+    "software": {
+      "title": "Open source software",
+      "intro": "Ludex is built on free software. These are the main parts, each with its own licence.",
+      "react": "The interface, on the web and on the phone.",
+      "tanstack": "The web app: routing, server rendering and data.",
+      "vite": "The web build tool.",
+      "tamagui": "The design system shared by web and mobile.",
+      "react-native-web": "Runs the native components in the browser.",
+      "react-native": "The mobile app.",
+      "expo": "The mobile app platform.",
+      "hono": "The API server.",
+      "orpc": "The typed link between client and server.",
+      "better-auth": "Sign up and sign in.",
+      "drizzle": "Database access.",
+      "postgres": "The PostgreSQL driver.",
+      "bullmq": "The background job queues.",
+      "zod": "Data validation.",
+      "use-intl": "Translations.",
+      "inter": "The text typeface, served by Fontsource.",
+      "interNote": "SIL Open Font License.",
+      "space-grotesk": "The heading typeface, served by Fontsource.",
+      "space-groteskNote": "SIL Open Font License."
+    },
+    "icons": {
+      "title": "Icons",
+      "intro": "The platform and store icons are not ours.",
+      "romm": "The platform icons are RomM's drawings, converted to PNG and renamed. They stay under RomM's AGPL-3.0 licence.",
+      "libretro": "Some platform icons, passed on through RomM, come from Libretro / RetroArch.",
+      "libretroNote": "© Libretro / RetroArch. Icons converted to PNG and renamed.",
+      "simple-icons": "The glyphs of many stores and sources.",
+      "igdb-icons": "The Xbox and Nintendo icons.",
+      "pcgamingwiki": "The HowLongToBeat icon.",
+      "lucide": "The interface icons.",
+      "trademarks": "Trademarks belong to their respective owners.",
+      "fullList": "Full list, file by file"
+    }
   }
 }

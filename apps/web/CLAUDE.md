@@ -73,6 +73,17 @@ all'idratazione. Tre pezzi che una pagina nuova usa:
 - **`takeLinkClick`**: la regola dei modificatori (nuova scheda, tasto
   centrale) per ogni `<a href>` che naviga nell'app, `ButtonLink` compreso.
 
+**Le pagine di servizio** — `/credits`, `/privacy`, `/terms` — stanno sotto
+`_app` e sono pubbliche. Il loro link sta nel `Footer` di `app-shell.tsx`, non
+nella barra: niente voce, niente `NavTarget`. I dati dei crediti (servizi,
+software, icone, indirizzo del sorgente, email di contatto) sono in
+`lib/credits.ts`, e i testi di informativa e condizioni, in italiano e inglese,
+in `lib/legal.ts`. **I testi legali descrivono ciò che Ludex raccoglie davvero**:
+cambiano le colonne di `user`, `session` o `store_accounts`, un cookie, un
+fornitore, e va aggiornato il testo con la sua data. Un link che esce
+dall'app è `ExternalLink`. Per OpenCritic vincolano anche le schermate, non solo
+il worker: vedi [apps/api/CLAUDE.md](../api/CLAUDE.md).
+
 Dall'identità, la parte che è del web:
 
 - **`theme-color` sta nel `<head>` di `__root.tsx`** e non in `head()`: il

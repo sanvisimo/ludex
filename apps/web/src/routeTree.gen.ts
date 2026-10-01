@@ -14,6 +14,9 @@ import { Route as GuestRouteImport } from './routes/_guest'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppPrivateRouteImport } from './routes/_app._private'
 import { Route as AppAccountRouteImport } from './routes/_app.account'
+import { Route as AppCreditsRouteImport } from './routes/_app.credits'
+import { Route as AppPrivacyRouteImport } from './routes/_app.privacy'
+import { Route as AppTermsRouteImport } from './routes/_app.terms'
 import { Route as GuestLoginRouteImport } from './routes/_guest.login'
 import { Route as GuestRegisterRouteImport } from './routes/_guest.register'
 import { Route as AppPrivateBacklogRouteImport } from './routes/_app._private.backlog'
@@ -41,6 +44,21 @@ const AppAccountRoute = AppAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCreditsRoute = AppCreditsRouteImport.update({
+  id: '/credits',
+  path: '/credits',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPrivacyRoute = AppPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTermsRoute = AppTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => AppRoute,
+} as any)
 const GuestLoginRoute = GuestLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -65,6 +83,9 @@ const AppGamesIdRoute = AppGamesIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/account': typeof AppAccountRoute
+  '/credits': typeof AppCreditsRoute
+  '/privacy': typeof AppPrivacyRoute
+  '/terms': typeof AppTermsRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
   '/backlog': typeof AppPrivateBacklogRoute
@@ -73,6 +94,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/account': typeof AppAccountRoute
+  '/credits': typeof AppCreditsRoute
+  '/privacy': typeof AppPrivacyRoute
+  '/terms': typeof AppTermsRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
   '/backlog': typeof AppPrivateBacklogRoute
@@ -84,6 +108,9 @@ export interface FileRoutesById {
   '/_guest': typeof GuestRouteWithChildren
   '/_app/_private': typeof AppPrivateRouteWithChildren
   '/_app/account': typeof AppAccountRoute
+  '/_app/credits': typeof AppCreditsRoute
+  '/_app/privacy': typeof AppPrivacyRoute
+  '/_app/terms': typeof AppTermsRoute
   '/_guest/login': typeof GuestLoginRoute
   '/_guest/register': typeof GuestRegisterRoute
   '/_app/': typeof AppIndexRoute
@@ -93,15 +120,35 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/account' | '/login' | '/register' | '/backlog' | '/games/$id'
+    | '/'
+    | '/account'
+    | '/credits'
+    | '/privacy'
+    | '/terms'
+    | '/login'
+    | '/register'
+    | '/backlog'
+    | '/games/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/login' | '/register' | '/backlog' | '/games/$id'
+  to:
+    | '/'
+    | '/account'
+    | '/credits'
+    | '/privacy'
+    | '/terms'
+    | '/login'
+    | '/register'
+    | '/backlog'
+    | '/games/$id'
   id:
     | '__root__'
     | '/_app'
     | '/_guest'
     | '/_app/_private'
     | '/_app/account'
+    | '/_app/credits'
+    | '/_app/privacy'
+    | '/_app/terms'
     | '/_guest/login'
     | '/_guest/register'
     | '/_app/'
@@ -151,6 +198,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccountRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/credits': {
+      id: '/_app/credits'
+      path: '/credits'
+      fullPath: '/credits'
+      preLoaderRoute: typeof AppCreditsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/privacy': {
+      id: '/_app/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof AppPrivacyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/terms': {
+      id: '/_app/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof AppTermsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_guest/login': {
       id: '/_guest/login'
       path: '/login'
@@ -197,6 +265,9 @@ const AppPrivateRouteWithChildren = AppPrivateRoute._addFileChildren(
 interface AppRouteChildren {
   AppPrivateRoute: typeof AppPrivateRouteWithChildren
   AppAccountRoute: typeof AppAccountRoute
+  AppCreditsRoute: typeof AppCreditsRoute
+  AppPrivacyRoute: typeof AppPrivacyRoute
+  AppTermsRoute: typeof AppTermsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppGamesIdRoute: typeof AppGamesIdRoute
 }
@@ -204,6 +275,9 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppPrivateRoute: AppPrivateRouteWithChildren,
   AppAccountRoute: AppAccountRoute,
+  AppCreditsRoute: AppCreditsRoute,
+  AppPrivacyRoute: AppPrivacyRoute,
+  AppTermsRoute: AppTermsRoute,
   AppIndexRoute: AppIndexRoute,
   AppGamesIdRoute: AppGamesIdRoute,
 }

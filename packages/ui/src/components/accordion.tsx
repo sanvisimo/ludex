@@ -67,10 +67,17 @@ export function AccordionItem({
 export function AccordionTrigger({
   children,
   hint,
+  variant = 'default',
 }: {
   children: string;
   hint?: ReactNode;
+  /**
+   * `heading` è il titolo di una sezione di una pagina di testo, nel carattere
+   * dei titoli; `default` è quello da pannello, più piccolo.
+   */
+  variant?: 'default' | 'heading';
 }) {
+  const heading = variant === 'heading';
   const contentId = useContext(ContentId);
   return (
     <AccordionBase.Header>
@@ -81,7 +88,7 @@ export function AccordionTrigger({
         items="center"
         gap={8}
         width="100%"
-        height={40}
+        height={heading ? 48 : 40}
         px={0}
         bg="transparent"
         borderWidth={0}
@@ -100,9 +107,10 @@ export function AccordionTrigger({
             <Text
               flex={1}
               text="left"
-              fontFamily="$body"
-              fontSize={14}
-              fontWeight="500"
+              fontFamily={heading ? '$heading' : '$body'}
+              fontSize={heading ? 18 : 14}
+              lineHeight={heading ? 24 : undefined}
+              fontWeight={heading ? '600' : '500'}
               color="$color12"
             >
               {children}
