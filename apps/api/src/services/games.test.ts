@@ -142,7 +142,9 @@ describe('findGameDetailById: ciò che serve alla pagina del gioco (12d)', () =>
     // l'altro simile in `games` non c'è proprio.
     const remake = await createGame({ igdbId: 20 });
     const simile = await createGame({ igdbId: 30 });
-    await db.insert(schema.backlog).values({ userId, gameId: remake.id });
+    await db
+      .insert(schema.backlog)
+      .values({ userId, gameId: remake.id, status: 'playing' });
     await db.insert(schema.gameRelated).values([
       {
         gameId: game.id,
@@ -170,9 +172,24 @@ describe('findGameDetailById: ciò che serve alla pagina del gioco (12d)', () =>
     const dettaglio = await findGameDetailById(game.id, userId);
 
     expect(dettaglio?.related).toEqual([
-      expect.objectContaining({ igdbId: 20, gameId: remake.id, owned: true }),
-      expect.objectContaining({ igdbId: 30, gameId: simile.id, owned: false }),
-      expect.objectContaining({ igdbId: 40, gameId: null, owned: false }),
+      expect.objectContaining({
+        igdbId: 20,
+        gameId: remake.id,
+        owned: true,
+        status: 'playing',
+      }),
+      expect.objectContaining({
+        igdbId: 30,
+        gameId: simile.id,
+        owned: false,
+        status: null,
+      }),
+      expect.objectContaining({
+        igdbId: 40,
+        gameId: null,
+        owned: false,
+        status: null,
+      }),
     ]);
 
     // Da sloggati nessuno possiede niente.

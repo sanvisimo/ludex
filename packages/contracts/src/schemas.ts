@@ -160,6 +160,9 @@ export const RelatedGameSchema = z.object({
   // apre solo i giochi tuoi (decisione del 12d), gli altri restano copertina e
   // nome finché la wishlist non darà un posto dove metterli.
   owned: z.boolean(),
+  // Lo stato che ha nel tuo backlog, se ce l'ha: è ciò che dice l'etichetta
+  // sulla copertina.
+  status: BacklogStatusSchema.nullable(),
 });
 
 export type RelatedGame = z.infer<typeof RelatedGameSchema>;

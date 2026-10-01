@@ -11,6 +11,7 @@ import {
   Badge,
   BrandIcon,
   Button,
+  CornerLabel,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -44,10 +45,11 @@ import { GameCover } from '@/components/game-cover';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { HltbTimes } from '@/components/hltb-times';
 import { RatingValue } from '@/components/rating-value';
+import { statusIcons } from '@/components/status-icon';
 import { useDuration } from '@/lib/duration';
 import { igdbImageUrl } from '@/lib/igdb-image';
 import { platformIconUrl } from '@/lib/platform-icons';
-import { useStoreLabels } from '@/lib/labels';
+import { useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 
 /**
@@ -635,6 +637,7 @@ export function RelatedRow({
   games: RelatedGame[];
 }) {
   const t = useTranslations('game');
+  const statusLabels = useStatusLabels();
   const scroller = useRef<ElementRef<typeof ScrollView>>(null);
   const [{ x, content, viewport }, setScroll] = useState({
     x: 0,
@@ -719,6 +722,8 @@ export function RelatedRow({
                 }
               >
                 <YStack
+                  position="relative"
+                  overflow="hidden"
                   rounded={8}
                   borderWidth={game.owned ? 0 : 1}
                   borderStyle="dashed"
@@ -730,6 +735,11 @@ export function RelatedRow({
                     size="cover_big"
                     width={104}
                   />
+                  {game.status && (
+                    <CornerLabel icon={statusIcons[game.status]}>
+                      {statusLabels[game.status]}
+                    </CornerLabel>
+                  )}
                 </YStack>
                 <Text
                   fontSize={13}
