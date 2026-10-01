@@ -43,8 +43,10 @@ Sette cose che le schermate devono sapere, perché si scoprono solo a vederle:
 - **`flex={1}` in una colonna ha base 0**, e dove l'altezza la decide il
   contenuto — una riga di griglia — Chrome la calcola da lì: schede alte pochi
   pixel. Per crescere senza schiacciare ci va `grow={1}`.
-- **le soglie guardano la finestra, non la pagina**: da `$md` il guscio se ne
-  prende 240, quindi a 900 px una pagina ha lo spazio di una finestra da 612.
+- **`flex={1}` in una fila che sotto una soglia diventa colonna** ha lo
+  stesso problema: base 0, altezza zero, e il contenuto esce e copre ciò che
+  viene dopo. Ci va `flexBasis: 'auto'` nella stessa media query che gira la
+  fila.
 - **una media query su un componente di `@repo/ui` si risolve a runtime**, e
   server e browser scrivono due classi diverse: l'idratazione non torna. Va su
   un `XStack` o `YStack` intorno, come fa il guscio.
@@ -60,22 +62,26 @@ le ragioni sono nel piano del 12a, il passaggio nel piano del 12b.
 
 **Il guscio** è il layout `_app` (`apps/web/src/routes/_app.tsx`), che avvolge
 tutte le rotte tranne accesso e registrazione: quelle stanno sotto `_guest`, a
-pagina piena. `AppShell` disegna **due forme della stessa navigazione** —
-barra laterale da `$md` in su, barra in alto col menu che apre lo `Sheet` sotto
-— e **le sceglie il CSS**, non JavaScript: tutte e due sono nell'HTML del
-server, e leggere la larghezza darebbe un primo render sbagliato da correggere
-all'idratazione. Tre pezzi che una pagina nuova usa:
+pagina piena. `AppShell` è **una barra sola** e un footer, senza barra
+laterale né menu a scomparsa: a sinistra il nome, che porta al catalogo; a
+destra l'avatar, col menu di backlog, account, tema, lingua e uscita, o da
+anonimo tema, lingua, «Accedi» e «Registrati». La barra resta sempre
+visibile, col fondo della pagina e senza bordo: **in alto da `$md`, in basso
+sotto**, dove arriva il pollice e i menu le si aprono sopra. La posizione la
+sceglie il CSS, non JavaScript, come ogni forma del guscio: leggere la
+larghezza darebbe un primo render sbagliato da correggere all'idratazione. Sul
+telefono la pagina le lascia sotto la sua altezza (`BAR_HEIGHT`). Due pezzi che
+una pagina nuova usa:
 
 - **`Page`** (`apps/web/src/components`): `<main>`, larghezza massima,
   titolo, sottotitolo e azioni. Una pagina non scrive più il suo contenitore.
-- **`NavLink`**: `NavItem` di `@repo/ui` legato al router. Una voce nuova
-  della barra passa da qui, e `NavTarget` dice quali pagine la barra conosce.
+  `hero` sta sopra, larga quanto la finestra: è l'immagine del gioco.
 - **`takeLinkClick`**: la regola dei modificatori (nuova scheda, tasto
   centrale) per ogni `<a href>` che naviga nell'app, `ButtonLink` compreso.
 
 **Le pagine di servizio** — `/credits`, `/privacy`, `/terms` — stanno sotto
-`_app` e sono pubbliche. Il loro link sta nel `Footer` di `app-shell.tsx`, non
-nella barra: niente voce, niente `NavTarget`. I dati dei crediti (servizi,
+`_app` e sono pubbliche. Il loro link sta nel `Footer` di `app-shell.tsx`,
+con la firma, e non nel menu. I dati dei crediti (servizi,
 software, icone, indirizzo del sorgente, email di contatto) sono in
 `lib/credits.ts`, e i testi di informativa e condizioni, in italiano e inglese,
 in `lib/legal.ts`. **I testi legali descrivono ciò che Ludex raccoglie davvero**:
