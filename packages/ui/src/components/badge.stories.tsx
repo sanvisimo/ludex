@@ -14,7 +14,14 @@ const meta = {
   argTypes: {
     variant: {
       control: 'inline-radio',
-      options: ['default', 'secondary', 'outline'],
+      options: [
+        'default',
+        'secondary',
+        'outline',
+        'success',
+        'warning',
+        'error',
+      ],
     },
   },
 } satisfies Meta<typeof Badge>;
@@ -30,6 +37,9 @@ export const Variants: Story = {
       <Badge>Default</Badge>
       <Badge variant="secondary">Secondary</Badge>
       <Badge variant="outline">Outline</Badge>
+      <Badge variant="success">Success</Badge>
+      <Badge variant="warning">Warning</Badge>
+      <Badge variant="error">Error</Badge>
     </XStack>
   ),
 };
@@ -82,10 +92,13 @@ export const Themes: Story = {
             <Text color="$color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
-            <XStack gap="$2">
+            <XStack gap="$2" flexWrap="wrap">
               <Badge>Default</Badge>
               <Badge variant="secondary">Secondary</Badge>
               <Badge variant="outline">Outline</Badge>
+              <Badge variant="success">Success</Badge>
+              <Badge variant="warning">Warning</Badge>
+              <Badge variant="error">Error</Badge>
             </XStack>
           </YStack>
         </Theme>

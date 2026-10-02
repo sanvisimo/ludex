@@ -52,6 +52,34 @@ export const Navigation: Story = {
   },
 };
 
+/**
+ * Una voce con un numero a destra, come le sezioni dell'account. Il numero fa
+ * parte del nome del link; in una fila (il telefono) resta accanto all'etichetta.
+ */
+export const WithCount: Story = {
+  render: () => (
+    <YStack width={224} gap={4}>
+      <NavItem href="#profilo" icon={<User size={16} />}>
+        Profilo
+      </NavItem>
+      <NavItem
+        href="#da-sistemare"
+        icon={<Library size={16} />}
+        trailing="26"
+        active
+      >
+        Da sistemare
+      </NavItem>
+    </YStack>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByRole('link', { name: 'Da sistemare 26' }),
+    ).toHaveAttribute('aria-current', 'page');
+  },
+};
+
 /** Chiaro e scuro affiancati: la voce attiva deve staccarsi in tutti e due. */
 export const Themes: Story = {
   render: () => (
