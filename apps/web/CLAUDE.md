@@ -70,8 +70,10 @@ visibile, col fondo della pagina e senza bordo: **in alto da `$md`, in basso
 sotto**, dove arriva il pollice e i menu le si aprono sopra. La posizione la
 sceglie il CSS, non JavaScript, come ogni forma del guscio: leggere la
 larghezza darebbe un primo render sbagliato da correggere all'idratazione. Sul
-telefono la pagina le lascia sotto la sua altezza (`BAR_HEIGHT`). Due pezzi che
-una pagina nuova usa:
+telefono la pagina le lascia sotto la sua altezza (`BAR_HEIGHT`). `BackToTop` è la freccia che riporta in
+cima: fissa in basso a destra, compare dopo un'altezza di finestra di
+scorrimento e sul telefono sta sopra la barra. Due pezzi che una pagina nuova
+usa:
 
 - **`Page`** (`apps/web/src/components`): `<main>`, larghezza massima,
   titolo, sottotitolo e azioni. Una pagina non scrive più il suo contenitore.

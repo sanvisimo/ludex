@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { ThemeToggle } from '@/components/theme-toggle';
+import { BackToTop } from '@/src/components/back-to-top';
 import { ButtonLink } from '@/src/components/button-link';
 import { LocaleSwitcher } from '@/src/components/locale-switcher';
 import { takeLinkClick } from '@/src/link-click';
@@ -50,6 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           e il footer gli finirebbe sopra. */}
       <YStack grow={1}>{children}</YStack>
       <Footer />
+      <BackToTop bottomOffset={BAR_HEIGHT} />
     </YStack>
   );
 }
