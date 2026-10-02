@@ -37,6 +37,9 @@ export async function listUnresolvedImports(userId: string) {
       name: schema.unresolvedImports.name,
       playtimeMinutes: schema.unresolvedImports.playtimeMinutes,
       lastPlayedAt: schema.unresolvedImports.lastPlayedAt,
+      createdAt: schema.unresolvedImports.createdAt,
+      imageUrl: schema.unresolvedImports.imageUrl,
+      storePage: schema.unresolvedImports.storePage,
       hiddenAt: schema.unresolvedImports.hiddenAt,
       hiddenKind: schema.unresolvedImports.hiddenKind,
     })

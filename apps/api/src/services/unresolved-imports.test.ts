@@ -54,6 +54,28 @@ async function pending(
 }
 
 describe('unresolved imports', () => {
+  it('rende data di aggiunta, copertina e indirizzo del negozio', async () => {
+    const account = await linkStoreAccount(userId, 'gog');
+    await db.insert(schema.unresolvedImports).values({
+      userId,
+      store: 'gog',
+      storeAccountId: account.id,
+      externalId: '1207658924',
+      name: 'Daggerfall Unity - GOG Cut',
+      imageUrl: 'https://images-1.gog-statics.com/aaa_glx_vertical_cover.webp',
+      storePage: '/en/game/daggerfall_unity',
+    });
+
+    const [voce] = await listUnresolvedImports(userId);
+
+    expect(voce).toMatchObject({
+      imageUrl: 'https://images-1.gog-statics.com/aaa_glx_vertical_cover.webp',
+      storePage: '/en/game/daggerfall_unity',
+    });
+    // `createdAt` è una data vera, non una stringa: il contratto la dichiara Date.
+    expect(voce!.createdAt).toBeInstanceOf(Date);
+  });
+
   it("chiama l'account come l'utente, poi come il negozio, poi con l'id", async () => {
     // La precedenza è quella di `storeAccountName`, e questa lista è l'unico
     // posto dell'app dove si vede il nome di un account accanto a uno scarto.

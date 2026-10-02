@@ -216,6 +216,12 @@ export type EpicLibraryEntry = {
    * con la sua data.
    */
   acquiredAt: Date | null;
+  /**
+   * La copertina verticale (`DieselGameBoxTall`) dal catalogo, o in mancanza la
+   * orizzontale. Il catalogo si chiama comunque per i titoli: l'immagine è
+   * nella stessa risposta.
+   */
+  imageUrl: string | null;
 };
 
 type LibraryRecord = {
@@ -236,8 +242,29 @@ type LibraryResponse = {
 
 type CatalogResponse = Record<
   string,
-  { title?: string; categories?: { path?: string }[] }
+  {
+    title?: string;
+    categories?: { path?: string }[];
+    keyImages?: { type?: string; url?: string }[];
+  }
 >;
+
+/** Titolo e copertina di un prodotto, come li dà il catalogo. */
+type CatalogEntry = { title: string; imageUrl: string | null };
+
+/**
+ * La copertina fra le `keyImages`: la verticale se c'è, altrimenti la
+ * orizzontale. Gli URL di Epic portano **spazi veri** (`TheEscapists_PDP
+ * Promo-…jpg`), e senza codificarli non si aprono.
+ */
+export function epicCoverUrl(
+  keyImages: { type?: string; url?: string }[] | undefined,
+): string | null {
+  const url =
+    keyImages?.find((image) => image.type === 'DieselGameBoxTall')?.url ??
+    keyImages?.find((image) => image.type === 'DieselGameBox')?.url;
+  return url ? url.replace(/ /g, '%20') : null;
+}
 
 /**
  * La libreria dell'utente, paginata a cursore.
@@ -338,13 +365,14 @@ export async function fetchEpicLibrary(
     .filter((record) => titoli.has(record.catalogItemId!))
     .map((record) => ({
       externalId: record.productId!,
-      name: titoli.get(record.catalogItemId!)!,
+      name: titoli.get(record.catalogItemId!)!.title,
       acquiredAt: acquisto.get(record.productId!) ?? null,
+      imageUrl: titoli.get(record.catalogItemId!)!.imageUrl,
     }));
 }
 
 /**
- * I titoli dal catalogo, per i soli `catalogItemId` che sono giochi.
+ * Titolo e copertina dal catalogo, per i soli `catalogItemId` che sono giochi.
  *
  * Chi non compare nella mappa **non va importato**: o il catalogo non l'ha
  * riconosciuto come gioco — DLC, asset Unreal, roba che gioco non è — o non ha
@@ -358,8 +386,8 @@ export async function fetchEpicLibrary(
 async function fetchCatalogTitles(
   accessToken: string,
   records: LibraryRecord[],
-): Promise<Map<string, string>> {
-  const titoli = new Map<string, string>();
+): Promise<Map<string, CatalogEntry>> {
+  const titoli = new Map<string, CatalogEntry>();
   if (records.length === 0) return titoli;
 
   const perNamespace = new Map<string, string[]>();
@@ -399,7 +427,12 @@ async function fetchCatalogTitles(
         const categorie = item.categories?.map((row) => row.path) ?? [];
         if (!categorie.includes('games')) continue;
         if (categorie.includes('addons')) continue;
-        if (item.title) titoli.set(id, item.title.trim());
+        if (item.title) {
+          titoli.set(id, {
+            title: item.title.trim(),
+            imageUrl: epicCoverUrl(item.keyImages),
+          });
+        }
       }
     }
   }

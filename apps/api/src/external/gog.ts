@@ -212,6 +212,13 @@ export type GogLibraryEntry = {
    * alla libreria dell'utente. Misurato in `docs/negozi.md`.
    */
   storePage: string | null;
+  /**
+   * La copertina verticale. GOG manda solo il percorso senza protocollo e senza
+   * suffisso (`//images-1.gog-statics.com/<hash>`), e il formato lo si sceglie
+   * aggiungendolo: `_glx_vertical_cover.webp` è quello da copertina, provato
+   * aperto. Nulla se il prodotto non ha immagine.
+   */
+  imageUrl: string | null;
 };
 
 type FilteredProductsResponse = {
@@ -220,6 +227,7 @@ type FilteredProductsResponse = {
     id: number;
     title?: string;
     url?: string;
+    image?: string;
     isGame?: boolean;
     isMovie?: boolean;
     // Non un timestamp: `{ date: "2018-12-13 00:00:00.000000", … }`.
@@ -232,6 +240,13 @@ function releaseYearOf(product: { releaseDate?: { date?: string } | null }) {
   if (!raw) return null;
   const year = new Date(raw.replace(' ', 'T')).getUTCFullYear();
   return Number.isFinite(year) ? year : null;
+}
+
+/** `//images-1.gog-statics.com/<hash>` → l'URL della copertina verticale. */
+export function gogCoverUrl(image: string | null | undefined): string | null {
+  if (!image) return null;
+  const base = image.startsWith('//') ? `https:${image}` : image;
+  return base.startsWith('https://') ? `${base}_glx_vertical_cover.webp` : null;
 }
 
 /**
@@ -279,6 +294,7 @@ export async function fetchGogLibrary(
         releaseYear: releaseYearOf(product),
         // `url` e non `slug`: vedi `storePage` qui sopra.
         storePage: product.url?.startsWith('/') ? product.url : null,
+        imageUrl: gogCoverUrl(product.image),
       });
     }
   }

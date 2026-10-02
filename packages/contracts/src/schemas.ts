@@ -397,6 +397,15 @@ export const UnresolvedImportSchema = z.object({
   name: z.string(),
   playtimeMinutes: z.number().int().nullable(),
   lastPlayedAt: z.date().nullable(),
+  // Quando la voce è comparsa fra gli scarti: la prima volta che un import l'ha
+  // vista. Il reimport non la tocca, quindi è la data di «aggiunta».
+  createdAt: z.date(),
+  // La copertina che il negozio manda, già pronta da mostrare, o nulla. Steam
+  // non la porta nemmeno qui: la compone `storeCoverUrl` dall'appid.
+  imageUrl: z.string().nullable(),
+  // Dove sta la voce sul negozio, nella forma di `ownerships.store_page`: il
+  // link lo compone `storePageUrl`.
+  storePage: z.string().nullable(),
   // Nascosta, e perché: vedi `hiddenKindValues`. Tutti e due nulli, o tutti e
   // due valorizzati. La lista le rende tutte, e la pagina le separa.
   hiddenAt: z.date().nullable(),

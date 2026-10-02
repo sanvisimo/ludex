@@ -173,6 +173,18 @@ export const unresolvedImports = pgTable(
     platformSlug: text('platform_slug').references(() => platforms.slug),
     playtimeMinutes: integer('playtime_minutes'),
     lastPlayedAt: timestamp('last_played_at'),
+    // La copertina, **come URL del negozio**: la voce non è un gioco, quindi non
+    // ha né `games` né IGDB, e questa è l'unica immagine che esiste. Già pronta
+    // da mostrare — GOG ne dà solo l'hash e il suffisso lo mette l'import — e
+    // solo per i negozi che la mandano: Steam non ne ha bisogno, la compone la
+    // UI dall'appid, e dove manca resta nulla e la riga mostra l'icona del
+    // negozio. Riscritta a ogni import insieme al nome, come tutto ciò che
+    // viene dal negozio.
+    imageUrl: text('image_url'),
+    // Dove sta la voce sul negozio, come pezzo di indirizzo: la stessa forma di
+    // `ownerships.store_page`, e il link lo compone lo stesso `storePageUrl`.
+    // Nulla dove il negozio non la dà (Epic, Amazon).
+    storePage: text('store_page'),
     // Nascosta dall'utente: non compare più fra i «da sistemare».
     //
     // Prima c'era `dismiss`, che **cancellava** la riga — e il prossimo import

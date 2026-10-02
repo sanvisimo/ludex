@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchGogAcquiredDates, gogLoginUrl, parseGogAuthCode } from './gog';
+import {
+  fetchGogAcquiredDates,
+  fetchGogLibrary,
+  gogCoverUrl,
+  gogLoginUrl,
+  parseGogAuthCode,
+} from './gog';
 
 // Puro: nessuna rete, nessun database. È il punto in cui il gesto dell'utente
 // — «incolla quello che hai sotto mano» — diventa un codice, e sbagliarlo
@@ -114,5 +120,66 @@ describe('fetchGogAcquiredDates', () => {
       ]),
     );
     expect(String(fetchMock.mock.calls[1]![0])).toContain('page_token=due');
+  });
+});
+
+describe('gogCoverUrl', () => {
+  it('compone la copertina verticale dal percorso senza protocollo', () => {
+    expect(gogCoverUrl('//images-1.gog-statics.com/c6e2d263')).toBe(
+      'https://images-1.gog-statics.com/c6e2d263_glx_vertical_cover.webp',
+    );
+  });
+
+  it('accetta anche un URL già intero', () => {
+    expect(gogCoverUrl('https://images-2.gog-statics.com/abc')).toBe(
+      'https://images-2.gog-statics.com/abc_glx_vertical_cover.webp',
+    );
+  });
+
+  it('rende null senza immagine, e su ciò che indirizzo non è', () => {
+    expect(gogCoverUrl(undefined)).toBeNull();
+    expect(gogCoverUrl('')).toBeNull();
+    expect(gogCoverUrl('/solo/un/percorso')).toBeNull();
+  });
+});
+
+describe('fetchGogLibrary', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => vi.stubGlobal('fetch', fetchMock));
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    fetchMock.mockReset();
+  });
+
+  it('porta la copertina e l’indirizzo di ogni prodotto, e null dove mancano', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        totalPages: 1,
+        products: [
+          {
+            id: 1207658924,
+            title: 'Daggerfall Unity',
+            url: '/en/game/daggerfall_unity',
+            image: '//images-1.gog-statics.com/aaa',
+          },
+          { id: 1453375253, title: 'Alder’s Blood Prologue' },
+        ],
+      }),
+    });
+
+    const library = await fetchGogLibrary('token');
+
+    expect(library).toMatchObject([
+      {
+        externalId: '1207658924',
+        storePage: '/en/game/daggerfall_unity',
+        imageUrl:
+          'https://images-1.gog-statics.com/aaa_glx_vertical_cover.webp',
+      },
+      { externalId: '1453375253', storePage: null, imageUrl: null },
+    ]);
   });
 });

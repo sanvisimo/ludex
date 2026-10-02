@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { epicLoginUrl, parseEpicAuthCode } from './epic';
+import { epicCoverUrl, epicLoginUrl, parseEpicAuthCode } from './epic';
 
 // Puro: nessuna rete, nessun database. Epic è il negozio dove il gesto è più
 // facile da sbagliare, perché quello che l'utente si trova davanti non è un
@@ -60,5 +60,50 @@ describe('epicLoginUrl', () => {
     );
     expect(redirect.searchParams.get('responseType')).toBe('code');
     expect(redirect.searchParams.get('clientId')).toBeTruthy();
+  });
+});
+
+describe('epicCoverUrl', () => {
+  it('preferisce la copertina verticale', () => {
+    expect(
+      epicCoverUrl([
+        { type: 'DieselGameBox', url: 'https://cdn1.epicgames.com/wide.jpg' },
+        {
+          type: 'DieselGameBoxTall',
+          url: 'https://cdn1.epicgames.com/tall.jpg',
+        },
+      ]),
+    ).toBe('https://cdn1.epicgames.com/tall.jpg');
+  });
+
+  it('ripiega sulla orizzontale', () => {
+    expect(
+      epicCoverUrl([
+        {
+          type: 'DieselGameBoxLogo',
+          url: 'https://cdn1.epicgames.com/logo.png',
+        },
+        { type: 'DieselGameBox', url: 'https://cdn1.epicgames.com/wide.jpg' },
+      ]),
+    ).toBe('https://cdn1.epicgames.com/wide.jpg');
+  });
+
+  it('codifica gli spazi, che negli URL di Epic ci sono davvero', () => {
+    expect(
+      epicCoverUrl([
+        {
+          type: 'DieselGameBoxTall',
+          url: 'https://cdn1.epicgames.com/item/TheEscapists_PDP Promo-2560.jpg',
+        },
+      ]),
+    ).toBe('https://cdn1.epicgames.com/item/TheEscapists_PDP%20Promo-2560.jpg');
+  });
+
+  it('rende null senza nessuna delle due', () => {
+    expect(epicCoverUrl(undefined)).toBeNull();
+    expect(epicCoverUrl([])).toBeNull();
+    expect(
+      epicCoverUrl([{ type: 'DieselGameBoxLogo', url: 'https://x/logo.png' }]),
+    ).toBeNull();
   });
 });
