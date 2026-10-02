@@ -6,8 +6,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   NavItem,
@@ -128,26 +126,38 @@ function UserDropdown({ name }: { name: string }) {
         <DropdownMenuLabel>{tTheme('label')}</DropdownMenuLabel>
         {/* `theme`, non `resolvedTheme`: si sceglie la preferenza, e
             «sistema» deve restare selezionabile come tale. */}
-        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
-          <DropdownMenuRadioItem value="light">
-            {tTheme('light')}
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark">
-            {tTheme('dark')}
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="system">
-            {tTheme('system')}
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
+        <YStack px={6} py={4}>
+          <ToggleGroup
+            value={theme ?? 'system'}
+            onValueChange={setTheme}
+            label={tTheme('label')}
+          >
+            <ToggleGroupItem value="light">
+              <OptionText>{tTheme('light')}</OptionText>
+            </ToggleGroupItem>
+            <ToggleGroupItem value="dark">
+              <OptionText>{tTheme('dark')}</OptionText>
+            </ToggleGroupItem>
+            <ToggleGroupItem value="system">
+              <OptionText>{tTheme('system')}</OptionText>
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </YStack>
         <DropdownMenuSeparator />
         <DropdownMenuLabel>{tLocale('label')}</DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={locale} onValueChange={change}>
-          {locales.map((value) => (
-            <DropdownMenuRadioItem key={value} value={value}>
-              {tLocale(value)}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
+        <YStack px={6} py={4}>
+          <ToggleGroup
+            value={locale}
+            onValueChange={change}
+            label={tLocale('label')}
+          >
+            {locales.map((value) => (
+              <ToggleGroupItem key={value} value={value}>
+                <OptionText>{tLocale(value)}</OptionText>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </YStack>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => void signOutAndLeave()}>
           {t('signOut')}
