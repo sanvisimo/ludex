@@ -1,73 +1,27 @@
-import type { StoreAccount, UnresolvedImport } from '@repo/contracts';
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Skeleton,
-  toast,
-} from '@repo/ui';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Skeleton, XStack, YStack } from '@repo/ui';
+import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { useTranslations } from 'use-intl';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
 
-import { AddStoreAccount } from '@/components/add-store-account';
-import { AutoSyncSettings } from '@/components/auto-sync-settings';
-import { HiddenEntries } from '@/components/hidden-entries';
-import { ResolveImportDialog } from '@/components/resolve-import-dialog';
-import { StoreAccountCard } from '@/components/store-account-card';
-import { UnresolvedImports } from '@/components/unresolved-imports';
-import { UnlinkAccountDialog } from '@/components/unlink-account-dialog';
-import { useApiErrorMessage } from '@/lib/api-error';
-import { api, client } from '@/lib/orpc';
+import { AccountNav } from '@/components/account-nav';
 import { Page } from '@/src/components/page';
 import { useSession } from '@/src/use-session';
 
 export const Route = createFileRoute('/_app/account')({
-  component: AccountPage,
+  component: AccountLayout,
 });
 
-function AccountPage() {
+/**
+ * La cornice dell'account: il titolo, il menu delle sezioni e, accanto, la
+ * sezione aperta. Ogni sezione è una rotta (`/account/profilo`, `librerie`,
+ * `da-sistemare`, `nascosti`), così l'indirizzo dice dove sei e «indietro»
+ * torna alla sezione di prima.
+ */
+function AccountLayout() {
   const t = useTranslations('account');
-  const errorMessage = useApiErrorMessage();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const { data: session, isPending: sessionPending } = useSession();
-  const [resolving, setResolving] = useState<UnresolvedImport | null>(null);
-  // Scollegare è una domanda con due risposte diverse, non un bottone: il
-  // dialogo la fa, dopo aver contato cosa porta via.
-  const [unlinking, setUnlinking] = useState<StoreAccount | null>(null);
-
-  // Durante l'import la pagina si aggiorna da sola, e anche dopo: a dirle
-  // quando rileggere sono gli eventi del guscio (`useLiveUpdates`).
-  const accounts = useQuery(api.accounts.list.queryOptions());
-
-  const unresolved = useQuery(api.imports.unresolved.queryOptions());
-  const settings = useQuery(api.settings.get.queryOptions());
-
-  // Basta che UN negozio stia importando perché il bottone «aggiorna tutti»
-  // resti spento: la pagina non deve sapere quale.
-  const syncing = accounts.data?.some((row) => row.syncing) ?? false;
-
-  const syncAll = useMutation({
-    mutationFn: () => client.accounts.syncAll(),
-    onSuccess: async ({ queued, needsReauth }) => {
-      await queryClient.invalidateQueries({
-        queryKey: api.accounts.list.key(),
-      });
-      // Un account da ricollegare non ferma gli altri, ma va detto: la sua
-      // scheda lo segnala già, il toast dice perché non è partito.
-      if (queued > 0 || needsReauth === 0)
-        toast.success(t('store.syncAllStarted', { count: queued }));
-      if (needsReauth > 0)
-        toast.warning(t('store.syncAllNeedsReauth', { count: needsReauth }));
-    },
-    onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('store.syncAllFailed') })),
-  });
 
   // La pagina non ha senso da anonimo: parla dell'account di chi la guarda.
   useEffect(() => {
@@ -84,78 +38,22 @@ function AccountPage() {
   }
 
   return (
-    <Page
-      title={t('title')}
-      // Con un account solo farebbe la stessa cosa del bottone sulla sua
-      // scheda. Spento mentre qualcosa importa: la coda deduplica per
-      // account, ma un bottone che non fa niente è peggio di uno spento.
-      actions={
-        (accounts.data?.length ?? 0) >= 2 && (
-          <Button
-            variant="outline"
-            onClick={() => syncAll.mutate()}
-            disabled={syncing || syncAll.isPending}
-          >
-            {t('store.syncAll')}
-          </Button>
-        )
-      }
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('profile.title')}</CardTitle>
-        </CardHeader>
-        <CardContent gap={4}>
-          <p className="font-medium">{session.user.name}</p>
-          <p className="text-muted-foreground">{session.user.email}</p>
-        </CardContent>
-      </Card>
-
-      {/* Solo con qualcosa da aggiornare: senza account è un interruttore che
-          non accende niente. */}
-      {settings.data && (accounts.data?.length ?? 0) > 0 && (
-        <AutoSyncSettings
-          settings={settings.data}
-          hasPsn={accounts.data?.some((row) => row.store === 'psn') ?? false}
-        />
-      )}
-
-      {accounts.isPending || settings.isPending ? (
-        <Skeleton height={128} width="100%" rounded={12} />
-      ) : (
-        accounts.data?.map((account) => (
-          <StoreAccountCard
-            key={account.id}
-            account={account}
-            busy={syncing}
-            autoSyncLibrary={settings.data?.autoSyncLibrary ?? true}
-            onUnlink={() => setUnlinking(account)}
-          />
-        ))
-      )}
-
-      <AddStoreAccount />
-
-      <UnresolvedImports
-        entries={unresolved.data ?? []}
-        onResolve={setResolving}
-      />
-
-      <HiddenEntries />
-
-      <UnlinkAccountDialog
-        account={unlinking}
-        onOpenChange={(open) => {
-          if (!open) setUnlinking(null);
-        }}
-      />
-
-      <ResolveImportDialog
-        entry={resolving}
-        onOpenChange={(open) => {
-          if (!open) setResolving(null);
-        }}
-      />
+    // Più larga delle altre pagine: il menu prende 200 px e la sezione ne
+    // vuole almeno quanto ne aveva prima.
+    <Page title={t('title')} maxW={1080}>
+      <XStack
+        gap={24}
+        items="flex-start"
+        $max-md={{ flexDirection: 'column', items: 'stretch' }}
+      >
+        <AccountNav />
+        {/* `flex={1}` in una fila che sotto `$md` diventa colonna ha base 0 e
+            altezza zero: lì ci va `flexBasis: 'auto'`. `minW={0}` perché una
+            sezione larga non spinga fuori il menu. */}
+        <YStack flex={1} minW={0} gap={24} $max-md={{ flexBasis: 'auto' }}>
+          <Outlet />
+        </YStack>
+      </XStack>
     </Page>
   );
 }

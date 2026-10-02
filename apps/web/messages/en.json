@@ -335,6 +335,7 @@
     "USER_ALREADY_EXISTS": "An account with this email already exists.",
     "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL": "An account with this email already exists: use another one.",
     "USER_NOT_FOUND": "No account with this email.",
+    "INVALID_PASSWORD": "The current password is incorrect.",
     "PASSWORD_TOO_SHORT": "That password is too short.",
     "PASSWORD_TOO_LONG": "That password is too long.",
     "EMAIL_NOT_VERIFIED": "You need to verify your email address first.",
@@ -342,12 +343,76 @@
   },
   "account": {
     "title": "Account",
+    "libraries": {
+      "title": "Libraries",
+      "emptyTitle": "No library linked",
+      "emptyDescription": "Link a store and Ludex imports its games: Steam, GOG, Epic, Amazon, PlayStation."
+    },
+    "nav": {
+      "label": "Account sections",
+      "profile": "Profile",
+      "libraries": "Libraries",
+      "toFix": "Needs attention",
+      "hidden": "Hidden"
+    },
     "profile": {
-      "title": "Your details"
+      "title": "Personal details",
+      "name": "Name",
+      "email": "Email",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "nameSaved": "Name saved",
+      "nameFailed": "I couldn't save the name"
+    },
+    "password": {
+      "title": "Password",
+      "description": "You need the current one to change it.",
+      "change": "Change password",
+      "dialogTitle": "Change password",
+      "dialogDescription": "Enter your current password and the new one.",
+      "current": "Current password",
+      "new": "New password",
+      "newHint": "At least {min} characters.",
+      "confirm": "Repeat the new password",
+      "mismatch": "The two passwords don't match.",
+      "revokeOthers": "Sign out of other devices",
+      "cancel": "Cancel",
+      "submit": "Change password",
+      "changed": "Password changed",
+      "failed": "I couldn't change the password"
+    },
+    "sessions": {
+      "title": "Active sessions",
+      "description": "The devices you're signed in on.",
+      "thisDevice": "this device",
+      "unknownDevice": "Unknown device",
+      "signedIn": "signed in {when}",
+      "revoke": "Sign out",
+      "revoked": "Device signed out",
+      "revokeOthers": "Sign out of other devices",
+      "revokedOthers": "Other devices signed out",
+      "revokeFailed": "I couldn't sign the device out",
+      "loadFailed": "I couldn't read your sessions"
+    },
+    "data": {
+      "exportTitle": "Export your data",
+      "exportDescription": "A file with everything in your account.",
+      "export": "Download my data",
+      "soon": "Coming soon.",
+      "deleteTitle": "Delete account",
+      "deleteDescription": "Takes everything with it: library, ratings, notes and linked accounts. It can't be undone.",
+      "delete": "Delete account",
+      "dialogTitle": "Delete your account?",
+      "dialogDescription": "Your library, ratings, notes, tags and linked accounts go away, and can't be recovered.",
+      "confirmLabel": "Type {name} to confirm",
+      "notAvailable": "Deleting isn't available yet.",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently"
     },
     "autoSync": {
       "title": "Automatic updates",
-      "label": "Update libraries automatically",
+      "whatIsIt": "What automatic updates mean",
       "description": "Linked libraries re-import on their own: PlayStation every {psnDays} days, other stores every {otherDays}. You can always update them by hand.",
       "psnWarning": "With automatic updates off, the PlayStation connection expires unless you import the library at least once every ten days.",
       "failed": "Could not save the preference"
@@ -374,6 +439,11 @@
       "neverSynced": "never imported",
       "needsReauth": "This connection has expired. Reconnect the account to resume imports.",
       "reconnect": "Reconnect",
+      "menu": "Actions for {name}",
+      "needsReauthBadge": "Needs reconnecting",
+      "reconnectTitle": "Reconnect {store}",
+      "renameTitle": "Name your {store} account",
+      "renameKnownAs": "The store calls it: {name}",
       "labelField": "Label (optional)",
       "labelPlaceholder": "e.g. main, family",
       "labelHint": "Useful when you connect two accounts on the same store: the name the store gives can be the same for both.",
@@ -387,12 +457,13 @@
       "pasteAddress": "the address",
       "pasteContent": "the content of the tab",
       "autoSync": "Update automatically",
+      "autoSyncShort": "Auto",
       "autoSyncOffGlobally": "Automatic updates are off for all accounts.",
       "autoSyncPsnWarning": "Without automatic updates the connection expires unless you import the library at least once every ten days.",
       "autoSyncFailed": "Could not save the preference"
     },
     "add": {
-      "title": "Add an account",
+      "title": "Add library",
       "description": "You can connect more than one account per store: each imports its own library, and your backlog remembers which one a game came from.",
       "storeLabel": "Store",
       "submit": "Connect"
@@ -439,6 +510,9 @@
       "title": "Needs attention ({count})",
       "description": "These library entries weren't recognised. They're usually beta clients or things that aren't games: you can link them to the right game or hide them, saying what they are.",
       "hours": "{hours}h",
+      "hiddenOn": "hidden {date}",
+      "addedOn": "added {date}",
+      "openOn": "Open on {store}",
       "resolve": "Link",
       "resolveTitle": "Link to the right game",
       "resolveDescription": "Search IGDB for the game matching “{name}”({store}). You can also type the IGDB id or paste the game page URL.",
@@ -449,12 +523,31 @@
       "resolved": "{name} added to your backlog",
       "resolveFailed": "I couldn't link this entry",
       "notAGame": "Not a game",
-      "hiddenTitle": "Hidden ({count})",
       "hiddenHint": "Entries you took out of “needs attention”. They stay here after the next imports: if one turns out to be a real game, you can still link it.",
       "hideFailed": "I couldn't hide this entry"
     },
+    "toFixEmpty": {
+      "title": "Nothing needs attention",
+      "description": "Every entry in your libraries was recognised or hidden."
+    },
+    "hiddenEmpty": {
+      "title": "You haven't hidden anything",
+      "description": "Games and import entries you take out of view show up here."
+    },
+    "hiddenTab": {
+      "label": "Type of hidden entry",
+      "tabs": {
+        "app": "App",
+        "dlc": "DLC",
+        "extra": "Extra content",
+        "prerelease": "Pre-release",
+        "unwanted": "Not interested"
+      },
+      "unwantedHint": "Games you hid from your backlog and import entries you don't care about sit together here.",
+      "emptyTitle": "Nothing in this category",
+      "emptyDescription": "No entries of this type."
+    },
     "hiddenEntries": {
-      "title": "Hidden games ({count})",
       "description": "They don't show up in your backlog or in the filters, but they're still yours: ownership doesn't change.",
       "showAll": "See all {count} in your backlog"
     }

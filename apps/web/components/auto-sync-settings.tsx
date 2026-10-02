@@ -1,39 +1,52 @@
 import { AUTO_SYNC_EVERY_DAYS, type UserSettings } from '@repo/contracts';
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
+  Button,
   Label,
   Switch,
+  Text,
+  Tooltip,
   XStack,
+  YStack,
   toast,
 } from '@repo/ui';
+import { CircleHelp } from '@repo/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useId, useState, type ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
 /**
- * L'interruttore generale: «Aggiorna automaticamente la libreria».
+ * La riga sopra le schede: l'interruttore generale «Aggiornamento automatico»
+ * e, a destra, ciò che gli sta accanto — «Aggiungi libreria».
  *
- * Vale per tutti gli account; ogni scheda ha poi il suo, e servono tutti e due
- * accesi. Acceso di default, ed è giusto che si veda: su PSN non è una
- * comodità, è ciò che tiene vivo il collegamento, e un utente che lo spegne
- * deve saperlo **prima**, non dieci giorni dopo.
+ * L'interruttore vale per tutti gli account; ogni scheda ha poi il suo, e
+ * servono tutti e due accesi. Acceso di default, ed è giusto che si veda: su
+ * PSN non è una comodità, è ciò che tiene vivo il collegamento, e un utente che
+ * lo spegne deve saperlo **prima**, non dieci giorni dopo.
+ *
+ * Il «?» spiega cosa vuol dire, in due modi insieme: al passaggio e al focus un
+ * suggerimento, e al clic lo stesso testo **sotto la riga**. Il suggerimento
+ * non compare su un telefono, dove il mouse non c'è, e la spiegazione serve
+ * soprattutto lì.
  */
 export function AutoSyncSettings({
   settings,
   hasPsn,
+  children,
 }: {
   settings: UserSettings;
   /** C'è un account PSN collegato: è l'unico caso in cui spegnere costa. */
   hasPsn: boolean;
+  /** I gesti a destra della riga. */
+  children?: ReactNode;
 }) {
   const t = useTranslations('account.autoSync');
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
+  const switchId = useId();
+  const [explained, setExplained] = useState(false);
 
   const update = useMutation({
     mutationFn: (autoSyncLibrary: boolean) =>
@@ -51,33 +64,57 @@ export function AutoSyncSettings({
     ? (update.variables ?? settings.autoSyncLibrary)
     : settings.autoSyncLibrary;
 
+  const description = t('description', {
+    psnDays: AUTO_SYNC_EVERY_DAYS.psn,
+    otherDays: AUTO_SYNC_EVERY_DAYS.steam,
+  });
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
-      </CardHeader>
-      <CardContent gap={12}>
+    <YStack gap={8}>
+      <XStack
+        items="center"
+        justify="space-between"
+        gap={12}
+        flexWrap="wrap"
+        px={16}
+        py={8}
+        rounded={12}
+        borderWidth={1}
+        borderColor="$borderColor"
+      >
         <XStack items="center" gap={12}>
           <Switch
-            id="auto-sync-library"
+            id={switchId}
             checked={checked}
             onCheckedChange={(value) => update.mutate(value)}
             disabled={update.isPending}
           />
-          <Label htmlFor="auto-sync-library">{t('label')}</Label>
+          <Label htmlFor={switchId}>{t('title')}</Label>
+          <Tooltip content={description} placement="bottom">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label={t('whatIsIt')}
+              aria-expanded={explained}
+              onClick={() => setExplained((value) => !value)}
+            >
+              <CircleHelp size={16} color="$color11" />
+            </Button>
+          </Tooltip>
         </XStack>
-        <p className="text-muted-foreground">
-          {t('description', {
-            psnDays: AUTO_SYNC_EVERY_DAYS.psn,
-            otherDays: AUTO_SYNC_EVERY_DAYS.steam,
-          })}
-        </p>
-        {!checked && hasPsn && (
-          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-destructive">
-            {t('psnWarning')}
-          </p>
-        )}
-      </CardContent>
-    </Card>
+        {children}
+      </XStack>
+
+      {explained && (
+        <Text fontSize={13} lineHeight={18} color="$color11" px={4}>
+          {description}
+        </Text>
+      )}
+      {!checked && hasPsn && (
+        <Text fontSize={13} lineHeight={18} color="$red11" px={4}>
+          {t('psnWarning')}
+        </Text>
+      )}
+    </YStack>
   );
 }

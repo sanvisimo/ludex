@@ -2,10 +2,6 @@ import type { HiddenKind, UnresolvedImport } from '@repo/contracts';
 import { hiddenKindValues } from '@repo/contracts';
 import {
   Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -13,15 +9,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Text,
+  YStack,
   toast,
 } from '@repo/ui';
+import { ChevronDown } from '@repo/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDownIcon } from 'lucide-react';
 import { useTranslations } from 'use-intl';
 
+import { UnresolvedRow } from '@/components/unresolved-row';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useHiddenKindLabels } from '@/lib/hide-entry';
-import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 
 // I quattro tipi che dicono **che cos'è** la voce, separati da `unwanted`, che
@@ -30,13 +28,18 @@ import { api, client } from '@/lib/orpc';
 const notAGame = hiddenKindValues.filter((kind) => kind !== 'unwanted');
 
 /**
- * Gli scarti d'import: quelli da sistemare, e sotto quelli nascosti.
+ * Gli scarti d'import **da sistemare**: le voci della libreria che nessun gioco
+ * ha riconosciuto, ciascuna con i due gesti possibili.
  *
- * Nascondere una voce vuol dire dire **perché**: un'app, un DLC, un contenuto
- * extra, una versione di prova, o un gioco vero che non interessa. I primi
- * quattro sono un fatto sulla voce, l'ultimo una preferenza, ed è la
+ * Collegarla al gioco giusto, o nasconderla dicendo **perché**: un'app, un DLC,
+ * un contenuto extra, una versione di prova, o un gioco vero che non interessa.
+ * I primi quattro sono un fatto sulla voce, l'ultimo una preferenza, ed è la
  * differenza che allo step 11 separerà ciò che si può promuovere a regola per
- * tutti da ciò che resta tuo.
+ * tutti da ciò che resta tuo. Le voci nascoste vivono in `hidden-list`, nella
+ * sezione Nascosti.
+ *
+ * Senza voci da sistemare non disegna niente: a dire «non c'è niente» è la
+ * sezione.
  */
 export function UnresolvedImports({
   entries,
@@ -61,157 +64,74 @@ export function UnresolvedImports({
   });
 
   const pending = entries.filter((entry) => entry.hiddenKind === null);
-  const hidden = entries.filter((entry) => entry.hiddenKind !== null);
-
-  if (entries.length === 0) return null;
+  if (pending.length === 0) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('title', { count: pending.length })}</CardTitle>
-      </CardHeader>
-      <CardContent gap={12}>
-        {pending.length > 0 && (
-          <>
-            <p className="text-muted-foreground">{t('description')}</p>
-            <ul className="grid gap-2">
-              {pending.map((entry) => (
-                <Row key={entry.id} entry={entry}>
+    <YStack gap={12}>
+      <YStack gap={4}>
+        <Text
+          render="h2"
+          fontFamily="$heading"
+          fontSize={18}
+          lineHeight={24}
+          fontWeight="600"
+          color="$color12"
+        >
+          {t('title', { count: pending.length })}
+        </Text>
+        <Text fontSize={14} lineHeight={20} color="$color11">
+          {t('description')}
+        </Text>
+      </YStack>
+
+      <ul style={{ display: 'grid', gap: 8, margin: 0, padding: 0 }}>
+        {pending.map((entry) => (
+          <UnresolvedRow key={entry.id} entry={entry}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onResolve(entry)}
+            >
+              {t('resolve')}
+            </Button>
+            <DropdownMenu align="end">
+              <DropdownMenuTrigger
+                render={
                   <Button
                     size="sm"
-                    variant="outline"
-                    onClick={() => onResolve(entry)}
+                    variant="ghost"
+                    disabled={setHidden.isPending}
                   >
-                    {t('resolve')}
+                    {tHidden('hide')}
+                    <ChevronDown size={16} color="$color12" />
                   </Button>
-                  <DropdownMenu align="end">
-                    <DropdownMenuTrigger
-                      render={
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          disabled={setHidden.isPending}
-                        >
-                          {tHidden('hide')}
-                          <ChevronDownIcon size={16} />
-                        </Button>
-                      }
-                    />
-                    <DropdownMenuContent width={208}>
-                      <DropdownMenuGroup>
-                        <DropdownMenuLabel>{t('notAGame')}</DropdownMenuLabel>
-                        {notAGame.map((kind) => (
-                          <DropdownMenuItem
-                            key={kind}
-                            onClick={() =>
-                              setHidden.mutate({ id: entry.id, kind })
-                            }
-                          >
-                            {kindLabels[kind]}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() =>
-                          setHidden.mutate({ id: entry.id, kind: 'unwanted' })
-                        }
-                      >
-                        {kindLabels.unwanted}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </Row>
-              ))}
-            </ul>
-          </>
-        )}
-
-        {/* Il posto dove ripensarci: chiuso di default, perché è ciò che si è
-            deciso di non guardare, ma sempre raggiungibile. Una voce nascosta
-            per errore può essere un gioco vero, e lì si può ancora collegare. */}
-        {hidden.length > 0 && (
-          <details className="grid gap-3">
-            <summary className="cursor-pointer font-medium">
-              {t('hiddenTitle', { count: hidden.length })}
-            </summary>
-            <div className="mt-3 grid gap-4">
-              <p className="text-muted-foreground">{t('hiddenHint')}</p>
-              {hiddenKindValues.map((kind) => {
-                const group = hidden
-                  .filter((entry) => entry.hiddenKind === kind)
-                  // Gli ultimi nascosti per primi: è lì che si cerca un errore
-                  // appena fatto.
-                  .sort(
-                    (a, b) =>
-                      (b.hiddenAt?.getTime() ?? 0) -
-                      (a.hiddenAt?.getTime() ?? 0),
-                  );
-                if (group.length === 0) return null;
-                return (
-                  <section key={kind} className="grid gap-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      {kindLabels[kind]} ({group.length})
-                    </h3>
-                    <ul className="grid gap-2">
-                      {group.map((entry) => (
-                        <Row key={entry.id} entry={entry}>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => onResolve(entry)}
-                          >
-                            {t('resolve')}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() =>
-                              setHidden.mutate({ id: entry.id, kind: null })
-                            }
-                            disabled={setHidden.isPending}
-                          >
-                            {tHidden('unhide')}
-                          </Button>
-                        </Row>
-                      ))}
-                    </ul>
-                  </section>
-                );
-              })}
-            </div>
-          </details>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-/** Una voce: il nome, da dove viene, e i bottoni che le passa chi la usa. */
-function Row({
-  entry,
-  children,
-}: {
-  entry: UnresolvedImport;
-  children: React.ReactNode;
-}) {
-  const t = useTranslations('account.unresolved');
-  const storeLabels = useStoreLabels();
-
-  return (
-    <li className="flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 ring-1 ring-foreground/10">
-      <div className="grid flex-1 gap-0.5">
-        <span className="font-medium">{entry.name}</span>
-        <span className="text-muted-foreground">
-          {storeLabels[entry.store]} ({entry.storeName}) · {entry.externalId}
-          {entry.playtimeMinutes
-            ? ` · ${t('hours', {
-                hours: Math.round(entry.playtimeMinutes / 60),
-              })}`
-            : ''}
-        </span>
-      </div>
-      {children}
-    </li>
+                }
+              />
+              <DropdownMenuContent width={208}>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>{t('notAGame')}</DropdownMenuLabel>
+                  {notAGame.map((kind) => (
+                    <DropdownMenuItem
+                      key={kind}
+                      onClick={() => setHidden.mutate({ id: entry.id, kind })}
+                    >
+                      {kindLabels[kind]}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() =>
+                    setHidden.mutate({ id: entry.id, kind: 'unwanted' })
+                  }
+                >
+                  {kindLabels.unwanted}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </UnresolvedRow>
+        ))}
+      </ul>
+    </YStack>
   );
 }

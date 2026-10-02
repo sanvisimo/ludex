@@ -335,6 +335,7 @@
     "USER_ALREADY_EXISTS": "Esiste già un account con questa email.",
     "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL": "Esiste già un account con questa email: usane un'altra.",
     "USER_NOT_FOUND": "Nessun account con questa email.",
+    "INVALID_PASSWORD": "La password attuale non è corretta.",
     "PASSWORD_TOO_SHORT": "La password è troppo corta.",
     "PASSWORD_TOO_LONG": "La password è troppo lunga.",
     "EMAIL_NOT_VERIFIED": "Devi prima verificare l'indirizzo email.",
@@ -342,12 +343,76 @@
   },
   "account": {
     "title": "Account",
+    "libraries": {
+      "title": "Librerie",
+      "emptyTitle": "Nessuna libreria collegata",
+      "emptyDescription": "Collega un negozio e Ludex ne importa i giochi: Steam, GOG, Epic, Amazon, PlayStation."
+    },
+    "nav": {
+      "label": "Sezioni dell'account",
+      "profile": "Profilo",
+      "libraries": "Librerie",
+      "toFix": "Da sistemare",
+      "hidden": "Nascosti"
+    },
     "profile": {
-      "title": "I tuoi dati"
+      "title": "Dati personali",
+      "name": "Nome",
+      "email": "Email",
+      "edit": "Modifica",
+      "save": "Salva",
+      "cancel": "Annulla",
+      "nameSaved": "Nome salvato",
+      "nameFailed": "Non sono riuscito a salvare il nome"
+    },
+    "password": {
+      "title": "Password",
+      "description": "Per cambiarla serve quella attuale.",
+      "change": "Cambia password",
+      "dialogTitle": "Cambia password",
+      "dialogDescription": "Scrivi la password di adesso e quella nuova.",
+      "current": "Password attuale",
+      "new": "Nuova password",
+      "newHint": "Almeno {min} caratteri.",
+      "confirm": "Ripeti la nuova password",
+      "mismatch": "Le due password non coincidono.",
+      "revokeOthers": "Esci dagli altri dispositivi",
+      "cancel": "Annulla",
+      "submit": "Cambia password",
+      "changed": "Password cambiata",
+      "failed": "Non sono riuscito a cambiare la password"
+    },
+    "sessions": {
+      "title": "Sessioni attive",
+      "description": "I dispositivi su cui sei collegato.",
+      "thisDevice": "questo dispositivo",
+      "unknownDevice": "Dispositivo sconosciuto",
+      "signedIn": "accesso {when}",
+      "revoke": "Esci",
+      "revoked": "Dispositivo scollegato",
+      "revokeOthers": "Esci dagli altri dispositivi",
+      "revokedOthers": "Scollegati gli altri dispositivi",
+      "revokeFailed": "Non sono riuscito a scollegare il dispositivo",
+      "loadFailed": "Non sono riuscito a leggere le sessioni"
+    },
+    "data": {
+      "exportTitle": "Esporta i tuoi dati",
+      "exportDescription": "Un file con tutto ciò che c'è nel tuo account.",
+      "export": "Scarica i miei dati",
+      "soon": "Disponibile a breve.",
+      "deleteTitle": "Cancella l'account",
+      "deleteDescription": "Porta via tutto: libreria, voti, note e account collegati. Non si può annullare.",
+      "delete": "Cancella account",
+      "dialogTitle": "Cancellare l'account?",
+      "dialogDescription": "Libreria, voti, note, tag e account collegati se ne vanno, e non si recuperano.",
+      "confirmLabel": "Scrivi {name} per confermare",
+      "notAvailable": "La cancellazione non è ancora disponibile.",
+      "cancel": "Annulla",
+      "confirm": "Cancella definitivamente"
     },
     "autoSync": {
       "title": "Aggiornamento automatico",
-      "label": "Aggiorna automaticamente la libreria",
+      "whatIsIt": "Cos'è l'aggiornamento automatico",
       "description": "Le librerie collegate si reimportano da sole: PlayStation ogni {psnDays} giorni, gli altri negozi ogni {otherDays}. Puoi sempre aggiornarle a mano.",
       "psnWarning": "Con l'aggiornamento automatico spento, il collegamento a PlayStation scade se non importi la libreria almeno una volta ogni dieci giorni.",
       "failed": "Non sono riuscito a salvare la preferenza"
@@ -374,6 +439,11 @@
       "neverSynced": "mai importata",
       "needsReauth": "Il collegamento è scaduto. Ricollega l'account per riprendere le importazioni.",
       "reconnect": "Ricollega",
+      "menu": "Azioni per {name}",
+      "needsReauthBadge": "Da ricollegare",
+      "reconnectTitle": "Ricollega {store}",
+      "renameTitle": "Dai un nome all'account {store}",
+      "renameKnownAs": "Il negozio lo chiama: {name}",
       "labelField": "Etichetta (facoltativa)",
       "labelPlaceholder": "es. principale, di famiglia",
       "labelHint": "Serve se colleghi due account dello stesso negozio: il nome che dà il negozio può essere lo stesso per entrambi.",
@@ -387,12 +457,13 @@
       "pasteAddress": "l’indirizzo",
       "pasteContent": "il contenuto della scheda",
       "autoSync": "Aggiorna automaticamente",
+      "autoSyncShort": "Auto",
       "autoSyncOffGlobally": "L'aggiornamento automatico è spento per tutti gli account.",
       "autoSyncPsnWarning": "Senza aggiornamento automatico il collegamento scade se non importi la libreria almeno una volta ogni dieci giorni.",
       "autoSyncFailed": "Non sono riuscito a salvare la preferenza"
     },
     "add": {
-      "title": "Aggiungi un account",
+      "title": "Aggiungi libreria",
       "description": "Puoi collegare più account dello stesso negozio: ognuno importa la sua libreria, e il backlog ricorda da quale dei due viene ogni gioco.",
       "storeLabel": "Negozio",
       "submit": "Collega"
@@ -439,6 +510,9 @@
       "title": "Da sistemare ({count})",
       "description": "Queste voci della libreria non sono state riconosciute. Di solito sono client beta o contenuti che non sono giochi: puoi collegarle al gioco giusto o nasconderle, dicendo che cosa sono.",
       "hours": "{hours}h",
+      "hiddenOn": "nascosta {date}",
+      "addedOn": "aggiunta {date}",
+      "openOn": "Apri su {store}",
       "resolve": "Collega",
       "resolveTitle": "Collega al gioco giusto",
       "resolveDescription": "Cerca su IGDB il gioco che corrisponde a «{name}» ({store}). Puoi scrivere anche l'id IGDB o incollare l'URL della scheda.",
@@ -449,12 +523,31 @@
       "resolved": "{name} aggiunto al backlog",
       "resolveFailed": "Non sono riuscito a collegare questa voce",
       "notAGame": "Non è un gioco",
-      "hiddenTitle": "Nascosti ({count})",
       "hiddenHint": "Voci che hai tolto dai «da sistemare». Restano qui anche dopo i prossimi import: se una è un gioco vero, puoi ancora collegarla.",
       "hideFailed": "Non sono riuscito a nascondere questa voce"
     },
+    "toFixEmpty": {
+      "title": "Niente da sistemare",
+      "description": "Ogni voce delle tue librerie è stata riconosciuta o nascosta."
+    },
+    "hiddenEmpty": {
+      "title": "Non hai nascosto niente",
+      "description": "Qui compaiono i giochi e le voci d'import che togli dalla vista."
+    },
+    "hiddenTab": {
+      "label": "Tipo di voce nascosta",
+      "tabs": {
+        "app": "App",
+        "dlc": "DLC",
+        "extra": "Contenuto extra",
+        "prerelease": "Versione di prova",
+        "unwanted": "Non interessato"
+      },
+      "unwantedHint": "Qui stanno insieme i giochi che hai nascosto dal backlog e le voci d'import che non ti interessano.",
+      "emptyTitle": "Niente in questa categoria",
+      "emptyDescription": "Nessuna voce di questo tipo."
+    },
     "hiddenEntries": {
-      "title": "Giochi nascosti ({count})",
       "description": "Non compaiono nel backlog né fra i filtri, ma restano tuoi: il possesso non cambia.",
       "showAll": "Vedili tutti nel backlog ({count})"
     }

@@ -9,6 +9,8 @@ import { useTranslations } from 'use-intl';
 // corrispondente: quello che manca ricade sul messaggio generico della pagina.
 const codes = [
   'INVALID_EMAIL_OR_PASSWORD',
+  // Il cambio password: quella attuale scritta male.
+  'INVALID_PASSWORD',
   'INVALID_EMAIL',
   'USER_ALREADY_EXISTS',
   'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL',
