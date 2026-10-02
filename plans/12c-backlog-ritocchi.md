@@ -2,7 +2,7 @@
 
 Seconda parte del 12c, non un lotto a sé: sono i commenti sul backlog visto in
 uso, e il backlog non era finito. **Struttura approvata il 29/09/2026**, tutti
-e sette i passi fatti. Il 12c resta aperto finché l'utente non dice che il
+e sette i passi fatti. **Chiuso il 02/10/2026**: l'utente ha detto che il
 backlog è pronto. Ciò che va rispettato d'ora in poi sta nei CLAUDE.md; qui
 restano le ragioni e le misure. Approvata sul wireframe v2
 ([12c-backlog-ritocchi.excalidraw](12c-backlog-ritocchi.excalidraw): si apre
@@ -273,3 +273,9 @@ wireframe a bassa fedeltà (Excalidraw, due giri), poi il codice.
    cambia: ogni salvataggio è un aggiornamento a caldo di Vite, e qui se ne
    facevano decine in pochi secondi. Non verificata: se ricapita con la
    pagina aperta da sola, si riparte da lì.
+
+   Una prova a favore dell'ipotesi (02/10/2026): a 412 px, in locale, la
+   pagina è comparsa senza la barra in basso e con la riga di ricerca che
+   sforava a destra, mentre online, dallo stesso commit, era giusta. Il
+   codice era lo stesso; un ricaricamento con la cache svuotata e il
+   riavvio del dev server l'hanno sistemata. Non era un difetto del layout.

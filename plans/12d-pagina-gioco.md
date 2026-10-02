@@ -159,8 +159,9 @@ dell'account.
    cinque secondi. Test: media e autori scritti, `game_related` riscritta
    senza accumulare e senza tenere ciò che IGDB ha tolto, l'arnese che
    riempie, non richiede due volte e lascia candidato chi IGDB non conosce.
-   **Resta da fare**: lanciare `igdb:media` in locale e scrivere qui la
-   copertura che stampa.
+   **Copertura** (02/10/2026), `igdb:media` in locale, su 1989 giochi coi
+   campi nuovi: artwork 96%, screenshot 99%, video 93%, sviluppo 98%,
+   remake/remaster 5%, simili 100%.
 
 2. **I link ai negozi.** La colonna su `ownerships`, scritta dagli import di
    Steam (l'appid), GOG (`url`) e PSN (`product/…` dagli acquisti,
@@ -288,9 +289,10 @@ quanto lo schermo come il drawer di prima: nome, «Il mio backlog» e
 «Esci». Da `$md` resta il menu a tendina; i due bottoni sono tutti e due
 nell'HTML e li sceglie il CSS. Trovato provandolo: un `ToggleGroupItem` col
 testo nudo dà errore (finora aveva solo icone), il testo va in un `Text`.
-**Da guardare dopo**: le soglie di `/backlog` (la colonna dei
+Le soglie di `/backlog` (la colonna dei
 filtri da `$xl`) erano tarate sui 240 px della barra laterale, che ora non
-c'è: funziona, ma ora la pagina ha 240 px in più.
+c'è: funziona, ma ora la pagina ha 240 px in più. **Guardate dall'utente il
+02/10/2026: funzionano, niente da cambiare.**
 
 6. **Chiusura**: `docs/modello-dati.md` (le colonne nuove e
    `game_related`), `apps/web/CLAUDE.md`, questo piano. Gli screenshot di
@@ -300,6 +302,10 @@ c'è: funziona, ma ora la pagina ha 240 px in più.
    **Fatto** (01/10/2026). `docs/modello-dati.md` ha «Media, autori e
    giochi legati»; `docs/import-librerie.md` la riga su
    `ownerships.store_page`; `apps/web/CLAUDE.md` il guscio nuovo e la pagina
-   del gioco. **Resta all'utente**, dal passo 1: lanciare
-   `pnpm --filter api igdb:media` in locale, dove ci sono le credenziali
-   IGDB, e scrivere qui la copertura che stampa.
+   del gioco. La copertura di `igdb:media`, che toccava all'utente, è nel
+   passo 1.
+
+   **Lotto chiuso il 02/10/2026**: l'utente ha detto che la pagina è
+   pronta. **La card, rimasta in sospeso, passa al 12e** (home), che nel
+   metro del 12a chiede già «card, list item»: si sceglie lì quali dati
+   dalla pagina salgono sulla card.
