@@ -87,6 +87,49 @@ da `$lg`; sotto, la laterale viene **prima** nell'HTML — durata, critica e
 stato sono ciò che serve a decidere — e `row-reverse` la rimette a destra sul
 desktop.
 
+**La pagina account** (`/account`) è un layout, `_app.account.tsx`, con quattro
+sezioni che sono rotte figlie: `profilo`, `librerie`, `da-sistemare`, `nascosti`.
+`/account` da solo rimanda al profilo (`replace`). Il menu è `AccountNav`: una
+colonna da `$md`, una riga che scorre sotto, un `YStack` solo che cambia
+direzione col CSS. Cose che non si indovinano:
+
+- **I numeri nel menu** (`useAccountCounts`) contano le voci da sistemare e i
+  nascosti — questi ultimi sono **voci d'import più giochi nascosti dal backlog**,
+  perché la sezione li mostra insieme. Zero non si scrive.
+- **Il profilo** usa Better Auth dal client (`updateUser`, `changePassword`,
+  `listSessions`, `revokeSession`, `revokeOtherSessions`), non oRPC: le chiavi
+  di query sono a mano (`['auth', 'sessions']`). L'ora delle sessioni è quella
+  dell'**accesso**, perché Better Auth aggiorna la sessione al più una volta al
+  giorno. «Esporta» e «Cancella» sono solo la parte che si vede: la conferma
+  della cancellazione la spegne `DELETION_AVAILABLE` in `account-data.tsx`, e la
+  accende lo step 16.
+- **Le librerie** sono una griglia `repeat(auto-fill, minmax(240px, 1fr))`, una
+  scheda per **account** (due account Amazon sono due schede). Stato e riga dei
+  gesti stanno **ancorati in fondo** (`grow` sul contenuto, `mt="auto"` su un
+  gruppo): la griglia allunga le schede di una riga alla più alta, e senza l'ancora
+  le icone ↻ stanno ad altezze diverse. `STORE_BRAND` è in `lib/store-brand.ts`.
+  Il ↻ gira con `Spinner` mentre quell'account importa.
+- **Gli scarti d'import hanno copertina e link al negozio**, e vengono dall'import:
+  `unresolved_imports.image_url` e `store_page`, riscritti a ogni reimport (vedi
+  [import-librerie](../../docs/import-librerie.md)). Steam non salva niente: la
+  copertina la compone `storeCoverUrl` dall'appid. Un'immagine che non si carica
+  — un gioco ritirato da Steam dà 404 — cade sul riquadro con l'icona del negozio
+  (`UnresolvedCover`), e l'icona accanto al nome è il link alla pagina dove un
+  link c'è. Le righe già in tabella la prendono al prossimo import.
+- **Nascosti** è a tab nell'URL (`?tipo=dlc`), e senza `?tipo` si apre il primo tab
+  che ha qualcosa. «Non interessato» è l'unico con due mucchi, e li unisce per data
+  di nascondimento; i giochi si portano al massimo 100 (`GAMES_LIMIT`), e il
+  numero del tab è il totale vero.
+- **Una barra di scorrimento non si ottiene con `overflow: scroll`**: su Windows
+  disegna sempre i nastri grigi, anche quando non servono. Per una riga che scorre
+  c'è `Tabs`, o `overflowX: 'auto'` con `scrollbarWidth: 'none'`.
+- **Provarla con Playwright**: la pagina tiene aperta una connessione per gli
+  eventi, quindi `networkidle` non scatta mai; si aspetta un selettore. L'accesso
+  si fa con una `POST /api/auth/sign-in/email` dal contesto del browser: il cookie
+  è per host e non per porta, quindi vale anche sul web.
+- **Tailwind resta** in `resolve-import-dialog.tsx`, `store-link-form.tsx` e
+  `unlink-account-dialog.tsx`: i dialoghi dell'account non sono ancora riscritti.
+
 **Le pagine di servizio** — `/credits`, `/privacy`, `/terms` — stanno sotto
 `_app` e sono pubbliche. Il loro link sta nel `Footer` di `app-shell.tsx`,
 con la firma, e non nel menu. I dati dei crediti (servizi,

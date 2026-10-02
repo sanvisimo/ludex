@@ -8,18 +8,31 @@ import type { GetProps } from 'tamagui';
  * deve ripeterlo sul figlio.
  */
 const BadgeContext = createStyledContext<{
-  variant: 'default' | 'secondary' | 'outline';
+  variant:
+    | 'default'
+    | 'secondary'
+    | 'outline'
+    | 'success'
+    | 'warning'
+    | 'error';
 }>({ variant: 'default' });
 
 /**
- * Le varianti sono le tre che le schermate usano: `secondary` quattro volte,
- * `default` e `outline` una. Le altre tre di shadcn — `destructive`, `ghost`,
- * `link` — nessuno le ha mai usate, e restano fuori per la stessa ragione
- * scritta sul Button.
+ * Le prime tre varianti sono quelle che le schermate usavano: `secondary`
+ * quattro volte, `default` e `outline` una. Le altre tre di shadcn —
+ * `destructive`, `ghost`, `link` — nessuno le ha mai usate, e restano fuori per
+ * la stessa ragione scritta sul Button.
  *
- * I colori sono quelli del Button, e non per pigrizia: sono le stesse coppie
- * fondo/testo già misurate lì (`$accent9` con testo scuro, `$color9` per un
- * bordo che si veda in entrambi i temi).
+ * `success`, `warning` ed `error` sono **stati**, non decorazione: dicono come
+ * sta una cosa — «questo dispositivo», un account da ricollegare, un
+ * collegamento che non regge. Hanno il nome dello stato e non del colore, così
+ * il significato sta nel codice che li usa. Il fondo è il passo 3 della scala
+ * dello stato, come il `destructive` del Button; il testo il 12 e non l'11,
+ * perché a 12 px l'11 non arriva al 4.5:1 sul tema chiaro.
+ *
+ * Per le altre tre i colori sono quelli del Button, e non per pigrizia: sono le
+ * stesse coppie fondo/testo già misurate lì (`$accent9` con testo scuro,
+ * `$color9` per un bordo che si veda in entrambi i temi).
  */
 const BadgeFrame = styled(XStack, {
   name: 'Badge',
@@ -38,6 +51,9 @@ const BadgeFrame = styled(XStack, {
       default: { bg: '$accent9' },
       secondary: { bg: '$color6' },
       outline: { bg: 'transparent', borderColor: '$color9' },
+      success: { bg: '$green3' },
+      warning: { bg: '$amber3' },
+      error: { bg: '$red3' },
     },
   } as const,
 
@@ -60,6 +76,12 @@ const BadgeText = styled(Text, {
       default: { color: '$black1' },
       secondary: { color: '$color12' },
       outline: { color: '$color12' },
+      // Il passo 12 e non l'11: a 12 px `$green11` su `$green3` nel tema chiaro
+      // fa 4.21 e `$amber11` su `$amber3` 4.24, e ne servono 4.5. Il fondo dice
+      // lo stato, il testo deve solo leggersi.
+      success: { color: '$green12' },
+      warning: { color: '$amber12' },
+      error: { color: '$red12' },
     },
   } as const,
 });

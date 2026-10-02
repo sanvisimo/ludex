@@ -14,6 +14,7 @@ function acquisto(over: Partial<PsnLibraryEntry> = {}): PsnLibraryEntry {
     entitlementId: null,
     productId: null,
     subscription: 'NONE',
+    imageUrl: null,
     ...over,
   };
 }
@@ -27,6 +28,7 @@ function giocato(over: Partial<PsnPlayedTitle> = {}): PsnPlayedTitle {
     category: 'ps5_native_game',
     service: 'other',
     conceptId: '10000886',
+    imageUrl: null,
     ...over,
   };
 }
@@ -49,6 +51,7 @@ describe('buildPsnEntries', () => {
         igdbLookup: { source: 36, uid: '10000886' },
         // Il disco non ha un `productId`: il link va alla scheda del concept.
         storePage: 'concept/10000886',
+        imageUrl: null,
       },
     ]);
   });
@@ -162,5 +165,30 @@ describe('buildPsnEntries', () => {
     expect(entries).toEqual([]);
     expect(dischi).toBe(0);
     expect(scartate).toEqual(['Horizon Forbidden West [ps3_game]']);
+  });
+});
+
+describe('buildPsnEntries, immagini', () => {
+  it('porta l’immagine dell’acquisto e quella del disco', () => {
+    const { entries } = buildPsnEntries(
+      [
+        acquisto({
+          titleId: 'PPSA05304_00',
+          productId: 'EP0001-PPSA05304_00-GAME',
+          imageUrl: 'https://image.api.playstation.com/acquisto.png',
+        }),
+      ],
+      [
+        giocato({
+          titleId: 'PPSA01521_00',
+          imageUrl: 'https://image.api.playstation.com/disco.png',
+        }),
+      ],
+    );
+
+    expect(entries.map((entry) => entry.imageUrl)).toEqual([
+      'https://image.api.playstation.com/acquisto.png',
+      'https://image.api.playstation.com/disco.png',
+    ]);
   });
 });

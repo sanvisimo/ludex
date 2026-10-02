@@ -304,11 +304,22 @@ export type AmazonLibraryEntry = {
   name: string;
   /** Quando Amazon ha dato il diritto, cioè quando è entrato in libreria. */
   acquiredAt: Date | null;
+  /**
+   * L'icona del prodotto (`productDetail.iconUrl`): è **quadrata**, non una
+   * copertina. Sulla stessa riga ci sono anche `backgroundUrl1/2` e `logoUrl`,
+   * ma sono sfondi e marchi, e non servono a riconoscere un gioco in una lista.
+   */
+  imageUrl: string | null;
 };
 
 type EntitlementsResponse = {
   entitlements?: {
-    product?: { id?: string; title?: string; productLine?: string };
+    product?: {
+      id?: string;
+      title?: string;
+      productLine?: string;
+      productDetail?: { iconUrl?: string };
+    };
     /** Millisecondi dall'epoch, **come stringa**: `"1719588703128"`. */
     entitlementDateFromEpoch?: string | number;
   }[];
@@ -388,6 +399,7 @@ export async function fetchAmazonLibrary(
         externalId: product.id,
         name: stripEdition(product.title),
         acquiredAt: ms > 0 ? new Date(ms) : null,
+        imageUrl: product.productDetail?.iconUrl ?? null,
       });
     }
 

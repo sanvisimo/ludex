@@ -21,6 +21,17 @@ negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
   prima la prendono, una scrittura che non la porta non la cancella. Le
   misure di cosa dà ogni negozio sono in
   [negozi](negozi.md#il-link-alla-pagina-del-gioco).
+- **copertina e pagina del negozio su `unresolved_imports`**: `image_url` e
+  `store_page`. Una voce non risolta non ha `games` né IGDB, quindi l'unica
+  immagine è quella che il negozio manda, nella stessa risposta che l'import già
+  scarica: GOG `image` (con `_glx_vertical_cover.webp`), Epic `keyImages` del
+  catalogo (`DieselGameBoxTall`, con gli spazi codificati), PSN `image.url`
+  (acquisti) e `imageUrl` (giocati), Amazon `productDetail.iconUrl`, un
+  quadrato. **Steam non la salva**: `storeCoverUrl` la compone dall'appid.
+  Al reimport vanno riscritte insieme al nome (`excluded`), e non toccano il
+  nascondere. `store_page` ha la stessa forma di quella su `ownerships`, e il
+  link lo compone lo stesso `storePageUrl`. Le righe esistenti le prendono al
+  prossimo import.
 - **supporto su `ownerships`**: `medium`, `digital` o `physical`, nullo quando
   nessuno l'ha dichiarato. Gemello di `subscription`: quello dice _a che
   titolo_ hai la copia, questo _che cosa_ hai in mano. L'import lo scrive

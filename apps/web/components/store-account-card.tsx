@@ -2,28 +2,42 @@ import type { LinkableStore, Store, StoreAccount } from '@repo/contracts';
 import { linkableStoreValues, storeAccountName } from '@repo/contracts';
 import {
   Badge,
+  BrandIcon,
   Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  Input,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   Label,
+  Spinner,
   Switch,
+  Text,
+  Tooltip,
   XStack,
+  YStack,
   toast,
 } from '@repo/ui';
+import { EllipsisVertical, RefreshCw } from '@repo/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useFormatter, useNow, useTranslations } from 'use-intl';
 import { useId, useState } from 'react';
+import { useFormatter, useNow, useTranslations } from 'use-intl';
 
 import { StoreLinkForm } from '@/components/store-link-form';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
+import { STORE_BRAND } from '@/lib/store-brand';
 import { api, client } from '@/lib/orpc';
 
 /**
- * Un account collegato.
+ * Un account collegato, in una scheda della griglia.
  *
  * Una scheda per **account** e non per negozio: due account Amazon sono un caso
  * vero — per il motore decisionale sono la stessa cosa, «ci posso giocare
@@ -31,10 +45,13 @@ import { api, client } from '@/lib/orpc';
  * quello giusto. Finché la scheda era una per negozio, il secondo collegamento
  * sovrascriveva il primo senza dirlo.
  *
- * Il modulo per collegare non sta più qui: quello è `add-store-account`, perché
- * aggiungere un account e guardarne uno collegato sono due gesti diversi. Qui
- * ricompare solo quando il credenziale è scaduto, dove ricollegare è esattamente
- * ciò che rimette a posto un `needs_reauth`.
+ * Sulla scheda stanno i gesti di ogni giorno: aggiornare e l'interruttore
+ * dell'aggiornamento automatico. Quelli rari — dare un nome, scollegare,
+ * ricollegare — stanno nel menu, e aprono un dialogo ciascuno.
+ *
+ * Il modulo per **aggiungere** un account non è qui, è `add-store-account`.
+ * Qui il modulo compare solo per ricollegare, perché è esattamente ciò che
+ * rimette a posto un `needs_reauth`.
  */
 const isLinkable = (store: Store): store is LinkableStore =>
   (linkableStoreValues as readonly string[]).includes(store);
@@ -43,6 +60,7 @@ export function StoreAccountCard({
   account,
   busy,
   autoSyncLibrary,
+  onRename,
   onUnlink,
 }: {
   account: StoreAccount;
@@ -59,6 +77,7 @@ export function StoreAccountCard({
    * torna com'era quando si riaccende quello generale.
    */
   autoSyncLibrary: boolean;
+  onRename: () => void;
   onUnlink: () => void;
 }) {
   const t = useTranslations('account.store');
@@ -72,10 +91,7 @@ export function StoreAccountCard({
   const errorMessage = useApiErrorMessage();
   const storeLabels = useStoreLabels();
   const queryClient = useQueryClient();
-
-  // `null` = non si sta rinominando. Stringa vuota è un valore legittimo: è
-  // l'etichetta cancellata, che è un gesto e non un errore.
-  const [label, setLabel] = useState<string | null>(null);
+  const [relinking, setRelinking] = useState(false);
 
   const syncing = account.syncing;
   // Ricollegare si può solo dove c'è un collegamento da rifare. `store` sul
@@ -85,21 +101,7 @@ export function StoreAccountCard({
     account.status === 'needs_reauth' && isLinkable(account.store)
       ? account.store
       : null;
-
-  const rename = useMutation({
-    mutationFn: () =>
-      client.accounts.rename({ accountId: account.id, label: label ?? null }),
-    onSuccess: async () => {
-      setLabel(null);
-      await queryClient.invalidateQueries({
-        queryKey: api.accounts.list.key(),
-      });
-      // Il nome dell'account compare anche sui possessi, nella scheda del gioco.
-      await queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
-    },
-    onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('renameFailed') })),
-  });
+  const brand = STORE_BRAND[account.store];
 
   const autoSync = useMutation({
     mutationFn: (value: boolean) =>
@@ -141,111 +143,192 @@ export function StoreAccountCard({
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{storeLabels[account.store]}</CardTitle>
-      </CardHeader>
-      <CardContent gap={16}>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary">{storeAccountName(account)}</Badge>
-          {/* Il nome del negozio accanto all'etichetta: serve a ritrovare quale
-              account è, quando l'etichetta gliel'hai data tu. */}
-          {account.label && account.displayName && (
-            <span className="text-muted-foreground">{account.displayName}</span>
-          )}
-          <span className="text-muted-foreground">
-            {syncing
-              ? t('syncing')
-              : account.lastSyncAt
+    <Card width="100%">
+      {/* `grow` e `mt="auto"` sulla riga in fondo: la griglia allunga le
+          schede di una riga alla più alta, e senza questo i bottoni di
+          aggiornamento stavano ad altezze diverse da una scheda all'altra. */}
+      <CardContent gap={12} grow={1}>
+        <XStack items="flex-start" justify="space-between" gap={8}>
+          <XStack items="center" gap={12} shrink={1} minW={0}>
+            {brand ? (
+              <BrandIcon
+                brand={brand}
+                size={40}
+                label={storeLabels[account.store]}
+              />
+            ) : null}
+            <YStack shrink={1} minW={0}>
+              <Text fontWeight="600" color="$color12">
+                {storeLabels[account.store]}
+              </Text>
+              <Text
+                fontSize={13}
+                lineHeight={18}
+                color="$color11"
+                numberOfLines={1}
+              >
+                {storeAccountName(account)}
+              </Text>
+              {/* Il nome del negozio accanto all'etichetta: serve a ritrovare
+                  quale account è, quando l'etichetta gliel'hai data tu. */}
+              {account.label && account.displayName && (
+                <Text
+                  fontSize={12}
+                  lineHeight={16}
+                  color="$color11"
+                  numberOfLines={1}
+                >
+                  {account.displayName}
+                </Text>
+              )}
+            </YStack>
+          </XStack>
+
+          <DropdownMenu align="end">
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={t('menu', {
+                    name: storeAccountName(account),
+                  })}
+                >
+                  <EllipsisVertical size={16} color="$color12" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent width={192}>
+              <DropdownMenuItem onClick={onRename}>
+                {account.label ? t('renameEdit') : t('renameAdd')}
+              </DropdownMenuItem>
+              {relinkStore && (
+                <DropdownMenuItem onClick={() => setRelinking(true)}>
+                  {t('reconnect')}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onUnlink} disabled={busy || syncing}>
+                {t('unlink')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </XStack>
+
+        {/* Tutto ciò che sta sotto l'intestazione è ancorato in fondo, stato
+            compreso. La griglia allunga le schede di una riga alla più alta:
+            con lo stato in alto e solo i gesti in fondo, fra i due restava un
+            vuoto di altezza diversa da una scheda all'altra. */}
+        <YStack gap={12} mt="auto">
+          {/* Lo stato in una riga: da ricollegare, in corso, o quando è stata
+            l'ultima volta. Da ricollegare vince sul resto: finché non si
+            rimette a posto niente si aggiorna. */}
+          {account.status === 'needs_reauth' ? (
+            <YStack gap={4}>
+              <Badge variant="error" self="flex-start">
+                {t('needsReauthBadge')}
+              </Badge>
+              <Text fontSize={13} lineHeight={18} color="$color11">
+                {t('needsReauth')}
+              </Text>
+            </YStack>
+          ) : syncing ? (
+            <Badge variant="warning" self="flex-start">
+              {t('syncing')}
+            </Badge>
+          ) : (
+            <Text fontSize={13} lineHeight={18} color="$color11">
+              {account.lastSyncAt
                 ? t('lastSync', {
                     when: format.relativeTime(account.lastSyncAt, now),
                   })
                 : t('neverSynced')}
-          </span>
-        </div>
+            </Text>
+          )}
 
-        {relinkStore ? (
-          <>
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-destructive">
-              {t('needsReauth')}
-            </p>
-            <StoreLinkForm
-              store={relinkStore}
-              accountId={account.id}
-              submitLabel={t('reconnect')}
-            />
-          </>
-        ) : (
-          <Button
-            onClick={() => sync.mutate()}
-            disabled={busy || syncing || sync.isPending}
-            width="max-content"
-          >
-            {t('sync')}
-          </Button>
-        )}
+          {/* Una riga sola: a sinistra il gesto, a destra l'interruttore.
+            «Aggiorna» è la sola icona, col suo nome nel suggerimento e
+            nell'`aria-label`; «Ricollega» resta a parole, perché è il gesto da
+            fare e non va nascosto. L'interruttore tiene «Auto» scritto: il
+            suggerimento non compare su un telefono, e senza una parola
+            accanto lo switch non direbbe cosa fa. */}
+          <XStack items="center" justify="space-between" gap={8}>
+            {relinkStore ? (
+              <Button onClick={() => setRelinking(true)}>
+                {t('reconnect')}
+              </Button>
+            ) : (
+              <Tooltip content={t('sync')}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={t('sync')}
+                  onClick={() => sync.mutate()}
+                  disabled={busy || syncing || sync.isPending}
+                >
+                  {/* Gira mentre quell'account importa: il bottone resta spento
+                    e dice «Aggiorna», lo Spinner è solo il movimento. */}
+                  <Spinner spinning={syncing}>
+                    <RefreshCw size={16} color="$color12" />
+                  </Spinner>
+                </Button>
+              </Tooltip>
+            )}
 
-        <div className="grid gap-2">
-          <XStack items="center" gap={12}>
-            <Switch
-              id={autoSyncId}
-              checked={autoSyncChecked}
-              onCheckedChange={(value) => autoSync.mutate(value)}
-              disabled={!autoSyncLibrary || autoSync.isPending}
-            />
-            <Label htmlFor={autoSyncId}>{t('autoSync')}</Label>
+            <XStack items="center" gap={8}>
+              <Label htmlFor={autoSyncId}>{t('autoSyncShort')}</Label>
+              <Tooltip content={t('autoSync')}>
+                <Switch
+                  id={autoSyncId}
+                  aria-label={t('autoSync')}
+                  checked={autoSyncChecked}
+                  onCheckedChange={(value) => autoSync.mutate(value)}
+                  disabled={!autoSyncLibrary || autoSync.isPending}
+                />
+              </Tooltip>
+            </XStack>
           </XStack>
+
           {!autoSyncLibrary ? (
-            <p className="text-muted-foreground">{t('autoSyncOffGlobally')}</p>
+            <Text fontSize={13} lineHeight={18} color="$color11">
+              {t('autoSyncOffGlobally')}
+            </Text>
           ) : (
             // Solo PSN: sugli altri negozi spegnerlo vuol dire una libreria
             // meno fresca, qui vuol dire un collegamento che muore.
             account.store === 'psn' &&
             !autoSyncChecked && (
-              <p className="rounded-lg bg-destructive/10 px-3 py-2 text-destructive">
+              <Text fontSize={13} lineHeight={18} color="$red11">
                 {t('autoSyncPsnWarning')}
-              </p>
+              </Text>
             )
           )}
-        </div>
-
-        {label === null ? (
-          <Button
-            variant="ghost"
-            onClick={() => setLabel(account.label ?? '')}
-            width="max-content"
-          >
-            {account.label ? t('renameEdit') : t('renameAdd')}
-          </Button>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            <Input
-              minW={192}
-              flex={1}
-              value={label}
-              onChange={(event) => setLabel(event.target.value)}
-              placeholder={t('labelPlaceholder')}
-              maxLength={60}
-              autoFocus
-            />
-            <Button onClick={() => rename.mutate()} disabled={rename.isPending}>
-              {t('renameSave')}
-            </Button>
-            <Button variant="ghost" onClick={() => setLabel(null)}>
-              {t('renameCancel')}
-            </Button>
-          </div>
-        )}
-
-        <Button
-          variant="ghost"
-          onClick={onUnlink}
-          disabled={busy || syncing}
-          width="max-content"
-        >
-          {t('unlink')}
-        </Button>
+        </YStack>
       </CardContent>
+
+      {/* Il dialogo si chiude da sé quando il ricollegamento riesce: lo stato
+          torna `ok`, `relinkStore` diventa nullo e `open` con lui. */}
+      <Dialog
+        open={relinking && relinkStore !== null}
+        onOpenChange={setRelinking}
+      >
+        <DialogContent maxW={512}>
+          <DialogHeader>
+            <DialogTitle>
+              {t('reconnectTitle', { store: storeLabels[account.store] })}
+            </DialogTitle>
+            <DialogDescription>{t('needsReauth')}</DialogDescription>
+          </DialogHeader>
+          {relinkStore && (
+            <StoreLinkForm
+              store={relinkStore}
+              accountId={account.id}
+              submitLabel={t('reconnect')}
+              onLinked={() => setRelinking(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

@@ -42,3 +42,28 @@ export function storePageUrl(
       return null;
   }
 }
+
+/**
+ * La copertina di una voce che non è un gioco: uno scarto d'import.
+ *
+ * Una voce non risolta non ha `games` né IGDB, e quindi nessuna copertina sua:
+ * l'unica immagine è quella che il negozio manda, salvata dall'import in
+ * `unresolved_imports.image_url`. **Steam fa eccezione**: la sua CDN è
+ * pubblica e si compone dall'appid (`library_600x900`, la verticale), senza
+ * che l'import salvi niente e senza una chiamata in più. Provata aperta su due
+ * appid il 02/10/2026.
+ *
+ * Nullo = niente copertina, e la riga mostra l'icona del negozio. Un'immagine
+ * che non si carica (un gioco ritirato da Steam dà 404) la gestisce chi la
+ * mostra, con lo stesso ripiego.
+ */
+export function storeCoverUrl(
+  store: Store,
+  externalId: string,
+  imageUrl: string | null,
+): string | null {
+  if (store === 'steam') {
+    return `https://cdn.cloudflare.steamstatic.com/steam/apps/${externalId}/library_600x900.jpg`;
+  }
+  return imageUrl;
+}

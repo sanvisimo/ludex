@@ -116,6 +116,14 @@ export type LibraryEntry = {
    * negozi che lo danno: Steam, GOG e PSN.
    */
   storePage?: string | null;
+  /**
+   * La copertina che il negozio manda, già pronta da mostrare. **Non diventa
+   * niente sui giochi risolti**, dove la copertina è quella di IGDB: serve solo
+   * agli scarti, che non hanno altra immagine. Steam non la porta, perché la
+   * compone la UI dall'appid; gli altri la prendono dalla stessa risposta che
+   * già scaricano, senza una chiamata in più.
+   */
+  imageUrl?: string | null;
 };
 
 /**
@@ -273,9 +281,12 @@ async function recordUnresolved(
           platformSlug: entry.platformSlug ?? null,
           playtimeMinutes: entry.playtimeMinutes ?? null,
           lastPlayedAt: entry.lastPlayedAt ?? null,
+          imageUrl: entry.imageUrl ?? null,
+          storePage: entry.storePage ?? null,
         })),
       )
-      // Un reimport aggiorna nome e ore invece di duplicare la voce.
+      // Un reimport aggiorna nome, ore, copertina e indirizzo invece di
+      // duplicare la voce.
       .onConflictDoUpdate({
         target: [
           schema.unresolvedImports.storeAccountId,
@@ -288,6 +299,8 @@ async function recordUnresolved(
           platformSlug: sql`excluded.platform_slug`,
           playtimeMinutes: sql`excluded.playtime_minutes`,
           lastPlayedAt: sql`excluded.last_played_at`,
+          imageUrl: sql`excluded.image_url`,
+          storePage: sql`excluded.store_page`,
           updatedAt: new Date(),
         },
       });

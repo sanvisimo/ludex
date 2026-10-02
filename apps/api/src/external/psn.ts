@@ -396,6 +396,11 @@ export type PsnLibraryEntry = {
    * step 14 a doverne fare qualcosa.
    */
   subscription: string | null;
+  /**
+   * L'immagine che Sony dà alla voce (`image.url`), un quadrato. Su una voce
+   * senza immagine è nulla.
+   */
+  imageUrl: string | null;
 };
 
 /**
@@ -425,6 +430,7 @@ type PurchasedGame = {
   platform?: string | null;
   subscriptionService?: string | null;
   isActive?: boolean | null;
+  image?: { url?: string | null } | null;
 };
 
 type PurchasedResponse = {
@@ -557,6 +563,7 @@ export async function fetchPsnLibrary(
         entitlementId: game.entitlementId ?? null,
         productId: game.productId ?? null,
         subscription: game.subscriptionService ?? null,
+        imageUrl: game.image?.url ?? null,
       });
     }
 
@@ -594,6 +601,8 @@ export type PsnPlayedTitle = {
    * dischi e non gli acquisti — vedi `buildPsnEntries`.
    */
   conceptId: string | null;
+  /** L'immagine del titolo (`imageUrl`): è il gioco, non la raccolta. */
+  imageUrl: string | null;
 };
 
 /** I campi di un giocato che l'import legge. Gli altri li vede solo l'arnese. */
@@ -606,6 +615,7 @@ type GameListTitle = {
   category?: string;
   service?: string;
   concept?: { id?: number };
+  imageUrl?: string;
 };
 
 /**
@@ -711,6 +721,7 @@ export async function fetchPsnPlayedTitles(
       category: title.category ?? null,
       service: title.service ?? null,
       conceptId: title.concept?.id != null ? String(title.concept.id) : null,
+      imageUrl: title.imageUrl ?? null,
     });
   }
   return titles;

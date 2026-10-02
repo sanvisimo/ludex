@@ -30,10 +30,13 @@ export function StoreLinkForm({
   store,
   accountId,
   submitLabel,
+  onLinked,
 }: {
   store: LinkableStore;
   accountId?: string;
   submitLabel: string;
+  /** Dopo un collegamento riuscito: chi sta in un dialogo lo chiude da qui. */
+  onLinked?: () => void;
 }) {
   const t = useTranslations('account.store');
   const tStore = useTranslations(`account.stores.${store}`);
@@ -81,6 +84,7 @@ export function StoreLinkForm({
         queryKey: api.accounts.list.key(),
       });
       toast.success(t('linked'));
+      onLinked?.();
     },
     onError: (error) =>
       toast.error(

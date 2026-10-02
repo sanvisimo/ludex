@@ -20,6 +20,11 @@ import { Route as AppTermsRouteImport } from './routes/_app.terms'
 import { Route as GuestLoginRouteImport } from './routes/_guest.login'
 import { Route as GuestRegisterRouteImport } from './routes/_guest.register'
 import { Route as AppPrivateBacklogRouteImport } from './routes/_app._private.backlog'
+import { Route as AppAccountIndexRouteImport } from './routes/_app.account.index'
+import { Route as AppAccountDaSistemareRouteImport } from './routes/_app.account.da-sistemare'
+import { Route as AppAccountLibrerieRouteImport } from './routes/_app.account.librerie'
+import { Route as AppAccountNascostiRouteImport } from './routes/_app.account.nascosti'
+import { Route as AppAccountProfiloRouteImport } from './routes/_app.account.profilo'
 import { Route as AppGamesIdRouteImport } from './routes/_app.games.$id'
 
 const AppRoute = AppRouteImport.update({
@@ -74,6 +79,31 @@ const AppPrivateBacklogRoute = AppPrivateBacklogRouteImport.update({
   path: '/backlog',
   getParentRoute: () => AppPrivateRoute,
 } as any)
+const AppAccountIndexRoute = AppAccountIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAccountRoute,
+} as any)
+const AppAccountDaSistemareRoute = AppAccountDaSistemareRouteImport.update({
+  id: '/da-sistemare',
+  path: '/da-sistemare',
+  getParentRoute: () => AppAccountRoute,
+} as any)
+const AppAccountLibrerieRoute = AppAccountLibrerieRouteImport.update({
+  id: '/librerie',
+  path: '/librerie',
+  getParentRoute: () => AppAccountRoute,
+} as any)
+const AppAccountNascostiRoute = AppAccountNascostiRouteImport.update({
+  id: '/nascosti',
+  path: '/nascosti',
+  getParentRoute: () => AppAccountRoute,
+} as any)
+const AppAccountProfiloRoute = AppAccountProfiloRouteImport.update({
+  id: '/profilo',
+  path: '/profilo',
+  getParentRoute: () => AppAccountRoute,
+} as any)
 const AppGamesIdRoute = AppGamesIdRouteImport.update({
   id: '/games/$id',
   path: '/games/$id',
@@ -82,32 +112,41 @@ const AppGamesIdRoute = AppGamesIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
-  '/account': typeof AppAccountRoute
+  '/account': typeof AppAccountRouteWithChildren
   '/credits': typeof AppCreditsRoute
   '/privacy': typeof AppPrivacyRoute
   '/terms': typeof AppTermsRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
   '/backlog': typeof AppPrivateBacklogRoute
+  '/account/da-sistemare': typeof AppAccountDaSistemareRoute
+  '/account/librerie': typeof AppAccountLibrerieRoute
+  '/account/nascosti': typeof AppAccountNascostiRoute
+  '/account/profilo': typeof AppAccountProfiloRoute
   '/games/$id': typeof AppGamesIdRoute
+  '/account/': typeof AppAccountIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
-  '/account': typeof AppAccountRoute
   '/credits': typeof AppCreditsRoute
   '/privacy': typeof AppPrivacyRoute
   '/terms': typeof AppTermsRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
   '/backlog': typeof AppPrivateBacklogRoute
+  '/account/da-sistemare': typeof AppAccountDaSistemareRoute
+  '/account/librerie': typeof AppAccountLibrerieRoute
+  '/account/nascosti': typeof AppAccountNascostiRoute
+  '/account/profilo': typeof AppAccountProfiloRoute
   '/games/$id': typeof AppGamesIdRoute
+  '/account': typeof AppAccountIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_guest': typeof GuestRouteWithChildren
   '/_app/_private': typeof AppPrivateRouteWithChildren
-  '/_app/account': typeof AppAccountRoute
+  '/_app/account': typeof AppAccountRouteWithChildren
   '/_app/credits': typeof AppCreditsRoute
   '/_app/privacy': typeof AppPrivacyRoute
   '/_app/terms': typeof AppTermsRoute
@@ -115,7 +154,12 @@ export interface FileRoutesById {
   '/_guest/register': typeof GuestRegisterRoute
   '/_app/': typeof AppIndexRoute
   '/_app/_private/backlog': typeof AppPrivateBacklogRoute
+  '/_app/account/da-sistemare': typeof AppAccountDaSistemareRoute
+  '/_app/account/librerie': typeof AppAccountLibrerieRoute
+  '/_app/account/nascosti': typeof AppAccountNascostiRoute
+  '/_app/account/profilo': typeof AppAccountProfiloRoute
   '/_app/games/$id': typeof AppGamesIdRoute
+  '/_app/account/': typeof AppAccountIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,18 +172,27 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/backlog'
+    | '/account/da-sistemare'
+    | '/account/librerie'
+    | '/account/nascosti'
+    | '/account/profilo'
     | '/games/$id'
+    | '/account/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/account'
     | '/credits'
     | '/privacy'
     | '/terms'
     | '/login'
     | '/register'
     | '/backlog'
+    | '/account/da-sistemare'
+    | '/account/librerie'
+    | '/account/nascosti'
+    | '/account/profilo'
     | '/games/$id'
+    | '/account'
   id:
     | '__root__'
     | '/_app'
@@ -153,7 +206,12 @@ export interface FileRouteTypes {
     | '/_guest/register'
     | '/_app/'
     | '/_app/_private/backlog'
+    | '/_app/account/da-sistemare'
+    | '/_app/account/librerie'
+    | '/_app/account/nascosti'
+    | '/_app/account/profilo'
     | '/_app/games/$id'
+    | '/_app/account/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -240,6 +298,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPrivateBacklogRouteImport
       parentRoute: typeof AppPrivateRoute
     }
+    '/_app/account/': {
+      id: '/_app/account/'
+      path: '/'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AppAccountIndexRouteImport
+      parentRoute: typeof AppAccountRoute
+    }
+    '/_app/account/da-sistemare': {
+      id: '/_app/account/da-sistemare'
+      path: '/da-sistemare'
+      fullPath: '/account/da-sistemare'
+      preLoaderRoute: typeof AppAccountDaSistemareRouteImport
+      parentRoute: typeof AppAccountRoute
+    }
+    '/_app/account/librerie': {
+      id: '/_app/account/librerie'
+      path: '/librerie'
+      fullPath: '/account/librerie'
+      preLoaderRoute: typeof AppAccountLibrerieRouteImport
+      parentRoute: typeof AppAccountRoute
+    }
+    '/_app/account/nascosti': {
+      id: '/_app/account/nascosti'
+      path: '/nascosti'
+      fullPath: '/account/nascosti'
+      preLoaderRoute: typeof AppAccountNascostiRouteImport
+      parentRoute: typeof AppAccountRoute
+    }
+    '/_app/account/profilo': {
+      id: '/_app/account/profilo'
+      path: '/profilo'
+      fullPath: '/account/profilo'
+      preLoaderRoute: typeof AppAccountProfiloRouteImport
+      parentRoute: typeof AppAccountRoute
+    }
     '/_app/games/$id': {
       id: '/_app/games/$id'
       path: '/games/$id'
@@ -262,9 +355,29 @@ const AppPrivateRouteWithChildren = AppPrivateRoute._addFileChildren(
   AppPrivateRouteChildren,
 )
 
+interface AppAccountRouteChildren {
+  AppAccountDaSistemareRoute: typeof AppAccountDaSistemareRoute
+  AppAccountLibrerieRoute: typeof AppAccountLibrerieRoute
+  AppAccountNascostiRoute: typeof AppAccountNascostiRoute
+  AppAccountProfiloRoute: typeof AppAccountProfiloRoute
+  AppAccountIndexRoute: typeof AppAccountIndexRoute
+}
+
+const AppAccountRouteChildren: AppAccountRouteChildren = {
+  AppAccountDaSistemareRoute: AppAccountDaSistemareRoute,
+  AppAccountLibrerieRoute: AppAccountLibrerieRoute,
+  AppAccountNascostiRoute: AppAccountNascostiRoute,
+  AppAccountProfiloRoute: AppAccountProfiloRoute,
+  AppAccountIndexRoute: AppAccountIndexRoute,
+}
+
+const AppAccountRouteWithChildren = AppAccountRoute._addFileChildren(
+  AppAccountRouteChildren,
+)
+
 interface AppRouteChildren {
   AppPrivateRoute: typeof AppPrivateRouteWithChildren
-  AppAccountRoute: typeof AppAccountRoute
+  AppAccountRoute: typeof AppAccountRouteWithChildren
   AppCreditsRoute: typeof AppCreditsRoute
   AppPrivacyRoute: typeof AppPrivacyRoute
   AppTermsRoute: typeof AppTermsRoute
@@ -274,7 +387,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppPrivateRoute: AppPrivateRouteWithChildren,
-  AppAccountRoute: AppAccountRoute,
+  AppAccountRoute: AppAccountRouteWithChildren,
   AppCreditsRoute: AppCreditsRoute,
   AppPrivacyRoute: AppPrivacyRoute,
   AppTermsRoute: AppTermsRoute,

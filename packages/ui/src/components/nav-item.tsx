@@ -47,6 +47,19 @@ const NavItemText = styled(Text, {
   } as const,
 });
 
+// Del colore dell'etichetta spenta anche sulla voce accesa: più chiaro non
+// passa il contrasto (`$color10` su `$color5` fa 3.09, ne servono 4.5).
+// `ml: 'auto'` lo porta a destra con la voce larga quanto la colonna, e lo
+// lascia accanto all'etichetta in una fila.
+const NavItemTrailing = styled(Text, {
+  name: 'NavItemTrailing',
+
+  ml: 'auto',
+  fontSize: 12,
+  lineHeight: 16,
+  color: '$color11',
+});
+
 export type NavItemProps = Omit<
   GetProps<typeof NavItemFrame>,
   'active' | 'children'
@@ -57,6 +70,12 @@ export type NavItemProps = Omit<
   active?: boolean;
   /** L'icona, già della misura giusta (16). */
   icon?: ReactNode;
+  /**
+   * Un dato corto a destra, come il numero di cose da guardare in quella
+   * pagina. È testo e non un nodo: resta nel nome del link, letto dopo
+   * l'etichetta, e non si trasforma in un secondo componente da stilare.
+   */
+  trailing?: string;
   children: string;
 };
 
@@ -72,6 +91,7 @@ export function NavItem({
   href,
   active = false,
   icon,
+  trailing,
   children,
   ...props
 }: NavItemProps) {
@@ -91,6 +111,7 @@ export function NavItem({
     >
       {icon}
       <NavItemText active={active}>{children}</NavItemText>
+      {trailing ? <NavItemTrailing>{trailing}</NavItemTrailing> : null}
     </NavItemFrame>
   );
 }

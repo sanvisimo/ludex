@@ -726,6 +726,56 @@ describe('importLibrary: ciò che si è nascosto resta nascosto', () => {
     ]);
   });
 
+  it('lo scarto tiene copertina e indirizzo del negozio, e il reimport li riscrive senza toccare il nascondere', async () => {
+    await importLibrary(account, [
+      {
+        externalId: '3',
+        name: 'Daggerfall Unity',
+        imageUrl:
+          'https://images-1.gog-statics.com/aaa_glx_vertical_cover.webp',
+        storePage: '/en/game/daggerfall_unity',
+      },
+    ]);
+    expect(await unresolvedOf(userId)).toMatchObject([
+      {
+        imageUrl:
+          'https://images-1.gog-statics.com/aaa_glx_vertical_cover.webp',
+        storePage: '/en/game/daggerfall_unity',
+      },
+    ]);
+
+    const [scarto] = await unresolvedOf(userId);
+    await setUnresolvedImportHidden(userId, scarto!.id, 'unwanted');
+
+    // Il negozio ha cambiato immagine e indirizzo: il reimport li segue.
+    await importLibrary(account, [
+      {
+        externalId: '3',
+        name: 'Daggerfall Unity',
+        imageUrl:
+          'https://images-1.gog-statics.com/bbb_glx_vertical_cover.webp',
+        storePage: '/en/game/daggerfall_unity_gog_cut',
+      },
+    ]);
+
+    expect(await unresolvedOf(userId)).toMatchObject([
+      {
+        imageUrl:
+          'https://images-1.gog-statics.com/bbb_glx_vertical_cover.webp',
+        storePage: '/en/game/daggerfall_unity_gog_cut',
+        hiddenKind: 'unwanted',
+      },
+    ]);
+  });
+
+  it('uno scarto senza copertina né indirizzo resta nullo', async () => {
+    await importLibrary(account, [{ externalId: '4', name: 'Akka Arrh' }]);
+
+    expect(await unresolvedOf(userId)).toMatchObject([
+      { imageUrl: null, storePage: null },
+    ]);
+  });
+
   it('un gioco nascosto resta nascosto, e il reimport non ne crea un altro', async () => {
     mockedSearch.mockResolvedValue([hit({ igdbId: 1234, name: 'Frostpunk' })]);
     await importLibrary(account, [{ externalId: '2', name: 'Frostpunk' }]);

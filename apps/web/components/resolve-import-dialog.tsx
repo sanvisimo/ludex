@@ -9,6 +9,7 @@ import {
   Input,
   Label,
   Skeleton,
+  XStack,
   toast,
 } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -19,6 +20,7 @@ import { useApiErrorMessage } from '@/lib/api-error';
 import { useGameTypeLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 import { GameCover } from '@/components/game-cover';
+import { UnresolvedCover } from '@/components/unresolved-row';
 
 /**
  * Sistema a mano una voce che l'import non ha saputo risolvere.
@@ -85,13 +87,27 @@ export function ResolveImportDialog({
       <DialogContent maxW={512}>
         <DialogHeader>
           <DialogTitle>{t('resolveTitle')}</DialogTitle>
-          <DialogDescription>
+        </DialogHeader>
+
+        {/* La copertina della voce a sinistra del testo, della stessa misura di
+            quelle dei risultati: si confronta a colpo d'occhio con la lista
+            che sta sotto, invece di ricordarsela. */}
+        <XStack gap={12} items="flex-start">
+          {entry && (
+            <UnresolvedCover
+              key={entry.id}
+              entry={entry}
+              width={90}
+              height={128}
+            />
+          )}
+          <DialogDescription flex={1} minW={0}>
             {t('resolveDescription', {
               name: entry?.name ?? '',
               store: `${entry?.store}/${entry?.storeName}`,
             })}
           </DialogDescription>
-        </DialogHeader>
+        </XStack>
 
         <div className="grid gap-3">
           <Label htmlFor="cerca">{t('searchLabel')}</Label>

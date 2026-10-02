@@ -4,6 +4,7 @@ import { resetStoreTokenKey } from '../lib/crypto';
 import {
   AmazonAuthError,
   amazonLoginUrl,
+  fetchAmazonLibrary,
   isAmazonRejection,
   isAmazonSerial,
   newAmazonSerial,
@@ -164,5 +165,51 @@ describe('refreshAmazonTokens', () => {
     reply(200, {});
     const errore = await refreshAmazonTokens('refresh').catch((e) => e);
     expect(errore).not.toBeInstanceOf(AmazonAuthError);
+  });
+});
+
+describe('fetchAmazonLibrary', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => vi.stubGlobal('fetch', fetchMock));
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    fetchMock.mockReset();
+  });
+
+  it('porta l’icona del prodotto, e null dove il prodotto non ne ha', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        entitlements: [
+          {
+            entitlementDateFromEpoch: '1719588703128',
+            product: {
+              id: 'amzn1.adg.product.aaa',
+              title: 'Akka Arrh',
+              productDetail: {
+                iconUrl: 'https://m.media-amazon.com/images/I/91Q.jpg',
+              },
+            },
+          },
+          {
+            entitlementDateFromEpoch: '1719588703128',
+            product: { id: 'amzn1.adg.product.bbb', title: 'Senza immagine' },
+          },
+        ],
+        nextToken: null,
+      }),
+    });
+
+    const library = await fetchAmazonLibrary('token', 'serial');
+
+    expect(library).toMatchObject([
+      {
+        externalId: 'amzn1.adg.product.aaa',
+        imageUrl: 'https://m.media-amazon.com/images/I/91Q.jpg',
+      },
+      { externalId: 'amzn1.adg.product.bbb', imageUrl: null },
+    ]);
   });
 });

@@ -110,6 +110,7 @@ export function buildPsnEntries(
           : null,
       medium: 'digital',
       storePage: raw.productId ? `product/${raw.productId}` : null,
+      imageUrl: raw.imageUrl,
     });
   }
 
@@ -148,6 +149,7 @@ export function buildPsnEntries(
       // Un disco il `productId` non ce l'ha: viene dai giocati, che portano
       // solo il concept. Il link va alla scheda del concept.
       storePage: title.conceptId ? `concept/${title.conceptId}` : null,
+      imageUrl: title.imageUrl,
     });
   }
 

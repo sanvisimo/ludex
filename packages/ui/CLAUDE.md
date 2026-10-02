@@ -48,6 +48,19 @@ si sa:
 - **`Wordmark` non è un link**: il link alla home è del router, e sul web è
   `HomeLink` in `app-shell.tsx`.
 
+**`Animated` di `react-native` non si importa nei componenti che girano sul web.**
+Sul server trascina tutto lo `StyleSheet` di react-native-web, che nel rendering
+di Vite fallisce (`inline-style-prefixer`) e la pagina risponde 500: lo
+`Skeleton` ha aggirato il limite con un'opacità che si alterna, e lo `Spinner`
+con la divisione per piattaforma — `spinner.tsx` per il web, `spinner.native.tsx`
+con `Animated` per React Native, che Metro sceglie da solo.
+
+**`Tabs` e `ToggleGroup` non sono la stessa cosa.** I tab sono le sezioni di una
+stessa lista — i nascosti per tipo: testo sopra una linea, sottolineatura
+sull'acceso, scorrono senza barra dove non stanno. Il `ToggleGroup` è la scelta
+di **come guardarla**, una vista, in una cornice. Messo a fare i tab sembra una
+barra di bottoni.
+
 Sei componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il
 perché sta nel loro commento:
 

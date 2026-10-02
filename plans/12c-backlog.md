@@ -2,8 +2,8 @@
 
 **Approvato il 27/09/2026**, tutti e cinque i passi fatti lo stesso giorno. Il
 lotto però non era chiuso: i commenti sul backlog visto in uso sono la seconda
-parte, in [12c-backlog-ritocchi.md](12c-backlog-ritocchi.md), e il 12c resta
-aperto finché l'utente non dice che il backlog è pronto. Ciò che va rispettato d'ora in poi sta nel CLAUDE.md, alla voce
+parte, in [12c-backlog-ritocchi.md](12c-backlog-ritocchi.md). **Chiuso il
+02/10/2026**: l'utente ha detto che il backlog è pronto. Ciò che va rispettato d'ora in poi sta nel CLAUDE.md, alla voce
 «Design system»; qui restano le ragioni e le misure. Sotto ogni passo, cosa è
 stato fatto e cosa ha smentito.
 

@@ -39,10 +39,7 @@ export {
 export { Avatar, initials, type AvatarProps } from './components/avatar';
 export { Badge, type BadgeProps } from './components/badge';
 export { Button, type ButtonProps } from './components/button';
-export {
-  CornerLabel,
-  type CornerLabelProps,
-} from './components/corner-label';
+export { CornerLabel, type CornerLabelProps } from './components/corner-label';
 export {
   Card,
   CardContent,
@@ -137,6 +134,13 @@ export {
 } from './components/select';
 export { Sheet, type SheetProps } from './components/sheet';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
+export { Spinner, type SpinnerProps } from './components/spinner';
+export {
+  Tabs,
+  TabsTab,
+  type TabsProps,
+  type TabsTabProps,
+} from './components/tabs';
 export { Slider, type SliderProps } from './components/slider';
 export { Switch, type SwitchProps } from './components/switch';
 export { Toaster, toast, type ToasterProps } from './components/toast';
