@@ -63,7 +63,7 @@ function GamePage() {
     return (
       <Page
         maxW={GAME_PAGE_WIDTH}
-        hero={<Skeleton height={300} width="100%" rounded={0} />}
+        hero={<Skeleton height={500} width="100%" rounded={0} />}
       >
         <Skeleton height={320} width="100%" rounded={12} />
       </Page>

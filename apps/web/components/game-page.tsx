@@ -170,7 +170,7 @@ export function GameHero({ game }: { game: GameDetail }) {
         position="relative"
         overflow="hidden"
         bg="$color2"
-        minH={300}
+        minH={500}
         justify="flex-end"
         $max-md={{ minH: 240 }}
       >
