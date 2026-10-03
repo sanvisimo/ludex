@@ -24,6 +24,7 @@ import { useState, type ComponentProps, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'use-intl';
 
 import { locales } from '@/i18n/config';
+import { ButtonLink } from '@/src/components/button-link';
 import { useChangeLocale } from '@/src/components/locale-switcher';
 import { takeLinkClick } from '@/src/link-click';
 
@@ -174,14 +175,7 @@ function UserDropdown({ name }: { name: string }) {
  */
 function UserSheet({ name }: { name: string }) {
   const t = useTranslations('nav');
-  const tTheme = useTranslations('theme');
-  const tLocale = useTranslations('locale');
   const [open, setOpen] = useState(false);
-  // Il contenuto del foglio si monta solo all'apertura: l'`undefined` di
-  // `theme` sul server non arriva mai al markup iniziale.
-  const { theme, setTheme } = useTheme();
-  const locale = useLocale();
-  const { change } = useChangeLocale();
   const signOutAndLeave = useSignOut();
   const close = () => setOpen(false);
 
@@ -215,38 +209,7 @@ function UserSheet({ name }: { name: string }) {
           </SheetLink>
         </YStack>
         <Separator />
-        <SheetSetting label={tTheme('label')}>
-          {/* `theme`, non `resolvedTheme`: si sceglie la preferenza, e
-              «sistema» deve restare selezionabile come tale. */}
-          <ToggleGroup
-            value={theme ?? 'system'}
-            onValueChange={setTheme}
-            label={tTheme('label')}
-          >
-            <ToggleGroupItem value="light">
-              <OptionText>{tTheme('light')}</OptionText>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="dark">
-              <OptionText>{tTheme('dark')}</OptionText>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="system">
-              <OptionText>{tTheme('system')}</OptionText>
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </SheetSetting>
-        <SheetSetting label={tLocale('label')}>
-          <ToggleGroup
-            value={locale}
-            onValueChange={change}
-            label={tLocale('label')}
-          >
-            {locales.map((value) => (
-              <ToggleGroupItem key={value} value={value}>
-                <OptionText>{tLocale(value)}</OptionText>
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </SheetSetting>
+        <SheetSettings />
         <Separator />
         <Button
           variant="ghost"
@@ -262,6 +225,95 @@ function UserSheet({ name }: { name: string }) {
           {t('signOut')}
         </Button>
       </Sheet>
+    </>
+  );
+}
+
+/**
+ * Il foglio di chi non è collegato, sotto `$md`: in barra accesso e
+ * registrazione col tema e la lingua non ci stanno. Lo stesso foglio di
+ * `UserSheet`, con accesso e registrazione al posto delle pagine e
+ * dell'uscita. Da `$md` i bottoni restano in barra (`AppShell`).
+ */
+export function GuestSheet() {
+  const t = useTranslations('nav');
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        width={40}
+        height={40}
+        rounded={999}
+        aria-label={t('menu')}
+        onPress={() => setOpen(true)}
+      >
+        <User size={20} />
+      </Button>
+      {/* I due link non chiudono il foglio: portano fuori dal guscio, e il
+          foglio se ne va con lui. */}
+      <Sheet open={open} onOpenChange={setOpen} label={t('menu')}>
+        <YStack gap={8} px={12} py={4}>
+          <ButtonLink href="/login" variant="outline">
+            {t('signIn')}
+          </ButtonLink>
+          <ButtonLink href="/register">{t('signUp')}</ButtonLink>
+        </YStack>
+        <Separator />
+        <SheetSettings />
+      </Sheet>
+    </>
+  );
+}
+
+/**
+ * Tema e lingua nel foglio, due file di bottoni: le stesse da collegato e da
+ * anonimo. Il contenuto del foglio si monta solo all'apertura, quindi
+ * l'`undefined` di `theme` sul server non arriva mai al markup iniziale.
+ */
+function SheetSettings() {
+  const tTheme = useTranslations('theme');
+  const tLocale = useTranslations('locale');
+  const { theme, setTheme } = useTheme();
+  const locale = useLocale();
+  const { change } = useChangeLocale();
+
+  return (
+    <>
+      <SheetSetting label={tTheme('label')}>
+        {/* `theme`, non `resolvedTheme`: si sceglie la preferenza, e
+          «sistema» deve restare selezionabile come tale. */}
+        <ToggleGroup
+          value={theme ?? 'system'}
+          onValueChange={setTheme}
+          label={tTheme('label')}
+        >
+          <ToggleGroupItem value="light">
+            <OptionText>{tTheme('light')}</OptionText>
+          </ToggleGroupItem>
+          <ToggleGroupItem value="dark">
+            <OptionText>{tTheme('dark')}</OptionText>
+          </ToggleGroupItem>
+          <ToggleGroupItem value="system">
+            <OptionText>{tTheme('system')}</OptionText>
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </SheetSetting>
+      <SheetSetting label={tLocale('label')}>
+        <ToggleGroup
+          value={locale}
+          onValueChange={change}
+          label={tLocale('label')}
+        >
+          {locales.map((value) => (
+            <ToggleGroupItem key={value} value={value}>
+              <OptionText>{tLocale(value)}</OptionText>
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </SheetSetting>
     </>
   );
 }

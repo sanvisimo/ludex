@@ -65,7 +65,8 @@ tutte le rotte tranne accesso e registrazione: quelle stanno sotto `_guest`, a
 pagina piena. `AppShell` è **una barra sola** e un footer, senza barra
 laterale né menu a scomparsa: a sinistra il nome, che porta al catalogo; a
 destra l'avatar, col menu di backlog, account, tema, lingua e uscita, o da
-anonimo tema, lingua, «Accedi» e «Registrati». La barra resta sempre
+anonimo tema, lingua, «Accedi» e «Registrati», che sotto `$md` in barra non
+ci stanno e vanno in un foglio aperto da un'icona (`GuestSheet`). La barra resta sempre
 visibile, col fondo della pagina e senza bordo: **in alto da `$md`, in basso
 sotto**, dove arriva il pollice e i menu le si aprono sopra. La posizione la
 sceglie il CSS, non JavaScript, come ogni forma del guscio: leggere la
