@@ -8,7 +8,7 @@ import { BackToTop } from '@/src/components/back-to-top';
 import { ButtonLink } from '@/src/components/button-link';
 import { LocaleSwitcher } from '@/src/components/locale-switcher';
 import { takeLinkClick } from '@/src/link-click';
-import { UserMenu } from '@/src/components/user-menu';
+import { GuestSheet, UserMenu } from '@/src/components/user-menu';
 import { useSession } from '@/src/use-session';
 
 /** L'altezza della barra: sul telefono la pagina le lascia questo spazio sotto. */
@@ -70,7 +70,8 @@ export function HomeLink() {
 /**
  * A destra nella barra: l'avatar di chi è collegato, o accesso e
  * registrazione. Tema e lingua da anonimo stanno qui; da collegato sono nel
- * menu dell'avatar.
+ * menu dell'avatar. Sotto `$md` da anonimo tutto questo in barra non ci sta,
+ * e va in un foglio come quello dell'avatar.
  */
 function Account() {
   const t = useTranslations('nav');
@@ -81,14 +82,19 @@ function Account() {
   if (session) return <UserMenu name={session.user.name} />;
 
   return (
-    <XStack items="center" gap={4}>
-      <ThemeToggle />
-      <LocaleSwitcher />
-      <ButtonLink href="/login" variant="ghost">
-        {t('signIn')}
-      </ButtonLink>
-      <ButtonLink href="/register">{t('signUp')}</ButtonLink>
-    </XStack>
+    <>
+      <XStack items="center" gap={4} $max-md={{ display: 'none' }}>
+        <ThemeToggle />
+        <LocaleSwitcher />
+        <ButtonLink href="/login" variant="ghost">
+          {t('signIn')}
+        </ButtonLink>
+        <ButtonLink href="/register">{t('signUp')}</ButtonLink>
+      </XStack>
+      <XStack display="none" $max-md={{ display: 'flex' }}>
+        <GuestSheet />
+      </XStack>
+    </>
   );
 }
 
