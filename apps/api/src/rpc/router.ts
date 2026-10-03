@@ -23,6 +23,7 @@ import {
   resolveGameFromIgdb,
   searchGames,
 } from '../services/games';
+import { listHomeBands } from '../services/home';
 import {
   findExistingPlatformSlugs,
   listPlatforms,
@@ -79,6 +80,10 @@ export const router = os.router({
     latest: os.games.latest.handler(({ input }) =>
       listLatestGames(input.limit),
     ),
+
+    home: os.games.home
+      .use(maybeAuthed)
+      .handler(({ context }) => listHomeBands(context.user?.id ?? null)),
 
     byId: os.games.byId.use(maybeAuthed).handler(async ({ input, context }) => {
       const game = await findGameDetailById(input.id, context.user?.id ?? null);

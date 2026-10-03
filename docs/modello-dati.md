@@ -153,6 +153,13 @@ IGDB, che è un ordine di trasparenza su come i voti sono aggregati, non di
 qualità. Serve allo step 7: il filtro "sopra 80" resta un confronto su una
 colonna indicizzabile invece di tre sottoquery correlate nella query di ricerca.
 
+Le **card** (backlog e home, dal 12e) non mostrano quel numero ma il **voto da
+card**: il complessivo Metacritic, altrimenti IGDB, **mai OpenCritic**, che
+accanto al voto vuole il suo nome e un link e su una card non ha posto. Non è
+una colonna: lo calcola chi legge, con una sottoquery su `game_scores`
+(`CARD_PRECEDENCE` e `cardScoreSql` in `apps/api/src/services/scores.ts`).
+Filtro e ordinamento del backlog restano sul denormalizzato.
+
 Il voto **non si traduce e non si media fra fonti**: OpenCritic pesa i critici
 di punta e sta sistematicamente qualche punto sotto Metacritic. La scheda del
 gioco li mostra tutti, con la fonte accanto.

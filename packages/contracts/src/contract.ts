@@ -10,6 +10,7 @@ import {
   GameDetailSchema,
   GameSchema,
   HiddenKindSchema,
+  HomeBandSchema,
   IgdbSearchHitSchema,
   LinkableStoreSchema,
   LiveEventSchema,
@@ -43,6 +44,10 @@ export const contract = {
     latest: oc
       .input(z.object({ limit: z.number().int().min(1).max(50).default(24) }))
       .output(z.array(GameSchema)),
+
+    // La home (12e): le fasce del catalogo, uguali per tutti. Da loggati ogni
+    // gioco porta lo stato che ha nel tuo backlog, e niente altro di tuo.
+    home: oc.output(z.array(HomeBandSchema)),
 
     // Scheda gioco. Il gioco si vede sempre; `entry` è popolato solo se chi
     // guarda è autenticato e ha quel gioco nel backlog. È la pagina auth/no-auth.

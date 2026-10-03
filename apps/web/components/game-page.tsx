@@ -17,7 +17,6 @@ import {
   DialogTitle,
   Gallery,
   PlatformIcon,
-  ScrollView,
   Text,
   Theme,
   XStack,
@@ -25,16 +24,9 @@ import {
   type Brand,
   type GalleryItem,
 } from '@repo/ui';
-import { ChevronLeft, ChevronRight } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ElementRef,
-  type ReactNode,
-} from 'react';
+import { useState, type ReactNode } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
 import { StatusButton } from '@/components/backlog-views';
@@ -45,6 +37,7 @@ import { GameCover } from '@/components/game-cover';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { HltbTimes } from '@/components/hltb-times';
 import { RatingValue } from '@/components/rating-value';
+import { ScrollRow } from '@/components/scroll-row';
 import { statusIcons } from '@/components/status-icon';
 import { useDuration } from '@/lib/duration';
 import { igdbImageUrl } from '@/lib/igdb-image';
@@ -637,10 +630,7 @@ export function BacklogPanel({
  * Una fila di giochi legati che scorre di lato. Quelli che hai aprono la loro
  * pagina; gli altri sono copertina e nome, attenuati e col bordo tratteggiato
  * come nel wireframe, finché la wishlist (step 15) non darà loro un posto.
- *
- * Con la rotella del mouse una fila orizzontale non si muove e la barra è
- * nascosta, quindi le frecce accanto al titolo: compaiono solo se la fila
- * non ci sta, e agli estremi si spengono, come in `Gallery`.
+ * Fila e frecce sono `ScrollRow`, la stessa delle fasce della home.
  */
 export function RelatedRow({
   title,
@@ -651,135 +641,68 @@ export function RelatedRow({
 }) {
   const t = useTranslations('game');
   const statusLabels = useStatusLabels();
-  const scroller = useRef<ElementRef<typeof ScrollView>>(null);
-  const [{ x, content, viewport }, setScroll] = useState({
-    x: 0,
-    content: 0,
-    viewport: 0,
-  });
-
-  // Le misure si leggono dal DOM: `onLayout` e `onContentSizeChange` passati
-  // al `ScrollView` di Tamagui sul web non arrivano mai.
-  useEffect(() => {
-    const node = scroller.current?.getScrollableNode() as
-      | HTMLElement
-      | undefined;
-    if (!node) return;
-    const measure = () =>
-      setScroll({
-        x: node.scrollLeft,
-        content: node.scrollWidth,
-        viewport: node.clientWidth,
-      });
-    measure();
-    node.addEventListener('scroll', measure, { passive: true });
-    const observer = new ResizeObserver(measure);
-    observer.observe(node);
-    if (node.firstElementChild) observer.observe(node.firstElementChild);
-    return () => {
-      node.removeEventListener('scroll', measure);
-      observer.disconnect();
-    };
-  }, [games.length]);
 
   if (games.length === 0) return null;
 
-  const overflows = content > viewport + 1;
-  const scrollBy = (direction: -1 | 1) =>
-    scroller.current?.scrollTo({
-      x: Math.max(0, x + direction * viewport * 0.8),
-      animated: true,
-    });
-
   return (
-    <YStack gap={8} render="section">
-      <XStack items="center" justify="space-between" gap={8}>
-        <PanelTitle>{title}</PanelTitle>
-        {overflows && (
-          <XStack gap={8}>
-            <Button
-              variant="secondary"
-              size="icon"
-              aria-label={t('galleryPrevious')}
-              disabled={x <= 0}
-              onPress={() => scrollBy(-1)}
+    <ScrollRow
+      title={<PanelTitle>{title}</PanelTitle>}
+      itemCount={games.length}
+    >
+      {games.map((game) => {
+        const card = (
+          <YStack
+            width={104}
+            gap={6}
+            opacity={game.owned ? 1 : 0.55}
+            aria-label={
+              game.owned ? undefined : `${game.name}, ${t('notOwned')}`
+            }
+          >
+            <YStack
+              position="relative"
+              overflow="hidden"
+              rounded={8}
+              borderWidth={game.owned ? 0 : 1}
+              borderStyle="dashed"
+              borderColor="$color8"
             >
-              <ChevronLeft size={16} />
-            </Button>
-            <Button
-              variant="secondary"
-              size="icon"
-              aria-label={t('galleryNext')}
-              disabled={x + viewport >= content - 1}
-              onPress={() => scrollBy(1)}
-            >
-              <ChevronRight size={16} />
-            </Button>
-          </XStack>
-        )}
-      </XStack>
-      <ScrollView
-        ref={scroller}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      >
-        <XStack gap={12} pb={4}>
-          {games.map((game) => {
-            const card = (
-              <YStack
+              <GameCover
+                imageId={game.coverImageId}
+                name={game.name}
+                size="cover_big"
                 width={104}
-                gap={6}
-                opacity={game.owned ? 1 : 0.55}
-                aria-label={
-                  game.owned ? undefined : `${game.name}, ${t('notOwned')}`
-                }
-              >
-                <YStack
-                  position="relative"
-                  overflow="hidden"
-                  rounded={8}
-                  borderWidth={game.owned ? 0 : 1}
-                  borderStyle="dashed"
-                  borderColor="$color8"
-                >
-                  <GameCover
-                    imageId={game.coverImageId}
-                    name={game.name}
-                    size="cover_big"
-                    width={104}
-                  />
-                  {game.status && (
-                    <CornerLabel icon={statusIcons[game.status]}>
-                      {statusLabels[game.status]}
-                    </CornerLabel>
-                  )}
-                </YStack>
-                <Text
-                  fontSize={13}
-                  lineHeight={18}
-                  color="$color12"
-                  numberOfLines={2}
-                >
-                  {game.name}
-                </Text>
-              </YStack>
-            );
+              />
+              {game.status && (
+                <CornerLabel icon={statusIcons[game.status]}>
+                  {statusLabels[game.status]}
+                </CornerLabel>
+              )}
+            </YStack>
+            <Text
+              fontSize={13}
+              lineHeight={18}
+              color="$color12"
+              numberOfLines={2}
+            >
+              {game.name}
+            </Text>
+          </YStack>
+        );
 
-            return game.owned && game.gameId ? (
-              <Link
-                key={`${game.kind}-${game.igdbId}`}
-                to="/games/$id"
-                params={{ id: game.gameId }}
-                style={{ color: 'inherit', textDecoration: 'none' }}
-              >
-                {card}
-              </Link>
-            ) : (
-              <YStack key={`${game.kind}-${game.igdbId}`}>{card}</YStack>
-            );
-          })}
-        </XStack>
-      </ScrollView>
-    </YStack>
+        return game.owned && game.gameId ? (
+          <Link
+            key={`${game.kind}-${game.igdbId}`}
+            to="/games/$id"
+            params={{ id: game.gameId }}
+            style={{ color: 'inherit', textDecoration: 'none' }}
+          >
+            {card}
+          </Link>
+        ) : (
+          <YStack key={`${game.kind}-${game.igdbId}`}>{card}</YStack>
+        );
+      })}
+    </ScrollRow>
   );
 }

@@ -1,5 +1,13 @@
 import { db, schema, type Db } from '@repo/db';
-import { and, eq, inArray, isNull, notInArray, sql } from '@repo/db/orm';
+import {
+  and,
+  eq,
+  inArray,
+  isNull,
+  notInArray,
+  sql,
+  type AnyColumn,
+} from '@repo/db/orm';
 
 /**
  * Scrittura dei voti della critica, per la parte che è uguale a tutte le fonti.
@@ -36,6 +44,63 @@ export const CRITIC_PRECEDENCE: readonly ScoreSource[] = [
   'metacritic',
   'igdb',
 ];
+
+/**
+ * Il voto che mostrano le card, del backlog e della home: **Metacritic, poi
+ * IGDB, mai OpenCritic**.
+ *
+ * Non è `CRITIC_PRECEDENCE` con un buco. Le condizioni della chiave OpenCritic
+ * vogliono, accanto al voto complessivo, il loro nome e il link alla pagina del
+ * gioco, e su una card non c'è posto per nessuno dei due (vedi
+ * apps/api/CLAUDE.md). Nascondere il voto quando la precedenza sceglie
+ * OpenCritic lasciava senza numero proprio i giochi che ne hanno di più; qui
+ * OpenCritic si salta, e si mostra il voto che viene dopo.
+ *
+ * Si calcola leggendo e non sta in una colonna: filtro e ordinamento del
+ * backlog restano su `games.criticScore`, con OpenCritic, e questo serve solo
+ * a ciò che una card mostra e alla fascia «Meglio votati», che ordina su ciò
+ * che mostra.
+ */
+export const CARD_PRECEDENCE: readonly ScoreSource[] = ['metacritic', 'igdb'];
+
+/**
+ * Una colonna del voto da card di un gioco, come sottoquery correlata: il
+ * complessivo (`platform_slug` nullo) della prima fonte di `CARD_PRECEDENCE`
+ * che ce l'ha.
+ *
+ * `gameId` è la colonna del gioco nella query che la ospita, alias compreso:
+ * nelle query relazionali di Drizzle la tabella `games` annidata ha un nome
+ * suo, ed è la ragione per cui questa è una funzione e non una costante.
+ *
+ * `game_scores` è scritta a mano, col suo alias, e non con le colonne dello
+ * schema: dentro gli `extras` di una query relazionale Drizzle riscrive ogni
+ * colonna col nome della tabella che le ospita, anche quelle di un'altra, e
+ * `"game_scores"."score"` diventava `"backlog_game"."score"`, che non esiste.
+ */
+const CARD_SCORE_COLUMNS = {
+  score: 'score',
+  source: 'source',
+  reviewCount: 'review_count',
+} as const;
+
+export function cardScoreSql(
+  gameId: AnyColumn,
+  column: keyof typeof CARD_SCORE_COLUMNS,
+) {
+  const precedence = sql`array[${sql.join(
+    CARD_PRECEDENCE.map((source) => sql`${source}`),
+    sql`, `,
+  )}]::text[]`;
+  return sql`(
+    select ${sql.raw(`cs.${CARD_SCORE_COLUMNS[column]}`)}
+    from game_scores cs
+    where cs.game_id = ${gameId}
+      and cs.platform_slug is null
+      and cs.source::text = any(${precedence})
+    order by array_position(${precedence}, cs.source::text)
+    limit 1
+  )`;
+}
 
 /**
  * Un punteggio da scrivere. `platformSlug` nullo è il voto complessivo del

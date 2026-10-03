@@ -7,7 +7,7 @@ import type {
 } from '@repo/contracts/vocabulary';
 
 import { chunk } from '../lib/chunk';
-import { gameColumns } from './games';
+import { cardScoreExtras, gameColumns } from './games';
 import { ensureUserTags } from './tags';
 import { db, schema } from '@repo/db';
 import { and, eq, inArray, sql } from '@repo/db/orm';
@@ -28,7 +28,7 @@ export const entryQuery = {
     createdAt: true,
   },
   with: {
-    game: { columns: gameColumns },
+    game: { columns: gameColumns, extras: cardScoreExtras },
     ownerships: {
       columns: {
         id: true,

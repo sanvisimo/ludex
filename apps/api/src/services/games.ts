@@ -1,4 +1,4 @@
-import type { Store } from '@repo/contracts/vocabulary';
+import type { ScoreSource, Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, desc, eq, inArray, sql } from '@repo/db/orm';
 
@@ -10,6 +10,7 @@ import {
 import { chunk } from '../lib/chunk';
 import { enqueueEnrichment } from '../queue/enrichment';
 import { reopenSourcesForNewExternalIds } from './enrichment';
+import { cardScoreSql } from './scores';
 
 // Postgres regge 65535 parametri per istruzione: con librerie da qualche
 // migliaio di voci un colpo solo li sfonderebbe.
@@ -38,6 +39,22 @@ export const gameColumns = {
   criticScoreSource: true,
   createdAt: true,
 } as const;
+
+/**
+ * Il voto da card (`CARD_PRECEDENCE`), come `extras` di una query relazionale
+ * su `games`: è ciò che `CardGameSchema` aggiunge a `GameSchema`. Una funzione
+ * perché Drizzle le passa la tabella con l'alias della query in cui sta, che
+ * annidata dentro `backlog` non si chiama `games`.
+ */
+export const cardScoreExtras = (games: typeof schema.games._.columns) => ({
+  cardScore: sql<number | null>`${cardScoreSql(games.id, 'score')}`.as(
+    'card_score',
+  ),
+  cardScoreSource: sql<ScoreSource | null>`${cardScoreSql(
+    games.id,
+    'source',
+  )}`.as('card_score_source'),
+});
 
 // Le stesse colonne nella forma che vuole `.returning()`. Derivata da
 // `gameColumns` e non riscritta a mano: erano due elenchi gemelli in tre punti,
