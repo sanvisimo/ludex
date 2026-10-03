@@ -85,29 +85,17 @@ export const GameSchema = z.object({
   // titolo, dove altrimenti sembrerebbe un gioco come gli altri. Null finché
   // l'enrichment non è passato.
   gameType: GameTypeSchema.nullable(),
-  // Il voto scelto per precedenza, con la fonte da cui viene. È quello su cui
-  // filtra e ordina lo step 7, e sta anche nelle liste perché la card lo mostra
-  // quando l'utente non ha votato. La precedenza la decide il server: se la
+  // Il voto scelto per precedenza (Metacritic, poi IGDB, mai OpenCritic), con
+  // la fonte da cui viene. È quello su cui filtra e ordina lo step 7, e sta
+  // anche nelle liste perché la card lo mostra quando l'utente non ha votato:
+  // lo stesso numero nei tre posti. La precedenza la decide il server: se la
   // rifacesse il client, due punti del sistema potrebbero rispondere in modo
-  // diverso alla stessa domanda. La fonte viaggia col numero perché OpenCritic
-  // e Metacritic non stanno sulla stessa scala.
+  // diverso alla stessa domanda. La fonte viaggia col numero perché Metacritic
+  // e IGDB non stanno sulla stessa scala.
   criticScore: z.number().nullable(),
   criticScoreSource: ScoreSourceSchema.nullable(),
   createdAt: z.date(),
 });
-
-// Un gioco come lo mostra una card, nel backlog e nella home: `GameSchema` più
-// il voto da card. Non è `criticScore` con un altro nome: è il complessivo
-// Metacritic, altrimenti IGDB, **mai OpenCritic**, che sulla card non ha posto
-// per il nome e il link che le sue condizioni chiedono accanto al voto. Filtro
-// e ordinamento del backlog restano su `criticScore`. La regola sta in un punto
-// solo, lato server (`CARD_PRECEDENCE`).
-export const CardGameSchema = GameSchema.extend({
-  cardScore: z.number().nullable(),
-  cardScoreSource: ScoreSourceSchema.nullable(),
-});
-
-export type CardGame = z.infer<typeof CardGameSchema>;
 
 export const GameAttributeSchema = z.object({
   kind: AttributeKindSchema,
@@ -299,7 +287,7 @@ export const BacklogEntrySchema = z.object({
   rating: z.number().nullable(),
   notes: z.string().nullable(),
   tags: z.array(UserTagSchema),
-  game: CardGameSchema,
+  game: GameSchema,
   ownerships: z.array(OwnershipSchema),
   // Nascosto dalla lista: il gioco resta tuo, solo non lo vuoi vedere. Non è
   // `excluded`, che è un giudizio sul gioco.
@@ -543,7 +531,7 @@ export const homeBandKindValues = [
 
 // Un gioco su una card della home. La home è uguale per tutti: l'unica cosa
 // di chi guarda è lo stato, nullo da anonimo o se il gioco non è suo.
-export const HomeGameSchema = CardGameSchema.extend({
+export const HomeGameSchema = GameSchema.extend({
   status: BacklogStatusSchema.nullable(),
 });
 

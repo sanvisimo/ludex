@@ -39,18 +39,22 @@ guarda, e usa ancora Tailwind.
   anche per l'ordinamento della fascia, non solo per ciò che si vede: una
   fascia «Meglio votati» ordinata sul voto OpenCritic e con le card senza
   numero non si capirebbe. Quindi il voto della home è **il complessivo
-  Metacritic, altrimenti quello IGDB**, preso da `game_scores` e non da
-  `games.criticScore`, che con OpenCritic presente punta a lui.
+  Metacritic, altrimenti quello IGDB**: com'è andata a finire è il punto
+  «OpenCritic fuori» qui sotto.
 - **Rotazione giornaliera** per brevi, medi, lunghi e per la scelta dei tre
   generi: ogni giorno un'estrazione diversa, uguale per tutti e per tutto il
   giorno. Ultimi aggiunti e meglio votati non ruotano: il loro ordine è il
   loro senso.
-- **OpenCritic fuori da tutte le card**, anche da quelle del backlog
-  (deciso il 03/10): prima la card del backlog, quando il voto scelto era
-  OpenCritic, non mostrava niente, e lo stesso gioco avrebbe avuto 85 in home
-  e nessun voto nel backlog. Il voto da card si calcola **leggendo**, senza
-  toccare lo schema: filtro e ordinamento del backlog restano su
-  `games.criticScore`, con OpenCritic.
+- **OpenCritic fuori da `games.critic_score`** (deciso il 03/10, in due
+  tempi). Prima la card del backlog, quando il voto scelto era OpenCritic,
+  non mostrava niente. Il primo giro aveva aggiunto un **voto da card**
+  calcolato leggendo, accanto a `critic_score`: card giuste, ma filtro e
+  ordinamento del backlog su un altro numero (OpenCritic 91, card 87). Il
+  secondo giro l'ha tolto e ha cambiato la precedenza di `critic_score` in
+  **Metacritic → IGDB**: un numero solo per card, filtro, ordinamento e
+  «Meglio votati». I giochi già scritti li ricalcola la migration 0028, solo
+  quelli dove aveva vinto OpenCritic. OpenCritic resta in `game_scores` e
+  sulla pagina del gioco.
 - **Lo slug** nei link al posto dell'UUID: sì, ma in un **lotto a parte**,
   con uno slug nostro. Qui le card usano lo stesso link della pagina del
   gioco di oggi, così il passaggio allo slug tocca un punto solo.
@@ -89,12 +93,15 @@ Proposti da me e approvati con la struttura.
      fasce da anonimo e da loggato, lo stato solo per chi ha il gioco, la stessa estrazione due
      volte nello stesso giorno.
 
-   **Fatto.** [`home.ts`](../apps/api/src/services/home.ts) e 13 casi in
-   [`home.test.ts`](../apps/api/src/services/home.test.ts); la suite è a 374,
-   tutti verdi. Il voto da card è `CARD_PRECEDENCE` e `cardScoreSql` in
-   [`scores.ts`](../apps/api/src/services/scores.ts), e `CardGameSchema` nel
-   contratto: lo portano anche le voci del backlog (`entryQuery`), così le
-   card del backlog saltano OpenCritic come quelle della home.
+   **Fatto.** [`home.ts`](../apps/api/src/services/home.ts) e 11 casi in
+   [`home.test.ts`](../apps/api/src/services/home.test.ts); la suite è a 373,
+   tutti verdi. La precedenza del voto è `CRITIC_PRECEDENCE` in
+   [`scores.ts`](../apps/api/src/services/scores.ts); «Meglio votati» ordina
+   su `critic_score`, e le 10 recensioni sono quelle della fonte che l'ha
+   dato. La migration
+   [0028](../packages/db/drizzle/0028_critic_score_without_opencritic.sql)
+   è provata su un database con 10 giochi a OpenCritic: diventano 6
+   Metacritic e 4 IGDB, e uno col solo OpenCritic resta senza voto.
    - **I tipi che entrano** sono un elenco di ciò che è un gioco
      (`main_game`, `standalone_expansion`, `remake`, `remaster`,
      `expanded_game`, `port`, `fork`), non di ciò che resta fuori: fuori
@@ -103,10 +110,9 @@ Proposti da me e approvati con la struttura.
      nessuna delle tre, con la stessa regola del filtro del backlog
      (`haUnaFine`, ora esportata da `backlog-search.ts`).
    - **Il giorno** dell'estrazione è quello UTC.
-   - Una cosa che non si indovina: dentro gli `extras` di una query
-     relazionale Drizzle riscrive **ogni** colonna col nome della tabella che
-     li ospita, anche quelle di un'altra tabella. La sottoquery su
-     `game_scores` è quindi scritta a mano, col suo alias.
+   - Una cosa che non si indovina, trovata col voto da card poi tolto: dentro
+     gli `extras` di una query relazionale Drizzle riscrive **ogni** colonna
+     col nome della tabella che li ospita, anche quelle di un'altra tabella.
 
 2. **La card** (`HomeCard`, in `apps/web/components`): copertina, le due
    etichette, titolo su due righe al massimo, anno · durata. Il voto riusa

@@ -148,17 +148,20 @@ dice una cosa che "vale 89" non dice, e allo step 13 pesa.
 
 Su `games` resta il **denormalizzato**: `critic_score` e `critic_score_source`,
 ricalcolati **nella stessa transazione** di ogni scrittura di `game_scores`
-secondo una precedenza scritta in un punto solo — OpenCritic → Metacritic →
-IGDB, che è un ordine di trasparenza su come i voti sono aggregati, non di
-qualità. Serve allo step 7: il filtro "sopra 80" resta un confronto su una
-colonna indicizzabile invece di tre sottoquery correlate nella query di ricerca.
+secondo una precedenza scritta in un punto solo — **Metacritic → IGDB**
+(`CRITIC_PRECEDENCE` in `apps/api/src/services/scores.ts`). Serve allo step 7:
+il filtro "sopra 80" resta un confronto su una colonna indicizzabile invece di
+tre sottoquery correlate nella query di ricerca. Ed è lo stesso numero che
+mostrano le card, del backlog e della home: si filtra e si ordina su ciò che
+si vede.
 
-Le **card** (backlog e home, dal 12e) non mostrano quel numero ma il **voto da
-card**: il complessivo Metacritic, altrimenti IGDB, **mai OpenCritic**, che
-accanto al voto vuole il suo nome e un link e su una card non ha posto. Non è
-una colonna: lo calcola chi legge, con una sottoquery su `game_scores`
-(`CARD_PRECEDENCE` e `cardScoreSql` in `apps/api/src/services/scores.ts`).
-Filtro e ordinamento del backlog restano sul denormalizzato.
+**OpenCritic non entra nella precedenza** (dal 12e; prima era in testa). Le
+condizioni della sua chiave vogliono accanto al voto complessivo il loro nome e
+un link, e su una card non c'è posto: finché vinceva lui la card doveva
+nasconderlo, e filtro e ordinamento lavoravano su un numero che non si vedeva.
+Il suo voto resta in `game_scores` e la pagina del gioco lo mostra. Il cambio
+di precedenza ha ricalcolato i giochi già scritti con la migration 0028: una
+precedenza nuova senza ricalcolo vale solo dalla prossima scrittura.
 
 Il voto **non si traduce e non si media fra fonti**: OpenCritic pesa i critici
 di punta e sta sistematicamente qualche punto sotto Metacritic. La scheda del

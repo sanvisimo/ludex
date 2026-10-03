@@ -3,7 +3,7 @@ import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createGame, createUser } from '../../test/factories';
-import { addToBacklog, findEntryByGame, setBacklogHidden } from './backlog';
+import { addToBacklog, setBacklogHidden } from './backlog';
 import { listHomeBands, MIN_GAMES_PER_GENRE } from './home';
 import { saveScores } from './scores';
 
@@ -123,7 +123,9 @@ describe('meglio votati', () => {
     const bande = await listHomeBands(null, GIORNO);
     const top = bande.find((band) => band.kind === 'topRated')!.games;
 
-    expect(top.map((g) => [g.name, g.cardScore, g.cardScoreSource])).toEqual([
+    expect(
+      top.map((g) => [g.name, g.criticScore, g.criticScoreSource]),
+    ).toEqual([
       ['Solo IGDB', 85, 'igdb'],
       ['Con OpenCritic', 80, 'metacritic'],
       ['Meta e IGDB', 70, 'metacritic'],
@@ -154,7 +156,7 @@ describe('meglio votati', () => {
       (band) => band.kind === 'topRated',
     )!.games;
 
-    expect(game!.cardScore).toBe(66);
+    expect(game!.criticScore).toBe(66);
   });
 });
 
@@ -256,48 +258,5 @@ describe('generi', () => {
         true,
       );
     }
-  });
-});
-
-describe('il voto delle card del backlog', () => {
-  it('salta OpenCritic e mostra Metacritic, anche dove il filtro usa OpenCritic', async () => {
-    const userId = await createUser();
-    const game = await gioco();
-    await saveScores(game.id, 'opencritic', [{ score: 91, reviewCount: 120 }]);
-    await saveScores(game.id, 'metacritic', [{ score: 87, reviewCount: 60 }]);
-    await addToBacklog({
-      userId,
-      gameId: game.id,
-      status: 'backlog',
-      ownerships: [{ platformSlug: 'pc_windows' }],
-    });
-
-    const entry = await findEntryByGame(userId, game.id);
-
-    expect(entry!.game).toMatchObject({
-      criticScore: 91,
-      criticScoreSource: 'opencritic',
-      cardScore: 87,
-      cardScoreSource: 'metacritic',
-    });
-  });
-
-  it('senza voti né Metacritic né IGDB, niente', async () => {
-    const userId = await createUser();
-    const game = await gioco();
-    await saveScores(game.id, 'opencritic', [{ score: 91, reviewCount: 120 }]);
-    await addToBacklog({
-      userId,
-      gameId: game.id,
-      status: 'backlog',
-      ownerships: [{ platformSlug: 'pc_windows' }],
-    });
-
-    const entry = await findEntryByGame(userId, game.id);
-
-    expect(entry!.game).toMatchObject({
-      cardScore: null,
-      cardScoreSource: null,
-    });
   });
 });

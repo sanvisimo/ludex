@@ -84,9 +84,11 @@ describe('enrichGameFromOpenCritic', () => {
         tier: 'Mighty',
       },
     ]);
+    // Il voto si salva ma non diventa quello del gioco: OpenCritic è fuori
+    // dalla precedenza (`CRITIC_PRECEDENCE`), e senza altre fonti resta nullo.
     expect(await gameRow(game.id)).toMatchObject({
-      criticScore: 89.5,
-      criticScoreSource: 'opencritic',
+      criticScore: null,
+      criticScoreSource: null,
     });
   });
 

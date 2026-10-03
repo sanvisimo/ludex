@@ -1,4 +1,4 @@
-import type { CardGame } from '@repo/contracts';
+import type { Game } from '@repo/contracts';
 import { Text, XStack } from '@repo/ui';
 import { Award } from '@repo/ui/icons';
 import { useTranslations } from 'use-intl';
@@ -18,19 +18,21 @@ export function EntryScore({
   game,
 }: {
   rating: number | null;
-  game: Pick<CardGame, 'cardScore' | 'cardScoreSource'>;
+  game: Pick<Game, 'criticScore' | 'criticScoreSource'>;
 }) {
   if (rating !== null) return <RatingValue value={rating} />;
-  return <CriticValue score={game.cardScore} source={game.cardScoreSource} />;
+  return (
+    <CriticValue score={game.criticScore} source={game.criticScoreSource} />
+  );
 }
 
 /**
  * Il voto della critica, con la fonte nel nome e al passaggio del mouse
  * (`title`): senza fonte il numero non si legge, perché Metacritic e IGDB non
- * stanno sulla stessa scala. È il voto da card che sceglie il server
- * (`cardScore`): Metacritic, poi IGDB, mai OpenCritic, che vuole accanto al
- * voto il suo nome e un link, e su una card non c'è posto. Il pannello filtra
- * e ordina invece su `criticScore`, che OpenCritic lo usa.
+ * stanno sulla stessa scala. È quello scelto dal server per precedenza, lo
+ * stesso su cui filtra e ordina il pannello. OpenCritic non è mai fra le fonti
+ * possibili: vuole accanto al voto il suo nome e un link, e su una card non
+ * c'è posto (`CRITIC_PRECEDENCE` in `apps/api/src/services/scores.ts`).
  *
  * `title` e non il nostro `Tooltip`, che vuole un elemento che prende il
  * focus: un numero in sola lettura non deve essere una fermata del Tab, e ce
@@ -43,8 +45,8 @@ export function CriticValue({
   source,
   compact = false,
 }: {
-  score: CardGame['cardScore'];
-  source: CardGame['cardScoreSource'];
+  score: Game['criticScore'];
+  source: Game['criticScoreSource'];
   compact?: boolean;
 }) {
   const t = useTranslations('critic');

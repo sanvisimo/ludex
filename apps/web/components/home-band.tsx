@@ -49,7 +49,7 @@ function HomeCard({ game }: { game: HomeGame }) {
               {statusLabels[game.status]}
             </CornerLabel>
           )}
-          {game.cardScore !== null && (
+          {game.criticScore !== null && (
             // Il fondo della pagina e non l'accento: su una copertina deve
             // distinguersi dallo stato, e il numero si legge su qualunque
             // immagine. Stessa misura e stessi raggi di `CornerLabel`,
@@ -65,8 +65,8 @@ function HomeCard({ game }: { game: HomeGame }) {
               borderBottomLeftRadius={6}
             >
               <CriticValue
-                score={game.cardScore}
-                source={game.cardScoreSource}
+                score={game.criticScore}
+                source={game.criticScoreSource}
                 compact
               />
             </XStack>

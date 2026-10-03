@@ -90,7 +90,8 @@ vuota. I pezzi sono in `apps/web/components/home-band.tsx`. La riga che
 scorre con le frecce è `ScrollRow` (`components/scroll-row.tsx`), la stessa
 dei giochi legati nella pagina del gioco; nella home le frecce ci sono solo
 da `$md` (`arrowsFromMd`). Il voto sulle card, qui come nel backlog, è
-`cardScore` e **mai OpenCritic** (vedi [apps/api/CLAUDE.md](../api/CLAUDE.md)).
+`criticScore`, che **non è mai OpenCritic** (vedi
+[apps/api/CLAUDE.md](../api/CLAUDE.md)).
 
 **La pagina del gioco** (`/games/$id`) ha i suoi pezzi in
 `apps/web/components/game-page.tsx`: la hero, che `Page` mette sopra il suo

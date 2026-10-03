@@ -33,10 +33,11 @@ regole complete, le ragioni e le misure.
     obbligatorio e va **vicino al voto**, con scritto «OpenCritic» o il logo
     intero (nome compreso). Non vale il solo glifo.
     Stato al 03/10/2026: la pagina del gioco e il dialog «Dettagli» lo
-    rispettano (nome come link, per ogni fonte); **le card, del backlog e
-    della home, saltano OpenCritic** e mostrano Metacritic o IGDB
-    (`CARD_PRECEDENCE` in `services/scores.ts`), perché non c'è posto per nome
-    e link. Filtro e ordinamento per voto della critica lo usano ancora.
+    rispettano (nome come link, per ogni fonte). **Il voto denormalizzato
+    `games.critic_score` non lo usa più**: la precedenza è Metacritic → IGDB
+    (`CRITIC_PRECEDENCE` in `services/scores.ts`), perché quel numero sta sulle
+    card, dove non c'è posto per nome e link, e su di lui lavorano filtro e
+    ordinamento del backlog.
   - **niente aggregatore concorrente**, e nessuna offerta dei loro dati
     tramite una nostra API: l'API di Ludex serve solo le app di Ludex.
   - **possono revocare la chiave e chiedere di cancellare tutti i loro dati**,

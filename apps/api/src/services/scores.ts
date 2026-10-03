@@ -1,13 +1,5 @@
 import { db, schema, type Db } from '@repo/db';
-import {
-  and,
-  eq,
-  inArray,
-  isNull,
-  notInArray,
-  sql,
-  type AnyColumn,
-} from '@repo/db/orm';
+import { and, eq, inArray, isNull, notInArray, sql } from '@repo/db/orm';
 
 /**
  * Scrittura dei voti della critica, per la parte che è uguale a tutte le fonti.
@@ -26,81 +18,24 @@ type Transaction = Parameters<Parameters<Db['transaction']>[0]>[0];
 type Executor = Db | Transaction;
 
 /**
- * Chi vince quando lo stesso gioco ha più voti.
+ * Chi vince quando lo stesso gioco ha più voti: **Metacritic, poi IGDB**.
+ * OpenCritic non c'è.
  *
- * OpenCritic per primo perché è l'unico dei tre che dice **come** aggrega:
- * media dei critici di punta, con la percentuale di chi lo consiglia accanto.
- * Metacritic secondo, che sul catalogo vecchio arriva dove OpenCritic non
- * arriva — è nato nel 2015. IGDB per ultimo: c'è quasi sempre, ma è
- * un'aggregazione di cui non conosciamo il perimetro.
+ * Non per la qualità del suo voto. Le condizioni della chiave OpenCritic
+ * vogliono, accanto al voto complessivo, il loro nome e un link alla pagina
+ * del gioco (vedi apps/api/CLAUDE.md), e questo numero finisce sulle card del
+ * backlog e della home, dove non c'è posto per nessuno dei due. Finché
+ * OpenCritic vinceva, la card doveva nasconderlo, e filtro e ordinamento
+ * lavoravano su un numero che non si vedeva. La pagina del gioco mostra
+ * comunque tutti e tre, OpenCritic col suo nome e il suo link.
  *
- * Non è un ordine di qualità dei voti, è un ordine di **trasparenza su come
- * sono fatti**. E vive qui, in un punto solo: la scheda del gioco mostra tutti
- * e tre i numeri, questa precedenza decide soltanto quale finisce nella colonna
- * su cui si filtra.
+ * Metacritic prima di IGDB perché dice come aggrega e quante recensioni ci
+ * sono dietro; IGDB c'è quasi sempre, ma è un'aggregazione di cui non
+ * conosciamo il perimetro. La precedenza vive qui, in un punto solo: una
+ * migration che la cambia deve ricalcolare `games.critic_score` (vedi la
+ * 0028).
  */
-export const CRITIC_PRECEDENCE: readonly ScoreSource[] = [
-  'opencritic',
-  'metacritic',
-  'igdb',
-];
-
-/**
- * Il voto che mostrano le card, del backlog e della home: **Metacritic, poi
- * IGDB, mai OpenCritic**.
- *
- * Non è `CRITIC_PRECEDENCE` con un buco. Le condizioni della chiave OpenCritic
- * vogliono, accanto al voto complessivo, il loro nome e il link alla pagina del
- * gioco, e su una card non c'è posto per nessuno dei due (vedi
- * apps/api/CLAUDE.md). Nascondere il voto quando la precedenza sceglie
- * OpenCritic lasciava senza numero proprio i giochi che ne hanno di più; qui
- * OpenCritic si salta, e si mostra il voto che viene dopo.
- *
- * Si calcola leggendo e non sta in una colonna: filtro e ordinamento del
- * backlog restano su `games.criticScore`, con OpenCritic, e questo serve solo
- * a ciò che una card mostra e alla fascia «Meglio votati», che ordina su ciò
- * che mostra.
- */
-export const CARD_PRECEDENCE: readonly ScoreSource[] = ['metacritic', 'igdb'];
-
-/**
- * Una colonna del voto da card di un gioco, come sottoquery correlata: il
- * complessivo (`platform_slug` nullo) della prima fonte di `CARD_PRECEDENCE`
- * che ce l'ha.
- *
- * `gameId` è la colonna del gioco nella query che la ospita, alias compreso:
- * nelle query relazionali di Drizzle la tabella `games` annidata ha un nome
- * suo, ed è la ragione per cui questa è una funzione e non una costante.
- *
- * `game_scores` è scritta a mano, col suo alias, e non con le colonne dello
- * schema: dentro gli `extras` di una query relazionale Drizzle riscrive ogni
- * colonna col nome della tabella che le ospita, anche quelle di un'altra, e
- * `"game_scores"."score"` diventava `"backlog_game"."score"`, che non esiste.
- */
-const CARD_SCORE_COLUMNS = {
-  score: 'score',
-  source: 'source',
-  reviewCount: 'review_count',
-} as const;
-
-export function cardScoreSql(
-  gameId: AnyColumn,
-  column: keyof typeof CARD_SCORE_COLUMNS,
-) {
-  const precedence = sql`array[${sql.join(
-    CARD_PRECEDENCE.map((source) => sql`${source}`),
-    sql`, `,
-  )}]::text[]`;
-  return sql`(
-    select ${sql.raw(`cs.${CARD_SCORE_COLUMNS[column]}`)}
-    from game_scores cs
-    where cs.game_id = ${gameId}
-      and cs.platform_slug is null
-      and cs.source::text = any(${precedence})
-    order by array_position(${precedence}, cs.source::text)
-    limit 1
-  )`;
-}
+export const CRITIC_PRECEDENCE: readonly ScoreSource[] = ['metacritic', 'igdb'];
 
 /**
  * Un punteggio da scrivere. `platformSlug` nullo è il voto complessivo del

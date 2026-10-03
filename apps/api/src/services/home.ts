@@ -17,8 +17,7 @@ import {
 } from '@repo/db/orm';
 
 import { haUnaFine } from './backlog-search';
-import { cardScoreExtras, gameColumns } from './games';
-import { cardScoreSql } from './scores';
+import { gameColumns } from './games';
 
 /**
  * La home (12e): il catalogo a fasce, **uguale per tutti**. Chi guarda cambia
@@ -137,20 +136,26 @@ export async function listHomeBands(
     {
       kind: 'topRated',
       genre: null,
-      // Ordina sul voto che la card mostra, non su `criticScore`: una fascia
-      // ordinata su OpenCritic con le card senza numero non si capirebbe.
+      // Sul voto che la card mostra, `criticScore`. Le recensioni sono quelle
+      // della fonte da cui viene quel voto, nel suo complessivo.
       ids: pick(
         and(
           giocabile,
           gte(
-            sql`${cardScoreSql(schema.games.id, 'reviewCount')}`,
+            sql`(${db
+              .select({ n: schema.gameScores.reviewCount })
+              .from(schema.gameScores)
+              .where(
+                and(
+                  eq(schema.gameScores.gameId, schema.games.id),
+                  eq(schema.gameScores.source, schema.games.criticScoreSource),
+                  isNull(schema.gameScores.platformSlug),
+                ),
+              )})`,
             MIN_REVIEWS,
           ),
         ),
-        [
-          sql`${cardScoreSql(schema.games.id, 'score')} desc`,
-          desc(schema.games.id),
-        ],
+        [desc(schema.games.criticScore), desc(schema.games.id)],
       ),
     },
     {
@@ -204,7 +209,6 @@ export async function listHomeBands(
   const [games, owned] = await Promise.all([
     db.query.games.findMany({
       columns: gameColumns,
-      extras: cardScoreExtras,
       where: inArray(schema.games.id, all),
     }),
     viewerId
