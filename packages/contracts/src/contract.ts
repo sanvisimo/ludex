@@ -39,12 +39,6 @@ export const contract = {
   },
 
   games: {
-    // Catalogo pubblico: "questi giochi Ludex li conosce". Ordinato per data di
-    // inserimento e volutamente anonimo — non dice chi li ha aggiunti.
-    latest: oc
-      .input(z.object({ limit: z.number().int().min(1).max(50).default(24) }))
-      .output(z.array(GameSchema)),
-
     // La home (12e): le fasce del catalogo, uguali per tutti. Da loggati ogni
     // gioco porta lo stato che ha nel tuo backlog, e niente altro di tuo.
     home: oc.output(z.array(HomeBandSchema)),

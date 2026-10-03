@@ -19,7 +19,6 @@ import {
   createGame,
   findGameById,
   findGameDetailById,
-  listLatestGames,
   resolveGameFromIgdb,
   searchGames,
 } from '../services/games';
@@ -77,10 +76,6 @@ export const router = os.router({
   },
 
   games: {
-    latest: os.games.latest.handler(({ input }) =>
-      listLatestGames(input.limit),
-    ),
-
     home: os.games.home
       .use(maybeAuthed)
       .handler(({ context }) => listHomeBands(context.user?.id ?? null)),
