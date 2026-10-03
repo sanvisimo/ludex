@@ -51,6 +51,8 @@ Dove il negozio non la dà, la data si corregge a mano dal form di modifica.
   di quella del negozio il reimport la riporta indietro.
 - **Gli scarti non portano la data**: risolti, l'import successivo li aggancia
   per id e la scrive.
+  **Superata dal passo 8**: risolto a mano, il gioco risultava aggiunto oggi
+  fino al reimport.
 - **Galaxy non è bloccante**: se non risponde, l'import GOG va avanti senza
   date.
 
@@ -186,3 +188,24 @@ entrambe, e il gioco prende il 2019; un reimport senza data non la cancella).
 `pnpm --filter api test` 338 verdi; typecheck e lint verdi pacchetto per
 pacchetto (`pnpm -r`), perché turbo in quell'ambiente non avviava i processi.
 Non ancora provato su un import vero.
+
+## Passo 8 — gli scarti tengono la data
+
+Approvato e fatto il 03/10/2026, sul branch `ccr-3765f971-robvd4`.
+
+Golazo, scarto Amazon collegato a mano a IGDB, è diventato l'ultimo gioco
+aggiunto: lo scarto non teneva la data, e `resolveUnresolvedImport` creava la
+riga di backlog con `added_at = now()`. Il reimport l'avrebbe riportata
+indietro, ma fino ad allora la data era sbagliata.
+
+- **Schema**: `unresolved_imports.acquired_at`, nullable. Migration
+  [0029_unresolved_acquired_at.sql](../packages/db/drizzle/0029_unresolved_acquired_at.sql),
+  senza backfill: gli scarti esistenti la prendono al prossimo import.
+- **`recordUnresolved`** la scrive, e il reimport la aggiorna come nome e ore.
+- **`resolveUnresolvedImport`** la passa alla copia e chiama `advanceAddedAt`.
+
+Verifica: un caso nuovo in `library-import.test.ts` (import senza match →
+scarto con la data → risolto a mano → copia e gioco con la data del negozio),
+che senza la correzione fallisce. `pnpm --filter api test` 374 verdi.
+
+Golazo, già risolto, la prende al prossimo reimport di Amazon.

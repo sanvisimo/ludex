@@ -127,6 +127,11 @@ possesso. Conseguenze:
   riporta indietro, perché il negozio sa quando l'hai preso. Togliere una
   copia non ricalcola la data del gioco.
 
+  **Anche gli scarti si tengono la data** (`unresolved_imports.acquired_at`):
+  risolti a mano, la passano alla copia e il gioco la prende con
+  `advanceAddedAt`, come dopo un import. Senza, un gioco collegato a IGDB a
+  mano risultava aggiunto il giorno in cui lo si collegava.
+
 ## I voti della critica stanno in `game_scores`, non su `games`
 
 Sono tre numeri diversi — IGDB, OpenCritic, Metacritic — e uno di loro **dipende
