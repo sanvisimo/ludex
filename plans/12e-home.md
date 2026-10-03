@@ -1,6 +1,6 @@
 # Step 12e — La home
 
-**In corso**: passi 1–4 fatti, il 5 è da guardare sulla pagina vera.
+**Chiuso il 03/10/2026**, quando l'utente ha detto che la home è pronta.
 Struttura approvata sul wireframe
 ([12e-home.excalidraw](12e-home.excalidraw): si apre trascinandolo su
 excalidraw.com). Sotto ogni passo, man mano, cosa è stato fatto e cosa l'ha
@@ -141,8 +141,19 @@ Proposti da me e approvati con la struttura.
    **Fatto.** Larga come il backlog (`maxW={1280}`), non 896: le fasce vivono
    di card. Il titolo è «Catalogo» e il messaggio `catalog.unresolved` è
    uscito con la vecchia lista. L'aggiunta di un gioco e gli eventi dal vivo
-   invalidano `games.home` invece di `games.latest`, che resta nel contratto
-   ma non lo usa più nessuno.
+   invalidano `games.home` invece di `games.latest`, che è uscito dal
+   contratto alla chiusura del lotto: la home l'aveva sostituito.
 
 5. **Verifica sulla pagina vera**, desktop e telefono, chiaro e scuro, da
    anonimo e da loggato; poi `apps/web/CLAUDE.md` con ciò che si è scoperto.
+
+   **Fatto.** Guardata in Chromium su dati di prova (80 giochi, senza
+   copertine): desktop e telefono, chiaro e scuro, da anonimo e da loggato,
+   nessun errore in console; il backlog in griglia e i giochi legati della
+   pagina del gioco come prima. `apps/web/CLAUDE.md` ha il paragrafo sulla
+   home.
+
+## Rimandato
+
+- **Lo slug dei giochi** nei link, al posto dell'UUID: lotto a parte, con
+  uno slug nostro (deciso col 12e).

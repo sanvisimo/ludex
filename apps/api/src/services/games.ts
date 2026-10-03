@@ -1,6 +1,6 @@
 import type { Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, desc, eq, inArray, sql } from '@repo/db/orm';
+import { and, eq, inArray, sql } from '@repo/db/orm';
 
 import {
   findIgdbGameById,
@@ -49,15 +49,6 @@ const gameReturning = Object.fromEntries(
     schema.games[name as keyof typeof gameColumns],
   ]),
 ) as { [K in keyof typeof gameColumns]: (typeof schema.games)[K] };
-
-/** Catalogo pubblico: gli ultimi giochi che Ludex ha conosciuto. */
-export function listLatestGames(limit: number) {
-  return db.query.games.findMany({
-    columns: gameColumns,
-    orderBy: desc(schema.games.createdAt),
-    limit,
-  });
-}
 
 export function findGameById(id: string) {
   return db.query.games.findFirst({
