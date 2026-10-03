@@ -1,6 +1,6 @@
 # Step 12e — La home
 
-**In progettazione.** Struttura da approvare sul wireframe
+**In progettazione.** Struttura approvata sul wireframe
 ([12e-home.excalidraw](12e-home.excalidraw): si apre trascinandolo su
 excalidraw.com). Sotto ogni passo, man mano, cosa è stato fatto e cosa l'ha
 smentito.
@@ -16,8 +16,10 @@ guarda, e usa ancora Tailwind.
 ## Decisioni prese
 
 - **Resta il catalogo di tutti i giochi Ludex**, non la libreria di chi
-  guarda. Da loggato, sulle card dei giochi che hai c'è lo **stato** del tuo
-  backlog; gli altri non hanno etichetta.
+  guarda, ed è **uguale per tutti**, loggati e no: stesse fasce, stessi
+  giochi. L'unica differenza è che da loggato, sulle card dei giochi che hai,
+  c'è lo **stato** del tuo backlog; gli altri non hanno etichetta. Per questo
+  i giochi che hai nascosto (`hidden_at`) in home ci sono.
 - **A fasce**: righe di card che scorrono di lato, ognuna col suo titolo.
   1. **Ultimi aggiunti** — per data di ingresso in Ludex, come oggi.
   2. **Meglio votati** — per voto della critica, dal più alto.
@@ -46,9 +48,9 @@ guarda, e usa ancora Tailwind.
   con uno slug nostro. Qui le card usano lo stesso link della pagina del
   gioco di oggi, così il passaggio allo slug tocca un punto solo.
 
-## Da confermare sul wireframe
+## Valori di partenza
 
-Valori di partenza miei; si cambiano qui se non vanno.
+Proposti da me e approvati con la struttura.
 
 - **Soglia di recensioni** per «Meglio votati»: almeno **10**. Senza, la
   fascia la apre un gioco con 2 recensioni a 95 (IGDB ne dà il conteggio,
@@ -56,8 +58,6 @@ Valori di partenza miei; si cambiano qui se non vanno.
 - **Quali giochi entrano nelle fasce**: solo i giochi veri, cioè esclusi
   DLC, espansioni, pacchetti, bundle, episodi e stagioni (`game_type`). Un
   gioco senza tipo (non ancora arricchito) entra solo in «Ultimi aggiunti».
-- **I nascosti di chi guarda** (`hidden_at`) non compaiono: è la sua
-  preferenza di vista, e la home la rispetta come il backlog.
 - **20 giochi per fascia**; una fascia vuota non si mostra.
 - **Generi**: i tre del giorno si scelgono fra quelli con almeno 20 giochi,
   così la fascia è piena.
@@ -78,8 +78,8 @@ Valori di partenza miei; si cambiano qui se non vanno.
    job. `games.latest` resta finché la home non è passata.
    - Test contro il Postgres vero: i bordi delle durate (600 minuti è breve,
      601 è medio), OpenCritic che non entra né nel voto né
-     nell'ordinamento, la soglia di recensioni, i tipi esclusi, i nascosti di
-     chi guarda, lo stato solo per chi ha il gioco, la stessa estrazione due
+     nell'ordinamento, la soglia di recensioni, i tipi esclusi, le stesse
+     fasce da anonimo e da loggato, lo stato solo per chi ha il gioco, la stessa estrazione due
      volte nello stesso giorno.
 2. **La card** (`HomeCard`, in `apps/web/components`): copertina, le due
    etichette, titolo su due righe al massimo, anno · durata. Il voto riusa
