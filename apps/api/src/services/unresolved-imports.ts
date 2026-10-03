@@ -4,6 +4,7 @@ import { db, schema } from '@repo/db';
 import { and, asc, eq, sql } from '@repo/db/orm';
 
 import {
+  advanceAddedAt,
   ensureBacklogEntries,
   ensureOwnerships,
   findEntryByGame,
@@ -136,8 +137,12 @@ export async function resolveUnresolvedImport(
       storeAccountId: pending.storeAccountId,
       playtimeMinutes: pending.playtimeMinutes,
       lastPlayedAt: pending.lastPlayedAt,
+      acquiredAt: pending.acquiredAt,
     },
   ]);
+  // Come dopo un import: senza, il gioco resterebbe aggiunto oggi, il giorno
+  // in cui lo si è collegato, invece che quando è entrato nella libreria.
+  await advanceAddedAt([backlogId]);
 
   await db
     .delete(schema.unresolvedImports)

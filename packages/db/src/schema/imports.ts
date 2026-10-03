@@ -173,6 +173,11 @@ export const unresolvedImports = pgTable(
     platformSlug: text('platform_slug').references(() => platforms.slug),
     playtimeMinutes: integer('playtime_minutes'),
     lastPlayedAt: timestamp('last_played_at'),
+    // Quando la voce è entrata nella libreria del negozio, dove il negozio lo
+    // dice (Epic, Amazon, GOG). Risolta la voce diventa `acquired_at` della
+    // copia: senza, il gioco risolto a mano risultava aggiunto il giorno in cui
+    // lo si collegava, finché un reimport non lo riportava indietro.
+    acquiredAt: timestamp('acquired_at'),
     // La copertina, **come URL del negozio**: la voce non è un gioco, quindi non
     // ha né `games` né IGDB, e questa è l'unica immagine che esiste. Già pronta
     // da mostrare — GOG ne dà solo l'hash e il suffisso lo mette l'import — e

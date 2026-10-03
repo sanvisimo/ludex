@@ -1,0 +1,1 @@
+ALTER TABLE "unresolved_imports" ADD COLUMN "acquired_at" timestamp;

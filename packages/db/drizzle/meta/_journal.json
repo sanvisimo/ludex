@@ -204,6 +204,13 @@
       "when": 1791028635244,
       "tag": "0028_critic_score_without_opencritic",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1791030749106,
+      "tag": "0029_unresolved_acquired_at",
+      "breakpoints": true
     }
   ]
 }

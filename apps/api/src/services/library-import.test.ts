@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createUser, linkStoreAccount } from '../../test/factories';
 import {
+  findIgdbGameById,
   findIgdbGamesByExternalIds,
   findIgdbGamesBySource,
   igdbSourceFor,
@@ -12,9 +13,13 @@ import {
 } from '../external/igdb';
 import { setBacklogHidden } from './backlog';
 import { importLibrary, platformFor, platformOf } from './library-import';
-import { setUnresolvedImportHidden } from './unresolved-imports';
+import {
+  resolveUnresolvedImport,
+  setUnresolvedImportHidden,
+} from './unresolved-imports';
 
 vi.mock('../external/igdb', () => ({
+  findIgdbGameById: vi.fn(),
   findIgdbGamesByExternalIds: vi.fn(),
   findIgdbGamesBySource: vi.fn(),
   searchIgdbGames: vi.fn(),
@@ -29,6 +34,7 @@ const mockedById = vi.mocked(findIgdbGamesByExternalIds);
 const mockedSearch = vi.mocked(searchIgdbGames);
 const mockedSource = vi.mocked(igdbSourceFor);
 const mockedBySource = vi.mocked(findIgdbGamesBySource);
+const mockedFindById = vi.mocked(findIgdbGameById);
 
 /** Un risultato di ricerca IGDB, ridotto a ciò che il matcher guarda. */
 function hit(over: {
@@ -916,5 +922,24 @@ describe('importLibrary: la data di aggiunta', () => {
     ]);
 
     expect(await addedAtOf()).toEqual(new Date('2015-01-01Z'));
+  });
+
+  it('uno scarto tiene la data, e risolto a mano la dà alla copia e al gioco', async () => {
+    // Senza, il gioco risolto a mano risultava aggiunto il giorno in cui lo si
+    // collegava, finché un reimport non lo riportava indietro.
+    mockedSearch.mockResolvedValue([]);
+    const acquiredAt = new Date('2020-06-18T10:30:00Z');
+    await importLibrary(account, [
+      { externalId: '1', name: 'Hades', acquiredAt },
+    ]);
+
+    const [scarto] = await unresolvedOf(userId);
+    expect(scarto!.acquiredAt).toEqual(acquiredAt);
+
+    mockedFindById.mockResolvedValue(hit({ igdbId: 4321, name: 'Hades' }));
+    await resolveUnresolvedImport(userId, scarto!.id, 4321);
+
+    expect(await addedAtOf()).toEqual(acquiredAt);
+    expect(await acquiredAtByStore()).toEqual({ gog: acquiredAt });
   });
 });
