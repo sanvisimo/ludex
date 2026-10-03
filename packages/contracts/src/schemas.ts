@@ -85,12 +85,13 @@ export const GameSchema = z.object({
   // titolo, dove altrimenti sembrerebbe un gioco come gli altri. Null finché
   // l'enrichment non è passato.
   gameType: GameTypeSchema.nullable(),
-  // Il voto scelto per precedenza, con la fonte da cui viene. È quello su cui
-  // filtra e ordina lo step 7, e sta anche nelle liste perché la card lo mostra
-  // quando l'utente non ha votato. La precedenza la decide il server: se la
+  // Il voto scelto per precedenza (Metacritic, poi IGDB, mai OpenCritic), con
+  // la fonte da cui viene. È quello su cui filtra e ordina lo step 7, e sta
+  // anche nelle liste perché la card lo mostra quando l'utente non ha votato:
+  // lo stesso numero nei tre posti. La precedenza la decide il server: se la
   // rifacesse il client, due punti del sistema potrebbero rispondere in modo
-  // diverso alla stessa domanda. La fonte viaggia col numero perché OpenCritic
-  // e Metacritic non stanno sulla stessa scala.
+  // diverso alla stessa domanda. La fonte viaggia col numero perché Metacritic
+  // e IGDB non stanno sulla stessa scala.
   criticScore: z.number().nullable(),
   criticScoreSource: ScoreSourceSchema.nullable(),
   createdAt: z.date(),
@@ -514,6 +515,35 @@ export const BacklogFilterOptionsSchema = z.object({
   gameTypes: z.array(GameTypeSchema),
   attributes: z.array(FilterAttributeSchema),
 });
+
+// --- La home (12e) ---
+
+// Le fasce della home, nell'ordine in cui si mostrano. `genre` è una fascia
+// per genere IGDB, tre al giorno: quale genere lo dice `genre` sulla fascia.
+export const homeBandKindValues = [
+  'latest',
+  'topRated',
+  'short',
+  'medium',
+  'long',
+  'genre',
+] as const;
+
+// Un gioco su una card della home. La home è uguale per tutti: l'unica cosa
+// di chi guarda è lo stato, nullo da anonimo o se il gioco non è suo.
+export const HomeGameSchema = GameSchema.extend({
+  status: BacklogStatusSchema.nullable(),
+});
+
+export const HomeBandSchema = z.object({
+  kind: z.enum(homeBandKindValues),
+  // Solo sulle fasce `genre`. Il nome è quello di IGDB, come nei filtri.
+  genre: z.object({ id: z.number().int(), name: z.string() }).nullable(),
+  games: z.array(HomeGameSchema),
+});
+
+export type HomeGame = z.infer<typeof HomeGameSchema>;
+export type HomeBand = z.infer<typeof HomeBandSchema>;
 
 export type Platform = z.infer<typeof PlatformSchema>;
 export type Game = z.infer<typeof GameSchema>;

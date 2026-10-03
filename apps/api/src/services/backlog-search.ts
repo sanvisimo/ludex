@@ -45,7 +45,7 @@ function escapeLike(term: string) {
  * NULL qui vorrebbe dire che il filtro durata non trova nulla finché
  * l'enrichment non è passato su tutta la libreria.
  */
-const haUnaFine = sql`${schema.games.hltbHasSolo} is not false`;
+export const haUnaFine = sql`${schema.games.hltbHasSolo} is not false`;
 
 /**
  * Un `EXISTS` correlato per ogni valore selezionato, tutti in AND.

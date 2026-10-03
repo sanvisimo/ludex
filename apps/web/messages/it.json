@@ -27,11 +27,17 @@
     "en": "English"
   },
   "catalog": {
-    "title": "Ultimi giochi inseriti",
+    "title": "Catalogo",
     "subtitle": "Il catalogo che Ludex conosce finora.",
     "error": "Non riesco a caricare il catalogo.",
-    "empty": "Ancora nessun gioco. Il catalogo si riempie man mano che vengono aggiunti.",
-    "unresolved": "non risolto"
+    "empty": "Ancora nessun gioco. Il catalogo si riempie man mano che vengono aggiunti."
+  },
+  "home": {
+    "latest": "Ultimi aggiunti",
+    "topRated": "Meglio votati",
+    "short": "Brevi · fino a 10 h",
+    "medium": "Medi · da 10 a 35 h",
+    "long": "Lunghi · oltre 35 h"
   },
   "backlog": {
     "title": "Il mio backlog",

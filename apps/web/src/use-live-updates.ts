@@ -51,7 +51,7 @@ export function useLiveUpdates() {
 
     const gamesChanged = (gameIds?: string[]) => {
       invalidate(api.backlog.key());
-      invalidate(api.games.latest.key());
+      invalidate(api.games.home.key());
       // Senza id vuol dire «tutte le schede aperte»: la riconnessione.
       if (!gameIds) invalidate(api.games.byId.key());
       else

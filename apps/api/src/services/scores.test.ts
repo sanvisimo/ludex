@@ -26,18 +26,30 @@ describe('saveScores', () => {
       criticScoreSource: 'igdb',
     });
 
-    // Metacritic scavalca IGDB, e OpenCritic scavalca Metacritic: conta
-    // l'ordine, non chi ha scritto per ultimo.
+    // Metacritic scavalca IGDB: conta l'ordine, non chi ha scritto per ultimo.
     await saveScores(game.id, 'metacritic', [{ score: 90 }]);
     expect(await gameRow(game.id)).toMatchObject({
       criticScore: 90,
       criticScoreSource: 'metacritic',
     });
 
+    // OpenCritic non entra mai: su una card il suo voto vorrebbe accanto
+    // nome e link, e il numero denormalizzato è quello che le card mostrano.
     await saveScores(game.id, 'opencritic', [{ score: 89.5 }]);
     expect(await gameRow(game.id)).toMatchObject({
-      criticScore: 89.5,
-      criticScoreSource: 'opencritic',
+      criticScore: 90,
+      criticScoreSource: 'metacritic',
+    });
+  });
+
+  it('con il solo OpenCritic il voto denormalizzato resta vuoto', async () => {
+    const game = await createGame();
+
+    await saveScores(game.id, 'opencritic', [{ score: 91, reviewCount: 120 }]);
+
+    expect(await gameRow(game.id)).toMatchObject({
+      criticScore: null,
+      criticScoreSource: null,
     });
   });
 

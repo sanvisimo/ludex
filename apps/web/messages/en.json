@@ -27,11 +27,17 @@
     "en": "English"
   },
   "catalog": {
-    "title": "Recently added games",
+    "title": "Catalogue",
     "subtitle": "The catalogue Ludex knows so far.",
     "error": "I can't load the catalogue.",
-    "empty": "No games yet. The catalogue fills up as games get added.",
-    "unresolved": "unresolved"
+    "empty": "No games yet. The catalogue fills up as games get added."
+  },
+  "home": {
+    "latest": "Recently added",
+    "topRated": "Top rated",
+    "short": "Short · up to 10 h",
+    "medium": "Medium · 10 to 35 h",
+    "long": "Long · over 35 h"
   },
   "backlog": {
     "title": "My backlog",

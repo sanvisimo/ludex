@@ -18,24 +18,24 @@ type Transaction = Parameters<Parameters<Db['transaction']>[0]>[0];
 type Executor = Db | Transaction;
 
 /**
- * Chi vince quando lo stesso gioco ha più voti.
+ * Chi vince quando lo stesso gioco ha più voti: **Metacritic, poi IGDB**.
+ * OpenCritic non c'è.
  *
- * OpenCritic per primo perché è l'unico dei tre che dice **come** aggrega:
- * media dei critici di punta, con la percentuale di chi lo consiglia accanto.
- * Metacritic secondo, che sul catalogo vecchio arriva dove OpenCritic non
- * arriva — è nato nel 2015. IGDB per ultimo: c'è quasi sempre, ma è
- * un'aggregazione di cui non conosciamo il perimetro.
+ * Non per la qualità del suo voto. Le condizioni della chiave OpenCritic
+ * vogliono, accanto al voto complessivo, il loro nome e un link alla pagina
+ * del gioco (vedi apps/api/CLAUDE.md), e questo numero finisce sulle card del
+ * backlog e della home, dove non c'è posto per nessuno dei due. Finché
+ * OpenCritic vinceva, la card doveva nasconderlo, e filtro e ordinamento
+ * lavoravano su un numero che non si vedeva. La pagina del gioco mostra
+ * comunque tutti e tre, OpenCritic col suo nome e il suo link.
  *
- * Non è un ordine di qualità dei voti, è un ordine di **trasparenza su come
- * sono fatti**. E vive qui, in un punto solo: la scheda del gioco mostra tutti
- * e tre i numeri, questa precedenza decide soltanto quale finisce nella colonna
- * su cui si filtra.
+ * Metacritic prima di IGDB perché dice come aggrega e quante recensioni ci
+ * sono dietro; IGDB c'è quasi sempre, ma è un'aggregazione di cui non
+ * conosciamo il perimetro. La precedenza vive qui, in un punto solo: una
+ * migration che la cambia deve ricalcolare `games.critic_score` (vedi la
+ * 0028).
  */
-export const CRITIC_PRECEDENCE: readonly ScoreSource[] = [
-  'opencritic',
-  'metacritic',
-  'igdb',
-];
+export const CRITIC_PRECEDENCE: readonly ScoreSource[] = ['metacritic', 'igdb'];
 
 /**
  * Un punteggio da scrivere. `platformSlug` nullo è il voto complessivo del

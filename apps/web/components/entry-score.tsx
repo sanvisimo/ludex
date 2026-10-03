@@ -28,28 +28,29 @@ export function EntryScore({
 
 /**
  * Il voto della critica, con la fonte nel nome e al passaggio del mouse
- * (`title`): senza fonte il numero non si legge, perché OpenCritic e
- * Metacritic non stanno sulla stessa scala. È quello scelto dal server per
- * precedenza, lo stesso su cui filtra e ordina il pannello.
+ * (`title`): senza fonte il numero non si legge, perché Metacritic e IGDB non
+ * stanno sulla stessa scala. È quello scelto dal server per precedenza, lo
+ * stesso su cui filtra e ordina il pannello. OpenCritic non è mai fra le fonti
+ * possibili: vuole accanto al voto il suo nome e un link, e su una card non
+ * c'è posto (`CRITIC_PRECEDENCE` in `apps/api/src/services/scores.ts`).
  *
  * `title` e non il nostro `Tooltip`, che vuole un elemento che prende il
  * focus: un numero in sola lettura non deve essere una fermata del Tab, e ce
  * ne sarebbero 120 per pagina.
+ *
+ * `compact` è la misura dell'angolo di una copertina, quella di `CornerLabel`.
  */
-function CriticValue({
+export function CriticValue({
   score,
   source,
+  compact = false,
 }: {
   score: Game['criticScore'];
   source: Game['criticScoreSource'];
+  compact?: boolean;
 }) {
   const t = useTranslations('critic');
   if (score === null || source === null) return null;
-  // OpenCritic vuole, accanto al voto complessivo, il suo nome e un link alla
-  // pagina del gioco, e su una card non c'è posto per nessuno dei due. Per ora
-  // non lo mostriamo: sulla pagina del gioco c'è, con tutto. Il filtro e
-  // l'ordinamento per voto della critica restano com'erano.
-  if (source === 'opencritic') return null;
 
   const value = Math.round(score);
   const label = t('scoreOf', { source: t(source), value });
@@ -64,8 +65,17 @@ function CriticValue({
       // `title` Tamagui lo passa al DOM ma non lo dichiara nei tipi.
       {...({ title: label } as object)}
     >
-      <Award size={14} color="$color11" />
-      <Text fontSize={14} lineHeight={20} color="$color11" aria-hidden>
+      <Award
+        size={compact ? 12 : 14}
+        color={compact ? '$color12' : '$color11'}
+      />
+      <Text
+        fontSize={compact ? 11 : 14}
+        lineHeight={compact ? 16 : 20}
+        fontWeight={compact ? '600' : undefined}
+        color={compact ? '$color12' : '$color11'}
+        aria-hidden
+      >
         {value}
       </Text>
     </XStack>

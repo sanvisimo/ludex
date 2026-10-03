@@ -104,7 +104,9 @@ export const games = pgTable(
     // piattaforma. Questi due sono la **denormalizzazione** di quella tabella:
     // il miglior voto complessivo che abbiamo per questo gioco, con la fonte da
     // cui viene, ricalcolati in coda a ogni enrichment secondo una precedenza
-    // scritta in un punto solo (OpenCritic → Metacritic → IGDB).
+    // scritta in un punto solo (Metacritic → IGDB). OpenCritic non entra: è
+    // il numero che mostrano le card, e il suo voto vorrebbe accanto nome e
+    // link, che su una card non stanno (12e, migration 0028).
     //
     // Esistono per lo step 7: il filtro "sopra 80" e l'ordinamento per voto
     // critica leggono una colonna indicizzabile invece di infilare tre
@@ -114,8 +116,8 @@ export const games = pgTable(
     // non in un passo che si può dimenticare.
     //
     // `criticScoreSource` non è decorazione: senza, la scheda mostrerebbe un
-    // numero senza poter dire di chi è, e OpenCritic e Metacritic non stanno
-    // sulla stessa scala.
+    // numero senza poter dire di chi è, e Metacritic e IGDB non stanno sulla
+    // stessa scala.
     criticScore: real('critic_score'),
     criticScoreSource: scoreSource('critic_score_source'),
 

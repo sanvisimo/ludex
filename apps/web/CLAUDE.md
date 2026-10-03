@@ -81,6 +81,18 @@ usa:
 - **`takeLinkClick`**: la regola dei modificatori (nuova scheda, tasto
   centrale) per ogni `<a href>` che naviga nell'app, `ButtonLink` compreso.
 
+**La home** (`/`, 12e) è il catalogo a fasce, **uguale per tutti**: da
+loggati cambia solo l'etichetta dello stato sulle card dei giochi tuoi, e i
+tuoi nascosti ci sono. Le fasce le sceglie il server (`games.home`,
+`apps/api/src/services/home.ts`), comprese la rotazione del giorno e i tre
+generi; la pagina le mostra nell'ordine in cui arrivano e non ne mostra una
+vuota. I pezzi sono in `apps/web/components/home-band.tsx`. La riga che
+scorre con le frecce è `ScrollRow` (`components/scroll-row.tsx`), la stessa
+dei giochi legati nella pagina del gioco; nella home le frecce ci sono solo
+da `$md` (`arrowsFromMd`). Il voto sulle card, qui come nel backlog, è
+`criticScore`, che **non è mai OpenCritic** (vedi
+[apps/api/CLAUDE.md](../api/CLAUDE.md)).
+
 **La pagina del gioco** (`/games/$id`) ha i suoi pezzi in
 `apps/web/components/game-page.tsx`: la hero, che `Page` mette sopra il suo
 contenitore a tutta larghezza, la gallery, durata e critica col dialog
