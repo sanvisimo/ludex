@@ -209,3 +209,5 @@ scarto con la data → risolto a mano → copia e gioco con la data del negozio)
 che senza la correzione fallisce. `pnpm --filter api test` 374 verdi.
 
 Golazo, già risolto, la prende al prossimo reimport di Amazon.
+
+**Verificato dall'utente il 03/10/2026 sull'app vera: funziona.**
