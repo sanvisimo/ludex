@@ -159,7 +159,7 @@ export function AddGameDialog({
     onSuccess: async (entry) => {
       await queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
       await queryClient.invalidateQueries({ queryKey: api.games.home.key() });
-      await queryClient.invalidateQueries({ queryKey: api.games.byId.key() });
+      await queryClient.invalidateQueries({ queryKey: api.games.bySlug.key() });
       toast.success(t('added', { name: entry.game.name }));
       setOpen(false);
       reset();

@@ -132,6 +132,13 @@ export {
   SelectValue,
   type SelectProps,
 } from './components/select';
+export {
+  SearchField,
+  SearchFieldGroup,
+  SearchFieldItem,
+  SearchFieldMessage,
+  type SearchFieldProps,
+} from './components/search-field';
 export { Sheet, type SheetProps } from './components/sheet';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
 export { Spinner, type SpinnerProps } from './components/spinner';

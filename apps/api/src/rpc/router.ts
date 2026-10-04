@@ -19,10 +19,15 @@ import {
   createGame,
   findGameById,
   findGameDetailById,
+  findGameIdBySlug,
   resolveGameFromIgdb,
   searchGames,
 } from '../services/games';
 import { listHomeBands } from '../services/home';
+import {
+  searchCatalog,
+  searchIgdbNotInCatalog,
+} from '../services/catalog-search';
 import {
   findExistingPlatformSlugs,
   listPlatforms,
@@ -80,18 +85,33 @@ export const router = os.router({
       .use(maybeAuthed)
       .handler(({ context }) => listHomeBands(context.user?.id ?? null)),
 
-    byId: os.games.byId.use(maybeAuthed).handler(async ({ input, context }) => {
-      const game = await findGameDetailById(input.id, context.user?.id ?? null);
-      if (!game)
-        throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
+    bySlug: os.games.bySlug
+      .use(maybeAuthed)
+      .handler(async ({ input, context }) => {
+        const id = await findGameIdBySlug(input.slug);
+        const game = id
+          ? await findGameDetailById(id, context.user?.id ?? null)
+          : null;
+        if (!game)
+          throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
 
-      // Da sloggati la scheda esiste comunque, semplicemente senza stato personale.
-      const entry = context.user
-        ? ((await findEntryByGame(context.user.id, game.id)) ?? null)
-        : null;
+        // Da sloggati la scheda esiste comunque, semplicemente senza stato personale.
+        const entry = context.user
+          ? ((await findEntryByGame(context.user.id, game.id)) ?? null)
+          : null;
 
-      return { game, entry };
-    }),
+        return { game, entry };
+      }),
+
+    find: os.games.find
+      .use(maybeAuthed)
+      .handler(({ input, context }) =>
+        searchCatalog(input, context.user?.id ?? null),
+      ),
+
+    findOnIgdb: os.games.findOnIgdb
+      .use(authed)
+      .handler(({ input }) => searchIgdbNotInCatalog(input.query)),
 
     create: os.games.create.use(authed).handler(async ({ input }) => {
       const game = await createGame(input.name);

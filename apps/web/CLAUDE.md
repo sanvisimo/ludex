@@ -94,13 +94,30 @@ da `$md` (`arrowsFromMd`). Il voto sulle card, qui come nel backlog, è
 `criticScore`, che **non è mai OpenCritic** (vedi
 [apps/api/CLAUDE.md](../api/CLAUDE.md)).
 
-**La pagina del gioco** (`/games/$id`) ha i suoi pezzi in
+**La ricerca globale** (12f) cerca nel catalogo intero, non nel backlog:
+prima i giochi di Ludex (`games.find`, pubblica, con lo stato di chi guarda),
+poi, **solo da loggati**, quelli IGDB che Ludex non ha ancora
+(`games.findOnIgdb`, che consuma il rate limit delle nostre credenziali). Un
+risultato IGDB diventa una riga di `games` **al clic** (`games.fromIgdb`), mai
+mentre si cerca: le righe di `games` non si cancellano. I pezzi sono in
+`components/game-search.tsx`; il campo con la tendina è `SearchField` di
+`@repo/ui`. La tendina ha dieci posti: prima i giochi di Ludex, e IGDB
+riempie quelli che restano, chiesto dopo e solo se ne restano. In barra il
+campo sta da `$md`; sotto c'è un'icona che porta a `/cerca`, la pagina con tutti i risultati: griglia con la card della home, a
+pagine da 30, testo e pagina nell'URL come il backlog. Su `/cerca` la barra non
+ha il campo, perché la pagina ha il suo. La scrittura aspetta 300 ms prima di
+chiedere: IGDB regge quattro richieste al secondo per tutto il server.
+
+**La pagina del gioco** (`/games/$slug`, lo slug di `games`, vedi
+[modello-dati](../../docs/modello-dati.md)) ha i suoi pezzi in
 `apps/web/components/game-page.tsx`: la hero, che `Page` mette sopra il suo
 contenitore a tutta larghezza, la gallery, durata e critica col dialog
 «Dettagli», il blocco del backlog, remake e simili. Le colonne si affiancano
 da `$lg`; sotto, la laterale viene **prima** nell'HTML — durata, critica e
 stato sono ciò che serve a decidere — e `row-reverse` la rimette a destra sul
-desktop.
+desktop. Remake e simili si aprono con la regola della ricerca: in catalogo
+sono un link, fuori catalogo da loggati un bottone che li crea
+(`useOpenIgdbHit`), da ospiti niente; attenuati se non sono tuoi.
 
 **La pagina account** (`/account`) è un layout, `_app.account.tsx`, con quattro
 sezioni che sono rotte figlie: `profilo`, `librerie`, `da-sistemare`, `nascosti`.

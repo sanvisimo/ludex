@@ -159,7 +159,7 @@ export function EditEntryDialog({
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),
-        queryClient.invalidateQueries({ queryKey: api.games.byId.key() }),
+        queryClient.invalidateQueries({ queryKey: api.games.bySlug.key() }),
         // Il vocabolario può essere cresciuto: i suggerimenti devono saperlo.
         queryClient.invalidateQueries({ queryKey: api.tags.list.key() }),
       ]);

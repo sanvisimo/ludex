@@ -65,6 +65,9 @@ export const PlatformSchema = z.object({
 
 export const GameSchema = z.object({
   id: z.uuid(),
+  // Il nostro slug, quello dei link (`/games/hollow-knight`). Nasce col gioco
+  // e non cambia più.
+  slug: z.string(),
   // Un gioco non ancora risolto su IGDB è legittimo: nessun consumatore può dare
   // per scontato che i metadata siano popolati.
   igdbId: z.number().int().nullable(),
@@ -155,11 +158,12 @@ export const RelatedGameSchema = z.object({
   igdbId: z.number().int(),
   name: z.string(),
   coverImageId: z.string().nullable(),
-  // Il nostro id, se il gioco è in `games`.
+  // Il nostro id e il nostro slug, se il gioco è in `games`.
   gameId: z.uuid().nullable(),
-  // Se chi guarda ce l'ha nel backlog. È ciò che lo rende cliccabile: la pagina
-  // apre solo i giochi tuoi (decisione del 12d), gli altri restano copertina e
-  // nome finché la wishlist non darà un posto dove metterli.
+  slug: z.string().nullable(),
+  // Se chi guarda ce l'ha nel backlog: è ciò che lo attenua sulla pagina. Non
+  // decide più se si apre (12f): si apre se è in catalogo, e da loggati anche
+  // se non c'è ancora, come un risultato IGDB della ricerca.
   owned: z.boolean(),
   // Lo stato che ha nel tuo backlog, se ce l'ha: è ciò che dice l'etichetta
   // sulla copertina.
@@ -195,7 +199,9 @@ export const GameDetailSchema = GameSchema.extend({
   publishers: z.array(z.string()).nullable(),
   // Il gioco a cui un DLC è attaccato, solo se è in `games`: di un padre che
   // non abbiamo sappiamo l'id IGDB e nient'altro, nemmeno il nome.
-  parent: z.object({ id: z.uuid(), name: z.string() }).nullable(),
+  parent: z
+    .object({ id: z.uuid(), slug: z.string(), name: z.string() })
+    .nullable(),
   // Remake e remaster, poi i simili, ciascuno nell'ordine di IGDB.
   related: z.array(RelatedGameSchema),
   // La pagina del gioco su ciascuna fonte, per il link accanto al suo dato.

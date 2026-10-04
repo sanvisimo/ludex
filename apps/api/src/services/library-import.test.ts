@@ -530,7 +530,12 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
 
   it('risolve per concept la voce che lo porta, senza cercare per nome', async () => {
     mockedBySource.mockResolvedValue(
-      new Map([['10000886', { igdbId: 1234, name: 'Horizon Forbidden West' }]]),
+      new Map([
+        [
+          '10000886',
+          { igdbId: 1234, name: 'Horizon Forbidden West', releaseYear: null },
+        ],
+      ]),
     );
 
     const report = await importLibrary(account, [
@@ -625,7 +630,9 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
     // portano allo stesso gioco. Il gioco è uno, le copie due: il diritto
     // digitale non fa sparire il disco, dice solo che puoi avviarlo senza.
     mockedBySource.mockResolvedValue(
-      new Map([['10000333', { igdbId: 9, name: 'Elden Ring' }]]),
+      new Map([
+        ['10000333', { igdbId: 9, name: 'Elden Ring', releaseYear: null }],
+      ]),
     );
     const lookup = { source: 36, uid: '10000333' };
 
@@ -893,8 +900,8 @@ describe('importLibrary: la data di aggiunta', () => {
     // aggancia, è la regola sulle etichette.
     mockedById.mockResolvedValue(
       new Map([
-        ['1', { igdbId: 4321, name: 'Hades' }],
-        ['2', { igdbId: 4321, name: 'Hades' }],
+        ['1', { igdbId: 4321, name: 'Hades', releaseYear: null }],
+        ['2', { igdbId: 4321, name: 'Hades', releaseYear: null }],
       ]),
     );
     await importLibrary(account, [

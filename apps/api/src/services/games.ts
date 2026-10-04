@@ -10,6 +10,7 @@ import {
 import { chunk } from '../lib/chunk';
 import { enqueueEnrichment } from '../queue/enrichment';
 import { reopenSourcesForNewExternalIds } from './enrichment';
+import { pickSlugs, retryOnSlugConflict } from './game-slug';
 
 // Postgres regge 65535 parametri per istruzione: con librerie da qualche
 // migliaio di voci un colpo solo li sfonderebbe.
@@ -27,6 +28,7 @@ const WRITE_CHUNK = 500;
  */
 export const gameColumns = {
   id: true,
+  slug: true,
   igdbId: true,
   name: true,
   coverImageId: true,
@@ -39,16 +41,25 @@ export const gameColumns = {
   createdAt: true,
 } as const;
 
-// Le stesse colonne nella forma che vuole `.returning()`. Derivata da
+// Le stesse colonne nella forma che vuole `.returning()`, e `.select()`. Derivata da
 // `gameColumns` e non riscritta a mano: erano due elenchi gemelli in tre punti,
 // e una colonna aggiunta a uno solo sarebbe passata inosservata fino a un errore
 // di validazione del contratto.
-const gameReturning = Object.fromEntries(
+export const gameReturning = Object.fromEntries(
   Object.keys(gameColumns).map((name) => [
     name,
     schema.games[name as keyof typeof gameColumns],
   ]),
 ) as { [K in keyof typeof gameColumns]: (typeof schema.games)[K] };
+
+/** L'id del gioco che ha questo slug, o null. */
+export async function findGameIdBySlug(slug: string) {
+  const game = await db.query.games.findFirst({
+    columns: { id: true },
+    where: eq(schema.games.slug, slug),
+  });
+  return game?.id ?? null;
+}
 
 export function findGameById(id: string) {
   return db.query.games.findFirst({
@@ -120,7 +131,7 @@ export async function findGameDetailById(
     parentIgdbId === null
       ? null
       : ((await db.query.games.findFirst({
-          columns: { id: true, name: true },
+          columns: { id: true, slug: true, name: true },
           where: eq(schema.games.igdbId, parentIgdbId),
         })) ?? null);
 
@@ -159,6 +170,7 @@ async function findRelatedGames(gameId: string, viewerId: string | null) {
       name: schema.gameRelated.name,
       coverImageId: schema.gameRelated.coverImageId,
       gameId: schema.games.id,
+      slug: schema.games.slug,
       status: schema.backlog.status,
     })
     .from(schema.gameRelated)
@@ -211,12 +223,15 @@ export function sourceLinks(refs: {
  * Crea un gioco non risolto, con il solo titolo: `igdbId` resta null finché non
  * passa l'enrichment dello step 3.
  */
-export async function createGame(name: string) {
-  const [row] = await db
-    .insert(schema.games)
-    .values({ name })
-    .returning(gameReturning);
-  return row;
+export function createGame(name: string) {
+  return retryOnSlugConflict(async () => {
+    const [slug] = await pickSlugs([{ name }]);
+    const [row] = await db
+      .insert(schema.games)
+      .values({ name, slug: slug! })
+      .returning(gameReturning);
+    return row;
+  });
 }
 
 const IGDB_URL = /^(?:https?:\/\/)?(?:www\.)?igdb\.com\/games\/([a-z0-9-]+)/i;
@@ -290,12 +305,16 @@ export async function resolveGameFromIgdb(igdbId: number) {
   if (!hit) return null;
 
   // `onConflictDoNothing` copre la corsa fra due utenti che importano lo stesso
-  // gioco insieme: chi perde non fallisce, rilegge la riga dell'altro.
-  const [inserted] = await db
-    .insert(schema.games)
-    .values({ igdbId: hit.igdbId, name: hit.name })
-    .onConflictDoNothing({ target: schema.games.igdbId })
-    .returning(gameReturning);
+  // gioco insieme: chi perde non fallisce, rilegge la riga dell'altro. Quella
+  // sullo slug, fra due giochi diversi con lo stesso nome, la copre il retry.
+  const [inserted] = await retryOnSlugConflict(async () => {
+    const [slug] = await pickSlugs([hit]);
+    return db
+      .insert(schema.games)
+      .values({ igdbId: hit.igdbId, name: hit.name, slug: slug! })
+      .onConflictDoNothing({ target: schema.games.igdbId })
+      .returning(gameReturning);
+  });
 
   // Solo chi ha davvero creato la riga accoda: se la corsa è stata persa, il
   // job lo ha gia' messo in coda l'altro. E l'accodamento sta qui, non nella
@@ -350,6 +369,8 @@ export type ExternalGameLink = {
   externalId: string;
   igdbId: number;
   name: string;
+  // Serve solo allo slug, se il gioco nasce qui e il suo nome è già preso.
+  releaseYear: number | null;
 };
 
 /**
@@ -384,12 +405,40 @@ export async function linkExternalGames(
 
   const gameIdByIgdbId = new Map<number, string>();
 
+  const readExisting = async (igdbIds: number[]) => {
+    if (igdbIds.length === 0) return;
+    const esistenti = await db
+      .select({ id: schema.games.id, igdbId: schema.games.igdbId })
+      .from(schema.games)
+      .where(inArray(schema.games.igdbId, igdbIds));
+    for (const row of esistenti) {
+      if (row.igdbId !== null) gameIdByIgdbId.set(row.igdbId, row.id);
+    }
+  };
+
   for (const page of chunk([...perIgdbId.values()], WRITE_CHUNK)) {
-    const inserted = await db
-      .insert(schema.games)
-      .values(page.map((link) => ({ igdbId: link.igdbId, name: link.name })))
-      .onConflictDoNothing({ target: schema.games.igdbId })
-      .returning({ id: schema.games.id, igdbId: schema.games.igdbId });
+    // Prima quelli che ci sono già: lo slug va scelto solo per chi nasce, o un
+    // gioco già presente occuperebbe per niente il nome di un omonimo nuovo.
+    // Il tutto si ripete se la corsa sullo slug va persa.
+    const inserted = await retryOnSlugConflict(async () => {
+      await readExisting(page.map((link) => link.igdbId));
+
+      const nuovi = page.filter((link) => !gameIdByIgdbId.has(link.igdbId));
+      if (nuovi.length === 0) return [];
+
+      const slugs = await pickSlugs(nuovi);
+      return db
+        .insert(schema.games)
+        .values(
+          nuovi.map((link, i) => ({
+            igdbId: link.igdbId,
+            name: link.name,
+            slug: slugs[i]!,
+          })),
+        )
+        .onConflictDoNothing({ target: schema.games.igdbId })
+        .returning({ id: schema.games.id, igdbId: schema.games.igdbId });
+    });
 
     for (const row of inserted) {
       if (row.igdbId === null) continue;
@@ -397,20 +446,13 @@ export async function linkExternalGames(
       createdGameIds.push(row.id);
     }
 
-    // Quelle che c'erano già non tornano dal RETURNING.
-    const mancanti = page
-      .map((link) => link.igdbId)
-      .filter((igdbId) => !gameIdByIgdbId.has(igdbId));
-    if (mancanti.length === 0) continue;
-
-    const esistenti = await db
-      .select({ id: schema.games.id, igdbId: schema.games.igdbId })
-      .from(schema.games)
-      .where(inArray(schema.games.igdbId, mancanti));
-
-    for (const row of esistenti) {
-      if (row.igdbId !== null) gameIdByIgdbId.set(row.igdbId, row.id);
-    }
+    // Quelli che un altro import ha creato fra la lettura e la scrittura non
+    // tornano dal RETURNING.
+    await readExisting(
+      page
+        .map((link) => link.igdbId)
+        .filter((igdbId) => !gameIdByIgdbId.has(igdbId)),
+    );
   }
 
   const mappature = links

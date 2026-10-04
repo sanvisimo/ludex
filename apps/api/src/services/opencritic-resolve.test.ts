@@ -94,7 +94,7 @@ describe('resolveOpenCriticIds', () => {
     const slugs = Array.from({ length: 501 }, (_, i) => `gioco-${i}`);
     await db
       .insert(schema.games)
-      .values(slugs.map((slug) => ({ name: slug, igdbSlug: slug })));
+      .values(slugs.map((slug) => ({ name: slug, slug, igdbSlug: slug })));
     mockedWikidata.mockResolvedValue(new Map());
 
     const report = await resolveOpenCriticIds();

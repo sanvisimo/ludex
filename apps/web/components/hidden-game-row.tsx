@@ -33,7 +33,7 @@ export function HiddenGameRow({ entry }: { entry: BacklogEntry }) {
       }
     >
       <XStack items="center" gap={8} flexWrap="wrap">
-        <Link to="/games/$id" params={{ id: entry.game.id }}>
+        <Link to="/games/$slug" params={{ slug: entry.game.slug }}>
           <Text fontWeight="500" color="$color12">
             {entry.game.name}
           </Text>

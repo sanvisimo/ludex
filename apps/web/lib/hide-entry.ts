@@ -31,7 +31,7 @@ export function useSetEntryHidden() {
         queryClient.invalidateQueries({
           queryKey: api.backlog.filterOptions.key(),
         }),
-        queryClient.invalidateQueries({ queryKey: api.games.byId.key() }),
+        queryClient.invalidateQueries({ queryKey: api.games.bySlug.key() }),
       ]);
       toast.success(input.hidden ? t('hiddenToast') : t('unhiddenToast'), {
         action: {

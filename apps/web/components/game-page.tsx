@@ -34,6 +34,7 @@ import { CriticScores } from '@/components/critic-scores';
 import { Muted, Strong } from '@/components/detail-text';
 import { EntryTags } from '@/components/entry-tags';
 import { GameCover } from '@/components/game-cover';
+import { useOpenIgdbHit } from '@/components/game-search';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { HltbTimes } from '@/components/hltb-times';
 import { RatingValue } from '@/components/rating-value';
@@ -44,6 +45,7 @@ import { igdbImageUrl } from '@/lib/igdb-image';
 import { platformIconUrl } from '@/lib/platform-icons';
 import { useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
+import { useSession } from '@/src/use-session';
 
 /**
  * I pezzi della pagina del gioco (12d). La struttura è quella approvata sul
@@ -237,8 +239,8 @@ export function GameHero({ game }: { game: GameDetail }) {
                   name: game.parent.name,
                   link: (chunks) => (
                     <Link
-                      to="/games/$id"
-                      params={{ id: game.parent!.id }}
+                      to="/games/$slug"
+                      params={{ slug: game.parent!.slug }}
                       style={{ color: 'inherit' }}
                     >
                       {chunks}
@@ -627,9 +629,11 @@ export function BacklogPanel({
 // --- remake e simili ---
 
 /**
- * Una fila di giochi legati che scorre di lato. Quelli che hai aprono la loro
- * pagina; gli altri sono copertina e nome, attenuati e col bordo tratteggiato
- * come nel wireframe, finché la wishlist (step 15) non darà loro un posto.
+ * Una fila di giochi legati che scorre di lato. Quelli che non hai sono
+ * attenuati e col bordo tratteggiato, come nel wireframe. Si aprono con la
+ * regola della ricerca (12f): un gioco già in catalogo è un link alla sua
+ * pagina; uno che non c'è ancora, da loggati, al clic diventa una riga di
+ * `games` e si apre; da ospiti resta copertina e nome.
  * Fila e frecce sono `ScrollRow`, la stessa delle fasce della home.
  */
 export function RelatedRow({
@@ -641,6 +645,8 @@ export function RelatedRow({
 }) {
   const t = useTranslations('game');
   const statusLabels = useStatusLabels();
+  const { data: session } = useSession();
+  const openIgdb = useOpenIgdbHit();
 
   if (games.length === 0) return null;
 
@@ -684,24 +690,53 @@ export function RelatedRow({
               lineHeight={18}
               color="$color12"
               numberOfLines={2}
+              // Dentro il bottone il browser centrerebbe.
+              text="left"
             >
               {game.name}
             </Text>
           </YStack>
         );
 
-        return game.owned && game.gameId ? (
-          <Link
-            key={`${game.kind}-${game.igdbId}`}
-            to="/games/$id"
-            params={{ id: game.gameId }}
-            style={{ color: 'inherit', textDecoration: 'none' }}
-          >
-            {card}
-          </Link>
-        ) : (
-          <YStack key={`${game.kind}-${game.igdbId}`}>{card}</YStack>
-        );
+        const key = `${game.kind}-${game.igdbId}`;
+
+        if (game.slug)
+          return (
+            <Link
+              key={key}
+              to="/games/$slug"
+              params={{ slug: game.slug }}
+              style={{ color: 'inherit', textDecoration: 'none' }}
+            >
+              {card}
+            </Link>
+          );
+
+        // Un bottone e non un link: prima di aprirlo, la riga va creata.
+        if (session)
+          return (
+            <YStack
+              key={key}
+              render="button"
+              p={0}
+              bg="transparent"
+              borderWidth={0}
+              items="stretch"
+              cursor="pointer"
+              focusVisibleStyle={{
+                outlineColor: '$outlineColor',
+                outlineStyle: 'solid',
+                outlineWidth: 2,
+                rounded: 8,
+              }}
+              {...({ type: 'button', disabled: openIgdb.isPending } as object)}
+              onPress={() => openIgdb.mutate(game.igdbId)}
+            >
+              {card}
+            </YStack>
+          );
+
+        return <YStack key={key}>{card}</YStack>;
       })}
     </ScrollRow>
   );

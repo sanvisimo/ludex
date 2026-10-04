@@ -179,8 +179,8 @@ function GameLink({
 }) {
   return (
     <Link
-      to="/games/$id"
-      params={{ id: entry.game.id }}
+      to="/games/$slug"
+      params={{ slug: entry.game.slug }}
       // Un blocco e non un link in riga: dentro un `<a>` inline il testo non
       // si tronca, e nella compatta il titolo passava sopra le colonne.
       style={{

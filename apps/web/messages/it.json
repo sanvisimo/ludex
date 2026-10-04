@@ -40,6 +40,22 @@
     "medium": "Medi · da 10 a 35 h",
     "long": "Lunghi · oltre 35 h"
   },
+  "search": {
+    "title": "Cerca",
+    "placeholder": "Cerca un gioco",
+    "clear": "Svuota",
+    "open": "Cerca",
+    "inLudex": "In Ludex",
+    "onIgdb": "Su IGDB",
+    "searching": "Cerco…",
+    "noResults": "Nessun gioco trovato.",
+    "allResults": "Tutti i risultati per «{query}»",
+    "hint": "Scrivi almeno due lettere del titolo.",
+    "count": "{count, plural, one {# gioco} other {# giochi}}",
+    "igdbSubtitle": "Giochi che Ludex non ha ancora: aprirne uno lo aggiunge al catalogo.",
+    "openFailed": "Non sono riuscito ad aprire il gioco.",
+    "error": "La ricerca non ha risposto."
+  },
   "backlog": {
     "title": "Il mio backlog",
     "count": "{count, plural, one {# gioco} other {# giochi}}",

@@ -55,6 +55,13 @@ di Vite fallisce (`inline-style-prefixer`) e la pagina risponde 500: lo
 con la divisione per piattaforma — `spinner.tsx` per il web, `spinner.native.tsx`
 con `Animated` per React Native, che Metro sceglie da solo.
 
+**`SearchField` non è il `Combobox`.** Il Combobox sceglie un valore fra voci
+che ha già e le filtra lui; il SearchField è una ricerca: il testo è il
+valore, le voci (in gruppi, con dentro quello che vuole l'app) le porta chi
+chiama, e Invio senza una voce evidenziata cerca invece di scegliere. Il
+pattern ARIA è lo stesso, col fuoco che resta nel campo. La prop delle voci è
+`options` e non `items`, che in Tamagui è l'allineamento.
+
 **`Tabs` e `ToggleGroup` non sono la stessa cosa.** I tab sono le sezioni di una
 stessa lista — i nascosti per tipo: testo sopra una linea, sottolineatura
 sull'acceso, scorrono senza barra dove non stanno. Il `ToggleGroup` è la scelta

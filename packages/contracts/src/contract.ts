@@ -11,6 +11,7 @@ import {
   GameSchema,
   HiddenKindSchema,
   HomeBandSchema,
+  HomeGameSchema,
   IgdbSearchHitSchema,
   LinkableStoreSchema,
   LiveEventSchema,
@@ -43,14 +44,37 @@ export const contract = {
     // gioco porta lo stato che ha nel tuo backlog, e niente altro di tuo.
     home: oc.output(z.array(HomeBandSchema)),
 
-    // Scheda gioco. Il gioco si vede sempre; `entry` è popolato solo se chi
-    // guarda è autenticato e ha quel gioco nel backlog. È la pagina auth/no-auth.
-    byId: oc.input(z.object({ id: z.uuid() })).output(
+    // Scheda gioco, per slug: è ciò che sta nel link. Il gioco si vede sempre;
+    // `entry` è popolato solo se chi guarda è autenticato e ha quel gioco nel
+    // backlog. È la pagina auth/no-auth.
+    bySlug: oc.input(z.object({ slug: z.string().min(1).max(200) })).output(
       z.object({
         game: GameDetailSchema,
         entry: BacklogEntrySchema.nullable(),
       }),
     ),
+
+    // La ricerca globale (12f), sul catalogo intero e per titolo. Pubblica come
+    // la home; da loggati ogni gioco porta lo stato che ha nel tuo backlog.
+    // `total` è il conteggio prima di limit/offset, come nel backlog.
+    find: oc
+      .input(
+        z.object({
+          q: z.string().trim().min(2).max(100),
+          limit: z.number().int().min(1).max(60).default(24),
+          offset: z.number().int().min(0).default(0),
+        }),
+      )
+      .output(
+        z.object({ games: z.array(HomeGameSchema), total: z.number().int() }),
+      ),
+
+    // La seconda metà della ricerca globale: i giochi IGDB che Ludex non ha
+    // ancora. Autenticata come `search`, per il rate limit. Non scrive: la
+    // riga nasce con `fromIgdb`, quando l'utente sceglie un risultato.
+    findOnIgdb: oc
+      .input(z.object({ query: z.string().trim().min(2).max(100) }))
+      .output(z.array(IgdbSearchHitSchema)),
 
     // Inserimento di un gioco non risolto, con il solo titolo. Via di scampo
     // quando IGDB non conosce il gioco: l'`igdbId` resta null e l'enrichment

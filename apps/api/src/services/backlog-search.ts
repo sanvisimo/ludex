@@ -33,7 +33,7 @@ import { entryQuery, toEntry } from './backlog';
 // I caratteri jolly di LIKE. Chi cerca "50%" cerca quella stringa, non "50" più
 // qualunque cosa, e senza questo un `_` in un titolo diventerebbe "un carattere
 // qualsiasi". La backslash va per prima o raddoppierebbe le proprie fughe.
-function escapeLike(term: string) {
+export function escapeLike(term: string) {
   return term.replace(/[\\%_]/g, (char) => `\\${char}`);
 }
 
