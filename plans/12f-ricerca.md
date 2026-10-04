@@ -154,3 +154,19 @@ Fanno ancora parte di questo lotto.
    link e quello fuori catalogo no; da loggato quest'ultimo è un bottone, e
    il clic chiede `fromIgdb` (qui fallisce per le credenziali IGDB e mostra
    l'avviso).
+
+9. **La pagina di un gioco appena entrato sembrava rotta.** Aperto dalla
+   ricerca o da un simile, il gioco esiste ma l'enrichment IGDB arriva
+   qualche secondo dopo: nell'attesa la pagina mostrava la cornice vuota —
+   fondo scuro, copertina col trattino, «Nessun voto». Ora, finché il gioco
+   ha un id IGDB, non ha ancora i dati ed è nato da meno di 2 minuti, la
+   pagina è lo skeleton del caricamento, col nome e «Sto recuperando i dati
+   da IGDB…». Il limite c'è perché con la coda ferma o IGDB giù lo skeleton
+   resterebbe per sempre: passato, torna la pagina com'era, che lo dice. Nel
+   frattempo la scheda si rilegge ogni 5 secondi, riserva dell'evento in push.
+
+   **Fatto** (`isEnriching` in
+   [\_app.games.$slug.tsx](../apps/web/src/routes/_app.games.$slug.tsx)).
+   Provato con Playwright: un gioco appena creato mostra lo skeleton, e
+   scritta a mano la sua riga IGDB in `game_sources` la pagina vera compare
+   in 5 secondi; un gioco vecchio senza dati mostra la pagina di oggi.
