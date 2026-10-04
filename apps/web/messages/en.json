@@ -186,6 +186,7 @@
     "backToCatalog": "Back to the catalogue",
     "notLinked": "Game not linked to IGDB: no metadata to fetch.",
     "notEnriched": "Metadata not fetched yet. Coming shortly.",
+    "enriching": "Fetching the data from IGDB…",
     "inBacklog": "In your backlog",
     "notInBacklog": "You don't own it",
     "statusLine": "Status: <value>{status}</value>",

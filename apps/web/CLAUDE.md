@@ -115,9 +115,12 @@ contenitore a tutta larghezza, la gallery, durata e critica col dialog
 «Dettagli», il blocco del backlog, remake e simili. Le colonne si affiancano
 da `$lg`; sotto, la laterale viene **prima** nell'HTML — durata, critica e
 stato sono ciò che serve a decidere — e `row-reverse` la rimette a destra sul
-desktop. Remake e simili si aprono con la regola della ricerca: in catalogo
-sono un link, fuori catalogo da loggati un bottone che li crea
-(`useOpenIgdbHit`), da ospiti niente; attenuati se non sono tuoi.
+desktop. Un gioco appena nato (id IGDB, dati non ancora arrivati, creato da
+meno di 2 minuti) mostra lo skeleton con «Sto recuperando i dati da IGDB…» e
+si rilegge ogni 5 secondi; oltre, la pagina com'è (`isEnriching`). Remake e
+simili si aprono con la regola della ricerca: in catalogo sono un link, fuori
+catalogo da loggati un bottone che li crea (`useOpenIgdbHit`), da ospiti
+niente; attenuati se non sono tuoi.
 
 **La pagina account** (`/account`) è un layout, `_app.account.tsx`, con quattro
 sezioni che sono rotte figlie: `profilo`, `librerie`, `da-sistemare`, `nascosti`.

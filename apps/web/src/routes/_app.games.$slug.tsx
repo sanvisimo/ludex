@@ -1,5 +1,13 @@
-import type { BacklogStatus } from '@repo/contracts';
-import { Button, Skeleton, Text, XStack, YStack, toast } from '@repo/ui';
+import type { BacklogStatus, GameDetail } from '@repo/contracts';
+import {
+  Button,
+  Skeleton,
+  Spinner,
+  Text,
+  XStack,
+  YStack,
+  toast,
+} from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -23,6 +31,30 @@ import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
 import { useSession } from '@/src/use-session';
 
+/**
+ * Quanto si aspetta l'enrichment di un gioco appena nato prima di arrendersi
+ * e mostrare la pagina com'è. Di solito bastano pochi secondi; oltre, la coda
+ * è ferma o IGDB non risponde, e uno skeleton per sempre sarebbe peggio.
+ */
+const ENRICHING_WINDOW_MS = 2 * 60_000;
+
+/** Ogni quanto si rilegge la scheda mentre si aspetta, se l'evento non arriva. */
+const ENRICHING_REFETCH_MS = 5_000;
+
+/**
+ * Un gioco appena entrato in Ludex, dalla ricerca o da un simile (12f): ha un
+ * id IGDB, i dati non sono ancora arrivati, ed è nato da poco. Al posto della
+ * pagina vuota, che sembrava rotta, lo skeleton. Un gioco importato e mai
+ * arricchito non è questo caso: è vecchio, e la sua pagina lo dice.
+ */
+function isEnriching(game: GameDetail) {
+  return (
+    game.igdbId !== null &&
+    game.igdbSyncedAt === null &&
+    Date.now() - game.createdAt.getTime() < ENRICHING_WINDOW_MS
+  );
+}
+
 // Pagina auth/no-auth: il gioco si vede sempre, `entry` arriva popolata solo se
 // chi guarda è autenticato e ce l'ha nel backlog.
 export const Route = createFileRoute('/_app/games/$slug')({
@@ -39,9 +71,15 @@ function GamePage() {
   const session = useSession();
 
   const { slug } = Route.useParams();
-  const { data, isPending, error } = useQuery(
-    api.games.bySlug.queryOptions({ input: { slug } }),
-  );
+  const { data, isPending, error } = useQuery({
+    ...api.games.bySlug.queryOptions({ input: { slug } }),
+    // I dati arrivano con l'evento in push dell'enrichment; questa è la
+    // riserva, e scandisce anche la fine dell'attesa.
+    refetchInterval: (query) =>
+      query.state.data && isEnriching(query.state.data.game)
+        ? ENRICHING_REFETCH_MS
+        : false,
+  });
 
   // Solo un interruttore: la riga da passare al dialog è sempre quella fresca
   // della query, non una copia congelata al momento del click.
@@ -81,6 +119,25 @@ function GamePage() {
   }
 
   const { game, entry } = data;
+
+  if (isEnriching(game)) {
+    return (
+      <Page
+        maxW={GAME_PAGE_WIDTH}
+        hero={<Skeleton height={500} width="100%" rounded={0} />}
+        title={game.name}
+      >
+        <XStack items="center" gap={8} role="status">
+          <Spinner />
+          <Text fontSize={14} color="$color11">
+            {t('enriching')}
+          </Text>
+        </XStack>
+        <Skeleton height={320} width="100%" rounded={12} />
+      </Page>
+    );
+  }
+
   const remakes = game.related.filter((row) => row.kind !== 'similar');
   const similar = game.related.filter((row) => row.kind === 'similar');
 

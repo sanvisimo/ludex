@@ -186,6 +186,7 @@
     "backToCatalog": "Torna al catalogo",
     "notLinked": "Gioco non collegato a IGDB: nessun metadato da recuperare.",
     "notEnriched": "Metadati non ancora recuperati. Arrivano a breve.",
+    "enriching": "Sto recuperando i dati da IGDB…",
     "inBacklog": "Nel tuo backlog",
     "notInBacklog": "Non ce l'hai",
     "statusLine": "Stato: <value>{status}</value>",
