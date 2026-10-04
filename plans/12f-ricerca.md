@@ -32,7 +32,8 @@ rimandato dal [12e](12e-home.md) a un lotto a parte, con uno slug nostro.
   l'enrichment, e poi apre la pagina del gioco.
 - **IGDB con un ritardo dopo la digitazione**, non a ogni tasto: il limite è
   di 4 richieste al secondo per tutto il server.
-- **Nella tendina**: copertina, titolo, anno.
+- **Nella tendina**: copertina, titolo, anno. Dieci posti, prima i nostri
+  (punto 7).
 - **La pagina dei risultati è la griglia del backlog, non le sue tre viste**:
   righe e compatta mostrano dati dell'utente (possessi, voto, tag, menu delle
   azioni) che un gioco non suo non ha. Le card sono quelle della home, e ogni
@@ -127,3 +128,29 @@ rimandato dal [12e](12e-home.md) a un lotto a parte, con uno slug nostro.
    **Documentazione fatta**, più una riga in
    [packages/ui/CLAUDE.md](../packages/ui/CLAUDE.md) sul `SearchField`. Il
    lotto resta aperto finché l'utente non dice che la ricerca è pronta.
+
+## I commenti dopo averla vista (04/10/2026)
+
+Fanno ancora parte di questo lotto.
+
+7. **La tendina ha dieci posti, prima i nostri.** Erano 5 + 5; ora i giochi
+   di Ludex prendono fino a dieci posti, e IGDB riempie quelli che restano.
+   IGDB si chiede quindi **dopo** i nostri, e con dieci giochi nostri non si
+   chiede affatto: costa un attimo di attesa in più sui risultati IGDB, e fa
+   risparmiare richieste al rate limit. La pagina `/cerca` resta com'era.
+
+   **Fatto** (`igdbFillsUpTo` in `useGameSearch`). Provato con Playwright:
+   12 giochi «Zelda» in catalogo danno 10 voci e nessuna chiamata a IGDB;
+   due «Hades» danno la chiamata.
+
+8. **Remake e simili si aprono con la regola della ricerca.** La pagina del
+   gioco li apriva solo se erano tuoi (12d, «finché non c'è la wishlist»);
+   con la ricerca la pagina di un gioco non tuo esiste comunque. Ora: in
+   catalogo, link alla sua pagina; non in catalogo e loggato, il clic lo
+   crea con `games.fromIgdb` e lo apre; da ospite resta copertina e nome.
+   L'aspetto attenuato e tratteggiato resta, perché dice «non ce l'hai».
+
+   **Fatto.** Provato con Playwright: da ospite il simile in catalogo è un
+   link e quello fuori catalogo no; da loggato quest'ultimo è un bottone, e
+   il clic chiede `fromIgdb` (qui fallisce per le credenziali IGDB e mostra
+   l'avviso).

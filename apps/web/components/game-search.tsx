@@ -27,8 +27,11 @@ import { useSession } from '@/src/use-session';
 /** Da quanti caratteri si cerca: sotto, il server rifiuta la richiesta. */
 export const MIN_QUERY = 2;
 
-/** Quanti giochi per gruppo nella tendina: il resto sta nella pagina. */
-const DROPDOWN_LIMIT = 5;
+/**
+ * Quanti giochi nella tendina, in tutto: prima i nostri, e i posti che
+ * restano a IGDB. Il resto sta nella pagina.
+ */
+const DROPDOWN_LIMIT = 10;
 
 /**
  * Il ritardo sulla scrittura. IGDB regge quattro richieste al secondo per
@@ -42,6 +45,10 @@ const DEBOUNCE_MS = 300;
  *
  * `delay: 0` per un testo che arriva già ritardato, come quello della pagina,
  * che lo legge dall'URL.
+ *
+ * Con `igdbFillsUpTo` IGDB serve solo a completare: si chiede dopo i nostri, e
+ * solo se sono meno di quel numero. È la tendina, che ha dieci posti; con dieci
+ * giochi nostri IGDB non si chiama affatto, e il rate limit ringrazia.
  */
 export function useGameSearch(
   query: string,
@@ -49,7 +56,13 @@ export function useGameSearch(
     limit,
     offset = 0,
     delay = DEBOUNCE_MS,
-  }: { limit: number; offset?: number; delay?: number },
+    igdbFillsUpTo,
+  }: {
+    limit: number;
+    offset?: number;
+    delay?: number;
+    igdbFillsUpTo?: number;
+  },
 ) {
   const { data: session } = useSession();
   const debounced = useDebouncedValue(query.trim(), delay);
@@ -60,9 +73,13 @@ export function useGameSearch(
     ...api.games.find.queryOptions({ input: { q, limit, offset } }),
     enabled,
   });
+  const room =
+    igdbFillsUpTo === undefined
+      ? true
+      : local.isSuccess && local.data.games.length < igdbFillsUpTo;
   const igdb = useQuery({
     ...api.games.findOnIgdb.queryOptions({ input: { query: q } }),
-    enabled: enabled && !!session,
+    enabled: enabled && !!session && room,
   });
 
   return {
@@ -71,7 +88,9 @@ export function useGameSearch(
     // ritardo: in quel tempo i risultati sono quelli di prima.
     settled: q === query.trim(),
     local,
-    igdb: session ? igdb : null,
+    // Null quando IGDB non va chiesto: da ospiti, o con la tendina già piena.
+    // Finché i nostri non sono arrivati non si sa ancora, e conta come chiesto.
+    igdb: session && (room || local.isPending) ? igdb : null,
   };
 }
 
@@ -135,10 +154,11 @@ export function GameSearchBox() {
   const [query, setQuery] = useState('');
   const { q, settled, local, igdb } = useGameSearch(query, {
     limit: DROPDOWN_LIMIT,
+    igdbFillsUpTo: DROPDOWN_LIMIT,
   });
 
   const games = local.data?.games ?? [];
-  const hits = (igdb?.data ?? []).slice(0, DROPDOWN_LIMIT);
+  const hits = (igdb?.data ?? []).slice(0, DROPDOWN_LIMIT - games.length);
   const options = [
     ...games.map((game) => `game:${game.slug}`),
     ...hits.map((hit) => `igdb:${hit.igdbId}`),

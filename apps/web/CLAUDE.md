@@ -101,8 +101,9 @@ poi, **solo da loggati**, quelli IGDB che Ludex non ha ancora
 risultato IGDB diventa una riga di `games` **al clic** (`games.fromIgdb`), mai
 mentre si cerca: le righe di `games` non si cancellano. I pezzi sono in
 `components/game-search.tsx`; il campo con la tendina è `SearchField` di
-`@repo/ui`. In barra il campo sta da `$md`; sotto c'è un'icona che porta a
-`/cerca`, la pagina con tutti i risultati: griglia con la card della home, a
+`@repo/ui`. La tendina ha dieci posti: prima i giochi di Ludex, e IGDB
+riempie quelli che restano, chiesto dopo e solo se ne restano. In barra il
+campo sta da `$md`; sotto c'è un'icona che porta a `/cerca`, la pagina con tutti i risultati: griglia con la card della home, a
 pagine da 30, testo e pagina nell'URL come il backlog. Su `/cerca` la barra non
 ha il campo, perché la pagina ha il suo. La scrittura aspetta 300 ms prima di
 chiedere: IGDB regge quattro richieste al secondo per tutto il server.
@@ -114,7 +115,9 @@ contenitore a tutta larghezza, la gallery, durata e critica col dialog
 «Dettagli», il blocco del backlog, remake e simili. Le colonne si affiancano
 da `$lg`; sotto, la laterale viene **prima** nell'HTML — durata, critica e
 stato sono ciò che serve a decidere — e `row-reverse` la rimette a destra sul
-desktop.
+desktop. Remake e simili si aprono con la regola della ricerca: in catalogo
+sono un link, fuori catalogo da loggati un bottone che li crea
+(`useOpenIgdbHit`), da ospiti niente; attenuati se non sono tuoi.
 
 **La pagina account** (`/account`) è un layout, `_app.account.tsx`, con quattro
 sezioni che sono rotte figlie: `profilo`, `librerie`, `da-sistemare`, `nascosti`.

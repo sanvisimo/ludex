@@ -161,9 +161,9 @@ export const RelatedGameSchema = z.object({
   // Il nostro id e il nostro slug, se il gioco è in `games`.
   gameId: z.uuid().nullable(),
   slug: z.string().nullable(),
-  // Se chi guarda ce l'ha nel backlog. È ciò che lo rende cliccabile: la pagina
-  // apre solo i giochi tuoi (decisione del 12d), gli altri restano copertina e
-  // nome finché la wishlist non darà un posto dove metterli.
+  // Se chi guarda ce l'ha nel backlog: è ciò che lo attenua sulla pagina. Non
+  // decide più se si apre (12f): si apre se è in catalogo, e da loggati anche
+  // se non c'è ancora, come un risultato IGDB della ricerca.
   owned: z.boolean(),
   // Lo stato che ha nel tuo backlog, se ce l'ha: è ciò che dice l'etichetta
   // sulla copertina.
