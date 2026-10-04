@@ -11,6 +11,7 @@ import {
   GameSchema,
   HiddenKindSchema,
   HomeBandSchema,
+  HomeGameSchema,
   IgdbSearchHitSchema,
   LinkableStoreSchema,
   LiveEventSchema,
@@ -52,6 +53,28 @@ export const contract = {
         entry: BacklogEntrySchema.nullable(),
       }),
     ),
+
+    // La ricerca globale (12f), sul catalogo intero e per titolo. Pubblica come
+    // la home; da loggati ogni gioco porta lo stato che ha nel tuo backlog.
+    // `total` è il conteggio prima di limit/offset, come nel backlog.
+    find: oc
+      .input(
+        z.object({
+          q: z.string().trim().min(2).max(100),
+          limit: z.number().int().min(1).max(60).default(24),
+          offset: z.number().int().min(0).default(0),
+        }),
+      )
+      .output(
+        z.object({ games: z.array(HomeGameSchema), total: z.number().int() }),
+      ),
+
+    // La seconda metà della ricerca globale: i giochi IGDB che Ludex non ha
+    // ancora. Autenticata come `search`, per il rate limit. Non scrive: la
+    // riga nasce con `fromIgdb`, quando l'utente sceglie un risultato.
+    findOnIgdb: oc
+      .input(z.object({ query: z.string().trim().min(2).max(100) }))
+      .output(z.array(IgdbSearchHitSchema)),
 
     // Inserimento di un gioco non risolto, con il solo titolo. Via di scampo
     // quando IGDB non conosce il gioco: l'`igdbId` resta null e l'enrichment

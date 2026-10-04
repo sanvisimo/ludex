@@ -85,6 +85,14 @@ rimandato dal [12e](12e-home.md) a un lotto a parte, con uno slug nostro.
 3. **La ricerca sul server.** Una procedura `games.find` sul catalogo intero,
    pubblica, `ilike` sul titolo come il backlog, a pagine; e `games.search`
    (IGDB) che toglie gli `igdbId` già in `games`. Test sulla ricerca.
+
+   **Fatto**, con una correzione: `games.search` resta com'è, perché la usa
+   anche la finestra «Aggiungi», a cui servono pure i giochi che abbiamo
+   già. La parte IGDB della ricerca globale è una procedura sua,
+   `games.findOnIgdb`. L'ordine dei risultati: prima il titolo esatto, poi
+   chi comincia con ciò che si è scritto, poi gli altri in ordine
+   alfabetico. Servizio in
+   [catalog-search.ts](../apps/api/src/services/catalog-search.ts).
 4. **Il campo e la tendina.** Nella barra in cima, fra il logo e l'account:
    fino a 5 dei nostri, poi, da loggato, fino a 5 di IGDB, e «Tutti i
    risultati». Invio apre la pagina. Sul telefono la barra sta in basso e

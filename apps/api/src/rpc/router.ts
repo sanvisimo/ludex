@@ -25,6 +25,10 @@ import {
 } from '../services/games';
 import { listHomeBands } from '../services/home';
 import {
+  searchCatalog,
+  searchIgdbNotInCatalog,
+} from '../services/catalog-search';
+import {
   findExistingPlatformSlugs,
   listPlatforms,
 } from '../services/platforms';
@@ -98,6 +102,16 @@ export const router = os.router({
 
         return { game, entry };
       }),
+
+    find: os.games.find
+      .use(maybeAuthed)
+      .handler(({ input, context }) =>
+        searchCatalog(input, context.user?.id ?? null),
+      ),
+
+    findOnIgdb: os.games.findOnIgdb
+      .use(authed)
+      .handler(({ input }) => searchIgdbNotInCatalog(input.query)),
 
     create: os.games.create.use(authed).handler(async ({ input }) => {
       const game = await createGame(input.name);

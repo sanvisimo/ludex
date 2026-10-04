@@ -41,11 +41,11 @@ export const gameColumns = {
   createdAt: true,
 } as const;
 
-// Le stesse colonne nella forma che vuole `.returning()`. Derivata da
+// Le stesse colonne nella forma che vuole `.returning()`, e `.select()`. Derivata da
 // `gameColumns` e non riscritta a mano: erano due elenchi gemelli in tre punti,
 // e una colonna aggiunta a uno solo sarebbe passata inosservata fino a un errore
 // di validazione del contratto.
-const gameReturning = Object.fromEntries(
+export const gameReturning = Object.fromEntries(
   Object.keys(gameColumns).map((name) => [
     name,
     schema.games[name as keyof typeof gameColumns],
