@@ -14,6 +14,7 @@ import { Route as GuestRouteImport } from './routes/_guest'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppPrivateRouteImport } from './routes/_app._private'
 import { Route as AppAccountRouteImport } from './routes/_app.account'
+import { Route as AppCercaRouteImport } from './routes/_app.cerca'
 import { Route as AppCreditsRouteImport } from './routes/_app.credits'
 import { Route as AppPrivacyRouteImport } from './routes/_app.privacy'
 import { Route as AppTermsRouteImport } from './routes/_app.terms'
@@ -47,6 +48,11 @@ const AppPrivateRoute = AppPrivateRouteImport.update({
 const AppAccountRoute = AppAccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCercaRoute = AppCercaRouteImport.update({
+  id: '/cerca',
+  path: '/cerca',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCreditsRoute = AppCreditsRouteImport.update({
@@ -113,6 +119,7 @@ const AppGamesSlugRoute = AppGamesSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/account': typeof AppAccountRouteWithChildren
+  '/cerca': typeof AppCercaRoute
   '/credits': typeof AppCreditsRoute
   '/privacy': typeof AppPrivacyRoute
   '/terms': typeof AppTermsRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
+  '/cerca': typeof AppCercaRoute
   '/credits': typeof AppCreditsRoute
   '/privacy': typeof AppPrivacyRoute
   '/terms': typeof AppTermsRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/_guest': typeof GuestRouteWithChildren
   '/_app/_private': typeof AppPrivateRouteWithChildren
   '/_app/account': typeof AppAccountRouteWithChildren
+  '/_app/cerca': typeof AppCercaRoute
   '/_app/credits': typeof AppCreditsRoute
   '/_app/privacy': typeof AppPrivacyRoute
   '/_app/terms': typeof AppTermsRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/cerca'
     | '/credits'
     | '/privacy'
     | '/terms'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/cerca'
     | '/credits'
     | '/privacy'
     | '/terms'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/_guest'
     | '/_app/_private'
     | '/_app/account'
+    | '/_app/cerca'
     | '/_app/credits'
     | '/_app/privacy'
     | '/_app/terms'
@@ -254,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AppAccountRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/cerca': {
+      id: '/_app/cerca'
+      path: '/cerca'
+      fullPath: '/cerca'
+      preLoaderRoute: typeof AppCercaRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/credits': {
@@ -378,6 +397,7 @@ const AppAccountRouteWithChildren = AppAccountRoute._addFileChildren(
 interface AppRouteChildren {
   AppPrivateRoute: typeof AppPrivateRouteWithChildren
   AppAccountRoute: typeof AppAccountRouteWithChildren
+  AppCercaRoute: typeof AppCercaRoute
   AppCreditsRoute: typeof AppCreditsRoute
   AppPrivacyRoute: typeof AppPrivacyRoute
   AppTermsRoute: typeof AppTermsRoute
@@ -388,6 +408,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppPrivateRoute: AppPrivateRouteWithChildren,
   AppAccountRoute: AppAccountRouteWithChildren,
+  AppCercaRoute: AppCercaRoute,
   AppCreditsRoute: AppCreditsRoute,
   AppPrivacyRoute: AppPrivacyRoute,
   AppTermsRoute: AppTermsRoute,

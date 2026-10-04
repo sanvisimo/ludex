@@ -22,8 +22,17 @@ export const CARD_WIDTH = 136;
  * Una card: la copertina con lo stato in alto a sinistra — solo se il gioco
  * è tuo — e il voto in alto a destra; sotto il titolo, e anno e durata. Tutta
  * la card è il link alla pagina del gioco.
+ *
+ * Larga `CARD_WIDTH` nelle fasce; con `fill` riempie la cella di una griglia,
+ * come nei risultati della ricerca (12f).
  */
-function HomeCard({ game }: { game: HomeGame }) {
+export function HomeCard({
+  game,
+  fill = false,
+}: {
+  game: HomeGame;
+  fill?: boolean;
+}) {
   const statusLabels = useStatusLabels();
 
   return (
@@ -32,19 +41,20 @@ function HomeCard({ game }: { game: HomeGame }) {
       params={{ slug: game.slug }}
       style={{ color: 'inherit', textDecoration: 'none' }}
     >
-      <YStack width={CARD_WIDTH} gap={6}>
+      <YStack width={fill ? '100%' : CARD_WIDTH} gap={6}>
         <YStack position="relative" overflow="hidden" rounded={6}>
           <GameCover
             imageId={game.coverImageId}
             name={game.name}
             size="cover_big"
             width={CARD_WIDTH}
+            fill={fill}
           />
           {game.status && (
             <CornerLabel
               icon={statusIcons[game.status]}
               // Lo spazio per il voto a destra, che è largo al più così.
-              maxW={CARD_WIDTH - 44}
+              maxW={fill ? ('calc(100% - 44px)' as never) : CARD_WIDTH - 44}
             >
               {statusLabels[game.status]}
             </CornerLabel>

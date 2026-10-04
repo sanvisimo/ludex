@@ -26,6 +26,27 @@ Flusso di risoluzione, all'inserimento (manuale o da import):
 Un gioco senza `igdbId` è quindi semplicemente un gioco non ancora risolto:
 **nessuna query può assumere che i metadata siano popolati**.
 
+### Lo slug: `games.slug`
+
+L'indirizzo della pagina del gioco è uno slug nostro (`/games/hollow-knight`),
+non l'UUID e non lo slug IGDB (`igdb_slug`, che IGDB riscrive quando rinomina
+e per questo non è unique). Le regole (12f):
+
+- **unique e not null**, calcolato dal nome **quando la riga nasce**, e da lì
+  **non cambia più**, nemmeno se l'enrichment corregge il nome: un link non si
+  rompe.
+- **Ai doppioni l'anno di uscita** (`god-of-war-2018`), poi l'id IGDB; il
+  primo arrivato tiene lo slug pulito. Un gioco non risolto, senza anno né id,
+  prende un suffisso casuale.
+- **La regola sta in un punto solo**, `apps/api/src/services/game-slug.ts`, e
+  la usano tutte le strade che creano un gioco (`createGame`,
+  `resolveGameFromIgdb`, `linkExternalGames`). All'import l'anno arriva con la
+  stessa richiesta IGDB che risolve gli id dei negozi. Due import che creano
+  insieme due omonimi non falliscono: chi perde il vincolo rilegge e riscrive
+  (`retryOnSlugConflict`).
+- Le righe che c'erano prima della colonna l'hanno avuto dalla migration 0031,
+  con la stessa regola in SQL.
+
 ### Che cos'è la scheda: `game_type`
 
 IGDB non indicizza solo giochi: la stessa tabella tiene DLC, espansioni,

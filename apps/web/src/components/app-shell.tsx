@@ -1,8 +1,10 @@
 import { Text, Wordmark, XStack, YStack } from '@repo/ui';
-import { Link, useRouter } from '@tanstack/react-router';
+import { Search } from '@repo/ui/icons';
+import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
+import { GameSearchBox } from '@/components/game-search';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { BackToTop } from '@/src/components/back-to-top';
 import { ButtonLink } from '@/src/components/button-link';
@@ -18,8 +20,8 @@ const BAR_HEIGHT = 56;
  * Il guscio: la cornice di tutte le pagine tranne accesso e registrazione.
  *
  * Una barra sola, a ogni larghezza: il nome a sinistra, che porta al
- * catalogo, e a destra chi è collegato, col menu che porta a backlog e
- * account. Sul desktop sta in alto, sul telefono in basso, dove arriva il
+ * catalogo, la ricerca in mezzo, e a destra chi è collegato, col menu che
+ * porta a backlog e account. Sul desktop sta in alto, sul telefono in basso, dove arriva il
  * pollice e da dove si aprono i menu. Resta sempre visibile: ha lo stesso
  * fondo della pagina, senza bordo, e il contenuto ci passa sotto.
  *
@@ -45,6 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         $max-md={{ position: 'fixed', t: 'auto', b: 0, l: 0, r: 0 }}
       >
         <HomeLink />
+        <BarSearch />
         <Account />
       </XStack>
       {/* `grow`, non `flex`: con base 0 il contenuto uscirebbe dalla colonna
@@ -64,6 +67,48 @@ export function HomeLink() {
         <Wordmark />
       </XStack>
     </Link>
+  );
+}
+
+/**
+ * In mezzo alla barra, la ricerca globale (12f): il campo con la tendina da
+ * `$md`; sotto, dove in barra non c'è posto, un'icona che porta alla pagina
+ * della ricerca. Sulla pagina della ricerca niente dei due: ha il suo campo.
+ */
+function BarSearch() {
+  const t = useTranslations('search');
+  const onSearchPage = useRouterState({
+    select: (state) => state.location.pathname === '/cerca',
+  });
+
+  if (onSearchPage) return <XStack flex={1} />;
+
+  return (
+    <>
+      <XStack flex={1} justify="center" $max-md={{ display: 'none' }}>
+        <YStack width="100%" maxW={480}>
+          <GameSearchBox />
+        </YStack>
+      </XStack>
+      <XStack
+        flex={1}
+        justify="flex-end"
+        display="none"
+        $max-md={{ display: 'flex' }}
+      >
+        <ButtonLink
+          href="/cerca"
+          variant="ghost"
+          size="icon"
+          width={40}
+          height={40}
+          rounded={999}
+          aria-label={t('open')}
+        >
+          <Search size={20} />
+        </ButtonLink>
+      </XStack>
+    </>
   );
 }
 

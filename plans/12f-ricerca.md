@@ -73,6 +73,7 @@ rimandato dal [12e](12e-home.md) a un lotto a parte, con uno slug nostro.
    legge prima i giochi che ci sono già, così lo slug si sceglie solo per chi
    nasce. Test in
    [game-slug.test.ts](../apps/api/src/services/game-slug.test.ts).
+
 2. **I link.** `GameSchema` porta lo `slug`, la rotta diventa
    `/games/$slug`, `games.byId` diventa `games.bySlug`, e i cinque link
    (home, backlog, nascosti, gioco padre, giochi correlati) passano allo slug.
@@ -82,6 +83,7 @@ rimandato dal [12e](12e-home.md) a un lotto a parte, con uno slug nostro.
    **Fatto.** Gli eventi in push parlano di id e le schede si aprono per
    slug: `use-live-updates` riconosce la scheda da rileggere dal gioco che ha
    in cache.
+
 3. **La ricerca sul server.** Una procedura `games.find` sul catalogo intero,
    pubblica, `ilike` sul titolo come il backlog, a pagine; e `games.search`
    (IGDB) che toglie gli `igdbId` già in `games`. Test sulla ricerca.
@@ -93,13 +95,35 @@ rimandato dal [12e](12e-home.md) a un lotto a parte, con uno slug nostro.
    chi comincia con ciò che si è scritto, poi gli altri in ordine
    alfabetico. Servizio in
    [catalog-search.ts](../apps/api/src/services/catalog-search.ts).
+
 4. **Il campo e la tendina.** Nella barra in cima, fra il logo e l'account:
    fino a 5 dei nostri, poi, da loggato, fino a 5 di IGDB, e «Tutti i
    risultati». Invio apre la pagina. Sul telefono la barra sta in basso e
    non c'è posto: lì un'icona porta alla pagina, col campo già attivo.
+
+   **Fatto.** La tendina è un componente nuovo di `@repo/ui`,
+   [`SearchField`](../packages/ui/src/components/search-field.tsx), con la
+   sua storia e i test in Chromium (axe compreso): il `Combobox` sceglie un
+   valore fra voci che ha già, qui le voci arrivano dal server e Invio cerca.
+   All'inizio nessuna voce è evidenziata, così Invio porta alla pagina; la
+   freccia giù entra nella lista. Sulla pagina `/cerca` la barra non ha il
+   campo, perché la pagina ha il suo.
+
 5. **La pagina `/cerca?q=…`**: la griglia dei nostri, a pagine, con la card
    della home; sotto, da loggato, i risultati IGDB nella stessa griglia, senza
    pagine (IGDB ne dà un numero fisso).
+
+   **Fatto**, 30 giochi per pagina, con la griglia del backlog
+   (`minmax(152px, 1fr)`) e la card della home, che ora sa anche riempire la
+   cella (`fill`). Provata con Playwright da ospite, da loggato e a 390 px.
+   **Non provato qui**: il clic su un risultato IGDB, perché in questo
+   ambiente IGDB non ha credenziali. Fallisce con 403, e la pagina regge:
+   mostra i giochi di Ludex e niente sezione IGDB.
+
 6. **Chiusura**: `docs/modello-dati.md` (la colonna `slug`),
    [apps/web/CLAUDE.md](../apps/web/CLAUDE.md) (la ricerca e la rotta). Il
    lotto si chiude quando l'utente dice che la ricerca è pronta.
+
+   **Documentazione fatta**, più una riga in
+   [packages/ui/CLAUDE.md](../packages/ui/CLAUDE.md) sul `SearchField`. Il
+   lotto resta aperto finché l'utente non dice che la ricerca è pronta.
