@@ -1,5 +1,12 @@
 # Step 12f — La ricerca globale, e lo slug dei giochi
 
+**Chiuso il 04/10/2026**, quando l'utente ha detto che la ricerca è pronta.
+Ciò che va rispettato d'ora in poi sta in
+[docs/modello-dati.md](../docs/modello-dati.md) (lo slug),
+[apps/web/CLAUDE.md](../apps/web/CLAUDE.md) (la ricerca, la pagina del
+gioco) e [packages/ui/CLAUDE.md](../packages/ui/CLAUDE.md) (`SearchField`);
+qui restano le ragioni e le prove.
+
 **Approvato il 04/10/2026**, senza wireframe: in questa sessione l'utente non
 può vederli, e la struttura è stata decisa per iscritto. Sotto ogni passo, man
 mano, cosa è stato fatto e cosa l'ha smentito.
@@ -126,8 +133,7 @@ rimandato dal [12e](12e-home.md) a un lotto a parte, con uno slug nostro.
    lotto si chiude quando l'utente dice che la ricerca è pronta.
 
    **Documentazione fatta**, più una riga in
-   [packages/ui/CLAUDE.md](../packages/ui/CLAUDE.md) sul `SearchField`. Il
-   lotto resta aperto finché l'utente non dice che la ricerca è pronta.
+   [packages/ui/CLAUDE.md](../packages/ui/CLAUDE.md) sul `SearchField`.
 
 ## I commenti dopo averla vista (04/10/2026)
 
