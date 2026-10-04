@@ -52,11 +52,17 @@ export function useLiveUpdates() {
     const gamesChanged = (gameIds?: string[]) => {
       invalidate(api.backlog.key());
       invalidate(api.games.home.key());
-      // Senza id vuol dire «tutte le schede aperte»: la riconnessione.
-      if (!gameIds) invalidate(api.games.byId.key());
-      else
-        for (const id of gameIds)
-          invalidate(api.games.byId.key({ input: { id } }));
+      // Senza id vuol dire «tutte le schede aperte»: la riconnessione. Gli
+      // eventi parlano di id e le schede si aprono per slug: si riconoscono
+      // dal gioco che hanno in cache.
+      void queryClient.invalidateQueries({
+        queryKey: api.games.bySlug.key(),
+        predicate: (query) => {
+          if (!gameIds) return true;
+          const data = query.state.data as { game: { id: string } } | undefined;
+          return data !== undefined && gameIds.includes(data.game.id);
+        },
+      });
     };
 
     function handle(event: LiveEvent) {

@@ -658,13 +658,18 @@ const STORE_BY_IGDB_SOURCE = new Map<number, Store>(
 // gioco.
 const EXTERNAL_PAGE = 500;
 
-export type IgdbExternalMatch = { igdbId: number; name: string };
+export type IgdbExternalMatch = {
+  igdbId: number;
+  name: string;
+  releaseYear: number | null;
+};
 
 type IgdbExternalGame = {
   uid: string;
   // Espanso: una richiesta sola dà l'id **e** il nome vero del gioco, invece di
-  // quello che gli dà il negozio.
-  game?: { id: number; name: string };
+  // quello che gli dà il negozio. L'anno viaggia con lui perché serve allo
+  // slug dei giochi omonimi (12f), e chiederlo qui non costa una richiesta.
+  game?: { id: number; name: string; first_release_date?: number };
 };
 
 /**
@@ -751,14 +756,20 @@ export async function findIgdbGamesBySource(
 
     const rows = await query<IgdbExternalGame[]>(
       'external_games',
-      `fields uid, game, game.name;` +
+      `fields uid, game, game.name, game.first_release_date;` +
         ` where external_game_source = ${source} & uid = (${list});` +
         ` limit ${EXTERNAL_PAGE};`,
     );
 
     for (const row of rows) {
       if (!row.game) continue;
-      matches.set(row.uid, { igdbId: row.game.id, name: row.game.name });
+      matches.set(row.uid, {
+        igdbId: row.game.id,
+        name: row.game.name,
+        releaseYear: row.game.first_release_date
+          ? new Date(row.game.first_release_date * 1000).getUTCFullYear()
+          : null,
+      });
     }
   }
 

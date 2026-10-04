@@ -43,7 +43,11 @@ function igdbKnows(
     new Map(
       entries.map((e) => [
         e.externalId,
-        { igdbId: e.igdbId, name: e.name ?? `IGDB ${e.igdbId}` },
+        {
+          igdbId: e.igdbId,
+          name: e.name ?? `IGDB ${e.igdbId}`,
+          releaseYear: null,
+        },
       ]),
     ),
   );

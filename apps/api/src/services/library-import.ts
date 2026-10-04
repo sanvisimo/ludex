@@ -513,6 +513,7 @@ export async function resolveByName(
         // con l'edizione, e quello finirebbe su una riga `games` condivisa da
         // tutti.
         name: scelto.name,
+        releaseYear: scelto.releaseYear,
       });
     }
   }

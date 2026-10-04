@@ -216,6 +216,7 @@ describe('findGameDetailById: ciò che serve alla pagina del gioco (12d)', () =>
 
     expect((await findGameDetailById(dlc.id))?.parent).toEqual({
       id: padre.id,
+      slug: padre.slug,
       name: 'The Witcher 3',
     });
     // Di un padre che non abbiamo non sappiamo nemmeno il nome.

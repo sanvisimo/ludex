@@ -52,6 +52,13 @@ export const games = pgTable(
     // gioco valido. L'identità resta l'id numerico; questo è solo un indirizzo.
     igdbSlug: text('igdb_slug'),
     name: text('name').notNull(),
+    // Il nostro slug, quello dei link (`/games/hollow-knight`). Si calcola dal
+    // nome quando la riga nasce e **non cambia più**, nemmeno se l'enrichment
+    // corregge il nome: un link non deve rompersi (12f). Ai doppioni l'anno di
+    // uscita, poi l'id IGDB: la regola sta in `apps/api/src/services/game-slug.ts`.
+    //
+    // Unique al contrario di `igdbSlug`, perché questo lo scriviamo solo noi.
+    slug: text('slug').notNull().unique(),
 
     // --- metadati, popolati dall'enrichment dello step 3 ---
     // Tutti nullable: un gioco esiste prima di essere arricchito, e le fonti

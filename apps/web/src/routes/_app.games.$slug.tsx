@@ -25,7 +25,7 @@ import { useSession } from '@/src/use-session';
 
 // Pagina auth/no-auth: il gioco si vede sempre, `entry` arriva popolata solo se
 // chi guarda è autenticato e ce l'ha nel backlog.
-export const Route = createFileRoute('/_app/games/$id')({
+export const Route = createFileRoute('/_app/games/$slug')({
   component: GamePage,
 });
 
@@ -38,9 +38,9 @@ function GamePage() {
   const setHidden = useSetEntryHidden();
   const session = useSession();
 
-  const { id } = Route.useParams();
+  const { slug } = Route.useParams();
   const { data, isPending, error } = useQuery(
-    api.games.byId.queryOptions({ input: { id } }),
+    api.games.bySlug.queryOptions({ input: { slug } }),
   );
 
   // Solo un interruttore: la riga da passare al dialog è sempre quella fresca
@@ -52,7 +52,7 @@ function GamePage() {
       client.backlog.setStatus(input),
     onSuccess: () =>
       Promise.all([
-        queryClient.invalidateQueries({ queryKey: api.games.byId.key() }),
+        queryClient.invalidateQueries({ queryKey: api.games.bySlug.key() }),
         queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),
       ]),
     onError: (error) =>

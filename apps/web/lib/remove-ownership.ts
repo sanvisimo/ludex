@@ -66,7 +66,7 @@ export function useRemoveOwnership() {
   async function invalida() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),
-      queryClient.invalidateQueries({ queryKey: api.games.byId.key() }),
+      queryClient.invalidateQueries({ queryKey: api.games.bySlug.key() }),
       // I possessi sono ciò da cui il pannello dei filtri ricava piattaforme e
       // negozi: tolta l'ultima copia GOG, «GOG» non deve restare nell'elenco.
       queryClient.invalidateQueries({

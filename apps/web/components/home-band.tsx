@@ -28,8 +28,8 @@ function HomeCard({ game }: { game: HomeGame }) {
 
   return (
     <Link
-      to="/games/$id"
-      params={{ id: game.id }}
+      to="/games/$slug"
+      params={{ slug: game.slug }}
       style={{ color: 'inherit', textDecoration: 'none' }}
     >
       <YStack width={CARD_WIDTH} gap={6}>

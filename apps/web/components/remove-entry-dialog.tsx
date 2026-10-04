@@ -46,7 +46,7 @@ export function RemoveEntryDialog({
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),
-        queryClient.invalidateQueries({ queryKey: api.games.byId.key() }),
+        queryClient.invalidateQueries({ queryKey: api.games.bySlug.key() }),
         queryClient.invalidateQueries({
           queryKey: api.backlog.filterOptions.key(),
         }),

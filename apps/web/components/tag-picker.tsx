@@ -101,7 +101,7 @@ export function TagPicker({
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: api.tags.list.key() }),
         queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),
-        queryClient.invalidateQueries({ queryKey: api.games.byId.key() }),
+        queryClient.invalidateQueries({ queryKey: api.games.bySlug.key() }),
       ]);
       // Anche dalla scelta in corso, che altrimenti lo ricreerebbe al salvataggio.
       onChange(

@@ -43,9 +43,10 @@ export const contract = {
     // gioco porta lo stato che ha nel tuo backlog, e niente altro di tuo.
     home: oc.output(z.array(HomeBandSchema)),
 
-    // Scheda gioco. Il gioco si vede sempre; `entry` è popolato solo se chi
-    // guarda è autenticato e ha quel gioco nel backlog. È la pagina auth/no-auth.
-    byId: oc.input(z.object({ id: z.uuid() })).output(
+    // Scheda gioco, per slug: è ciò che sta nel link. Il gioco si vede sempre;
+    // `entry` è popolato solo se chi guarda è autenticato e ha quel gioco nel
+    // backlog. È la pagina auth/no-auth.
+    bySlug: oc.input(z.object({ slug: z.string().min(1).max(200) })).output(
       z.object({
         game: GameDetailSchema,
         entry: BacklogEntrySchema.nullable(),

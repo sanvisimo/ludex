@@ -31,6 +31,7 @@ export async function createGame(
   values: {
     igdbId?: number | null;
     name?: string;
+    slug?: string;
     firstReleaseDate?: Date | null;
     // Campi dell'enrichment, per i casi del filtraggio. Restano nulli di
     // default: un gioco appena creato non è arricchito, ed è proprio il caso
@@ -52,6 +53,9 @@ export async function createGame(
     .insert(schema.games)
     .values({
       name: values.name ?? `Gioco ${n}`,
+      // Unico per costruzione, senza passare da `pickSlugs`: qui interessa il
+      // gioco, non la regola dello slug, che ha i suoi test.
+      slug: values.slug ?? `gioco-${n}`,
       // `undefined` vuol dire "dammene uno qualunque", `null` vuol dire
       // "non risolto": sono due casi diversi e i test usano entrambi.
       igdbId: values.igdbId === undefined ? 100_000 + n : values.igdbId,
@@ -62,7 +66,11 @@ export async function createGame(
       criticScoreSource: values.criticScoreSource ?? null,
       gameType: values.gameType ?? null,
     })
-    .returning({ id: schema.games.id, igdbId: schema.games.igdbId });
+    .returning({
+      id: schema.games.id,
+      igdbId: schema.games.igdbId,
+      slug: schema.games.slug,
+    });
   return row!;
 }
 

@@ -237,8 +237,8 @@ export function GameHero({ game }: { game: GameDetail }) {
                   name: game.parent.name,
                   link: (chunks) => (
                     <Link
-                      to="/games/$id"
-                      params={{ id: game.parent!.id }}
+                      to="/games/$slug"
+                      params={{ slug: game.parent!.slug }}
                       style={{ color: 'inherit' }}
                     >
                       {chunks}
@@ -690,11 +690,11 @@ export function RelatedRow({
           </YStack>
         );
 
-        return game.owned && game.gameId ? (
+        return game.owned && game.slug ? (
           <Link
             key={`${game.kind}-${game.igdbId}`}
-            to="/games/$id"
-            params={{ id: game.gameId }}
+            to="/games/$slug"
+            params={{ slug: game.slug }}
             style={{ color: 'inherit', textDecoration: 'none' }}
           >
             {card}

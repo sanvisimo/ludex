@@ -25,7 +25,7 @@ import { Route as AppAccountDaSistemareRouteImport } from './routes/_app.account
 import { Route as AppAccountLibrerieRouteImport } from './routes/_app.account.librerie'
 import { Route as AppAccountNascostiRouteImport } from './routes/_app.account.nascosti'
 import { Route as AppAccountProfiloRouteImport } from './routes/_app.account.profilo'
-import { Route as AppGamesIdRouteImport } from './routes/_app.games.$id'
+import { Route as AppGamesSlugRouteImport } from './routes/_app.games.$slug'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -104,9 +104,9 @@ const AppAccountProfiloRoute = AppAccountProfiloRouteImport.update({
   path: '/profilo',
   getParentRoute: () => AppAccountRoute,
 } as any)
-const AppGamesIdRoute = AppGamesIdRouteImport.update({
-  id: '/games/$id',
-  path: '/games/$id',
+const AppGamesSlugRoute = AppGamesSlugRouteImport.update({
+  id: '/games/$slug',
+  path: '/games/$slug',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -123,7 +123,7 @@ export interface FileRoutesByFullPath {
   '/account/librerie': typeof AppAccountLibrerieRoute
   '/account/nascosti': typeof AppAccountNascostiRoute
   '/account/profilo': typeof AppAccountProfiloRoute
-  '/games/$id': typeof AppGamesIdRoute
+  '/games/$slug': typeof AppGamesSlugRoute
   '/account/': typeof AppAccountIndexRoute
 }
 export interface FileRoutesByTo {
@@ -138,7 +138,7 @@ export interface FileRoutesByTo {
   '/account/librerie': typeof AppAccountLibrerieRoute
   '/account/nascosti': typeof AppAccountNascostiRoute
   '/account/profilo': typeof AppAccountProfiloRoute
-  '/games/$id': typeof AppGamesIdRoute
+  '/games/$slug': typeof AppGamesSlugRoute
   '/account': typeof AppAccountIndexRoute
 }
 export interface FileRoutesById {
@@ -158,7 +158,7 @@ export interface FileRoutesById {
   '/_app/account/librerie': typeof AppAccountLibrerieRoute
   '/_app/account/nascosti': typeof AppAccountNascostiRoute
   '/_app/account/profilo': typeof AppAccountProfiloRoute
-  '/_app/games/$id': typeof AppGamesIdRoute
+  '/_app/games/$slug': typeof AppGamesSlugRoute
   '/_app/account/': typeof AppAccountIndexRoute
 }
 export interface FileRouteTypes {
@@ -176,7 +176,7 @@ export interface FileRouteTypes {
     | '/account/librerie'
     | '/account/nascosti'
     | '/account/profilo'
-    | '/games/$id'
+    | '/games/$slug'
     | '/account/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -191,7 +191,7 @@ export interface FileRouteTypes {
     | '/account/librerie'
     | '/account/nascosti'
     | '/account/profilo'
-    | '/games/$id'
+    | '/games/$slug'
     | '/account'
   id:
     | '__root__'
@@ -210,7 +210,7 @@ export interface FileRouteTypes {
     | '/_app/account/librerie'
     | '/_app/account/nascosti'
     | '/_app/account/profilo'
-    | '/_app/games/$id'
+    | '/_app/games/$slug'
     | '/_app/account/'
   fileRoutesById: FileRoutesById
 }
@@ -333,11 +333,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccountProfiloRouteImport
       parentRoute: typeof AppAccountRoute
     }
-    '/_app/games/$id': {
-      id: '/_app/games/$id'
-      path: '/games/$id'
-      fullPath: '/games/$id'
-      preLoaderRoute: typeof AppGamesIdRouteImport
+    '/_app/games/$slug': {
+      id: '/_app/games/$slug'
+      path: '/games/$slug'
+      fullPath: '/games/$slug'
+      preLoaderRoute: typeof AppGamesSlugRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -382,7 +382,7 @@ interface AppRouteChildren {
   AppPrivacyRoute: typeof AppPrivacyRoute
   AppTermsRoute: typeof AppTermsRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppGamesIdRoute: typeof AppGamesIdRoute
+  AppGamesSlugRoute: typeof AppGamesSlugRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -392,7 +392,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPrivacyRoute: AppPrivacyRoute,
   AppTermsRoute: AppTermsRoute,
   AppIndexRoute: AppIndexRoute,
-  AppGamesIdRoute: AppGamesIdRoute,
+  AppGamesSlugRoute: AppGamesSlugRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
