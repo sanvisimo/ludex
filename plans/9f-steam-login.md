@@ -1,7 +1,7 @@
 # Step 9f — Steam con login e Family
 
 **Fatto sul branch `feat/9f-steam-login` e provato (05/10/2026), ma NON rilasciato**:
-dopo la prova vera Steam ha bloccato temporaneamente l'account dell'utente, e finché
+Steam ha bloccato temporaneamente l'account dell'utente (alle 11:57 del 05/10, prima del login in browser delle 14:51), e finché
 non si sa se un login da server è accettato resta fermo. Vedi «Il blocco
 dell'account» in [docs/negozi.md](../docs/negozi.md). Le misure su cui poggia sono
 nella stessa pagina, «Steam Family e il login Steam».

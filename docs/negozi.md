@@ -543,11 +543,22 @@ Sul branch `feat/9f-steam-login`. Il piano e le ragioni sono in
 
 ### Il blocco dell'account (05/10/2026)
 
-**Dopo la prova vera, fatta dal browser in locale, Steam ha bloccato
-temporaneamente l'account dell'utente.** Il messaggio parla di un «dispositivo
-inatteso» che ha effettuato l'accesso, dice che **non è un ban**, e limita
-l'account (acquisti, doni, scambi, Community) finché il proprietario non lo recupera
-con l'Assistenza di Steam, via `help.steampowered.com`.
+**Steam ha bloccato temporaneamente l'account dell'utente.** Il messaggio parla di
+un «dispositivo inatteso» che ha effettuato l'accesso **il 5 ottobre alle 11:57, a
+Milano**, dice che **non è un ban**, e limita l'account (acquisti, doni, scambi,
+Community) finché il proprietario non lo recupera con l'Assistenza di Steam, via
+`help.steampowered.com`.
+
+**Gli orari, ricostruiti il 05/10/2026 dai file e dal database** (la macchina è in
+CEST, cioè l'ora di Milano): migration del passo 1 alle 11:28; import dal browser col
+solo profilo alle 11:37; test del passo 2 alle 11:45; **un import Steam con la chiave
+alle 11:56**; test del passo 4 alle 12:03. Il **login col QR dall'interfaccia**, quello
+della prova vera in browser, è invece delle **14:51** circa, con l'import alle 14:58:
+**tre ore dopo** l'orario di Steam. Fra le 11:45 e le 12:03 sono state fatte, contro
+Steam, due cose: la prova dei token falsi e il probe col login (quello con la sezione
+«il nostro client»). Non ho un orologio dei singoli comandi, quindi quale delle due
+sia delle 11:57 è un'**inferenza dalla sequenza**, non una misura. Gli orari esatti
+dei login stanno su Steam Guard → «Gestisci i dispositivi».
 
 Cosa era successo prima, da questa macchina, con quell'account:
 
@@ -555,14 +566,18 @@ Cosa era successo prima, da questa macchina, con quell'account:
   vera, tutti come «app mobile»;
 - richieste a `IFamilyGroupsService` e a `GetOwnedGames` col token;
 - nelle ultime esecuzioni del probe, **refresh token falsi con dentro lo SteamID
-  dell'utente** e token inventati, per misurare gli errori (ora dietro
-  `--error-paths`, spento di default);
+  dell'utente** e token inventati, per misurare gli errori (la sezione è stata
+  tolta dal probe);
 - una ventina di QR aperti dai test della schermata e mai approvati.
 
-**La causa non è accertata**, e non c'è modo di saperla da qui: può essere il
-login in sé (un dispositivo nuovo che entra da un indirizzo di server o di casa),
-la frequenza, i token falsi, o tutte e tre. La risposta dell'Assistenza non c'è
-ancora. Quello che **non** sappiamo, e che decide se il login si può rilasciare:
+**La causa non è accertata**, e non c'è modo di saperla da qui. **L'ipotesi principale,
+dell'utente e coerente con gli orari**: i probe lanciati in fila e le prove con i
+**token falsi** (refresh token ben formati con lo SteamID dell'utente, token inventati
+sulle API della famiglia), che per Steam somigliano a un tentativo di accesso non
+autorizzato. Il login col QR in sé (un dispositivo nuovo che entra da un indirizzo
+diverso) resta una possibilità minore, e non si può escludere. La risposta
+dell'Assistenza non c'è ancora. Quello che **non** sappiamo, e che decide se il login
+si può rilasciare:
 
 - se Steam considera sospetto **qualsiasi** login fatto da un server per conto di un
   utente, o solo il modo in cui sono state fatte le prove;
