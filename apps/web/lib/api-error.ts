@@ -10,6 +10,7 @@ const codes = [
   'FORBIDDEN',
   'NOT_FOUND',
   'CONFLICT',
+  'PRECONDITION_FAILED',
   'TOO_MANY_REQUESTS',
   'INTERNAL_SERVER_ERROR',
 ] as const;
@@ -43,4 +44,15 @@ export function useApiErrorMessage() {
     if (!code) return options.fallback;
     return options[code] ?? t(code);
   };
+}
+
+/**
+ * L'errore ha questo codice?
+ *
+ * Per chi deve fare una cosa diversa da un toast — mostrare il messaggio dentro
+ * il dialogo, come per il profilo Steam privato — e quindi ha bisogno di sapere
+ * *quale* errore è, non solo di tradurlo.
+ */
+export function hasErrorCode(error: unknown, code: ErrorCode): boolean {
+  return codeOf(error) === code;
 }

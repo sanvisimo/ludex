@@ -36,9 +36,19 @@ import {
   refreshPsnTokens,
   SSO_COOKIE_URL,
 } from '../external/psn';
-import { fetchSteamPersonaName, resolveSteamId } from '../external/steam';
+import {
+  fetchSteamLibrary,
+  fetchSteamPersonaName,
+  resolveSteamId,
+} from '../external/steam';
+import {
+  refreshSteamTokens,
+  SteamAuthError,
+  type SteamLogin,
+} from '../external/steam-auth';
 import { encryptCredentials, decryptCredentials } from '../lib/crypto';
 import { enqueueImport, isImportRunning } from '../queue/imports';
+import { hasPersonalData } from './personal-data';
 
 /**
  * Gli account di negozio collegati, e il ciclo di vita dei loro credenziali.
@@ -113,6 +123,8 @@ const accountColumns = {
   status: schema.storeAccounts.status,
   lastSyncAt: schema.storeAccounts.lastSyncAt,
   autoSync: schema.storeAccounts.autoSync,
+  // Se c'è una credenziale, **non** la credenziale: vedi `StoreAccountSchema`.
+  hasLogin: sql<boolean>`${schema.storeAccounts.credentials} is not null`,
 };
 
 /**
@@ -262,8 +274,13 @@ async function upsertAccount(input: {
         // L'etichetta è dell'utente, non del negozio: ricollegare non deve
         // cancellargliela. Si sovrascrive solo se ne ha scritta una nuova.
         label: input.label ? input.label : sql`${schema.storeAccounts.label}`,
-        credentials,
-        credentialsExpireAt: input.expiresAt ?? null,
+        // Senza credenziale nuova **si lascia quella che c'è**: l'unico che
+        // collega senza è Steam col solo profilo, e se l'account aveva anche il
+        // login (9f) un secondo «collega col profilo» non deve buttarlo via. Gli
+        // altri negozi ne portano sempre una.
+        ...(credentials === null
+          ? {}
+          : { credentials, credentialsExpireAt: input.expiresAt ?? null }),
         status: 'ok',
         lastSyncAt: null,
         updatedAt: new Date(),
@@ -320,15 +337,7 @@ function orphanEntries(accountId: string) {
     .select({
       id: schema.backlog.id,
       nascosto: sql<boolean>`${schema.backlog.hiddenAt} is not null`,
-      personale: sql<boolean>`(
-        ${schema.backlog.rating} is not null
-        or ${schema.backlog.notes} is not null
-        or ${schema.backlog.status} <> 'backlog'
-        or exists (
-          select 1 from ${schema.backlogTags}
-           where ${schema.backlogTags.backlogId} = ${schema.backlog.id}
-        )
-      )`,
+      personale: hasPersonalData,
     })
     .from(schema.backlog)
     .where(
@@ -434,10 +443,18 @@ export async function unlinkStoreAccount(
   });
 }
 
-// --- Steam: nessun credenziale, solo l'identità pubblica ---
+// --- Steam: il profilo pubblico, o il login ---
+//
+// Due modi di collegare **la stessa riga**: chi incolla il profilo non ha una
+// credenziale (la libreria si legge con la chiave dell'applicazione), chi fa il
+// login col QR ne ha una e porta con sé la famiglia. La chiave è lo SteamID64, lo
+// stesso nei due casi, quindi fare l'uno dopo l'altro aggiorna la riga invece di
+// aggiungerne una.
 
 /**
  * Collega Steam a partire da quello che l'utente ha incollato.
+ *
+ * Non tocca la credenziale se l'account ne ha una: vedi `upsertAccount`.
  *
  * Accetta l'URL del profilo, lo SteamID64 nudo o il solo nome scelto: sono le
  * tre forme che uno ha davvero sotto mano, perché lo SteamID su Steam non è in
@@ -450,6 +467,28 @@ export async function linkSteamAccount(
   options: LinkOptions = {},
 ) {
   const steamId = await resolveSteamId(profile);
+
+  // **Si legge la libreria subito, prima di collegare.** Col solo profilo la
+  // libreria si legge con la chiave dell'applicazione, e a profilo privato Steam
+  // risponde vuoto: l'import fallirebbe dopo, in un job, e un import fallito non
+  // arriva alla schermata — la scheda tornerebbe a «importata X fa» senza dire
+  // niente. Così l'errore arriva a chi sta collegando, mentre ha ancora il
+  // dialogo aperto e il bottone «Accedi con Steam» a portata di mano.
+  //
+  // Non serve se l'account ha già il login: la libreria si legge col token, e a
+  // profilo privato va benissimo. Non vede un profilo che diventa privato
+  // **dopo** il collegamento: lì il guasto resta silenzioso, ed è raro.
+  const conLogin = await db.query.storeAccounts.findFirst({
+    columns: { id: true },
+    where: and(
+      eq(schema.storeAccounts.userId, userId),
+      eq(schema.storeAccounts.store, 'steam'),
+      eq(schema.storeAccounts.externalAccountId, steamId),
+      sql`${schema.storeAccounts.credentials} is not null`,
+    ),
+  });
+  if (!conLogin) await fetchSteamLibrary(steamId);
+
   return upsertAccount({
     userId,
     store: 'steam',
@@ -459,6 +498,33 @@ export async function linkSteamAccount(
     // rumoroso — al massimo rende null e si ripiega sull'id, come prima.
     displayName: await fetchSteamPersonaName(steamId),
     label: options.label,
+    expectedExternalAccountId: options.relinking?.externalAccountId,
+  });
+}
+
+/**
+ * Collega Steam dopo il login col QR: la riga dello SteamID64 prende la
+ * credenziale.
+ *
+ * Su un account che c'era col solo profilo è la stessa riga, con la credenziale
+ * in più; su uno nuovo, una riga nuova. Su un ricollegamento si controlla che il
+ * login sia stato fatto **con quell'account**: l'app Steam sul telefono può
+ * essere collegata a un altro, e senza il controllo se ne aggiornerebbe in
+ * silenzio uno diverso.
+ */
+export async function linkSteamLogin(
+  userId: string,
+  login: SteamLogin,
+  options: LinkOptions = {},
+) {
+  return upsertAccount({
+    userId,
+    store: 'steam',
+    externalAccountId: login.steamId,
+    displayName: await fetchSteamPersonaName(login.steamId),
+    label: options.label,
+    credentials: login.credentials,
+    expiresAt: new Date(login.credentials.expiresAt),
     expectedExternalAccountId: options.relinking?.externalAccountId,
   });
 }
@@ -710,8 +776,9 @@ export async function amazonAccess(account: StoreAccountRow) {
  *
  * Lo `state` esiste per Amazon, che deve decidere il serial del dispositivo
  * **prima** del login e ritrovarlo dopo (vedi `external/amazon.ts`). Gli altri
- * rendono null. Steam non ha un login: lì si incolla il proprio profilo, che è
- * pubblico.
+ * rendono null. Steam non passa da un indirizzo: il login col QR è una sessione che
+ * il server tiene aperta (`steam-login.ts`), e col solo profilo si incolla il
+ * proprio, che è pubblico.
  *
  * Su un ricollegamento si passa l'account, e Amazon riusa il suo serial: senza,
  * ogni ricollegamento lascerebbe un «AGSLauncher» in più fra i dispositivi
@@ -872,12 +939,14 @@ export async function requireReauth(
  * esattamente questo — chi chiede il rinnovo, e come si riconosce un rifiuto
  * definitivo da una rete che cade.
  *
- * Steam non c'è: non ha credenziali che scadano.
+ * Steam c'è solo per chi ha fatto il login (9f): chi ha incollato il profilo non
+ * ha credenziale, e il suo import non passa da qui.
  */
 const OAUTH_STORES = {
   gog: { refresh: refreshGogTokens, AuthError: GogAuthError },
   epic: { refresh: refreshEpicTokens, AuthError: EpicAuthError },
   psn: { refresh: refreshPsnTokens, AuthError: PsnAuthError },
+  steam: { refresh: refreshSteamTokens, AuthError: SteamAuthError },
 } as const;
 
 // Amazon **non è qui** e non è una dimenticanza: il suo rinnovo non ruota il

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."subscription" ADD VALUE 'steam_family';

@@ -352,7 +352,8 @@
     "NOT_FOUND": "I can't find this any more: it may have been removed.",
     "CONFLICT": "This already exists.",
     "TOO_MANY_REQUESTS": "Too many requests in a row. Try again shortly.",
-    "INTERNAL_SERVER_ERROR": "Something went wrong on the server side."
+    "INTERNAL_SERVER_ERROR": "Something went wrong on the server side.",
+    "PRECONDITION_FAILED": "This can't be done in the current state."
   },
   "authErrors": {
     "INVALID_EMAIL_OR_PASSWORD": "Wrong email or password.",
@@ -506,9 +507,9 @@
     },
     "stores": {
       "steam": {
-        "inputLabel": "Steam profile",
+        "inputLabel": "Public profile only",
         "placeholder": "https://steamcommunity.com/id/…",
-        "hint": "Paste your Steam profile URL, your SteamID64 or your custom name. The profile must be public, otherwise Steam won't let us read the library."
+        "hint": "Paste your Steam profile URL, your SteamID64 or your custom name. The profile and the game details must be public, otherwise Steam won't let us read the library: in that case, sign in with Steam."
       },
       "gog": {
         "inputLabel": "Landing address",
@@ -575,6 +576,50 @@
     "hiddenEntries": {
       "description": "They don't show up in your backlog or in the filters, but they're still yours: ownership doesn't change.",
       "showAll": "See all {count} in your backlog"
+    },
+    "steamLogin": {
+      "button": "Sign in with Steam",
+      "recommended": "Recommended",
+      "benefitFamily": "Includes your Steam family's games",
+      "benefitPrivate": "Works with a private profile too",
+      "benefitDate": "Imports the purchase date",
+      "phoneHint": "Done with your phone: the Steam app, and a QR code to scan.",
+      "or": "or",
+      "profileTitle": "Public profile only",
+      "profileHint": "Both the profile and the game details must be public.",
+      "privateProfile": "This Steam profile is private: Ludex can't read the library. Make the profile and the game details public, or sign in with Steam.",
+      "back": "Back",
+      "title": "Sign in with Steam",
+      "description": "With a login Ludex reads your Steam family too, and it works with a private profile.",
+      "preparing": "Preparing the code…",
+      "qrAlt": "QR code to scan with the Steam app",
+      "waiting": "Waiting for the scan…",
+      "step1": "1. Open the Steam app on your phone",
+      "step2": "2. Tap Steam Guard, then “Sign in with a QR code”",
+      "step3": "3. Scan the code and confirm",
+      "validFor": "The code is valid for 5 minutes.",
+      "newCode": "Generate a new QR code",
+      "scanned": "Confirm in the Steam app",
+      "expired": "The code has expired.",
+      "failed": "Steam didn't confirm the sign-in.",
+      "wrongAccount": "You signed in with a different Steam account than the expected one.",
+      "retry": "Try again",
+      "startFailed": "Couldn't prepare the code",
+      "done": "Steam linked: import started",
+      "badgeOn": "Signed in",
+      "badgeDead": "With login",
+      "familyIncluded": "family included",
+      "badgeProfileOnly": "Profile only",
+      "signIn": "Sign in with Steam",
+      "removeLogin": "Remove the login",
+      "removeTitle": "Remove the Steam login",
+      "removeBody": "The Steam account and your games stay, and the import carries on from the public profile.",
+      "removeFamily": "Family copies leave the library, except those you've rated, noted or tagged. You can sign in again whenever you want.",
+      "removeCancel": "Cancel",
+      "removeConfirm": "Remove the login",
+      "removed": "Login removed. {removed, plural, =0 {No family copies to remove} one {One family copy removed} other {# family copies removed}}{kept, plural, =0 {} one { · one stays because it has your data} other { · # stay because they have your data}}.",
+      "removeFailed": "Couldn't remove the login",
+      "removeWhileSyncing": "An import is running: remove the login when it's done"
     }
   },
   "critic": {
@@ -590,7 +635,8 @@
     "split": "{positive} positive · {mixed} mixed · {negative} negative"
   },
   "subscription": {
-    "ps_plus": "PS Plus"
+    "ps_plus": "PS Plus",
+    "steam_family": "Steam Family"
   },
   "medium": {
     "digital": "Digital",

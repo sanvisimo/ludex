@@ -3,7 +3,10 @@
 Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli altri file: [modello-dati](modello-dati.md), [import-librerie](import-librerie.md), [negozi](negozi.md), [ordine-sviluppo](ordine-sviluppo.md), [scelte-scartate](scelte-scartate.md).
 
 Steam è l'eccezione, non il modello: una chiave applicativa nostra, un profilo
-pubblico, zero credenziali dell'utente. Nessun altro negozio funziona così.
+pubblico, zero credenziali dell'utente. Nessun altro negozio funziona così. Il 9f
+gli aggiunge un login **facoltativo** col QR, sulla stessa riga dell'account: è
+sul branch `feat/9f-steam-login` e **non è rilasciato**, vedi «Il blocco
+dell'account» più sotto.
 
 Playnite li risolve tutti aprendo una webview, ma **la webview gli serve una
 volta sola**: fatto il login tiene i cookie o i token su disco e da lì in poi usa
@@ -121,15 +124,16 @@ Due pezzi collegati, anche loro da valutare:
 Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 **quanto costa risolvere l'identità**. Misurate su una libreria vera:
 
-| Negozio  | Credenziale                                                        | Id su IGDB                                                       | Ore      |
-| -------- | ------------------------------------------------------------------ | ---------------------------------------------------------------- | -------- |
-| GOG      | refresh token, non scade in pratica                                | product id, sorgente 5 — **94,5% su 435 giochi**                 | no       |
-| Epic     | refresh token                                                      | **nessuno**: vedi sotto                                          | no       |
-| Amazon   | refresh token                                                      | **nessuno**: sorgente 23 ha 678 righe in tutto                   | no       |
-| PSN      | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto | parziali |
-| EA       | sessione corta, si sgancia sempre                                  | nessuno                                                          | sì       |
-| Nintendo | cookie di sessione                                                 | nessuno                                                          | no       |
-| Xbox     | chiave OpenXBL, o XSTS in proprio                                  | `titleId` → ProductId via `displaycatalog`, sorgente 11          | sì       |
+| Negozio          | Credenziale                                                                    | Id su IGDB                                                       | Ore      |
+| ---------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------- | -------- |
+| GOG              | refresh token, non scade in pratica                                            | product id, sorgente 5 — **94,5% su 435 giochi**                 | no       |
+| Epic             | refresh token                                                                  | **nessuno**: vedi sotto                                          | no       |
+| Amazon           | refresh token                                                                  | **nessuno**: sorgente 23 ha 678 righe in tutto                   | no       |
+| PSN              | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo             | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto | parziali |
+| EA               | sessione corta, si sgancia sempre                                              | nessuno                                                          | sì       |
+| Nintendo         | cookie di sessione                                                             | nessuno                                                          | no       |
+| Xbox             | chiave OpenXBL, o XSTS in proprio                                              | `titleId` → ProductId via `displaycatalog`, sorgente 11          | sì       |
+| Steam, col login | refresh token **210–212 giorni**, access token 24 ore, rinnovo dentro l'import | appid, la sorgente Steam di IGDB, come col solo profilo          | sì       |
 
 Le prime due colonne sono state scritte **prima** di provare, e il 9b ha
 smentito quella su PSN in tutte e due i campi — e poi ha smentito la sua stessa
@@ -323,12 +327,12 @@ un server non è attaccato. Con Battle.net non c'è nemmeno il ripiego di un
 endpoint pubblico: l'OAuth ufficiale di Blizzard esiste ma non espone la libreria
 a nessuno.
 
-Steam Family, quando si farà (9f), legge la libreria con lo stesso
-`GetOwnedGames` chiamato su N SteamID64. Qui c'era scritto che **non porta
-credenziali nuove**, e va verificato prima di crederci: sapere _chi_ sta nella
-famiglia probabilmente richiede il token di un membro, cioè il login Steam che
-il 9f porta con sé. La parte che resta certa è l'altra: è un problema di
-modello, e lo stesso di Xbox.
+Steam Family (9f) era descritta qui come lo stesso `GetOwnedGames` chiamato su N
+SteamID64, senza credenziali nuove. **Smentito il 05/10/2026**: la famiglia non
+si legge dai profili dei membri ma da `IFamilyGroupsService`, che vuole il token
+del login, e la chiave applicativa da sola dà 401. Le misure sono in «Steam
+Family e il login Steam» più sotto. La parte che resta vera è l'altra: è un
+problema di modello, e lo stesso di Xbox.
 
 Che è la domanda che nessun negozio del 9a poneva, e che **il 9b ha posto subito
 e in grande**: un gioco a cui puoi giocare stasera ma che non è tuo — Game Pass,
@@ -351,13 +355,228 @@ riscrive **senza COALESCE**, al contrario delle ore, ed è voluto: il caso che
 conta è quello in cui il valore sparisce — compri un gioco che avevi col Plus, e
 il possesso deve smettere di dire che dipende dall'abbonamento.
 
-Resta aperto il pezzo che PSN non pone: la libreria di **tuo fratello**, cioè
-Steam Family e Xbox, dove ciò che torna non è nemmeno un abbonamento tuo. Lì la
-risposta di oggi non si estende da sola.
+Restava aperto il pezzo che PSN non pone: la libreria di **tuo fratello**, cioè
+Steam Family e Xbox, dove ciò che torna non è nemmeno un abbonamento tuo. Per
+**Steam** il 9f ha risposto nello stesso modo: le copie della famiglia **entrano**
+nel backlog, marcate `steam_family` — non è un abbonamento ma la domanda è la
+stessa, «è tua o ce l'hai finché dura un diritto che non è tuo?» — e se ne vanno
+quando la famiglia le toglie (vedi «Steam Family e il login Steam»). Per Xbox
+resta aperto.
 
 **`store_account_id` non è quella risposta**, e non va scambiato per tale: dice
 di chi è la copia, non se è tua — e ora nemmeno `subscription` va scambiata per
 la stessa cosa, perché dice a che titolo ce l'hai, non di chi è l'abbonamento.
+
+## Steam Family e il login Steam (9f)
+
+**Misurato il 05/10/2026**, in sola lettura, con `pnpm --filter api
+steam:family-probe` su un account vero: una famiglia da cinque membri (l'utente
+e altri quattro), un posto libero e due ex membri, 453 giochi in
+`GetOwnedGames`. Il probe non scrive niente e non stampa token: dei token
+mostra solo audience e scadenze, lette dal JWT.
+
+**Il login.** Col QR dell'app Steam, con `steam-session` e piattaforma
+`MobileApp`. Il README della libreria dice che è l'unica piattaforma i cui token
+si rinnovano da un server (`WebBrowser` risponde `AccessDenied`, `SteamClient`
+vuole una sessione CM aperta); non l'abbiamo provato, perché il probe usa solo
+`MobileApp`.
+
+| Cosa                                   | Misurato                                                                                                        |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| refresh token                          | audience `web, renew, derive, mobile`, **210–212 giorni** (18 305 360, 18 211 050 e 18 179 376 s, in tre login) |
+| access token                           | audience `web, mobile`, **24 ore e mezza** (fra 86 848 e 87 904 s, in quattro login)                            |
+| nuovo access token dal refresh token   | funziona (`refreshAccessToken`), stessa audience, 88 049 s                                                      |
+| `renewRefreshToken()` a token fresco   | **non emette** un refresh token nuovo: resta il vecchio                                                         |
+| access token su `IFamilyGroupsService` | accettato: `GetFamilyGroupForUser`, `GetFamilyGroup`, `GetSharedLibraryApps`                                    |
+| access token su `GetOwnedGames`        | accettato: 453 giochi, **gli stessi** della chiave (0 solo col token)                                           |
+
+Il percorso di Playnite (cookie web → `webapi_token` dalla pagina dello store)
+**funziona e non serve**: `getWebCookies()` rende `steamLoginSecure` e
+`sessionid`, `ajaxgetasyncconfig` rende un `webapi_token` con la stessa audience
+e la stessa durata dell'access token, e la famiglia con quello torna identica
+(343 app). Un percorso in più che dà ciò che il refresh token dà già.
+
+**Non misurato, e conta per il rinnovo.** Con un token appena emesso Steam non
+ne emette uno nuovo, quindi non sappiamo **da quando** lo fa (probabilmente
+vicino alla scadenza) né se la finestra riparte. Il README di `steam-session`
+avverte che quando un refresh token viene davvero rinnovato **il vecchio muore
+subito**: stesso vincolo di GOG, Epic e PSN, e non l'abbiamo visto accadere.
+
+**La famiglia.** `GetFamilyGroupForUser` rende `family_groupid` e
+`is_not_member_of_any_group`; `GetFamilyGroup` rende i membri (5), i posti
+liberi e gli ex membri. Su `GetSharedLibraryApps` ogni app porta `appid`,
+`name`, `owner_steamids` (uno o più), `exclude_reason`, `rt_time_acquired`,
+`rt_last_played`, `rt_playtime` e `app_type`.
+
+|                                   | `include_own=false` | `include_own=true` | `+ include_excluded`, `include_free`, `include_non_games` |
+| --------------------------------- | ------------------- | ------------------ | --------------------------------------------------------- |
+| app                               | 343                 | 772                | 972                                                       |
+| con `exclude_reason`              | **0**               | 42 (tutti `3`)     | 191 (`3`: 179, `6`: 8, `1`: 4)                            |
+| `app_type`                        | tutti `1`           | tutti `1`          | `1`: 777, `4`: 172, `8192`: 11, `8`: 8, `2`: 4            |
+| con me fra gli `owner_steamids`   | 0                   | 501                | 676                                                       |
+| presenti in `GetOwnedGames` (453) | 70                  | 448                | 453                                                       |
+| proprietari per app (1 / 2 / 3)   | 322 / 21 / 0        | 687 / 77 / 8       | 859 / 101 / 12                                            |
+| `rt_time_acquired` valorizzato    | 343 su 343          | 772 su 772         | 972 su 972                                                |
+
+- **Senza i flag di apertura Steam filtra già lei.** Gli esclusi, i gratuiti e
+  i non-giochi compaiono solo se si chiedono: nella chiamata base `exclude_reason`
+  non c'è mai su `include_own=false`, e su `include_own=true` ce n'è un solo
+  valore. Che cosa vogliano dire `1`, `3` e `6` **non è documentato** e non lo
+  indoviniamo; nel terzo giro i `4` che portano `3` sono, per esempio, _Source
+  SDK_ e _Half-Life Dedicated Server_.
+- **`include_own=false` non vuol dire «non miei».** 70 delle sue 343 app sono
+  anche in `GetOwnedGames`, e in nessuna io compaio fra i proprietari: sono
+  giochi che **anche** un altro membro possiede, e la risposta toglie me
+  dall'elenco senza togliere l'app. Quindi «si saltano quelli che possiedo già» non è
+  ridondante. Inferenza, non misura diretta: i 343 tornano come 271 (le app di
+  `include_own=true` dove io **non** sono proprietario) più 72 (quelle dove lo
+  sono, insieme a un altro); i 72 sono i 70 di `GetOwnedGames` più 2 che quella
+  lista non ha.
+- **Le app solo della famiglia non hanno mai `exclude_reason`** (misurato col nostro
+  client, 05/10/2026): le 42 che ne portano uno su `include_own=true` sono tutte
+  app dove l'utente è proprietario, e delle 271 solo della famiglia nessuna. Il
+  filtro dell'import resta come guardia, ma su questa famiglia non scarta niente.
+- **Ciò che è mio si distingue da `owner_steamids`**: se c'è il mio SteamID
+  l'app è mia, altrimenti è solo della famiglia. Una chiamata sola con
+  `include_own=true` basterebbe a separare le due cose.
+- **`rt_playtime` sono minuti, e le mie.** Uguale a `playtime_forever` su 20 app
+  su 20 (`include_own=false`) e 66 su 66 (`include_own=true`), fra quelle che
+  ho giocato. Sulle app che non possiedo non c'è un termine di paragone.
+- **I proprietari sono ripartiti fra i membri**: sulle 343, 140, 112, 89 e 23
+  app per i quattro altri (la somma supera 343 perché 21 hanno due
+  proprietari).
+
+**I rifiuti, misurati il 05/10/2026 con i nostri client** (senza login: un token
+finto resta finto):
+
+| Prova                                                     | Risposta di Steam                                           |
+| --------------------------------------------------------- | ----------------------------------------------------------- |
+| token inventato su `GetFamilyGroupForUser`                | **401**                                                     |
+| token inventato su `GetOwnedGames`                        | **401**                                                     |
+| refresh token ben formato ma falso, non scaduto           | `AccessDenied` (15)                                         |
+| refresh token ben formato ma falso, con `exp` nel passato | `AccessDenied` (15), lo stesso                              |
+| stringa che non è un JWT                                  | il setter di `steam-session` alza `Invalid JWT`, senza rete |
+
+Il falso con `exp` passato risponde come quello non scaduto: Steam controlla la
+firma prima della data, quindi **questo non dice quale `EResult` dia un refresh
+token scaduto davvero**, né uno revocato. Resta da vedere alla prima revoca
+vera, togliendo la sessione da Steam Guard. `AccessDenied` è invece confermato
+come il rifiuto, ed è già in `REFUSED`.
+
+**La sola chiave applicativa** su `GetSharedLibraryApps` risponde **401** con un
+corpo **HTML**, non JSON: «Access is denied. Retrying will not help. Please
+verify your key= parameter». Un client che prova a leggerlo come JSON si ritrova
+un errore di parsing e non un rifiuto.
+
+**Profilo privato.** Non misurato, e per tre giri il controllo era sbagliato.
+Il probe è stato lanciato tre volte il 05/10/2026 e i numeri sopra coincidono
+(stessi 343, 772 e 972 app, stessi 453 giochi).
+
+- Il primo controllo leggeva `communityvisibilitystate` di `GetPlayerSummaries`,
+  che **non segue «Il mio profilo»**: con tutto su Privato (profilo, dettagli dei
+  giochi, inventario, da screenshot) vale ancora `3`, perché segue i «dettagli di
+  base», che restano pubblici.
+- Il secondo si fidava della **chiave**: se rende una risposta vuota i giochi
+  sono nascosti. Ma con tutto su Privato, e un anonimo che dal profilo XML della
+  Community legge `privacyState: private`, la chiave rende comunque i 453 giochi.
+  La spiegazione più probabile è che la chiave sia dell'account interrogato, e
+  Steam le mostri i dati privati come al proprietario. Quindi **a profilo privato
+  il confronto chiave contro token non dice niente sugli altri utenti**, per cui
+  la risposta vuota della chiave resta quella misurata allo step 4
+  (`SteamLibraryNotVisibleError`).
+- Il segnale che regge è `privacyState` del profilo XML della Community
+  (`/profiles/{id}/?xml=1`), letto da anonimo: distingue `public`, `friendsonly` e
+  `private`. Non dice i «dettagli dei giochi», che sono una voce a parte: una
+  pagina della Community che li distingua non l'abbiamo trovata, e
+  `/games?xml=1` non rende più XML.
+
+**Misurato nel quarto giro**, con `profilo da anonimo: private`: il token legge la
+libreria propria a profilo privato, **453 giochi, gli stessi della chiave e di
+`GetOwnedGames`, nessuno mancante** (`fetchSteamLibrary` col token, il nostro
+client). Era l'attesa, ed è la risposta alla domanda che contava: col login un
+profilo privato non impedisce di importare. La chiave, per gli altri utenti che
+non sono il suo proprietario, resta vuota.
+
+### Come è fatto (9f)
+
+Sul branch `feat/9f-steam-login`. Il piano e le ragioni sono in
+[plans/9f-steam-login.md](../plans/9f-steam-login.md).
+
+- **Un account, due modi.** Il profilo incollato e il login col QR sono due modi
+  della **stessa riga** di `store_accounts`: la chiave è lo SteamID64, quindi fare
+  l'uno dopo l'altro aggiorna la riga e non duplica i giochi. Col login la riga
+  ha una credenziale cifrata come gli altri negozi (`steam` in `OAUTH_STORES`);
+  l'elenco account dice solo **se** c'è (`hasLogin`), mai la credenziale. Togliere
+  il solo login lascia account, profilo e giochi propri.
+- **Il QR è una sessione, non una mutazione.** Il server la tiene aperta in
+  **memoria nel processo dell'API** mentre l'utente inquadra e conferma
+  (`accounts.steamLogin.{start,status,remove}`); cinque minuti per il QR, e un
+  riavvio costa un QR da rifare. Con più repliche servirebbe Redis. A conferma
+  l'account è già scritto e l'import accodato.
+- **La famiglia entra come `steam_family`**, con le ore dell'utente e **senza data
+  d'acquisto** (è del proprietario, e `backlog.added_at` si porta solo
+  indietro). Solo dove l'utente non ha già il gioco: sulla stessa riga Steam di
+  un acquisto la copia della famiglia non si scrive, e **non esiste una seconda
+  riga Steam per lo stesso gioco**. Steam distingue le due copie per i DLC, che
+  Ludex non tiene; farlo vorrebbe dire cambiare la chiave del vincolo sui
+  possessi, condivisa con tutti i negozi, e rovinerebbe il caso PSN in cui
+  comprare smette di dire «da abbonamento».
+- **Cosa esce, e cosa resta.** Una copia della famiglia che la famiglia non ha
+  più si toglie al reimport; se non resta altro e la riga ha dati dell'utente
+  (voto, note, tag, stato) **la copia resta**, perché una riga senza possessi non
+  è uno stato legittimo e il voto non sparisce per una licenza tolta. Non
+  adotta i possessi scritti a mano: restano due righe.
+- **Le date d'acquisto** si scrivono sulle copie proprie, dove l'utente è fra i
+  proprietari. Un'app nella libreria propria che la famiglia elenca con un altro
+  proprietario soltanto resta senza data.
+- **Profilo privato senza login**: al collegamento col solo profilo si legge la
+  libreria prima di collegare, e un profilo privato **non collega**
+  (`PRECONDITION_FAILED`), con l'invito ad accedere con Steam. Un import fallito è
+  silenzioso per l'utente (l'evento `finished` ricarica la lista e basta), per
+  questo il controllo sta al collegamento. Non vede un profilo che diventa
+  privato **dopo**.
+- **Il primo import vero** (05/10/2026, col login, dal browser): 269 copie della
+  famiglia su 271 attese (le altre 2 sono giochi non risolti da IGDB, fra gli
+  scarti), 446 copie proprie di cui 442 con la data, nessuna copia della famiglia
+  con data. _Portal_ e _Portal 2_ risultano del 2025-07-02, come sulla pagina
+  delle licenze di Steam: l'ipotesi sulle date regge su due giochi.
+
+### Il blocco dell'account (05/10/2026)
+
+**Dopo la prova vera, fatta dal browser in locale, Steam ha bloccato
+temporaneamente l'account dell'utente.** Il messaggio parla di un «dispositivo
+inatteso» che ha effettuato l'accesso, dice che **non è un ban**, e limita
+l'account (acquisti, doni, scambi, Community) finché il proprietario non lo recupera
+con l'Assistenza di Steam, via `help.steampowered.com`.
+
+Cosa era successo prima, da questa macchina, con quell'account:
+
+- diversi login col QR in poche ore, dal probe `steam:family-probe` e dalla prova
+  vera, tutti come «app mobile»;
+- richieste a `IFamilyGroupsService` e a `GetOwnedGames` col token;
+- nelle ultime esecuzioni del probe, **refresh token falsi con dentro lo SteamID
+  dell'utente** e token inventati, per misurare gli errori (ora dietro
+  `--error-paths`, spento di default);
+- una ventina di QR aperti dai test della schermata e mai approvati.
+
+**La causa non è accertata**, e non c'è modo di saperla da qui: può essere il
+login in sé (un dispositivo nuovo che entra da un indirizzo di server o di casa),
+la frequenza, i token falsi, o tutte e tre. La risposta dell'Assistenza non c'è
+ancora. Quello che **non** sappiamo, e che decide se il login si può rilasciare:
+
+- se Steam considera sospetto **qualsiasi** login fatto da un server per conto di un
+  utente, o solo il modo in cui sono state fatte le prove;
+- se conta l'indirizzo (quello del server, diverso da quello del telefono che
+  approva) e se dopo il primo accesso i rinnovi periodici passano senza avvisi;
+- se un blocco simile colpirebbe gli altri utenti di Ludex, che farebbero un solo
+  login ciascuno ma tutti da un solo indirizzo.
+
+Finché non c'è una risposta il login Steam **non si rilascia**, e **nessun probe o
+prova si lancia contro un account vero senza averlo concordato** (vedi l'avvertimento
+in cima al probe). Le strade, a decisione presa: tenere il codice dietro un
+interruttore spento, restare col solo profilo pubblico (che non tocca l'account),
+oppure capire dalla documentazione di Valve o dall'Assistenza se questo tipo di
+login è accettato.
 
 ## La data d'acquisto
 
@@ -369,7 +588,7 @@ Diventa `ownerships.acquired_at` della copia, e la più vecchia delle copie
 | Epic    | `acquisitionDate` sul record di `library/api/public/items`, nella risposta che già si scarica                                                                              | 888/888 record |
 | Amazon  | `entitlementDateFromEpoch` sull'entitlement: millisecondi, **come stringa**                                                                                                | 95/95          |
 | GOG     | **non** in `getFilteredProducts`: sta nella libreria di Galaxy, `galaxy-library.gog.com/users/{galaxyUserId}/releases`, stesso token, 500 per pagina con `next_page_token` | 442/442        |
-| Steam   | niente in `GetOwnedGames`. C'è nella pagina delle licenze, che vuole il login: 9f                                                                                          | —              |
+| Steam   | niente in `GetOwnedGames`. Col login, `rt_time_acquired` su `GetSharedLibraryApps` (misurato il 05/10/2026, vedi «Steam Family e il login Steam»): **501/501** sui miei    | 501/501        |
 | PSN     | niente fra gli acquisti: vedi sotto                                                                                                                                        | —              |
 
 Su Epic un prodotto ha più record — i DLC hanno lo stesso `productId` — e vale
@@ -380,6 +599,24 @@ vecchi (23 giochi su quel giorno solo). Si prende la prima, e la seconda dove
 manca. Galaxy porta anche i giochi degli altri negozi che integra: di quelli
 non si tiene niente, la loro data è quando Galaxy li ha visti. E Galaxy **non
 blocca** l'import: se non risponde, i giochi entrano lo stesso, senza data.
+
+**Steam: la data c'è, e per le copie proprie è quella giusta.**
+`rt_time_acquired` è valorizzato su ogni app, ma **lo stesso gioco ha date
+diverse a seconda della chiamata**: _Portal_ vale 2011-09-20 con
+`include_own=false` e 2025-07-02 con `include_own=true`. È la data di **una**
+copia. Riscontro del 05/10/2026 sulla pagina delle licenze di Steam
+(`store.steampowered.com/account/licenses`): _Portal_ e _Portal 2_ risultano
+acquisiti il 2 luglio 2025, quindi per un'app in comune con un parente la risposta
+con `include_own=true` dà la data **dell'utente**, e quella del proprietario
+(2011) è l'altra chiamata. _Portal 2_ non era nel campione stampato dal probe, e
+resta da confrontare in pagina dopo il primo import.
+
+Sulle app **solo della famiglia** la data è del proprietario (la più vecchia
+misurata è del 2008, prima che l'utente entrasse nella famiglia) e non dice quando
+il gioco è diventato giocabile per lui: non va scritta come `acquired_at`, o
+farebbe arretrare `backlog.added_at`, che si porta solo indietro. E sulle app che
+la libreria propria ha ma la famiglia elenca con un altro proprietario soltanto,
+la data è sua e non si usa.
 
 **PSN: le date ci sono, ma non le prendiamo.** Stanno nello storico
 transazioni del PlayStation Store, e ci si arriva solo con la sessione del sito:

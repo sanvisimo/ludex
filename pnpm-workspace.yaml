@@ -13,6 +13,9 @@ allowBuilds:
   # acceleratore nativo opzionale di msgpackr (BullMQ): senza, si usa il
   # fallback in JS. Nessuna perdita funzionale, un binario in meno da compilare.
   msgpackr-extract: false
+  # Arriva da steam-session. Il postinstall controlla solo la versione di
+  # protobufjs-cli, che non usiamo: il build script non serve.
+  protobufjs: false
 minimumReleaseAgeExclude:
   - '@better-auth/core@1.6.27'
   - '@better-auth/drizzle-adapter@1.6.27'

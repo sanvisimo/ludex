@@ -19,6 +19,7 @@ import { Plus } from '@repo/ui/icons';
 import { useTranslations } from 'use-intl';
 import { useState } from 'react';
 
+import { SteamLink } from '@/components/steam-link';
 import { StoreLinkForm } from '@/components/store-link-form';
 import { useStoreLabels } from '@/lib/labels';
 
@@ -86,12 +87,17 @@ export function AddStoreAccount({
           {/* La chiave rimonta il modulo cambiando negozio: il testo incollato
               per GOG non deve restare nel campo quando si passa ad Amazon. Da
               collegato il dialogo si chiude: la scheda nuova è nella griglia. */}
-          <StoreLinkForm
-            key={store}
-            store={store}
-            submitLabel={t('submit')}
-            onLinked={() => setOpen(false)}
-          />
+          {store === 'steam' ? (
+            // Steam ha due modi, il login col QR e il solo profilo: un corpo suo.
+            <SteamLink key={store} onLinked={() => setOpen(false)} />
+          ) : (
+            <StoreLinkForm
+              key={store}
+              store={store}
+              submitLabel={t('submit')}
+              onLinked={() => setOpen(false)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>

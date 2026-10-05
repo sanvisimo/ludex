@@ -162,6 +162,13 @@ direzione col CSS. Cose che non si indovinano:
   eventi, quindi `networkidle` non scatta mai; si aspetta un selettore. L'accesso
   si fa con una `POST /api/auth/sign-in/email` dal contesto del browser: il cookie
   è per host e non per porta, quindi vale anche sul web.
+- **Steam ha un corpo suo nel dialogo «Aggiungi libreria»** (`steam-link.tsx`): il
+  login col QR sopra, il profilo sotto, e il nome facoltativo condiviso. Il QR è
+  `steam-qr-panel.tsx`: lo chiede all'apertura e interroga `status` ogni due
+  secondi, e **chiudere il pannello smette di chiedere**. La scheda dice se
+  l'account ha il login (`hasLogin`) e il menu ha «Accedi con Steam» e «Togli il
+  login». Un import fallito **non arriva alla schermata**, per questo il profilo
+  privato si controlla al collegamento e l'avviso sta nel dialogo.
 - **Tailwind resta** in `resolve-import-dialog.tsx`, `store-link-form.tsx` e
   `unlink-account-dialog.tsx`: i dialoghi dell'account non sono ancora riscritti.
 

@@ -92,7 +92,13 @@ export const storeAccountStatusValues = [
 // mensile riscattato — che resta tuo finché sei abbonato — sia per il catalogo
 // Extra/Premium, che tuo non è mai stato. **Quella distinzione l'API non la
 // fa**, e nessun valore qui può inventarla.
-export const subscriptionValues = ['ps_plus'] as const;
+//
+// `steam_family` arriva col 9f ed è un caso diverso: non è un abbonamento ma la
+// libreria di un altro membro della famiglia Steam. Sta qui perché la domanda
+// è la stessa — «questa copia è tua, o ce l'hai finché dura un diritto che non
+// è tuo?» — e perché al reimport si riscrive, come `ps_plus`. Un gioco che esce
+// dalla famiglia se ne va dal reimport; uno comprato poi torna nullo da solo.
+export const subscriptionValues = ['ps_plus', 'steam_family'] as const;
 
 // **Su che supporto** sta una copia: un diritto digitale o un disco.
 //

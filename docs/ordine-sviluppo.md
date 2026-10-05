@@ -86,10 +86,14 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
    - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
      prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
      librerie», e per ora è volutamente aperta.
-   - **9f — Steam con login e Family**: il login Steam al posto del solo
-     profilo pubblico, e con lui la libreria della famiglia. Ha la stessa
-     domanda di Xbox — un gioco della libreria di tuo fratello è tuo? — e va
-     fatto per ultimo.
+   - **9f — Steam con login e Family**: il login Steam col QR **accanto** al
+     solo profilo pubblico (le due cose sulla stessa riga), e con lui la
+     libreria della famiglia. La domanda sul «gioco di tuo fratello» ha avuto la
+     stessa risposta del PSN Plus: entra, marcato `steam_family`. **Fatto sul
+     branch `feat/9f-steam-login`, non rilasciato**: dopo la prova vera Steam ha
+     bloccato temporaneamente l'account dell'utente, e finché non si sa se un
+     login da server è accettato resta fermo. Vedi «Il blocco dell'account» in
+     [negozi](negozi.md) e il piano in `plans/9f-steam-login.md`.
 10. **Import da file** — importazione di giochi da file CSV. **In analisi.**
     Il file di prova è un export di Playnite, in
     `apps/api/test/fixtures/playnite-export-2026-08.csv`.

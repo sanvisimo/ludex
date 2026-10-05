@@ -36,7 +36,8 @@ export type SteamLibraryEntry = {
 export class SteamLibraryNotVisibleError extends Error {
   constructor(steamId: string) {
     super(
-      `Steam non espone la libreria di ${steamId}: profilo privato, dettagli dei giochi nascosti, o SteamID inesistente`,
+      `Steam non espone la libreria di ${steamId}: profilo privato, dettagli dei giochi nascosti, o SteamID inesistente. ` +
+        'Rendi pubblici il profilo e i dettagli dei giochi, oppure accedi con Steam.',
     );
     this.name = 'SteamLibraryNotVisibleError';
   }
@@ -60,11 +61,37 @@ function apiKey() {
   return key;
 }
 
+/**
+ * Steam ha rifiutato il token, o la chiave dove non vale.
+ *
+ * Distinto da un errore qualunque perché il chiamante ci fa una cosa diversa:
+ * con un token di un utente che ha fatto il login vuol dire che il credenziale
+ * è morto e va rifatto, mentre un 500 è Steam in affanno e il job riprova.
+ *
+ * Il messaggio porta lo stato e **mai l'URL**, che contiene il token.
+ */
+export class SteamUnauthorizedError extends Error {
+  constructor(
+    what: string,
+    readonly status: number,
+  ) {
+    super(`Steam ${what}: accesso rifiutato (${status})`);
+    this.name = 'SteamUnauthorizedError';
+  }
+}
+
+/**
+ * La libreria propria, con la chiave (profilo pubblico) o, se c'è un token, con
+ * quello (9f): a profilo privato la chiave risponde vuota, mentre il token è
+ * l'utente stesso e vede la sua libreria come la vede l'app.
+ */
 export async function fetchSteamLibrary(
   steamId: string,
+  accessToken?: string,
 ): Promise<SteamLibraryEntry[]> {
   const url = new URL(OWNED_GAMES_URL);
-  url.searchParams.set('key', apiKey());
+  if (accessToken) url.searchParams.set('access_token', accessToken);
+  else url.searchParams.set('key', apiKey());
   url.searchParams.set('steamid', steamId);
   // Senza `include_appinfo` tornano solo gli appid, e i nomi servono: sono
   // l'unica cosa mostrabile per le voci che non si risolvono.
@@ -73,6 +100,11 @@ export async function fetchSteamLibrary(
   url.searchParams.set('include_played_free_games', '1');
 
   const response = await fetch(url);
+  // Col token un rifiuto è il credenziale che non vale più. Con la chiave resta
+  // l'errore di sempre, qui sotto: non è colpa dell'utente.
+  if (accessToken && (response.status === 401 || response.status === 403)) {
+    throw new SteamUnauthorizedError('GetOwnedGames', response.status);
+  }
   if (!response.ok) {
     // 403 = chiave sbagliata o revocata. Non è colpa dell'utente e non va
     // confuso con un profilo privato.
@@ -131,6 +163,182 @@ export async function fetchSteamPersonaName(
   } catch {
     return null;
   }
+}
+
+// --- La famiglia (9f) ---
+//
+// Non è la Web API pubblica: `IFamilyGroupsService` non è documentata da Valve, e
+// vuole il token di un membro. Playnite la usa allo stesso modo. Misurato il
+// 05/10/2026 su una famiglia da cinque membri, vedi docs/negozi.md.
+
+const FAMILY_GROUP_URL =
+  'https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/';
+const SHARED_LIBRARY_URL =
+  'https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/';
+
+/** Un'app della libreria condivisa, ridotta a ciò che l'import usa. */
+export type SteamSharedApp = {
+  /** L'appid, come stringa: stessa forma di `SteamLibraryEntry.externalId`. */
+  externalId: string;
+  name: string;
+  /**
+   * Gli SteamID64 dei membri che **possiedono** l'app, quello dell'utente
+   * compreso se ce l'ha. È ciò che separa le copie sue da quelle della famiglia:
+   * con `include_own=false` la risposta toglie l'utente dall'elenco senza
+   * togliere l'app: 70 delle 343 app che rendeva erano anche sue.
+   */
+  ownerSteamIds: string[];
+  /** Perché Steam la considera non condivisibile; null se non lo dice. */
+  excludeReason: number | null;
+  /** Minuti, e dell'utente: `rt_playtime` coincide con `playtime_forever`. */
+  playtimeMinutes: number;
+  lastPlayedAt: Date | null;
+  /**
+   * Quando la copia è entrata in libreria. Di **una** copia — la stessa app ha
+   * date diverse a seconda di chi la possiede — quindi sulle app solo della
+   * famiglia è la data del proprietario, non quella in cui sono diventate
+   * giocabili per l'utente.
+   */
+  acquiredAt: Date | null;
+};
+
+export type SteamFamilyLibrary = {
+  /** Falso se l'utente non sta in nessun gruppo famiglia. */
+  inGroup: boolean;
+  /**
+   * Quando l'utente è entrato nella famiglia (`latest_time_joined`, l'ultima volta
+   * se è uscito e rientrato). Nulla fuori da un gruppo.
+   *
+   * Serve a stimare da quando una copia della famiglia è giocabile per lui: non
+   * prima che sia entrato, e non prima che il proprietario l'abbia presa.
+   */
+  joinedAt: Date | null;
+  apps: SteamSharedApp[];
+};
+
+type FamilyGroupResponse = {
+  response?: {
+    family_groupid?: string;
+    is_not_member_of_any_group?: boolean;
+    latest_time_joined?: number;
+  };
+};
+
+type SharedLibraryResponse = {
+  response?: {
+    apps?: {
+      appid: number;
+      name?: string;
+      owner_steamids?: string[];
+      exclude_reason?: number;
+      rt_time_acquired?: number;
+      rt_last_played?: number;
+      rt_playtime?: number;
+    }[];
+  };
+};
+
+/**
+ * Una GET alle API della famiglia, con il token.
+ *
+ * Un 401 non è mai un JSON: Steam risponde con una pagina HTML («Access is
+ * denied»), e leggerla come JSON darebbe un errore di parsing che non dice cosa
+ * è andato storto. Per questo lo stato si guarda **prima** di leggere il corpo.
+ */
+async function familyGet<T>(
+  what: string,
+  base: string,
+  params: Record<string, string>,
+): Promise<T> {
+  const url = new URL(base);
+  for (const [name, value] of Object.entries(params)) {
+    url.searchParams.set(name, value);
+  }
+
+  const response = await fetch(url);
+  if (response.status === 401 || response.status === 403) {
+    throw new SteamUnauthorizedError(what, response.status);
+  }
+  if (!response.ok) {
+    // Il corpo si tronca: può essere una pagina intera.
+    throw new Error(
+      `Steam ${what}: ${response.status} ${(await response.text()).slice(0, 200)}`,
+    );
+  }
+  return (await response.json()) as T;
+}
+
+/**
+ * Le app della famiglia dell'utente, **comprese le sue**.
+ *
+ * `include_own=true` e non `false`, ed è misurato: `false` non toglie le app che
+ * l'utente possiede anche lui (70 su 343), le rende solo senza il suo SteamID
+ * fra i proprietari. Con `true` basta guardare `ownerSteamIds` per separare le
+ * sue dalle altre, in una chiamata sola.
+ *
+ * Senza i flag che aprono esclusi, gratuiti e non-giochi: Steam li toglie già
+ * lei, e nella chiamata base `exclude_reason` compare solo su `include_own`.
+ *
+ * L'utente fuori da ogni gruppo, e un gruppo senza altri membri (`apps` assente),
+ * sono la famiglia **vuota** e non un errore: chi ne esce deve poter portare via
+ * le sue copie al reimport.
+ */
+export async function fetchSteamFamilyLibrary(
+  accessToken: string,
+  steamId: string,
+): Promise<SteamFamilyLibrary> {
+  const group = await familyGet<FamilyGroupResponse>(
+    'GetFamilyGroupForUser',
+    FAMILY_GROUP_URL,
+    { access_token: accessToken, steamid: steamId },
+  );
+
+  const groupId = group.response?.family_groupid;
+  if (group.response?.is_not_member_of_any_group || !groupId) {
+    return { inGroup: false, joinedAt: null, apps: [] };
+  }
+
+  const shared = await familyGet<SharedLibraryResponse>(
+    'GetSharedLibraryApps',
+    SHARED_LIBRARY_URL,
+    {
+      access_token: accessToken,
+      steamid: steamId,
+      family_groupid: groupId,
+      include_own: 'true',
+      // Gli stessi nomi di `GetOwnedGames`, che sono in inglese: servono a
+      // risolvere per nome, e due lingue sulla stessa libreria non combaciano.
+      language: 'english',
+    },
+  );
+
+  return {
+    inGroup: true,
+    joinedAt: steamDate(group.response?.latest_time_joined),
+    apps: (shared.response?.apps ?? []).map((app) => ({
+      externalId: String(app.appid),
+      name: app.name?.trim() || `App ${app.appid}`,
+      ownerSteamIds: app.owner_steamids ?? [],
+      excludeReason: app.exclude_reason ? app.exclude_reason : null,
+      playtimeMinutes: app.rt_playtime ?? 0,
+      lastPlayedAt: steamDate(app.rt_last_played, true),
+      acquiredAt: steamDate(app.rt_time_acquired),
+    })),
+  };
+}
+
+/**
+ * Da secondi di epoch a `Date`, con lo zero come «nessuna data».
+ *
+ * Per le ultime partite si scarta anche tutto ciò che è prima del 2004: Playnite
+ * ha visto Steam rendere `1970-01-02` per i giochi giocati prima che registrasse
+ * le date. **Non è una misura nostra**: l'abbiamo copiata dal suo sorgente, e se
+ * sulla nostra libreria non succede mai la guardia è innocua.
+ */
+function steamDate(seconds: number | undefined, lastPlayed = false) {
+  if (!seconds) return null;
+  const date = new Date(seconds * 1000);
+  return lastPlayed && date.getUTCFullYear() < 2004 ? null : date;
 }
 
 const RESOLVE_VANITY_URL =

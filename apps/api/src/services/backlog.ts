@@ -667,6 +667,14 @@ export type OwnershipUpsert = {
  * Ciò che non dichiara niente invece si adotta: una riga senza supporto dice
  * «non lo so», non «un altro».
  *
+ * **Una copia della famiglia Steam non adotta niente.** Il possesso a mano dice
+ * «ce l'ho su PC», e una copia della famiglia dice l'opposto — è di un altro, e
+ * ce l'hai finché c'è la famiglia. Adottarlo vorrebbe dire che il giorno che il
+ * parente toglie il gioco la potatura butta una riga che l'utente aveva scritto
+ * da sé. Restano due righe, come per ogni copia di un altro negozio. Se poi il
+ * gioco lo compri, la tua copia ha la stessa chiave di quella della famiglia e
+ * lì l'adozione riprende: la riga a mano si fonde con l'acquisto, come sempre.
+ *
  * Quando la riga di destinazione **esiste già** — l'import era passato, e la
  * riga a mano è rimasta lì accanto — adottare vorrebbe dire violare il vincolo:
  * lì la riga meno specifica si cancella, perché le due sono la stessa copia e
@@ -711,6 +719,8 @@ async function adottaPossessiMenoSpecifici(rows: OwnershipUpsert[]) {
   // stessa piattaforma, a farsi adottare sarebbe quella che càpita per prima.
   for (const esatto of [true, false]) {
     for (const row of rows) {
+      if (row.subscription === 'steam_family') continue;
+
       const destinazione = chiavePossesso(row);
       if (servite.has(destinazione)) continue;
 
