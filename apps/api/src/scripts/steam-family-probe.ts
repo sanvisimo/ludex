@@ -6,12 +6,8 @@ import { join } from 'node:path';
 import QRCode from 'qrcode';
 import { EAuthTokenPlatformType, LoginSession } from 'steam-session';
 
-import {
-  fetchSteamFamilyLibrary,
-  fetchSteamLibrary,
-  SteamUnauthorizedError,
-} from '../external/steam';
-import { refreshSteamTokens, SteamAuthError } from '../external/steam-auth';
+import { fetchSteamFamilyLibrary, fetchSteamLibrary } from '../external/steam';
+import { refreshSteamTokens } from '../external/steam-auth';
 
 // Misure per il 9f (Steam con login e Family). **Non scrive niente**: né sul DB
 // né su disco, a parte il file col QR.
@@ -24,7 +20,7 @@ import { refreshSteamTokens, SteamAuthError } from '../external/steam-auth';
 // senza averlo concordato, e non ripetere i login «per sicurezza»**: uno basta.
 // Vedi «Il blocco dell'account» in docs/negozi.md.
 //
-//   pnpm --filter api steam:family-probe [--qr=percorso.svg] [--private-check[=secondi]] [--error-paths]
+//   pnpm --filter api steam:family-probe [--qr=percorso.svg] [--private-check[=secondi]]
 //
 // Fa il login col QR dell'app Steam (la scansione la fa l'utente) e poi
 // risponde alle domande che il piano non può chiudere a tavolino:
@@ -38,13 +34,14 @@ import { refreshSteamTokens, SteamAuthError } from '../external/steam-auth';
 //  4. `GetOwnedGames` col token funziona anche coi dettagli dei giochi privati?
 //  4b. il **nostro** client (`refreshSteamTokens`, `fetchSteamFamilyLibrary`,
 //     `fetchSteamLibrary` col token) rende gli stessi numeri delle misure
-//     grezze, e come finiscono i percorsi d'errore con token falsi.
+//     grezze.
 //  5. cosa risponde `GetSharedLibraryApps` alla sola chiave applicativa?
 //
-// `--error-paths` manda a Steam **token inventati e refresh token falsi con
-// dentro lo SteamID di chi lo lancia**, per vedere quale errore risponde. Spento
-// di default: è la cosa che somiglia di più a un tentativo di attacco, e gli
-// errori che dà sono già misurati (docs/negozi.md, «I rifiuti»).
+// **Non manda mai token falsi o inventati a Steam.** Una versione di questo probe lo
+// faceva, per misurare gli errori, con dentro lo SteamID di chi lo lanciava; il
+// 05/10/2026 l'account dell'utente è stato bloccato da Steam e quella è l'ipotesi
+// principale. Gli errori sono già misurati (docs/negozi.md, «I rifiuti») e la
+// sezione è stata tolta.
 //
 // **Nessun token si stampa mai**, nemmeno in parte: solo audience e scadenze,
 // lette dal payload del JWT. I token vivono in memoria e muoiono col processo.
@@ -600,80 +597,6 @@ await sezione('il nostro client', async () => {
     `  fetchSteamLibrary(token): ${propria.length}  ${uguale(propria.length, mieiGiochi.size)}, mancanti rispetto a GetOwnedGames: ${mancanti.length}`,
   );
 });
-
-const errorPaths = flag('error-paths') !== undefined;
-
-if (!errorPaths) {
-  console.log(
-    "\npercorsi d'errore: saltati (token falsi solo con --error-paths: già misurati)",
-  );
-}
-
-if (errorPaths)
-  await sezione("percorsi d'errore", async () => {
-    const descriviErrore = (error: unknown) => {
-      if (error instanceof SteamUnauthorizedError) {
-        return `SteamUnauthorizedError, stato ${error.status}`;
-      }
-      if (error instanceof SteamAuthError) {
-        return `SteamAuthError: ${error.message}`;
-      }
-      const eresult = (error as { eresult?: number }).eresult;
-      return `${error instanceof Error ? error.name : 'errore'}${eresult === undefined ? '' : ` eresult ${eresult}`}: ${error instanceof Error ? error.message.slice(0, 120) : String(error)}`;
-    };
-    const provaErrore = async (
-      etichetta: string,
-      fn: () => Promise<unknown>,
-    ) => {
-      try {
-        await fn();
-        console.log(`  ${etichetta}  NESSUN ERRORE (!)`);
-      } catch (error) {
-        console.log(`  ${etichetta}  ${descriviErrore(error)}`);
-      }
-    };
-
-    // Un token che Steam non ha mai emesso, sulle due chiamate che lo usano.
-    await provaErrore('famiglia, token finto:       ', () =>
-      fetchSteamFamilyLibrary('token-finto', steamId),
-    );
-    await provaErrore('GetOwnedGames, token finto:   ', () =>
-      fetchSteamLibrary(steamId, 'token-finto'),
-    );
-
-    // Un refresh token **ben formato ma falso**: passa i controlli del setter di
-    // steam-session e arriva a Steam, che lo deve rifiutare. È l'unico modo di
-    // misurare quale EResult usi per un rifiuto — e se `REFUSED` lo prende — senza
-    // aspettare 211 giorni o togliere la sessione.
-    const falso = (scadenzaSecondi: number) =>
-      [
-        Buffer.from(JSON.stringify({ alg: 'EdDSA', typ: 'JWT' })).toString(
-          'base64url',
-        ),
-        Buffer.from(
-          JSON.stringify({
-            iss: 'steam',
-            sub: steamId,
-            aud: ['web', 'renew', 'derive', 'mobile'],
-            iat: scadenzaSecondi - 86_400,
-            exp: scadenzaSecondi,
-            jti: '0000_0000_0000',
-          }),
-        ).toString('base64url'),
-        Buffer.alloc(64, 7).toString('base64url'),
-      ].join('.');
-    const adesso = Math.floor(Date.now() / 1000);
-
-    await provaErrore('refresh falso, non scaduto:   ', () =>
-      refreshSteamTokens(falso(adesso + 86_400)),
-    );
-    await provaErrore('refresh falso, già scaduto:   ', () =>
-      refreshSteamTokens(falso(adesso - 3_600)),
-    );
-    await provaErrore('rifiuto del setter:           ', () =>
-      refreshSteamTokens('spazzatura'),
-    );
-  });
 
 // --- 8. il rinnovo ---
 //

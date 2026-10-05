@@ -90,7 +90,7 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
      solo profilo pubblico (le due cose sulla stessa riga), e con lui la
      libreria della famiglia. La domanda sul «gioco di tuo fratello» ha avuto la
      stessa risposta del PSN Plus: entra, marcato `steam_family`. **Fatto sul
-     branch `feat/9f-steam-login`, non rilasciato**: dopo la prova vera Steam ha
+     branch `feat/9f-steam-login`, non rilasciato**: Steam ha
      bloccato temporaneamente l'account dell'utente, e finché non si sa se un
      login da server è accettato resta fermo. Vedi «Il blocco dell'account» in
      [negozi](negozi.md) e il piano in `plans/9f-steam-login.md`.
