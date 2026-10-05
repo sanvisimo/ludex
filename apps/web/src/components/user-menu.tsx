@@ -17,7 +17,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { Library, LogOut, User } from '@repo/ui/icons';
+import { House, Library, LogOut, User } from '@repo/ui/icons';
 import { useMatchRoute, useRouter } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
 import { useState, type ComponentProps, type ReactNode } from 'react';
@@ -30,7 +30,7 @@ import { takeLinkClick } from '@/src/link-click';
 
 /**
  * Chi è collegato, a destra nella barra: l'avatar, e nel menu le sue pagine —
- * backlog e account — e le tre cose che sono sue e non di una pagina: tema,
+ * home, backlog e account — e le tre cose che sono sue e non di una pagina: tema,
  * lingua, uscita.
  *
  * Due forme, scelte dal CSS come la posizione della barra: da `$md` un menu a
@@ -113,6 +113,9 @@ function UserDropdown({ name }: { name: string }) {
         >
           {name}
         </DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => void router.navigate({ to: '/' })}>
+          {t('home')}
+        </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => void router.navigate({ to: '/backlog' })}
         >
@@ -197,6 +200,9 @@ function UserSheet({ name }: { name: string }) {
           </Text>
         </XStack>
         <YStack render="nav" aria-label={name} gap={4}>
+          <SheetLink to="/" icon={<House size={16} />} onNavigate={close}>
+            {t('home')}
+          </SheetLink>
           <SheetLink
             to="/backlog"
             icon={<Library size={16} />}
@@ -345,7 +351,7 @@ function SheetLink({
   onNavigate,
   children,
 }: {
-  to: '/backlog' | '/account';
+  to: '/' | '/backlog' | '/account';
   icon: ReactNode;
   onNavigate: () => void;
   children: string;
@@ -356,7 +362,8 @@ function SheetLink({
   return (
     <NavItem
       href={to}
-      active={matchRoute({ to, fuzzy: true }) !== false}
+      // `/` combacia con ogni percorso: «Home» si accende solo da sé.
+      active={matchRoute({ to, fuzzy: to !== '/' }) !== false}
       icon={icon}
       onClick={(event) => {
         if (!takeLinkClick(event)) return;
