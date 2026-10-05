@@ -143,9 +143,12 @@ const fields = {
   // Famiglia Steam, PS Plus. Sta nel pannello dentro il gruppo Store, ma è un
   // criterio suo: `ownerships.subscription` è un'altra colonna.
   subscriptions: field(listOf(oneOf(subscriptionValues)), [] as Subscription[]),
-  // Solo i giochi con almeno una copia tua: toglie quelli che hai solo via
-  // famiglia o abbonamento. Vedi il commento sul contratto.
-  excludeSubscriptions: field(flag, false),
+  // Tiene i giochi con almeno una copia che non è fra queste: toglie quelli che
+  // hai solo via famiglia o abbonamento. Vedi il commento sul contratto.
+  excludeSubscriptions: field(
+    listOf(oneOf(subscriptionValues)),
+    [] as Subscription[],
+  ),
   attributes: field(listOf(integer), [] as number[]),
   gameTypes: field(listOf(oneOf(gameTypeValues)), [] as GameType[]),
   tags: field(listOf(text), [] as string[]),
@@ -272,7 +275,7 @@ export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
     platforms: vuoto(filter.platforms),
     stores: vuoto(filter.stores),
     subscriptions: vuoto(filter.subscriptions),
-    excludeSubscriptions: filter.excludeSubscriptions || undefined,
+    excludeSubscriptions: vuoto(filter.excludeSubscriptions),
     gameTypes: vuoto(filter.gameTypes),
     attributes: vuoto(filter.attributes),
     tags: vuoto(filter.tags),
@@ -385,5 +388,16 @@ export function toggle<T>(values: T[], value: T): T[] | null {
     : [...values, value];
   // `null` e non `[]`: toglie il parametro dall'URL invece di lasciarcelo
   // vuoto, e sullo stato rimette il default.
+  return next.length > 0 ? next : null;
+}
+
+/**
+ * Toglie un valore da un criterio multiplo, senza aggiungerlo se non c'è.
+ *
+ * Serve alle due liste dello stesso criterio che non si possono contraddire
+ * (mostra solo / escludi): spuntare un valore in una lo toglie dall'altra.
+ */
+export function without<T>(values: T[], value: T): T[] | null {
+  const next = values.filter((item) => item !== value);
   return next.length > 0 ? next : null;
 }

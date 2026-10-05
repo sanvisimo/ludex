@@ -13,6 +13,8 @@ import {
   lt,
   lte,
   notExists,
+  notInArray,
+  or,
   sql,
 } from '@repo/db/orm';
 import type { SQL } from '@repo/db/orm';
@@ -78,6 +80,17 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
     conditions.push(inArray(schema.backlog.status, input.status));
   }
 
+  // Una copia che non è fra quelle escluse: `subscription` nullo (tua) o un altro
+  // valore. Sta in ogni sottoquery sulle copie e non solo nel suo predicato: «Steam»
+  // + «senza Famiglia Steam» vuol dire una copia **Steam** che non è da famiglia,
+  // non una copia Steam qualunque e, da qualche altra parte, una copia tua.
+  const nonEsclusa = input.excludeSubscriptions?.length
+    ? or(
+        isNull(schema.ownerships.subscription),
+        notInArray(schema.ownerships.subscription, input.excludeSubscriptions),
+      )
+    : undefined;
+
   if (input.platforms?.length) {
     conditions.push(
       ...tuttiPresenti(input.platforms, (slug) =>
@@ -89,6 +102,7 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
               and(
                 eq(schema.ownerships.backlogId, schema.backlog.id),
                 eq(schema.ownerships.platformSlug, slug),
+                nonEsclusa,
               ),
             ),
         ),
@@ -107,6 +121,7 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
               and(
                 eq(schema.ownerships.backlogId, schema.backlog.id),
                 eq(schema.ownerships.store, store),
+                nonEsclusa,
               ),
             ),
         ),
@@ -128,6 +143,7 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
               and(
                 eq(schema.ownerships.backlogId, schema.backlog.id),
                 eq(schema.ownerships.subscription, subscription),
+                nonEsclusa,
               ),
             ),
         ),
@@ -135,20 +151,18 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
     );
   }
 
-  // Almeno una copia **tua**. Non è il contrario del filtro qui sopra: quello
-  // chiede «ha una copia da famiglia», questo «ha una copia che non lo è», e un
-  // gioco può avere tutte e due.
-  if (input.excludeSubscriptions) {
+  // Almeno una copia che non è fra quelle escluse. Non è il contrario del filtro
+  // qui sopra: quello chiede «ha una copia da famiglia», questo «ha una copia
+  // che non lo è», e un gioco può avere tutte e due. Serve anche da solo, quando
+  // nessun filtro sulle copie lo porta già dentro la sua sottoquery.
+  if (nonEsclusa) {
     conditions.push(
       exists(
         db
           .select({ uno: sql`1` })
           .from(schema.ownerships)
           .where(
-            and(
-              eq(schema.ownerships.backlogId, schema.backlog.id),
-              isNull(schema.ownerships.subscription),
-            ),
+            and(eq(schema.ownerships.backlogId, schema.backlog.id), nonEsclusa),
           ),
       ),
     );

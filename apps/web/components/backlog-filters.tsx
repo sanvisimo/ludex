@@ -38,7 +38,7 @@ import { useFormatter, useTranslations } from 'use-intl';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 
 import { statusIcons } from '@/components/status-icon';
-import { toggle, useBacklogFilter } from '@/lib/backlog-filter';
+import { toggle, useBacklogFilter, without } from '@/lib/backlog-filter';
 import {
   useGameTypeLabels,
   useStatusLabels,
@@ -314,6 +314,19 @@ function ActiveChips() {
           subscriptions: toggle(filter.subscriptions, subscription),
         }),
     })),
+    ...filter.excludeSubscriptions.map((subscription) => ({
+      key: `exclude-subscription-${subscription}`,
+      label: t('withoutSubscription', {
+        label: subscriptionLabels[subscription],
+      }),
+      remove: () =>
+        setFilter({
+          excludeSubscriptions: toggle(
+            filter.excludeSubscriptions,
+            subscription,
+          ),
+        }),
+    })),
     ...filter.gameTypes.map((type) => ({
       key: `type-${type}`,
       label: gameTypeLabels[type],
@@ -354,12 +367,6 @@ function ActiveChips() {
       key: 'critic',
       label: `${t('criticShort')} ${range(filter.criticMin, null)}`,
       remove: () => setFilter({ criticMin: null }),
-    });
-  if (filter.excludeSubscriptions)
-    chips.push({
-      key: 'exclude-subscriptions',
-      label: t('withoutSubscriptions'),
-      remove: () => setFilter({ excludeSubscriptions: null }),
     });
   if (filter.neverPlayed)
     chips.push({
@@ -414,6 +421,12 @@ export function FilterPanel() {
 
   const attributi = options?.attributes ?? [];
   const h = (value: string) => t('hoursValue', { value });
+  const subscriptionItems = (options?.subscriptions ?? []).map(
+    (subscription) => ({
+      value: subscription,
+      label: subscriptionLabels[subscription],
+    }),
+  );
 
   const sections: {
     value: string;
@@ -468,34 +481,19 @@ export function FilterPanel() {
       // posto che si chiama Store. Solo i valori che l'utente ha davvero.
       value: 'subscriptions',
       label: t('subscriptionsLabel'),
-      active:
-        filter.subscriptions.length + (filter.excludeSubscriptions ? 1 : 0),
+      active: filter.subscriptions.length + filter.excludeSubscriptions.length,
       body: (
         <YStack gap={10}>
-          {/* Solo se c'è qualcosa da escludere (o il filtro è già acceso da un
-              link): un interruttore che non cambia niente è rumore. */}
-          {((options?.subscriptions.length ?? 0) > 0 ||
-            filter.excludeSubscriptions) && (
-            <XStack gap={8} items="center">
-              <Checkbox
-                id={`${prefix}-exclude-subscriptions`}
-                checked={filter.excludeSubscriptions}
-                onCheckedChange={(checked) =>
-                  setFilter({ excludeSubscriptions: checked === true || null })
-                }
-              />
-              <Label htmlFor={`${prefix}-exclude-subscriptions`}>
-                {t('excludeSubscriptions')}
-              </Label>
-            </XStack>
-          )}
+          {/* Due liste degli stessi valori. Spuntare un valore in una lo toglie
+              dall'altra: «ha una copia dal Plus» e «tienilo anche senza» non
+              si possono chiedere insieme, e non si lasciano chiedere. */}
+          <Text fontSize={13} fontWeight="600">
+            {t('includeSubscriptions')}
+          </Text>
           <CheckList
             prefix={`${prefix}-subscriptions`}
             hint={t('allOfThem')}
-            items={(options?.subscriptions ?? []).map((subscription) => ({
-              value: subscription,
-              label: subscriptionLabels[subscription],
-            }))}
+            items={subscriptionItems}
             selected={filter.subscriptions}
             onToggle={(value) =>
               setFilter({
@@ -503,10 +501,38 @@ export function FilterPanel() {
                   filter.subscriptions,
                   value as Subscription,
                 ),
+                excludeSubscriptions: without(
+                  filter.excludeSubscriptions,
+                  value as Subscription,
+                ),
               })
             }
             empty={t('noSubscriptions')}
           />
+          {subscriptionItems.length > 0 && (
+            <>
+              <Text fontSize={13} fontWeight="600">
+                {t('excludeSubscriptions')}
+              </Text>
+              <CheckList
+                prefix={`${prefix}-exclude-subscriptions`}
+                items={subscriptionItems}
+                selected={filter.excludeSubscriptions}
+                onToggle={(value) =>
+                  setFilter({
+                    excludeSubscriptions: toggle<Subscription>(
+                      filter.excludeSubscriptions,
+                      value as Subscription,
+                    ),
+                    subscriptions: without(
+                      filter.subscriptions,
+                      value as Subscription,
+                    ),
+                  })
+                }
+              />
+            </>
+          )}
         </YStack>
       ),
     },
@@ -742,7 +768,7 @@ function CheckList({
   empty,
 }: {
   prefix: string;
-  hint: string;
+  hint?: string;
   items: { value: string; label: string }[];
   selected: string[];
   onToggle: (value: string) => void;
@@ -759,12 +785,13 @@ function CheckList({
     <YStack gap={6}>
       {/* Nel pannello, più spunte dello stesso criterio significano "tutte":
           due tag selezionati restringono ai giochi che hanno entrambi. */}
-      {selected.filter((value) => items.some((i) => i.value === value)).length >
-        1 && (
-        <Text fontSize={13} color="$color11">
-          {hint}
-        </Text>
-      )}
+      {hint &&
+        selected.filter((value) => items.some((i) => i.value === value))
+          .length > 1 && (
+          <Text fontSize={13} color="$color11">
+            {hint}
+          </Text>
+        )}
       <ScrollView maxH={224}>
         <YStack gap={6} py={2} px={2}>
           {items.map((item, index) => {

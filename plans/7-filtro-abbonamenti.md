@@ -3,7 +3,7 @@
 **Stato: fatto, non committato.** Branch `feat/filtro-abbonamenti`, da `main`.
 Scelta del 06/10/2026: **un gruppo nuovo «Famiglia e abbonamenti»** accanto a Store
 (prima era stata scelta l'opzione 2, righe dentro Store, poi ritirata). Verificato:
-`pnpm check-types`, `pnpm lint` e `pnpm --filter api test` (477 verdi, con 10 casi nuovi);
+`pnpm check-types`, `pnpm lint` e `pnpm --filter api test` (559 verdi dopo la revisione di «escludi»);
 **non guardato nel browser**.
 
 ## Perché non c'è, e dove deve stare
@@ -41,19 +41,33 @@ chip per ogni valore acceso e il suo conteggio accanto al titolo. Offre solo i v
 che l'utente ha fra le righe **visibili**: una famiglia Steam su soli giochi nascosti
 non compare. Il gruppo Store resta com'era.
 
-## Escludi famiglia e abbonamenti (richiesta del 06/10/2026)
+## Escludi famiglia e abbonamenti (richiesta del 06/10/2026, rivista lo stesso giorno)
 
-Un secondo criterio, `excludeSubscriptions`: **tieni i giochi con almeno una copia
-tua**, cioè con `subscription` nullo (comprata, o inserita a mano). Scelta la lettura
-«almeno una copia tua» e non «nessuna copia da famiglia o abbonamento»: la seconda
-toglierebbe anche un gioco comprato su Steam che si ha anche nel PS Plus, che è
-tuo davvero. Toglie solo ciò che si ha **soltanto** così.
+`excludeSubscriptions` è una **lista di `Subscription`**, non un booleano: tieni i
+giochi con **almeno una copia che non è fra quelle escluse**, cioè con `subscription`
+nullo (comprata, o inserita a mano) o di un altro abbonamento. Escludere solo
+`steam_family` lascia i giochi che hai solo nel PS Plus, e viceversa; escluderli
+tutti e due è la lettura di prima, «solo copie tue».
 
-Nel pannello è una casella in cima al gruppo «Famiglia e abbonamenti» (la stessa forma
-di «Mai giocato»), con il chip «Senza famiglia e abbonamenti». Si mostra solo se
-l'utente ha almeno una copia di quel tipo, o se il filtro è già acceso da un link.
-Non è il contrario del filtro positivo: «ha una copia dal Plus» e «ha anche una copia
-tua» sono due domande, e un gioco può rispondere sì a tutte e due.
+Prima era una casella unica, e «escludi + Famiglia Steam» chiedeva due cose opposte
+(deve avere una copia da famiglia / deve averne una che non lo è): zero risultati
+sempre. Rimasta la lettura «almeno una copia» e non «nessuna copia da famiglia»: la
+seconda toglierebbe anche un gioco comprato su Steam che si ha anche nel PS Plus, che
+è tuo davvero.
+
+**Sulla stessa copia, non su copie qualunque** (corretto dopo averlo visto in uso):
+la prima versione teneva «escludi» come un `EXISTS` a parte, quindi «Steam» + «senza
+Famiglia Steam» lasciava passare un gioco con la copia Steam da famiglia e un'altra
+copia tua (Nintendo eShop). Ora il predicato «copia non esclusa» sta dentro ogni
+sottoquery sulle copie (`platforms`, `stores`, `subscriptions`), e resta come
+`EXISTS` autonomo per quando nessuno di quei filtri c'è. «Steam» + «senza famiglia»
+vuol dire una copia **Steam** che non è da famiglia.
+
+Nel pannello, il gruppo «Famiglia e abbonamenti» ha due liste degli stessi valori:
+«Mostra solo» (in AND) e «Escludi». Spuntare un valore in una lo toglie dall'altra,
+quindi la contraddizione non si può costruire. Un chip per valore escluso
+(«Senza Famiglia Steam»). Un link vecchio con `excludeSubscriptions=true` perde il
+parametro: il filtro era di poche ore prima.
 
 ## Verifica
 
