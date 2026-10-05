@@ -5,6 +5,7 @@ import type {
   GameType,
   SortDirection,
   Store,
+  Subscription,
 } from '@repo/contracts';
 import {
   backlogSortValues,
@@ -12,6 +13,7 @@ import {
   gameTypeValues,
   sortDirectionValues,
   storeValues,
+  subscriptionValues,
 } from '@repo/contracts';
 import { getRouteApi, useRouter } from '@tanstack/react-router';
 
@@ -138,6 +140,9 @@ const fields = {
   status: field(listOf(oneOf(backlogStatusValues)), defaultStatus),
   platforms: field(listOf(text), [] as string[]),
   stores: field(listOf(oneOf(storeValues)), [] as Store[]),
+  // Famiglia Steam, PS Plus. Sta nel pannello dentro il gruppo Store, ma è un
+  // criterio suo: `ownerships.subscription` è un'altra colonna.
+  subscriptions: field(listOf(oneOf(subscriptionValues)), [] as Subscription[]),
   attributes: field(listOf(integer), [] as number[]),
   gameTypes: field(listOf(oneOf(gameTypeValues)), [] as GameType[]),
   tags: field(listOf(text), [] as string[]),
@@ -227,6 +232,7 @@ const criteri = [
   'status',
   'platforms',
   'stores',
+  'subscriptions',
   'gameTypes',
   'attributes',
   'tags',
@@ -261,6 +267,7 @@ export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
         : vuoto(filter.status),
     platforms: vuoto(filter.platforms),
     stores: vuoto(filter.stores),
+    subscriptions: vuoto(filter.subscriptions),
     gameTypes: vuoto(filter.gameTypes),
     attributes: vuoto(filter.attributes),
     tags: vuoto(filter.tags),

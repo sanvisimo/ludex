@@ -122,6 +122,8 @@
     "platformsLabel": "Platforms",
     "noPlatforms": "No platform yet.",
     "noStores": "No store: games added by hand don't have one.",
+    "subscriptionsLabel": "Family and subscriptions",
+    "noSubscriptions": "No copies from a family or subscription.",
     "storesLabel": "Stores",
     "categoriesLabel": "Categories",
     "tagsLabel": "Tags",

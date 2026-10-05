@@ -1,7 +1,7 @@
 import type { BacklogQueryInput } from '@repo/contracts';
 import { BacklogQuerySchema } from '@repo/contracts';
 import { db, schema } from '@repo/db';
-import { eq } from '@repo/db/orm';
+import { and, eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createGame, createUser } from '../../test/factories';
@@ -104,6 +104,108 @@ describe('filtri sui multi-valore', () => {
     expect(
       await nomi(userId, { platforms: ['pc_windows', 'nintendo_switch'] }),
     ).toEqual(['Su due']);
+  });
+});
+
+describe('filtro per abbonamento', () => {
+  let userId: string;
+
+  beforeEach(async () => {
+    userId = await createUser();
+  });
+
+  it('trova chi ha una copia della famiglia Steam, e non chi ha solo copie comprate', async () => {
+    await conAbbonamento(userId, 'Del fratello', [
+      {
+        platformSlug: 'pc_windows',
+        store: 'steam',
+        subscription: 'steam_family',
+      },
+    ]);
+    await conAbbonamento(userId, 'Comprato', [
+      { platformSlug: 'pc_windows', store: 'steam', subscription: null },
+    ]);
+    await aggiungi(userId, { name: 'A mano' });
+
+    expect(await nomi(userId, { subscriptions: ['steam_family'] })).toEqual([
+      'Del fratello',
+    ]);
+  });
+
+  it('più abbonamenti sono in AND: servono tutti e due, anche su copie diverse', async () => {
+    await conAbbonamento(userId, 'Tutti e due', [
+      {
+        platformSlug: 'pc_windows',
+        store: 'steam',
+        subscription: 'steam_family',
+      },
+      {
+        platformSlug: 'sony_playstation5',
+        store: 'psn',
+        subscription: 'ps_plus',
+      },
+    ]);
+    await conAbbonamento(userId, 'Solo Plus', [
+      {
+        platformSlug: 'sony_playstation5',
+        store: 'psn',
+        subscription: 'ps_plus',
+      },
+    ]);
+
+    expect(
+      await nomi(userId, { subscriptions: ['steam_family', 'ps_plus'] }),
+    ).toEqual(['Tutti e due']);
+    expect(await nomi(userId, { subscriptions: ['ps_plus'] })).toEqual([
+      'Solo Plus',
+      'Tutti e due',
+    ]);
+  });
+
+  it('un gioco esce una volta sola anche con due copie dello stesso abbonamento', async () => {
+    await conAbbonamento(userId, 'Due console', [
+      {
+        platformSlug: 'sony_playstation4',
+        store: 'psn',
+        subscription: 'ps_plus',
+      },
+      {
+        platformSlug: 'sony_playstation5',
+        store: 'psn',
+        subscription: 'ps_plus',
+      },
+    ]);
+
+    const risultato = await search(userId, { subscriptions: ['ps_plus'] });
+    expect(risultato.entries).toHaveLength(1);
+    expect(risultato.total).toBe(1);
+  });
+
+  it('si combina con lo store: la famiglia Steam su Steam, non quella PSN', async () => {
+    await conAbbonamento(userId, 'Famiglia', [
+      {
+        platformSlug: 'pc_windows',
+        store: 'steam',
+        subscription: 'steam_family',
+      },
+    ]);
+    await conAbbonamento(userId, 'Plus', [
+      {
+        platformSlug: 'sony_playstation5',
+        store: 'psn',
+        subscription: 'ps_plus',
+      },
+    ]);
+
+    expect(
+      await nomi(userId, {
+        stores: ['steam'],
+        subscriptions: ['steam_family'],
+      }),
+    ).toEqual(['Famiglia']);
+    expect(
+      await nomi(userId, { stores: ['psn'], subscriptions: ['steam_family'] }),
+    ).toEqual([]);
   });
 });
 
@@ -388,6 +490,39 @@ describe('opzioni del pannello', () => {
     expect(opzioni.stores).toEqual(['steam']);
   });
 
+  it('offre gli abbonamenti che ci sono, e il comprato non è una voce', async () => {
+    const userId = await createUser();
+    await conAbbonamento(userId, 'Famiglia', [
+      {
+        platformSlug: 'pc_windows',
+        store: 'steam',
+        subscription: 'steam_family',
+      },
+    ]);
+    await conAbbonamento(userId, 'Comprato', [
+      { platformSlug: 'pc_windows', store: 'steam', subscription: null },
+    ]);
+
+    // Niente PS Plus: non c'è una copia, quindi non è una voce da offrire.
+    expect((await listBacklogFilterOptions(userId)).subscriptions).toEqual([
+      'steam_family',
+    ]);
+  });
+
+  it('una copia della famiglia solo su un gioco nascosto non fa comparire la voce', async () => {
+    const userId = await createUser();
+    const id = await conAbbonamento(userId, 'Nascosto', [
+      {
+        platformSlug: 'pc_windows',
+        store: 'steam',
+        subscription: 'steam_family',
+      },
+    ]);
+    await setBacklogHidden(userId, id, true);
+
+    expect((await listBacklogFilterOptions(userId)).subscriptions).toEqual([]);
+  });
+
   it('lo store nullo degli inserimenti manuali non diventa una voce', async () => {
     const userId = await createUser();
     await aggiungi(userId, { name: 'A mano' });
@@ -397,6 +532,48 @@ describe('opzioni del pannello', () => {
 });
 
 // --- utilità ---
+
+type CopiaConAbbonamento = {
+  platformSlug: string;
+  store: 'steam' | 'psn';
+  subscription: 'ps_plus' | 'steam_family' | null;
+};
+
+/**
+ * Un gioco con copie che hanno un abbonamento.
+ *
+ * `addToBacklog` non lo prende: l'abbonamento lo scrive solo l'import, e
+ * l'inserimento a mano non sa dirlo. Qui lo si scrive a mano sulla copia, che è
+ * ciò che l'import lascia in tabella.
+ */
+async function conAbbonamento(
+  userId: string,
+  name: string,
+  copie: CopiaConAbbonamento[],
+) {
+  const game = await createGame({ name });
+  const id = await addToBacklog({
+    userId,
+    gameId: game.id,
+    status: 'backlog',
+    ownerships: copie.map(({ platformSlug, store }) => ({
+      platformSlug,
+      store,
+    })),
+  });
+  for (const copia of copie) {
+    await db
+      .update(schema.ownerships)
+      .set({ subscription: copia.subscription })
+      .where(
+        and(
+          eq(schema.ownerships.backlogId, id),
+          eq(schema.ownerships.platformSlug, copia.platformSlug),
+        ),
+      );
+  }
+  return id;
+}
 
 async function aggiungi(
   userId: string,

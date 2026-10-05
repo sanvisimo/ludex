@@ -2,6 +2,7 @@ import type {
   BacklogStatus,
   GameType,
   Store,
+  Subscription,
   UserTagKind,
 } from '@repo/contracts';
 import { attributeKindValues, backlogStatusValues } from '@repo/contracts';
@@ -42,6 +43,7 @@ import {
   useGameTypeLabels,
   useStatusLabels,
   useStoreLabels,
+  useSubscriptionLabels,
 } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 
@@ -284,6 +286,7 @@ const hours = (minutes: number | null) =>
 function ActiveChips() {
   const t = useTranslations('filters');
   const storeLabels = useStoreLabels();
+  const subscriptionLabels = useSubscriptionLabels();
   const gameTypeLabels = useGameTypeLabels();
   const range = useRangeText();
   const { filter, setFilter, reset, activeCount } = useBacklogFilter();
@@ -302,6 +305,14 @@ function ActiveChips() {
       key: `store-${store}`,
       label: storeLabels[store],
       remove: () => setFilter({ stores: toggle(filter.stores, store) }),
+    })),
+    ...filter.subscriptions.map((subscription) => ({
+      key: `subscription-${subscription}`,
+      label: subscriptionLabels[subscription],
+      remove: () =>
+        setFilter({
+          subscriptions: toggle(filter.subscriptions, subscription),
+        }),
     })),
     ...filter.gameTypes.map((type) => ({
       key: `type-${type}`,
@@ -387,6 +398,7 @@ function ActiveChips() {
 export function FilterPanel() {
   const t = useTranslations('filters');
   const storeLabels = useStoreLabels();
+  const subscriptionLabels = useSubscriptionLabels();
   const gameTypeLabels = useGameTypeLabels();
   const attributeKindLabels = useTranslations('attributeKind');
   const range = useRangeText();
@@ -440,6 +452,35 @@ export function FilterPanel() {
             setFilter({ stores: toggle<Store>(filter.stores, value as Store) })
           }
           empty={t('noStores')}
+        />
+      ),
+    },
+    {
+      // A che titolo si ha la copia: la famiglia Steam, il PS Plus. Un gruppo
+      // suo e non righe dentro «Store»: è un'altra colonna (`subscriptions`
+      // contro `stores`), e il chip dice «Famiglia Steam» senza passare per un
+      // posto che si chiama Store. Solo i valori che l'utente ha davvero.
+      value: 'subscriptions',
+      label: t('subscriptionsLabel'),
+      active: filter.subscriptions.length,
+      body: (
+        <CheckList
+          prefix={`${prefix}-subscriptions`}
+          hint={t('allOfThem')}
+          items={(options?.subscriptions ?? []).map((subscription) => ({
+            value: subscription,
+            label: subscriptionLabels[subscription],
+          }))}
+          selected={filter.subscriptions}
+          onToggle={(value) =>
+            setFilter({
+              subscriptions: toggle<Subscription>(
+                filter.subscriptions,
+                value as Subscription,
+              ),
+            })
+          }
+          empty={t('noSubscriptions')}
         />
       ),
     },
