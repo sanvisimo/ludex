@@ -4,6 +4,7 @@
     "description": "What should I play now"
   },
   "nav": {
+    "home": "Home",
     "backlog": "My backlog",
     "signOut": "Sign out",
     "signIn": "Sign in",
