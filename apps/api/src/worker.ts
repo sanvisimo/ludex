@@ -42,6 +42,7 @@ import { importAmazonLibrary } from './services/amazon-import';
 import { importEpicLibrary } from './services/epic-import';
 import { importGogLibrary } from './services/gog-import';
 import { enqueueDueImports } from './services/library-sync';
+import { importNintendoLibrary } from './services/nintendo-import';
 import { importPsnLibrary } from './services/psn-import';
 import { type ImportReport } from './services/library-import';
 import { SteamLibraryNotVisibleError } from './external/steam';
@@ -184,6 +185,7 @@ const importers: Partial<
   epic: importEpicLibrary,
   amazon: importAmazonLibrary,
   psn: importPsnLibrary,
+  nintendo: importNintendoLibrary,
 };
 
 // Coda a parte: un import genera centinaia di job di enrichment, e sulla stessa

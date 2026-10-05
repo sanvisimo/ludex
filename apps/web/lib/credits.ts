@@ -38,6 +38,7 @@ export const services: Credit[] = [
   { id: 'epic', name: 'Epic Games', url: 'https://store.epicgames.com' },
   { id: 'amazon', name: 'Amazon Games', url: 'https://gaming.amazon.com' },
   { id: 'psn', name: 'PlayStation', url: 'https://www.playstation.com' },
+  { id: 'nintendo', name: 'Nintendo', url: 'https://www.nintendo.com' },
 ];
 
 /** Il software su cui poggia Ludex. */

@@ -82,7 +82,13 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
      (`medium`). Il rinnovo entro dieci giorni, perché il collegamento non
      muoia da solo, lo fa l'aggiornamento automatico.
    - **9c — EA**: non un account collegato ma un'**importazione una tantum**.
-   - **9d — Nintendo**: barattolo di cookie, nessun id che IGDB conosca.
+   - **9d — Nintendo**: **due fonti** che si completano — le **Virtual Game Cards**
+     (la libreria digitale, anche mai avviata) e lo **storico di gioco** (ciò che
+     si è avviato, cartucce comprese, che diventano `medium: physical`). Login col
+     codice nell'indirizzo di un pulsante che non si clicca, session token da due
+     anni, risoluzione per nome. Vedi «Nintendo (9d)» in [negozi](negozi.md) e
+     `plans/9d-nintendo.md`. **Rilascio da decidere**: il rinnovo lo fa il
+     server con due identità non nostre (l'app e il portale).
    - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
      prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
      librerie», e per ora è volutamente aperta.

@@ -482,15 +482,13 @@
       "renameSave": "Salva",
       "renameCancel": "Annulla",
       "renameFailed": "Non sono riuscito a rinominare l’account",
-      "openLogin": "1. Apri il login",
-      "pasteStep": "2. Incolla qui {address}",
-      "pasteAddress": "l’indirizzo",
-      "pasteContent": "il contenuto della scheda",
       "autoSync": "Aggiorna automaticamente",
       "autoSyncShort": "Auto",
       "autoSyncOffGlobally": "L'aggiornamento automatico è spento per tutti gli account.",
       "autoSyncPsnWarning": "Senza aggiornamento automatico il collegamento scade se non importi la libreria almeno una volta ogni dieci giorni.",
-      "autoSyncFailed": "Non sono riuscito a salvare la preferenza"
+      "autoSyncFailed": "Non sono riuscito a salvare la preferenza",
+      "pasteOk": "Sembra giusto.",
+      "knowMore": "Da sapere"
     },
     "add": {
       "title": "Aggiungi libreria",
@@ -516,24 +514,60 @@
         "hint": "Incolla l'indirizzo del tuo profilo Steam, il tuo SteamID64 o il nome scelto. Il profilo e i dettagli dei giochi devono essere pubblici, altrimenti Steam non ci lascia leggere la libreria: in quel caso accedi con Steam."
       },
       "gog": {
-        "inputLabel": "Indirizzo di atterraggio",
         "placeholder": "https://embed.gog.com/on_login_success?…",
-        "hint": "Apri il login, entra con il tuo account GOG e poi copia dalla barra del browser l'indirizzo della pagina bianca su cui atterri: dentro c'è il codice che serve. Va fatto una volta sola."
+        "openLabel": "Apri il login di GOG",
+        "steps": [
+          "Apri il login di GOG ed entra con il tuo account.",
+          "Atterri su una pagina bianca: copia l'indirizzo dalla barra del browser.",
+          "Incolla qui l'indirizzo che hai copiato."
+        ],
+        "wrong": "Non sembra l'indirizzo giusto: dovrebbe iniziare con https e contenere «code=».",
+        "note": "Si fa una volta sola: da lì in poi il collegamento si rinnova da sé."
       },
       "epic": {
-        "inputLabel": "Codice di autorizzazione",
-        "placeholder": "'{\"redirectUrl\":\"…\",\"authorizationCode\":\"…\"}'",
-        "hint": "Apri il login, entra con il tuo account Epic e poi copia il JSON che compare a schermo — va bene tutto quanto, non serve estrarne il codice. Va fatto una volta sola."
+        "placeholder": "{\"redirectUrl\":\"…\",\"authorizationCode\":\"…\"}",
+        "openLabel": "Apri il login di Epic",
+        "steps": [
+          "Apri il login di Epic ed entra con il tuo account.",
+          "Compare un testo a schermo: selezionalo tutto e copialo.",
+          "Incolla qui il testo che hai copiato."
+        ],
+        "wrong": "Non sembra il testo di Epic: serve tutto, e dentro c'è «authorizationCode».",
+        "note": "Si fa una volta sola: da lì in poi il collegamento si rinnova da sé."
       },
       "amazon": {
-        "inputLabel": "Indirizzo di atterraggio",
         "placeholder": "https://www.amazon.com/?…openid.oa2.authorization_code=…",
-        "hint": "Apri il login ed entra con il tuo account Amazon: il negozio è quello americano, ma un account italiano ci entra lo stesso. Atterrato sulla home di amazon.com, copia l'indirizzo dalla barra del browser. Il collegamento registra un dispositivo «AGSLauncher for Windows» sul tuo account, che puoi togliere quando vuoi dalle impostazioni Amazon."
+        "openLabel": "Apri il login di Amazon",
+        "steps": [
+          "Apri il login di Amazon ed entra con il tuo account. Il negozio è quello americano, ma un account italiano va bene.",
+          "Atterri sulla home di amazon.com: copia l'indirizzo dalla barra del browser.",
+          "Incolla qui l'indirizzo che hai copiato."
+        ],
+        "wrong": "Non sembra l'indirizzo giusto: dovrebbe contenere «openid.oa2.authorization_code».",
+        "note": "Il collegamento registra un dispositivo «AGSLauncher for Windows» sul tuo account Amazon, che puoi togliere quando vuoi dalle impostazioni di Amazon. Si fa una volta sola."
       },
       "psn": {
-        "inputLabel": "Risposta della pagina ssocookie",
-        "placeholder": "'{\"npsso\":\"…\"}'",
-        "hint": "Entra prima su playstation.com col browser e spunta «Fidati di questo browser», poi apri il collegamento qui sopra: la pagina risponde con una riga tipo '{\"npsso\":\"…\"}'. Incollala tutta, o solo il valore. Se vedi npsso vuoto o un errore, vuol dire che il login non è ancora andato. Attenzione: su PlayStation il collegamento dura una decina di giorni, poi va rifatto."
+        "placeholder": "{\"npsso\":\"…\"}",
+        "openLabel": "Apri la pagina del codice",
+        "steps": [
+          "Entra su playstation.com con il browser e spunta «Fidati di questo browser».",
+          "Apri la pagina del codice qui sotto: mostra una riga come {\"npsso\":\"…\"}.",
+          "Copia tutta la riga, o solo il valore.",
+          "Incolla qui quello che hai copiato."
+        ],
+        "wrong": "Serve la riga {\"npsso\":\"…\"} o il solo valore. Se vedi npsso vuoto o un errore, il login non è ancora andato: entra prima su playstation.com.",
+        "note": "Su PlayStation il collegamento scade se non importi la libreria per una decina di giorni. L'aggiornamento automatico lo tiene vivo; se lo spegni, va rifatto."
+      },
+      "nintendo": {
+        "placeholder": "npf5c38e31cd085304b://auth#session_token_code=…",
+        "openLabel": "Apri il login di Nintendo",
+        "steps": [
+          "Apri il login di Nintendo ed entra con il tuo account.",
+          "Alla pagina «Link an account» non cliccare il pulsante rosso: non succede niente. Fai clic destro sopra e scegli «Copia indirizzo del link» (o «Copia collegamento», secondo il browser).",
+          "Incolla qui quello che hai copiato. Vale per una decina di minuti."
+        ],
+        "wrong": "Non sembra l'indirizzo del link: hai cliccato il pulsante? Serve l'indirizzo che inizia con «npf» e contiene «session_token_code».",
+        "note": "Ludex legge la tua libreria digitale, anche i giochi mai avviati, e i giochi che hai avviato, cartucce comprese. Una cartuccia mai avviata non lascia traccia su Nintendo e va aggiunta a mano. Il collegamento si fa una volta sola e dura circa due anni."
       }
     },
     "unresolved": {
@@ -624,6 +658,13 @@
       "removed": "Login tolto. {removed, plural, =0 {Nessuna copia della famiglia da togliere} one {Una copia della famiglia tolta} other {# copie della famiglia tolte}}{kept, plural, =0 {} one { · una resta perché ha dati tuoi} other { · # restano perché hanno dati tuoi}}.",
       "removeFailed": "Non sono riuscito a togliere il login",
       "removeWhileSyncing": "C'è un'importazione in corso: togli il login quando ha finito"
+    },
+    "nintendoGuide": {
+      "caption": "Disegno schematico: la pagina vera può avere un aspetto diverso.",
+      "name": "il tuo nome",
+      "button": "Select this account",
+      "menuTop": "Apri in una nuova scheda",
+      "menuCopy": "Copia indirizzo del link"
     }
   },
   "critic": {
@@ -680,7 +721,8 @@
       "gog": "Importazione della libreria.",
       "epic": "Importazione della libreria.",
       "amazon": "Importazione della libreria.",
-      "psn": "Importazione della libreria."
+      "psn": "Importazione della libreria.",
+      "nintendo": "Importazione della libreria."
     },
     "software": {
       "title": "Software open source",

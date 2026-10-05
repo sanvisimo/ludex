@@ -10,6 +10,12 @@ import {
   linkStoreAccount,
 } from '../../test/factories';
 import {
+  exchangeNintendoCode,
+  fetchNintendoProfile,
+  NintendoAuthError,
+  refreshNintendoTokens,
+} from '../external/nintendo';
+import {
   fetchSteamLibrary,
   fetchSteamPersonaName,
   resolveSteamId,
@@ -24,8 +30,11 @@ import {
 } from '../lib/crypto';
 import { enqueueImport, isImportRunning } from '../queue/imports';
 import {
+  linkNintendoAccount,
+  nintendoCredentials,
   linkSteamAccount,
   listStoreAccounts,
+  NintendoCodeError,
   renameStoreAccount,
   StoreAccountMismatchError,
   StoreReauthRequiredError,
@@ -46,6 +55,12 @@ vi.mock('../external/steam-auth', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../external/steam-auth')>()),
   refreshSteamTokens: vi.fn(),
 }));
+vi.mock('../external/nintendo', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../external/nintendo')>()),
+  exchangeNintendoCode: vi.fn(),
+  fetchNintendoProfile: vi.fn(),
+  refreshNintendoTokens: vi.fn(),
+}));
 vi.mock('../queue/imports', () => ({
   isImportRunning: vi.fn(),
   enqueueImport: vi.fn(),
@@ -55,6 +70,9 @@ const mockedResolve = vi.mocked(resolveSteamId);
 const mockedPersona = vi.mocked(fetchSteamPersonaName);
 const mockedLibrary = vi.mocked(fetchSteamLibrary);
 const mockedRefresh = vi.mocked(refreshSteamTokens);
+const mockedExchangeNintendo = vi.mocked(exchangeNintendoCode);
+const mockedRefreshNintendo = vi.mocked(refreshNintendoTokens);
+const mockedProfileNintendo = vi.mocked(fetchNintendoProfile);
 const mockedRunning = vi.mocked(isImportRunning);
 const mockedEnqueue = vi.mocked(enqueueImport);
 
@@ -636,5 +654,249 @@ describe('credenziale Steam (9f)', () => {
     const account = await linkSteamAccount(userId, 'pippo');
 
     expect((await reload(account.id)).credentials).toBeNull();
+  });
+});
+
+describe('Nintendo (9d)', () => {
+  const ACCOUNT_ID = '3247fa748f1dd367';
+  const INDIRIZZO =
+    'npf5c38e31cd085304b://auth#session_token_code=IL.CODICE.X&state=lo-state&session_state=ff';
+  let userId: string;
+
+  beforeEach(async () => {
+    process.env.STORE_TOKEN_KEY = Buffer.alloc(32, 7).toString('base64');
+    resetStoreTokenKey();
+    userId = await createUser();
+    mockedExchangeNintendo.mockResolvedValue({
+      accessToken: 'accesso',
+      refreshToken: 'sessione',
+      expiresAt: Date.now() + 840_000,
+      accountId: ACCOUNT_ID,
+      idToken: 'idtoken',
+    });
+    mockedProfileNintendo.mockResolvedValue({
+      country: 'IT',
+      nickname: 'sanvisimo',
+    });
+  });
+
+  const reload = async (id: string) =>
+    (
+      await db
+        .select()
+        .from(schema.storeAccounts)
+        .where(eq(schema.storeAccounts.id, id))
+    )[0]!;
+
+  it("collega dall'indirizzo incollato, con codice e state e l'utente che lo ha chiesto", async () => {
+    const account = await linkNintendoAccount(userId, INDIRIZZO);
+
+    // Lo state sta nell'indirizzo, e con l'utente rifà il verifier.
+    expect(mockedExchangeNintendo).toHaveBeenCalledWith(
+      userId,
+      'IL.CODICE.X',
+      'lo-state',
+    );
+    expect(account).toMatchObject({
+      store: 'nintendo',
+      externalAccountId: ACCOUNT_ID,
+      status: 'ok',
+    });
+    const riga = await reload(account.id);
+    expect(
+      decryptCredentials<{ refreshToken: string }>(riga.credentials!),
+    ).toMatchObject({
+      refreshToken: 'sessione',
+    });
+  });
+
+  it('un indirizzo senza codice non chiama Nintendo e dice cosa fare', async () => {
+    await expect(
+      linkNintendoAccount(userId, 'https://accounts.nintendo.com/'),
+    ).rejects.toBeInstanceOf(NintendoCodeError);
+    expect(mockedExchangeNintendo).not.toHaveBeenCalled();
+  });
+
+  it('lo stesso account ricollegato è la stessa riga, non un doppione', async () => {
+    const primo = await linkNintendoAccount(userId, INDIRIZZO);
+    const secondo = await linkNintendoAccount(userId, INDIRIZZO, {
+      relinking: primo,
+    });
+
+    expect(secondo.id).toBe(primo.id);
+  });
+
+  it('rifiuta un login fatto con un altro account Nintendo', async () => {
+    const giusto = await linkStoreAccount(userId, 'nintendo', 'un-altro-id');
+
+    await expect(
+      linkNintendoAccount(userId, INDIRIZZO, { relinking: giusto }),
+    ).rejects.toBeInstanceOf(StoreAccountMismatchError);
+  });
+
+  it('il login si apre con un indirizzo e senza state da riportare', () => {
+    const { url, state } = storeLoginUrl(userId, 'nintendo');
+
+    expect(url).toMatch(/^https:\/\/accounts\.nintendo\.com\/connect\//);
+    // Lo state è dentro l'indirizzo: il client non ha niente da riportare.
+    expect(state).toBeNull();
+  });
+
+  it('prende paese e nickname dal profilo e li salva', async () => {
+    const account = await linkNintendoAccount(userId, INDIRIZZO);
+
+    expect(mockedProfileNintendo).toHaveBeenCalledWith('accesso');
+    expect(account.displayName).toBe('sanvisimo');
+    const riga = await reload(account.id);
+    expect(
+      decryptCredentials<{ country: string; idToken: string }>(
+        riga.credentials!,
+      ),
+    ).toMatchObject({ country: 'IT', idToken: 'idtoken' });
+  });
+
+  it('la claim dell’id_token vince sul profilo', async () => {
+    mockedExchangeNintendo.mockResolvedValue({
+      accessToken: 'accesso',
+      refreshToken: 'sessione',
+      expiresAt: Date.now() + 840_000,
+      accountId: ACCOUNT_ID,
+      idToken: 'idtoken',
+      country: 'GB',
+    });
+
+    const account = await linkNintendoAccount(userId, INDIRIZZO);
+
+    expect(
+      decryptCredentials<{ country: string }>(
+        (await reload(account.id)).credentials!,
+      ).country,
+    ).toBe('GB');
+  });
+
+  it('un profilo che non risponde non impedisce il collegamento: paese nullo', async () => {
+    // L'import salterà le Virtual Game Cards e lo dirà, invece di indovinare.
+    mockedProfileNintendo.mockResolvedValue(null);
+
+    const account = await linkNintendoAccount(userId, INDIRIZZO);
+
+    expect(account.status).toBe('ok');
+    expect(account.displayName).toBeNull();
+    expect(
+      decryptCredentials<{ country: string | null }>(
+        (await reload(account.id)).credentials!,
+      ).country,
+    ).toBeNull();
+  });
+
+  describe('rinnovo', () => {
+    async function collegato(expiresAt: number, country?: string) {
+      const account = await linkStoreAccount(userId, 'nintendo', ACCOUNT_ID);
+      const [row] = await db
+        .update(schema.storeAccounts)
+        .set({
+          credentials: encryptCredentials({
+            accessToken: 'vecchio',
+            refreshToken: 'sessione',
+            expiresAt,
+            accountId: ACCOUNT_ID,
+            idToken: 'vecchio-idtoken',
+            ...(country ? { country } : {}),
+          }),
+          credentialsExpireAt: new Date(expiresAt),
+        })
+        .where(eq(schema.storeAccounts.id, account.id))
+        .returning();
+      return row!;
+    }
+
+    it("usa l'access token ancora valido senza chiamare Nintendo", async () => {
+      const account = await collegato(Date.now() + 600_000);
+
+      expect(await storeAccessToken(account)).toBe('vecchio');
+      expect(mockedRefreshNintendo).not.toHaveBeenCalled();
+    });
+
+    it('lo rinnova col session token, che resta lo stesso', async () => {
+      const account = await collegato(Date.now() - 1_000);
+      mockedRefreshNintendo.mockResolvedValue({
+        accessToken: 'nuovo',
+        refreshToken: 'sessione',
+        expiresAt: Date.now() + 840_000,
+        accountId: ACCOUNT_ID,
+        idToken: 'nuovo-idtoken',
+      });
+
+      expect(await storeAccessToken(account)).toBe('nuovo');
+
+      expect(mockedRefreshNintendo).toHaveBeenCalledWith('sessione');
+      const riga = await reload(account.id);
+      expect(
+        decryptCredentials<{ accessToken: string; refreshToken: string }>(
+          riga.credentials!,
+        ),
+      ).toMatchObject({ accessToken: 'nuovo', refreshToken: 'sessione' });
+    });
+
+    it('il rinnovo non azzera il paese preso al collegamento', async () => {
+      const account = await collegato(Date.now() - 1_000, 'IT');
+      // Il rinnovo non rende il paese: non lo conosce.
+      mockedRefreshNintendo.mockResolvedValue({
+        accessToken: 'nuovo',
+        refreshToken: 'sessione',
+        expiresAt: Date.now() + 840_000,
+        accountId: ACCOUNT_ID,
+        idToken: 'nuovo-idtoken',
+      });
+
+      await storeAccessToken(account);
+
+      expect(
+        decryptCredentials<{ country: string; idToken: string }>(
+          (await reload(account.id)).credentials!,
+        ),
+      ).toMatchObject({ country: 'IT', idToken: 'nuovo-idtoken' });
+    });
+
+    it('`nintendoCredentials` rende access token, id_token e paese già rinnovati', async () => {
+      const account = await collegato(Date.now() - 1_000, 'IT');
+      mockedRefreshNintendo.mockResolvedValue({
+        accessToken: 'nuovo',
+        refreshToken: 'sessione',
+        expiresAt: Date.now() + 840_000,
+        accountId: ACCOUNT_ID,
+        idToken: 'nuovo-idtoken',
+      });
+
+      expect(await nintendoCredentials(account)).toMatchObject({
+        accessToken: 'nuovo',
+        idToken: 'nuovo-idtoken',
+        country: 'IT',
+      });
+    });
+
+    it("un rifiuto di Nintendo manda l'account in needs_reauth", async () => {
+      const account = await collegato(Date.now() - 1_000);
+      mockedRefreshNintendo.mockRejectedValue(
+        new NintendoAuthError('rifiutato'),
+      );
+
+      await expect(storeAccessToken(account)).rejects.toThrow(
+        StoreReauthRequiredError,
+      );
+
+      expect((await reload(account.id)).status).toBe('needs_reauth');
+    });
+
+    it('un 429 o una rete che cade non toccano né lo stato né il credenziale', async () => {
+      const account = await collegato(Date.now() - 1_000);
+      mockedRefreshNintendo.mockRejectedValue(new Error('Nintendo: 429'));
+
+      await expect(storeAccessToken(account)).rejects.toThrow('429');
+
+      const riga = await reload(account.id);
+      expect(riga.status).toBe('ok');
+      expect(sameCredentials(riga.credentials, account.credentials)).toBe(true);
+    });
   });
 });

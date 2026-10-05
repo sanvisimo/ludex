@@ -124,16 +124,16 @@ Due pezzi collegati, anche loro da valutare:
 Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 **quanto costa risolvere l'identità**. Misurate su una libreria vera:
 
-| Negozio          | Credenziale                                                                    | Id su IGDB                                                       | Ore      |
-| ---------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------- | -------- |
-| GOG              | refresh token, non scade in pratica                                            | product id, sorgente 5 — **94,5% su 435 giochi**                 | no       |
-| Epic             | refresh token                                                                  | **nessuno**: vedi sotto                                          | no       |
-| Amazon           | refresh token                                                                  | **nessuno**: sorgente 23 ha 678 righe in tutto                   | no       |
-| PSN              | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo             | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto | parziali |
-| EA               | sessione corta, si sgancia sempre                                              | nessuno                                                          | sì       |
-| Nintendo         | cookie di sessione                                                             | nessuno                                                          | no       |
-| Xbox             | chiave OpenXBL, o XSTS in proprio                                              | `titleId` → ProductId via `displaycatalog`, sorgente 11          | sì       |
-| Steam, col login | refresh token **210–212 giorni**, access token 24 ore, rinnovo dentro l'import | appid, la sorgente Steam di IGDB, come col solo profilo          | sì       |
+| Negozio          | Credenziale                                                                    | Id su IGDB                                                                                     | Ore      |
+| ---------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | -------- |
+| GOG              | refresh token, non scade in pratica                                            | product id, sorgente 5 — **94,5% su 435 giochi**                                               | no       |
+| Epic             | refresh token                                                                  | **nessuno**: vedi sotto                                                                        | no       |
+| Amazon           | refresh token                                                                  | **nessuno**: sorgente 23 ha 678 righe in tutto                                                 | no       |
+| PSN              | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo             | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto                               | parziali |
+| EA               | sessione corta, si sgancia sempre                                              | nessuno                                                                                        | sì       |
+| Nintendo         | session token **730 giorni** (non ruota, non verificato), access token 15 min  | nessuno: **per nome**; le licenze digitali portano un id (16 esadecimali) che IGDB non conosce | parziali |
+| Xbox             | chiave OpenXBL, o XSTS in proprio                                              | `titleId` → ProductId via `displaycatalog`, sorgente 11                                        | sì       |
+| Steam, col login | refresh token **210–212 giorni**, access token 24 ore, rinnovo dentro l'import | appid, la sorgente Steam di IGDB, come col solo profilo                                        | sì       |
 
 Le prime due colonne sono state scritte **prima** di provare, e il 9b ha
 smentito quella su PSN in tutte e due i campi — e poi ha smentito la sua stessa
@@ -592,6 +592,111 @@ in cima al probe). Le strade, a decisione presa: tenere il codice dietro un
 interruttore spento, restare col solo profilo pubblico (che non tocca l'account),
 oppure capire dalla documentazione di Valve o dall'Assistenza se questo tipo di
 login è accettato.
+
+## Nintendo (9d)
+
+Nessuna API per sviluppatori: è il backend dell'app Nintendo (`com.nintendo.znej`) per
+i token e lo storico, e il GraphQL del portale `accounts.nintendo.com` per le licenze
+digitali. `CLIENT_ID`, `User-Agent` e i path dell'app vengono dal client open source
+[nintendo-go](https://pkg.go.dev/github.com/wolveix/nintendo-go); il GraphQL e la sua
+query dalla richiesta del portale e dall'estensione Nintendo di Playnite
+([XenorPLxx](https://github.com/XenorPLxx/playnite-library-nintendo)). Tutto
+**provato il 05 e il 06/10/2026** su un account vero, con
+`pnpm --filter api nintendo:probe` e `nintendo:vgc-probe`. Il piano e le ragioni sono
+in [plans/9d-nintendo.md](../plans/9d-nintendo.md).
+
+**Due fonti, e nessuna basta da sola** (su un account con 19 licenze digitali e 37
+giochi giocati):
+
+| Fonte                                        | Cosa dà                                                                                                                         | Cosa non ha                  |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **Virtual Game Cards** (GraphQL del portale) | la libreria **digitale**, **anche mai avviata**: _Hyrule Warriors: Age of Calamity_ e _Blanc_ sono lì, senza un minuto di gioco | le cartucce; le ore          |
+| **Storico di gioco** (`play_histories`)      | ciò che si è avviato, **cartucce comprese** (_Zelda: Tears of the Kingdom_, _Super Mario Bros. Wonder_), con ore e ultimo avvio | ciò che non si è mai avviato |
+
+È la forma dei dischi PSN `other`: un titolo **nello storico e senza una licenza
+digitale** è con ogni probabilità una cartuccia, e il possesso lo dice (`medium:
+physical`). Su un account vero regge su **quattro casi su cinque** (misurato il
+06/10/2026 con l'utente): _Bayonetta_ è digitale (il codice incluso con la cartuccia di
+_Bayonetta 2_) e sta nelle Virtual Game Cards, e le cartucce vere sono solo nello
+storico. **_Tetris 99_ sbaglia**: è digitale, è nello storico, e non è fra le licenze né
+visibili né nascoste (`isHidden: true` rende zero voci), quindi risulta «fisico». La
+classe che sbaglia è quella dei giochi gratuiti o legati all'abbonamento: si risolvono su
+IGDB, **entrano come possesso**, e l'utente non può correggere il supporto di una copia.
+Il perché _Tetris 99_ non stia nelle Virtual Game Cards **non è spiegato**. App
+dell'abbonamento e demo risultano «fisiche» allo stesso modo, ma non si risolvono su IGDB
+e non diventano mai un possesso. **Una cartuccia mai avviata non lascia traccia da nessuna
+parte**: resta l'inserimento a mano (o l'import da file dello step 10).
+
+**Scelta dell'utente (06/10/2026): si tiene «fisico», accettando i falsi.** L'alternativa
+— dichiarare `medium` solo dove c'è una prova (le Virtual Game Cards dicono «digitale») e
+lasciare lo storico senza licenza non dichiarato, come PSN lo dichiara solo con `service:
+other` — avrebbe perso il «Fisico» sulle cartucce vere per non scrivere un'affermazione che
+a volte è falsa. Si è preferito il «Fisico» sulle cartucce, e il prezzo è quello scritto
+sopra: un gioco gratuito o dell'abbonamento giocato e senza licenza risulta fisico, e
+**l'utente non può correggere il supporto di una copia**. Se questa classe si rivelasse
+larga, la correzione naturale è renderlo modificabile dalla scheda del gioco (step 5), non
+cambiare la regola.
+
+**Le voci di soli contenuti aggiuntivi non sono una copia del gioco.** _Zelda: Breath of
+the Wild_, _Monster Hunter Rise_ e _Mario + Rabbids: Sparks of Hope_ sono voci con
+`hasReleasedApplication: false` e solo `hasReleasedAddOnContents: true`: gli
+aggiornamenti o i DLC di un gioco che si ha altrove (di _Zelda_, in cartuccia: l'utente
+lo ha confermato). Si saltano, come i DLC di Epic che collassano sul gioco. Se il gioco
+è una cartuccia e lo si è avviato, arriva dallo storico.
+
+| Cosa                             | Misurato                                                                                                                                                                                                                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| il login                         | PKCE su `accounts.nintendo.com`; l'utente accede **nel suo browser**. «Select this account» non si clicca (punta a `npf…://`): **clic destro → copia l'indirizzo del link**                                                                                                    |
+| credenziali                      | session token **730 giorni**; access token e `id_token` **15 minuti**. Il rinnovo è una POST sola e non cambia il session token (che non ruoti è ciò che assume il client di riferimento, **non provato** su un rinnovo vero)                                                  |
+| GraphQL delle Virtual Game Cards | `wb.lp1.savanna.srv.nintendo.net/graphql` (**`*.srv.nintendo.net`, non nintendo.com**); senza cookie; **accetta l'`id_token` del login dell'app** (HTTP 200, gli stessi 19 titoli) oltre a quello del portale, che vive 14 minuti e si ricava dalla pagina con la sessione web |
+| header e variabili               | `x-nintendo-savanna-client-id` (lo stesso del portale, **non so se uguale per tutti**), `shopId` 3, `language` `en`, `nasLanguage` `en-US`, e il **paese dell'account** (`IT`)                                                                                                 |
+| storico                          | `app-api.znej.nintendo.com/api/v2.0/users/me/play_histories`, una richiesta, 37 titoli; `platform` **`HAC`**, `deviceType` assente                                                                                                                                             |
+| Virtual Game Cards, i campi      | `apparentPlatform` **`NX`** su 19 su 19; `applicationId` 16 esadecimali minuscoli; `ownerNaId` = `userNaId` = il `sub` dell'`id_token` (`3247fa748f1dd367`)                                                                                                                    |
+| identità su IGDB                 | nessun id: **per nome**. Sullo storico, 28 su 37; i 9 irrisolti sono app Switch Online e Classics, due demo, _HentaiUni_: nessun gioco vero                                                                                                                                    |
+| Switch 2                         | `OUNCE` per le Virtual Game Cards **viene dal codice di Playnite, non è misurato**; il codice dello **storico** non si conosce. L'account di prova non ha giochi Switch 2                                                                                                      |
+
+**Decisioni** (le ragioni sono nel piano):
+
+- una **copia digitale** solo se la voce ha `hasReleasedApplication`; `medium: digital`.
+  Un titolo solo nello storico è `medium: physical`;
+- la piattaforma: `HAC` e `NX` → `nintendo_switch`, `OUNCE` → `nintendo_switch2`. Un
+  codice sconosciuto **non ripiega su Switch 1**, per la stessa ragione di PSN: si salta
+  con un log;
+- l'id esterno è l'`applicationId` / `titleId` **in minuscolo da tutte e due le parti**:
+  la **coincidenza fra i due non è verificata** su un titolo in comune. Se non
+  coincidessero, ogni gioco giocato e digitale comparirebbe due volte;
+- le app dell'abbonamento e le demo **non si filtrano**: nessun campo le distingue da un
+  gioco, e cadono da sole fra gli scarti, come i _goodies_ di GOG;
+- l'account è il `sub` dell'`id_token`, che coincide con `ownerNaId`; il nickname, se il
+  profilo risponde, è solo il nome leggibile;
+- il **paese** si prende al collegamento: dalla claim `country` dell'`id_token` se c'è,
+  altrimenti da `GET /2.0.0/users/me`. **Nessuno dei due è misurato.** Se manca,
+  l'import **salta le Virtual Game Cards, con un log, e importa lo storico senza
+  dichiarare il supporto** (dire «fisico» sarebbe falso per quasi tutta la libreria
+  digitale giocata): non si indovina un paese. Ricollegare riprova;
+- se le Virtual Game Cards **falliscono** (non per l'autorizzazione), l'import **fallisce**
+  invece di degradare allo storico, per la stessa ragione: il job riprova;
+- il primo avvio **non** è `acquired_at`: dice quando si è cominciato a giocare;
+- **400 e 401** sul token sono «non vale più» (`needs_reauth`); 403, 429, 5xx e la rete
+  sono temporanei. Lo stato che Nintendo dà a un session token scaduto **non è
+  misurato**;
+- i giochi **in prestito o di un altro account** (`ownerNaId` diverso da `userNaId`, o
+  `isLending`) non si trattano: si importano come gli altri e si contano in un log. Non
+  ce ne sono sull'account di prova, quindi **non è misurato** come si presentino.
+
+**Il rischio, da decidere prima di rilasciare.** Il login lo fa l'utente dal suo
+browser, ma il rinnovo lo fa il **server**, a ogni import, e ora con **due identità non
+nostre**: quella dell'app Nintendo (`com.nintendo.znej`, per i token e lo storico) e
+quella di un browser del portale (origine e `User-Agent` di Chrome, per il GraphQL: il
+GraphQL è provato così, non senza). Tre richieste per import (token, storico,
+GraphQL). In locale l'indirizzo è quello di casa, e il rischio è piccolo; su un server
+remoto, con molti utenti da un solo indirizzo, è la domanda che ha fermato il 9f, e non
+è misurata. Un client non ufficiale
+[può violare il contratto Nintendo](https://pkg.go.dev/github.com/wolveix/nintendo-go).
+L'aggiornamento automatico è a **sette giorni**, come Steam e GOG: se si decide che un
+rinnovo periodico dal server è troppo, è `AUTO_SYNC_EVERY_DAYS.nintendo`. Se il GraphQL
+risponde 401 su un token fresco, la prima riga da guardare è `SAVANNA_CLIENT_ID` in
+`apps/api/src/external/nintendo.ts`.
 
 ## La data d'acquisto
 
