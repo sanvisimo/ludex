@@ -212,18 +212,32 @@ describe('filtro per abbonamento', () => {
       await aggiungi(userId, { name: 'A mano' });
     });
 
-    it('toglie i giochi che hai solo via famiglia o abbonamento', async () => {
+    it('con tutti i valori toglie i giochi che hai solo via famiglia o abbonamento', async () => {
       // Ordinati: l'ordine di default è per data, e righe create nello stesso
       // istante non hanno un ordine che valga la pena fissare qui.
       expect(
-        (await nomi(userId, { excludeSubscriptions: true })).sort(),
+        (
+          await nomi(userId, {
+            excludeSubscriptions: ['steam_family', 'ps_plus'],
+          })
+        ).sort(),
       ).toEqual(['A mano', 'Comprato', 'Comprato e nel Plus']);
     });
 
-    it('spento non cambia niente', async () => {
-      expect(await nomi(userId, { excludeSubscriptions: false })).toHaveLength(
-        5,
-      );
+    it('solo la famiglia: restano i giochi che hai solo nel Plus', async () => {
+      expect(
+        (await nomi(userId, { excludeSubscriptions: ['steam_family'] })).sort(),
+      ).toEqual(['A mano', 'Comprato', 'Comprato e nel Plus', 'Solo Plus']);
+    });
+
+    it('solo il Plus: restano i giochi che hai solo in famiglia', async () => {
+      expect(
+        (await nomi(userId, { excludeSubscriptions: ['ps_plus'] })).sort(),
+      ).toEqual(['A mano', 'Comprato', 'Comprato e nel Plus', 'Solo famiglia']);
+    });
+
+    it('una lista vuota non cambia niente', async () => {
+      expect(await nomi(userId, { excludeSubscriptions: [] })).toHaveLength(5);
       expect(await nomi(userId)).toHaveLength(5);
     });
 
@@ -233,15 +247,16 @@ describe('filtro per abbonamento', () => {
       expect(
         await nomi(userId, {
           subscriptions: ['ps_plus'],
-          excludeSubscriptions: true,
+          excludeSubscriptions: ['steam_family', 'ps_plus'],
         }),
       ).toEqual(['Comprato e nel Plus']);
     });
 
     it('il totale segue il filtro', async () => {
-      expect((await search(userId, { excludeSubscriptions: true })).total).toBe(
-        3,
-      );
+      expect(
+        (await search(userId, { excludeSubscriptions: ['steam_family'] }))
+          .total,
+      ).toBe(4);
     });
   });
 

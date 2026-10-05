@@ -13,6 +13,8 @@ import {
   lt,
   lte,
   notExists,
+  notInArray,
+  or,
   sql,
 } from '@repo/db/orm';
 import type { SQL } from '@repo/db/orm';
@@ -135,10 +137,11 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
     );
   }
 
-  // Almeno una copia **tua**. Non è il contrario del filtro qui sopra: quello
-  // chiede «ha una copia da famiglia», questo «ha una copia che non lo è», e un
-  // gioco può avere tutte e due.
-  if (input.excludeSubscriptions) {
+  // Almeno una copia che **non è fra quelle escluse**: tua (`subscription`
+  // nullo) o di un altro abbonamento. Non è il contrario del filtro qui sopra:
+  // quello chiede «ha una copia da famiglia», questo «ha una copia che non lo
+  // è», e un gioco può avere tutte e due.
+  if (input.excludeSubscriptions?.length) {
     conditions.push(
       exists(
         db
@@ -147,7 +150,13 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
           .where(
             and(
               eq(schema.ownerships.backlogId, schema.backlog.id),
-              isNull(schema.ownerships.subscription),
+              or(
+                isNull(schema.ownerships.subscription),
+                notInArray(
+                  schema.ownerships.subscription,
+                  input.excludeSubscriptions,
+                ),
+              ),
             ),
           ),
       ),
