@@ -143,6 +143,9 @@ const fields = {
   // Famiglia Steam, PS Plus. Sta nel pannello dentro il gruppo Store, ma è un
   // criterio suo: `ownerships.subscription` è un'altra colonna.
   subscriptions: field(listOf(oneOf(subscriptionValues)), [] as Subscription[]),
+  // Solo i giochi con almeno una copia tua: toglie quelli che hai solo via
+  // famiglia o abbonamento. Vedi il commento sul contratto.
+  excludeSubscriptions: field(flag, false),
   attributes: field(listOf(integer), [] as number[]),
   gameTypes: field(listOf(oneOf(gameTypeValues)), [] as GameType[]),
   tags: field(listOf(text), [] as string[]),
@@ -233,6 +236,7 @@ const criteri = [
   'platforms',
   'stores',
   'subscriptions',
+  'excludeSubscriptions',
   'gameTypes',
   'attributes',
   'tags',
@@ -268,6 +272,7 @@ export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
     platforms: vuoto(filter.platforms),
     stores: vuoto(filter.stores),
     subscriptions: vuoto(filter.subscriptions),
+    excludeSubscriptions: filter.excludeSubscriptions || undefined,
     gameTypes: vuoto(filter.gameTypes),
     attributes: vuoto(filter.attributes),
     tags: vuoto(filter.tags),

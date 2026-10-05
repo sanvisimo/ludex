@@ -355,6 +355,12 @@ function ActiveChips() {
       label: `${t('criticShort')} ${range(filter.criticMin, null)}`,
       remove: () => setFilter({ criticMin: null }),
     });
+  if (filter.excludeSubscriptions)
+    chips.push({
+      key: 'exclude-subscriptions',
+      label: t('withoutSubscriptions'),
+      remove: () => setFilter({ excludeSubscriptions: null }),
+    });
   if (filter.neverPlayed)
     chips.push({
       key: 'never-played',
@@ -462,26 +468,46 @@ export function FilterPanel() {
       // posto che si chiama Store. Solo i valori che l'utente ha davvero.
       value: 'subscriptions',
       label: t('subscriptionsLabel'),
-      active: filter.subscriptions.length,
+      active:
+        filter.subscriptions.length + (filter.excludeSubscriptions ? 1 : 0),
       body: (
-        <CheckList
-          prefix={`${prefix}-subscriptions`}
-          hint={t('allOfThem')}
-          items={(options?.subscriptions ?? []).map((subscription) => ({
-            value: subscription,
-            label: subscriptionLabels[subscription],
-          }))}
-          selected={filter.subscriptions}
-          onToggle={(value) =>
-            setFilter({
-              subscriptions: toggle<Subscription>(
-                filter.subscriptions,
-                value as Subscription,
-              ),
-            })
-          }
-          empty={t('noSubscriptions')}
-        />
+        <YStack gap={10}>
+          {/* Solo se c'è qualcosa da escludere (o il filtro è già acceso da un
+              link): un interruttore che non cambia niente è rumore. */}
+          {((options?.subscriptions.length ?? 0) > 0 ||
+            filter.excludeSubscriptions) && (
+            <XStack gap={8} items="center">
+              <Checkbox
+                id={`${prefix}-exclude-subscriptions`}
+                checked={filter.excludeSubscriptions}
+                onCheckedChange={(checked) =>
+                  setFilter({ excludeSubscriptions: checked === true || null })
+                }
+              />
+              <Label htmlFor={`${prefix}-exclude-subscriptions`}>
+                {t('excludeSubscriptions')}
+              </Label>
+            </XStack>
+          )}
+          <CheckList
+            prefix={`${prefix}-subscriptions`}
+            hint={t('allOfThem')}
+            items={(options?.subscriptions ?? []).map((subscription) => ({
+              value: subscription,
+              label: subscriptionLabels[subscription],
+            }))}
+            selected={filter.subscriptions}
+            onToggle={(value) =>
+              setFilter({
+                subscriptions: toggle<Subscription>(
+                  filter.subscriptions,
+                  value as Subscription,
+                ),
+              })
+            }
+            empty={t('noSubscriptions')}
+          />
+        </YStack>
       ),
     },
     {

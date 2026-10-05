@@ -124,6 +124,8 @@
     "noStores": "No store: games added by hand don't have one.",
     "subscriptionsLabel": "Family and subscriptions",
     "noSubscriptions": "No copies from a family or subscription.",
+    "excludeSubscriptions": "Exclude family and subscriptions",
+    "withoutSubscriptions": "Without family and subscriptions",
     "storesLabel": "Stores",
     "categoriesLabel": "Categories",
     "tagsLabel": "Tags",

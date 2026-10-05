@@ -181,6 +181,70 @@ describe('filtro per abbonamento', () => {
     expect(risultato.total).toBe(1);
   });
 
+  describe('escludi famiglia e abbonamenti', () => {
+    beforeEach(async () => {
+      await conAbbonamento(userId, 'Solo famiglia', [
+        {
+          platformSlug: 'pc_windows',
+          store: 'steam',
+          subscription: 'steam_family',
+        },
+      ]);
+      await conAbbonamento(userId, 'Solo Plus', [
+        {
+          platformSlug: 'sony_playstation5',
+          store: 'psn',
+          subscription: 'ps_plus',
+        },
+      ]);
+      await conAbbonamento(userId, 'Comprato', [
+        { platformSlug: 'pc_windows', store: 'steam', subscription: null },
+      ]);
+      // Comprato su Steam e **anche** nel Plus: la copia tua c'è, resta.
+      await conAbbonamento(userId, 'Comprato e nel Plus', [
+        { platformSlug: 'pc_windows', store: 'steam', subscription: null },
+        {
+          platformSlug: 'sony_playstation5',
+          store: 'psn',
+          subscription: 'ps_plus',
+        },
+      ]);
+      await aggiungi(userId, { name: 'A mano' });
+    });
+
+    it('toglie i giochi che hai solo via famiglia o abbonamento', async () => {
+      // Ordinati: l'ordine di default è per data, e righe create nello stesso
+      // istante non hanno un ordine che valga la pena fissare qui.
+      expect(
+        (await nomi(userId, { excludeSubscriptions: true })).sort(),
+      ).toEqual(['A mano', 'Comprato', 'Comprato e nel Plus']);
+    });
+
+    it('spento non cambia niente', async () => {
+      expect(await nomi(userId, { excludeSubscriptions: false })).toHaveLength(
+        5,
+      );
+      expect(await nomi(userId)).toHaveLength(5);
+    });
+
+    it('un gioco comprato e anche nel Plus resta, e col filtro positivo si trova lì', async () => {
+      // «Hai una copia dal Plus» e «hai anche una copia tua» sono due domande,
+      // e un gioco può rispondere sì a tutte e due.
+      expect(
+        await nomi(userId, {
+          subscriptions: ['ps_plus'],
+          excludeSubscriptions: true,
+        }),
+      ).toEqual(['Comprato e nel Plus']);
+    });
+
+    it('il totale segue il filtro', async () => {
+      expect((await search(userId, { excludeSubscriptions: true })).total).toBe(
+        3,
+      );
+    });
+  });
+
   it('si combina con lo store: la famiglia Steam su Steam, non quella PSN', async () => {
     await conAbbonamento(userId, 'Famiglia', [
       {

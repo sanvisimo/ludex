@@ -3,7 +3,7 @@
 **Stato: fatto, non committato.** Branch `feat/filtro-abbonamenti`, da `main`.
 Scelta del 06/10/2026: **un gruppo nuovo «Famiglia e abbonamenti»** accanto a Store
 (prima era stata scelta l'opzione 2, righe dentro Store, poi ritirata). Verificato:
-`pnpm check-types`, `pnpm lint` e `pnpm --filter api test` (473 verdi, con 6 casi nuovi);
+`pnpm check-types`, `pnpm lint` e `pnpm --filter api test` (477 verdi, con 10 casi nuovi);
 **non guardato nel browser**.
 
 ## Perché non c'è, e dove deve stare
@@ -40,6 +40,20 @@ Un gruppo del pannello a parte, con la stessa forma degli altri (`CheckList`), u
 chip per ogni valore acceso e il suo conteggio accanto al titolo. Offre solo i valori
 che l'utente ha fra le righe **visibili**: una famiglia Steam su soli giochi nascosti
 non compare. Il gruppo Store resta com'era.
+
+## Escludi famiglia e abbonamenti (richiesta del 06/10/2026)
+
+Un secondo criterio, `excludeSubscriptions`: **tieni i giochi con almeno una copia
+tua**, cioè con `subscription` nullo (comprata, o inserita a mano). Scelta la lettura
+«almeno una copia tua» e non «nessuna copia da famiglia o abbonamento»: la seconda
+toglierebbe anche un gioco comprato su Steam che si ha anche nel PS Plus, che è
+tuo davvero. Toglie solo ciò che si ha **soltanto** così.
+
+Nel pannello è una casella in cima al gruppo «Famiglia e abbonamenti» (la stessa forma
+di «Mai giocato»), con il chip «Senza famiglia e abbonamenti». Si mostra solo se
+l'utente ha almeno una copia di quel tipo, o se il filtro è già acceso da un link.
+Non è il contrario del filtro positivo: «ha una copia dal Plus» e «ha anche una copia
+tua» sono due domande, e un gioco può rispondere sì a tutte e due.
 
 ## Verifica
 

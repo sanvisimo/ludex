@@ -135,6 +135,25 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
     );
   }
 
+  // Almeno una copia **tua**. Non è il contrario del filtro qui sopra: quello
+  // chiede «ha una copia da famiglia», questo «ha una copia che non lo è», e un
+  // gioco può avere tutte e due.
+  if (input.excludeSubscriptions) {
+    conditions.push(
+      exists(
+        db
+          .select({ uno: sql`1` })
+          .from(schema.ownerships)
+          .where(
+            and(
+              eq(schema.ownerships.backlogId, schema.backlog.id),
+              isNull(schema.ownerships.subscription),
+            ),
+          ),
+      ),
+    );
+  }
+
   // In OR come lo stato, e per la stessa ragione: un gioco ha esattamente un
   // tipo. Sta su `games`, che la ricerca unisce comunque, quindi è un confronto
   // sulla riga e non una sottoquery.
