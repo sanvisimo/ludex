@@ -241,15 +241,88 @@ describe('filtro per abbonamento', () => {
       expect(await nomi(userId)).toHaveLength(5);
     });
 
-    it('un gioco comprato e anche nel Plus resta, e col filtro positivo si trova lì', async () => {
-      // «Hai una copia dal Plus» e «hai anche una copia tua» sono due domande,
-      // e un gioco può rispondere sì a tutte e due.
+    it('«ha una copia dal Plus» e «senza famiglia» sono due domande', async () => {
+      // Il Plus incluso, la famiglia esclusa: chi ha una copia Plus, con la
+      // copia che conta che non sia della famiglia.
+      expect(
+        (
+          await nomi(userId, {
+            subscriptions: ['ps_plus'],
+            excludeSubscriptions: ['steam_family'],
+          })
+        ).sort(),
+      ).toEqual(['Comprato e nel Plus', 'Solo Plus']);
+    });
+
+    it('includere ed escludere lo stesso valore non trova niente', async () => {
+      // Il pannello non lo lascia costruire, un link scritto a mano sì.
       expect(
         await nomi(userId, {
           subscriptions: ['ps_plus'],
-          excludeSubscriptions: ['steam_family', 'ps_plus'],
+          excludeSubscriptions: ['ps_plus'],
         }),
-      ).toEqual(['Comprato e nel Plus']);
+      ).toEqual([]);
+    });
+
+    describe('insieme a un filtro sulle copie', () => {
+      beforeEach(async () => {
+        // La copia Steam è della famiglia, quella Switch è tua.
+        await conAbbonamento(userId, 'Famiglia e Switch', [
+          {
+            platformSlug: 'pc_windows',
+            store: 'steam',
+            subscription: 'steam_family',
+          },
+          {
+            platformSlug: 'nintendo_switch',
+            store: 'nintendo',
+            subscription: null,
+          },
+        ]);
+      });
+
+      it('«Steam» e senza famiglia chiede una copia Steam che non è da famiglia', async () => {
+        // «Famiglia e Switch» ha una copia tua, ma non su Steam: non c'è.
+        expect(
+          (
+            await nomi(userId, {
+              stores: ['steam'],
+              excludeSubscriptions: ['steam_family'],
+            })
+          ).sort(),
+        ).toEqual(['Comprato', 'Comprato e nel Plus']);
+      });
+
+      it('lo stesso vale per la piattaforma (la copia a mano su PC è tua)', async () => {
+        expect(
+          (
+            await nomi(userId, {
+              platforms: ['pc_windows'],
+              excludeSubscriptions: ['steam_family'],
+            })
+          ).sort(),
+        ).toEqual(['A mano', 'Comprato', 'Comprato e nel Plus']);
+      });
+
+      it('la copia tua su un altro store si trova con quello store', async () => {
+        expect(
+          await nomi(userId, {
+            stores: ['nintendo'],
+            excludeSubscriptions: ['steam_family'],
+          }),
+        ).toEqual(['Famiglia e Switch']);
+      });
+
+      it('la famiglia esclusa non toglie la copia del Plus', async () => {
+        expect(
+          (
+            await nomi(userId, {
+              stores: ['psn'],
+              excludeSubscriptions: ['steam_family'],
+            })
+          ).sort(),
+        ).toEqual(['Comprato e nel Plus', 'Solo Plus']);
+      });
     });
 
     it('il totale segue il filtro', async () => {
@@ -614,7 +687,7 @@ describe('opzioni del pannello', () => {
 
 type CopiaConAbbonamento = {
   platformSlug: string;
-  store: 'steam' | 'psn';
+  store: 'steam' | 'psn' | 'nintendo';
   subscription: 'ps_plus' | 'steam_family' | null;
 };
 

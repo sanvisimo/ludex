@@ -3,7 +3,7 @@
 **Stato: fatto, non committato.** Branch `feat/filtro-abbonamenti`, da `main`.
 Scelta del 06/10/2026: **un gruppo nuovo «Famiglia e abbonamenti»** accanto a Store
 (prima era stata scelta l'opzione 2, righe dentro Store, poi ritirata). Verificato:
-`pnpm check-types`, `pnpm lint` e `pnpm --filter api test` (554 verdi dopo la revisione di «escludi»);
+`pnpm check-types`, `pnpm lint` e `pnpm --filter api test` (559 verdi dopo la revisione di «escludi»);
 **non guardato nel browser**.
 
 ## Perché non c'è, e dove deve stare
@@ -54,6 +54,14 @@ Prima era una casella unica, e «escludi + Famiglia Steam» chiedeva due cose op
 sempre. Rimasta la lettura «almeno una copia» e non «nessuna copia da famiglia»: la
 seconda toglierebbe anche un gioco comprato su Steam che si ha anche nel PS Plus, che
 è tuo davvero.
+
+**Sulla stessa copia, non su copie qualunque** (corretto dopo averlo visto in uso):
+la prima versione teneva «escludi» come un `EXISTS` a parte, quindi «Steam» + «senza
+Famiglia Steam» lasciava passare un gioco con la copia Steam da famiglia e un'altra
+copia tua (Nintendo eShop). Ora il predicato «copia non esclusa» sta dentro ogni
+sottoquery sulle copie (`platforms`, `stores`, `subscriptions`), e resta come
+`EXISTS` autonomo per quando nessuno di quei filtri c'è. «Steam» + «senza famiglia»
+vuol dire una copia **Steam** che non è da famiglia.
 
 Nel pannello, il gruppo «Famiglia e abbonamenti» ha due liste degli stessi valori:
 «Mostra solo» (in AND) e «Escludi». Spuntare un valore in una lo toglie dall'altra,
