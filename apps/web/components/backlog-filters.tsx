@@ -2,6 +2,7 @@ import type {
   BacklogStatus,
   GameType,
   Store,
+  Subscription,
   UserTagKind,
 } from '@repo/contracts';
 import { attributeKindValues, backlogStatusValues } from '@repo/contracts';
@@ -42,6 +43,7 @@ import {
   useGameTypeLabels,
   useStatusLabels,
   useStoreLabels,
+  useSubscriptionLabels,
 } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 
@@ -284,6 +286,7 @@ const hours = (minutes: number | null) =>
 function ActiveChips() {
   const t = useTranslations('filters');
   const storeLabels = useStoreLabels();
+  const subscriptionLabels = useSubscriptionLabels();
   const gameTypeLabels = useGameTypeLabels();
   const range = useRangeText();
   const { filter, setFilter, reset, activeCount } = useBacklogFilter();
@@ -302,6 +305,14 @@ function ActiveChips() {
       key: `store-${store}`,
       label: storeLabels[store],
       remove: () => setFilter({ stores: toggle(filter.stores, store) }),
+    })),
+    ...filter.subscriptions.map((subscription) => ({
+      key: `subscription-${subscription}`,
+      label: subscriptionLabels[subscription],
+      remove: () =>
+        setFilter({
+          subscriptions: toggle(filter.subscriptions, subscription),
+        }),
     })),
     ...filter.gameTypes.map((type) => ({
       key: `type-${type}`,
@@ -343,6 +354,12 @@ function ActiveChips() {
       key: 'critic',
       label: `${t('criticShort')} ${range(filter.criticMin, null)}`,
       remove: () => setFilter({ criticMin: null }),
+    });
+  if (filter.excludeSubscriptions)
+    chips.push({
+      key: 'exclude-subscriptions',
+      label: t('withoutSubscriptions'),
+      remove: () => setFilter({ excludeSubscriptions: null }),
     });
   if (filter.neverPlayed)
     chips.push({
@@ -387,6 +404,7 @@ function ActiveChips() {
 export function FilterPanel() {
   const t = useTranslations('filters');
   const storeLabels = useStoreLabels();
+  const subscriptionLabels = useSubscriptionLabels();
   const gameTypeLabels = useGameTypeLabels();
   const attributeKindLabels = useTranslations('attributeKind');
   const range = useRangeText();
@@ -441,6 +459,55 @@ export function FilterPanel() {
           }
           empty={t('noStores')}
         />
+      ),
+    },
+    {
+      // A che titolo si ha la copia: la famiglia Steam, il PS Plus. Un gruppo
+      // suo e non righe dentro «Store»: è un'altra colonna (`subscriptions`
+      // contro `stores`), e il chip dice «Famiglia Steam» senza passare per un
+      // posto che si chiama Store. Solo i valori che l'utente ha davvero.
+      value: 'subscriptions',
+      label: t('subscriptionsLabel'),
+      active:
+        filter.subscriptions.length + (filter.excludeSubscriptions ? 1 : 0),
+      body: (
+        <YStack gap={10}>
+          {/* Solo se c'è qualcosa da escludere (o il filtro è già acceso da un
+              link): un interruttore che non cambia niente è rumore. */}
+          {((options?.subscriptions.length ?? 0) > 0 ||
+            filter.excludeSubscriptions) && (
+            <XStack gap={8} items="center">
+              <Checkbox
+                id={`${prefix}-exclude-subscriptions`}
+                checked={filter.excludeSubscriptions}
+                onCheckedChange={(checked) =>
+                  setFilter({ excludeSubscriptions: checked === true || null })
+                }
+              />
+              <Label htmlFor={`${prefix}-exclude-subscriptions`}>
+                {t('excludeSubscriptions')}
+              </Label>
+            </XStack>
+          )}
+          <CheckList
+            prefix={`${prefix}-subscriptions`}
+            hint={t('allOfThem')}
+            items={(options?.subscriptions ?? []).map((subscription) => ({
+              value: subscription,
+              label: subscriptionLabels[subscription],
+            }))}
+            selected={filter.subscriptions}
+            onToggle={(value) =>
+              setFilter({
+                subscriptions: toggle<Subscription>(
+                  filter.subscriptions,
+                  value as Subscription,
+                ),
+              })
+            }
+            empty={t('noSubscriptions')}
+          />
+        </YStack>
       ),
     },
     {

@@ -484,6 +484,16 @@ export const BacklogFilterSchema = z.object({
   status: z.array(BacklogStatusSchema).max(10).optional(),
   platforms: z.array(z.string().min(1)).max(20).optional(),
   stores: z.array(StoreSchema).max(20).optional(),
+  // A che titolo si ha la copia: la famiglia Steam, il PS Plus. In AND come
+  // `stores`, ma sta su una colonna a parte (`ownerships.subscription`), che è
+  // il motivo per cui è un criterio suo e non un valore di `stores`.
+  subscriptions: z.array(SubscriptionSchema).max(5).optional(),
+  // Tieni i giochi con **almeno una copia tua**: `subscription` nullo, cioè
+  // comprata, o inserita a mano. Non toglie un gioco perché ha *anche* una copia
+  // da famiglia o abbonamento (comprato su Steam e nel PS Plus resta): toglie
+  // quelli che hai **solo** così, che sono i giochi che stasera puoi avviare e
+  // domani no. Un gioco senza possessi non c'è, quindi non è un caso.
+  excludeSubscriptions: z.boolean().optional(),
   // Gli id di `igdb_attributes`, non le coppie (kind, igdbId): sono la chiave
   // che `game_attributes` referenzia davvero, e il client li riceve da
   // `backlog.filterOptions` senza doverli comporre.
@@ -556,6 +566,7 @@ export const FilterAttributeSchema = z.object({
 export const BacklogFilterOptionsSchema = z.object({
   platforms: z.array(PlatformSchema),
   stores: z.array(StoreSchema),
+  subscriptions: z.array(SubscriptionSchema),
   gameTypes: z.array(GameTypeSchema),
   attributes: z.array(FilterAttributeSchema),
 });

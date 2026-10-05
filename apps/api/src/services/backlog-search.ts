@@ -1,5 +1,5 @@
 import type { BacklogQuery } from '@repo/contracts';
-import type { GameType, Store } from '@repo/contracts/vocabulary';
+import type { GameType, Store, Subscription } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import {
   and,
@@ -110,6 +110,46 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
               ),
             ),
         ),
+      ),
+    );
+  }
+
+  // Come `stores`, ma su un'altra colonna: «Famiglia Steam» non è un negozio,
+  // è a che titolo si ha la copia. Una copia comprata ha `subscription` nullo e
+  // non corrisponde a nessuna spunta.
+  if (input.subscriptions?.length) {
+    conditions.push(
+      ...tuttiPresenti(input.subscriptions, (subscription) =>
+        exists(
+          db
+            .select({ uno: sql`1` })
+            .from(schema.ownerships)
+            .where(
+              and(
+                eq(schema.ownerships.backlogId, schema.backlog.id),
+                eq(schema.ownerships.subscription, subscription),
+              ),
+            ),
+        ),
+      ),
+    );
+  }
+
+  // Almeno una copia **tua**. Non è il contrario del filtro qui sopra: quello
+  // chiede «ha una copia da famiglia», questo «ha una copia che non lo è», e un
+  // gioco può avere tutte e due.
+  if (input.excludeSubscriptions) {
+    conditions.push(
+      exists(
+        db
+          .select({ uno: sql`1` })
+          .from(schema.ownerships)
+          .where(
+            and(
+              eq(schema.ownerships.backlogId, schema.backlog.id),
+              isNull(schema.ownerships.subscription),
+            ),
+          ),
       ),
     );
   }
@@ -386,6 +426,24 @@ export async function listBacklogFilterOptions(userId: string) {
     )
     .orderBy(schema.ownerships.store);
 
+  // A che titolo si hanno le copie, offerti solo se ce n'è almeno una **fra le
+  // righe visibili**: una famiglia Steam che compare solo su giochi nascosti non
+  // va proposta, come per i negozi. Il nullo (comprato) non è una voce.
+  const subscriptionRows = await db
+    .selectDistinct({ subscription: schema.ownerships.subscription })
+    .from(schema.ownerships)
+    .innerJoin(
+      schema.backlog,
+      eq(schema.backlog.id, schema.ownerships.backlogId),
+    )
+    .where(
+      and(
+        visibleOf(userId),
+        sql`${schema.ownerships.subscription} is not null`,
+      ),
+    )
+    .orderBy(schema.ownerships.subscription);
+
   // I tipi presenti nel backlog visibile. I nulli restano fuori: un gioco non
   // ancora arricchito non è una voce da offrire, e chi lo spuntasse non saprebbe
   // che cosa ha spuntato. L'ordine lo dà Postgres, che ordina un enum come è
@@ -420,6 +478,11 @@ export async function listBacklogFilterOptions(userId: string) {
     stores: storeRows
       .map((row) => row.store)
       .filter((store): store is Store => store !== null),
+    subscriptions: subscriptionRows
+      .map((row) => row.subscription)
+      .filter(
+        (subscription): subscription is Subscription => subscription !== null,
+      ),
     gameTypes: gameTypeRows
       .map((row) => row.gameType)
       .filter((type): type is GameType => type !== null),

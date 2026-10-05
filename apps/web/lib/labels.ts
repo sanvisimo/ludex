@@ -1,9 +1,16 @@
-import type { BacklogStatus, GameType, Medium, Store } from '@repo/contracts';
+import type {
+  BacklogStatus,
+  GameType,
+  Medium,
+  Store,
+  Subscription,
+} from '@repo/contracts';
 import {
   backlogStatusValues,
   gameTypeValues,
   mediumValues,
   storeValues,
+  subscriptionValues,
 } from '@repo/contracts';
 import { useTranslations } from 'use-intl';
 import { useMemo } from 'react';
@@ -45,6 +52,17 @@ export function useStoreLabels(): Record<Store, string> {
       Object.fromEntries(
         storeValues.map((value) => [value, t(value)]),
       ) as Record<Store, string>,
+    [t],
+  );
+}
+
+export function useSubscriptionLabels(): Record<Subscription, string> {
+  const t = useTranslations('subscription');
+  return useMemo(
+    () =>
+      Object.fromEntries(
+        subscriptionValues.map((value) => [value, t(value)]),
+      ) as Record<Subscription, string>,
     [t],
   );
 }
