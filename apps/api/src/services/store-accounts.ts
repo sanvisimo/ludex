@@ -28,6 +28,16 @@ import {
   refreshGogTokens,
 } from '../external/gog';
 import {
+  exchangeNintendoCode,
+  fetchNintendoProfile,
+  newNintendoState,
+  NintendoAuthError,
+  type NintendoCredentials,
+  nintendoLoginUrl,
+  parseNintendoAuthCode,
+  refreshNintendoTokens,
+} from '../external/nintendo';
+import {
   exchangeNpssoForCode,
   exchangePsnCode,
   fetchPsnProfile,
@@ -718,6 +728,68 @@ export async function linkPsnAccount(
   });
 }
 
+// --- Nintendo: il codice sta nell'indirizzo di un pulsante che non si apre ---
+
+export class NintendoCodeError extends Error {
+  constructor() {
+    super(
+      "Non trovo il codice: sulla pagina «Link an account» fai clic destro su «Select this account», scegli «Copia indirizzo del link» e incolla qui l'indirizzo intero",
+    );
+    this.name = 'NintendoCodeError';
+  }
+}
+
+/**
+ * Collega Nintendo.
+ *
+ * Il login lo fa l'utente nel suo browser; il pulsante finale punta a uno
+ * schema `npf…://` che nessun browser apre, e **cliccarlo non fa niente**. Si
+ * incolla quindi l'indirizzo del link, intero, come per GOG e Amazon.
+ *
+ * Il verifier PKCE si ricalcola da `userId` e dallo `state` che sta
+ * nell'indirizzo incollato: nessun `options.state` da riportare dal client, e
+ * la mutazione non sa chi le ha portato il codice — il mobile potrà prenderlo
+ * da una `WebView` senza toccare questo.
+ *
+ * L'account è l'id numerico (`sub` dell'`id_token`) e non il nickname, che
+ * Nintendo lascia cambiare: il nickname è solo la decorazione, e viene dal
+ * profilo se risponde.
+ */
+export async function linkNintendoAccount(
+  userId: string,
+  pasted: string,
+  options: LinkOptions = {},
+) {
+  const parsed = parseNintendoAuthCode(pasted);
+  if (!parsed) throw new NintendoCodeError();
+
+  const exchanged = await exchangeNintendoCode(
+    userId,
+    parsed.code,
+    parsed.state,
+  );
+
+  // Il profilo dà il paese (che il GraphQL vuole) e il nickname. È un tentativo:
+  // se non risponde si collega lo stesso, e l'import salta le Virtual Game Cards
+  // dicendolo. La claim dell'`id_token`, se c'era, vince.
+  const profile = await fetchNintendoProfile(exchanged.accessToken);
+  const credentials: NintendoCredentials = {
+    ...exchanged,
+    country: exchanged.country ?? profile?.country ?? null,
+  };
+
+  return upsertAccount({
+    userId,
+    store: 'nintendo',
+    externalAccountId: credentials.accountId,
+    displayName: profile?.nickname ?? null,
+    credentials,
+    expiresAt: new Date(credentials.expiresAt),
+    label: options.label,
+    expectedExternalAccountId: options.relinking?.externalAccountId,
+  });
+}
+
 /**
  * Un access token Amazon valido, più il serial che serve agli entitlement.
  *
@@ -804,6 +876,10 @@ export function storeLoginUrl(
       // entrato su playstation.com la trova vuota, e a dirglielo è il testo del
       // modulo. Un login vero non c'è da aprire — è già suo, nel browser.
       return { url: SSO_COOKIE_URL, state: null };
+    case 'nintendo':
+      // Lo `state` è dentro l'indirizzo, e torna dentro quello incollato: il
+      // client non deve riportarlo (vedi `linkNintendoAccount`).
+      return { url: nintendoLoginUrl(userId, newNintendoState()), state: null };
     default:
       return { url: null, state: null };
   }
@@ -852,6 +928,8 @@ export function linkStore(
       return linkAmazonAccount(userId, value, options);
     case 'psn':
       return linkPsnAccount(userId, value, options);
+    case 'nintendo':
+      return linkNintendoAccount(userId, value, options);
   }
 }
 
@@ -946,6 +1024,9 @@ const OAUTH_STORES = {
   gog: { refresh: refreshGogTokens, AuthError: GogAuthError },
   epic: { refresh: refreshEpicTokens, AuthError: EpicAuthError },
   psn: { refresh: refreshPsnTokens, AuthError: PsnAuthError },
+  // Il «refresh token» è il session token, che non ruota: il rinnovo rende un
+  // access token nuovo e lo stesso session token.
+  nintendo: { refresh: refreshNintendoTokens, AuthError: NintendoAuthError },
   steam: { refresh: refreshSteamTokens, AuthError: SteamAuthError },
 } as const;
 
@@ -1026,11 +1107,41 @@ export async function storeAccessToken(
   await db
     .update(schema.storeAccounts)
     .set({
-      credentials: encryptCredentials(rinnovato),
+      // Il rinnovo **si sovrappone** al credenziale, non lo sostituisce: ciò che
+      // il negozio non rende resta com'era. Per i negozi di prima non cambia
+      // niente (rendono tutto). Per Nintendo è il punto: il paese si prende al
+      // collegamento, dal profilo, e il rinnovo non lo conosce.
+      credentials: encryptCredentials({ ...credentials, ...rinnovato }),
       credentialsExpireAt: new Date(rinnovato.expiresAt),
       updatedAt: new Date(),
     })
     .where(eq(schema.storeAccounts.id, account.id));
 
   return rinnovato.accessToken;
+}
+
+/**
+ * Il credenziale Nintendo **già rinnovato**: access token, `id_token` e paese.
+ *
+ * `storeAccessToken` rende solo l'access token, e l'import delle Virtual Game
+ * Cards vuole l'`id_token` che lo accompagna. Dopo il rinnovo si rilegge la riga,
+ * perché `account.credentials` è quella di prima. Se l'access token era ancora
+ * valido il credenziale in tabella è già buono, e `idToken` ha la stessa scadenza.
+ */
+export async function nintendoCredentials(
+  account: StoreAccountRow,
+): Promise<NintendoCredentials> {
+  await storeAccessToken(account);
+
+  const row = await db.query.storeAccounts.findFirst({
+    where: eq(schema.storeAccounts.id, account.id),
+    columns: { credentials: true },
+  });
+  if (!row?.credentials) throw new Error('Nessun account nintendo collegato');
+
+  try {
+    return decryptCredentials<NintendoCredentials>(row.credentials);
+  } catch {
+    return requireReauth(account);
+  }
 }

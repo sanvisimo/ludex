@@ -46,6 +46,7 @@ export const linkableStoreValues = [
   'epic',
   'amazon',
   'psn',
+  'nintendo',
 ] as const;
 
 // Lo stato del collegamento a un negozio (step 9).
@@ -242,6 +243,7 @@ export const AUTO_SYNC_EVERY_DAYS: Record<
   epic: 7,
   amazon: 7,
   psn: 3,
+  nintendo: 7,
 };
 
 export type BacklogStatus = (typeof backlogStatusValues)[number];

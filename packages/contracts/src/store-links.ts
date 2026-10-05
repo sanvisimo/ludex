@@ -1,4 +1,4 @@
-import type { Store } from './vocabulary';
+import type { LinkableStore, Store } from './vocabulary';
 
 /**
  * L'URL della pagina del gioco su un negozio, per una copia.
@@ -66,4 +66,80 @@ export function storeCoverUrl(
     return `https://cdn.cloudflare.steamstatic.com/steam/apps/${externalId}/library_600x900.jpg`;
   }
   return imageUrl;
+}
+
+/**
+ * Un negozio che si collega con un login nel browser e un copia-incolla: tutti
+ * i collegabili tranne Steam, che ha il suo modo (il QR o il profilo).
+ */
+export type GuidedStore = Exclude<LinkableStore, 'steam'>;
+
+/** `ok`: sembra quello giusto. `wrong`: non sembra. Nullo: il campo è vuoto. */
+export type PastedLoginCheck = 'ok' | 'wrong' | null;
+
+/**
+ * Quello che l'utente ha incollato **sembra** quello che ci serve?
+ *
+ * Un suggerimento per chi sta incollando, mentre incolla: non decide niente e non
+ * blocca il pulsante. Il server resta quello che accetta o rifiuta, con i suoi
+ * parser (`parseGogAuthCode` & co. in `apps/api`), e nessuna richiesta parte da
+ * qui. Per questo **non deve essere più severa del server**: un indirizzo che il
+ * server accetterebbe e che qui risulta «sbagliato» manderebbe l'utente a
+ * riprovare per niente. Le regole sono le stesse, scritte con espressioni
+ * regolari e non con `URL` — su React Native `searchParams` non è implementato —
+ * e `apps/api/src/external/paste-check.test.ts` le confronta con i parser veri.
+ *
+ * Il caso per cui esiste è Nintendo, dove il pulsante finale **non si clicca**
+ * (punta a `npf…://`, che il browser non apre) e si copia il suo indirizzo: chi
+ * incolla l'indirizzo della pagina invece di quello del link lo vede subito.
+ */
+export function checkPastedLogin(
+  store: GuidedStore,
+  input: string,
+): PastedLoginCheck {
+  const text = input.trim();
+  if (!text) return null;
+
+  const param = (name: string) =>
+    new RegExp(`[?&#]${name.replace(/\./g, '\\.')}=[^&\\s#]+`).test(text);
+  const isUrl = /^https?:\/\//i.test(text);
+  const unquoted = text.replace(/^"|"$/g, '');
+
+  const jsonField = (field: string): boolean => {
+    if (!text.startsWith('{')) return false;
+    try {
+      const value = (JSON.parse(text) as Record<string, unknown>)[field];
+      return typeof value === 'string' && value.length > 0;
+    } catch {
+      return false;
+    }
+  };
+
+  let ok: boolean;
+  switch (store) {
+    case 'nintendo':
+      ok =
+        /session_token_code=[^&\s]+/.test(text) &&
+        /[#&?]state=[^&\s]+/.test(text);
+      break;
+    case 'gog':
+      ok = isUrl ? param('code') : /^[\w-]{20,}$/.test(text);
+      break;
+    case 'epic':
+      ok = text.startsWith('{')
+        ? jsonField('authorizationCode')
+        : /^[0-9a-f]{32}$/i.test(unquoted);
+      break;
+    case 'amazon':
+      ok = isUrl
+        ? param('openid.oa2.authorization_code')
+        : /^[A-Za-z0-9._-]{10,}$/.test(text);
+      break;
+    case 'psn':
+      ok = text.startsWith('{')
+        ? jsonField('npsso')
+        : /^[\w-]{40,}$/.test(unquoted);
+      break;
+  }
+  return ok ? 'ok' : 'wrong';
 }
