@@ -356,6 +356,35 @@ describe('aggiunta di un possesso', () => {
     });
   });
 
+  it('una copia della famiglia Steam non adotta il possesso scritto a mano', async () => {
+    // Il possesso a mano dice «ce l'ho su Steam», e la copia della famiglia dice
+    // che è di un altro. Adottarlo vorrebbe dire che il giorno che il parente
+    // toglie il gioco, quello che l'utente aveva scritto da sé se ne va con lui.
+    const account = await linkStoreAccount(userId, 'steam');
+
+    await ensureOwnerships([
+      {
+        backlogId: entryId,
+        platformSlug: 'pc_windows',
+        store: 'steam',
+        storeAccountId: account.id,
+        subscription: 'steam_family',
+      },
+    ]);
+
+    const entry = await findEntryById(userId, entryId);
+    expect(entry?.ownerships).toHaveLength(2);
+    expect(entry?.ownerships).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ storeAccount: null, subscription: null }),
+        expect.objectContaining({
+          storeAccount: expect.objectContaining({ id: account.id }),
+          subscription: 'steam_family',
+        }),
+      ]),
+    );
+  });
+
   it('due account dello stesso negozio sono due possessi', async () => {
     // Ed è il punto di tutta la modifica: per il filtro hard sono la stessa
     // cosa, ma per lanciare il gioco no — bisogna essere collegati a quello

@@ -332,9 +332,47 @@ export const StoreAccountSchema = z.object({
   // Se si aggiorna da solo. Conta solo con l'interruttore generale acceso
   // (`UserSettings.autoSyncLibrary`): servono tutti e due.
   autoSync: z.boolean(),
+  // Ha una credenziale salvata. Mai la credenziale in sé: solo il fatto che c'è.
+  // Per Steam è ciò che distingue il **login** (con la famiglia, e col profilo
+  // anche privato) dal solo profilo pubblico, che di credenziale non ne ha. Per
+  // gli altri negozi è sempre vero finché sono collegati.
+  hasLogin: z.boolean(),
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
   // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
   syncing: z.boolean(),
+});
+
+// Il login Steam col QR (9f). A differenza degli altri negozi non si collega con
+// un valore incollato: il server tiene aperta una sessione finché l'utente non
+// inquadra il QR con l'app Steam e conferma, e la schermata chiede a che punto è.
+export const SteamLoginStartSchema = z.object({
+  // Identifica la sessione: si rende a `steamLogin.status`.
+  loginId: z.uuid(),
+  // L'indirizzo dentro il QR. Sul mobile, dove il telefono è lo stesso che ha
+  // l'app, si potrà aprire invece di scansionarlo.
+  qrUrl: z.string(),
+  // Il QR già disegnato, come immagine in data URL: web e mobile lo mostrano
+  // senza una libreria di QR nel bundle.
+  qrImage: z.string(),
+});
+
+export const SteamLoginStatusSchema = z.object({
+  // `expired` vale anche per una sessione che non c'è o che non è tua: la
+  // risposta non dice quali esistono.
+  status: z.enum(['waiting', 'scanned', 'done', 'expired', 'failed']),
+  // L'account scritto, a login confermato.
+  accountId: z.uuid().nullable(),
+  // Solo quando la schermata deve dire una cosa specifica: il login è stato fatto
+  // con un altro account Steam da quello che si stava ricollegando.
+  reason: z.enum(['wrong_account']).nullable(),
+});
+
+// Cosa ha portato via la rimozione del solo login: le copie della famiglia.
+export const SteamLoginRemovedSchema = z.object({
+  // Le copie `steam_family` tolte.
+  removed: z.number().int(),
+  // E quelle rimaste perché la riga ha dati dell'utente sopra.
+  kept: z.number().int(),
 });
 
 // Cosa porta via lo scollegamento di un account, prima di portarlo via: sono i
@@ -581,6 +619,9 @@ export function storeAccountName(account: {
   return account.label ?? account.displayName ?? account.externalAccountId;
 }
 export type UnlinkImpact = z.infer<typeof UnlinkImpactSchema>;
+export type SteamLoginStart = z.infer<typeof SteamLoginStartSchema>;
+export type SteamLoginStatus = z.infer<typeof SteamLoginStatusSchema>;
+export type SteamLoginRemoved = z.infer<typeof SteamLoginRemovedSchema>;
 export type SyncAllResult = z.infer<typeof SyncAllResultSchema>;
 export type UserSettings = z.infer<typeof UserSettingsSchema>;
 export type UnresolvedImport = z.infer<typeof UnresolvedImportSchema>;

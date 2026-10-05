@@ -1,5 +1,5 @@
 import { db, schema } from '@repo/db';
-import { eq } from '@repo/db/orm';
+import { and, eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -11,11 +11,30 @@ import {
   steamEntry,
 } from '../../test/factories';
 import { findIgdbGamesByExternalIds, searchIgdbGames } from '../external/igdb';
-import { fetchSteamLibrary } from '../external/steam';
+import {
+  fetchSteamFamilyLibrary,
+  fetchSteamLibrary,
+  type SteamFamilyLibrary,
+  type SteamSharedApp,
+  SteamUnauthorizedError,
+} from '../external/steam';
 import { enqueueEnrichment, enqueuePostImport } from '../queue/enrichment';
 import { importSteamLibrary } from './steam-import';
+import { StoreReauthRequiredError, storeAccessToken } from './store-accounts';
 
-vi.mock('../external/steam', () => ({ fetchSteamLibrary: vi.fn() }));
+// Il confine è il client di Steam, non `fetch`: le classi d'errore restano vere,
+// perché l'import ci fa `instanceof`.
+vi.mock('../external/steam', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../external/steam')>()),
+  fetchSteamLibrary: vi.fn(),
+  fetchSteamFamilyLibrary: vi.fn(),
+}));
+// Il rinnovo del token è un altro test (`store-accounts.test.ts`): qui interessa
+// cosa l'import fa col token, non come lo si ottiene.
+vi.mock('./store-accounts', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./store-accounts')>()),
+  storeAccessToken: vi.fn(),
+}));
 vi.mock('../external/igdb', () => ({
   findIgdbGamesByExternalIds: vi.fn(),
   // Il passo 3 del 9a: l'import ora ripiega sul match per nome. Steam non ne ha
@@ -30,6 +49,8 @@ vi.mock('../queue/enrichment', () => ({
 }));
 
 const mockedLibrary = vi.mocked(fetchSteamLibrary);
+const mockedFamily = vi.mocked(fetchSteamFamilyLibrary);
+const mockedToken = vi.mocked(storeAccessToken);
 const mockedResolve = vi.mocked(findIgdbGamesByExternalIds);
 const mockedSearch = vi.mocked(searchIgdbGames);
 const mockedEnqueue = vi.mocked(enqueueEnrichment);
@@ -62,6 +83,8 @@ const ownershipsOf = (userId: string) =>
       store: schema.ownerships.store,
       playtimeMinutes: schema.ownerships.playtimeMinutes,
       lastPlayedAt: schema.ownerships.lastPlayedAt,
+      subscription: schema.ownerships.subscription,
+      acquiredAt: schema.ownerships.acquiredAt,
     })
     .from(schema.backlog)
     .innerJoin(
@@ -348,6 +371,19 @@ describe('importSteamLibrary', () => {
     );
   });
 
+  it('senza credenziale non chiede né il token né la famiglia', async () => {
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
+    igdbKnows([{ externalId: '220', igdbId: 233 }]);
+
+    const report = await importSteamLibrary(account);
+
+    // Il profilo pubblico resta com'è: la chiave dell'applicazione, e basta.
+    expect(mockedToken).not.toHaveBeenCalled();
+    expect(mockedFamily).not.toHaveBeenCalled();
+    expect(mockedLibrary).toHaveBeenCalledWith(account.externalAccountId);
+    expect(report.family).toBeUndefined();
+  });
+
   it("segna l'ultima sincronizzazione sull'account collegato", async () => {
     mockedLibrary.mockResolvedValue([]);
     igdbKnows([]);
@@ -359,5 +395,475 @@ describe('importSteamLibrary', () => {
       .from(schema.storeAccounts)
       .where(eq(schema.storeAccounts.id, account.id));
     expect(aggiornato?.lastSyncAt).toBeInstanceOf(Date);
+  });
+});
+
+// --- 9f: col login, e la famiglia ---
+
+const ME = '76561190000000000';
+const OTHER = '76561190000000001';
+
+/** Un'app della famiglia come la restituisce il client: di un altro membro. */
+function sharedApp(over: Partial<SteamSharedApp> & { externalId: string }) {
+  return {
+    name: `Gioco ${over.externalId}`,
+    ownerSteamIds: [OTHER],
+    excludeReason: null,
+    playtimeMinutes: 0,
+    lastPlayedAt: null,
+    // La data del proprietario, antica apposta: l'import non deve usarla.
+    acquiredAt: new Date('2008-02-20T00:00:00Z'),
+    ...over,
+  } satisfies SteamSharedApp;
+}
+
+const family = (
+  apps: Parameters<typeof sharedApp>[0][],
+  inGroup = true,
+  joinedAt: Date | null = new Date('2024-09-12T00:00:00Z'),
+): SteamFamilyLibrary => ({ inGroup, joinedAt, apps: apps.map(sharedApp) });
+
+/** Chi ha un possesso, per appid: più leggibile dei gameId. */
+const byApp = async (userId: string) => {
+  const rows = await db
+    .select({
+      appId: schema.externalIds.externalId,
+      subscription: schema.ownerships.subscription,
+      playtimeMinutes: schema.ownerships.playtimeMinutes,
+      acquiredAt: schema.ownerships.acquiredAt,
+      store: schema.ownerships.store,
+    })
+    .from(schema.backlog)
+    .innerJoin(
+      schema.ownerships,
+      eq(schema.ownerships.backlogId, schema.backlog.id),
+    )
+    .innerJoin(
+      schema.externalIds,
+      and(
+        eq(schema.externalIds.gameId, schema.backlog.gameId),
+        eq(schema.externalIds.source, 'steam'),
+      ),
+    )
+    .where(eq(schema.backlog.userId, userId));
+  return new Map(rows.map((row) => [row.appId, row]));
+};
+
+const backlogOf = (userId: string) =>
+  db.select().from(schema.backlog).where(eq(schema.backlog.userId, userId));
+
+describe('importSteamLibrary col login (9f)', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkSteamAccount>>;
+
+  /** Un account Steam che ha fatto il login: ha una credenziale. */
+  async function withLogin(owner: string, steamId: string) {
+    const row = await linkSteamAccount(owner, steamId);
+    const [conCredenziale] = await db
+      .update(schema.storeAccounts)
+      .set({ credentials: Buffer.from('credenziale') })
+      .where(eq(schema.storeAccounts.id, row.id))
+      .returning();
+    return conCredenziale!;
+  }
+
+  /** IGDB conosce questi appid, e ciascuno è un gioco a sé. */
+  const igdbKnowsAll = (appIds: string[]) =>
+    igdbKnows(appIds.map((id) => ({ externalId: id, igdbId: Number(id) })));
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await withLogin(userId, ME);
+    mockedToken.mockResolvedValue('token');
+    mockedSearch.mockResolvedValue([]);
+    mockedLibrary.mockResolvedValue([]);
+  });
+
+  it('scrive le copie della famiglia come steam_family, e non le proprie', async () => {
+    mockedLibrary.mockResolvedValue([
+      steamEntry({ externalId: '220', playtimeMinutes: 630 }),
+    ]);
+    mockedFamily.mockResolvedValue(
+      family([
+        // Una mia, che la risposta elenca perché `include_own=true`.
+        { externalId: '220', ownerSteamIds: [ME] },
+        { externalId: '400', playtimeMinutes: 90 },
+        { externalId: '500', ownerSteamIds: [OTHER, '76561190000000002'] },
+      ]),
+    );
+    igdbKnowsAll(['220', '400', '500']);
+
+    const report = await importSteamLibrary(account);
+
+    const copie = await byApp(userId);
+    expect(copie.get('220')).toMatchObject({
+      subscription: null,
+      playtimeMinutes: 630,
+      // La sua: l'utente è fra i proprietari.
+      acquiredAt: new Date('2008-02-20T00:00:00Z'),
+    });
+    // Le ore sono quelle dell'utente, e la data d'acquisto **non** si scrive: è
+    // del proprietario, e farebbe arretrare `backlog.added_at` per sempre.
+    expect(copie.get('400')).toMatchObject({
+      subscription: 'steam_family',
+      playtimeMinutes: 90,
+      // Una stima: il più recente fra la data del proprietario (2008) e quella in
+      // cui l'utente è entrato nella famiglia.
+      acquiredAt: new Date('2024-09-12T00:00:00Z'),
+      store: 'steam',
+    });
+    expect(copie.get('500')).toMatchObject({ subscription: 'steam_family' });
+    expect(report.family).toEqual({ copies: 2, removed: 0, kept: 0 });
+    // Col token, non con la chiave: a profilo privato la chiave risponde vuota.
+    expect(mockedLibrary).toHaveBeenCalledWith(ME, 'token');
+    expect(mockedFamily).toHaveBeenCalledWith('token', ME);
+  });
+
+  it('la data d’acquisto delle copie proprie porta indietro `aggiunto il`, quella della famiglia no', async () => {
+    mockedLibrary.mockResolvedValue([
+      steamEntry({ externalId: '220' }),
+      steamEntry({ externalId: '500' }),
+    ]);
+    mockedFamily.mockResolvedValue(
+      family([
+        // Il caso insidioso: l'app è anche nella mia libreria, ma la famiglia
+        // la elenca con un altro proprietario soltanto, e con la **sua** data.
+        // Non è la mia, e scriverla farebbe arretrare `aggiunto il` al 2008.
+        { externalId: '500', acquiredAt: new Date('2008-02-20T00:00:00Z') },
+        // Un'app in comune con un parente: la risposta con `include_own=true`
+        // rende la data dell'utente, non quella del proprietario (*Portal*:
+        // 2025 contro il 2011 dell'altro, e la pagina delle licenze dice 2025).
+        {
+          externalId: '220',
+          ownerSteamIds: [OTHER, ME],
+          acquiredAt: new Date('2025-07-02T00:00:00Z'),
+        },
+        // Solo del parente: la data è sua, e non deve arretrare il backlog.
+        { externalId: '400', acquiredAt: new Date('2008-02-20T00:00:00Z') },
+      ]),
+    );
+    igdbKnowsAll(['220', '400', '500']);
+
+    await importSteamLibrary(account);
+
+    const copie = await byApp(userId);
+    expect(copie.get('500')?.acquiredAt).toBeNull();
+    expect(copie.get('220')?.acquiredAt).toEqual(
+      new Date('2025-07-02T00:00:00Z'),
+    );
+    expect(copie.get('400')?.acquiredAt).toEqual(
+      new Date('2024-09-12T00:00:00Z'),
+    );
+
+    const aggiunti = (await backlogOf(userId)).map((riga) =>
+      riga.addedAt.getUTCFullYear(),
+    );
+    // Il 2025 della copia propria: né il 2008 del parente, né oggi.
+    expect(aggiunti).toContain(2025);
+    expect(aggiunti).not.toContain(2008);
+  });
+
+  it('una copia propria che la famiglia non elenca resta senza data', async () => {
+    // Succede: pochi giochi della libreria propria non stanno nella risposta
+    // della famiglia (5 su 453 sul primo account misurato).
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
+    mockedFamily.mockResolvedValue(family([]));
+    igdbKnowsAll(['220']);
+
+    await importSteamLibrary(account);
+
+    expect((await byApp(userId)).get('220')?.acquiredAt).toBeNull();
+  });
+
+  it('non scrive come famiglia ciò che hai già o che Steam esclude', async () => {
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
+    mockedFamily.mockResolvedValue(
+      family([
+        // Il caso di confine misurato: un altro membro ha l'app, ma è anche
+        // nella mia libreria. Il proprietario elencato non sono io, e non è
+        // una copia della famiglia.
+        { externalId: '220', ownerSteamIds: [OTHER] },
+        { externalId: '90', excludeReason: 3 },
+        { externalId: '400' },
+      ]),
+    );
+    igdbKnowsAll(['220', '90', '400']);
+
+    const report = await importSteamLibrary(account);
+
+    const copie = await byApp(userId);
+    expect(copie.get('220')?.subscription).toBeNull();
+    expect(copie.has('90')).toBe(false);
+    expect(copie.get('400')?.subscription).toBe('steam_family');
+    expect(report.family?.copies).toBe(1);
+  });
+
+  it('rieseguito lascia lo stesso stato', async () => {
+    mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+    igdbKnowsAll(['400']);
+
+    await importSteamLibrary(account);
+    const secondo = await importSteamLibrary(account);
+
+    expect(await ownershipsOf(userId)).toHaveLength(1);
+    expect(await backlogOf(userId)).toHaveLength(1);
+    expect(secondo.family).toEqual({ copies: 1, removed: 0, kept: 0 });
+  });
+
+  it('un gioco che esce dalla famiglia se ne va, con la sua riga di backlog', async () => {
+    mockedFamily.mockResolvedValue(
+      family([{ externalId: '400' }, { externalId: '500' }]),
+    );
+    igdbKnowsAll(['400', '500']);
+    await importSteamLibrary(account);
+
+    mockedFamily.mockResolvedValue(family([{ externalId: '500' }]));
+    const report = await importSteamLibrary(account);
+
+    expect([...(await byApp(userId)).keys()]).toEqual(['500']);
+    // Era solo il riflesso della famiglia: la riga non ha niente dell'utente.
+    expect(await backlogOf(userId)).toHaveLength(1);
+    expect(report.family).toEqual({ copies: 1, removed: 1, kept: 0 });
+  });
+
+  it('se la riga ha dati dell’utente la copia resta', async () => {
+    mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+    igdbKnowsAll(['400']);
+    await importSteamLibrary(account);
+    // Un voto: roba che l'utente ha scritto, e che non sparisce perché un parente
+    // ha tolto la licenza.
+    await db.update(schema.backlog).set({ rating: 4.5 });
+
+    mockedFamily.mockResolvedValue(family([]));
+    const report = await importSteamLibrary(account);
+
+    expect((await byApp(userId)).get('400')?.subscription).toBe('steam_family');
+    expect(await backlogOf(userId)).toMatchObject([{ rating: 4.5 }]);
+    expect(report.family).toEqual({ copies: 0, removed: 0, kept: 1 });
+  });
+
+  it('con un’altra copia, esce solo quella della famiglia', async () => {
+    mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+    igdbKnowsAll(['400']);
+    await importSteamLibrary(account);
+    // Lo stesso gioco comprato anche su GOG.
+    const [riga] = await backlogOf(userId);
+    await db.insert(schema.ownerships).values({
+      backlogId: riga!.id,
+      platformSlug: 'pc_windows',
+      store: 'gog',
+    });
+
+    mockedFamily.mockResolvedValue(family([]));
+    await importSteamLibrary(account);
+
+    const righe = await ownershipsOf(userId);
+    expect(righe).toHaveLength(1);
+    expect(righe[0]).toMatchObject({ store: 'gog', subscription: null });
+    // La riga di backlog resta: ha ancora un possesso.
+    expect(await backlogOf(userId)).toHaveLength(1);
+  });
+
+  it('un gioco comprato dopo averlo avuto dalla famiglia smette di esserlo', async () => {
+    mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+    igdbKnowsAll(['400']);
+    await importSteamLibrary(account);
+
+    // Adesso è nella mia libreria, e la famiglia lo elenca con me fra i
+    // proprietari. La chiave del possesso è la stessa: si riscrive senza COALESCE.
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '400' })]);
+    mockedFamily.mockResolvedValue(
+      family([{ externalId: '400', ownerSteamIds: [ME, OTHER] }]),
+    );
+    const report = await importSteamLibrary(account);
+
+    const righe = await ownershipsOf(userId);
+    expect(righe).toHaveLength(1);
+    expect(righe[0]?.subscription).toBeNull();
+    expect(report.family).toEqual({ copies: 0, removed: 0, kept: 0 });
+  });
+
+  it('chi esce da ogni gruppo perde tutte le copie della famiglia', async () => {
+    mockedFamily.mockResolvedValue(
+      family([{ externalId: '400' }, { externalId: '500' }]),
+    );
+    igdbKnowsAll(['400', '500']);
+    await importSteamLibrary(account);
+
+    mockedFamily.mockResolvedValue(family([], false));
+    const report = await importSteamLibrary(account);
+
+    expect(await ownershipsOf(userId)).toHaveLength(0);
+    expect(report.family?.removed).toBe(2);
+  });
+
+  it('se la famiglia non si legge non si pota niente', async () => {
+    mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+    igdbKnowsAll(['400']);
+    await importSteamLibrary(account);
+
+    // Una rete che cade non è un'uscita dalla famiglia.
+    mockedFamily.mockRejectedValue(new Error('rete giù'));
+    await expect(importSteamLibrary(account)).rejects.toThrow('rete giù');
+
+    expect((await byApp(userId)).get('400')?.subscription).toBe('steam_family');
+  });
+
+  it('un rifiuto di Steam manda l’account in needs_reauth', async () => {
+    mockedFamily.mockRejectedValue(
+      new SteamUnauthorizedError('GetSharedLibraryApps', 401),
+    );
+
+    await expect(importSteamLibrary(account)).rejects.toThrow(
+      StoreReauthRequiredError,
+    );
+
+    const [riga] = await db
+      .select({ status: schema.storeAccounts.status })
+      .from(schema.storeAccounts)
+      .where(eq(schema.storeAccounts.id, account.id));
+    expect(riga?.status).toBe('needs_reauth');
+  });
+
+  it('un rifiuto sulla libreria propria è lo stesso rifiuto', async () => {
+    mockedLibrary.mockRejectedValue(
+      new SteamUnauthorizedError('GetOwnedGames', 401),
+    );
+
+    await expect(importSteamLibrary(account)).rejects.toThrow(
+      StoreReauthRequiredError,
+    );
+    expect(mockedFamily).not.toHaveBeenCalled();
+  });
+
+  it('una copia tolta a mano non rientra al reimport', async () => {
+    mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+    igdbKnowsAll(['400']);
+    await importSteamLibrary(account);
+
+    // «Questa copia non ce l'ho»: il gesto di `docs/import-librerie.md`.
+    const [riga] = await backlogOf(userId);
+    await db
+      .delete(schema.ownerships)
+      .where(eq(schema.ownerships.backlogId, riga!.id));
+    await db.insert(schema.ownershipRejections).values({
+      backlogId: riga!.id,
+      platformSlug: 'pc_windows',
+      store: 'steam',
+      storeAccountId: account.id,
+      medium: 'digital',
+    });
+
+    await importSteamLibrary(account);
+
+    expect(await ownershipsOf(userId)).toHaveLength(0);
+  });
+
+  it('un appid proprio e uno della famiglia sullo stesso gioco restano una copia comprata', async () => {
+    // Succede davvero: 445 giochi per 447 appid. Le righe si fondono e vince il
+    // `subscription` della prima, quindi le proprie devono stare davanti — o un
+    // acquisto uscirebbe marcato famiglia, e la potatura lo butterebbe.
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
+    mockedFamily.mockResolvedValue(family([{ externalId: '221' }]));
+    igdbKnows([
+      { externalId: '220', igdbId: 233 },
+      { externalId: '221', igdbId: 233 },
+    ]);
+
+    await importSteamLibrary(account);
+
+    const righe = await ownershipsOf(userId);
+    expect(righe).toHaveLength(1);
+    expect(righe[0]?.subscription).toBeNull();
+
+    // E la potatura non lo tocca, nemmeno a famiglia vuota.
+    mockedFamily.mockResolvedValue(family([]));
+    await importSteamLibrary(account);
+    expect(await ownershipsOf(userId)).toHaveLength(1);
+  });
+
+  describe('con un possesso scritto a mano', () => {
+    /** Il gioco era già nel backlog, con «PC» a mano e nessun negozio. */
+    async function manualEntry() {
+      const game = await createGame({ igdbId: 400 });
+      const [entry] = await db
+        .insert(schema.backlog)
+        .values({ userId, gameId: game.id })
+        .returning({ id: schema.backlog.id });
+      await db
+        .insert(schema.ownerships)
+        .values({ backlogId: entry!.id, platformSlug: 'pc_windows' });
+      return entry!.id;
+    }
+
+    it('non lo adotta: restano due righe', async () => {
+      await manualEntry();
+      mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+      igdbKnowsAll(['400']);
+
+      await importSteamLibrary(account);
+
+      const righe = await ownershipsOf(userId);
+      expect(righe).toHaveLength(2);
+      expect(righe).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ store: null, subscription: null }),
+          expect.objectContaining({
+            store: 'steam',
+            subscription: 'steam_family',
+          }),
+        ]),
+      );
+    });
+
+    it('se la famiglia lo toglie esce solo la copia della famiglia', async () => {
+      await manualEntry();
+      mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+      igdbKnowsAll(['400']);
+      await importSteamLibrary(account);
+
+      mockedFamily.mockResolvedValue(family([]));
+      await importSteamLibrary(account);
+
+      // Quello scritto a mano resta, con la sua riga di backlog: è dell'utente.
+      const righe = await ownershipsOf(userId);
+      expect(righe).toHaveLength(1);
+      expect(righe[0]).toMatchObject({ store: null, subscription: null });
+      expect(await backlogOf(userId)).toHaveLength(1);
+    });
+
+    it('se poi lo compri si fonde con l’acquisto, come sempre', async () => {
+      await manualEntry();
+      mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+      igdbKnowsAll(['400']);
+      await importSteamLibrary(account);
+
+      // Adesso è nella libreria propria: la copia ha la chiave di quella della
+      // famiglia, e lì l'adozione riprende — la riga a mano era la stessa copia.
+      mockedLibrary.mockResolvedValue([steamEntry({ externalId: '400' })]);
+      mockedFamily.mockResolvedValue(
+        family([{ externalId: '400', ownerSteamIds: [ME, OTHER] }]),
+      );
+      await importSteamLibrary(account);
+
+      const righe = await ownershipsOf(userId);
+      expect(righe).toHaveLength(1);
+      expect(righe[0]).toMatchObject({ store: 'steam', subscription: null });
+    });
+  });
+
+  it('la potatura è dell’account: le copie di un altro utente restano', async () => {
+    const altro = await createUser();
+    const suoAccount = await withLogin(altro, '76561190000000009');
+    mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+    igdbKnowsAll(['400']);
+    await importSteamLibrary(suoAccount);
+    await importSteamLibrary(account);
+
+    mockedFamily.mockResolvedValue(family([]));
+    await importSteamLibrary(account);
+
+    expect(await ownershipsOf(userId)).toHaveLength(0);
+    expect((await byApp(altro)).get('400')?.subscription).toBe('steam_family');
   });
 });

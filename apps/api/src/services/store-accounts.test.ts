@@ -9,23 +9,42 @@ import {
   linkSteamAccount as seedAccount,
   linkStoreAccount,
 } from '../../test/factories';
-import { fetchSteamPersonaName, resolveSteamId } from '../external/steam';
-import { encryptCredentials, resetStoreTokenKey } from '../lib/crypto';
+import {
+  fetchSteamLibrary,
+  fetchSteamPersonaName,
+  resolveSteamId,
+  SteamLibraryNotVisibleError,
+} from '../external/steam';
+import { refreshSteamTokens, SteamAuthError } from '../external/steam-auth';
+import {
+  decryptCredentials,
+  encryptCredentials,
+  resetStoreTokenKey,
+  sameCredentials,
+} from '../lib/crypto';
 import { enqueueImport, isImportRunning } from '../queue/imports';
 import {
   linkSteamAccount,
   listStoreAccounts,
   renameStoreAccount,
   StoreAccountMismatchError,
+  StoreReauthRequiredError,
+  storeAccessToken,
   storeLoginUrl,
   syncAllStoreAccounts,
   unlinkImpact,
   unlinkStoreAccount,
 } from './store-accounts';
 
-vi.mock('../external/steam', () => ({
+vi.mock('../external/steam', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../external/steam')>()),
   resolveSteamId: vi.fn(),
   fetchSteamPersonaName: vi.fn(),
+  fetchSteamLibrary: vi.fn(),
+}));
+vi.mock('../external/steam-auth', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../external/steam-auth')>()),
+  refreshSteamTokens: vi.fn(),
 }));
 vi.mock('../queue/imports', () => ({
   isImportRunning: vi.fn(),
@@ -34,6 +53,8 @@ vi.mock('../queue/imports', () => ({
 
 const mockedResolve = vi.mocked(resolveSteamId);
 const mockedPersona = vi.mocked(fetchSteamPersonaName);
+const mockedLibrary = vi.mocked(fetchSteamLibrary);
+const mockedRefresh = vi.mocked(refreshSteamTokens);
 const mockedRunning = vi.mocked(isImportRunning);
 const mockedEnqueue = vi.mocked(enqueueImport);
 
@@ -439,5 +460,181 @@ describe('ricollegamento', () => {
   it('gli altri negozi non hanno uno state', () => {
     expect(storeLoginUrl(userId, 'gog').state).toBeNull();
     expect(storeLoginUrl(userId, 'steam')).toEqual({ url: null, state: null });
+  });
+});
+
+describe('credenziale Steam (9f)', () => {
+  const STEAM_ID = '76561190000000042';
+  let userId: string;
+
+  beforeEach(async () => {
+    process.env.STORE_TOKEN_KEY = Buffer.alloc(32, 7).toString('base64');
+    resetStoreTokenKey();
+    userId = await createUser();
+    mockedPersona.mockResolvedValue(null);
+  });
+
+  /** Un account Steam che ha fatto il login: la riga col suo credenziale. */
+  async function withLogin(expiresAt: number) {
+    const account = await seedAccount(userId, STEAM_ID);
+    const [row] = await db
+      .update(schema.storeAccounts)
+      .set({
+        credentials: encryptCredentials({
+          accessToken: 'vecchio',
+          refreshToken: 'refresh-1',
+          expiresAt,
+          refreshExpiresAt: Date.now() + 200 * 86_400_000,
+        }),
+        credentialsExpireAt: new Date(expiresAt),
+      })
+      .where(eq(schema.storeAccounts.id, account.id))
+      .returning();
+    return row!;
+  }
+
+  const reload = async (id: string) =>
+    (
+      await db
+        .select()
+        .from(schema.storeAccounts)
+        .where(eq(schema.storeAccounts.id, id))
+    )[0]!;
+
+  it("usa l'access token ancora valido senza chiamare Steam", async () => {
+    const account = await withLogin(Date.now() + 3_600_000);
+
+    expect(await storeAccessToken(account)).toBe('vecchio');
+    expect(mockedRefresh).not.toHaveBeenCalled();
+  });
+
+  it('lo rinnova se è scaduto, e riscrive il credenziale prima di restituirlo', async () => {
+    const account = await withLogin(Date.now() - 1_000);
+    const scadenza = Date.now() + 88_000_000;
+    mockedRefresh.mockResolvedValue({
+      accessToken: 'nuovo',
+      // Steam ne ha emesso uno nuovo, e il vecchio è già morto: se non finisse
+      // in tabella adesso, un import fallito a metà lascerebbe un credenziale
+      // inutilizzabile.
+      refreshToken: 'refresh-2',
+      expiresAt: scadenza,
+      refreshExpiresAt: Date.now() + 200 * 86_400_000,
+    });
+
+    expect(await storeAccessToken(account)).toBe('nuovo');
+
+    expect(mockedRefresh).toHaveBeenCalledWith('refresh-1');
+    const row = await reload(account.id);
+    expect(
+      decryptCredentials<{ refreshToken: string }>(row.credentials!),
+    ).toMatchObject({
+      accessToken: 'nuovo',
+      refreshToken: 'refresh-2',
+    });
+    expect(row.credentialsExpireAt?.getTime()).toBe(scadenza);
+    expect(row.status).toBe('ok');
+  });
+
+  it("un rifiuto di Steam manda l'account in needs_reauth", async () => {
+    const account = await withLogin(Date.now() - 1_000);
+    mockedRefresh.mockRejectedValue(new SteamAuthError('Steam ha rifiutato'));
+
+    await expect(storeAccessToken(account)).rejects.toThrow(
+      StoreReauthRequiredError,
+    );
+
+    expect((await reload(account.id)).status).toBe('needs_reauth');
+  });
+
+  it('una rete che cade non tocca né lo stato né il credenziale', async () => {
+    const account = await withLogin(Date.now() - 1_000);
+    mockedRefresh.mockRejectedValue(new Error('rete giù'));
+
+    await expect(storeAccessToken(account)).rejects.toThrow('rete giù');
+
+    // Il job riproverà: mandare l'utente a rifare il QR per una rete andata
+    // giù sarebbe il torto peggiore.
+    const row = await reload(account.id);
+    expect(row.status).toBe('ok');
+    expect(sameCredentials(row.credentials, account.credentials)).toBe(true);
+  });
+
+  it('un account col solo profilo non ha un access token da dare', async () => {
+    const account = await seedAccount(userId, STEAM_ID);
+
+    await expect(storeAccessToken(account)).rejects.toThrow(
+      'Nessun account steam collegato',
+    );
+    expect(mockedRefresh).not.toHaveBeenCalled();
+  });
+
+  it('ricollegare col profilo non cancella il login', async () => {
+    // Profilo e login sono due modi di collegare la stessa riga: chi ha fatto
+    // il login e poi incolla il profilo non deve perdere la famiglia.
+    const account = await withLogin(Date.now() + 3_600_000);
+    mockedResolve.mockResolvedValue(STEAM_ID);
+
+    const ricollegato = await linkSteamAccount(userId, 'pippo');
+
+    expect(ricollegato.id).toBe(account.id);
+    const row = await reload(account.id);
+    expect(sameCredentials(row.credentials, account.credentials)).toBe(true);
+    expect(row.credentialsExpireAt?.getTime()).toBe(
+      account.credentialsExpireAt?.getTime(),
+    );
+    expect(await db.select().from(schema.storeAccounts)).toHaveLength(1);
+  });
+
+  it('collegando il profilo legge la libreria subito, e un profilo privato non collega', async () => {
+    // Un import fallito non arriva alla schermata: meglio dirlo a chi sta
+    // collegando, mentre ha il dialogo aperto.
+    mockedResolve.mockResolvedValue(STEAM_ID);
+    mockedLibrary.mockRejectedValue(new SteamLibraryNotVisibleError(STEAM_ID));
+
+    await expect(linkSteamAccount(userId, 'pippo')).rejects.toThrow(
+      SteamLibraryNotVisibleError,
+    );
+
+    // Niente da ricordare: l'account non si è scritto.
+    expect(await db.select().from(schema.storeAccounts)).toHaveLength(0);
+  });
+
+  it('un profilo pubblico collega, dopo averne letto la libreria', async () => {
+    mockedResolve.mockResolvedValue(STEAM_ID);
+    mockedLibrary.mockResolvedValue([]);
+
+    const account = await linkSteamAccount(userId, 'pippo');
+
+    expect(mockedLibrary).toHaveBeenCalledWith(STEAM_ID);
+    expect(account.store).toBe('steam');
+  });
+
+  it('con il login già fatto non serve che il profilo sia pubblico', async () => {
+    // La libreria si legge col token: a profilo privato va benissimo, e
+    // rifiutare il collegamento toglierebbe il profilo a chi ha già il login.
+    await withLogin(Date.now() + 3_600_000);
+    mockedResolve.mockResolvedValue(STEAM_ID);
+
+    await linkSteamAccount(userId, 'pippo');
+
+    expect(mockedLibrary).not.toHaveBeenCalled();
+  });
+
+  it("l'elenco dice se c'è un login, senza mai mostrare la credenziale", async () => {
+    await withLogin(Date.now() + 3_600_000);
+    await seedAccount(userId, '76561190000000043');
+
+    const righe = await listStoreAccounts(userId);
+
+    expect(righe.map((riga) => riga.hasLogin).sort()).toEqual([false, true]);
+    expect(righe.every((riga) => !('credentials' in riga))).toBe(true);
+  });
+
+  it('collegare col profilo un account nuovo non ha credenziale, come prima', async () => {
+    mockedResolve.mockResolvedValue(STEAM_ID);
+
+    const account = await linkSteamAccount(userId, 'pippo');
+
+    expect((await reload(account.id)).credentials).toBeNull();
   });
 });

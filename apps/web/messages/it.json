@@ -352,7 +352,8 @@
     "NOT_FOUND": "Non trovo più questo elemento: forse è stato rimosso.",
     "CONFLICT": "Questo elemento esiste già.",
     "TOO_MANY_REQUESTS": "Troppe richieste di fila. Riprova fra poco.",
-    "INTERNAL_SERVER_ERROR": "Qualcosa è andato storto dalla parte del server."
+    "INTERNAL_SERVER_ERROR": "Qualcosa è andato storto dalla parte del server.",
+    "PRECONDITION_FAILED": "Non si può fare in questo stato."
   },
   "authErrors": {
     "INVALID_EMAIL_OR_PASSWORD": "Email o password non corretti.",
@@ -506,9 +507,9 @@
     },
     "stores": {
       "steam": {
-        "inputLabel": "Profilo Steam",
+        "inputLabel": "Solo il profilo pubblico",
         "placeholder": "https://steamcommunity.com/id/…",
-        "hint": "Incolla l'indirizzo del tuo profilo Steam, il tuo SteamID64 o il nome scelto. Il profilo deve essere pubblico, altrimenti Steam non ci lascia leggere la libreria."
+        "hint": "Incolla l'indirizzo del tuo profilo Steam, il tuo SteamID64 o il nome scelto. Il profilo e i dettagli dei giochi devono essere pubblici, altrimenti Steam non ci lascia leggere la libreria: in quel caso accedi con Steam."
       },
       "gog": {
         "inputLabel": "Indirizzo di atterraggio",
@@ -575,6 +576,50 @@
     "hiddenEntries": {
       "description": "Non compaiono nel backlog né fra i filtri, ma restano tuoi: il possesso non cambia.",
       "showAll": "Vedili tutti nel backlog ({count})"
+    },
+    "steamLogin": {
+      "button": "Accedi con Steam",
+      "recommended": "Consigliato",
+      "benefitFamily": "Include i giochi della tua famiglia Steam",
+      "benefitPrivate": "Funziona anche col profilo privato",
+      "benefitDate": "Importa la data d'acquisto",
+      "phoneHint": "Si fa col telefono: app Steam, un QR da inquadrare.",
+      "or": "oppure",
+      "profileTitle": "Solo il profilo pubblico",
+      "profileHint": "Il profilo e i dettagli dei giochi devono essere pubblici.",
+      "privateProfile": "Il profilo Steam è privato: Ludex non può leggere la libreria. Rendi pubblici il profilo e i dettagli dei giochi, oppure accedi con Steam.",
+      "back": "Indietro",
+      "title": "Accedi con Steam",
+      "description": "Col login Ludex legge anche la tua famiglia Steam, e funziona col profilo privato.",
+      "preparing": "Preparo il codice…",
+      "qrAlt": "Codice QR da inquadrare con l'app Steam",
+      "waiting": "In attesa della scansione…",
+      "step1": "1. Apri l'app Steam sul telefono",
+      "step2": "2. Tocca Steam Guard, poi «Accedi con un codice QR»",
+      "step3": "3. Inquadra il codice e conferma",
+      "validFor": "Il codice vale 5 minuti.",
+      "newCode": "Genera un nuovo QR",
+      "scanned": "Conferma nell'app Steam",
+      "expired": "Il codice è scaduto.",
+      "failed": "Steam non ha confermato il login.",
+      "wrongAccount": "Hai fatto il login con un altro account Steam da quello atteso.",
+      "retry": "Riprova",
+      "startFailed": "Non sono riuscito a preparare il codice",
+      "done": "Steam collegato: importazione avviata",
+      "badgeOn": "Login attivo",
+      "badgeDead": "Con login",
+      "familyIncluded": "famiglia inclusa",
+      "badgeProfileOnly": "Solo profilo",
+      "signIn": "Accedi con Steam",
+      "removeLogin": "Togli il login",
+      "removeTitle": "Togli il login Steam",
+      "removeBody": "L'account Steam e i tuoi giochi restano, e l'importazione continua dal profilo pubblico.",
+      "removeFamily": "Le copie della famiglia escono dalla libreria, tranne quelle su cui hai messo un voto, note o tag. Potrai rifare il login quando vuoi.",
+      "removeCancel": "Annulla",
+      "removeConfirm": "Togli il login",
+      "removed": "Login tolto. {removed, plural, =0 {Nessuna copia della famiglia da togliere} one {Una copia della famiglia tolta} other {# copie della famiglia tolte}}{kept, plural, =0 {} one { · una resta perché ha dati tuoi} other { · # restano perché hanno dati tuoi}}.",
+      "removeFailed": "Non sono riuscito a togliere il login",
+      "removeWhileSyncing": "C'è un'importazione in corso: togli il login quando ha finito"
     }
   },
   "critic": {
@@ -590,7 +635,8 @@
     "split": "{positive} positive · {mixed} miste · {negative} negative"
   },
   "subscription": {
-    "ps_plus": "PS Plus"
+    "ps_plus": "PS Plus",
+    "steam_family": "Famiglia Steam"
   },
   "medium": {
     "digital": "Digitale",

@@ -61,6 +61,19 @@ export const Route = createFileRoute('/_app/games/$slug')({
   component: GamePage,
 });
 
+/**
+ * La hero mentre si aspetta: alta quanto quella vera di `GameHero`, 500 da
+ * `$md` e 240 sotto. La media query sta sullo `YStack` e non sullo
+ * `Skeleton`: su un componente di `@repo/ui` l'idratazione non torna.
+ */
+function HeroSkeleton() {
+  return (
+    <YStack width="100%" height={500} $max-md={{ height: 240 }}>
+      <Skeleton height="100%" width="100%" rounded={0} />
+    </YStack>
+  );
+}
+
 function GamePage() {
   const t = useTranslations('game');
   const tHidden = useTranslations('hidden');
@@ -99,10 +112,7 @@ function GamePage() {
 
   if (isPending) {
     return (
-      <Page
-        maxW={GAME_PAGE_WIDTH}
-        hero={<Skeleton height={500} width="100%" rounded={0} />}
-      >
+      <Page maxW={GAME_PAGE_WIDTH} hero={<HeroSkeleton />}>
         <Skeleton height={320} width="100%" rounded={12} />
       </Page>
     );
@@ -122,11 +132,7 @@ function GamePage() {
 
   if (isEnriching(game)) {
     return (
-      <Page
-        maxW={GAME_PAGE_WIDTH}
-        hero={<Skeleton height={500} width="100%" rounded={0} />}
-        title={game.name}
-      >
+      <Page maxW={GAME_PAGE_WIDTH} hero={<HeroSkeleton />} title={game.name}>
         <XStack items="center" gap={8} role="status">
           <Spinner />
           <Text fontSize={14} color="$color11">

@@ -232,6 +232,13 @@
       "when": 1791100856247,
       "tag": "0032_games_slug_not_null",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791192520462,
+      "tag": "0033_subscription_steam_family",
+      "breakpoints": true
     }
   ]
 }

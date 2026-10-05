@@ -30,6 +30,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 import { useFormatter, useNow, useTranslations } from 'use-intl';
 
+import { RemoveSteamLoginDialog } from '@/components/remove-steam-login-dialog';
+import { SteamLink } from '@/components/steam-link';
 import { StoreLinkForm } from '@/components/store-link-form';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
@@ -92,6 +94,13 @@ export function StoreAccountCard({
   const storeLabels = useStoreLabels();
   const queryClient = useQueryClient();
   const [relinking, setRelinking] = useState(false);
+  // Steam: aggiungere il login a un account che aveva solo il profilo, e
+  // toglierlo. Il ricollegamento di un login scaduto passa da `relinking`, come
+  // per gli altri negozi, ma con il QR al posto del modulo.
+  const [loggingIn, setLoggingIn] = useState(false);
+  const [removingLogin, setRemovingLogin] = useState(false);
+  const tSteam = useTranslations('account.steamLogin');
+  const isSteam = account.store === 'steam';
 
   const syncing = account.syncing;
   // Ricollegare si può solo dove c'è un collegamento da rifare. `store` sul
@@ -207,6 +216,21 @@ export function StoreAccountCard({
                   {t('reconnect')}
                 </DropdownMenuItem>
               )}
+              {/* Le due voci nuove del 9f: sono due modi della stessa riga, e
+                  l'una esclude l'altra — si offre quella che manca. */}
+              {isSteam && !account.hasLogin && (
+                <DropdownMenuItem onClick={() => setLoggingIn(true)}>
+                  {tSteam('signIn')}
+                </DropdownMenuItem>
+              )}
+              {isSteam && account.hasLogin && (
+                <DropdownMenuItem
+                  onClick={() => setRemovingLogin(true)}
+                  disabled={busy || syncing}
+                >
+                  {tSteam('removeLogin')}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onUnlink} disabled={busy || syncing}>
                 {t('unlink')}
@@ -220,6 +244,42 @@ export function StoreAccountCard({
             con lo stato in alto e solo i gesti in fondo, fra i due restava un
             vuoto di altezza diversa da una scheda all'altra. */}
         <YStack gap={12} mt="auto">
+          {/* Su Steam la scheda dice **come** è collegato l'account: col login
+              (e allora c'è la famiglia) o col solo profilo, dove il login si
+              offre lì accanto. Con il login scaduto non si dice «attivo»: il
+              badge rosso di sotto dice già cosa fare. */}
+          {isSteam &&
+            (account.hasLogin ? (
+              <XStack items="center" gap={8} flexWrap="wrap">
+                <Badge
+                  variant={
+                    account.status === 'needs_reauth' ? 'secondary' : 'success'
+                  }
+                >
+                  {account.status === 'needs_reauth'
+                    ? tSteam('badgeDead')
+                    : tSteam('badgeOn')}
+                </Badge>
+                <Text fontSize={13} color="$color11">
+                  · {tSteam('familyIncluded')}
+                </Text>
+              </XStack>
+            ) : (
+              <XStack items="center" gap={8} flexWrap="wrap">
+                <Badge variant="secondary">{tSteam('badgeProfileOnly')}</Badge>
+                {/* Senza il rientro del bottone: accanto al badge deve stare in
+                    una riga sola, e allineato al suo bordo. */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  px={0}
+                  onClick={() => setLoggingIn(true)}
+                >
+                  {tSteam('signIn')}
+                </Button>
+              </XStack>
+            ))}
+
           {/* Lo stato in una riga: da ricollegare, in corso, o quando è stata
             l'ultima volta. Da ricollegare vince sul resto: finché non si
             rimette a posto niente si aggiorna. */}
@@ -319,16 +379,54 @@ export function StoreAccountCard({
             </DialogTitle>
             <DialogDescription>{t('needsReauth')}</DialogDescription>
           </DialogHeader>
-          {relinkStore && (
-            <StoreLinkForm
-              store={relinkStore}
+          {relinkStore === 'steam' ? (
+            // Un account Steam da ricollegare ha un login scaduto: si rifà il
+            // QR, non si incolla il profilo, che di credenziale non ne ha.
+            <SteamLink
+              loginOnly
               accountId={account.id}
-              submitLabel={t('reconnect')}
               onLinked={() => setRelinking(false)}
             />
+          ) : (
+            relinkStore && (
+              <StoreLinkForm
+                store={relinkStore}
+                accountId={account.id}
+                submitLabel={t('reconnect')}
+                onLinked={() => setRelinking(false)}
+              />
+            )
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Aggiungere il login a un account che aveva solo il profilo: lo stesso
+          QR, sulla stessa riga. Il server rifiuta un login fatto con un altro
+          account Steam. */}
+      {isSteam && (
+        <Dialog open={loggingIn} onOpenChange={setLoggingIn}>
+          <DialogContent maxW={512}>
+            <DialogHeader>
+              <DialogTitle>{tSteam('title')}</DialogTitle>
+              <DialogDescription>{tSteam('description')}</DialogDescription>
+            </DialogHeader>
+            {loggingIn && (
+              <SteamLink
+                loginOnly
+                accountId={account.id}
+                onLinked={() => setLoggingIn(false)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {isSteam && (
+        <RemoveSteamLoginDialog
+          account={removingLogin ? account : null}
+          onOpenChange={setRemovingLogin}
+        />
+      )}
     </Card>
   );
 }

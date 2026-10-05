@@ -44,6 +44,7 @@ import { importGogLibrary } from './services/gog-import';
 import { enqueueDueImports } from './services/library-sync';
 import { importPsnLibrary } from './services/psn-import';
 import { type ImportReport } from './services/library-import';
+import { SteamLibraryNotVisibleError } from './external/steam';
 import { importSteamLibrary } from './services/steam-import';
 import {
   type StoreAccountRow,
@@ -246,6 +247,12 @@ const importsWorker = new Worker<ImportJob | ImportsSweepJob>(
       // subito, che è anche ciò che libera la chiave di deduplicazione.
       // Lo stato `needs_reauth` sulla riga l'ha già scritto chi ha alzato.
       if (error instanceof StoreReauthRequiredError) {
+        throw new UnrecoverableError(error.message);
+      }
+      // Un profilo privato non diventa pubblico fra un tentativo e l'altro: i tre
+      // giri con backoff sono per le reti che cadono. Il messaggio dice cosa
+      // fare — rendere pubblico il profilo, o accedere con Steam.
+      if (error instanceof SteamLibraryNotVisibleError) {
         throw new UnrecoverableError(error.message);
       }
       throw error;

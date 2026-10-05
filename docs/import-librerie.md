@@ -10,9 +10,13 @@ negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
   `auth.ts` è generato e viene riscritto. Allo step 4 teneva solo l'identità
   pubblica dell'account, perché a Steam basta uno SteamID64; dallo step 9 tiene
   anche i token, e come sono fatti lo dice «Le altre librerie» qui sotto.
-- **abbonamento su `ownerships`**: `subscription`, nullo se la copia è comprata.
+- **abbonamento su `ownerships`**: `subscription` (`ps_plus`, `steam_family`), nullo se la copia è comprata.
   Vedi «un gioco a cui puoi giocare stasera ma che non è tuo», più sotto: è la
-  risposta parziale che il 9b ha dovuto dare, non un campo in più.
+  risposta parziale che il 9b ha dovuto dare, non un campo in più. `steam_family`
+  (9f) non è un abbonamento ma risponde alla stessa domanda per la libreria di un
+  familiare: **non esce mai da sola** per un gioco su cui l'utente ha messo dati
+  suoi, e **non adotta** i possessi scritti a mano. Vedi «Come è fatto (9f)» in
+  [negozi](negozi.md).
 - **pagina del negozio su `ownerships`**: `store_page`, il pezzo di
   indirizzo che il negozio dà (Steam `app/{appid}`, GOG l'`url` del prodotto,
   PSN `product/{id}` o `concept/{id}`); l'URL intero lo compone

@@ -16,6 +16,7 @@
     "catchup": "tsx src/scripts/catchup.ts",
     "platforms:audit": "tsx src/scripts/platforms-audit.ts",
     "steam:probe": "tsx src/scripts/steam-probe.ts",
+    "steam:family-probe": "tsx src/scripts/steam-family-probe.ts",
     "hltb:probe": "tsx src/scripts/hltb-probe.ts",
     "hltb:endpoint": "tsx src/scripts/hltb-endpoint.ts",
     "opencritic:resolve": "tsx src/scripts/opencritic-resolve.ts",
@@ -37,12 +38,15 @@
     "bullmq": "^6.1.2",
     "dotenv": "^17.4.2",
     "hono": "^4.13.1",
-    "ioredis": "^6.0.0"
+    "ioredis": "^6.0.0",
+    "qrcode": "^1.5.4",
+    "steam-session": "^1.9.4"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
+    "@types/qrcode": "^1.5.6",
     "concurrently": "^10.0.5",
     "eslint": "^9.39.1",
     "postgres": "^3.4.9",

@@ -25,6 +25,11 @@ import {
 } from '../services/games';
 import { listHomeBands } from '../services/home';
 import {
+  removeSteamLogin,
+  startSteamLogin,
+  steamLoginStatus,
+} from '../services/steam-login';
+import {
   searchCatalog,
   searchIgdbNotInCatalog,
 } from '../services/catalog-search';
@@ -52,6 +57,7 @@ import {
 } from '../services/unresolved-imports';
 import { getUserSettings, updateUserSettings } from '../services/user-settings';
 import { eventForUser, liveEvents } from '../lib/events';
+import { SteamLibraryNotVisibleError } from '../external/steam';
 import { enqueueImport, isImportRunning } from '../queue/imports';
 import { authed, maybeAuthed, os } from './context';
 
@@ -171,6 +177,14 @@ export const router = os.router({
         if (error instanceof StoreAccountMismatchError) {
           throw new ORPCError('CONFLICT', { message: error.message });
         }
+        // Un profilo Steam privato: la libreria non si può leggere. Non è un
+        // input mal scritto (BAD_REQUEST, che la schermata legge come un campo
+        // sbagliato) ma uno stato del profilo che l'utente può cambiare.
+        if (error instanceof SteamLibraryNotVisibleError) {
+          throw new ORPCError('PRECONDITION_FAILED', {
+            message: error.message,
+          });
+        }
         throw error;
       });
 
@@ -180,6 +194,56 @@ export const router = os.router({
 
       return { ...account, syncing: true };
     }),
+
+    steamLogin: {
+      start: os.accounts.steamLogin.start
+        .use(authed)
+        .handler(async ({ input, context }) => {
+          const relinking = await relinkTarget(
+            context.user.id,
+            'steam',
+            input.accountId,
+          );
+          return startSteamLogin(context.user.id, {
+            label: input.label,
+            relinking,
+          });
+        }),
+
+      status: os.accounts.steamLogin.status
+        .use(authed)
+        .handler(({ input, context }) =>
+          steamLoginStatus(context.user.id, input.loginId),
+        ),
+
+      remove: os.accounts.steamLogin.remove
+        .use(authed)
+        .handler(async ({ input, context }) => {
+          const account = await findStoreAccount(
+            context.user.id,
+            input.accountId,
+          );
+          if (!account || account.store !== 'steam')
+            throw new ORPCError('NOT_FOUND', {
+              message: 'Account inesistente',
+            });
+
+          // Un import in corso riscriverebbe le copie appena tolte.
+          if (await isImportRunning(account.id)) {
+            throw new ORPCError('CONFLICT', { message: 'Import in corso' });
+          }
+
+          const removed = await removeSteamLogin(
+            context.user.id,
+            input.accountId,
+          );
+          if (!removed)
+            throw new ORPCError('NOT_FOUND', {
+              message: 'Account inesistente',
+            });
+          return removed;
+        }),
+    },
 
     rename: os.accounts.rename
       .use(authed)

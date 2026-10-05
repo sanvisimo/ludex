@@ -19,6 +19,9 @@ import {
   OwnershipInputSchema,
   PlatformSchema,
   RatingSchema,
+  SteamLoginRemovedSchema,
+  SteamLoginStartSchema,
+  SteamLoginStatusSchema,
   StoreAccountSchema,
   SyncAllResultSchema,
   UnlinkImpactSchema,
@@ -168,6 +171,41 @@ export const contract = {
         }),
       )
       .output(StoreAccountSchema),
+
+    // Il login Steam col QR (9f): un secondo modo di collegare Steam, accanto al
+    // profilo incollato, che porta con sé la famiglia. Sono due modi della stessa
+    // riga — la chiave è lo SteamID64 — quindi farli uno dopo l'altro non
+    // duplica niente.
+    //
+    // Non passa da `link`: il QR non è un valore che l'utente incolla, è una
+    // sessione che il server tiene aperta mentre lui inquadra e conferma
+    // nell'app. `start` apre la sessione e rende il QR; `status` si interroga a
+    // intervalli; a `done` l'account è già scritto e l'import accodato.
+    steamLogin: {
+      // `accountId` quando si ricollega un account già presente: se il login è
+      // fatto con un altro account Steam lo stato è `failed` con
+      // `wrong_account`, e nessuna riga viene toccata. Una sola sessione attiva
+      // per utente: aprirne una nuova annulla la precedente.
+      start: oc
+        .input(
+          z.object({
+            label: z.string().trim().max(60).nullish(),
+            accountId: z.uuid().nullish(),
+          }),
+        )
+        .output(SteamLoginStartSchema),
+
+      status: oc
+        .input(z.object({ loginId: z.uuid() }))
+        .output(SteamLoginStatusSchema),
+
+      // Toglie il solo login: l'account, il profilo e i giochi propri restano, le
+      // copie della famiglia escono. CONFLICT se un import è in corso, come per
+      // lo scollegamento.
+      remove: oc
+        .input(z.object({ accountId: z.uuid() }))
+        .output(SteamLoginRemovedSchema),
+    },
 
     // Rinomina un account già collegato. Esiste separata da `link` perché
     // altrimenti etichettare quelli che hai già vorrebbe dire scollegarli e
