@@ -38,7 +38,8 @@ import {
  * nascoste** (misurato il 06/10/2026, `isHidden: true` rende zero voci): quindi
  * risulta «fisico». La classe che sbaglia è quella dei giochi gratuiti o legati
  * all'abbonamento, che si risolvono su IGDB e **entrano come possesso**, e
- * l'utente non può correggere il supporto di una copia. **Una cartuccia mai avviata
+ * l'utente non può correggere il supporto di una copia: **scelto così dall'utente
+ * il 06/10/2026**, per non perdere il «Fisico» sulle cartucce vere. **Una cartuccia mai avviata
  * non lascia traccia da nessuna parte**, come un disco PSN mai avviato: resta
  * l'inserimento a mano.
  *

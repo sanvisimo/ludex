@@ -262,10 +262,12 @@ step 7/12; qui resta la nota.
    rende **zero voci**, quindi sull'account non ci sono licenze nascoste e _Tetris 99_ non è
    fra le visibili né fra le nascoste. Perché non ci sia **non lo so**. La regola «storico
    senza licenza = fisico» sbaglia su questa classe (giochi gratuiti o legati
-   all'abbonamento), e l'utente non può correggere il supporto. **Decisione aperta**:
-   tenerla così (4 casi su 5) o dichiarare `medium` solo dove c'è una prova e lasciare lo
-   storico senza licenza non dichiarato. Consigliata la seconda; **non applicata**. Una
-   richiesta, dalla macchina dell'utente.
+   all'abbonamento), e l'utente non può correggere il supporto. **Deciso dall'utente il 06/10/2026: si tiene «fisico» per lo storico senza
+   licenza, accettando i falsi** (l'alternativa era dichiarare `medium` solo dove c'è una
+   prova). Il prezzo: un gioco gratuito o dell'abbonamento giocato risulta fisico, e
+   l'utente non può correggere il supporto di una copia. La correzione naturale, se la
+   classe fosse larga, è renderlo modificabile dalla scheda del gioco (step 5). Misura:
+   una richiesta, dalla macchina dell'utente.
 2. **Una data d'aggiunta non c'è.** La query non ne riceve, e il portale ordina per
    `ACTIVATED_DATE`, quindi esiste sul server. `nintendo:vgc-probe --schema` manda
    un'introspezione senza token e il server risponde **HTTP 400**. Il probe non stampa il

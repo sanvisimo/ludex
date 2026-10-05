@@ -627,10 +627,15 @@ dell'abbonamento e demo risultano «fisiche» allo stesso modo, ma non si risolv
 e non diventano mai un possesso. **Una cartuccia mai avviata non lascia traccia da nessuna
 parte**: resta l'inserimento a mano (o l'import da file dello step 10).
 
-**Alternativa non presa, da riconsiderare**: dichiarare `medium` solo dove c'è una prova
-(le Virtual Game Cards dicono «digitale») e lasciare lo storico senza licenza **non
-dichiarato**, come PSN lo dichiara solo con `service: other`. Si perdono il «Fisico» sulle
-cartucce vere e si smette di scrivere un'affermazione che a volte è falsa.
+**Scelta dell'utente (06/10/2026): si tiene «fisico», accettando i falsi.** L'alternativa
+— dichiarare `medium` solo dove c'è una prova (le Virtual Game Cards dicono «digitale») e
+lasciare lo storico senza licenza non dichiarato, come PSN lo dichiara solo con `service:
+other` — avrebbe perso il «Fisico» sulle cartucce vere per non scrivere un'affermazione che
+a volte è falsa. Si è preferito il «Fisico» sulle cartucce, e il prezzo è quello scritto
+sopra: un gioco gratuito o dell'abbonamento giocato e senza licenza risulta fisico, e
+**l'utente non può correggere il supporto di una copia**. Se questa classe si rivelasse
+larga, la correzione naturale è renderlo modificabile dalla scheda del gioco (step 5), non
+cambiare la regola.
 
 **Le voci di soli contenuti aggiuntivi non sono una copia del gioco.** _Zelda: Breath of
 the Wild_, _Monster Hunter Rise_ e _Mario + Rabbids: Sparks of Hope_ sono voci con
