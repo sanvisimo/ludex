@@ -824,6 +824,26 @@ export const RepointPreviewSchema = z.object({
   ),
 });
 
+// --- Utenti (11a, passo 7) ---
+
+export const AdminRoleSchema = z.enum(['admin', 'user']);
+
+export const AdminUserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+  createdAt: z.date(),
+  role: AdminRoleSchema,
+  banned: z.boolean(),
+  banReason: z.string().nullable(),
+  // Nullo con `banned`: per sempre. Passata la data, il ban si toglie da solo
+  // al primo accesso: fino ad allora la riga dice ancora `banned`.
+  banExpires: z.date().nullable(),
+  games: z.number().int(),
+  accounts: z.number().int(),
+});
+
+export type AdminUser = z.infer<typeof AdminUserSchema>;
 export type ReportTarget = z.infer<typeof ReportTargetSchema>;
 export type OpenReport = z.infer<typeof OpenReportSchema>;
 export type ReportGroup = z.infer<typeof ReportGroupSchema>;

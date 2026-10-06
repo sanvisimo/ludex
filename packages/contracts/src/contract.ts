@@ -2,6 +2,8 @@ import { eventIterator, oc } from '@orpc/contract';
 import { z } from 'zod';
 
 import {
+  AdminRoleSchema,
+  AdminUserSchema,
   BacklogEntrySchema,
   BacklogFilterOptionsSchema,
   BacklogListSchema,
@@ -545,6 +547,44 @@ export const contract = {
         .output(
           z.object({ wholeRows: z.number().int(), copies: z.number().int() }),
         ),
+    },
+
+    users: {
+      // Gli utenti, i più recenti prima, con giochi e account.
+      list: oc
+        .input(
+          z.object({
+            q: z.string().trim().min(1).max(100).optional(),
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(
+          z.object({ rows: z.array(AdminUserSchema), total: z.number().int() }),
+        ),
+
+      // Il ruolo. Il proprio non si toglie: si resterebbe senza admin.
+      setRole: oc
+        .input(z.object({ userId: z.string().min(1), role: AdminRoleSchema }))
+        .output(z.void()),
+
+      // Banna e chiude le sessioni. Senza scadenza è per sempre. Se stessi no.
+      ban: oc
+        .input(
+          z.object({
+            userId: z.string().min(1),
+            reason: z.string().trim().min(1).max(200).optional(),
+            expiresInDays: z.number().int().min(1).max(3650).optional(),
+          }),
+        )
+        .output(z.void()),
+
+      unban: oc.input(z.object({ userId: z.string().min(1) })).output(z.void()),
+
+      // Chiude tutte le sessioni dell'utente: dovrà riaccedere.
+      revokeSessions: oc
+        .input(z.object({ userId: z.string().min(1) }))
+        .output(z.void()),
     },
 
     unresolved: {

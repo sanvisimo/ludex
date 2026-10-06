@@ -30,4 +30,8 @@ export const auth = betterAuth({
 });
 
 export type Auth = typeof auth;
+// Gli errori delle API di Better Auth, per chi le chiama dal server (la
+// sezione Utenti dell'admin) e deve tradurli: così `apps/api` non dipende da
+// `better-auth` direttamente.
+export { APIError } from 'better-auth/api';
 export type Session = typeof auth.$Infer.Session;

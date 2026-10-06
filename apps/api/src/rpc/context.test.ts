@@ -98,6 +98,19 @@ describe('le procedure admin.*', () => {
       router.admin.links.repoint,
       { linkId: gameId, igdbId: 1 },
     ],
+    ['users.list', router.admin.users.list, {}],
+    [
+      'users.setRole',
+      router.admin.users.setRole,
+      { userId: 'x', role: 'admin' },
+    ],
+    ['users.ban', router.admin.users.ban, { userId: 'x' }],
+    ['users.unban', router.admin.users.unban, { userId: 'x' }],
+    [
+      'users.revokeSessions',
+      router.admin.users.revokeSessions,
+      { userId: 'x' },
+    ],
     ['unresolved.list', router.admin.unresolved.list, {}],
     [
       'unresolved.globalHidden',

@@ -1,4 +1,5 @@
 import { ORPCError } from '@orpc/server';
+import { auth } from '@repo/auth';
 
 import {
   addOwnershipToEntry,
@@ -45,6 +46,7 @@ import {
   previewRepoint,
   repointLink,
 } from '../services/admin-games';
+import { listUsers } from '../services/admin-users';
 import { listHomeBands } from '../services/home';
 import {
   closeReports,
@@ -88,6 +90,7 @@ import { eventForUser, liveEvents } from '../lib/events';
 import { SteamLibraryNotVisibleError } from '../external/steam';
 import { enqueueImport, isImportRunning } from '../queue/imports';
 import { admin, authed, maybeAuthed, os } from './context';
+import { asAdminAuthCall } from './admin-auth';
 
 /**
  * L'account che si sta ricollegando, se la richiesta ne nomina uno.
@@ -761,6 +764,71 @@ export const router = os.router({
             context.user.id,
           );
           return { externalId };
+        }),
+    },
+
+    users: {
+      list: os.admin.users.list
+        .use(authed)
+        .use(admin)
+        .handler(({ input }) => listUsers(input)),
+
+      setRole: os.admin.users.setRole
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => {
+          if (input.userId === context.user.id && input.role !== 'admin')
+            throw new ORPCError('BAD_REQUEST', {
+              message: 'Il tuo ruolo non lo togli da solo',
+            });
+          await asAdminAuthCall(() =>
+            auth.api.setRole({
+              body: { userId: input.userId, role: input.role },
+              headers: context.headers,
+            }),
+          );
+        }),
+
+      ban: os.admin.users.ban
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => {
+          await asAdminAuthCall(() =>
+            auth.api.banUser({
+              body: {
+                userId: input.userId,
+                banReason: input.reason,
+                banExpiresIn: input.expiresInDays
+                  ? input.expiresInDays * 24 * 60 * 60
+                  : undefined,
+              },
+              headers: context.headers,
+            }),
+          );
+        }),
+
+      unban: os.admin.users.unban
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => {
+          await asAdminAuthCall(() =>
+            auth.api.unbanUser({
+              body: { userId: input.userId },
+              headers: context.headers,
+            }),
+          );
+        }),
+
+      revokeSessions: os.admin.users.revokeSessions
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => {
+          await asAdminAuthCall(() =>
+            auth.api.revokeUserSessions({
+              body: { userId: input.userId },
+              headers: context.headers,
+            }),
+          );
         }),
     },
 
