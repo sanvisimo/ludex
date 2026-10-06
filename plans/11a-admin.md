@@ -173,6 +173,16 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
 3. **Wireframe** (Excalidraw, `11a-admin.excalidraw`) di `/admin`, delle
    quattro sezioni e del form di segnalazione sulla pagina del gioco. Si
    corregge lì finché la struttura non è approvata.
+
+   **Fatto** (06/10/2026), otto frame, approvati. Due cose che il piano non
+   diceva: la **scheda admin di un gioco** è una pagina sua,
+   `/admin/giochi/:slug`, che mette insieme i gesti delle fonti (passo 4) e
+   dei collegamenti (passo 6) su un gioco solo, ed è da lì che si fa
+   «Inserisci id» su una fonte `ok`; le **segnalazioni stanno dentro
+   Giochi**, col conteggio nel menu. Sulla pagina del gioco, chi il gioco non
+   ce l'ha non vede il pannello «Nella tua libreria»: il link «Segnala un
+   errore» sta allora sotto «Durata e critica».
+
 4. **Dati mancanti** (era «Fonti in `not_found`», allargato il 06/10/2026).
    In cima una tabellina di conteggi, fonte per stato: in coda, non trovati
    da sistemare, non trovati giusti così, trovati ma vuoti (HLTB senza durata,
