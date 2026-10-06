@@ -29,7 +29,9 @@ export function UnresolvedCover({
   width,
   height,
 }: {
-  entry: UnresolvedImport;
+  // Solo ciò che serve alla copertina: la usa anche l'admin, con la riga
+  // raggruppata degli scarti di tutti.
+  entry: Pick<UnresolvedImport, 'store' | 'externalId' | 'imageUrl'>;
   width: number;
   height: number;
 }) {

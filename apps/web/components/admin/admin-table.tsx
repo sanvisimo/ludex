@@ -93,18 +93,33 @@ function Cell<T>({
   role: 'cell' | 'columnheader';
   children: ReactNode;
 }) {
+  // Solo le colonne elastiche tagliano: le view di Tamagui non si restringono
+  // da sole, e un id Amazon lungo usciva dalla sua colonna e finiva sopra
+  // quella accanto. Le fisse no, perché tengono i bottoni, e tagliandole si
+  // perderebbe l'anello del focus: la loro larghezza va data giusta.
   return column.width !== undefined ? (
     <XStack role={role} width={column.width} shrink={0} items="center" gap={6}>
       {children}
     </XStack>
   ) : (
-    <XStack role={role} flex={column.flex ?? 1} minW={0} items="center" gap={6}>
+    <XStack
+      role={role}
+      flex={column.flex ?? 1}
+      minW={0}
+      overflow="hidden"
+      items="center"
+      gap={6}
+    >
       {children}
     </XStack>
   );
 }
 
-/** Il testo di una cella: una riga, tagliata se non ci sta. */
+/**
+ * Il testo di una cella: una riga, tagliata se non ci sta. Accanto a una
+ * copertina va dentro un blocco con `flex={1} minW={0}`, o il taglio non
+ * scatta: il blocco resterebbe largo quanto il testo.
+ */
 export function CellText({
   children,
   muted = false,

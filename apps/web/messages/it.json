@@ -102,7 +102,7 @@
       "app": "App o servizio",
       "dlc": "DLC o espansione",
       "extra": "Contenuto extra",
-      "prerelease": "Versione di prova",
+      "prerelease": "Demo o versione di prova",
       "unwanted": "Non mi interessa"
     }
   },
@@ -606,7 +606,7 @@
         "app": "App",
         "dlc": "DLC",
         "extra": "Contenuto extra",
-        "prerelease": "Versione di prova",
+        "prerelease": "Demo o prova",
         "unwanted": "Non interessato"
       },
       "unwantedHint": "Qui stanno insieme i giochi che hai nascosto dal backlog e le voci d'import che non ti interessano.",
@@ -838,6 +838,55 @@
       "saved": "Id salvato, fonte in coda",
       "failed": "Non sono riuscito a salvare l'id"
     },
-    "forbidden": "Questa sezione è solo per gli admin."
+    "forbidden": "Questa sezione è solo per gli admin.",
+    "igdbPick": {
+      "label": "Cerca su IGDB",
+      "hint": "Anche l'id IGDB o l'URL della scheda.",
+      "search": "Cerca",
+      "searchFailed": "La ricerca non è andata.",
+      "noResults": "Nessun risultato.",
+      "choose": "Scegli",
+      "inCatalog": "in Ludex"
+    },
+    "unresolved": {
+      "title": "Scarti d'import",
+      "open": "Da sistemare",
+      "globalHidden": "Nascosti per tutti",
+      "allStores": "Negozio: tutti",
+      "search": "Cerca per nome…",
+      "store": "Negozio",
+      "name": "Nome sul negozio",
+      "libraries": "Librerie",
+      "hiddenBy": "Già nascosto",
+      "link": "Collega per tutti",
+      "hide": "Nascondi per tutti",
+      "hideAs": "Come {kind}",
+      "linkTitle": "Collega per tutti",
+      "linkDescription": "«{name}» ({store}) diventa quel gioco per chiunque la importi, e gli scarti di {count, plural, one {# libreria} other {# librerie}} si risolvono adesso. Chi l'aveva nascosta lo ritrova nascosto.",
+      "linked": "Collegata: {count, plural, =0 {nessuno scarto da risolvere} one {# scarto risolto} other {# scarti risolti}}",
+      "linkFailed": "Non sono riuscito a collegarla",
+      "linkedElsewhere": "È già collegata a un altro gioco: si ripunta dalla scheda del gioco.",
+      "hidden": "Nascosta per tutti: {count, plural, =0 {nessuno scarto visibile} one {# scarto nascosto} other {# scarti nascosti}}",
+      "hideFailed": "Non sono riuscito a nasconderla",
+      "kind": "Tipo",
+      "decidedBy": "Deciso da",
+      "on": "Quando",
+      "unhide": "Togli",
+      "unhidden": "Regola tolta: le righe nuove nasceranno visibili",
+      "unhideFailed": "Non sono riuscito a toglierla",
+      "empty": "Nessuno scarto da sistemare.",
+      "emptyHidden": "Nessuna voce nascosta per tutti.",
+      "failed": "Non sono riuscito a leggere gli scarti",
+      "hiddenShort": "{count} {kind}",
+      "details": "Dettagli di {name}",
+      "detail": {
+        "externalId": "Id sul negozio",
+        "libraries": "In {count, plural, one {# libreria} other {# librerie}}, {visible} da sistemare",
+        "hidden": "Già nascosta: {list}",
+        "notHidden": "Nessuno l'ha nascosta.",
+        "openOn": "Apri su {store}",
+        "linkHint": "Scegli il gioco giusto: diventa quello per tutti."
+      }
+    }
   }
 }

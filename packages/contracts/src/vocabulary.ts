@@ -125,7 +125,9 @@ export const mediumValues = ['digital', 'physical'] as const;
 //
 // Presi dagli scarti di una libreria vera: `app` sono Netflix, Spotify, DAZN, il
 // lettore multimediale; `extra` i goodies GOG, il REDkit, l'artbook di Horizon;
-// `prerelease` beta, alpha, «Friend's Pass» e accessi di prova. I DLC puri non
+// `prerelease` beta, alpha, «Friend's Pass», accessi di prova e demo (le demo
+// stanno qui e non in un tipo loro: nessun gesto le tratta diversamente da una
+// beta, quindi è cambiata solo l'etichetta). I DLC puri non
 // c'erano, ma i negozi li restituiscono e il gesto deve saperli dire.
 //
 // Solo sugli scarti. Un gioco del backlog si nasconde senza tipo: lì nasconderlo

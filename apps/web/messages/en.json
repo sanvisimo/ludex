@@ -102,7 +102,7 @@
       "app": "App or service",
       "dlc": "DLC or expansion",
       "extra": "Extra content",
-      "prerelease": "Pre-release version",
+      "prerelease": "Demo or pre-release version",
       "unwanted": "Not interested"
     }
   },
@@ -606,7 +606,7 @@
         "app": "App",
         "dlc": "DLC",
         "extra": "Extra content",
-        "prerelease": "Pre-release",
+        "prerelease": "Demo or pre-release",
         "unwanted": "Not interested"
       },
       "unwantedHint": "Games you hid from your backlog and import entries you don't care about sit together here.",
@@ -838,6 +838,55 @@
       "saved": "Id saved, source queued",
       "failed": "Couldn't save the id"
     },
-    "forbidden": "This section is for admins only."
+    "forbidden": "This section is for admins only.",
+    "igdbPick": {
+      "label": "Search IGDB",
+      "hint": "An IGDB id or the page URL work too.",
+      "search": "Search",
+      "searchFailed": "The search failed.",
+      "noResults": "No results.",
+      "choose": "Choose",
+      "inCatalog": "in Ludex"
+    },
+    "unresolved": {
+      "title": "Unresolved imports",
+      "open": "To fix",
+      "globalHidden": "Hidden for everyone",
+      "allStores": "Store: all",
+      "search": "Search by name…",
+      "store": "Store",
+      "name": "Name on the store",
+      "libraries": "Libraries",
+      "hiddenBy": "Already hidden",
+      "link": "Link for everyone",
+      "hide": "Hide for everyone",
+      "hideAs": "As {kind}",
+      "linkTitle": "Link for everyone",
+      "linkDescription": "“{name}” ({store}) becomes that game for anyone importing it, and the entries in {count, plural, one {# library} other {# libraries}} are resolved now. Whoever had hidden it finds it hidden.",
+      "linked": "Linked: {count, plural, =0 {no entries to resolve} one {# entry resolved} other {# entries resolved}}",
+      "linkFailed": "Couldn't link it",
+      "linkedElsewhere": "It's already linked to another game: repoint it from the game's page.",
+      "hidden": "Hidden for everyone: {count, plural, =0 {no visible entries} one {# entry hidden} other {# entries hidden}}",
+      "hideFailed": "Couldn't hide it",
+      "kind": "Kind",
+      "decidedBy": "Decided by",
+      "on": "When",
+      "unhide": "Remove",
+      "unhidden": "Rule removed: new entries will be visible",
+      "unhideFailed": "Couldn't remove it",
+      "empty": "No unresolved imports to fix.",
+      "emptyHidden": "Nothing hidden for everyone.",
+      "failed": "Couldn't load the unresolved imports",
+      "hiddenShort": "{count} {kind}",
+      "details": "Details of {name}",
+      "detail": {
+        "externalId": "Store id",
+        "libraries": "In {count, plural, one {# library} other {# libraries}}, {visible} to fix",
+        "hidden": "Already hidden: {list}",
+        "notHidden": "Nobody hid it.",
+        "openOn": "Open on {store}",
+        "linkHint": "Pick the right game: it becomes that game for everyone."
+      }
+    }
   }
 }

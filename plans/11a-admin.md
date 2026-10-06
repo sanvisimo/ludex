@@ -367,6 +367,47 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
    che ricava i candidati scartati dal testo di `error`, e la voce «Admin» nel
    menu dell'avatar. Scarti, Giochi e Utenti sono segnaposto fino ai loro pezzi.
 
+   **8b fatto** (06/10/2026):
+   [\_app.admin.scarti.tsx](../apps/web/src/routes/_app.admin.scarti.tsx), due
+   tab nell'indirizzo («Da sistemare» e «Nascosti per tutti»), filtro per
+   negozio e ricerca; «Collega per tutti» apre
+   [igdb-pick-dialog.tsx](../apps/web/components/admin/igdb-pick-dialog.tsx),
+   la ricerca IGDB riscritta in Tamagui (quella dell'account è ancora in
+   Tailwind) che serve anche a 8c e 8e; «Nascondi per tutti ▾» offre i quattro
+   tipi, mai «non interessato». `UnresolvedCover` ora chiede solo negozio, id e
+   immagine, così vale anche per la riga raggruppata.
+
+   **Visto in uso** (06/10/2026): nelle tabelle i testi lunghi (gli id
+   Amazon) uscivano dalla colonna e finivano sopra quella accanto. Le view di
+   Tamagui non si restringono da sole: le celle elastiche ora tagliano
+   (`overflow="hidden"`) e i blocchi di testo accanto a una copertina hanno
+   `flex={1} minW={0}`. Le celle fisse no — tengono i bottoni, e tagliarle
+   nasconderebbe l'anello del focus — quindi la loro larghezza va data giusta:
+   le azioni degli scarti sono passate da 290 a 340.
+
+   **Scarti, visto in uso** (06/10/2026, decisione dell'utente): nella tabella
+   i testi si tagliano e non si capiva cosa si stava collegando. Cliccando la
+   voce si apre il **dettaglio**
+   ([unresolved-detail-dialog.tsx](../apps/web/components/admin/unresolved-detail-dialog.tsx)):
+   copertina grande, negozio e piattaforma, id intero, librerie, come l'hanno
+   nascosta, link alla pagina del negozio (l'api ora dà `storePage` anche sulla
+   riga raggruppata), e i due gesti. «Collega per tutti» apre la ricerca IGDB
+   **nello stesso dialogo**, sotto i dati — la ricerca è diventata una sezione,
+   `IgdbPicker`, e `IgdbPickDialog` resta per chi non ha altro da mostrare —;
+   dalla tabella apre il dettaglio con la ricerca già aperta. La colonna
+   «Nascosto da», che si leggeva come «da chi», è diventata **«Già nascosto»**,
+   in forma corta («7 App · 2 DLC»), con la frase intera nel dettaglio.
+
+   **Le demo** (06/10/2026, decisione dell'utente): stanno in `prerelease`,
+   che copriva già gli accessi di prova, e non in un tipo loro — nessun gesto
+   le tratta diversamente da una beta. È cambiata solo l'etichetta: «Demo o
+   versione di prova» nel menu per nascondere, «Demo o prova» nel tab, che sul
+   telefono deve stare in una riga.
+
+   **8g, aggiunto vedendolo in uso** (06/10/2026): i filtri anche nelle pagine
+   dell'utente **«Da sistemare»** e **«Nascosti»** di `/account`, come quelli
+   degli scarti dell'admin: ricerca per nome e negozio, nell'indirizzo.
+
 9. **Documentazione**: step 11 in [ordine-sviluppo](../docs/ordine-sviluppo.md)
    diviso in 11a e 11b; in [import-librerie](../docs/import-librerie.md) la
    risposta alla domanda «è roba di uno o di tutti?», e il rimedio di «Un

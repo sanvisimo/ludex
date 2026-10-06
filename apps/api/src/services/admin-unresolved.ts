@@ -47,6 +47,8 @@ export async function listUnresolvedGroups(input: {
         'platform_slug',
       ),
       imageUrl: sql<string | null>`max(${ui.imageUrl})`.as('image_url'),
+      // Dove sta la voce sul negozio: il link del dialogo di dettaglio.
+      storePage: sql<string | null>`max(${ui.storePage})`.as('store_page'),
       libraries: sql<number>`count(*)::int`.as('libraries'),
       visible: visibili.as('visible'),
       hiddenApp: nascostiCome('app').as('hidden_app'),
@@ -78,6 +80,7 @@ export async function listUnresolvedGroups(input: {
       name: row.name,
       platformSlug: row.platformSlug,
       imageUrl: row.imageUrl,
+      storePage: row.storePage,
       libraries: row.libraries,
       visible: row.visible,
       hidden: {

@@ -306,13 +306,11 @@ function MissingList({
       render: (row) => (
         <>
           <GameCover imageId={row.coverImageId} name={row.name} width={24} />
-          <Link
-            to="/games/$slug"
-            params={{ slug: row.slug }}
-            style={{ minWidth: 0, overflow: 'hidden' }}
-          >
-            <CellText>{row.name}</CellText>
-          </Link>
+          <YStack flex={1} minW={0}>
+            <Link to="/games/$slug" params={{ slug: row.slug }}>
+              <CellText>{row.name}</CellText>
+            </Link>
+          </YStack>
         </>
       ),
     },
@@ -321,7 +319,7 @@ function MissingList({
       header: t('missing.reasonColumn'),
       flex: 3,
       render: (row) => (
-        <YStack minW={0}>
+        <YStack flex={1} minW={0}>
           <CellText>
             {row.reason ? t(`reason.${row.reason}`) : t(`status.${row.status}`)}
             {row.manual ? ` · ${t('missing.manual')}` : ''}

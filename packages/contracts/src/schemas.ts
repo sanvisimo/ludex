@@ -693,6 +693,7 @@ export const UnresolvedGroupSchema = z.object({
   name: z.string(),
   platformSlug: z.string().nullable(),
   imageUrl: z.string().nullable(),
+  storePage: z.string().nullable(),
   libraries: z.number().int(),
   visible: z.number().int(),
   hidden: z.record(HiddenKindSchema, z.number().int()),
