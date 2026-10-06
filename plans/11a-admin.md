@@ -49,6 +49,11 @@ Cosa c'è già, letto dal codice:
   gioco giusto (nome o id IGDB); l'admin trova le segnalazioni nella sezione
   Giochi.
 
+- **«Dati mancanti» al posto di «Fonti»** (06/10/2026): una sezione sola, con
+  la tabellina dei conteggi in cima; il motivo del `not_found` diventa una
+  colonna; l'id scritto a mano dall'admin è esente dall'unicità. Vedi il
+  passo 4.
+
 ## Il caso Toki (06/10/2026)
 
 `/games/toki`: l'import Nintendo ha agganciato l'arcade del 1989, ma il gioco
@@ -168,9 +173,39 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
 3. **Wireframe** (Excalidraw, `11a-admin.excalidraw`) di `/admin`, delle
    quattro sezioni e del form di segnalazione sulla pagina del gioco. Si
    corregge lì finché la struttura non è approvata.
-4. **Fonti in `not_found`**: lista filtrabile per fonte, con gioco, motivo
-   (`error`) e quanti utenti ce l'hanno. Azioni «Ritenta» (in coda) e
-   «Inserisci id» (`external_id` scritto, `pending`, in coda).
+4. **Dati mancanti** (era «Fonti in `not_found`», allargato il 06/10/2026).
+   In cima una tabellina di conteggi, fonte per stato: in coda, non trovati
+   da sistemare, non trovati giusti così, trovati ma vuoti (HLTB senza durata,
+   OpenCritic e Metacritic senza voto), falliti. Più due righe: giochi senza
+   id IGDB (passo 6) e scarti d'import (passo 5). Ogni cella apre la lista
+   filtrata, con gioco, motivo e quanti utenti ce l'hanno. Per la coda
+   OpenCritic basta quante e da quando: il budget del giorno vive nella
+   memoria del worker, e mostrarlo vorrebbe dire salvarlo in Redis.
+
+   **Il motivo del `not_found` diventa una colonna**, `game_sources.reason`:
+   `too_old`, `no_results`, `ambiguous`, `year_mismatch`, `taken`. Oggi è
+   solo il testo di `error`, diverso per ogni fonte, e separare «da
+   sistemare» da «giusto così» vorrebbe una regex sul testo. La scrive
+   l'enrichment; la migration la riempie una volta sulle righe che ci sono.
+   La lista di default mostra solo i sistemabili (`ambiguous`,
+   `year_mismatch`, `taken`). Sul database di sviluppo, 06/10/2026: dei 574
+   `not_found` di OpenCritic 349 sono `too_old`.
+
+   Azioni «Ritenta» (in coda) e «Inserisci id» (`external_id` scritto,
+   `pending`, in coda). **«Inserisci id» vale su qualunque fonte, anche
+   `ok`**: Metal Gear Solid 3 – Master Collection ha Metacritic `ok` ma
+   agganciato a Peace Walker, che nessuna lista dei mancanti mostra. Ci si
+   arriva dalla scheda del gioco nell'admin, o da una segnalazione.
+
+   **L'id scritto a mano è esente dall'unicità** (06/10/2026). Il vincolo
+   `(source, external_id)` su `game_sources` ferma i match automatici
+   sbagliati, ma port e remaster condividono davvero la voce dell'originale
+   (MGS3 Master Collection e MGS3 sono la stessa voce HLTB, 5913), e le 24
+   righe HLTB e 23 Metacritic in `taken` sono probabilmente in buona parte
+   questo. Una colonna `manual` su `game_sources`, scritta da «Inserisci id»;
+   l'indice unique diventa parziale anche su `not manual`. I match automatici
+   restano vincolati come oggi, anche contro una riga manuale.
+
 5. **Scarti d'import di tutti**: raggruppati per negozio e id esterno, con
    quante librerie li hanno e come li hanno nascosti. Azioni:
    - **«Collega per tutti»**: la riga di `external_ids` e la risoluzione degli
@@ -207,16 +242,10 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
 7. **Utenti**: nome, email, iscrizione, numero di giochi e di account
    collegati. Azioni: ruolo, ban e rimozione del ban, chiudi le sessioni. Niente
    cancellazione (step 16) e niente impersonazione.
-8. **Web**: `/admin` col menu a sinistra come `/account`, sotto-rotte `fonti`,
-   `scarti`, `giochi`, `utenti`. Il link compare solo agli admin; la rotta
-   rimanda via chi non lo è (la sicurezza vera la fa il middleware).
-
-   **Da capire (06/10/2026): una sezione «Dati mancanti».** Quali dati l'admin
-   dovrebbe vedere, prima del wireframe del passo 3. Esempi dall'utente: una
-   tabellina con le fonti accodate (OpenCritic in `pending`), i giochi senza id
-   IGDB, quelli senza id HLTB, ecc. Da decidere anche come si lega alle
-   sezioni che ci sono già: i `not_found` del passo 4 e i non collegati del
-   passo 6 sono già dati mancanti.
+8. **Web**: `/admin` col menu a sinistra come `/account`, sotto-rotte
+   `mancanti`, `scarti`, `giochi`, `utenti`. Il link compare solo agli admin;
+   la rotta rimanda via chi non lo è (la sicurezza vera la fa il middleware).
+   La sezione «Dati mancanti», che era un «da capire», è decisa al passo 4.
 
 9. **Documentazione**: step 11 in [ordine-sviluppo](../docs/ordine-sviluppo.md)
    diviso in 11a e 11b; in [import-librerie](../docs/import-librerie.md) la
@@ -244,7 +273,12 @@ Test contro Postgres, in `apps/api`:
   copia, o aveva già il gioco giusto, ha le due righe come prima, con le copie
   spostate;
 - risegnalare lo stesso gioco aggiorna la segnalazione aperta, non ne crea
-  un'altra; correggere quella cosa la chiude.
+  un'altra; correggere quella cosa la chiude;
+- «Inserisci id» accetta un id già di un altro gioco, e lo marca `manual`;
+  un match automatico che trova un id già preso resta `not_found` con
+  `reason = 'taken'`;
+- la migration di `reason` classifica le righe che ci sono (un caso per
+  motivo, col testo di `error` di oggi).
 
 `global_hidden_imports` e `game_reports` non sono seedate da una migration,
 quindi non vanno aggiunte alla lista delle tabelle escluse dal troncamento.
@@ -256,3 +290,11 @@ quindi non vanno aggiunte alla lista delle tabelle escluse dal troncamento.
 - Ripuntare un collegamento **dalla pagina del gioco**, per ogni utente: no,
   solo admin (vedi «Il caso Toki»). Dalla pagina del gioco si segnala.
 - Cancellazione ed esportazione dell'account: step 16.
+- **La durata nascosta sulle card** (06/10/2026, web, da fare a parte).
+  [game-duration.tsx](../apps/web/components/game-duration.tsx) la nasconde
+  quando HLTB dice `hasSolo = false`, regola nata per Counter-Strike. Sbaglia
+  sui giochi in co-op: Blanc (123 minuti) non la mostra. Sul database di
+  sviluppo sono 67 le durate nascoste, 31 con la co-op. Va nascosta solo se
+  non c'è né solo né co-op.
+- **Il filtro «senza durata»** nel backlog (06/10/2026, step 7, da fare a
+  parte): una spunta nel filtro della durata per i giochi che non ce l'hanno.
