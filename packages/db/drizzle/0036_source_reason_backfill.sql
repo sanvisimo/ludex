@@ -15,4 +15,9 @@ SET "reason" = CASE
     OR "error" LIKE 'la scheda % non esiste'
     OR "error" LIKE 'IGDB non conosce l''id %' THEN 'gone'
 END::"source_reason"
-WHERE "status" = 'not_found';
+-- `::text` e non il letterale dell'enum: `not_found` l'ha aggiunto la 0005, e
+-- drizzle fa girare tutte le migration di un database nuovo in una sola
+-- transazione, dove Postgres rifiuta un valore appena aggiunto ("unsafe use of
+-- new value"). Sul database di sviluppo, migrato un passo alla volta, non si
+-- vedeva.
+WHERE "status"::text = 'not_found';
