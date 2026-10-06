@@ -399,6 +399,8 @@
     "PASSWORD_TOO_LONG": "La password è troppo lunga.",
     "EMAIL_NOT_VERIFIED": "Devi prima verificare l'indirizzo email.",
     "FAILED_TO_CREATE_USER": "Non sono riuscito a creare l'account.",
+    "LAST_ADMIN": "Sei l'ultimo admin: nomina prima qualcun altro dalla sezione Utenti, poi potrai cancellare l'account.",
+    "PASSWORD_REQUIRED": "Per cancellare l'account serve la password.",
     "BANNED_USER": "Questo account è sospeso. Se pensi che sia un errore, scrivici: l'indirizzo è nelle condizioni d'uso."
   },
   "account": {
@@ -459,14 +461,14 @@
       "exportTitle": "Esporta i tuoi dati",
       "exportDescription": "Un file con tutto ciò che c'è nel tuo account.",
       "export": "Scarica i miei dati",
-      "soon": "Disponibile a breve.",
+      "exportFailed": "Non sono riuscito a preparare il file. Riprova fra poco.",
+      "passwordLabel": "Scrivi la tua password per confermare",
+      "deleteFailed": "Non sono riuscito a cancellare l'account.",
       "deleteTitle": "Cancella l'account",
       "deleteDescription": "Porta via tutto: libreria, voti, note e account collegati. Non si può annullare.",
       "delete": "Cancella account",
       "dialogTitle": "Cancellare l'account?",
       "dialogDescription": "Libreria, voti, note, tag e account collegati se ne vanno, e non si recuperano.",
-      "confirmLabel": "Scrivi {name} per confermare",
-      "notAvailable": "La cancellazione non è ancora disponibile.",
       "cancel": "Annulla",
       "confirm": "Cancella definitivamente"
     },

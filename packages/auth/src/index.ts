@@ -1,6 +1,8 @@
 import { db, schema } from '@repo/db';
+import { and, count, eq, ne } from '@repo/db/orm';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { admin } from 'better-auth/plugins/admin';
 
 const secret = process.env.BETTER_AUTH_SECRET;
@@ -23,8 +25,58 @@ export const auth = betterAuth({
     // sessioni attive) risponde 403 SESSION_NOT_FRESH. Il resto delle
     // operazioni sensibili (revoca, cambio password) non lo controlla comunque.
     // Conseguenza: `delete-user` senza password passerebbe su qualunque sessione,
-    // quindi lo step 16 deve chiedere la password lui.
+    // ed è per questo che l'hook qui sotto la pretende.
     freshAge: 0,
+  },
+  hooks: {
+    // La conferma della cancellazione è la password (step 16). Better Auth la
+    // chiede solo se la sessione non è fresca, e con `freshAge: 0` non lo è mai
+    // stata: senza questo, una sessione rubata cancellerebbe l'account.
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === '/delete-user' && !ctx.body?.password)
+        throw new APIError('BAD_REQUEST', {
+          code: 'PASSWORD_REQUIRED',
+          message: 'Per cancellare l’account serve la password',
+        });
+    }),
+  },
+  user: {
+    // La cancellazione dell'account (step 16). Le FK verso `user` sono tutte in
+    // cascade, e `games` non ha `userId`: i giochi condivisi restano.
+    deleteUser: {
+      enabled: true,
+      beforeDelete: async (user) => {
+        // L'ultimo admin non si cancella: senza nessuno, scarti e segnalazioni
+        // restano senza chi li gestisce, e si riparte da `admin:grant`. Il
+        // ruolo si legge dal database e non dalla sessione che arriva qui.
+        const [row] = await db
+          .select({ role: schema.user.role })
+          .from(schema.user)
+          .where(eq(schema.user.id, user.id));
+        if (row?.role === 'admin') {
+          const [others] = await db
+            .select({ n: count() })
+            .from(schema.user)
+            .where(
+              and(eq(schema.user.role, 'admin'), ne(schema.user.id, user.id)),
+            );
+          if (!others?.n)
+            throw new APIError('BAD_REQUEST', {
+              code: 'LAST_ADMIN',
+              message: 'Sei l’ultimo admin: nomina prima qualcun altro',
+            });
+        }
+
+        // Prima il backlog, e con lui i possessi. `ownerships.store_account_id`
+        // è `restrict` e `store_accounts` cade nella stessa cascata dell'utente:
+        // misurato, passa, ma solo perché Postgres percorre le FK nell'ordine in
+        // cui sono state create. Su un database ricostruito da un dump potrebbe
+        // cambiare, e la cancellazione fallirebbe a metà.
+        await db
+          .delete(schema.backlog)
+          .where(eq(schema.backlog.userId, user.id));
+      },
+    },
   },
   emailAndPassword: {
     enabled: true,

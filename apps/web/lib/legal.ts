@@ -89,13 +89,13 @@ const privacyIt: LegalDoc = {
           "Segnalazioni: finché hai l'account, anche dopo che sono state risolte.",
         ],
         "Se chiudi l'account cancelliamo i tuoi dati: libreria, copie, tag, account dei negozi, segnalazioni. I dati dei giochi (titoli, copertine, durate) sono condivisi fra tutti gli utenti e non sono personali, quindi restano.",
-        `Oggi la cancellazione e l'esportazione dei tuoi dati si chiedono scrivendo a ${contactEmail}, e rispondiamo entro un mese. Una funzione dentro l'app è prevista.`,
+        "Dalla pagina Profilo del tuo account puoi scaricare i tuoi dati in un file JSON e cancellare l'account. La cancellazione chiede la password, è immediata e non si può annullare. Il file non contiene le credenziali dei negozi né la password.",
       ],
     },
     {
       heading: 'I tuoi diritti',
       blocks: [
-        `Puoi chiedere di accedere ai tuoi dati, correggerli, cancellarli, limitarne il trattamento, opporti, e riceverli in un formato leggibile da un altro servizio (portabilità). Scrivi a ${contactEmail}.`,
+        `Puoi accedere ai tuoi dati, riceverli in un formato leggibile da un altro servizio (portabilità) e cancellarli dalla pagina Profilo del tuo account. Per correggerli, limitarne il trattamento o opporti scrivi a ${contactEmail}: rispondiamo entro un mese.`,
         'Se ritieni che i tuoi dati siano trattati male puoi presentare reclamo al Garante per la protezione dei dati personali (garanteprivacy.it).',
       ],
     },
@@ -177,13 +177,13 @@ const privacyEn: LegalDoc = {
           'Reports: as long as you have the account, even after they are resolved.',
         ],
         'If you close the account we delete your data: library, copies, tags, store accounts, reports. Game data (titles, covers, durations) is shared among all users and is not personal, so it stays.',
-        `Today, deletion and export of your data are requested by writing to ${contactEmail}, and we reply within one month. A feature inside the app is planned.`,
+        'From the Profile page of your account you can download your data as a JSON file and delete the account. Deleting asks for your password, takes effect immediately and cannot be undone. The file contains neither store credentials nor your password.',
       ],
     },
     {
       heading: 'Your rights',
       blocks: [
-        `You can ask to access your data, correct it, delete it, restrict its processing, object to it, and receive it in a format another service can read (portability). Write to ${contactEmail}.`,
+        `You can access your data, receive it in a format another service can read (portability) and delete it from the Profile page of your account. To correct it, restrict its processing or object to it, write to ${contactEmail}: we reply within one month.`,
         'If you think your data is being handled badly you can lodge a complaint with your data protection authority; in Italy, the Garante per la protezione dei dati personali (garanteprivacy.it).',
       ],
     },

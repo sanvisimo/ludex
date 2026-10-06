@@ -161,15 +161,36 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
     questo step decidesse di cancellare, dovrebbe **chiedere prima** — è
     l'unico momento in cui l'utente ha l'informazione e noi no.
 
-15. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
-    posseduti.
+15. **Wishlist e playlist** — la wishlist è una tabella separata da `backlog`,
+    arricchita come i giochi posseduti.
 
-16. **Cancellazione ed esportazione dell'account** — l'utente elimina il
+    **Creazione di sliders/playlist** (aggiunta il 06/10/2026). Le liste in
+    homepage sono comode, e sarebbe bello che ogni utente potesse crearne di
+    sue coi filtri. Va fatta **insieme alla wishlist**. Decisioni prese il
+    06/10/2026:
+    - **leggono il backlog** (non il catalogo), e sono **dinamiche**: una
+      playlist è un `BacklogQuery` salvato con un nome, per utente, e la query
+      gira a ogni apertura. Hanno **rotte loro**, non sono una vista di
+      `/backlog`.
+    - **il JSON è una colonna come le altre**, senza versione: un campo nuovo è
+      opzionale e non rompe niente; rinominare o togliere un campo, o cambiare
+      un valore di un enum, porta una migration che riscrive le playlist
+      salvate. Altrimenti Zod scarta il campo in silenzio e la playlist
+      mostrerebbe più giochi del previsto. I tag sono salvati per id: uno
+      cancellato si ignora, e la playlist lo dice.
+    - **prima la tabella delle playlist**: la wishlist può riusarla come
+      «lista con nome».
+
+16. **Cancellazione ed esportazione dell'account** — **fatto il 06/10/2026**
+    (piano in `plans/16-cancellazione-esportazione.md`). L'utente elimina il
     proprio account e scarica i propri dati: i diritti di cancellazione e di
-    portabilità del GDPR (artt. 17 e 20), che oggi nessuna schermata offre.
-    Aggiunto in coda il 01/10/2026, dopo aver deciso la licenza (AGPL-3.0) e
-    visto cosa raccogliamo: nome, email, la libreria e i token dei negozi.
-    Da decidere quando si apre lo step, non prima:
+    portabilità del GDPR (artt. 17 e 20). Aggiunto in coda il 01/10/2026, dopo
+    aver deciso la licenza (AGPL-3.0) e visto cosa raccogliamo: nome, email, la
+    libreria e i token dei negozi. Com'è andata, sulle domande qui sotto:
+    la cancellazione è `deleteUser` di Better Auth con la password pretesa da
+    un hook, l'ultimo admin non si cancella, e `beforeDelete` cancella prima il
+    backlog (la cascata passerebbe lo stesso, ma per l'ordine delle FK). Le
+    domande originali:
     - **cosa si porta via la cancellazione.** Le FK dell'utente sono in
       cascade, ma `games` è condivisa e **non si cancella mai**: se ne vanno
       backlog, possessi, tag, account dei negozi e i loro token, e restano i

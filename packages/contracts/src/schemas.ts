@@ -439,6 +439,78 @@ export const UserSettingsSchema = z.object({
   autoSyncLibrary: z.boolean(),
 });
 
+// L'esportazione dell'account (step 16, GDPR art. 20): tutto ciò che Ludex ha
+// della persona, in una forma che un altro servizio sa leggere. **Senza token
+// dei negozi, senza hash della password, senza sessioni**: non sono dati suoi.
+// I giochi ci stanno col nome e l'id IGDB, per ritrovarli altrove.
+export const AccountExportSchema = z.object({
+  exportedAt: z.date(),
+  profile: z.object({
+    name: z.string(),
+    email: z.string(),
+    createdAt: z.date(),
+  }),
+  settings: UserSettingsSchema,
+  storeAccounts: z.array(
+    z.object({
+      store: StoreSchema,
+      storeName: z.string().nullable(),
+      label: z.string().nullable(),
+      linkedAt: z.date(),
+      lastSyncAt: z.date().nullable(),
+    }),
+  ),
+  library: z.array(
+    z.object({
+      game: z.object({ name: z.string(), igdbId: z.number().nullable() }),
+      status: BacklogStatusSchema,
+      rating: z.number().nullable(),
+      notes: z.string().nullable(),
+      addedAt: z.date(),
+      hiddenAt: z.date().nullable(),
+      tags: z.array(z.object({ kind: UserTagKindSchema, name: z.string() })),
+      ownerships: z.array(
+        z.object({
+          platform: z.string(),
+          store: StoreSchema.nullable(),
+          account: z.string().nullable(),
+          medium: MediumSchema.nullable(),
+          subscription: SubscriptionSchema.nullable(),
+          playtimeMinutes: z.number().nullable(),
+          lastPlayedAt: z.date().nullable(),
+          acquiredAt: z.date().nullable(),
+          storePage: z.string().nullable(),
+        }),
+      ),
+    }),
+  ),
+  unresolvedImports: z.array(
+    z.object({
+      store: StoreSchema,
+      name: z.string(),
+      externalId: z.string(),
+      platform: z.string().nullable(),
+      playtimeMinutes: z.number().nullable(),
+      hiddenAt: z.date().nullable(),
+      hiddenKind: HiddenKindSchema.nullable(),
+    }),
+  ),
+  reports: z.array(
+    z.object({
+      game: z.string(),
+      igdbId: z.number().nullable(),
+      store: StoreSchema.nullable(),
+      source: z.string().nullable(),
+      suggestedName: z.string().nullable(),
+      suggestedIgdbId: z.number().nullable(),
+      note: z.string().nullable(),
+      createdAt: z.date(),
+      resolvedAt: z.date().nullable(),
+    }),
+  ),
+});
+export type AccountExport = z.infer<typeof AccountExportSchema>;
+
 // Una voce di libreria che l'import non ha saputo legare a un gioco. Il nome è
 // quello del negozio: è tutto ciò che si può mostrare per farla riconoscere.
 export const UnresolvedImportSchema = z.object({

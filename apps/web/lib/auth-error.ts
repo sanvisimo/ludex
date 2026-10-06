@@ -21,6 +21,10 @@ const codes = [
   'FAILED_TO_CREATE_USER',
   // L'account sospeso da un admin (11a): Better Auth lo rifiuta all'accesso.
   'BANNED_USER',
+  // La cancellazione dell'account (step 16): l'ultimo admin non si cancella, e
+  // il server pretende la password.
+  'LAST_ADMIN',
+  'PASSWORD_REQUIRED',
 ] as const;
 
 type AuthErrorCode = (typeof codes)[number];

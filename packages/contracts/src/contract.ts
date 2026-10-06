@@ -2,6 +2,7 @@ import { eventIterator, oc } from '@orpc/contract';
 import { z } from 'zod';
 
 import {
+  AccountExportSchema,
   AdminRoleSchema,
   AdminUserSchema,
   BacklogEntrySchema,
@@ -285,6 +286,12 @@ export const contract = {
 
     // Scrive solo i campi che arrivano: gli altri restano come sono.
     update: oc.input(UserSettingsSchema.partial()).output(UserSettingsSchema),
+  },
+
+  // L'esportazione dei propri dati (step 16). La cancellazione no: passa da
+  // Better Auth, con la password.
+  accountData: {
+    export: oc.output(AccountExportSchema),
   },
 
   imports: {
