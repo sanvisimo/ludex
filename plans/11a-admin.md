@@ -294,6 +294,35 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
      il gioco giusto» con la ricerca IGDB già usata per l'inserimento a mano
      (sceglierne uno dà l'id) o un nome scritto libero, e una nota. Con una
      segnalazione aperta, al posto del bottone c'è «Segnalato il …».
+     **Fatto** (06/10/2026), solo l'api. Tabella `game_reports`
+     ([0038](../packages/db/drizzle/0038_game_reports.sql)), servizi
+     [reports.ts](../apps/api/src/services/reports.ts) e
+     [admin-games.ts](../apps/api/src/services/admin-games.ts). Procedure utente
+     `reports.create`, `reports.openForGame`; admin `admin.reports.list`,
+     `archive`, `admin.games.unlinked`, `linkIgdb`, `detail`,
+     `admin.links.repointPreview`, `repoint`. Cose che il piano non diceva:
+   - una segnalazione riguarda **una cosa sola**, un negozio o una fonte (un
+     CHECK vuole esattamente una delle due); il form che ne spunta tre ne
+     scrive tre. La copia di un negozio si segnala solo se è tua, la fonte
+     sempre. L'unicità delle aperte sono **due indici parziali**: uno solo su
+     `coalesce(store::text, source::text)` Postgres lo rifiuta, perché il cast
+     di un enum a testo non è IMMUTABLE;
+   - «Non è questo gioco» sposta la riga intera con un `update` di
+     `backlog.game_id`: tag, rifiuti, voto e note la seguono da soli. Quando
+     sposta solo le copie, **sposta anche i rifiuti di quel negozio**, o il
+     prossimo import rimetterebbe sul gioco giusto la copia che l'utente aveva
+     tolto;
+   - **prima le copie, poi la riga di `external_ids`**: se si rompe a metà,
+     ripetere riprende da dove si era fermato. L'anteprima non scrive niente,
+     nemmeno il gioco giusto se manca dal catalogo, e avvisa degli altri id
+     dello stesso negozio sul gioco sbagliato (le copie si spostano con il
+     primo);
+   - «Inserisci id» (passo 4) chiude le segnalazioni su quella fonte, «Non è
+     questo gioco» quelle su quella copia;
+   - un conteggio scritto come `${schema.games.id}` dentro una sottoquery
+     contava sempre zero: in una select su una tabella sola Drizzle scrive
+     `"id"` senza tabella. Preso dal test, corretto in `admin-games.ts`.
+
 7. **Utenti**: nome, email, iscrizione, numero di giochi e di account
    collegati. Azioni: ruolo, ban e rimozione del ban, chiudi le sessioni. Niente
    cancellazione (step 16) e niente impersonazione.
