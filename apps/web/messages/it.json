@@ -225,7 +225,31 @@
     "galleryEnlarge": "Ingrandisci",
     "galleryClose": "Chiudi",
     "galleryItem": "Elemento {index} di {total}",
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "report": {
+      "open": "Segnala un errore",
+      "again": "Segnala ancora",
+      "sent": "Segnalato il {date}",
+      "title": "Segnala un errore",
+      "description": "Lo vede un admin, che lo corregge per tutti.",
+      "what": "Cosa è sbagliato",
+      "copy": "la copia {store}",
+      "hltb": "la durata (HowLongToBeat)",
+      "opencritic": "il voto OpenCritic",
+      "metacritic": "il voto Metacritic",
+      "suggest": "Suggerisci il gioco giusto (facoltativo)",
+      "searchIgdb": "Cerca su IGDB",
+      "chosen": "{name} · IGDB {id}",
+      "remove": "Togli",
+      "orName": "Oppure scrivi il nome",
+      "note": "Nota (facoltativa)",
+      "notePlaceholder": "Es. è il remake, su Switch c'è solo quello",
+      "send": "Invia",
+      "cancel": "Annulla",
+      "thanks": "Segnalazione inviata, grazie",
+      "failed": "Non sono riuscito a inviarla",
+      "admin": "Apri nell'admin"
+    }
   },
   "hltb": {
     "title": "Quanto dura",

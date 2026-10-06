@@ -225,7 +225,31 @@
     "galleryEnlarge": "Enlarge",
     "galleryClose": "Close",
     "galleryItem": "Item {index} of {total}",
-    "close": "Close"
+    "close": "Close",
+    "report": {
+      "open": "Report a mistake",
+      "again": "Report again",
+      "sent": "Reported on {date}",
+      "title": "Report a mistake",
+      "description": "An admin sees it and fixes it for everyone.",
+      "what": "What's wrong",
+      "copy": "the {store} copy",
+      "hltb": "the duration (HowLongToBeat)",
+      "opencritic": "the OpenCritic score",
+      "metacritic": "the Metacritic score",
+      "suggest": "Suggest the right game (optional)",
+      "searchIgdb": "Search IGDB",
+      "chosen": "{name} · IGDB {id}",
+      "remove": "Remove",
+      "orName": "Or type its name",
+      "note": "Note (optional)",
+      "notePlaceholder": "E.g. it's the remake, Switch only has that one",
+      "send": "Send",
+      "cancel": "Cancel",
+      "thanks": "Report sent, thanks",
+      "failed": "Couldn't send it",
+      "admin": "Open in admin"
+    }
   },
   "hltb": {
     "title": "How long it takes",

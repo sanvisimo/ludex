@@ -29,6 +29,7 @@ import { useSetEntryHidden } from '@/lib/hide-entry';
 import { api, client } from '@/lib/orpc';
 import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
+import { ReportError } from '@/components/report-error';
 import { useSession } from '@/src/use-session';
 
 /**
@@ -78,6 +79,7 @@ function GamePage() {
   const t = useTranslations('game');
   const tHidden = useTranslations('hidden');
   const tBacklog = useTranslations('backlog');
+  const tReport = useTranslations('game.report');
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
   const setHidden = useSetEntryHidden();
@@ -205,6 +207,25 @@ function GamePage() {
           ) : (
             session.data && <AddGameDialog game={game} />
           )}
+          {/* In fondo alla colonna: sotto il pannello del backlog se il gioco
+              è tuo, sotto durata e critica se no. Solo da loggati: la
+              segnalazione è di qualcuno. */}
+          {session.data ? (
+            <XStack gap={8} items="center" flexWrap="wrap">
+              <ReportError game={game} entry={entry} />
+              {/* Per l'admin, la scheda dove si corregge. È comodità: la
+                  sezione la protegge il server. */}
+              {session.data.user.role === 'admin' ? (
+                <ButtonLink
+                  size="sm"
+                  variant="ghost"
+                  href={`/admin/giochi/${game.slug}`}
+                >
+                  {tReport('admin')}
+                </ButtonLink>
+              ) : null}
+            </XStack>
+          ) : null}
         </YStack>
 
         {/* Sotto `$lg` le colonne sono impilate, e la base 0 di `flex`

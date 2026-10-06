@@ -466,6 +466,28 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
    ban, chiudi le sessioni. Sulla propria riga «Togli admin» e «Banna» non ci
    sono: il server li rifiuterebbe comunque.
 
+   **8e fatto** (06/10/2026):
+   [report-error.tsx](../apps/web/components/report-error.tsx), in fondo
+   alla colonna laterale della pagina del gioco — sotto «Nella tua libreria»
+   se il gioco è tuo, sotto durata e critica se no —, solo da loggati. Le
+   spunte: le copie per negozio (solo i tuoi) e le tre fonti. Il gioco giusto
+   si suggerisce con `IgdbPicker`, la ricerca dell'admin, che dà l'id; oppure
+   col nome scritto. Con una segnalazione aperta il link diventa «Segnalato il
+   … · Segnala ancora».
+
+   **Segnalazioni, visto in uso** (06/10/2026): su Dream Daddy la
+   segnalazione «la copia Amazon è l'originale, IGDB 38045» sembrava potersi
+   solo archiviare — il gesto giusto, «Non è questo gioco» sulla riga Amazon,
+   stava in un'altra sezione della scheda. Ora ogni segnalazione ha accanto il
+   gesto che la risolve: «Non è questo gioco» su una copia, «Inserisci id» su
+   una fonte. E il suggerimento scelto dalla ricerca IGDB salva anche il nome,
+   non solo l'id.
+
+   **«Apri nell'admin»** (06/10/2026, visto in uso): sulla pagina pubblica
+   di ogni gioco, solo per gli admin, accanto a «Segnala un errore». Senza,
+   alla scheda admin di un gioco si arrivava solo cercandolo, da «Dati
+   mancanti» o da una segnalazione.
+
    **8g, aggiunto vedendolo in uso** (06/10/2026): i filtri anche nelle pagine
    dell'utente **«Da sistemare»** e **«Nascosti»** di `/account`, come quelli
    degli scarti dell'admin: ricerca per nome e negozio, nell'indirizzo.

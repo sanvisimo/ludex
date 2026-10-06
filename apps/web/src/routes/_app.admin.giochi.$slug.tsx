@@ -347,6 +347,16 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
                   </Text>
                 ))}
               </YStack>
+              {/* Il gesto che risolve la segnalazione, accanto a lei: sulla
+                  copia si ripunta il collegamento di quel negozio, sulla fonte
+                  si scrive l'id. Prima stava solo nelle tabelle sopra, e
+                  sembrava che si potesse soltanto archiviare. */}
+              <ReportFix
+                report={report}
+                detail={detail}
+                onRepoint={setRepointing}
+                onSetId={setSetting}
+              />
               <Button
                 size="sm"
                 variant="outline"
@@ -379,5 +389,49 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
         onSaved={refresh}
       />
     </YStack>
+  );
+}
+
+/** Il gesto che risolve una segnalazione: ripuntare la copia, o l'id della fonte. */
+function ReportFix({
+  report,
+  detail,
+  onRepoint,
+  onSetId,
+}: {
+  report: Report;
+  detail: GameAdminDetail;
+  onRepoint: (link: Link) => void;
+  onSetId: (row: SourceToSet) => void;
+}) {
+  const t = useTranslations('admin');
+  if (report.store) {
+    const link = detail.links.find((row) => row.source === report.store);
+    if (!link) return null;
+    return (
+      <Button size="sm" onPress={() => onRepoint(link)}>
+        {t('game.notThis')}
+      </Button>
+    );
+  }
+  const source = detail.sources.find((row) => row.source === report.source);
+  if (!report.source) return null;
+  return (
+    <Button
+      size="sm"
+      onPress={() =>
+        onSetId({
+          gameId: detail.game.id,
+          name: detail.game.name,
+          coverImageId: detail.game.coverImageId,
+          status: source?.status ?? 'pending',
+          reason: source?.reason ?? null,
+          error: source?.error ?? null,
+          source: report.source!,
+        })
+      }
+    >
+      {t('missing.setId')}
+    </Button>
   );
 }
