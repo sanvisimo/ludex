@@ -166,8 +166,20 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 
     **Creazione di sliders/playlist** (aggiunta il 06/10/2026). Le liste in
     homepage sono comode, e sarebbe bello che ogni utente potesse crearne di
-    sue coi filtri. Va fatta **insieme alla wishlist**. Da decidere quando si
-    apre lo step, non prima.
+    sue coi filtri. Va fatta **insieme alla wishlist**. Decisioni prese il
+    06/10/2026:
+    - **leggono il backlog** (non il catalogo), e sono **dinamiche**: una
+      playlist è un `BacklogQuery` salvato con un nome, per utente, e la query
+      gira a ogni apertura. Hanno **rotte loro**, non sono una vista di
+      `/backlog`.
+    - **il JSON è una colonna come le altre**, senza versione: un campo nuovo è
+      opzionale e non rompe niente; rinominare o togliere un campo, o cambiare
+      un valore di un enum, porta una migration che riscrive le playlist
+      salvate. Altrimenti Zod scarta il campo in silenzio e la playlist
+      mostrerebbe più giochi del previsto. I tag sono salvati per id: uno
+      cancellato si ignora, e la playlist lo dice.
+    - **prima la tabella delle playlist**: la wishlist può riusarla come
+      «lista con nome».
 
 16. **Cancellazione ed esportazione dell'account** — l'utente elimina il
     proprio account e scarica i propri dati: i diritti di cancellazione e di
