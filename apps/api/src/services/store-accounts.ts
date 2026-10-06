@@ -280,7 +280,12 @@ async function upsertAccount(input: {
         schema.storeAccounts.externalAccountId,
       ],
       set: {
-        displayName: input.displayName ?? null,
+        // Il nome del negozio è decorazione e a volte non si riesce a leggere:
+        // un ricollegamento che non lo trova non deve cancellare quello che
+        // c'era, o `/account` ripiega sull'ID nudo (il login famiglia di Steam).
+        displayName: input.displayName
+          ? input.displayName
+          : sql`${schema.storeAccounts.displayName}`,
         // L'etichetta è dell'utente, non del negozio: ricollegare non deve
         // cancellargliela. Si sovrascrive solo se ne ha scritta una nuova.
         label: input.label ? input.label : sql`${schema.storeAccounts.label}`,
