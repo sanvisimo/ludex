@@ -1,4 +1,8 @@
-import type { Store } from '@repo/contracts/vocabulary';
+import type {
+  EnrichmentSource,
+  SourceReason,
+  Store,
+} from '@repo/contracts/vocabulary';
 import { db, schema, type Db } from '@repo/db';
 import {
   and,
@@ -24,7 +28,7 @@ import {
  * stesso ritmo e le farebbe cadere insieme.
  */
 
-export type EnrichmentSource = 'igdb' | 'hltb' | 'opencritic' | 'metacritic';
+export type { EnrichmentSource };
 
 /** Il `tx` che Drizzle passa dentro `db.transaction`, senza doverlo nominare. */
 type Transaction = Parameters<Parameters<Db['transaction']>[0]>[0];
@@ -97,15 +101,20 @@ export async function markSource(
   values: {
     gameId: string;
     source: EnrichmentSource;
-    status: 'ok' | 'failed' | 'not_found';
     error?: string | null;
     externalId?: string | null;
-  },
+  } & (
+    | { status: 'ok' | 'failed'; reason?: never }
+    // Il motivo è obbligatorio sul `not_found`: è su quello che la sezione
+    // «Dati mancanti» dell'admin separa il da sistemare dal giusto così.
+    | { status: 'not_found'; reason: SourceReason }
+  ),
   executor: Db | Transaction = db,
 ) {
   const now = new Date();
   const { gameId, source, status } = values;
   const error = values.error ?? null;
+  const reason = values.reason ?? null;
   const touchesExternalId = values.externalId !== undefined;
 
   await executor
@@ -119,6 +128,7 @@ export async function markSource(
       syncedAt: status === 'ok' ? now : null,
       attemptedAt: now,
       error,
+      reason,
       externalId: values.externalId ?? null,
     })
     .onConflictDoUpdate({
@@ -127,6 +137,7 @@ export async function markSource(
         status,
         attemptedAt: now,
         error,
+        reason,
         updatedAt: now,
         ...(status === 'ok' ? { syncedAt: now } : {}),
         ...(touchesExternalId ? { externalId: values.externalId ?? null } : {}),
@@ -215,6 +226,7 @@ export async function reopenSourcesForNewExternalIds(
       .set({
         status: 'pending',
         error: null,
+        reason: null,
         attemptedAt: null,
         updatedAt: new Date(),
       })

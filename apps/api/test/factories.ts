@@ -5,7 +5,11 @@ import type { IgdbGameMetadata } from '../src/external/igdb';
 import type { MetacriticGame } from '../src/external/metacritic';
 import type { OpenCriticGame } from '../src/external/opencritic';
 import type { SteamLibraryEntry } from '../src/external/steam';
-import type { GameType, ScoreSource } from '@repo/contracts/vocabulary';
+import type {
+  GameType,
+  ScoreSource,
+  SourceReason,
+} from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 
 // Fixture minime: scrivono la riga e restituiscono l'id. Niente builder
@@ -86,6 +90,9 @@ export function setSource(values: {
   syncedAt?: Date | null;
   attemptedAt?: Date | null;
   externalId?: string | null;
+  error?: string | null;
+  reason?: SourceReason | null;
+  manual?: boolean;
 }) {
   const source = values.source ?? 'igdb';
   const row = {
@@ -95,6 +102,9 @@ export function setSource(values: {
     syncedAt: values.syncedAt ?? null,
     attemptedAt: values.attemptedAt ?? null,
     externalId: values.externalId ?? null,
+    error: values.error ?? null,
+    reason: values.reason ?? null,
+    manual: values.manual ?? false,
   };
 
   return db

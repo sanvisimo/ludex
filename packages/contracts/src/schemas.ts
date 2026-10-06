@@ -4,13 +4,17 @@ import {
   attributeKindValues,
   backlogSortValues,
   backlogStatusValues,
+  enrichmentSourceValues,
   linkableStoreValues,
   gameTypeValues,
   hiddenKindValues,
+  manualSourceValues,
   mediumValues,
+  missingBucketValues,
   relatedKindValues,
   scoreSourceValues,
   sortDirectionValues,
+  sourceReasonValues,
   storeAccountStatusValues,
   storeValues,
   subscriptionValues,
@@ -630,6 +634,54 @@ export function storeAccountName(account: {
 }) {
   return account.label ?? account.displayName ?? account.externalAccountId;
 }
+// --- Admin (11a) ---
+
+export const EnrichmentSourceSchema = z.enum(enrichmentSourceValues);
+export const ManualSourceSchema = z.enum(manualSourceValues);
+export const MissingBucketSchema = z.enum(missingBucketValues);
+export const SourceReasonSchema = z.enum(sourceReasonValues);
+
+// La tabellina in cima a «Dati mancanti»: una riga per fonte, più i giochi
+// senza id IGDB e gli scarti d'import ancora visibili.
+export const MissingSummarySchema = z.object({
+  sources: z.array(
+    z.object({
+      source: EnrichmentSourceSchema,
+      pending: z.number().int(),
+      pendingSince: z.date().nullable(),
+      fixable: z.number().int(),
+      fine: z.number().int(),
+      empty: z.number().int(),
+      failed: z.number().int(),
+    }),
+  ),
+  gamesWithoutIgdb: z.number().int(),
+  unresolvedImports: z.number().int(),
+});
+
+export const MissingRowSchema = z.object({
+  gameId: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  coverImageId: z.string().nullable(),
+  source: EnrichmentSourceSchema,
+  status: z.enum(['pending', 'ok', 'failed', 'not_found']),
+  reason: SourceReasonSchema.nullable(),
+  // Il testo per chi legge: per un `ambiguous` elenca i candidati scartati.
+  error: z.string().nullable(),
+  externalId: z.string().nullable(),
+  manual: z.boolean(),
+  attemptedAt: z.date().nullable(),
+  users: z.number().int(),
+});
+
+export const MissingListSchema = z.object({
+  rows: z.array(MissingRowSchema),
+  total: z.number().int(),
+});
+
+export type MissingSummary = z.infer<typeof MissingSummarySchema>;
+export type MissingRow = z.infer<typeof MissingRowSchema>;
 export type UnlinkImpact = z.infer<typeof UnlinkImpactSchema>;
 export type SteamLoginStart = z.infer<typeof SteamLoginStartSchema>;
 export type SteamLoginStatus = z.infer<typeof SteamLoginStatusSchema>;

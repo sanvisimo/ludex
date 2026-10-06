@@ -246,6 +246,20 @@
       "when": 1791277344688,
       "tag": "0034_admin_plugin",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1791286581663,
+      "tag": "0035_source_reason_manual",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1791286595108,
+      "tag": "0036_source_reason_backfill",
+      "breakpoints": true
     }
   ]
 }

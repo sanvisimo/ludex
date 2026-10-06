@@ -116,6 +116,7 @@ export async function enrichGameFromOpenCritic(
         gameId,
         source: 'opencritic',
         status: 'not_found',
+        reason: 'taken',
         error: 'la voce OpenCritic scelta è già agganciata a un altro gioco',
         externalId: null,
       });
@@ -180,6 +181,7 @@ async function resolveAndSave(game: GameRow): Promise<OpenCriticOutcome> {
       gameId: game.id,
       source: 'opencritic',
       status: 'not_found',
+      reason: 'too_old',
       error: `uscito nel ${nostroAnno}: OpenCritic nasce nel ${OPENCRITIC_FIRST_YEAR} e non lo cerchiamo`,
       externalId: null,
     });
@@ -193,6 +195,7 @@ async function resolveAndSave(game: GameRow): Promise<OpenCriticOutcome> {
       gameId: game.id,
       source: 'opencritic',
       status: 'not_found',
+      reason: 'no_results',
       error: `OpenCritic non ha nulla per "${game.name}"`,
       externalId: null,
     });
@@ -213,6 +216,7 @@ async function resolveAndSave(game: GameRow): Promise<OpenCriticOutcome> {
       gameId: game.id,
       source: 'opencritic',
       status: 'not_found',
+      reason: 'ambiguous',
       error:
         `nessun candidato convincente per "${game.name}": ` +
         hits
@@ -231,6 +235,7 @@ async function resolveAndSave(game: GameRow): Promise<OpenCriticOutcome> {
       gameId: game.id,
       source: 'opencritic',
       status: 'not_found',
+      reason: 'gone',
       error: `la scheda OpenCritic ${picked.hit.id} non esiste`,
       externalId: null,
     });
@@ -250,6 +255,7 @@ async function resolveAndSave(game: GameRow): Promise<OpenCriticOutcome> {
       gameId: game.id,
       source: 'opencritic',
       status: 'not_found',
+      reason: 'year_mismatch',
       error: `"${detail.name}" (${detail.id}) è del ${detail.releaseYear}, il nostro del ${nostroAnno}`,
       externalId: null,
     });

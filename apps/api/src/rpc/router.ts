@@ -23,6 +23,14 @@ import {
   resolveGameFromIgdb,
   searchGames,
 } from '../services/games';
+import {
+  findSourceIdOwner,
+  listMissing,
+  missingSummary,
+  parseSourceId,
+  retrySource,
+  setSourceExternalId,
+} from '../services/admin-sources';
 import { listHomeBands } from '../services/home';
 import {
   removeSteamLogin,
@@ -59,7 +67,7 @@ import { getUserSettings, updateUserSettings } from '../services/user-settings';
 import { eventForUser, liveEvents } from '../lib/events';
 import { SteamLibraryNotVisibleError } from '../external/steam';
 import { enqueueImport, isImportRunning } from '../queue/imports';
-import { authed, maybeAuthed, os } from './context';
+import { admin, authed, maybeAuthed, os } from './context';
 
 /**
  * L'account che si sta ricollegando, se la richiesta ne nomina uno.
@@ -547,6 +555,64 @@ export const router = os.router({
         if (!removed)
           throw new ORPCError('NOT_FOUND', { message: 'Riga inesistente' });
       }),
+  },
+
+  admin: {
+    missing: {
+      summary: os.admin.missing.summary
+        .use(authed)
+        .use(admin)
+        .handler(() => missingSummary()),
+
+      list: os.admin.missing.list
+        .use(authed)
+        .use(admin)
+        .handler(({ input }) => listMissing(input)),
+    },
+
+    sources: {
+      retry: os.admin.sources.retry
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          if (!(await retrySource(input.gameId, input.source)))
+            throw new ORPCError('NOT_FOUND', {
+              message: 'Il gioco non ha questa fonte',
+            });
+        }),
+
+      lookup: os.admin.sources.lookup
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          const externalId = parseSourceId(input.source, input.externalId);
+          if (!externalId)
+            throw new ORPCError('BAD_REQUEST', {
+              message: 'Non è un id né un indirizzo di quella fonte',
+            });
+          const owner = await findSourceIdOwner(
+            input.source,
+            externalId,
+            input.gameId,
+          );
+          return { externalId, owner };
+        }),
+
+      setExternalId: os.admin.sources.setExternalId
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          const externalId = parseSourceId(input.source, input.externalId);
+          if (!externalId)
+            throw new ORPCError('BAD_REQUEST', {
+              message: 'Non è un id né un indirizzo di quella fonte',
+            });
+          if (!(await findGameById(input.gameId)))
+            throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
+          await setSourceExternalId(input.gameId, input.source, externalId);
+          return { externalId };
+        }),
+    },
   },
 
   events: {

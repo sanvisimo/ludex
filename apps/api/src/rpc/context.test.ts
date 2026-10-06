@@ -5,9 +5,10 @@ import { eq } from '@repo/db/orm';
 import { describe, expect, it } from 'vitest';
 
 import { admin, authed, type RpcContext } from './context';
+import { router } from './router';
 
-// Una procedura qualunque dietro i due middleware: il contratto `admin.*` lo
-// riempiono i passi successivi, qui interessa solo chi passa.
+// Una procedura qualunque dietro i due middleware: qui interessa solo chi
+// passa, non cosa fa. Le procedure vere sono nel blocco in fondo.
 const soloAdmin = plain
   .$context<RpcContext>()
   .use(authed)
@@ -52,5 +53,48 @@ describe('middleware admin', () => {
     await expect(
       call(soloAdmin, undefined, { context: { headers: new Headers() } }),
     ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+  });
+});
+
+describe('le procedure admin.*', () => {
+  // Una per una, con un input valido: se una procedura nuova dimentica
+  // `.use(admin)`, è qui che si vede. Il web nasconde il link, ma la sicurezza
+  // vera è questa.
+  const gameId = '00000000-0000-4000-8000-000000000000';
+  const casi = [
+    ['missing.summary', router.admin.missing.summary, undefined],
+    [
+      'missing.list',
+      router.admin.missing.list,
+      { source: 'hltb', bucket: 'fixable' },
+    ],
+    ['sources.retry', router.admin.sources.retry, { gameId, source: 'hltb' }],
+    [
+      'sources.lookup',
+      router.admin.sources.lookup,
+      { gameId, source: 'hltb', externalId: '1' },
+    ],
+    [
+      'sources.setExternalId',
+      router.admin.sources.setExternalId,
+      { gameId, source: 'hltb', externalId: '1' },
+    ],
+  ] as const;
+
+  it.each(casi)('%s respinge chi non è admin', async (_, procedura, input) => {
+    const { headers } = await signedIn('curioso@esempio.test');
+
+    await expect(
+      // Le procedure hanno input diversi, e qui interessa solo chi passa.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      call(procedura as any, input, { context: { headers } }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+  });
+
+  it('coprono tutto il gruppo', () => {
+    const nomi = Object.entries(router.admin).flatMap(([gruppo, procedure]) =>
+      Object.keys(procedure).map((nome) => `${gruppo}.${nome}`),
+    );
+    expect(nomi.sort()).toEqual(casi.map(([nome]) => nome).sort());
   });
 });

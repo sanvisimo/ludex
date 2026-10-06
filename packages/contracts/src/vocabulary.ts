@@ -178,6 +178,41 @@ export const hiddenKindValues = [
 // una scelta di prodotto alla forma di un tipo SQL.
 export const scoreSourceValues = ['igdb', 'opencritic', 'metacritic'] as const;
 
+// Le fonti che l'enrichment interroga, una riga di `game_sources` ciascuna.
+// SteamGridDB è fra le fonti di dati ma non ha un enrichment.
+export const enrichmentSourceValues = [
+  'igdb',
+  'hltb',
+  'opencritic',
+  'metacritic',
+] as const;
+
+// Perché una fonte è `not_found` (11a): il significato di ciascuno è sul tipo
+// Postgres, in `packages/db/src/schema/sources.ts`. Come `scoreSourceValues`,
+// l'ordine è quello del tipo e non si cambia.
+export const sourceReasonValues = [
+  'too_old',
+  'no_results',
+  'ambiguous',
+  'year_mismatch',
+  'taken',
+  'gone',
+] as const;
+
+// Le fonti dove l'admin scrive l'id a mano (11a). IGDB no: lì l'id sta su
+// `games`, e si cambia collegando il gioco.
+export const manualSourceValues = ['hltb', 'opencritic', 'metacritic'] as const;
+
+// Le colonne della tabellina «Dati mancanti» dell'admin (11a). Il significato
+// di ciascuna è in `apps/api/src/services/admin-sources.ts`.
+export const missingBucketValues = [
+  'pending',
+  'fixable',
+  'fine',
+  'empty',
+  'failed',
+] as const;
+
 // Tipi di attributo IGDB: generi, temi, modalita di gioco, prospettive.
 export const attributeKindValues = [
   'genre',
@@ -254,6 +289,10 @@ export type Store = (typeof storeValues)[number];
 export type LinkableStore = (typeof linkableStoreValues)[number];
 export type StoreAccountStatus = (typeof storeAccountStatusValues)[number];
 export type ScoreSource = (typeof scoreSourceValues)[number];
+export type EnrichmentSource = (typeof enrichmentSourceValues)[number];
+export type SourceReason = (typeof sourceReasonValues)[number];
+export type ManualSource = (typeof manualSourceValues)[number];
+export type MissingBucket = (typeof missingBucketValues)[number];
 export type Subscription = (typeof subscriptionValues)[number];
 export type Medium = (typeof mediumValues)[number];
 export type HiddenKind = (typeof hiddenKindValues)[number];

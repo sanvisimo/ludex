@@ -124,6 +124,7 @@ export async function enrichGameFromIgdb(
         gameId,
         source: 'igdb',
         status: 'not_found',
+        reason: 'gone',
         error: `IGDB non conosce l'id ${game.igdbId}`,
       });
       return { status: 'not_found' };

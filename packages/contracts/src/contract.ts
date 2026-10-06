@@ -7,6 +7,7 @@ import {
   BacklogListSchema,
   BacklogQuerySchema,
   BacklogStatusSchema,
+  EnrichmentSourceSchema,
   GameDetailSchema,
   GameSchema,
   HiddenKindSchema,
@@ -15,12 +16,17 @@ import {
   IgdbSearchHitSchema,
   LinkableStoreSchema,
   LiveEventSchema,
+  ManualSourceSchema,
+  MissingBucketSchema,
+  MissingListSchema,
+  MissingSummarySchema,
   NotesSchema,
   OwnershipInputSchema,
   PlatformSchema,
   RatingSchema,
   SteamLoginRemovedSchema,
   SteamLoginStartSchema,
+  SourceReasonSchema,
   SteamLoginStatusSchema,
   StoreAccountSchema,
   SyncAllResultSchema,
@@ -377,6 +383,66 @@ export const contract = {
       .output(BacklogEntrySchema),
 
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+  },
+
+  // Solo admin (11a): li protegge il middleware `admin`, non il client.
+  admin: {
+    missing: {
+      // La tabellina di «Dati mancanti».
+      summary: oc.output(MissingSummarySchema),
+
+      // Una cella della tabellina, aperta. Prima i giochi con più utenti.
+      list: oc
+        .input(
+          z.object({
+            source: EnrichmentSourceSchema,
+            bucket: MissingBucketSchema,
+            reason: SourceReasonSchema.optional(),
+            q: z.string().trim().min(1).max(100).optional(),
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(MissingListSchema),
+    },
+
+    sources: {
+      // «Ritenta»: in coda così com'è, col suo id se ce l'ha.
+      retry: oc
+        .input(z.object({ gameId: z.uuid(), source: EnrichmentSourceSchema }))
+        .output(z.void()),
+
+      // Di quale gioco è già un id: l'avviso del dialogo prima di salvare.
+      // `externalId` è quello che l'admin ha incollato, id o indirizzo.
+      lookup: oc
+        .input(
+          z.object({
+            gameId: z.uuid(),
+            source: ManualSourceSchema,
+            externalId: z.string().trim().min(1).max(300),
+          }),
+        )
+        .output(
+          z.object({
+            externalId: z.string(),
+            owner: z
+              .object({ id: z.uuid(), name: z.string(), slug: z.string() })
+              .nullable(),
+          }),
+        ),
+
+      // «Inserisci id»: scritto a mano, esente dall'unicità, e in coda. Vale
+      // anche su una fonte `ok` agganciata male.
+      setExternalId: oc
+        .input(
+          z.object({
+            gameId: z.uuid(),
+            source: ManualSourceSchema,
+            externalId: z.string().trim().min(1).max(300),
+          }),
+        )
+        .output(z.object({ externalId: z.string() })),
+    },
   },
 
   events: {
