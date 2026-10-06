@@ -242,6 +242,31 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
      scarti di ogni utente con quella chiave, con la stessa logica di
      `resolveUnresolvedImport`;
    - **«Nascondi per tutti»** con il tipo, e il suo rovescio: la sezione sopra.
+
+   **Fatto** (06/10/2026), solo l'api. Tabella `global_hidden_imports`
+   ([0037](../packages/db/drizzle/0037_global_hidden_imports.sql)), servizio
+   [admin-unresolved.ts](../apps/api/src/services/admin-unresolved.ts),
+   procedure `admin.unresolved.list`, `globalHidden`, `resolve`, `hide`,
+   `unhide`. Decisioni prese strada facendo:
+   - **il nascondere segue la voce** (decisione dell'utente). Collegare un
+     gioco è un fatto del catalogo, averlo nascosto è una scelta dell'utente,
+     e la prima non cambia la seconda. Uno scarto nascosto che si risolve —
+     con «Collega per tutti» o al prossimo import — entra nel backlog **già
+     nascosto**, nel tab «Non interessato» perché lì il tipo non c'è (ora è un
+     gioco, non più un'app). Non lo nasconde se l'utente il gioco ce l'aveva
+     già, o se nello stesso import arriva anche da una voce visibile. Prima
+     l'import lo rimetteva in libreria visibile: cambiato in
+     [library-import.ts](../apps/api/src/services/library-import.ts), da
+     scrivere in [import-librerie](../docs/import-librerie.md) al passo 9.
+     Quando invece è l'utente a collegare uno scarto suo, anche dal tab dei
+     nascosti, il gioco entra visibile: vuol dire che lo vuole vedere;
+   - «Collega per tutti» **si ferma se la chiave è già di un altro gioco**
+     (quello è ripuntare, passo 6); collegata allo stesso gioco va avanti, ed è
+     ciò che lo rende ripetibile;
+   - `global_hidden_imports` tiene anche il **nome** della voce: senza, una
+     chiave senza più scarti attivi sarebbe solo un id. `decided_by` è `set
+null`, perché cancellare l'account dell'admin non tolga la regola.
+
 6. **Giochi**, quattro pezzi, l'ultimo fuori dall'admin:
    - **non collegati** (senza `igdbId`): lista, con quanti utenti li hanno in
      backlog. Azione «Collega a IGDB» se l'id è libero, altrimenti un messaggio
@@ -281,7 +306,8 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
    diviso in 11a e 11b; in [import-librerie](../docs/import-librerie.md) la
    risposta alla domanda «è roba di uno o di tutti?», e il rimedio di «Un
    collegamento sbagliato non si disfa togliendo il gioco» corretto: per i
-   negozi che vanno per nome cancellare la riga non basta.
+   negozi che vanno per nome cancellare la riga non basta; e la regola nuova
+   che il nascondere segue la voce quando lo scarto si risolve (passo 5).
 
 ## Verifica
 
@@ -302,6 +328,9 @@ Test contro Postgres, in `apps/api`:
   sul gioco giusto e nessuna riga sul gioco sbagliato; chi ha anche un'altra
   copia, o aveva già il gioco giusto, ha le due righe come prima, con le copie
   spostate;
+- uno scarto nascosto che si risolve, con «Collega per tutti» o
+  all'import, entra nel backlog nascosto; resta visibile se il gioco
+  c'era già o arriva anche da una voce visibile;
 - risegnalare lo stesso gioco aggiorna la segnalazione aperta, non ne crea
   un'altra; correggere quella cosa la chiude;
 - «Inserisci id» accetta un id già di un altro gioco, e lo marca `manual`;
