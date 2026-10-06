@@ -129,6 +129,17 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
    i candidati esatti uno solo è uscito su quella piattaforma, è quello; se no
    si va avanti come oggi (`pickByName`, poi `breakTieByReviews`). Vale per
    ogni negozio che dice la piattaforma per riga (PSN, Nintendo).
+
+   **Fatto** (06/10/2026). `IgdbSearchHit.platformIds` in
+   [igdb.ts](../apps/api/src/external/igdb.ts), `breakTieByPlatform` in
+   [library-import.ts](../apps/api/src/services/library-import.ts). L'ordine
+   è `pickByName`, poi la piattaforma, poi le recensioni: la piattaforma rompe
+   un pareggio, non scavalca un giudizio fatto su nome e anno. Le piattaforme
+   sono quelle di tutto il gruppo, perché su PSN lo stesso titolo arriva per
+   PS4 e per PS5. Verificato sul database che Toki è la voce Nintendo
+   `0100f3400a432000` → IGDB 12228, l'arcade. Il collegamento già scritto
+   resta sbagliato finché non lo corregge il passo 6.
+
 2. **Ruolo admin.** Plugin `admin` nel server e nel client di
    [packages/auth](../packages/auth/src), `pnpm auth:generate`, migration.
    Middleware `admin` in [context.ts](../apps/api/src/rpc/context.ts) (dopo
@@ -180,6 +191,14 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
 8. **Web**: `/admin` col menu a sinistra come `/account`, sotto-rotte `fonti`,
    `scarti`, `giochi`, `utenti`. Il link compare solo agli admin; la rotta
    rimanda via chi non lo è (la sicurezza vera la fa il middleware).
+
+   **Da capire (06/10/2026): una sezione «Dati mancanti».** Quali dati l'admin
+   dovrebbe vedere, prima del wireframe del passo 3. Esempi dall'utente: una
+   tabellina con le fonti accodate (OpenCritic in `pending`), i giochi senza id
+   IGDB, quelli senza id HLTB, ecc. Da decidere anche come si lega alle
+   sezioni che ci sono già: i `not_found` del passo 4 e i non collegati del
+   passo 6 sono già dati mancanti.
+
 9. **Documentazione**: step 11 in [ordine-sviluppo](../docs/ordine-sviluppo.md)
    diviso in 11a e 11b; in [import-librerie](../docs/import-librerie.md) la
    risposta alla domanda «è roba di uno o di tutti?», e il rimedio di «Un
