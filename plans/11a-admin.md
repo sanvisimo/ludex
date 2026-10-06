@@ -214,7 +214,27 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
    righe HLTB e 23 Metacritic in `taken` sono probabilmente in buona parte
    questo. Una colonna `manual` su `game_sources`, scritta da «Inserisci id»;
    l'indice unique diventa parziale anche su `not manual`. I match automatici
-   restano vincolati come oggi, anche contro una riga manuale.
+   restano vincolati fra loro come oggi, **e contro una riga manuale no**
+   (corretto il 06/10/2026): se l'originale arriva dopo, la voce è sua, e
+   quella manuale è in prestito.
+
+   **Fatto** (06/10/2026), solo l'api: le schermate sono del passo 8.
+   Migration [0035](../packages/db/drizzle/0035_source_reason_manual.sql)
+   (enum, colonne, indice) e
+   [0036](../packages/db/drizzle/0036_source_reason_backfill.sql) (il
+   backfill, che sul database di sviluppo ha classificato tutti i 917
+   `not_found`); `markSource` vuole il motivo su ogni `not_found`, e il tipo lo
+   impone ai 13 punti che lo scrivono; servizio
+   [admin-sources.ts](../apps/api/src/services/admin-sources.ts) e procedure
+   `admin.missing.summary`, `admin.missing.list`, `admin.sources.retry`,
+   `admin.sources.lookup`, `admin.sources.setExternalId`. Cose che il piano
+   non diceva:
+   - i motivi sono **sei**: c'è anche `gone`, l'id che avevamo e che la fonte
+     non ha più (pagina HLTB sparita, IGDB che non conosce l'id);
+   - **`no_results` è da sistemare**, non giusto così: «non ha nulla» può essere
+     un nome cercato male. Giusto così resta solo `too_old`;
+   - «Inserisci id» accetta l'id o l'indirizzo della scheda, e l'id lo estrae
+     il server; `admin.sources.lookup` dice prima di salvare di chi è già.
 
 5. **Scarti d'import di tutti**: raggruppati per negozio e id esterno, con
    quante librerie li hanno e come li hanno nascosti. Azioni:
@@ -286,7 +306,8 @@ Test contro Postgres, in `apps/api`:
   un'altra; correggere quella cosa la chiude;
 - «Inserisci id» accetta un id già di un altro gioco, e lo marca `manual`;
   un match automatico che trova un id già preso resta `not_found` con
-  `reason = 'taken'`;
+  `reason = 'taken'`, e una riga manuale non ferma l'originale che arriva
+  dopo;
 - la migration di `reason` classifica le righe che ci sono (un caso per
   motivo, col testo di `error` di oggi).
 
