@@ -47,6 +47,7 @@ import {
   previewRepoint,
   repointLink,
 } from '../services/admin-games';
+import { exportAccount } from '../services/account-export';
 import { listUsers } from '../services/admin-users';
 import { listHomeBands } from '../services/home';
 import {
@@ -376,6 +377,12 @@ export const router = os.router({
       .handler(({ input, context }) =>
         updateUserSettings(context.user.id, input),
       ),
+  },
+
+  accountData: {
+    export: os.accountData.export
+      .use(authed)
+      .handler(({ context }) => exportAccount(context.user.id)),
   },
 
   imports: {

@@ -135,9 +135,10 @@ direzione col CSS. Cose che non si indovinano:
   `listSessions`, `revokeSession`, `revokeOtherSessions`), non oRPC: le chiavi
   di query sono a mano (`['auth', 'sessions']`). L'ora delle sessioni è quella
   dell'**accesso**, perché Better Auth aggiorna la sessione al più una volta al
-  giorno. «Esporta» e «Cancella» sono solo la parte che si vede: la conferma
-  della cancellazione la spegne `DELETION_AVAILABLE` in `account-data.tsx`, e la
-  accende lo step 16.
+  giorno. «Esporta» scarica un JSON preparato dal server
+  (`accountData.export`, senza token), e «Cancella» chiama `authClient.deleteUser`
+  **con la password**: il server la pretende, e rifiuta l'ultimo admin
+  (`LAST_ADMIN`). Step 16, fatto.
 - **Le librerie** sono una griglia `repeat(auto-fill, minmax(240px, 1fr))`, una
   scheda per **account** (due account Amazon sono due schede). Stato e riga dei
   gesti stanno **ancorati in fondo** (`grow` sul contenuto, `mt="auto"` su un

@@ -181,12 +181,16 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
     - **prima la tabella delle playlist**: la wishlist può riusarla come
       «lista con nome».
 
-16. **Cancellazione ed esportazione dell'account** — l'utente elimina il
+16. **Cancellazione ed esportazione dell'account** — **fatto il 06/10/2026**
+    (piano in `plans/16-cancellazione-esportazione.md`). L'utente elimina il
     proprio account e scarica i propri dati: i diritti di cancellazione e di
-    portabilità del GDPR (artt. 17 e 20), che oggi nessuna schermata offre.
-    Aggiunto in coda il 01/10/2026, dopo aver deciso la licenza (AGPL-3.0) e
-    visto cosa raccogliamo: nome, email, la libreria e i token dei negozi.
-    Da decidere quando si apre lo step, non prima:
+    portabilità del GDPR (artt. 17 e 20). Aggiunto in coda il 01/10/2026, dopo
+    aver deciso la licenza (AGPL-3.0) e visto cosa raccogliamo: nome, email, la
+    libreria e i token dei negozi. Com'è andata, sulle domande qui sotto:
+    la cancellazione è `deleteUser` di Better Auth con la password pretesa da
+    un hook, l'ultimo admin non si cancella, e `beforeDelete` cancella prima il
+    backlog (la cascata passerebbe lo stesso, ma per l'ordine delle FK). Le
+    domande originali:
     - **cosa si porta via la cancellazione.** Le FK dell'utente sono in
       cascade, ma `games` è condivisa e **non si cancella mai**: se ne vanno
       backlog, possessi, tag, account dei negozi e i loro token, e restano i
