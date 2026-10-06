@@ -113,15 +113,19 @@ const itemStyle = {
 
 type DropdownMenuItemProps = Omit<GetProps<typeof Menu.Item>, 'onSelect'> & {
   onClick?: () => void;
+  /** Un'icona prima del testo, come le voci del foglio mobile. Facoltativa. */
+  icon?: ReactNode;
 };
 
 export function DropdownMenuItem({
   onClick,
+  icon,
   children,
   ...props
 }: DropdownMenuItemProps) {
   return (
     <Menu.Item {...itemStyle} onSelect={onClick} {...props}>
+      {icon}
       <ItemText>{children}</ItemText>
     </Menu.Item>
   );

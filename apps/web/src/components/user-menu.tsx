@@ -121,21 +121,27 @@ function UserDropdown({ name, isAdmin }: { name: string; isAdmin: boolean }) {
         >
           {name}
         </DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => void router.navigate({ to: '/' })}>
+        <DropdownMenuItem
+          icon={<House size={16} />}
+          onClick={() => void router.navigate({ to: '/' })}
+        >
           {t('home')}
         </DropdownMenuItem>
         <DropdownMenuItem
+          icon={<Library size={16} />}
           onClick={() => void router.navigate({ to: '/backlog' })}
         >
           {t('backlog')}
         </DropdownMenuItem>
         <DropdownMenuItem
+          icon={<User size={16} />}
           onClick={() => void router.navigate({ to: '/account' })}
         >
           {t('account')}
         </DropdownMenuItem>
         {isAdmin ? (
           <DropdownMenuItem
+            icon={<Shield size={16} />}
             onClick={() => void router.navigate({ to: '/admin' })}
           >
             {t('admin')}
@@ -178,7 +184,10 @@ function UserDropdown({ name, isAdmin }: { name: string; isAdmin: boolean }) {
           </ToggleGroup>
         </YStack>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => void signOutAndLeave()}>
+        <DropdownMenuItem
+          icon={<LogOut size={16} />}
+          onClick={() => void signOutAndLeave()}
+        >
           {t('signOut')}
         </DropdownMenuItem>
       </DropdownMenuContent>

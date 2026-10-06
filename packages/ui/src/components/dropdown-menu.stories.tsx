@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { useState } from 'react';
 import { expect, fn, screen, userEvent, waitFor, within } from 'storybook/test';
 
-import { EyeOff, SunMoon } from '../icons';
+import { EyeOff, Library, SunMoon, User } from '../icons';
 import { XStack } from '../primitives';
 import { Button } from './button';
 import {
@@ -62,6 +62,27 @@ export const Default: Story = {
       </DropdownMenu>
     </XStack>
   ),
+};
+
+/** Le voci con l'icona prima del testo: il nome della voce resta il solo testo. */
+export const WithIcons: Story = {
+  render: () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="ghost">Menu</Button>} />
+      <DropdownMenuContent width={208}>
+        <DropdownMenuItem icon={<Library size={16} />}>
+          Backlog
+        </DropdownMenuItem>
+        <DropdownMenuItem icon={<User size={16} />}>Account</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByText('Menu'));
+    const item = await screen.findByRole('menuitem', { name: 'Backlog' });
+    await expect(item.querySelector('svg')).not.toBeNull();
+  },
 };
 
 /** Il selettore del tema: tre voci radio, la scelta ha la spunta. */
