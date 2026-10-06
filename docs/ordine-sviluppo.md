@@ -171,6 +171,10 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
       giochi.
     - **cosa contiene l'esportazione**: backlog, possessi, voti, note, tag,
       senza i token.
+    - **la conferma passa dalla password.** `session.freshAge` è 0 (vedi
+      `packages/auth`), quindi Better Auth non controlla più che la sessione
+      sia recente: `delete-user` va chiamato **con** la password, e il server
+      deve rifiutare la richiesta senza.
     - **fino ad allora** un'informativa privacy non può prometterli: o si
       scrive un indirizzo a cui chiedere, o questo step viene prima.
 

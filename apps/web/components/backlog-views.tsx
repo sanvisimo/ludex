@@ -244,11 +244,17 @@ function RowsView({
               nostro lasciava una fascia vuota in fondo a ogni riga. */}
           <Card py={0}>
             <XStack p={8} gap={8} $md={{ gap: 12, p: 12 }} items="flex-start">
-              <GameCover
-                imageId={entry.game.coverImageId}
-                name={entry.game.name}
-                width={64}
-              />
+              <Link
+                to="/games/$slug"
+                params={{ slug: entry.game.slug }}
+                style={{ color: 'inherit', textDecoration: 'none' }}
+              >
+                <GameCover
+                  imageId={entry.game.coverImageId}
+                  name={entry.game.name}
+                  width={64}
+                />
+              </Link>
               <YStack flex={1} minW={0} gap={8}>
                 <XStack
                   flexWrap="wrap"
@@ -314,12 +320,18 @@ function GridView({
               uscivano alte una manciata di pixel, con la copertina tagliata. */}
           <Card py={0} grow={1}>
             <YStack p={8} gap={8} grow={1}>
-              <GameCover
-                imageId={entry.game.coverImageId}
-                name={entry.game.name}
-                size="cover_big"
-                fill
-              />
+              <Link
+                to="/games/$slug"
+                params={{ slug: entry.game.slug }}
+                style={{ color: 'inherit', textDecoration: 'none' }}
+              >
+                <GameCover
+                  imageId={entry.game.coverImageId}
+                  name={entry.game.name}
+                  size="cover_big"
+                  fill
+                />
+              </Link>
               <YStack gap={2} grow={1}>
                 <XStack items="flex-start" gap={4}>
                   <YStack flex={1} minW={0}>
@@ -448,11 +460,17 @@ function CompactView({
             hoverStyle={{ bg: '$color2' }}
           >
             <XStack role="cell" flex={2} minW={0} gap={12} items="center">
-              <GameCover
-                imageId={entry.game.coverImageId}
-                name={entry.game.name}
-                width={32}
-              />
+              <Link
+                to="/games/$slug"
+                params={{ slug: entry.game.slug }}
+                style={{ color: 'inherit', textDecoration: 'none' }}
+              >
+                <GameCover
+                  imageId={entry.game.coverImageId}
+                  name={entry.game.name}
+                  width={32}
+                />
+              </Link>
               <XStack flex={1} minW={0} items="center" gap={8}>
                 <YStack shrink={1} minW={0}>
                   <GameLink entry={entry} lines={1} />

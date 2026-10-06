@@ -23,8 +23,8 @@ import { useAuthErrorMessage } from '@/lib/auth-error';
  * (protocol-relative) trasformerebbero il login in un redirect aperto.
  */
 function safeNext(value: string | undefined) {
-  if (!value) return '/';
-  if (!value.startsWith('/') || value.startsWith('//')) return '/';
+  if (!value) return '/backlog';
+  if (!value.startsWith('/') || value.startsWith('//')) return '/backlog';
   return value;
 }
 
@@ -54,7 +54,7 @@ function LoginForm() {
     }
 
     // Il rimbalzo da una pagina privata scrive ?next=/percorso: si torna lì
-    // invece che sulla home.
+    // invece che sul backlog.
     await router.navigate({ href: safeNext(next) });
   }
 

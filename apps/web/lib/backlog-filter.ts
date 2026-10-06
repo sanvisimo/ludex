@@ -17,7 +17,7 @@ import {
 } from '@repo/contracts';
 import { getRouteApi, useRouter } from '@tanstack/react-router';
 
-export const backlogViewValues = ['rows', 'grid', 'compact'] as const;
+export const backlogViewValues = ['grid', 'rows', 'compact'] as const;
 export type BacklogView = (typeof backlogViewValues)[number];
 
 /**
@@ -169,10 +169,10 @@ const fields = {
   hidden: field(flag, false),
   sort: field(oneOf(backlogSortValues), 'addedAt' as BacklogSort),
   direction: field(oneOf(sortDirectionValues), 'desc' as SortDirection),
-  // La vista: righe, griglia o compatta. Sta nell'URL come l'ordinamento,
+  // La vista: griglia (di default), righe o compatta. Sta nell'URL come l'ordinamento,
   // così un link condiviso apre la stessa vista. Non la ricorda fra una visita
   // e l'altra: se servirà, è una colonna in `user_settings`.
-  view: field(oneOf(backlogViewValues), 'rows' as BacklogView),
+  view: field(oneOf(backlogViewValues), 'grid' as BacklogView),
   // La pagina, da 1. Non è un criterio e non conta fra i filtri accesi, ma
   // ogni altro cambiamento la riporta a 1: vedi `setFilter`.
   page: field(pageNumber, 1),
