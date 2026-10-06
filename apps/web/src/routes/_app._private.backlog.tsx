@@ -176,11 +176,11 @@ function BacklogPage() {
               setFilter({ view: view as BacklogView, page: filter.page })
             }
           >
-            <ToggleGroupItem value="rows" aria-label={t('viewRows')}>
-              <Rows3 size={16} color="$color12" />
-            </ToggleGroupItem>
             <ToggleGroupItem value="grid" aria-label={t('viewGrid')}>
               <LayoutGrid size={16} color="$color12" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="rows" aria-label={t('viewRows')}>
+              <Rows3 size={16} color="$color12" />
             </ToggleGroupItem>
             <ToggleGroupItem value="compact" aria-label={t('viewCompact')}>
               <List size={16} color="$color12" />

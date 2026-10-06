@@ -23,7 +23,7 @@ query string sono separate da virgole e non in JSON, per `stringifySearch` in
 `apps/web/src/router.tsx`.
 
 **`/backlog` tiene tutto nell'URL** (`apps/web/lib/backlog-filter.ts`): i
-filtri, l'ordinamento, la vista (`view`: righe, griglia, compatta), la pagina
+filtri, l'ordinamento, la vista (`view`: griglia di default, poi righe e compatta), la pagina
 (`page`) e quanti giochi per pagina (`size`: 15, 30, 60 o 120, di default 15).
 Ogni `setFilter` riporta a pagina 1 e non
 lascia voci nella cronologia; `goToPage` sì, perché «indietro» deve tornare
