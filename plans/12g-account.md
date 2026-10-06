@@ -426,3 +426,45 @@ stessa risposta che già scarichiamo: nessuna chiamata in più.
 - cambio email e reset password: serve un sender di email;
 - l'esportazione e la cancellazione vere: step 16;
 - la card dei giochi (12e).
+
+## Sessione non fresca (06/10/2026)
+
+**Trovato in produzione**: «Active sessions» mostra «I couldn't read your
+sessions». La chiamata `list-sessions` risponde 403 con
+`{"code":"SESSION_NOT_FRESH"}`: Better Auth rifiuta le operazioni sensibili a
+una sessione più vecchia di `session.freshAge` (un giorno di default) finché
+non si rifà il login. Non è un guasto: è la schermata che mette ogni errore
+sotto la stessa frase. Env e CORS in produzione sono a posto (controllati nel
+container). La stessa soglia riguarda, con ogni probabilità, anche «Esci dagli
+altri dispositivi», la revoca di una sessione e il cambio password.
+
+**Decisione**: gestire il codice nell'interfaccia; `freshAge` non si tocca,
+è una protezione.
+
+1. `lib/auth-error.ts`: `SESSION_NOT_FRESH` fra i codici noti, con il testo in
+   `messages/it.json` e `en.json` (`authErrors`): «Per farlo devi accedere di
+   nuovo.» Così lo mostrano da soli i toast di revoca e il dialogo del cambio
+   password.
+2. `components/active-sessions.tsx`: se l'errore della lista è
+   `SESSION_NOT_FRESH`, al posto di `loadFailed` il messaggio di cui sopra e un
+   bottone «Accedi di nuovo». Il bottone fa `signOut()`; ogni altro errore
+   resta `loadFailed`. Per leggere il codice la `queryFn` lascia passare
+   l'errore di Better Auth com'è, come già fa.
+3. `routes/_app.account.tsx:29`: quando la sessione sparisce rimanda a
+   `/login` **senza** `next`; ci va `search: { next: location.pathname }`,
+   perché dopo il login si torni al profilo e non alla home. La rotta
+   `_app._private` lo fa già.
+
+**Da verificare provandolo** (non si indovina rileggendo): che
+`signOut()` seguito dal rimbalzo dell'account non pesti due navigazioni, come
+avverte il commento di `useSignOut` in `user-menu.tsx`. Se si pestano, il
+bottone fa come `useSignOut`: prima la navigazione, poi `signOut()`.
+
+**Provarlo**: da loggati, nel DB portare `session.created_at` e `updated_at`
+della propria sessione a più di un giorno fa (non basta aspettare) e aprire
+`/account/profilo`: messaggio e bottone; dopo il login si torna lì e la lista
+c'è. Poi `pnpm lint` e `pnpm check-types`.
+
+**Fuori**: un test automatico (la logica è un ramo su un codice d'errore, e
+`apps/web` non ha test di componente); il testo legale (non cambia cosa si
+raccoglie).
