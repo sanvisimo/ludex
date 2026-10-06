@@ -396,7 +396,8 @@
     "PASSWORD_TOO_SHORT": "La password è troppo corta.",
     "PASSWORD_TOO_LONG": "La password è troppo lunga.",
     "EMAIL_NOT_VERIFIED": "Devi prima verificare l'indirizzo email.",
-    "FAILED_TO_CREATE_USER": "Non sono riuscito a creare l'account."
+    "FAILED_TO_CREATE_USER": "Non sono riuscito a creare l'account.",
+    "BANNED_USER": "Questo account è sospeso. Se pensi che sia un errore, scrivici: l'indirizzo è nelle condizioni d'uso."
   },
   "account": {
     "title": "Account",

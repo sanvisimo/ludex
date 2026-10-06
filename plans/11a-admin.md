@@ -488,6 +488,17 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
    alla scheda admin di un gioco si arrivava solo cercandolo, da «Dati
    mancanti» o da una segnalazione.
 
+   **8f fatto** (06/10/2026): `BANNED_USER` in
+   [auth-error.ts](../apps/web/lib/auth-error.ts), con un testo che dice che
+   l'account è sospeso e dove scrivere. L'informativa
+   ([legal.ts](../apps/web/lib/legal.ts), italiano e inglese, data al 6
+   ottobre) dice ora il ruolo e l'eventuale sospensione con motivo e
+   scadenza, le segnalazioni (cosa, il gioco suggerito, la nota, lette da chi
+   amministra), la sospensione fra i motivi di sicurezza, e quanto restano le
+   segnalazioni. Le condizioni d'uso prevedevano già la sospensione per
+   abuso. `impersonatedBy` non si cita: l'impersonazione non c'è, e la colonna
+   resta vuota.
+
    **8g, aggiunto vedendolo in uso** (06/10/2026): i filtri anche nelle pagine
    dell'utente **«Da sistemare»** e **«Nascosti»** di `/account`, come quelli
    degli scarti dell'admin: ricerca per nome e negozio, nell'indirizzo.
