@@ -158,7 +158,8 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
 9. Altre librerie: 9a GOG, Epic, Amazon · 9b PSN · 9c EA · 9d Nintendo ·
    9e Xbox · 9f Steam con login e Family
 10. Import da file CSV — **in analisi**
-11. Admin
+11. Admin: 11a ruolo, dati mancanti, scarti, segnalati, utenti · 11b fusione
+    di due giochi
 12. UI
 13. AI: raccomandazione, provider LLM, embedding
 14. Gestione abbonamenti

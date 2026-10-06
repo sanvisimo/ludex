@@ -119,6 +119,7 @@ export async function resolveOpenCriticIds(
             // cercarlo — ora un indirizzo ce l'ha, e va riprovato.
             status: 'pending',
             error: null,
+            reason: null,
             // Azzerato perché è il freno dei ritentativi: il tentativo che
             // l'aveva mosso riguardava una domanda che adesso non si fa più.
             attemptedAt: null,

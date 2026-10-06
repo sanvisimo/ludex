@@ -239,6 +239,41 @@
       "when": 1791192520462,
       "tag": "0033_subscription_steam_family",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1791277344688,
+      "tag": "0034_admin_plugin",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1791286581663,
+      "tag": "0035_source_reason_manual",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1791286595108,
+      "tag": "0036_source_reason_backfill",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1791288537065,
+      "tag": "0037_global_hidden_imports",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1791291390043,
+      "tag": "0038_game_reports",
+      "breakpoints": true
     }
   ]
 }

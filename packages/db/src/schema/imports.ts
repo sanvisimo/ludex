@@ -10,6 +10,7 @@ import {
   integer,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   unique,
@@ -215,5 +216,45 @@ export const unresolvedImports = pgTable(
       table.externalId,
     ),
     index('unresolved_imports_user_id_idx').on(table.userId),
+  ],
+);
+
+/**
+ * Gli scarti nascosti **per tutti** (11a): una voce che non è un gioco per
+ * nessuno — Netflix su PSN è un'app in ogni libreria. La decide un admin.
+ *
+ * Una regola, non uno stato: le righe di `unresolved_imports` restano ciascuna
+ * dell'utente suo. La regola agisce in due momenti soli — quando l'admin la
+ * scrive, sulle righe ancora visibili, e quando un import fa **nascere** una
+ * riga con quella chiave. Le righe già nascoste dall'utente non si toccano, e
+ * un utente che rimette la voce fra i «da sistemare» resta libero di farlo:
+ * l'upsert di un reimport non tocca `hidden_at`. Togliere la regola smette di
+ * applicarla alle righe nuove e non tocca quelle già scritte.
+ */
+export const globalHiddenImports = pgTable(
+  'global_hidden_imports',
+  {
+    store: store('store').notNull(),
+    externalId: text('external_id').notNull(),
+    // Il nome della voce quando la si è nascosta. Senza, nella vista «Nascosti
+    // per tutti» una chiave che non ha più scarti attivi sarebbe solo un id:
+    // `97205382-970c-…` non dice a nessuno che era Dream Daddy.
+    name: text('name').notNull(),
+    // Solo i tipi che sono un fatto: `unwanted` è una preferenza, e una
+    // preferenza non si decide per tutti. Lo esclude il CHECK qui sotto.
+    hiddenKind: hiddenKind('hidden_kind').notNull(),
+    // Chi l'ha decisa. `set null` e non `cascade`: cancellare l'account
+    // dell'admin (step 16) non deve portarsi via la regola.
+    decidedBy: text('decided_by').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    ...timestamps,
+  },
+  (table) => [
+    primaryKey({ columns: [table.store, table.externalId] }),
+    check(
+      'global_hidden_imports_not_unwanted',
+      sql`${table.hiddenKind} <> 'unwanted'`,
+    ),
   ],
 );

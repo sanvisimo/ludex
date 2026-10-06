@@ -130,7 +130,13 @@ function Account() {
 
   // `isPending` evita che i bottoni da anonimo lampeggino al primo render.
   if (isPending) return null;
-  if (session) return <UserMenu name={session.user.name} />;
+  if (session)
+    return (
+      <UserMenu
+        name={session.user.name}
+        isAdmin={session.user.role === 'admin'}
+      />
+    );
 
   return (
     <>

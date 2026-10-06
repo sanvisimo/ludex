@@ -21,6 +21,7 @@ const hit = (igdbId: number, name: string) => ({
   developer: null,
   gameType: null,
   totalRatingCount: null,
+  platformIds: [],
   cover: null,
 });
 

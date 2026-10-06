@@ -2,29 +2,47 @@ import { eventIterator, oc } from '@orpc/contract';
 import { z } from 'zod';
 
 import {
+  AdminRoleSchema,
+  AdminUserSchema,
   BacklogEntrySchema,
   BacklogFilterOptionsSchema,
   BacklogListSchema,
   BacklogQuerySchema,
   BacklogStatusSchema,
+  EnrichmentSourceSchema,
+  GameAdminDetailSchema,
   GameDetailSchema,
   GameSchema,
+  GlobalHiddenImportSchema,
+  GlobalHiddenKindSchema,
   HiddenKindSchema,
   HomeBandSchema,
   HomeGameSchema,
   IgdbSearchHitSchema,
   LinkableStoreSchema,
   LiveEventSchema,
+  ManualSourceSchema,
+  MissingBucketSchema,
+  MissingListSchema,
+  MissingSummarySchema,
   NotesSchema,
+  OpenReportSchema,
   OwnershipInputSchema,
   PlatformSchema,
   RatingSchema,
+  RepointPreviewSchema,
+  ReportGroupSchema,
+  ReportTargetSchema,
   SteamLoginRemovedSchema,
   SteamLoginStartSchema,
+  SourceReasonSchema,
   SteamLoginStatusSchema,
   StoreAccountSchema,
+  StoreSchema,
   SyncAllResultSchema,
+  UnlinkedGameSchema,
   UnlinkImpactSchema,
+  UnresolvedGroupListSchema,
   UnresolvedImportSchema,
   UserSettingsSchema,
   UserTagInputSchema,
@@ -377,6 +395,272 @@ export const contract = {
       .output(BacklogEntrySchema),
 
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+  },
+
+  // Le segnalazioni dell'utente (11a): «questo gioco è sbagliato», dalla
+  // pagina del gioco. Le corregge un admin.
+  reports: {
+    // Una segnalazione per cosa; una già aperta sulla stessa cosa si aggiorna.
+    // La copia di un negozio si segnala solo se è tua. Rende le aperte.
+    create: oc
+      .input(
+        z.object({
+          gameId: z.uuid(),
+          targets: z.array(ReportTargetSchema).min(1).max(5),
+          suggestedIgdbId: z.number().int().positive().optional(),
+          suggestedName: z.string().trim().min(1).max(200).optional(),
+          note: z.string().trim().min(1).max(1000).optional(),
+        }),
+      )
+      .output(z.array(OpenReportSchema)),
+
+    // Le tue aperte su un gioco: il «Segnalato il …» al posto del bottone.
+    openForGame: oc
+      .input(z.object({ gameId: z.uuid() }))
+      .output(z.array(OpenReportSchema)),
+  },
+
+  // Solo admin (11a): li protegge il middleware `admin`, non il client.
+  admin: {
+    missing: {
+      // La tabellina di «Dati mancanti».
+      summary: oc.output(MissingSummarySchema),
+
+      // Una cella della tabellina, aperta. Prima i giochi con più utenti.
+      list: oc
+        .input(
+          z.object({
+            source: EnrichmentSourceSchema,
+            bucket: MissingBucketSchema,
+            reason: SourceReasonSchema.optional(),
+            q: z.string().trim().min(1).max(100).optional(),
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(MissingListSchema),
+    },
+
+    sources: {
+      // «Ritenta»: in coda così com'è, col suo id se ce l'ha.
+      retry: oc
+        .input(z.object({ gameId: z.uuid(), source: EnrichmentSourceSchema }))
+        .output(z.void()),
+
+      // Di quale gioco è già un id: l'avviso del dialogo prima di salvare.
+      // `externalId` è quello che l'admin ha incollato, id o indirizzo.
+      lookup: oc
+        .input(
+          z.object({
+            gameId: z.uuid(),
+            source: ManualSourceSchema,
+            externalId: z.string().trim().min(1).max(300),
+          }),
+        )
+        .output(
+          z.object({
+            externalId: z.string(),
+            owner: z
+              .object({ id: z.uuid(), name: z.string(), slug: z.string() })
+              .nullable(),
+          }),
+        ),
+
+      // «Cerca» nel dialogo «Inserisci id»: il testo come nome sulla fonte.
+      // HLTB e Metacritic non costano; OpenCritic sì, una delle 25 ricerche
+      // del giorno, e dopo dice quante ne restano.
+      search: oc
+        .input(
+          z.object({
+            source: ManualSourceSchema,
+            query: z.string().trim().min(2).max(100),
+          }),
+        )
+        .output(
+          z.object({
+            hits: z.array(
+              z.object({
+                id: z.string(),
+                name: z.string(),
+                releaseYear: z.number().int().nullable(),
+                // La copertina sulla fonte, dove la ricerca la dà.
+                image: z.string().nullable(),
+              }),
+            ),
+            searchesLeft: z.number().int().nullable(),
+          }),
+        ),
+
+      // «Inserisci id»: scritto a mano, esente dall'unicità, e in coda. Vale
+      // anche su una fonte `ok` agganciata male.
+      setExternalId: oc
+        .input(
+          z.object({
+            gameId: z.uuid(),
+            source: ManualSourceSchema,
+            externalId: z.string().trim().min(1).max(300),
+          }),
+        )
+        .output(z.object({ externalId: z.string() })),
+    },
+
+    reports: {
+      // Le segnalazioni aperte, una riga per gioco e cosa.
+      list: oc
+        .input(
+          z.object({
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(
+          z.object({
+            rows: z.array(ReportGroupSchema),
+            total: z.number().int(),
+          }),
+        ),
+
+      // «Archivia»: chiude senza correggere.
+      archive: oc
+        .input(z.object({ gameId: z.uuid(), target: ReportTargetSchema }))
+        .output(z.object({ closed: z.number().int() })),
+    },
+
+    games: {
+      // I giochi senza id IGDB.
+      unlinked: oc
+        .input(
+          z.object({
+            q: z.string().trim().min(1).max(100).optional(),
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(
+          z.object({
+            rows: z.array(UnlinkedGameSchema),
+            total: z.number().int(),
+          }),
+        ),
+
+      // «Collega a IGDB», solo se l'id è libero: altrimenti è l'11b.
+      linkIgdb: oc
+        .input(
+          z.object({ gameId: z.uuid(), igdbId: z.number().int().positive() }),
+        )
+        .output(z.void()),
+
+      // La scheda admin di un gioco.
+      detail: oc
+        .input(z.object({ slug: z.string().min(1).max(200) }))
+        .output(GameAdminDetailSchema),
+    },
+
+    links: {
+      // «Non è questo gioco», anteprima: non scrive niente.
+      repointPreview: oc
+        .input(
+          z.object({ linkId: z.uuid(), igdbId: z.number().int().positive() }),
+        )
+        .output(RepointPreviewSchema),
+
+      // «Non è questo gioco»: ripunta la riga e sposta le copie di quel negozio.
+      repoint: oc
+        .input(
+          z.object({ linkId: z.uuid(), igdbId: z.number().int().positive() }),
+        )
+        .output(
+          z.object({ wholeRows: z.number().int(), copies: z.number().int() }),
+        ),
+    },
+
+    users: {
+      // Gli utenti, i più recenti prima, con giochi e account.
+      list: oc
+        .input(
+          z.object({
+            q: z.string().trim().min(1).max(100).optional(),
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(
+          z.object({ rows: z.array(AdminUserSchema), total: z.number().int() }),
+        ),
+
+      // Il ruolo. Il proprio non si toglie: si resterebbe senza admin.
+      setRole: oc
+        .input(z.object({ userId: z.string().min(1), role: AdminRoleSchema }))
+        .output(z.void()),
+
+      // Banna e chiude le sessioni. Senza scadenza è per sempre. Se stessi no.
+      ban: oc
+        .input(
+          z.object({
+            userId: z.string().min(1),
+            reason: z.string().trim().min(1).max(200).optional(),
+            expiresInDays: z.number().int().min(1).max(3650).optional(),
+          }),
+        )
+        .output(z.void()),
+
+      unban: oc.input(z.object({ userId: z.string().min(1) })).output(z.void()),
+
+      // Chiude tutte le sessioni dell'utente: dovrà riaccedere.
+      revokeSessions: oc
+        .input(z.object({ userId: z.string().min(1) }))
+        .output(z.void()),
+    },
+
+    unresolved: {
+      // Gli scarti di tutti, una riga per chiave con almeno uno scarto visibile.
+      list: oc
+        .input(
+          z.object({
+            store: StoreSchema.optional(),
+            q: z.string().trim().min(1).max(100).optional(),
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(UnresolvedGroupListSchema),
+
+      // La vista «Nascosti per tutti»: le regole scritte.
+      globalHidden: oc.output(z.array(GlobalHiddenImportSchema)),
+
+      // «Collega per tutti». Si rifiuta se la chiave è già di un altro gioco:
+      // quello è ripuntare, e sta nella scheda admin del gioco.
+      resolve: oc
+        .input(
+          z.object({
+            store: StoreSchema,
+            externalId: z.string().min(1).max(200),
+            igdbId: z.number().int().positive(),
+          }),
+        )
+        .output(z.object({ resolved: z.number().int() })),
+
+      // «Nascondi per tutti», mai con `unwanted`.
+      hide: oc
+        .input(
+          z.object({
+            store: StoreSchema,
+            externalId: z.string().min(1).max(200),
+            kind: GlobalHiddenKindSchema,
+          }),
+        )
+        .output(z.object({ hidden: z.number().int() })),
+
+      // Toglie la regola; le righe già nascoste restano come sono.
+      unhide: oc
+        .input(
+          z.object({
+            store: StoreSchema,
+            externalId: z.string().min(1).max(200),
+          }),
+        )
+        .output(z.void()),
+    },
   },
 
   events: {

@@ -10,6 +10,10 @@ import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { useTranslations } from 'use-intl';
 
+import {
+  matchesAccountFilter,
+  type AccountFilter,
+} from '@/components/account-filters';
 import { HiddenGameRow } from '@/components/hidden-game-row';
 import { UnresolvedRow } from '@/components/unresolved-row';
 import { useApiErrorMessage } from '@/lib/api-error';
@@ -34,17 +38,27 @@ export type Item =
  * è una preferenza di vista. «Non interessato» è l'unico che ha entrambi, ed è
  * per questo che il suo tab unisce le due liste.
  */
-export function useHiddenItems() {
+export function useHiddenItems(filter: AccountFilter = {}) {
   const unresolved = useQuery(api.imports.unresolved.queryOptions());
+  // I giochi si filtrano sul server, che ne porta al massimo `GAMES_LIMIT`:
+  // nome e negozio sono gli stessi filtri del backlog (`q`, `stores`, cioè
+  // almeno una copia di quel negozio).
   const games = useQuery(
     api.backlog.list.queryOptions({
-      input: { hidden: true, limit: GAMES_LIMIT },
+      input: {
+        hidden: true,
+        limit: GAMES_LIMIT,
+        q: filter.q,
+        stores: filter.negozio ? [filter.negozio] : undefined,
+      },
     }),
   );
 
   return useMemo(() => {
+    // Le voci d'import arrivano tutte: i filtri si applicano qui.
     const imports = (unresolved.data ?? []).filter(
-      (entry) => entry.hiddenKind !== null,
+      (entry) =>
+        entry.hiddenKind !== null && matchesAccountFilter(entry, filter),
     );
     const gameEntries = games.data?.entries ?? [];
     const byKind = (kind: HiddenKind): Item[] => {
@@ -92,7 +106,13 @@ export function useHiddenItems() {
       gamesTotal,
       gamesShown: gameEntries.length,
     };
-  }, [unresolved.data, unresolved.isPending, games.data, games.isPending]);
+  }, [
+    unresolved.data,
+    unresolved.isPending,
+    games.data,
+    games.isPending,
+    filter,
+  ]);
 }
 
 /**

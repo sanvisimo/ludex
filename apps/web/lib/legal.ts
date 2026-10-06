@@ -26,7 +26,7 @@ const controller = 'Simone Sanvito';
 
 const privacyIt: LegalDoc = {
   title: 'Informativa sulla privacy',
-  updated: 'Ultimo aggiornamento: 1 ottobre 2026',
+  updated: 'Ultimo aggiornamento: 6 ottobre 2026',
   sections: [
     {
       heading: 'Chi siamo',
@@ -38,10 +38,11 @@ const privacyIt: LegalDoc = {
       heading: 'Quali dati raccogliamo',
       blocks: [
         [
-          'Account: nome, indirizzo email e password. La password non è salvata in chiaro, ma solo come impronta (hash).',
+          "Account: nome, indirizzo email e password. La password non è salvata in chiaro, ma solo come impronta (hash). Se serve, anche il ruolo (amministratore) e l'eventuale sospensione dell'account, con motivo e scadenza.",
           "Sessione: quando accedi registriamo l'indirizzo IP e il browser (user agent) della sessione, finché la sessione dura.",
           'Libreria: i giochi del tuo backlog con stato, voto, note e tag, le copie che possiedi (piattaforma, negozio, supporto), le ore giocate e le tue preferenze.',
           "Account dei negozi: se ne colleghi uno, l'identificativo e il nome dell'account sul negozio e, dove serve, le credenziali (token) per leggere la tua libreria. I token sono conservati cifrati. Su Steam non ne conserviamo: basta il profilo pubblico.",
+          'Segnalazioni: se segnali un errore su un gioco, cosa hai segnalato, il gioco che suggerisci e la nota che scrivi. Le legge chi amministra Ludex, per correggere il gioco per tutti.',
         ],
         'Non raccogliamo dati di pagamento, posizione, né usiamo strumenti di statistica o pubblicità.',
       ],
@@ -51,7 +52,7 @@ const privacyIt: LegalDoc = {
       blocks: [
         [
           "Per darti il servizio: l'account, la libreria e l'aggiornamento dai negozi che colleghi. La base è il contratto con te (art. 6.1.b GDPR).",
-          "Per la sicurezza: le sessioni e l'indirizzo IP servono a tenere sicuro l'accesso. La base è il nostro legittimo interesse (art. 6.1.f GDPR).",
+          "Per la sicurezza: le sessioni e l'indirizzo IP servono a tenere sicuro l'accesso, e la sospensione di un account a fermare un abuso. La base è il nostro legittimo interesse (art. 6.1.f GDPR).",
         ],
         'Non vendiamo i tuoi dati e non li usiamo per pubblicità.',
       ],
@@ -85,8 +86,9 @@ const privacyIt: LegalDoc = {
           "Account e libreria: finché hai l'account.",
           'Sessioni: fino alla scadenza.',
           "Credenziali di un negozio: si cancellano quando scolleghi quell'account.",
+          "Segnalazioni: finché hai l'account, anche dopo che sono state risolte.",
         ],
-        "Se chiudi l'account cancelliamo i tuoi dati: libreria, copie, tag, account dei negozi. I dati dei giochi (titoli, copertine, durate) sono condivisi fra tutti gli utenti e non sono personali, quindi restano.",
+        "Se chiudi l'account cancelliamo i tuoi dati: libreria, copie, tag, account dei negozi, segnalazioni. I dati dei giochi (titoli, copertine, durate) sono condivisi fra tutti gli utenti e non sono personali, quindi restano.",
         `Oggi la cancellazione e l'esportazione dei tuoi dati si chiedono scrivendo a ${contactEmail}, e rispondiamo entro un mese. Una funzione dentro l'app è prevista.`,
       ],
     },
@@ -112,7 +114,7 @@ const privacyIt: LegalDoc = {
 
 const privacyEn: LegalDoc = {
   title: 'Privacy notice',
-  updated: 'Last updated: 1 October 2026',
+  updated: 'Last updated: 6 October 2026',
   sections: [
     {
       heading: 'Who we are',
@@ -124,10 +126,11 @@ const privacyEn: LegalDoc = {
       heading: 'What data we collect',
       blocks: [
         [
-          'Account: name, email address and password. The password is not stored in clear, only as a hash.',
+          'Account: name, email address and password. The password is not stored in clear, only as a hash. Where needed, also the role (administrator) and any suspension of the account, with its reason and expiry.',
           'Session: when you sign in we record the IP address and the browser (user agent) of the session, for as long as the session lasts.',
           'Library: the games in your backlog with status, rating, notes and tags, the copies you own (platform, store, medium), hours played and your preferences.',
           'Store accounts: if you link one, the identifier and name of your account on that store and, where needed, the credentials (tokens) to read your library. Tokens are stored encrypted. For Steam we store none: a public profile is enough.',
+          'Reports: if you report a mistake on a game, what you reported, the game you suggest and the note you write. Whoever runs Ludex reads them, to fix the game for everyone.',
         ],
         'We do not collect payment data or location, and we use no analytics or advertising tools.',
       ],
@@ -137,7 +140,7 @@ const privacyEn: LegalDoc = {
       blocks: [
         [
           'To provide the service: the account, the library and the updates from the stores you link. The basis is the contract with you (art. 6.1.b GDPR).',
-          'For security: sessions and the IP address keep sign-in safe. The basis is our legitimate interest (art. 6.1.f GDPR).',
+          'For security: sessions and the IP address keep sign-in safe, and suspending an account stops an abuse. The basis is our legitimate interest (art. 6.1.f GDPR).',
         ],
         'We do not sell your data and we do not use it for advertising.',
       ],
@@ -171,8 +174,9 @@ const privacyEn: LegalDoc = {
           'Account and library: as long as you have the account.',
           'Sessions: until they expire.',
           "A store's credentials: deleted when you unlink that account.",
+          'Reports: as long as you have the account, even after they are resolved.',
         ],
-        'If you close the account we delete your data: library, copies, tags, store accounts. Game data (titles, covers, durations) is shared among all users and is not personal, so it stays.',
+        'If you close the account we delete your data: library, copies, tags, store accounts, reports. Game data (titles, covers, durations) is shared among all users and is not personal, so it stays.',
         `Today, deletion and export of your data are requested by writing to ${contactEmail}, and we reply within one month. A feature inside the app is planned.`,
       ],
     },

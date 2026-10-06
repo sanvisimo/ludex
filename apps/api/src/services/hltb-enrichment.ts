@@ -194,6 +194,7 @@ export async function enrichGameFromHltb(gameId: string): Promise<HltbOutcome> {
         gameId,
         source: 'hltb',
         status: 'not_found',
+        reason: 'taken',
         error: 'la voce HLTB scelta è già agganciata a un altro gioco',
         externalId: null,
       });
@@ -247,6 +248,7 @@ async function resolveAndSave(game: GameRow): Promise<HltbOutcome> {
       gameId: game.id,
       source: 'hltb',
       status: 'not_found',
+      reason: 'no_results',
       // Si dicono anche i titoli accorciati provati: senza, dalla admin
       // sembrerebbe che i tentativi successivi non siano stati fatti.
       error:
@@ -299,6 +301,7 @@ async function resolveAndSave(game: GameRow): Promise<HltbOutcome> {
       gameId: game.id,
       source: 'hltb',
       status: 'not_found',
+      reason: 'ambiguous',
       error: `nessun candidato convincente per "${game.name}": ${describe(ranked)}`,
       externalId: null,
     });
@@ -314,6 +317,7 @@ async function resolveAndSave(game: GameRow): Promise<HltbOutcome> {
       gameId: game.id,
       source: 'hltb',
       status: 'not_found',
+      reason: 'gone',
       error: `la pagina HLTB ${picked.hit.hltbId} non esiste più`,
       externalId: null,
     });

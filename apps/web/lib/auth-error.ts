@@ -19,6 +19,8 @@ const codes = [
   'PASSWORD_TOO_LONG',
   'EMAIL_NOT_VERIFIED',
   'FAILED_TO_CREATE_USER',
+  // L'account sospeso da un admin (11a): Better Auth lo rifiuta all'accesso.
+  'BANNED_USER',
 ] as const;
 
 type AuthErrorCode = (typeof codes)[number];

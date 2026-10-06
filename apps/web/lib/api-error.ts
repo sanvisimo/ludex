@@ -6,6 +6,7 @@ import { useTranslations } from 'use-intl';
 // traduce il *codice*, che è la parte del contratto pensata per essere letta da
 // un programma.
 const codes = [
+  'BAD_REQUEST',
   'UNAUTHORIZED',
   'FORBIDDEN',
   'NOT_FOUND',

@@ -11,7 +11,7 @@ import {
 } from './backlog';
 import { reopenSourcesForNewExternalIds } from './enrichment';
 import { resolveGameFromIgdb } from './games';
-import { platformFor } from './library-import';
+import { hideEntriesFromHiddenUnresolved, platformFor } from './library-import';
 
 /**
  * Le voci di libreria che l'import non ha saputo legare a un gioco, nascoste
@@ -88,6 +88,10 @@ export async function resolveUnresolvedImport(
   userId: string,
   id: string,
   igdbId: number,
+  // Solo «Collega per tutti» (11a): uno scarto che l'utente aveva nascosto
+  // entra nel backlog nascosto, come all'import. Quando lo collega lui stesso,
+  // anche dal tab dei nascosti, vuol dire che lo vuole vedere.
+  { keepHidden = false }: { keepHidden?: boolean } = {},
 ) {
   const pending = await findOwn(userId, id);
   if (!pending) return { status: 'not_found' as const };
@@ -123,8 +127,14 @@ export async function resolveUnresolvedImport(
   // Collegare a mano un appid Steam è lo stesso evento di quando lo porta IGDB.
   await reopenSourcesForNewExternalIds(inserted);
 
-  const { byGameId } = await ensureBacklogEntries(userId, [game.id]);
+  const { byGameId, created } = await ensureBacklogEntries(userId, [game.id]);
   const backlogId = byGameId.get(game.id)!;
+  if (keepHidden && pending.hiddenAt)
+    await hideEntriesFromHiddenUnresolved(
+      [{ gameId: game.id, hidden: true }],
+      created,
+      byGameId,
+    );
 
   await ensureOwnerships([
     {

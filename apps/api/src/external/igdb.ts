@@ -117,6 +117,7 @@ type IgdbGame = {
   first_release_date?: number;
   game_type?: number;
   total_rating_count?: number;
+  platforms?: number[];
   // `cover.image_id` è ciò che SEARCH_FIELDS chiede: la URL si compone da lì.
   cover?: { image_id: string };
   involved_companies?: {
@@ -173,7 +174,7 @@ const EXCLUDED_TYPES = [
 ];
 
 const SEARCH_FIELDS =
-  'fields name, first_release_date, game_type, total_rating_count, cover.image_id,' +
+  'fields name, first_release_date, game_type, total_rating_count, platforms, cover.image_id,' +
   ' involved_companies.developer, involved_companies.company.name;';
 
 /**
@@ -214,6 +215,14 @@ export type IgdbSearchHit = {
    * nemmeno l'anno — ed è il caso di Epic.
    */
   totalRatingCount: number | null;
+  /**
+   * Le piattaforme su cui la scheda è uscita, come id IGDB: si traducono nei
+   * nostri slug con `platforms.igdb_id`, e il client HTTP il database non lo
+   * conosce. Servono al matcher dell'import quando il nome non basta: le due
+   * schede «Toki» sono l'arcade del 1989 e il remake del 2018, e su Switch è
+   * uscito solo il secondo.
+   */
+  platformIds: number[];
 };
 
 function toHit(game: IgdbGame): IgdbSearchHit {
@@ -230,6 +239,7 @@ function toHit(game: IgdbGame): IgdbSearchHit {
     cover: game.cover?.image_id ?? null,
     gameType: gameTypeFromIgdb(game.game_type),
     totalRatingCount: game.total_rating_count ?? null,
+    platformIds: game.platforms ?? [],
   };
 }
 

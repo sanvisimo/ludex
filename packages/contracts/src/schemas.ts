@@ -4,13 +4,17 @@ import {
   attributeKindValues,
   backlogSortValues,
   backlogStatusValues,
+  enrichmentSourceValues,
   linkableStoreValues,
   gameTypeValues,
   hiddenKindValues,
+  manualSourceValues,
   mediumValues,
+  missingBucketValues,
   relatedKindValues,
   scoreSourceValues,
   sortDirectionValues,
+  sourceReasonValues,
   storeAccountStatusValues,
   storeValues,
   subscriptionValues,
@@ -630,6 +634,231 @@ export function storeAccountName(account: {
 }) {
   return account.label ?? account.displayName ?? account.externalAccountId;
 }
+// --- Admin (11a) ---
+
+export const EnrichmentSourceSchema = z.enum(enrichmentSourceValues);
+export const ManualSourceSchema = z.enum(manualSourceValues);
+export const MissingBucketSchema = z.enum(missingBucketValues);
+export const SourceReasonSchema = z.enum(sourceReasonValues);
+
+// La tabellina in cima a «Dati mancanti»: una riga per fonte, più i giochi
+// senza id IGDB e gli scarti d'import ancora visibili.
+export const MissingSummarySchema = z.object({
+  sources: z.array(
+    z.object({
+      source: EnrichmentSourceSchema,
+      pending: z.number().int(),
+      pendingSince: z.date().nullable(),
+      fixable: z.number().int(),
+      fine: z.number().int(),
+      empty: z.number().int(),
+      failed: z.number().int(),
+    }),
+  ),
+  gamesWithoutIgdb: z.number().int(),
+  unresolvedImports: z.number().int(),
+});
+
+export const MissingRowSchema = z.object({
+  gameId: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  coverImageId: z.string().nullable(),
+  source: EnrichmentSourceSchema,
+  status: z.enum(['pending', 'ok', 'failed', 'not_found']),
+  reason: SourceReasonSchema.nullable(),
+  // Il testo per chi legge: per un `ambiguous` elenca i candidati scartati.
+  error: z.string().nullable(),
+  externalId: z.string().nullable(),
+  manual: z.boolean(),
+  attemptedAt: z.date().nullable(),
+  users: z.number().int(),
+});
+
+export const MissingListSchema = z.object({
+  rows: z.array(MissingRowSchema),
+  total: z.number().int(),
+});
+
+// I tipi che si nascondono per tutti: `unwanted` è una preferenza di chi
+// importa, e una preferenza non si decide per tutti. Lo ripete un CHECK nel
+// database.
+export const GlobalHiddenKindSchema = HiddenKindSchema.exclude(['unwanted']);
+
+// Uno scarto visto dall'admin: una riga per negozio e id esterno, con quante
+// librerie lo hanno e come l'hanno nascosto quelle che l'hanno fatto.
+export const UnresolvedGroupSchema = z.object({
+  store: StoreSchema,
+  externalId: z.string(),
+  name: z.string(),
+  platformSlug: z.string().nullable(),
+  imageUrl: z.string().nullable(),
+  storePage: z.string().nullable(),
+  libraries: z.number().int(),
+  visible: z.number().int(),
+  hidden: z.record(HiddenKindSchema, z.number().int()),
+});
+
+export const UnresolvedGroupListSchema = z.object({
+  rows: z.array(UnresolvedGroupSchema),
+  total: z.number().int(),
+});
+
+export const GlobalHiddenImportSchema = z.object({
+  store: StoreSchema,
+  externalId: z.string(),
+  name: z.string(),
+  hiddenKind: GlobalHiddenKindSchema,
+  // Il nome dell'admin che l'ha deciso; nullo se il suo account non c'è più.
+  decidedBy: z.string().nullable(),
+  createdAt: z.date(),
+  libraries: z.number().int(),
+});
+
+// --- Segnalazioni e giochi (11a, passo 6) ---
+
+// La cosa segnalata: la copia di un negozio, oppure una fonte.
+export const ReportTargetSchema = z.union([
+  z.object({ store: StoreSchema }),
+  z.object({ source: ManualSourceSchema }),
+]);
+
+// Una segnalazione aperta, vista da chi l'ha fatta: il «Segnalato il …».
+export const OpenReportSchema = z.object({
+  id: z.uuid(),
+  store: StoreSchema.nullable(),
+  source: ManualSourceSchema.nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+// Le segnalazioni aperte viste dall'admin: una riga per gioco e cosa.
+export const ReportGroupSchema = z.object({
+  gameId: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  store: StoreSchema.nullable(),
+  source: ManualSourceSchema.nullable(),
+  users: z.number().int(),
+  suggestions: z.array(
+    z.object({
+      igdbId: z.number().int().nullable(),
+      name: z.string().nullable(),
+    }),
+  ),
+  notes: z.array(z.string()),
+  lastAt: z.date(),
+});
+
+export const UnlinkedGameSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  createdAt: z.date(),
+  users: z.number().int(),
+});
+
+// La scheda admin di un gioco: collegamenti, fonti, segnalazioni aperte.
+export const GameAdminDetailSchema = z.object({
+  game: z.object({
+    id: z.uuid(),
+    name: z.string(),
+    slug: z.string(),
+    igdbId: z.number().int().nullable(),
+    igdbSlug: z.string().nullable(),
+    firstReleaseDate: z.date().nullable(),
+    gameType: GameTypeSchema.nullable(),
+    coverImageId: z.string().nullable(),
+    users: z.number().int(),
+  }),
+  links: z.array(
+    z.object({
+      id: z.uuid(),
+      source: StoreSchema,
+      externalId: z.string(),
+      // Per negozio, non per id: le copie non sanno da quale id sono nate.
+      users: z.number().int(),
+      copies: z.number().int(),
+      // La pagina sul negozio, per controllare che sia il gioco giusto.
+      url: z.string().nullable(),
+    }),
+  ),
+  sources: z.array(
+    z.object({
+      source: EnrichmentSourceSchema,
+      status: z.enum(['pending', 'ok', 'failed', 'not_found']),
+      reason: SourceReasonSchema.nullable(),
+      error: z.string().nullable(),
+      externalId: z.string().nullable(),
+      manual: z.boolean(),
+      attemptedAt: z.date().nullable(),
+      // La scheda sulla fonte: si apre e si vede se è quella giusta.
+      url: z.string().nullable(),
+    }),
+  ),
+  reports: z.array(ReportGroupSchema),
+});
+
+// Cosa farebbe «Non è questo gioco», utente per utente.
+export const RepointPreviewSchema = z.object({
+  from: z.object({ id: z.uuid(), name: z.string() }),
+  // `id` nullo: il gioco giusto non è ancora nel catalogo, lo crea la conferma.
+  to: z.object({
+    id: z.uuid().nullable(),
+    name: z.string(),
+    inCatalog: z.boolean(),
+  }),
+  link: z.object({ source: StoreSchema, externalId: z.string() }),
+  moves: z.array(
+    z.object({
+      userName: z.string(),
+      copies: z.array(
+        z.object({
+          platformSlug: z.string(),
+          medium: MediumSchema.nullable(),
+          account: z.string().nullable(),
+        }),
+      ),
+      // La riga intera cambia gioco, con stato, voto, note e tag.
+      wholeRow: z.boolean(),
+    }),
+  ),
+  // Gli altri id dello stesso negozio sul gioco sbagliato: le loro copie si
+  // spostano con queste, e vanno ripuntati anche loro.
+  otherIdsSameStore: z.array(
+    z.object({ id: z.uuid(), externalId: z.string() }),
+  ),
+});
+
+// --- Utenti (11a, passo 7) ---
+
+export const AdminRoleSchema = z.enum(['admin', 'user']);
+
+export const AdminUserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+  createdAt: z.date(),
+  role: AdminRoleSchema,
+  banned: z.boolean(),
+  banReason: z.string().nullable(),
+  // Nullo con `banned`: per sempre. Passata la data, il ban si toglie da solo
+  // al primo accesso: fino ad allora la riga dice ancora `banned`.
+  banExpires: z.date().nullable(),
+  games: z.number().int(),
+  accounts: z.number().int(),
+});
+
+export type AdminUser = z.infer<typeof AdminUserSchema>;
+export type ReportTarget = z.infer<typeof ReportTargetSchema>;
+export type OpenReport = z.infer<typeof OpenReportSchema>;
+export type ReportGroup = z.infer<typeof ReportGroupSchema>;
+export type GameAdminDetail = z.infer<typeof GameAdminDetailSchema>;
+export type RepointPreview = z.infer<typeof RepointPreviewSchema>;
+export type MissingSummary = z.infer<typeof MissingSummarySchema>;
+export type UnresolvedGroup = z.infer<typeof UnresolvedGroupSchema>;
+export type GlobalHiddenImport = z.infer<typeof GlobalHiddenImportSchema>;
+export type MissingRow = z.infer<typeof MissingRowSchema>;
 export type UnlinkImpact = z.infer<typeof UnlinkImpactSchema>;
 export type SteamLoginStart = z.infer<typeof SteamLoginStartSchema>;
 export type SteamLoginStatus = z.infer<typeof SteamLoginStatusSchema>;

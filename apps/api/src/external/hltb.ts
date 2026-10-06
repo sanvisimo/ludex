@@ -273,6 +273,8 @@ type HltbSearchRow = {
   game_alias?: string;
   game_type?: string;
   release_world?: number;
+  // «26286_Hollow_Knight.jpg»: la copertina, sotto `/games/`.
+  game_image?: string;
 };
 
 /**
@@ -290,6 +292,11 @@ export type HltbSearchHit = {
   /** "game", "dlc", "multi"… Serve a buttare via i DLC, che sporcano ogni ricerca. */
   type: string | null;
   releaseYear: number | null;
+  /**
+   * La copertina sul sito HLTB. Facoltativa: al match non serve, la usa solo
+   * la ricerca dell'admin, dove si sceglie anche a occhio.
+   */
+  image?: string | null;
 };
 
 /**
@@ -343,6 +350,7 @@ export async function searchHltbGames(
     alias: row.game_alias || null,
     type: row.game_type ?? null,
     releaseYear: row.release_world || null,
+    image: row.game_image ? `${BASE_URL}/games/${row.game_image}` : null,
   }));
 }
 

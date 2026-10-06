@@ -224,6 +224,7 @@ export async function enrichGameFromMetacritic(
         gameId,
         source: 'metacritic',
         status: 'not_found',
+        reason: 'taken',
         error: 'la scheda Metacritic scelta è già agganciata a un altro gioco',
         externalId: null,
       });
@@ -339,6 +340,7 @@ async function resolveAndSave(game: GameRow): Promise<MetacriticOutcome> {
     gameId: game.id,
     source: 'metacritic',
     status: 'not_found',
+    reason: 'ambiguous',
     error: `nessuna scheda Metacritic convincente per "${game.name}"`,
     externalId: null,
   });

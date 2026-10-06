@@ -118,6 +118,7 @@ describe('lo slug di chi crea un gioco', () => {
       cover: null,
       gameType: null,
       totalRatingCount: null,
+      platformIds: [],
     });
 
     const game = await resolveGameFromIgdb(20);
