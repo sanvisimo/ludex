@@ -17,6 +17,7 @@ import {
 } from '@repo/db/orm';
 
 import { enqueueEnrichment } from '../queue/enrichment';
+import { closeReports } from './reports';
 
 // La sezione «Dati mancanti» dell'admin (11a, passo 4): ciò che l'enrichment
 // non ha saputo chiudere da solo, e i due gesti per chiuderlo a mano.
@@ -254,6 +255,8 @@ export async function setSourceExternalId(
   gameId: string,
   source: ManualSource,
   externalId: string,
+  // L'admin che lo scrive: chiude a suo nome le segnalazioni su quella fonte.
+  resolvedBy: string | null = null,
 ) {
   const now = new Date();
   await db
@@ -273,4 +276,5 @@ export async function setSourceExternalId(
     });
 
   await enqueueEnrichment(source, gameId);
+  await closeReports(gameId, { source }, resolvedBy);
 }

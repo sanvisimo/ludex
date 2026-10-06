@@ -79,6 +79,25 @@ describe('le procedure admin.*', () => {
       router.admin.sources.setExternalId,
       { gameId, source: 'hltb', externalId: '1' },
     ],
+    ['reports.list', router.admin.reports.list, {}],
+    [
+      'reports.archive',
+      router.admin.reports.archive,
+      { gameId, target: { store: 'nintendo' } },
+    ],
+    ['games.unlinked', router.admin.games.unlinked, {}],
+    ['games.linkIgdb', router.admin.games.linkIgdb, { gameId, igdbId: 1 }],
+    ['games.detail', router.admin.games.detail, { slug: 'toki' }],
+    [
+      'links.repointPreview',
+      router.admin.links.repointPreview,
+      { linkId: gameId, igdbId: 1 },
+    ],
+    [
+      'links.repoint',
+      router.admin.links.repoint,
+      { linkId: gameId, igdbId: 1 },
+    ],
     ['unresolved.list', router.admin.unresolved.list, {}],
     [
       'unresolved.globalHidden',

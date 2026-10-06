@@ -8,6 +8,7 @@ import {
   BacklogQuerySchema,
   BacklogStatusSchema,
   EnrichmentSourceSchema,
+  GameAdminDetailSchema,
   GameDetailSchema,
   GameSchema,
   GlobalHiddenImportSchema,
@@ -23,9 +24,13 @@ import {
   MissingListSchema,
   MissingSummarySchema,
   NotesSchema,
+  OpenReportSchema,
   OwnershipInputSchema,
   PlatformSchema,
   RatingSchema,
+  RepointPreviewSchema,
+  ReportGroupSchema,
+  ReportTargetSchema,
   SteamLoginRemovedSchema,
   SteamLoginStartSchema,
   SourceReasonSchema,
@@ -33,6 +38,7 @@ import {
   StoreAccountSchema,
   StoreSchema,
   SyncAllResultSchema,
+  UnlinkedGameSchema,
   UnlinkImpactSchema,
   UnresolvedGroupListSchema,
   UnresolvedImportSchema,
@@ -389,6 +395,29 @@ export const contract = {
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
   },
 
+  // Le segnalazioni dell'utente (11a): «questo gioco è sbagliato», dalla
+  // pagina del gioco. Le corregge un admin.
+  reports: {
+    // Una segnalazione per cosa; una già aperta sulla stessa cosa si aggiorna.
+    // La copia di un negozio si segnala solo se è tua. Rende le aperte.
+    create: oc
+      .input(
+        z.object({
+          gameId: z.uuid(),
+          targets: z.array(ReportTargetSchema).min(1).max(5),
+          suggestedIgdbId: z.number().int().positive().optional(),
+          suggestedName: z.string().trim().min(1).max(200).optional(),
+          note: z.string().trim().min(1).max(1000).optional(),
+        }),
+      )
+      .output(z.array(OpenReportSchema)),
+
+    // Le tue aperte su un gioco: il «Segnalato il …» al posto del bottone.
+    openForGame: oc
+      .input(z.object({ gameId: z.uuid() }))
+      .output(z.array(OpenReportSchema)),
+  },
+
   // Solo admin (11a): li protegge il middleware `admin`, non il client.
   admin: {
     missing: {
@@ -446,6 +475,76 @@ export const contract = {
           }),
         )
         .output(z.object({ externalId: z.string() })),
+    },
+
+    reports: {
+      // Le segnalazioni aperte, una riga per gioco e cosa.
+      list: oc
+        .input(
+          z.object({
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(
+          z.object({
+            rows: z.array(ReportGroupSchema),
+            total: z.number().int(),
+          }),
+        ),
+
+      // «Archivia»: chiude senza correggere.
+      archive: oc
+        .input(z.object({ gameId: z.uuid(), target: ReportTargetSchema }))
+        .output(z.object({ closed: z.number().int() })),
+    },
+
+    games: {
+      // I giochi senza id IGDB.
+      unlinked: oc
+        .input(
+          z.object({
+            q: z.string().trim().min(1).max(100).optional(),
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(
+          z.object({
+            rows: z.array(UnlinkedGameSchema),
+            total: z.number().int(),
+          }),
+        ),
+
+      // «Collega a IGDB», solo se l'id è libero: altrimenti è l'11b.
+      linkIgdb: oc
+        .input(
+          z.object({ gameId: z.uuid(), igdbId: z.number().int().positive() }),
+        )
+        .output(z.void()),
+
+      // La scheda admin di un gioco.
+      detail: oc
+        .input(z.object({ slug: z.string().min(1).max(200) }))
+        .output(GameAdminDetailSchema),
+    },
+
+    links: {
+      // «Non è questo gioco», anteprima: non scrive niente.
+      repointPreview: oc
+        .input(
+          z.object({ linkId: z.uuid(), igdbId: z.number().int().positive() }),
+        )
+        .output(RepointPreviewSchema),
+
+      // «Non è questo gioco»: ripunta la riga e sposta le copie di quel negozio.
+      repoint: oc
+        .input(
+          z.object({ linkId: z.uuid(), igdbId: z.number().int().positive() }),
+        )
+        .output(
+          z.object({ wholeRows: z.number().int(), copies: z.number().int() }),
+        ),
     },
 
     unresolved: {

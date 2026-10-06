@@ -714,6 +714,121 @@ export const GlobalHiddenImportSchema = z.object({
   libraries: z.number().int(),
 });
 
+// --- Segnalazioni e giochi (11a, passo 6) ---
+
+// La cosa segnalata: la copia di un negozio, oppure una fonte.
+export const ReportTargetSchema = z.union([
+  z.object({ store: StoreSchema }),
+  z.object({ source: ManualSourceSchema }),
+]);
+
+// Una segnalazione aperta, vista da chi l'ha fatta: il «Segnalato il …».
+export const OpenReportSchema = z.object({
+  id: z.uuid(),
+  store: StoreSchema.nullable(),
+  source: ManualSourceSchema.nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+// Le segnalazioni aperte viste dall'admin: una riga per gioco e cosa.
+export const ReportGroupSchema = z.object({
+  gameId: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  store: StoreSchema.nullable(),
+  source: ManualSourceSchema.nullable(),
+  users: z.number().int(),
+  suggestions: z.array(
+    z.object({
+      igdbId: z.number().int().nullable(),
+      name: z.string().nullable(),
+    }),
+  ),
+  notes: z.array(z.string()),
+  lastAt: z.date(),
+});
+
+export const UnlinkedGameSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  createdAt: z.date(),
+  users: z.number().int(),
+});
+
+// La scheda admin di un gioco: collegamenti, fonti, segnalazioni aperte.
+export const GameAdminDetailSchema = z.object({
+  game: z.object({
+    id: z.uuid(),
+    name: z.string(),
+    slug: z.string(),
+    igdbId: z.number().int().nullable(),
+    firstReleaseDate: z.date().nullable(),
+    gameType: GameTypeSchema.nullable(),
+    coverImageId: z.string().nullable(),
+    users: z.number().int(),
+  }),
+  links: z.array(
+    z.object({
+      id: z.uuid(),
+      source: StoreSchema,
+      externalId: z.string(),
+      // Per negozio, non per id: le copie non sanno da quale id sono nate.
+      users: z.number().int(),
+      copies: z.number().int(),
+    }),
+  ),
+  sources: z.array(
+    z.object({
+      source: EnrichmentSourceSchema,
+      status: z.enum(['pending', 'ok', 'failed', 'not_found']),
+      reason: SourceReasonSchema.nullable(),
+      error: z.string().nullable(),
+      externalId: z.string().nullable(),
+      manual: z.boolean(),
+      attemptedAt: z.date().nullable(),
+    }),
+  ),
+  reports: z.array(ReportGroupSchema),
+});
+
+// Cosa farebbe «Non è questo gioco», utente per utente.
+export const RepointPreviewSchema = z.object({
+  from: z.object({ id: z.uuid(), name: z.string() }),
+  // `id` nullo: il gioco giusto non è ancora nel catalogo, lo crea la conferma.
+  to: z.object({
+    id: z.uuid().nullable(),
+    name: z.string(),
+    inCatalog: z.boolean(),
+  }),
+  link: z.object({ source: StoreSchema, externalId: z.string() }),
+  moves: z.array(
+    z.object({
+      userName: z.string(),
+      copies: z.array(
+        z.object({
+          platformSlug: z.string(),
+          medium: MediumSchema.nullable(),
+          account: z.string().nullable(),
+        }),
+      ),
+      // La riga intera cambia gioco, con stato, voto, note e tag.
+      wholeRow: z.boolean(),
+    }),
+  ),
+  // Gli altri id dello stesso negozio sul gioco sbagliato: le loro copie si
+  // spostano con queste, e vanno ripuntati anche loro.
+  otherIdsSameStore: z.array(
+    z.object({ id: z.uuid(), externalId: z.string() }),
+  ),
+});
+
+export type ReportTarget = z.infer<typeof ReportTargetSchema>;
+export type OpenReport = z.infer<typeof OpenReportSchema>;
+export type ReportGroup = z.infer<typeof ReportGroupSchema>;
+export type GameAdminDetail = z.infer<typeof GameAdminDetailSchema>;
+export type RepointPreview = z.infer<typeof RepointPreviewSchema>;
 export type MissingSummary = z.infer<typeof MissingSummarySchema>;
 export type UnresolvedGroup = z.infer<typeof UnresolvedGroupSchema>;
 export type GlobalHiddenImport = z.infer<typeof GlobalHiddenImportSchema>;

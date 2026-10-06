@@ -38,7 +38,20 @@ import {
   resolveUnresolvedForAll,
   unhideUnresolvedForAll,
 } from '../services/admin-unresolved';
+import {
+  gameAdminDetail,
+  linkGameToIgdb,
+  listUnlinkedGames,
+  previewRepoint,
+  repointLink,
+} from '../services/admin-games';
 import { listHomeBands } from '../services/home';
+import {
+  closeReports,
+  createReports,
+  listOpenReports,
+  openReportsForGame,
+} from '../services/reports';
 import {
   removeSteamLogin,
   startSteamLogin,
@@ -564,7 +577,132 @@ export const router = os.router({
       }),
   },
 
+  reports: {
+    create: os.reports.create
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const esito = await createReports(context.user.id, input);
+        if (esito.status === 'not_found')
+          throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
+        if (esito.status === 'not_owned')
+          throw new ORPCError('BAD_REQUEST', {
+            message: 'Si segnala solo una copia che hai',
+          });
+        return esito.open;
+      }),
+
+    openForGame: os.reports.openForGame
+      .use(authed)
+      .handler(({ input, context }) =>
+        openReportsForGame(context.user.id, input.gameId),
+      ),
+  },
+
   admin: {
+    reports: {
+      list: os.admin.reports.list
+        .use(authed)
+        .use(admin)
+        .handler(({ input }) => listOpenReports(input)),
+
+      archive: os.admin.reports.archive
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => ({
+          closed: await closeReports(
+            input.gameId,
+            input.target,
+            context.user.id,
+          ),
+        })),
+    },
+
+    games: {
+      unlinked: os.admin.games.unlinked
+        .use(authed)
+        .use(admin)
+        .handler(({ input }) => listUnlinkedGames(input)),
+
+      linkIgdb: os.admin.games.linkIgdb
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          const esito = await linkGameToIgdb(input.gameId, input.igdbId);
+          if (esito.status === 'not_found')
+            throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
+          if (esito.status === 'already_linked')
+            throw new ORPCError('CONFLICT', {
+              message: 'Il gioco ha già un id IGDB',
+            });
+          if (esito.status === 'taken')
+            throw new ORPCError('CONFLICT', {
+              message: `L'id è già di «${esito.game}»: i due giochi vanno fusi (11b)`,
+            });
+          if (esito.status === 'unknown_igdb_id')
+            throw new ORPCError('NOT_FOUND', {
+              message: 'IGDB non conosce questo id',
+            });
+        }),
+
+      detail: os.admin.games.detail
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          const detail = await gameAdminDetail(input.slug);
+          if (!detail)
+            throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
+          return detail;
+        }),
+    },
+
+    links: {
+      repointPreview: os.admin.links.repointPreview
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          const esito = await previewRepoint(input.linkId, input.igdbId);
+          if (esito.status === 'not_found')
+            throw new ORPCError('NOT_FOUND', {
+              message: 'Collegamento inesistente',
+            });
+          if (esito.status === 'unknown_igdb_id')
+            throw new ORPCError('NOT_FOUND', {
+              message: 'IGDB non conosce questo id',
+            });
+          if (esito.status === 'same_game')
+            throw new ORPCError('CONFLICT', {
+              message: 'Il collegamento punta già a questo gioco',
+            });
+          return {
+            from: esito.from,
+            to: esito.to,
+            link: esito.link,
+            moves: esito.moves,
+            otherIdsSameStore: esito.otherIdsSameStore,
+          };
+        }),
+
+      repoint: os.admin.links.repoint
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => {
+          const esito = await repointLink(
+            context.user.id,
+            input.linkId,
+            input.igdbId,
+          );
+          if (esito.status === 'not_found')
+            throw new ORPCError('NOT_FOUND', {
+              message: 'Collegamento inesistente',
+            });
+          if (esito.status === 'unknown_igdb_id')
+            throw new ORPCError('NOT_FOUND', {
+              message: 'IGDB non conosce questo id',
+            });
+          return { wholeRows: esito.wholeRows, copies: esito.copies };
+        }),
+    },
+
     missing: {
       summary: os.admin.missing.summary
         .use(authed)
@@ -608,7 +746,7 @@ export const router = os.router({
       setExternalId: os.admin.sources.setExternalId
         .use(authed)
         .use(admin)
-        .handler(async ({ input }) => {
+        .handler(async ({ input, context }) => {
           const externalId = parseSourceId(input.source, input.externalId);
           if (!externalId)
             throw new ORPCError('BAD_REQUEST', {
@@ -616,7 +754,12 @@ export const router = os.router({
             });
           if (!(await findGameById(input.gameId)))
             throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
-          await setSourceExternalId(input.gameId, input.source, externalId);
+          await setSourceExternalId(
+            input.gameId,
+            input.source,
+            externalId,
+            context.user.id,
+          );
           return { externalId };
         }),
     },
