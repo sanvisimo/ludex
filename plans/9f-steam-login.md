@@ -1,8 +1,10 @@
 # Step 9f — Steam con login e Family
 
-**Fatto sul branch `feat/9f-steam-login` e provato (05/10/2026), ma NON rilasciato**:
-Steam ha bloccato temporaneamente l'account dell'utente (alle 11:57 del 05/10, prima del login in browser delle 14:51), e finché
-non si sa se un login da server è accettato resta fermo. Vedi «Il blocco
+**Fatto e provato (05/10/2026). Dal 06/10/2026 è rilasciato sul mini PC**, per
+provarlo su un server attivo; il rilascio agli altri utenti aspetta l'esito.
+Il contesto: Steam ha bloccato temporaneamente l'account dell'utente (alle 11:57
+del 05/10, prima del login in browser delle 14:51), e non si sa se un login da
+server è accettato. Vedi «Il blocco
 dell'account» in [docs/negozi.md](../docs/negozi.md). Le misure su cui poggia sono
 nella stessa pagina, «Steam Family e il login Steam».
 
@@ -495,8 +497,8 @@ Fatta il 05/10/2026: la riga di `steam:family-probe` in
 
 ## Cosa resta
 
-- **Decidere se e come rilasciarlo**, dopo la risposta dell'Assistenza di Steam. Le
-  strade: tenere il codice dietro un interruttore spento, restare col solo profilo
+- **Decidere se e come rilasciarlo agli altri utenti**, dopo l'esito della prova sul
+  mini PC (dal 06/10/2026) e la risposta dell'Assistenza di Steam. Le strade: tenere il codice dietro un interruttore spento, restare col solo profilo
   pubblico (che non tocca l'account), o capire se questo tipo di login è accettato.
   Nessun probe o prova contro un account vero senza averlo concordato.
 - Il commit e la PR, quando l'utente lo chiede. `apps/web/src/routes/_app.games.$slug.tsx`

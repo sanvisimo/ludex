@@ -396,6 +396,53 @@ describe('i NULL non sono zeri', () => {
     expect(await nomi(userId, { durationMin: 3_000 })).toEqual(['Persona']);
   });
 
+  it('un gioco solo co-op ha una fine: la sua durata entra nel filtro', async () => {
+    await aggiungi(userId, {
+      name: 'Blanc',
+      hltbMainMinutes: 123,
+      hltbHasSolo: false,
+      hltbHasCoop: true,
+    });
+    await aggiungi(userId, {
+      name: 'Solo versus',
+      hltbMainMinutes: 123,
+      hltbHasSolo: false,
+      hltbHasVersus: true,
+    });
+
+    expect(await nomi(userId, { durationMax: 300 })).toEqual(['Blanc']);
+  });
+
+  it('«senza durata» trova i giochi che sulla card non ne mostrano una', async () => {
+    await aggiungi(userId, {
+      name: 'Con durata',
+      hltbMainMinutes: 120,
+      hltbHasSolo: true,
+    });
+    await aggiungi(userId, { name: 'Non arricchito' });
+    await aggiungi(userId, {
+      name: 'Counter-Strike',
+      hltbMainMinutes: 8_580,
+      hltbHasSolo: false,
+      hltbHasVersus: true,
+    });
+    await aggiungi(userId, {
+      name: 'Blanc',
+      hltbMainMinutes: 123,
+      hltbHasSolo: false,
+      hltbHasCoop: true,
+    });
+
+    expect((await nomi(userId, { noDuration: true })).sort()).toEqual([
+      'Counter-Strike',
+      'Non arricchito',
+    ]);
+    // Esclusivo: l'intervallo si ignora, o l'AND non troverebbe mai niente.
+    expect(
+      (await nomi(userId, { noDuration: true, durationMax: 300 })).sort(),
+    ).toEqual(['Counter-Strike', 'Non arricchito']);
+  });
+
   it('la durata sconosciuta non blocca il filtro: hasSolo nullo resta ammesso', async () => {
     // HLTB non è ancora passato a dire se ha una campagna, ma la durata c'è.
     await aggiungi(userId, {

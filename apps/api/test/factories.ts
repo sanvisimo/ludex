@@ -42,6 +42,8 @@ export async function createGame(
     // che i filtri devono trattare bene.
     hltbMainMinutes?: number | null;
     hltbHasSolo?: boolean | null;
+    hltbHasCoop?: boolean | null;
+    hltbHasVersus?: boolean | null;
     // Il voto denormalizzato, scritto dritto: qui interessa il filtro dello
     // step 7, non la strada che il numero fa per arrivare in colonna. Chi
     // testa quella strada passa da `saveScores`.
@@ -66,6 +68,8 @@ export async function createGame(
       firstReleaseDate: values.firstReleaseDate ?? null,
       hltbMainMinutes: values.hltbMainMinutes ?? null,
       hltbHasSolo: values.hltbHasSolo ?? null,
+      hltbHasCoop: values.hltbHasCoop ?? null,
+      hltbHasVersus: values.hltbHasVersus ?? null,
       criticScore: values.criticScore ?? null,
       criticScoreSource: values.criticScoreSource ?? null,
       gameType: values.gameType ?? null,

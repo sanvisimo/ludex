@@ -569,11 +569,11 @@ quindi non vanno aggiunte alla lista delle tabelle escluse dal troncamento.
 - Ripuntare un collegamento **dalla pagina del gioco**, per ogni utente: no,
   solo admin (vedi «Il caso Toki»). Dalla pagina del gioco si segnala.
 - Cancellazione ed esportazione dell'account: step 16.
-- **La durata nascosta sulle card** (06/10/2026, web, da fare a parte).
+- **La durata nascosta sulle card** (06/10/2026, web). **Fatto il 06/10/2026**, a parte.
   [game-duration.tsx](../apps/web/components/game-duration.tsx) la nasconde
   quando HLTB dice `hasSolo = false`, regola nata per Counter-Strike. Sbaglia
   sui giochi in co-op: Blanc (123 minuti) non la mostra. Sul database di
   sviluppo sono 67 le durate nascoste, 31 con la co-op. Va nascosta solo se
   non c'è né solo né co-op.
-- **Il filtro «senza durata»** nel backlog (06/10/2026, step 7, da fare a
-  parte): una spunta nel filtro della durata per i giochi che non ce l'hanno.
+- **Il filtro «senza durata»** nel backlog (06/10/2026, step 7). **Fatto il
+  06/10/2026**, a parte: una spunta nel filtro della durata per i giochi che non ce l'hanno.

@@ -60,11 +60,14 @@ export function HltbTimes({ game }: { game: GameDetail }) {
   ];
   const righe = tutte.filter((riga) => riga.minuti !== null);
 
-  // Un gioco che non ha una campagna non ha una durata: i suoi numeri sono ore
-  // investite, e leggerli come "quanto ci metto a finirlo" è l'errore che questi
-  // flag esistono per impedire.
+  // Un gioco che non ha una campagna né la co-op non ha una durata: i suoi
+  // numeri sono ore investite, e leggerli come "quanto ci metto a finirlo" è
+  // l'errore che questi flag esistono per impedire. Un gioco solo co-op una
+  // fine ce l'ha.
   const senzaFine =
-    game.hltbHasSolo === false && (game.hltbHasVersus || game.hltbHasCoop);
+    game.hltbHasSolo === false &&
+    game.hltbHasCoop !== true &&
+    game.hltbHasVersus === true;
 
   return (
     <YStack gap={8}>
