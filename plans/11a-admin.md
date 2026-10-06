@@ -146,6 +146,25 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
    `authed`, rifiuta chi non ha `role = 'admin'`), gruppo `admin.*` nel
    contratto. Script per nominare il primo admin per email, documentato in
    [apps/api/CLAUDE.md](../apps/api/CLAUDE.md).
+
+   **Fatto** (06/10/2026). Plugin in
+   [packages/auth](../packages/auth/src), migration
+   [0034_admin_plugin](../packages/db/drizzle/0034_admin_plugin.sql), middleware
+   `admin` in [context.ts](../apps/api/src/rpc/context.ts) con il suo test
+   (401 senza sessione, 403 senza ruolo, passa l'admin; sessione vera di
+   Better Auth, non finta), `pnpm --filter api admin:grant <email>`. Cose che
+   il piano non diceva:
+   - il gruppo `admin.*` nel contratto nasce al passo 4, con la prima
+     procedura: vuoto non serve a niente, e il test del middleware usa una
+     procedura sua;
+   - col plugin il tipo di `auth` nomina zod, e `tsc` di `@repo/auth` falliva
+     sulla portabilità delle dichiarazioni (TS2742). Il package non emette
+     niente e si consuma dal sorgente: `declaration` spento nel suo tsconfig,
+     invece di aggiungere zod alle sue dipendenze;
+   - `pnpm auth:generate` non legge il `.env` da solo: va lanciato con le
+     variabili caricate (`set -a; . ./.env; set +a`), e chiede conferma prima
+     di sovrascrivere.
+
 3. **Wireframe** (Excalidraw, `11a-admin.excalidraw`) di `/admin`, delle
    quattro sezioni e del form di segnalazione sulla pagina del gioco. Si
    corregge lì finché la struttura non è approvata.
