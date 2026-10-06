@@ -1,5 +1,10 @@
 import { Skeleton, XStack, YStack } from '@repo/ui';
-import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useTranslations } from 'use-intl';
 
@@ -20,14 +25,20 @@ export const Route = createFileRoute('/_app/account')({
 function AccountLayout() {
   const t = useTranslations('account');
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const { data: session, isPending: sessionPending } = useSession();
 
   // La pagina non ha senso da anonimo: parla dell'account di chi la guarda.
+  // `next` riporta alla sezione da cui si veniva, come fa `_app._private`.
   useEffect(() => {
     if (!sessionPending && !session)
-      void navigate({ to: '/login', replace: true });
-  }, [sessionPending, session, navigate]);
+      void navigate({
+        to: '/login',
+        search: { next: pathname },
+        replace: true,
+      });
+  }, [sessionPending, session, navigate, pathname]);
 
   if (sessionPending || !session) {
     return (
