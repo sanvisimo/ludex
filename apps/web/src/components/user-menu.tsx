@@ -17,7 +17,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { Library, LogOut, User } from '@repo/ui/icons';
+import { Library, LogOut, Shield, User } from '@repo/ui/icons';
 import { useMatchRoute, useRouter } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
 import { useState, type ComponentProps, type ReactNode } from 'react';
@@ -37,14 +37,22 @@ import { takeLinkClick } from '@/src/link-click';
  * tendina, sotto un foglio dal basso largo quanto lo schermo, che sul
  * telefono si legge e si tocca meglio.
  */
-export function UserMenu({ name }: { name: string }) {
+export function UserMenu({
+  name,
+  isAdmin = false,
+}: {
+  name: string;
+  // La voce «Admin» c'è solo per chi lo è (11a). È comodità: la sezione la
+  // protegge il server.
+  isAdmin?: boolean;
+}) {
   return (
     <>
       <XStack $max-md={{ display: 'none' }}>
-        <UserDropdown name={name} />
+        <UserDropdown name={name} isAdmin={isAdmin} />
       </XStack>
       <XStack display="none" $max-md={{ display: 'flex' }}>
-        <UserSheet name={name} />
+        <UserSheet name={name} isAdmin={isAdmin} />
       </XStack>
     </>
   );
@@ -91,7 +99,7 @@ function useSignOut() {
   };
 }
 
-function UserDropdown({ name }: { name: string }) {
+function UserDropdown({ name, isAdmin }: { name: string; isAdmin: boolean }) {
   const t = useTranslations('nav');
   const tTheme = useTranslations('theme');
   const tLocale = useTranslations('locale');
@@ -123,6 +131,13 @@ function UserDropdown({ name }: { name: string }) {
         >
           {t('account')}
         </DropdownMenuItem>
+        {isAdmin ? (
+          <DropdownMenuItem
+            onClick={() => void router.navigate({ to: '/admin' })}
+          >
+            {t('admin')}
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuLabel>{tTheme('label')}</DropdownMenuLabel>
         {/* `theme`, non `resolvedTheme`: si sceglie la preferenza, e
@@ -173,7 +188,7 @@ function UserDropdown({ name }: { name: string }) {
  * menu: qui le pagine sono `NavItem`, accese dove si è, e tema e lingua due
  * file di bottoni. Il foglio si chiude dopo ogni voce che porta altrove.
  */
-function UserSheet({ name }: { name: string }) {
+function UserSheet({ name, isAdmin }: { name: string; isAdmin: boolean }) {
   const t = useTranslations('nav');
   const [open, setOpen] = useState(false);
   const signOutAndLeave = useSignOut();
@@ -207,6 +222,15 @@ function UserSheet({ name }: { name: string }) {
           <SheetLink to="/account" icon={<User size={16} />} onNavigate={close}>
             {t('account')}
           </SheetLink>
+          {isAdmin ? (
+            <SheetLink
+              to="/admin"
+              icon={<Shield size={16} />}
+              onNavigate={close}
+            >
+              {t('admin')}
+            </SheetLink>
+          ) : null}
         </YStack>
         <Separator />
         <SheetSettings />
@@ -345,7 +369,7 @@ function SheetLink({
   onNavigate,
   children,
 }: {
-  to: '/backlog' | '/account';
+  to: '/backlog' | '/account' | '/admin';
   icon: ReactNode;
   onNavigate: () => void;
   children: string;

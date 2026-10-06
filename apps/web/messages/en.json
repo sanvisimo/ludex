@@ -14,7 +14,8 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "madeWith": "Made with ♥ in Italy & EU",
-    "backToTop": "Back to top"
+    "backToTop": "Back to top",
+    "admin": "Admin"
   },
   "theme": {
     "label": "Theme",
@@ -761,5 +762,82 @@
       "trademarks": "Trademarks belong to their respective owners.",
       "fullList": "Full list, file by file"
     }
+  },
+  "admin": {
+    "title": "Admin",
+    "nav": {
+      "label": "Admin sections",
+      "missing": "Missing data",
+      "unresolved": "Unresolved",
+      "games": "Games",
+      "users": "Users"
+    },
+    "source": {
+      "igdb": "IGDB",
+      "hltb": "HowLongToBeat",
+      "opencritic": "OpenCritic",
+      "metacritic": "Metacritic"
+    },
+    "bucket": {
+      "pending": "Queued",
+      "fixable": "To fix",
+      "fine": "Fine as is",
+      "empty": "Found but empty",
+      "failed": "Failed"
+    },
+    "reason": {
+      "too_old": "too old",
+      "no_results": "no results",
+      "ambiguous": "ambiguous",
+      "year_mismatch": "year mismatch",
+      "taken": "taken by another game",
+      "gone": "no longer exists"
+    },
+    "status": {
+      "pending": "queued",
+      "ok": "ok",
+      "failed": "failed",
+      "not_found": "not found"
+    },
+    "missing": {
+      "title": "Missing data",
+      "description": "Source by state. Each cell opens the list below.",
+      "source": "Source",
+      "pendingSince": "since {date}",
+      "emptyHltb": "no duration",
+      "emptyScore": "no score",
+      "gamesWithoutIgdb": "Games without an IGDB id",
+      "unresolved": "Unresolved imports to fix",
+      "open": "Open",
+      "listTitle": "{source} · {bucket}",
+      "reasonAll": "Reason: all",
+      "search": "Search a game…",
+      "game": "Game",
+      "reasonColumn": "Reason",
+      "users": "Users",
+      "retry": "Retry",
+      "setId": "Set id",
+      "retried": "Queued again",
+      "retryFailed": "Couldn't queue it again",
+      "empty": "Nothing here.",
+      "pick": "Pick a cell in the table to see the games.",
+      "manual": "set by hand",
+      "failed": "Couldn't load the missing data"
+    },
+    "setId": {
+      "title": "Set {source} id",
+      "state": "State: {status}",
+      "candidates": "Candidates the match rejected",
+      "use": "Use this",
+      "label": "Id or page address",
+      "taken": "Id {id} already belongs to “{game}”. That's allowed: an id set by hand is exempt from uniqueness.",
+      "invalid": "Not an id or a {source} address.",
+      "after": "Then the source is queued, and the name match isn't redone.",
+      "cancel": "Cancel",
+      "save": "Save and queue",
+      "saved": "Id saved, source queued",
+      "failed": "Couldn't save the id"
+    },
+    "forbidden": "This section is for admins only."
   }
 }

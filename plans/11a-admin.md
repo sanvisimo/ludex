@@ -347,6 +347,26 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
    la rotta rimanda via chi non lo è (la sicurezza vera la fa il middleware).
    La sezione «Dati mancanti», che era un «da capire», è decisa al passo 4.
 
+   **In pezzi** (06/10/2026), ciascuno da vedere sulla pagina vera prima del
+   successivo: **8a** guscio di `/admin` e «Dati mancanti» col dialogo
+   «Inserisci id»; **8b** Scarti; **8c** Giochi, scheda admin e «Non è questo
+   gioco»; **8d** Utenti; **8e** «Segnala un errore» sulla pagina del gioco;
+   **8f** `BANNED_USER` al login e i testi legali — le regole del web vogliono
+   l'informativa aggiornata quando cambiano le colonne di `user`, e col plugin
+   ne sono arrivate quattro, più le segnalazioni con le loro note.
+
+   **8a fatto** (06/10/2026): [\_app.admin.tsx](../apps/web/src/routes/_app.admin.tsx)
+   (rimanda via chi non è admin), menu
+   [admin-nav.tsx](../apps/web/components/admin/admin-nav.tsx) coi numeri di
+   scarti e segnalazioni, la tabella condivisa
+   [admin-table.tsx](../apps/web/components/admin/admin-table.tsx) (in
+   `@repo/ui` una tabella non c'è), la pagina
+   [\_app.admin.mancanti.tsx](../apps/web/src/routes/_app.admin.mancanti.tsx)
+   con cella, motivo, ricerca e pagina nell'indirizzo, il dialogo
+   [set-source-id-dialog.tsx](../apps/web/components/admin/set-source-id-dialog.tsx)
+   che ricava i candidati scartati dal testo di `error`, e la voce «Admin» nel
+   menu dell'avatar. Scarti, Giochi e Utenti sono segnaposto fino ai loro pezzi.
+
 9. **Documentazione**: step 11 in [ordine-sviluppo](../docs/ordine-sviluppo.md)
    diviso in 11a e 11b; in [import-librerie](../docs/import-librerie.md) la
    risposta alla domanda «è roba di uno o di tutti?», e il rimedio di «Un

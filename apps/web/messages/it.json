@@ -14,7 +14,8 @@
     "privacy": "Privacy",
     "terms": "Termini",
     "madeWith": "Made with ♥ in Italy & EU",
-    "backToTop": "Torna su"
+    "backToTop": "Torna su",
+    "admin": "Admin"
   },
   "theme": {
     "label": "Tema",
@@ -761,5 +762,82 @@
       "trademarks": "I marchi appartengono ai rispettivi proprietari.",
       "fullList": "Elenco completo, file per file"
     }
+  },
+  "admin": {
+    "title": "Admin",
+    "nav": {
+      "label": "Sezioni dell'admin",
+      "missing": "Dati mancanti",
+      "unresolved": "Scarti",
+      "games": "Giochi",
+      "users": "Utenti"
+    },
+    "source": {
+      "igdb": "IGDB",
+      "hltb": "HowLongToBeat",
+      "opencritic": "OpenCritic",
+      "metacritic": "Metacritic"
+    },
+    "bucket": {
+      "pending": "In coda",
+      "fixable": "Da sistemare",
+      "fine": "Giusti così",
+      "empty": "Trovati ma vuoti",
+      "failed": "Falliti"
+    },
+    "reason": {
+      "too_old": "troppo vecchio",
+      "no_results": "nessun risultato",
+      "ambiguous": "ambiguo",
+      "year_mismatch": "anno diverso",
+      "taken": "già di un altro gioco",
+      "gone": "non esiste più"
+    },
+    "status": {
+      "pending": "in coda",
+      "ok": "ok",
+      "failed": "fallito",
+      "not_found": "non trovato"
+    },
+    "missing": {
+      "title": "Dati mancanti",
+      "description": "Fonte per stato. Ogni cella apre la lista sotto.",
+      "source": "Fonte",
+      "pendingSince": "dal {date}",
+      "emptyHltb": "senza durata",
+      "emptyScore": "senza voto",
+      "gamesWithoutIgdb": "Giochi senza id IGDB",
+      "unresolved": "Scarti d'import da sistemare",
+      "open": "Apri",
+      "listTitle": "{source} · {bucket}",
+      "reasonAll": "Motivo: tutti",
+      "search": "Cerca un gioco…",
+      "game": "Gioco",
+      "reasonColumn": "Motivo",
+      "users": "Utenti",
+      "retry": "Ritenta",
+      "setId": "Inserisci id",
+      "retried": "Rimessa in coda",
+      "retryFailed": "Non sono riuscito a rimetterla in coda",
+      "empty": "Niente qui.",
+      "pick": "Scegli una cella della tabella per vedere i giochi.",
+      "manual": "scritto a mano",
+      "failed": "Non sono riuscito a leggere i dati mancanti"
+    },
+    "setId": {
+      "title": "Inserisci id {source}",
+      "state": "Stato: {status}",
+      "candidates": "Candidati scartati dal match",
+      "use": "Usa questo",
+      "label": "Id o indirizzo della scheda",
+      "taken": "L'id {id} è già di «{game}». Si può: l'id scritto a mano è esente dall'unicità.",
+      "invalid": "Non è un id né un indirizzo di {source}.",
+      "after": "Dopo: la fonte va in coda, e il match per nome non si rifà.",
+      "cancel": "Annulla",
+      "save": "Salva e accoda",
+      "saved": "Id salvato, fonte in coda",
+      "failed": "Non sono riuscito a salvare l'id"
+    },
+    "forbidden": "Questa sezione è solo per gli admin."
   }
 }
