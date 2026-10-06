@@ -88,6 +88,9 @@ export const GameSchema = z.object({
   // senza campagna ha comunque un `hltbMainMinutes` — le 143 ore di
   // Counter-Strike 2 — che però è tempo investito, non una durata.
   hltbHasSolo: z.boolean().nullable(),
+  // Senza campagna ma con la co-op (Blanc) una fine c'è: serve a distinguerlo
+  // da Counter-Strike, che non ne ha nessuna.
+  hltbHasCoop: z.boolean().nullable(),
   // Che cos'è la scheda secondo IGDB: serve a dire «DLC» o «Bundle» accanto al
   // titolo, dove altrimenti sembrerebbe un gioco come gli altri. Null finché
   // l'enrichment non è passato.
@@ -517,6 +520,10 @@ export const BacklogFilterSchema = z.object({
   // le 143 ore di Counter-Strike 2 sono tempo investito, non una durata.
   durationMin: z.number().int().min(0).max(600_000).optional(),
   durationMax: z.number().int().min(0).max(600_000).optional(),
+  // Solo i giochi che non hanno una durata da mostrare: nessun dato HLTB, o
+  // nessuna fine. **Esclusivo**: se c'è, `durationMin` e `durationMax` si
+  // ignorano, perché in AND non troverebbero mai niente.
+  noDuration: z.boolean().optional(),
   ratingMin: RatingSchema.optional(),
   ratingMax: RatingSchema.optional(),
   criticMin: z.number().min(0).max(100).optional(),

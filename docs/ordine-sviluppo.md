@@ -87,18 +87,21 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
      si è avviato, cartucce comprese, che diventano `medium: physical`). Login col
      codice nell'indirizzo di un pulsante che non si clicca, session token da due
      anni, risoluzione per nome. Vedi «Nintendo (9d)» in [negozi](negozi.md) e
-     `plans/9d-nintendo.md`. **Rilascio da decidere**: il rinnovo lo fa il
-     server con due identità non nostre (l'app e il portale).
+     `plans/9d-nintendo.md`. **Rilasciato sul mini PC dal 06/10/2026**, per
+     provarlo su un server attivo; il rilascio agli altri utenti resta da
+     decidere: il rinnovo lo fa il server con due identità non nostre (l'app e
+     il portale).
    - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
      prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
      librerie», e per ora è volutamente aperta.
    - **9f — Steam con login e Family**: il login Steam col QR **accanto** al
      solo profilo pubblico (le due cose sulla stessa riga), e con lui la
      libreria della famiglia. La domanda sul «gioco di tuo fratello» ha avuto la
-     stessa risposta del PSN Plus: entra, marcato `steam_family`. **Fatto sul
-     branch `feat/9f-steam-login`, non rilasciato**: Steam ha
-     bloccato temporaneamente l'account dell'utente, e finché non si sa se un
-     login da server è accettato resta fermo. Vedi «Il blocco dell'account» in
+     stessa risposta del PSN Plus: entra, marcato `steam_family`. **Fatto, e dal 06/10/2026
+     rilasciato sul mini PC** per provarlo su un server attivo: Steam ha
+     bloccato temporaneamente l'account dell'utente, e la prova serve a sapere
+     se un login da server è accettato. Il rilascio agli altri utenti aspetta
+     l'esito. Vedi «Il blocco dell'account» in
      [negozi](negozi.md) e il piano in `plans/9f-steam-login.md`.
 10. **Import da file** — importazione di giochi da file CSV. **In analisi.**
     Il file di prova è un export di Playnite, in

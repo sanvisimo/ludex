@@ -157,6 +157,9 @@ const fields = {
   // "non filtrare", perché escluderebbe i giochi senza durata.
   durationMin: field(integer, null),
   durationMax: field(integer, null),
+  // Solo i giochi senza durata da mostrare. Esclusivo con i due di sopra: con la
+  // spunta accesa l'intervallo si azzera e lo slider si disattiva.
+  noDuration: field(flag, false),
   ratingMin: field(decimal, null),
   ratingMax: field(decimal, null),
   criticMin: field(integer, null),
@@ -245,6 +248,7 @@ const criteri = [
   'tags',
   'durationMin',
   'durationMax',
+  'noDuration',
   'ratingMin',
   'ratingMax',
   'criticMin',
@@ -281,6 +285,7 @@ export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
     tags: vuoto(filter.tags),
     durationMin: filter.durationMin ?? undefined,
     durationMax: filter.durationMax ?? undefined,
+    noDuration: filter.noDuration || undefined,
     ratingMin: filter.ratingMin ?? undefined,
     ratingMax: filter.ratingMax ?? undefined,
     criticMin: filter.criticMin ?? undefined,

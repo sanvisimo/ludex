@@ -35,6 +35,7 @@ export const gameColumns = {
   firstReleaseDate: true,
   hltbMainMinutes: true,
   hltbHasSolo: true,
+  hltbHasCoop: true,
   gameType: true,
   criticScore: true,
   criticScoreSource: true,

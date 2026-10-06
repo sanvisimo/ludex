@@ -46,8 +46,20 @@ export function escapeLike(term: string) {
  * non ha ancora visto, e "non lo so" non è "non ha una campagna". Escludere i
  * NULL qui vorrebbe dire che il filtro durata non trova nulla finché
  * l'enrichment non è passato su tutta la libreria.
+ *
+ * Un gioco solo co-op (Blanc) non ha la campagna ma ha una fine: HLTB gli dà
+ * dei tempi veri. Senza fine è solo ciò che non ha né l'una né l'altra. È la
+ * stessa regola di `GameDuration` sul web, e devono restare uguali: la card che
+ * mostra un numero che il filtro non trova è peggio di una che tace.
  */
-export const haUnaFine = sql`${schema.games.hltbHasSolo} is not false`;
+export const haUnaFine = sql`(${schema.games.hltbHasSolo} is not false or ${schema.games.hltbHasCoop} is true)`;
+
+/**
+ * La card non mostra nessuna durata: HLTB non l'ha ancora (o non la conosce),
+ * oppure il gioco non ha una fine. Il filtro «senza durata» trova esattamente
+ * questi, quelli che sulla card hanno la riga vuota.
+ */
+const senzaDurata = sql`(${schema.games.hltbMainMinutes} is null or not ${haUnaFine})`;
 
 /**
  * Un `EXISTS` correlato per ogni valore selezionato, tutti in AND.
@@ -220,17 +232,24 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
   // va bene così: un gioco senza durata non è un gioco corto. Il guard sulla
   // fine invece va aggiunto, o le 143 ore di Counter-Strike 2 entrerebbero fra
   // i giochi lunghi.
-  if (input.durationMin !== undefined) {
-    conditions.push(
-      gte(schema.games.hltbMainMinutes, input.durationMin),
-      haUnaFine,
-    );
-  }
-  if (input.durationMax !== undefined) {
-    conditions.push(
-      lte(schema.games.hltbMainMinutes, input.durationMax),
-      haUnaFine,
-    );
+  if (input.noDuration) {
+    // Esclusivo, non in AND con l'intervallo: un gioco senza durata non può
+    // stare in nessun intervallo, e l'AND darebbe sempre zero risultati. Con la
+    // spunta accesa l'intervallo si ignora (la UI lo disattiva).
+    conditions.push(senzaDurata);
+  } else {
+    if (input.durationMin !== undefined) {
+      conditions.push(
+        gte(schema.games.hltbMainMinutes, input.durationMin),
+        haUnaFine,
+      );
+    }
+    if (input.durationMax !== undefined) {
+      conditions.push(
+        lte(schema.games.hltbMainMinutes, input.durationMax),
+        haUnaFine,
+      );
+    }
   }
 
   if (input.ratingMin !== undefined) {

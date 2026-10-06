@@ -368,6 +368,12 @@ function ActiveChips() {
       label: `${t('criticShort')} ${range(filter.criticMin, null)}`,
       remove: () => setFilter({ criticMin: null }),
     });
+  if (filter.noDuration)
+    chips.push({
+      key: 'no-duration',
+      label: t('noDuration'),
+      remove: () => setFilter({ noDuration: null }),
+    });
   if (filter.neverPlayed)
     chips.push({
       key: 'never-played',
@@ -615,28 +621,53 @@ export function FilterPanel() {
       value: 'duration',
       label: t('durationShort'),
       active:
-        filter.durationMin !== null || filter.durationMax !== null ? 1 : 0,
+        filter.durationMin !== null ||
+        filter.durationMax !== null ||
+        filter.noDuration
+          ? 1
+          : 0,
       body: (
-        <RangeFilter
-          min={0}
-          max={DURATION_MAX_HOURS}
-          step={0.5}
-          low={hours(filter.durationMin)}
-          high={hours(filter.durationMax)}
-          text={(low, high) => range(low, high, h)}
-          thumbLabels={[t('durationMinThumb'), t('durationMaxThumb')]}
-          help={t('durationLabel')}
-          // Il filtro esclude chi una durata non ce l'ha, e chi una fine non
-          // ce l'ha. Detto qui una volta, invece di lasciar credere che quei
-          // giochi siano spariti.
-          hint={t('durationHint')}
-          onCommit={(low, high) =>
-            setFilter({
-              durationMin: low === null ? null : Math.round(low * 60),
-              durationMax: high === null ? null : Math.round(high * 60),
-            })
-          }
-        />
+        <YStack gap={12}>
+          <RangeFilter
+            min={0}
+            max={DURATION_MAX_HOURS}
+            step={0.5}
+            low={hours(filter.durationMin)}
+            high={hours(filter.durationMax)}
+            text={(low, high) => range(low, high, h)}
+            thumbLabels={[t('durationMinThumb'), t('durationMaxThumb')]}
+            help={t('durationLabel')}
+            // Il filtro esclude chi una durata non ce l'ha, e chi una fine non
+            // ce l'ha. Detto qui una volta, invece di lasciar credere che quei
+            // giochi siano spariti.
+            hint={t('durationHint')}
+            disabled={filter.noDuration}
+            onCommit={(low, high) =>
+              setFilter({
+                durationMin: low === null ? null : Math.round(low * 60),
+                durationMax: high === null ? null : Math.round(high * 60),
+              })
+            }
+          />
+          <XStack gap={8} items="center">
+            <Checkbox
+              id={`${prefix}-no-duration`}
+              checked={filter.noDuration}
+              // Esclusivo con l'intervallo: accenderla lo azzera, o il chip e lo
+              // slider direbbero due cose.
+              onCheckedChange={(checked) =>
+                setFilter({
+                  noDuration: checked === true || null,
+                  ...(checked === true && {
+                    durationMin: null,
+                    durationMax: null,
+                  }),
+                })
+              }
+            />
+            <Label htmlFor={`${prefix}-no-duration`}>{t('noDuration')}</Label>
+          </XStack>
+        </YStack>
       ),
     },
     {
@@ -833,6 +864,7 @@ function RangeFilter({
   thumbLabels,
   help,
   hint,
+  disabled = false,
   onCommit,
 }: {
   min: number;
@@ -844,6 +876,7 @@ function RangeFilter({
   thumbLabels: string[];
   help?: string;
   hint?: string;
+  disabled?: boolean;
   onCommit: (low: number | null, high: number | null) => void;
 }) {
   const double = high !== undefined;
@@ -896,6 +929,7 @@ function RangeFilter({
           value={value}
           onValueChange={setValue}
           thumbLabels={thumbLabels}
+          disabled={disabled}
           mx={8}
         />
       ) : (

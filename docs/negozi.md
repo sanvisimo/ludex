@@ -5,8 +5,9 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 Steam è l'eccezione, non il modello: una chiave applicativa nostra, un profilo
 pubblico, zero credenziali dell'utente. Nessun altro negozio funziona così. Il 9f
 gli aggiunge un login **facoltativo** col QR, sulla stessa riga dell'account: è
-sul branch `feat/9f-steam-login` e **non è rilasciato**, vedi «Il blocco
-dell'account» più sotto.
+in `main` e, dal 06/10/2026, **rilasciato sul mini PC** per provarlo su un server
+attivo: la prova è il modo per sapere se un login da server è accettato. Vedi
+«Il blocco dell'account» più sotto.
 
 Playnite li risolve tutti aprendo una webview, ma **la webview gli serve una
 volta sola**: fatto il login tiene i cookie o i token su disco e da lì in poi usa
@@ -586,7 +587,11 @@ si può rilasciare:
 - se un blocco simile colpirebbe gli altri utenti di Ludex, che farebbero un solo
   login ciascuno ma tutti da un solo indirizzo.
 
-Finché non c'è una risposta il login Steam **non si rilascia**, e **nessun probe o
+**Aggiornamento del 06/10/2026**: Steam e Nintendo sono rilasciati sul mini PC,
+apposta per provarli su un server attivo. Non è la risposta, è il modo per
+averla: se l'account viene bloccato di nuovo, va scritto qui e il login si
+spegne. Fino ad allora il rilascio **agli altri utenti** resta una decisione
+aperta, e **nessun probe o
 prova si lancia contro un account vero senza averlo concordato** (vedi l'avvertimento
 in cima al probe). Le strade, a decisione presa: tenere il codice dietro un
 interruttore spento, restare col solo profilo pubblico (che non tocca l'account),

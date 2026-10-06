@@ -1,7 +1,9 @@
 # Step 9d — Nintendo
 
-**Stato: passi 3, 4, 5 e 6 fatti (il 5 da guardare a schermo); niente rilasciato, niente
-committato.** Branch `feat/9d-nintendo`, da `main` (il 9f è dentro, mergiato con la #36).
+**Stato: passi 3, 4, 5 e 6 fatti (il 5 da guardare a schermo). Il codice è in `main`
+(`cfd7568`) e dal 06/10/2026 è rilasciato sul mini PC**, per provarlo su un server
+attivo; il rilascio agli altri utenti resta da decidere (vedi il punto 6 più sotto).
+Il 9f è dentro (mergiato con la #36).
 Le misure sono state fatte dall'utente, col suo account, in tre giri (`nintendo:probe`,
 `nintendo:vgc-probe`, `nintendo:vgc-probe --app-token`): in tutto una manciata di
 richieste a Nintendo, nessun errore. **Nessuna richiesta a Nintendo è stata fatta da
@@ -123,8 +125,9 @@ valgono per **tutto** il lotto, non solo per il probe:
 6. Resta un rischio di prodotto, da scrivere in `docs/`: un client non ufficiale
    [può violare il contratto Nintendo](https://pkg.go.dev/github.com/wolveix/nintendo-go),
    e il rinnovo per conto di molti utenti da un solo indirizzo è la stessa
-   domanda che ha fermato il 9f. **Non rilasciare senza averci pensato**, e valutare
-   un interruttore spento come per Steam.
+   domanda che ha fermato il 9f. **Non rilasciarlo agli altri utenti senza averci pensato**, e
+   valutare un interruttore spento come per Steam. Sul mini PC è rilasciato dal
+   06/10/2026, proprio per vedere come si comporta il rinnovo da server.
 
    Una precisazione sul perché il rischio è piccolo **in locale**: il login lo fa
    l'utente dal suo browser, ma il rinnovo lo fa il **server**, che non è il suo
