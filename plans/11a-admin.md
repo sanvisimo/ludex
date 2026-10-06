@@ -457,6 +457,15 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
    costerebbe una richiesta per risultato sul budget del giorno; resta il
    riquadro vuoto, della stessa misura.
 
+   **8d fatto** (06/10/2026):
+   [\_app.admin.utenti.tsx](../apps/web/src/routes/_app.admin.utenti.tsx).
+   Tabella con nome (e «tu» sulla propria riga), email, iscrizione, giochi,
+   account, stato (admin, bannato, bannato fino al…); ricerca per nome o email
+   nell'indirizzo; «Azioni ▾» con rendi/togli admin, banna (dialogo: motivo
+   facoltativo e scadenza fra 1, 7, 30, 365 giorni o per sempre), togli il
+   ban, chiudi le sessioni. Sulla propria riga «Togli admin» e «Banna» non ci
+   sono: il server li rifiuterebbe comunque.
+
    **8g, aggiunto vedendolo in uso** (06/10/2026): i filtri anche nelle pagine
    dell'utente **«Da sistemare»** e **«Nascosti»** di `/account`, come quelli
    degli scarti dell'admin: ricerca per nome e negozio, nell'indirizzo.

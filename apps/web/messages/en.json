@@ -968,6 +968,42 @@
     },
     "reported": {
       "title": "Reported"
+    },
+    "users": {
+      "title": "Users",
+      "search": "Search by name or email…",
+      "name": "Name",
+      "email": "Email",
+      "joined": "Joined",
+      "games": "Games",
+      "accounts": "Accounts",
+      "role": "Role",
+      "state": "State",
+      "admin": "admin",
+      "you": "you",
+      "banned": "banned",
+      "bannedUntil": "banned until {date}",
+      "actions": "Actions",
+      "makeAdmin": "Make admin",
+      "removeAdmin": "Remove admin",
+      "ban": "Ban…",
+      "unban": "Remove ban",
+      "revoke": "Close sessions",
+      "roleChanged": "Role changed",
+      "banned_": "User banned: their sessions are closed",
+      "unbanned": "Ban removed",
+      "revoked": "Sessions closed: they'll have to sign in again",
+      "failed": "That didn't work",
+      "empty": "No users.",
+      "loadFailed": "Couldn't load the users",
+      "banTitle": "Ban {name}",
+      "banReason": "Reason (optional)",
+      "banExpires": "Expiry",
+      "banForever": "Forever",
+      "banDays": "{count, plural, one {# day} other {# days}}",
+      "banHint": "Closes their sessions right away, and while it lasts they can't sign in.",
+      "banConfirm": "Ban",
+      "cancel": "Cancel"
     }
   }
 }

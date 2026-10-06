@@ -968,6 +968,42 @@
     },
     "reported": {
       "title": "Segnalati"
+    },
+    "users": {
+      "title": "Utenti",
+      "search": "Cerca per nome o email…",
+      "name": "Nome",
+      "email": "Email",
+      "joined": "Iscritto",
+      "games": "Giochi",
+      "accounts": "Account",
+      "role": "Ruolo",
+      "state": "Stato",
+      "admin": "admin",
+      "you": "tu",
+      "banned": "bannato",
+      "bannedUntil": "bannato fino al {date}",
+      "actions": "Azioni",
+      "makeAdmin": "Rendi admin",
+      "removeAdmin": "Togli admin",
+      "ban": "Banna…",
+      "unban": "Togli il ban",
+      "revoke": "Chiudi le sessioni",
+      "roleChanged": "Ruolo cambiato",
+      "banned_": "Utente bannato: le sue sessioni sono chiuse",
+      "unbanned": "Ban tolto",
+      "revoked": "Sessioni chiuse: dovrà riaccedere",
+      "failed": "Non ci sono riuscito",
+      "empty": "Nessun utente.",
+      "loadFailed": "Non sono riuscito a leggere gli utenti",
+      "banTitle": "Banna {name}",
+      "banReason": "Motivo (facoltativo)",
+      "banExpires": "Scadenza",
+      "banForever": "Per sempre",
+      "banDays": "{count, plural, one {# giorno} other {# giorni}}",
+      "banHint": "Chiude subito le sue sessioni, e finché dura non potrà accedere.",
+      "banConfirm": "Banna",
+      "cancel": "Annulla"
     }
   }
 }
