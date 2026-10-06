@@ -326,6 +326,22 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
 7. **Utenti**: nome, email, iscrizione, numero di giochi e di account
    collegati. Azioni: ruolo, ban e rimozione del ban, chiudi le sessioni. Niente
    cancellazione (step 16) e niente impersonazione.
+   **Fatto** (06/10/2026), solo l'api. Servizio
+   [admin-users.ts](../apps/api/src/services/admin-users.ts) per la lista
+   (giochi e account contati per utente); ruolo, ban, rimozione del ban e
+   chiusura delle sessioni passano dalle API del plugin di Better Auth, con le
+   intestazioni dell'admin, e i loro errori diventano errori oRPC in
+   [admin-auth.ts](../apps/api/src/rpc/admin-auth.ts). `APIError` lo
+   riesporta `@repo/auth`, perché `apps/api` non dipenda da `better-auth`.
+   Cose che il piano non diceva:
+   - il plugin banna e chiude le sessioni in un colpo, rifiuta il ban di se
+     stessi e, passata la scadenza, toglie il ban da solo al primo accesso. La
+     protezione aggiunta qui è una: **il proprio ruolo non si toglie**, o si
+     resta senza admin;
+   - **al passo 8** il web deve tradurre `BANNED_USER` in
+     [auth-error.ts](../apps/web/lib/auth-error.ts): oggi chi è bannato
+     vedrebbe il messaggio generico del login.
+
 8. **Web**: `/admin` col menu a sinistra come `/account`, sotto-rotte
    `mancanti`, `scarti`, `giochi`, `utenti`. Il link compare solo agli admin;
    la rotta rimanda via chi non lo è (la sicurezza vera la fa il middleware).
