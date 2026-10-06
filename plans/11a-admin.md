@@ -42,6 +42,12 @@ Cosa c'è già, letto dal codice:
 - **Uno scarto nascosto può valere per tutti, e si fa ora.** Vedi sotto.
 - **Ripuntare un collegamento sbagliato sta qui, non nell'11b** (06/10/2026),
   ed è **solo dell'admin**. Lo ha riportato dentro il caso Toki, sotto.
+- **L'utente segnala, l'admin corregge** (06/10/2026). Un collegamento
+  sbagliato non lo vede nessun automatismo: il gioco ha `igdbId` e le fonti in
+  `found`, quindi non finisce in nessuna lista. Lo vede solo chi ce l'ha in
+  libreria. Dalla pagina del gioco l'utente lo segnala, e può suggerire il
+  gioco giusto (nome o id IGDB); l'admin trova le segnalazioni nella sezione
+  Giochi.
 
 ## Il caso Toki (06/10/2026)
 
@@ -76,6 +82,20 @@ Due rimedi, tutti e due in questo lotto:
   dell'admin (passo 6). Solo admin, perché la riga è di tutti: collegare uno
   scarto riempie un vuoto, ripuntare cambia la libreria di chi il gioco ce l'ha
   già. Lo stesso confine degli scarti nascosti per tutti.
+
+**Chi se ne accorge è l'utente**, e l'admin lo sa solo se glielo dice: da qui
+la segnalazione (passo 6). Intanto l'utente non deve fare niente: quando
+l'admin ripunta, la sua copia si sposta da sola. Se nel frattempo il gioco gli
+dà fastidio, lo nasconde con `hidden_at`.
+
+Le casistiche, messe in fila:
+
+| Caso                                                        | Chi lo vede    | Chi corregge                                 |
+| ----------------------------------------------------------- | -------------- | -------------------------------------------- |
+| import collegato male (Toki): `external_ids` sbagliata      | l'utente       | l'admin, su segnalazione                     |
+| aggiunto a mano scegliendo la scheda IGDB sbagliata         | l'utente       | l'utente: lo toglie e aggiunge quello giusto |
+| gioco senza `igdbId`                                        | la lista admin | l'admin                                      |
+| fonte `found` ma sul gioco sbagliato (HLTB, OpenCritic, MC) | l'utente       | l'admin, su segnalazione, con «Inserisci id» |
 
 **Le copie non sanno da quale id sono nate**: `ownerships` non ha l'id del
 negozio. Spostarle vuol dire prendere, sul gioco sbagliato, le copie di quel
@@ -115,8 +135,9 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
    `authed`, rifiuta chi non ha `role = 'admin'`), gruppo `admin.*` nel
    contratto. Script per nominare il primo admin per email, documentato in
    [apps/api/CLAUDE.md](../apps/api/CLAUDE.md).
-3. **Wireframe** (Excalidraw, `11a-admin.excalidraw`) di `/admin` e delle
-   quattro sezioni. Si corregge lì finché la struttura non è approvata.
+3. **Wireframe** (Excalidraw, `11a-admin.excalidraw`) di `/admin`, delle
+   quattro sezioni e del form di segnalazione sulla pagina del gioco. Si
+   corregge lì finché la struttura non è approvata.
 4. **Fonti in `not_found`**: lista filtrabile per fonte, con gioco, motivo
    (`error`) e quanti utenti ce l'hanno. Azioni «Ritenta» (in coda) e
    «Inserisci id» (`external_id` scritto, `pending`, in coda).
@@ -126,16 +147,33 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
      scarti di ogni utente con quella chiave, con la stessa logica di
      `resolveUnresolvedImport`;
    - **«Nascondi per tutti»** con il tipo, e il suo rovescio: la sezione sopra.
-6. **Giochi**, due gesti:
+6. **Giochi**, quattro pezzi, l'ultimo fuori dall'admin:
    - **non collegati** (senza `igdbId`): lista, con quanti utenti li hanno in
      backlog. Azione «Collega a IGDB» se l'id è libero, altrimenti un messaggio
      che rimanda all'11b;
+   - **segnalazioni**: una tabella nuova, `game_reports`: utente, gioco, cosa è
+     sbagliato (la copia di un negozio, oppure una fonte: `hltb`, `opencritic`,
+     `metacritic`), il suggerimento facoltativo (`suggested_igdb_id` e
+     `suggested_name`), una nota libera, quando, e `resolved_at` /
+     `resolved_by`. Una sola segnalazione aperta per utente, gioco e cosa:
+     risegnalare aggiorna quella. Nell'admin sono raggruppate per gioco, con
+     quanti utenti l'hanno detto e i suggerimenti; da lì si apre il gioco con
+     il suggerimento già nella ricerca. Si chiudono da sole quando l'admin
+     corregge quella cosa su quel gioco, oppure a mano con «Archivia»;
    - **collegati male**, il caso Toki: dal gioco, le sue righe di
      `external_ids`, e l'azione «Non è questo gioco» con la ricerca IGDB. Ripunta
      la riga (il gioco giusto lo crea `resolveGameFromIgdb` se non c'è), sposta
      sul gioco giusto le copie di quel negozio di ogni utente che le ha, e le
-     mostra prima di confermare. Le righe di backlog che restano senza copie
-     non si cancellano: sono roba dell'utente, con voto e note.
+     mostra prima di confermare. **La riga di backlog**, per ogni utente: se sul
+     gioco sbagliato non ha altre copie, si sposta tutta (stato, voto, note,
+     tag) sul gioco giusto, perché quel voto l'ha dato al gioco che credeva di
+     avere; se ha altre copie, o ha già il gioco giusto in backlog, si spostano
+     solo le copie e la riga resta (le due righe dello stesso utente sono l'11b).
+   - **Lato utente**, sulla pagina del gioco: «Segnala un errore», un form
+     piccolo con cosa è sbagliato (le copie per negozio, le fonti), «Suggerisci
+     il gioco giusto» con la ricerca IGDB già usata per l'inserimento a mano
+     (sceglierne uno dà l'id) o un nome scritto libero, e una nota. Con una
+     segnalazione aperta, al posto del bottone c'è «Segnalato il …».
 7. **Utenti**: nome, email, iscrizione, numero di giochi e di account
    collegati. Azioni: ruolo, ban e rimozione del ban, chiudi le sessioni. Niente
    cancellazione (step 16) e niente impersonazione.
@@ -162,15 +200,21 @@ Test contro Postgres, in `apps/api`:
 - a parità di nome vince il candidato uscito sulla piattaforma della voce, e
   senza piattaforma il risultato è quello di oggi (Toki come caso di test);
 - «Non è questo gioco» ripunta la riga, sposta le copie di quel negozio e,
-  ripetuto, non cambia niente; un import successivo legge la riga nuova.
+  ripetuto, non cambia niente; un import successivo legge la riga nuova;
+- dopo «Non è questo gioco», chi aveva solo quella copia ritrova voto e note
+  sul gioco giusto e nessuna riga sul gioco sbagliato; chi ha anche un'altra
+  copia, o aveva già il gioco giusto, ha le due righe come prima, con le copie
+  spostate;
+- risegnalare lo stesso gioco aggiorna la segnalazione aperta, non ne crea
+  un'altra; correggere quella cosa la chiude.
 
-`global_hidden_imports` non è seedata da una migration, quindi non va aggiunta
-alla lista delle tabelle escluse dal troncamento.
+`global_hidden_imports` e `game_reports` non sono seedate da una migration,
+quindi non vanno aggiunte alla lista delle tabelle escluse dal troncamento.
 
 ## Fuori da questo lotto
 
 - **11b — fusione di due righe `games`**, con backlog, possessi,
   `external_ids` e le due righe di backlog dello stesso utente.
 - Ripuntare un collegamento **dalla pagina del gioco**, per ogni utente: no,
-  solo admin (vedi «Il caso Toki»).
+  solo admin (vedi «Il caso Toki»). Dalla pagina del gioco si segnala.
 - Cancellazione ed esportazione dell'account: step 16.
