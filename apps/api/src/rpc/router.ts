@@ -30,6 +30,7 @@ import {
   missingSummary,
   parseSourceId,
   retrySource,
+  searchSource,
   setSourceExternalId,
 } from '../services/admin-sources';
 import {
@@ -744,6 +745,22 @@ export const router = os.router({
             input.gameId,
           );
           return { externalId, owner };
+        }),
+
+      search: os.admin.sources.search
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          const esito = await searchSource(input.source, input.query);
+          if (esito.status === 'disabled')
+            throw new ORPCError('PRECONDITION_FAILED', {
+              message: 'OpenCritic è spento in questo ambiente',
+            });
+          if (esito.status === 'quota')
+            throw new ORPCError('TOO_MANY_REQUESTS', {
+              message: 'Le ricerche OpenCritic di oggi sono finite',
+            });
+          return { hits: esito.hits, searchesLeft: esito.searchesLeft };
         }),
 
       setExternalId: os.admin.sources.setExternalId

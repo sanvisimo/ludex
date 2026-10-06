@@ -28,11 +28,12 @@ import { Route as AppAccountLibrerieRouteImport } from './routes/_app.account.li
 import { Route as AppAccountNascostiRouteImport } from './routes/_app.account.nascosti'
 import { Route as AppAccountProfiloRouteImport } from './routes/_app.account.profilo'
 import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
-import { Route as AppAdminGiochiRouteImport } from './routes/_app.admin.giochi'
 import { Route as AppAdminMancantiRouteImport } from './routes/_app.admin.mancanti'
 import { Route as AppAdminScartiRouteImport } from './routes/_app.admin.scarti'
+import { Route as AppAdminSegnalatiRouteImport } from './routes/_app.admin.segnalati'
 import { Route as AppAdminUtentiRouteImport } from './routes/_app.admin.utenti'
 import { Route as AppGamesSlugRouteImport } from './routes/_app.games.$slug'
+import { Route as AppAdminGiochiSlugRouteImport } from './routes/_app.admin.giochi.$slug'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -126,11 +127,6 @@ const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppAdminGiochiRoute = AppAdminGiochiRouteImport.update({
-  id: '/giochi',
-  path: '/giochi',
-  getParentRoute: () => AppAdminRoute,
-} as any)
 const AppAdminMancantiRoute = AppAdminMancantiRouteImport.update({
   id: '/mancanti',
   path: '/mancanti',
@@ -139,6 +135,11 @@ const AppAdminMancantiRoute = AppAdminMancantiRouteImport.update({
 const AppAdminScartiRoute = AppAdminScartiRouteImport.update({
   id: '/scarti',
   path: '/scarti',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminSegnalatiRoute = AppAdminSegnalatiRouteImport.update({
+  id: '/segnalati',
+  path: '/segnalati',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminUtentiRoute = AppAdminUtentiRouteImport.update({
@@ -150,6 +151,11 @@ const AppGamesSlugRoute = AppGamesSlugRouteImport.update({
   id: '/games/$slug',
   path: '/games/$slug',
   getParentRoute: () => AppRoute,
+} as any)
+const AppAdminGiochiSlugRoute = AppAdminGiochiSlugRouteImport.update({
+  id: '/giochi/$slug',
+  path: '/giochi/$slug',
+  getParentRoute: () => AppAdminRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -167,13 +173,14 @@ export interface FileRoutesByFullPath {
   '/account/librerie': typeof AppAccountLibrerieRoute
   '/account/nascosti': typeof AppAccountNascostiRoute
   '/account/profilo': typeof AppAccountProfiloRoute
-  '/admin/giochi': typeof AppAdminGiochiRoute
   '/admin/mancanti': typeof AppAdminMancantiRoute
   '/admin/scarti': typeof AppAdminScartiRoute
+  '/admin/segnalati': typeof AppAdminSegnalatiRoute
   '/admin/utenti': typeof AppAdminUtentiRoute
   '/games/$slug': typeof AppGamesSlugRoute
   '/account/': typeof AppAccountIndexRoute
   '/admin/': typeof AppAdminIndexRoute
+  '/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
@@ -188,13 +195,14 @@ export interface FileRoutesByTo {
   '/account/librerie': typeof AppAccountLibrerieRoute
   '/account/nascosti': typeof AppAccountNascostiRoute
   '/account/profilo': typeof AppAccountProfiloRoute
-  '/admin/giochi': typeof AppAdminGiochiRoute
   '/admin/mancanti': typeof AppAdminMancantiRoute
   '/admin/scarti': typeof AppAdminScartiRoute
+  '/admin/segnalati': typeof AppAdminSegnalatiRoute
   '/admin/utenti': typeof AppAdminUtentiRoute
   '/games/$slug': typeof AppGamesSlugRoute
   '/account': typeof AppAccountIndexRoute
   '/admin': typeof AppAdminIndexRoute
+  '/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -215,13 +223,14 @@ export interface FileRoutesById {
   '/_app/account/librerie': typeof AppAccountLibrerieRoute
   '/_app/account/nascosti': typeof AppAccountNascostiRoute
   '/_app/account/profilo': typeof AppAccountProfiloRoute
-  '/_app/admin/giochi': typeof AppAdminGiochiRoute
   '/_app/admin/mancanti': typeof AppAdminMancantiRoute
   '/_app/admin/scarti': typeof AppAdminScartiRoute
+  '/_app/admin/segnalati': typeof AppAdminSegnalatiRoute
   '/_app/admin/utenti': typeof AppAdminUtentiRoute
   '/_app/games/$slug': typeof AppGamesSlugRoute
   '/_app/account/': typeof AppAccountIndexRoute
   '/_app/admin/': typeof AppAdminIndexRoute
+  '/_app/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -240,13 +249,14 @@ export interface FileRouteTypes {
     | '/account/librerie'
     | '/account/nascosti'
     | '/account/profilo'
-    | '/admin/giochi'
     | '/admin/mancanti'
     | '/admin/scarti'
+    | '/admin/segnalati'
     | '/admin/utenti'
     | '/games/$slug'
     | '/account/'
     | '/admin/'
+    | '/admin/giochi/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -261,13 +271,14 @@ export interface FileRouteTypes {
     | '/account/librerie'
     | '/account/nascosti'
     | '/account/profilo'
-    | '/admin/giochi'
     | '/admin/mancanti'
     | '/admin/scarti'
+    | '/admin/segnalati'
     | '/admin/utenti'
     | '/games/$slug'
     | '/account'
     | '/admin'
+    | '/admin/giochi/$slug'
   id:
     | '__root__'
     | '/_app'
@@ -287,13 +298,14 @@ export interface FileRouteTypes {
     | '/_app/account/librerie'
     | '/_app/account/nascosti'
     | '/_app/account/profilo'
-    | '/_app/admin/giochi'
     | '/_app/admin/mancanti'
     | '/_app/admin/scarti'
+    | '/_app/admin/segnalati'
     | '/_app/admin/utenti'
     | '/_app/games/$slug'
     | '/_app/account/'
     | '/_app/admin/'
+    | '/_app/admin/giochi/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -436,13 +448,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminIndexRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/admin/giochi': {
-      id: '/_app/admin/giochi'
-      path: '/giochi'
-      fullPath: '/admin/giochi'
-      preLoaderRoute: typeof AppAdminGiochiRouteImport
-      parentRoute: typeof AppAdminRoute
-    }
     '/_app/admin/mancanti': {
       id: '/_app/admin/mancanti'
       path: '/mancanti'
@@ -455,6 +460,13 @@ declare module '@tanstack/react-router' {
       path: '/scarti'
       fullPath: '/admin/scarti'
       preLoaderRoute: typeof AppAdminScartiRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/segnalati': {
+      id: '/_app/admin/segnalati'
+      path: '/segnalati'
+      fullPath: '/admin/segnalati'
+      preLoaderRoute: typeof AppAdminSegnalatiRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/utenti': {
@@ -470,6 +482,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/games/$slug'
       preLoaderRoute: typeof AppGamesSlugRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/admin/giochi/$slug': {
+      id: '/_app/admin/giochi/$slug'
+      path: '/giochi/$slug'
+      fullPath: '/admin/giochi/$slug'
+      preLoaderRoute: typeof AppAdminGiochiSlugRouteImport
+      parentRoute: typeof AppAdminRoute
     }
   }
 }
@@ -507,19 +526,21 @@ const AppAccountRouteWithChildren = AppAccountRoute._addFileChildren(
 )
 
 interface AppAdminRouteChildren {
-  AppAdminGiochiRoute: typeof AppAdminGiochiRoute
   AppAdminMancantiRoute: typeof AppAdminMancantiRoute
   AppAdminScartiRoute: typeof AppAdminScartiRoute
+  AppAdminSegnalatiRoute: typeof AppAdminSegnalatiRoute
   AppAdminUtentiRoute: typeof AppAdminUtentiRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
+  AppAdminGiochiSlugRoute: typeof AppAdminGiochiSlugRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
-  AppAdminGiochiRoute: AppAdminGiochiRoute,
   AppAdminMancantiRoute: AppAdminMancantiRoute,
   AppAdminScartiRoute: AppAdminScartiRoute,
+  AppAdminSegnalatiRoute: AppAdminSegnalatiRoute,
   AppAdminUtentiRoute: AppAdminUtentiRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
+  AppAdminGiochiSlugRoute: AppAdminGiochiSlugRoute,
 }
 
 const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(

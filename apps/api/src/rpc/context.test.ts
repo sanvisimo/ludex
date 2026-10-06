@@ -75,6 +75,11 @@ describe('le procedure admin.*', () => {
       { gameId, source: 'hltb', externalId: '1' },
     ],
     [
+      'sources.search',
+      router.admin.sources.search,
+      { source: 'hltb', query: 'xx' },
+    ],
+    [
       'sources.setExternalId',
       router.admin.sources.setExternalId,
       { gameId, source: 'hltb', externalId: '1' },

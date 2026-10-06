@@ -347,12 +347,41 @@ describe('la scheda admin di un gioco', () => {
       suggestedName: 'Toki 2018',
     });
 
+    await db
+      .insert(schema.externalIds)
+      .values({ gameId: arcade.id, source: 'steam', externalId: '1058320' });
+    await db
+      .insert(schema.gameSources)
+      .values({
+        gameId: arcade.id,
+        source: 'hltb',
+        status: 'ok',
+        externalId: '5023',
+      });
+
     const detail = await gameAdminDetail(arcade.slug);
 
     expect(detail).toMatchObject({
       game: { name: 'Toki', users: 1 },
-      links: [
-        { source: 'nintendo', externalId: TOKI_NINTENDO, users: 1, copies: 1 },
+      // Nintendo un link non lo dà; Steam lo si ricava dall'appid.
+      links: expect.arrayContaining([
+        expect.objectContaining({
+          source: 'nintendo',
+          externalId: TOKI_NINTENDO,
+          users: 1,
+          copies: 1,
+          url: null,
+        }),
+        expect.objectContaining({
+          source: 'steam',
+          url: 'https://store.steampowered.com/app/1058320',
+        }),
+      ]),
+      sources: [
+        expect.objectContaining({
+          source: 'hltb',
+          url: 'https://howlongtobeat.com/game/5023',
+        }),
       ],
       reports: [
         {

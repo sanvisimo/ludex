@@ -404,6 +404,59 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
    versione di prova» nel menu per nascondere, «Demo o prova» nel tab, che sul
    telefono deve stare in una riga.
 
+   **8c fatto** (06/10/2026):
+   [\_app.admin.giochi.tsx](../apps/web/src/routes/_app.admin.giochi.tsx) con
+   le tab «Segnalazioni» e «Non collegati» e la ricerca nel catalogo che apre
+   la scheda; la scheda è
+   [\_app.admin.giochi\_.$slug.tsx](../apps/web/src/routes/_app.admin.giochi_.$slug.tsx),
+   rotta **non annidata** (`giochi_`), perché la scheda sta accanto alla lista
+   e non dentro. «Non è questo gioco» è
+   [repoint-dialog.tsx](../apps/web/components/admin/repoint-dialog.tsx): un
+   dialogo solo, come per gli scarti — prima `IgdbPicker`, che parte dal
+   suggerimento della segnalazione (l'id IGDB se c'è, se no il nome), poi
+   l'anteprima utente per utente, poi «Ripunta». «Collega a IGDB» usa
+   `IgdbPickDialog`. In «Dati mancanti» il gioco ora porta alla scheda admin.
+
+   **8c rivisto, visto in uso** (06/10/2026, wireframe aggiornato e
+   approvato: frame 1, 2, 4). Cliccare sui numeri non era intuitivo, e
+   «Giochi → Non collegati» faceva pensare ai giochi senza HLTB o voto:
+   - **«Dati mancanti»**: il riepilogo resta (i numeri sono link), e sotto
+     una **tab per fonte** — IGDB | HLTB | OpenCritic | Metacritic, col numero
+     da sistemare — con il filtro per stato e la lista già aperta. Per fonte e
+     non per stato perché i gesti cambiano con la fonte. Nella tab IGDB,
+     «Da sistemare» comprende i **giochi senza id IGDB**, con «Collega a IGDB»
+     ([unlinked-games.tsx](../apps/web/components/admin/unlinked-games.tsx));
+   - **«Giochi» è diventato «Segnalati»**
+     ([\_app.admin.segnalati.tsx](../apps/web/src/routes/_app.admin.segnalati.tsx)),
+     solo segnalazioni; la scheda resta a `/admin/giochi/:slug` (non più
+     `giochi_`, perché la lista sopra non c'è più) e «indietro» torna da dove
+     si è venuti; **«Apri un gioco»** sta nell'intestazione di tutto l'admin
+     ([catalog-finder.tsx](../apps/web/components/admin/catalog-finder.tsx));
+   - **«Ritenta» è «Riprova»**, col tooltip «la rimette in coda e rifà il
+     match: per id, se ce n'è uno»;
+   - **«Inserisci id» ha due bottoni**: «Aggiungi» salva l'id o l'indirizzo
+     senza cercare, e un nome lo rifiuta («Non è un id: per un nome usa
+     Cerca»); «Cerca» usa il testo come nome sulla fonte e mostra i
+     risultati — procedura nuova `admin.sources.search`, con i client
+     dell'enrichment. HLTB e Metacritic non costano; OpenCritic sì, una delle
+     25 ricerche del giorno: il dialogo lo dice prima, e dopo dice quante ne
+     restano (lo dichiara la risposta). L'avviso sull'id già usato è solo
+     «L'id … è già di «…»»;
+   - **la scheda ha i link** alle pagine di negozi e fonti, per controllare
+     che siano quelle giuste. Le fonti con `sourceLinks`, gli stessi della
+     pagina pubblica; i negozi con la pagina che l'import ha salvato su una
+     copia, e senza copie dall'id dove la forma è nota — Steam per appid, PSN
+     per concept, Xbox per id prodotto, GOG via gogdb.org. Epic, Amazon e
+     Nintendo un link non lo danno.
+
+   **Le copertine nella ricerca delle fonti** (06/10/2026, visto in uso):
+   come per IGDB, a 72 px. HLTB e Metacritic le danno già nei risultati
+   (`game_image` sotto `howlongtobeat.com/games/`; la `cardImage` sotto
+   `metacritic.com/a/img/catalog`), aggiunte ai client come campo facoltativo
+   — al match non servono. OpenCritic no: la ricerca non le dà, e prenderle
+   costerebbe una richiesta per risultato sul budget del giorno; resta il
+   riquadro vuoto, della stessa misura.
+
    **8g, aggiunto vedendolo in uso** (06/10/2026): i filtri anche nelle pagine
    dell'utente **«Da sistemare»** e **«Nascosti»** di `/account`, come quelli
    degli scarti dell'admin: ricerca per nome e negozio, nell'indirizzo.

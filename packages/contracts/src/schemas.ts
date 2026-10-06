@@ -765,6 +765,7 @@ export const GameAdminDetailSchema = z.object({
     name: z.string(),
     slug: z.string(),
     igdbId: z.number().int().nullable(),
+    igdbSlug: z.string().nullable(),
     firstReleaseDate: z.date().nullable(),
     gameType: GameTypeSchema.nullable(),
     coverImageId: z.string().nullable(),
@@ -778,6 +779,8 @@ export const GameAdminDetailSchema = z.object({
       // Per negozio, non per id: le copie non sanno da quale id sono nate.
       users: z.number().int(),
       copies: z.number().int(),
+      // La pagina sul negozio, per controllare che sia il gioco giusto.
+      url: z.string().nullable(),
     }),
   ),
   sources: z.array(
@@ -789,6 +792,8 @@ export const GameAdminDetailSchema = z.object({
       externalId: z.string().nullable(),
       manual: z.boolean(),
       attemptedAt: z.date().nullable(),
+      // La scheda sulla fonte: si apre e si vede se è quella giusta.
+      url: z.string().nullable(),
     }),
   ),
   reports: z.array(ReportGroupSchema),

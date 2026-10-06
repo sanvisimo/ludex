@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { AdminNav } from '@/components/admin/admin-nav';
+import { CatalogFinder } from '@/components/admin/catalog-finder';
 import { Page } from '@/src/components/page';
 import { useSession } from '@/src/use-session';
 
@@ -42,7 +43,9 @@ function AdminLayout() {
 
   return (
     // Più larga dell'account: le sezioni sono tabelle.
-    <Page title={t('title')} maxW={1200}>
+    // «Apri un gioco» sta nell'intestazione: c'è da qualunque sezione, perché
+    // un collegamento sbagliato che nessuno ha segnalato si trova così.
+    <Page title={t('title')} maxW={1200} actions={<CatalogFinder />}>
       <XStack
         gap={24}
         items="flex-start"

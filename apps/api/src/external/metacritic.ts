@@ -77,13 +77,25 @@ type FinderRow = {
   title?: string;
   premiereYear?: number;
   typeId?: number;
+  // Fra le immagini, la `cardImage` è la copertina della scheda.
+  images?: { typeName?: string | null; bucketPath?: string | null }[];
 };
 
 export type MetacriticSearchHit = {
   slug: string;
   name: string;
   releaseYear: number | null;
+  /** La copertina. Facoltativa: al match non serve, la usa la ricerca admin. */
+  image?: string | null;
 };
+
+/** L'indirizzo della copertina: `bucketPath` sotto `/a/img/catalog`. */
+function cardImage(row: FinderRow) {
+  const path = row.images?.find(
+    (image) => image.typeName === 'cardImage',
+  )?.bucketPath;
+  return path ? `https://www.metacritic.com/a/img/catalog${path}` : null;
+}
 
 export async function searchMetacriticGames(
   term: string,
@@ -101,6 +113,7 @@ export async function searchMetacriticGames(
       slug: row.slug,
       name: row.title,
       releaseYear: row.premiereYear ?? null,
+      image: cardImage(row),
     }));
 }
 

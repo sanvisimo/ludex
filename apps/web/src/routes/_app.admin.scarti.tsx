@@ -395,6 +395,7 @@ function OpenList({
           pageCount={pageCount}
           href={(target) =>
             router.buildLocation({
+              from: Route.fullPath,
               to: Route.fullPath,
               search: (prev) => ({
                 ...prev,

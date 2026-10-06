@@ -466,6 +466,31 @@ export const contract = {
           }),
         ),
 
+      // «Cerca» nel dialogo «Inserisci id»: il testo come nome sulla fonte.
+      // HLTB e Metacritic non costano; OpenCritic sì, una delle 25 ricerche
+      // del giorno, e dopo dice quante ne restano.
+      search: oc
+        .input(
+          z.object({
+            source: ManualSourceSchema,
+            query: z.string().trim().min(2).max(100),
+          }),
+        )
+        .output(
+          z.object({
+            hits: z.array(
+              z.object({
+                id: z.string(),
+                name: z.string(),
+                releaseYear: z.number().int().nullable(),
+                // La copertina sulla fonte, dove la ricerca la dà.
+                image: z.string().nullable(),
+              }),
+            ),
+            searchesLeft: z.number().int().nullable(),
+          }),
+        ),
+
       // «Inserisci id»: scritto a mano, esente dall'unicità, e in coda. Vale
       // anche su una fonte `ok` agganciata male.
       setExternalId: oc

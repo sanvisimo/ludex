@@ -1,5 +1,5 @@
 import { NavItem, YStack } from '@repo/ui';
-import { Database, Gamepad2, Inbox, Users } from '@repo/ui/icons';
+import { Database, Flag, Inbox, Users } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useMatchRoute, useRouter } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
@@ -11,7 +11,7 @@ import { takeLinkClick } from '@/src/link-click';
 type AdminSection =
   | '/admin/mancanti'
   | '/admin/scarti'
-  | '/admin/giochi'
+  | '/admin/segnalati'
   | '/admin/utenti';
 
 /**
@@ -58,11 +58,11 @@ export function AdminNav() {
         {t('unresolved')}
       </SectionLink>
       <SectionLink
-        to="/admin/giochi"
-        icon={<Gamepad2 size={16} />}
+        to="/admin/segnalati"
+        icon={<Flag size={16} />}
         count={segnalazioni.data?.total}
       >
-        {t('games')}
+        {t('reported')}
       </SectionLink>
       <SectionLink to="/admin/utenti" icon={<Users size={16} />}>
         {t('users')}
@@ -88,7 +88,6 @@ function SectionLink({
   return (
     <NavItem
       href={to}
-      // `fuzzy`: la scheda di un gioco (`/admin/giochi/toki`) accende Giochi.
       active={matchRoute({ to, fuzzy: true }) !== false}
       icon={icon}
       trailing={count ? String(count) : undefined}

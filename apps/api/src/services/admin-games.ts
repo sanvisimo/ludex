@@ -1,4 +1,4 @@
-import { storeAccountName } from '@repo/contracts';
+import { storeAccountName, storePageUrl } from '@repo/contracts';
 import type { Medium, Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import {
@@ -21,7 +21,7 @@ import {
   ensureOwnerships,
 } from './backlog';
 import { reopenSourcesForNewExternalIds } from './enrichment';
-import { findGameByIgdbId, resolveGameFromIgdb } from './games';
+import { findGameByIgdbId, resolveGameFromIgdb, sourceLinks } from './games';
 import { closeReports, listOpenReports } from './reports';
 
 // La sezione Giochi dell'admin (11a, passo 6): i giochi senza id IGDB, la
@@ -115,6 +115,7 @@ export async function gameAdminDetail(slug: string) {
       name: schema.games.name,
       slug: schema.games.slug,
       igdbId: schema.games.igdbId,
+      igdbSlug: schema.games.igdbSlug,
       firstReleaseDate: schema.games.firstReleaseDate,
       gameType: schema.games.gameType,
       coverImageId: schema.games.coverImageId,
@@ -132,6 +133,9 @@ export async function gameAdminDetail(slug: string) {
       store: schema.ownerships.store,
       users: sql<number>`count(distinct ${schema.backlog.userId})::int`,
       copies: sql<number>`count(*)::int`,
+      // La pagina che l'import ha salvato su una delle copie: è il link più
+      // sicuro, quello che il negozio stesso ha dato.
+      storePage: sql<string | null>`max(${schema.ownerships.storePage})`,
     })
     .from(schema.ownerships)
     .innerJoin(
@@ -180,19 +184,73 @@ export async function gameAdminDetail(slug: string) {
     offset: 0,
   });
 
+  // I link delle fonti, gli stessi della pagina pubblica: l'admin apre la
+  // scheda e vede se è quella giusta.
+  const idOf = (source: string) =>
+    sources.find((row) => row.source === source)?.externalId ?? null;
+  const sourceUrl = sourceLinks({
+    igdbSlug: game.igdbSlug,
+    hltbId: idOf('hltb'),
+    openCriticId: idOf('opencritic'),
+    metacriticSlug: idOf('metacritic'),
+  });
+
   return {
     game,
     links: links.map((link) => ({
       ...link,
       users: copiePer.get(link.source)?.users ?? 0,
       copies: copiePer.get(link.source)?.copies ?? 0,
+      url: storeLinkUrl(
+        link.source,
+        link.externalId,
+        copiePer.get(link.source)?.storePage ?? null,
+      ),
     })),
-    sources: sources.map((row) => ({
-      ...row,
-      source: row.source as 'igdb' | 'hltb' | 'opencritic' | 'metacritic',
-    })),
+    sources: sources.map((row) => {
+      const source = row.source as
+        | 'igdb'
+        | 'hltb'
+        | 'opencritic'
+        | 'metacritic';
+      return { ...row, source, url: sourceUrl[source] };
+    }),
     reports,
   };
+}
+
+/**
+ * La pagina di un collegamento sul suo negozio, per controllare che sia giusto.
+ *
+ * Prima quella che l'import ha salvato su una copia: è il negozio stesso ad
+ * averla data, con le regole di `storePageUrl`. Senza copie si ricava dall'id
+ * dove la forma è nota (docs/negozi.md): Steam per appid, PSN per concept (gli
+ * id numerici sono concept, quelli che IGDB dà), Xbox per id prodotto. GOG
+ * dall'id da solo non dà una pagina ufficiale: si passa da gogdb.org, che è
+ * fatto apposta. Epic, Amazon e Nintendo un link non lo danno.
+ */
+function storeLinkUrl(
+  store: Store,
+  externalId: string,
+  storePage: string | null,
+) {
+  if (storePage) return storePageUrl(store, storePage);
+  switch (store) {
+    case 'steam':
+      return storePageUrl('steam', `app/${externalId}`);
+    case 'psn':
+      return /^\d+$/.test(externalId)
+        ? storePageUrl('psn', `concept/${externalId}`)
+        : null;
+    case 'xbox':
+      return `https://www.xbox.com/games/store/x/${externalId}`;
+    case 'gog':
+      return /^\d+$/.test(externalId)
+        ? `https://www.gogdb.org/product/${externalId}`
+        : null;
+    default:
+      return null;
+  }
 }
 
 /**

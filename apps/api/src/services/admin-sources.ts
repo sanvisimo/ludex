@@ -16,6 +16,14 @@ import {
   type SQL,
 } from '@repo/db/orm';
 
+import { searchHltbGames } from '../external/hltb';
+import { searchMetacriticGames } from '../external/metacritic';
+import {
+  openCriticEnabled,
+  openCriticQuota,
+  OpenCriticQuotaError,
+  searchOpenCriticGames,
+} from '../external/opencritic';
 import { enqueueEnrichment } from '../queue/enrichment';
 import { closeReports } from './reports';
 
@@ -277,4 +285,63 @@ export async function setSourceExternalId(
 
   await enqueueEnrichment(source, gameId);
   await closeReports(gameId, { source }, resolvedBy);
+}
+
+/**
+ * «Cerca» nel dialogo «Inserisci id»: il testo come nome, sulla fonte, e i
+ * risultati da scegliere. Gli stessi client dell'enrichment, col loro ritmo.
+ *
+ * HLTB e Metacritic non costano niente. OpenCritic sì: ogni ricerca è una
+ * delle 25 al giorno del piano gratuito, che il dialogo dice prima. Dopo, il
+ * client sa quante ne restano — la risposta lo dichiara — e lo si rende.
+ */
+export async function searchSource(source: ManualSource, query: string) {
+  if (source === 'hltb') {
+    const hits = await searchHltbGames(query, 10);
+    return {
+      status: 'ok' as const,
+      hits: hits.map((hit) => ({
+        id: String(hit.hltbId),
+        name: hit.name,
+        releaseYear: hit.releaseYear,
+        image: hit.image ?? null,
+      })),
+      searchesLeft: null,
+    };
+  }
+
+  if (source === 'metacritic') {
+    const hits = await searchMetacriticGames(query, 10);
+    return {
+      status: 'ok' as const,
+      hits: hits.map((hit) => ({
+        id: hit.slug,
+        name: hit.name,
+        releaseYear: hit.releaseYear,
+        image: hit.image ?? null,
+      })),
+      searchesLeft: null,
+    };
+  }
+
+  if (!openCriticEnabled()) return { status: 'disabled' as const };
+  try {
+    const hits = await searchOpenCriticGames(query);
+    return {
+      status: 'ok' as const,
+      hits: hits.map((hit) => ({
+        id: String(hit.id),
+        name: hit.name,
+        releaseYear: null,
+        // La ricerca OpenCritic l'immagine non la dà, e prenderla costerebbe
+        // una richiesta per risultato sul budget del giorno.
+        image: null,
+      })),
+      searchesLeft: openCriticQuota().searches,
+    };
+  } catch (error) {
+    if (error instanceof OpenCriticQuotaError)
+      return { status: 'quota' as const };
+    throw error;
+  }
 }
