@@ -43,6 +43,7 @@ function hit(over: {
   releaseYear?: number | null;
   gameType?: GameType | null;
   totalRatingCount?: number | null;
+  platformIds?: number[];
 }) {
   return {
     igdbId: over.igdbId,
@@ -52,6 +53,7 @@ function hit(over: {
     cover: null,
     gameType: over.gameType ?? null,
     totalRatingCount: over.totalRatingCount ?? null,
+    platformIds: over.platformIds ?? [],
   };
 }
 
@@ -675,6 +677,84 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
     expect(await unresolvedOf(userId)).toMatchObject([
       { name: 'Netflix', platformSlug: 'sony_playstation4' },
     ]);
+  });
+});
+
+describe('importLibrary: a parità di nome conta la piattaforma (11a)', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  // Il caso Toki: IGDB ha due schede col titolo identico, l'arcade del 1989
+  // (52 è l'arcade) e il remake del 2018 (130 è la Switch). Nintendo l'anno non
+  // lo dà, e le recensioni premiano l'arcade.
+  const toki = () => [
+    hit({
+      igdbId: 12228,
+      name: 'Toki',
+      totalRatingCount: 40,
+      platformIds: [52],
+    }),
+    hit({
+      igdbId: 103329,
+      name: 'Toki',
+      totalRatingCount: 5,
+      platformIds: [130, 48, 6],
+    }),
+  ];
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'nintendo');
+    mockedById.mockResolvedValue(new Map());
+    mockedSource.mockReturnValue(null);
+    mockedBySource.mockResolvedValue(new Map());
+  });
+
+  it('sceglie la scheda uscita sulla piattaforma della voce', async () => {
+    mockedSearch.mockResolvedValue(toki());
+
+    await importLibrary(account, [
+      {
+        externalId: '0100f3400a432000',
+        name: 'Toki',
+        platformSlug: 'nintendo_switch',
+      },
+    ]);
+
+    expect(await gamesOf(userId)).toEqual([{ name: 'Toki', igdbId: 103329 }]);
+  });
+
+  it('senza piattaforma sceglie come prima', async () => {
+    mockedSearch.mockResolvedValue(toki());
+    // Un negozio PC: la piattaforma non la dice la riga.
+    const gog = await linkStoreAccount(userId, 'gog');
+
+    await importLibrary(gog, [{ externalId: 'x', name: 'Toki' }]);
+
+    expect(await gamesOf(userId)).toEqual([{ name: 'Toki', igdbId: 12228 }]);
+  });
+
+  it('se sulla piattaforma ce ne sono due, decide come prima', async () => {
+    mockedSearch.mockResolvedValue([
+      hit({
+        igdbId: 1,
+        name: 'Observer',
+        totalRatingCount: 174,
+        platformIds: [48],
+      }),
+      hit({
+        igdbId: 2,
+        name: 'Observer',
+        totalRatingCount: 120,
+        platformIds: [48],
+      }),
+    ]);
+
+    const report = await importLibrary(account, [
+      { externalId: 'x', name: 'Observer', platformSlug: 'sony_playstation4' },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
   });
 });
 

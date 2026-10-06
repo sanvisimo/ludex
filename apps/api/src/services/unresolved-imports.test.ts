@@ -121,6 +121,7 @@ describe('unresolved imports', () => {
       cover: null,
       gameType: null,
       totalRatingCount: null,
+      platformIds: [],
     });
 
     const esito = await resolveUnresolvedImport(userId, id, 555);
@@ -145,6 +146,7 @@ describe('unresolved imports', () => {
       cover: null,
       gameType: null,
       totalRatingCount: null,
+      platformIds: [],
     });
 
     await resolveUnresolvedImport(userId, id, 555);
@@ -234,6 +236,7 @@ describe('unresolved imports', () => {
       cover: null,
       gameType: null,
       totalRatingCount: null,
+      platformIds: [],
     });
 
     const esito = await resolveUnresolvedImport(userId, row!.id, 102584);

@@ -1,6 +1,6 @@
 import type { Medium, Store, Subscription } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, eq, inArray, sql } from '@repo/db/orm';
+import { and, eq, inArray, isNotNull, sql } from '@repo/db/orm';
 
 import {
   findIgdbGamesByExternalIds,
@@ -242,6 +242,47 @@ function breakTieByReviews<T extends { totalRatingCount: number | null }>(
     : null;
 }
 
+/**
+ * Il solo candidato esatto uscito su una piattaforma della voce, o null.
+ *
+ * È il caso Toki: Nintendo non dà l'anno, IGDB ha due «Toki» col titolo
+ * identico — l'arcade del 1989 e il remake del 2018 — e le recensioni
+ * premiavano l'arcade. Ma la voce sapeva di essere Switch, e su Switch è uscito
+ * solo il remake. Vale per i negozi che dicono la piattaforma per riga (PSN,
+ * Nintendo); sugli altri `platforms` è vuoto e si va avanti come prima.
+ *
+ * Sta **dopo** `pickByName` e **prima** di `breakTieByReviews`: non scavalca un
+ * giudizio fatto su nome e anno, rompe un pareggio con un fatto invece che con
+ * una misura di popolarità.
+ */
+function breakTieByPlatform<T extends { platformIds: number[] }>(
+  ranked: Ranked<T>[],
+  platforms: Set<string>,
+  slugByIgdbId: Map<number, string>,
+): T | null {
+  if (platforms.size === 0) return null;
+
+  const sullaPiattaforma = ranked.filter(
+    (row) =>
+      row.exact &&
+      row.score >= NAME_THRESHOLD &&
+      row.hit.platformIds.some((id) => {
+        const slug = slugByIgdbId.get(id);
+        return slug !== undefined && platforms.has(slug);
+      }),
+  );
+  return sullaPiattaforma.length === 1 ? sullaPiattaforma[0]!.hit : null;
+}
+
+/** Da id IGDB di piattaforma al nostro slug, per `breakTieByPlatform`. */
+async function platformSlugsByIgdbId() {
+  const rows = await db
+    .select({ slug: schema.platforms.slug, igdbId: schema.platforms.igdbId })
+    .from(schema.platforms)
+    .where(isNotNull(schema.platforms.igdbId));
+  return new Map(rows.map((row) => [row.igdbId!, row.slug]));
+}
+
 export type ImportReport = {
   /** Voci nella libreria del negozio. */
   total: number;
@@ -460,6 +501,11 @@ export async function resolveByName(
     })
     .slice(0, NAME_SEARCH_CAP);
 
+  // Solo se qualche voce dice la piattaforma: sui negozi PC non serve.
+  const slugByIgdbId = entries.some((entry) => entry.platformSlug)
+    ? await platformSlugsByIgdbId()
+    : new Map<number, string>();
+
   let fatte = 0;
 
   for (const gruppo of daCercare) {
@@ -493,12 +539,21 @@ export async function resolveByName(
         type: hit.gameType === 'dlc' ? 'dlc' : null,
         igdbId: hit.igdbId,
         totalRatingCount: hit.totalRatingCount,
+        platformIds: hit.platformIds,
       })),
     );
 
-    // Il giudizio per nome prima, e solo se rinuncia si guarda quanto le schede
-    // sono vissute: è un ripiego per le parità, non un criterio di merito.
-    const scelto = pickByName(ranked)?.hit ?? breakTieByReviews(ranked);
+    // Il giudizio per nome prima, e solo se rinuncia si guarda dove le schede
+    // sono uscite e poi quanto sono vissute: sono ripieghi per le parità, non
+    // criteri di merito. Le piattaforme del gruppo, non della prima riga: su
+    // PSN lo stesso titolo arriva per PS4 e per PS5.
+    const piattaforme = new Set(
+      gruppo.flatMap((riga) => (riga.platformSlug ? [riga.platformSlug] : [])),
+    );
+    const scelto =
+      pickByName(ranked)?.hit ??
+      breakTieByPlatform(ranked, piattaforme, slugByIgdbId) ??
+      breakTieByReviews(ranked);
     if (!scelto) continue;
 
     // Un link **per ogni riga del gruppo**, non uno per il gruppo: gli id
