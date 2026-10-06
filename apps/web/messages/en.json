@@ -693,6 +693,11 @@
       "button": "Select this account",
       "menuTop": "Open in new tab",
       "menuCopy": "Copy link address"
+    },
+    "filters": {
+      "search": "Search by name…",
+      "allStores": "Store: all",
+      "noMatch": "Nothing matches these filters."
     }
   },
   "critic": {

@@ -3,9 +3,14 @@ import { hiddenKindValues } from '@repo/contracts';
 import { EmptyState, Skeleton, Tabs, TabsTab, Text, YStack } from '@repo/ui';
 import { EyeOff } from '@repo/ui/icons';
 import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
+import {
+  AccountFilters,
+  readAccountFilter,
+  type AccountFilter,
+} from '@/components/account-filters';
 import { HiddenList, useHiddenItems } from '@/components/hidden-list';
 import { ResolveImportDialog } from '@/components/resolve-import-dialog';
 
@@ -16,7 +21,10 @@ export const Route = createFileRoute('/_app/account/nascosti')({
   // Il tab sta nell'indirizzo, come i filtri del backlog: «indietro» torna al
   // tab di prima e un link riapre quello giusto. Un valore che non è un tipo
   // si ignora.
-  validateSearch: (search: Record<string, unknown>): { tipo?: HiddenKind } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { tipo?: HiddenKind } & AccountFilter => ({
+    ...readAccountFilter(search),
     tipo: isHiddenKind(search.tipo) ? search.tipo : undefined,
   }),
   component: HiddenSection,
@@ -35,12 +43,15 @@ function HiddenSection() {
   const tUnresolved = useTranslations('account.unresolved');
   const tEmpty = useTranslations('account.hiddenEmpty');
   const tEntries = useTranslations('account.hiddenEntries');
-  const { tipo } = Route.useSearch();
+  const tFilters = useTranslations('account.filters');
+  const { tipo, q, negozio } = Route.useSearch();
   const navigate = Route.useNavigate();
+  const filter = useMemo(() => ({ q, negozio }), [q, negozio]);
+  const filtered = q !== undefined || negozio !== undefined;
   const [resolving, setResolving] = useState<UnresolvedImport | null>(null);
 
   const { isPending, counts, byKind, gamesTotal, gamesShown } =
-    useHiddenItems();
+    useHiddenItems(filter);
 
   const total = hiddenKindValues.reduce(
     (sum, kind) => sum + (counts[kind] ?? 0),
@@ -56,7 +67,7 @@ function HiddenSection() {
           <Skeleton height={32} width="100%" rounded={8} />
           <Skeleton height={96} width="100%" rounded={12} />
         </YStack>
-      ) : total === 0 ? (
+      ) : total === 0 && !filtered ? (
         <EmptyState
           icon={<EyeOff size={24} color="$color11" />}
           title={tEmpty('title')}
@@ -64,13 +75,26 @@ function HiddenSection() {
         />
       ) : (
         <YStack gap={16}>
+          <AccountFilters
+            filter={filter}
+            onChange={(next) =>
+              void navigate({
+                search: (prev) => ({ ...prev, ...next }),
+                replace: true,
+              })
+            }
+          />
+          {total === 0 ? <EmptyState title={tFilters('noMatch')} /> : null}
           {/* Scorre in orizzontale sul telefono, dove cinque tab col numero non
               stanno: senza barra, e il tab acceso si porta da sé in vista. */}
           <Tabs
             label={t('label')}
             value={active}
             onValueChange={(value) =>
-              void navigate({ search: { tipo: value as HiddenKind } })
+              void navigate({
+                // Cambiare tab tiene i filtri.
+                search: (prev) => ({ ...prev, tipo: value as HiddenKind }),
+              })
             }
           >
             {hiddenKindValues.map((kind) => (

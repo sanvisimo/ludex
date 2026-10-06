@@ -503,6 +503,15 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
    dell'utente **«Da sistemare»** e **«Nascosti»** di `/account`, come quelli
    degli scarti dell'admin: ricerca per nome e negozio, nell'indirizzo.
 
+   **8g fatto** (06/10/2026):
+   [account-filters.tsx](../apps/web/components/account-filters.tsx), un
+   componente per le due pagine, con `q` e `negozio` nell'indirizzo. Le voci
+   d'import si filtrano sul client, dove arrivano già tutte; i giochi nascosti
+   sul server, coi filtri del backlog (`q`, e `stores` = almeno una copia di
+   quel negozio), perché se ne portano al massimo 100. Con un filtro che non
+   trova niente la pagina dice «Nessuna voce con questi filtri» e non «Non hai
+   nascosto niente»; cambiare tab nei Nascosti tiene i filtri.
+
 9. **Documentazione**: step 11 in [ordine-sviluppo](../docs/ordine-sviluppo.md)
    diviso in 11a e 11b; in [import-librerie](../docs/import-librerie.md) la
    risposta alla domanda «è roba di uno o di tutti?», e il rimedio di «Un
