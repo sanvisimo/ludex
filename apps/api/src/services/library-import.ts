@@ -283,6 +283,43 @@ async function platformSlugsByIgdbId() {
   return new Map(rows.map((row) => [row.igdbId!, row.slug]));
 }
 
+/**
+ * Lo scarto nascosto che si risolve entra nel backlog **nascosto** (11a).
+ *
+ * Solo sulle righe di backlog appena create, e solo se tutte le voci che le
+ * portano erano nascoste: un gioco che c'era già, o che arriva anche da una
+ * voce visibile, l'utente ha deciso di vederlo, e lo scarto gli aggiunge solo
+ * una copia. Nel backlog il tipo non c'è: Netflix nascosto come «app» finisce
+ * fra i «non interessato», ed è giusto, perché ora è un gioco.
+ */
+export async function hideEntriesFromHiddenUnresolved(
+  voci: { gameId: string; hidden: boolean }[],
+  created: Set<string>,
+  byGameId: Map<string, string>,
+) {
+  const visibili = new Set(
+    voci.filter((voce) => !voce.hidden).map((voce) => voce.gameId),
+  );
+  const backlogIds = [
+    ...new Set(
+      voci
+        .filter(
+          (voce) =>
+            voce.hidden &&
+            created.has(voce.gameId) &&
+            !visibili.has(voce.gameId),
+        )
+        .map((voce) => byGameId.get(voce.gameId)!),
+    ),
+  ];
+  if (backlogIds.length === 0) return;
+
+  await db
+    .update(schema.backlog)
+    .set({ hiddenAt: new Date() })
+    .where(inArray(schema.backlog.id, backlogIds));
+}
+
 export type ImportReport = {
   /** Voci nella libreria del negozio. */
   total: number;
@@ -306,6 +343,12 @@ async function recordUnresolved(
   if (entries.length === 0) return;
 
   for (const page of chunk(entries, 500)) {
+    const perTutti = await globallyHidden(
+      account.store,
+      page.map((entry) => entry.externalId),
+    );
+    const now = new Date();
+
     await db
       .insert(schema.unresolvedImports)
       .values(
@@ -325,6 +368,12 @@ async function recordUnresolved(
           acquiredAt: entry.acquiredAt ?? null,
           imageUrl: entry.imageUrl ?? null,
           storePage: entry.storePage ?? null,
+          // Nasce già nascosta se un admin l'ha nascosta per tutti (11a). Solo
+          // qui, all'inserimento: il `set` dell'upsert qui sotto non tocca
+          // `hidden_at`, e chi la rimette fra i «da sistemare» resta libero.
+          ...(perTutti.has(entry.externalId)
+            ? { hiddenAt: now, hiddenKind: perTutti.get(entry.externalId)! }
+            : {}),
         })),
       )
       // Un reimport aggiorna nome, ore, copertina e indirizzo invece di
@@ -350,6 +399,45 @@ async function recordUnresolved(
   }
 }
 
+/** Le chiavi di questo negozio nascoste per tutti da un admin, col loro tipo. */
+async function globallyHidden(store: Store, externalIds: string[]) {
+  const rows =
+    externalIds.length === 0
+      ? []
+      : await db
+          .select({
+            externalId: schema.globalHiddenImports.externalId,
+            hiddenKind: schema.globalHiddenImports.hiddenKind,
+          })
+          .from(schema.globalHiddenImports)
+          .where(
+            and(
+              eq(schema.globalHiddenImports.store, store),
+              inArray(schema.globalHiddenImports.externalId, externalIds),
+            ),
+          );
+  return new Map(rows.map((row) => [row.externalId, row.hiddenKind]));
+}
+
+/** Gli scarti di questo account che l'utente aveva nascosto, fra questi id. */
+async function hiddenUnresolvedIds(
+  storeAccountId: string,
+  externalIds: string[],
+) {
+  if (externalIds.length === 0) return new Set<string>();
+  const rows = await db
+    .select({ externalId: schema.unresolvedImports.externalId })
+    .from(schema.unresolvedImports)
+    .where(
+      and(
+        eq(schema.unresolvedImports.storeAccountId, storeAccountId),
+        inArray(schema.unresolvedImports.externalId, externalIds),
+        isNotNull(schema.unresolvedImports.hiddenAt),
+      ),
+    );
+  return new Set(rows.map((row) => row.externalId));
+}
+
 /**
  * Riallinea gli scarti alla libreria: restano solo quelli ancora irrisolti
  * **e ancora presenti**.
@@ -367,9 +455,12 @@ async function recordUnresolved(
  * `coolgrey Production` che sopravvive a tre reimport di fila.
  *
  * Vale anche per le voci **nascoste**, ed è voluto. Se sparisce dalla libreria
- * non c'è più niente da nascondere; se IGDB impara a riconoscerla, non è più uno
- * scarto ma un gioco nel backlog, e il nascondere non la segue perché l'oggetto
- * è cambiato. Ricomparirà una volta, e lì si nasconde di nuovo, dall'altro lato.
+ * non c'è più niente da nascondere. Se invece impara a risolversi — IGDB che
+ * cresce, un admin che la collega per tutti — non è più uno scarto ma un gioco,
+ * e la riga se ne va: il nascondere però **la segue** (11a), e il gioco entra
+ * nel backlog già nascosto. Collegare un gioco è un fatto del catalogo; averlo
+ * nascosto è una scelta dell'utente, e la prima non cambia la seconda. Lo fa
+ * `importLibrary`, che legge i nascosti prima di chiamare questa.
  */
 async function pruneUnresolved(storeAccountId: string, daTogliere: string[]) {
   if (daTogliere.length === 0) return;
@@ -673,6 +764,12 @@ export async function importLibrary(
   // libreria, e va tolto.
   const scartiPrima = await currentUnresolvedIds(storeAccountId);
   const nellaLibreria = new Set(library.map((entry) => entry.externalId));
+  // Letti prima della potatura, che quelle righe le cancella: vedi
+  // `pruneUnresolved`.
+  const nascostiRisolti = await hiddenUnresolvedIds(
+    storeAccountId,
+    resolved.map((entry) => entry.externalId),
+  );
 
   await recordUnresolved(account, unresolved);
   await pruneUnresolved(storeAccountId, [
@@ -712,6 +809,14 @@ export async function importLibrary(
   );
 
   await advanceAddedAt([...byGameId.values()]);
+  await hideEntriesFromHiddenUnresolved(
+    resolved.map((entry) => ({
+      gameId: gameIdByExternalId.get(entry.externalId)!,
+      hidden: nascostiRisolti.has(entry.externalId),
+    })),
+    created,
+    byGameId,
+  );
 
   // Solo i giochi nati adesso: gli altri l'enrichment ce l'hanno già, o ce
   // l'hanno vecchio e ci pensa la spazzata.

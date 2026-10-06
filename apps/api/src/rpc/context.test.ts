@@ -79,6 +79,27 @@ describe('le procedure admin.*', () => {
       router.admin.sources.setExternalId,
       { gameId, source: 'hltb', externalId: '1' },
     ],
+    ['unresolved.list', router.admin.unresolved.list, {}],
+    [
+      'unresolved.globalHidden',
+      router.admin.unresolved.globalHidden,
+      undefined,
+    ],
+    [
+      'unresolved.resolve',
+      router.admin.unresolved.resolve,
+      { store: 'psn', externalId: 'x', igdbId: 1 },
+    ],
+    [
+      'unresolved.hide',
+      router.admin.unresolved.hide,
+      { store: 'psn', externalId: 'x', kind: 'app' },
+    ],
+    [
+      'unresolved.unhide',
+      router.admin.unresolved.unhide,
+      { store: 'psn', externalId: 'x' },
+    ],
   ] as const;
 
   it.each(casi)('%s respinge chi non è admin', async (_, procedura, input) => {

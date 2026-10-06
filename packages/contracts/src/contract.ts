@@ -10,6 +10,8 @@ import {
   EnrichmentSourceSchema,
   GameDetailSchema,
   GameSchema,
+  GlobalHiddenImportSchema,
+  GlobalHiddenKindSchema,
   HiddenKindSchema,
   HomeBandSchema,
   HomeGameSchema,
@@ -29,8 +31,10 @@ import {
   SourceReasonSchema,
   SteamLoginStatusSchema,
   StoreAccountSchema,
+  StoreSchema,
   SyncAllResultSchema,
   UnlinkImpactSchema,
+  UnresolvedGroupListSchema,
   UnresolvedImportSchema,
   UserSettingsSchema,
   UserTagInputSchema,
@@ -442,6 +446,56 @@ export const contract = {
           }),
         )
         .output(z.object({ externalId: z.string() })),
+    },
+
+    unresolved: {
+      // Gli scarti di tutti, una riga per chiave con almeno uno scarto visibile.
+      list: oc
+        .input(
+          z.object({
+            store: StoreSchema.optional(),
+            q: z.string().trim().min(1).max(100).optional(),
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(UnresolvedGroupListSchema),
+
+      // La vista «Nascosti per tutti»: le regole scritte.
+      globalHidden: oc.output(z.array(GlobalHiddenImportSchema)),
+
+      // «Collega per tutti». Si rifiuta se la chiave è già di un altro gioco:
+      // quello è ripuntare, e sta nella scheda admin del gioco.
+      resolve: oc
+        .input(
+          z.object({
+            store: StoreSchema,
+            externalId: z.string().min(1).max(200),
+            igdbId: z.number().int().positive(),
+          }),
+        )
+        .output(z.object({ resolved: z.number().int() })),
+
+      // «Nascondi per tutti», mai con `unwanted`.
+      hide: oc
+        .input(
+          z.object({
+            store: StoreSchema,
+            externalId: z.string().min(1).max(200),
+            kind: GlobalHiddenKindSchema,
+          }),
+        )
+        .output(z.object({ hidden: z.number().int() })),
+
+      // Toglie la regola; le righe già nascoste restano come sono.
+      unhide: oc
+        .input(
+          z.object({
+            store: StoreSchema,
+            externalId: z.string().min(1).max(200),
+          }),
+        )
+        .output(z.void()),
     },
   },
 

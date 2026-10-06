@@ -680,7 +680,43 @@ export const MissingListSchema = z.object({
   total: z.number().int(),
 });
 
+// I tipi che si nascondono per tutti: `unwanted` è una preferenza di chi
+// importa, e una preferenza non si decide per tutti. Lo ripete un CHECK nel
+// database.
+export const GlobalHiddenKindSchema = HiddenKindSchema.exclude(['unwanted']);
+
+// Uno scarto visto dall'admin: una riga per negozio e id esterno, con quante
+// librerie lo hanno e come l'hanno nascosto quelle che l'hanno fatto.
+export const UnresolvedGroupSchema = z.object({
+  store: StoreSchema,
+  externalId: z.string(),
+  name: z.string(),
+  platformSlug: z.string().nullable(),
+  imageUrl: z.string().nullable(),
+  libraries: z.number().int(),
+  visible: z.number().int(),
+  hidden: z.record(HiddenKindSchema, z.number().int()),
+});
+
+export const UnresolvedGroupListSchema = z.object({
+  rows: z.array(UnresolvedGroupSchema),
+  total: z.number().int(),
+});
+
+export const GlobalHiddenImportSchema = z.object({
+  store: StoreSchema,
+  externalId: z.string(),
+  name: z.string(),
+  hiddenKind: GlobalHiddenKindSchema,
+  // Il nome dell'admin che l'ha deciso; nullo se il suo account non c'è più.
+  decidedBy: z.string().nullable(),
+  createdAt: z.date(),
+  libraries: z.number().int(),
+});
+
 export type MissingSummary = z.infer<typeof MissingSummarySchema>;
+export type UnresolvedGroup = z.infer<typeof UnresolvedGroupSchema>;
+export type GlobalHiddenImport = z.infer<typeof GlobalHiddenImportSchema>;
 export type MissingRow = z.infer<typeof MissingRowSchema>;
 export type UnlinkImpact = z.infer<typeof UnlinkImpactSchema>;
 export type SteamLoginStart = z.infer<typeof SteamLoginStartSchema>;

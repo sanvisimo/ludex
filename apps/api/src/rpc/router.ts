@@ -31,6 +31,13 @@ import {
   retrySource,
   setSourceExternalId,
 } from '../services/admin-sources';
+import {
+  hideUnresolvedForAll,
+  listGlobalHidden,
+  listUnresolvedGroups,
+  resolveUnresolvedForAll,
+  unhideUnresolvedForAll,
+} from '../services/admin-unresolved';
 import { listHomeBands } from '../services/home';
 import {
   removeSteamLogin,
@@ -611,6 +618,60 @@ export const router = os.router({
             throw new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
           await setSourceExternalId(input.gameId, input.source, externalId);
           return { externalId };
+        }),
+    },
+
+    unresolved: {
+      list: os.admin.unresolved.list
+        .use(authed)
+        .use(admin)
+        .handler(({ input }) => listUnresolvedGroups(input)),
+
+      globalHidden: os.admin.unresolved.globalHidden
+        .use(authed)
+        .use(admin)
+        .handler(() => listGlobalHidden()),
+
+      resolve: os.admin.unresolved.resolve
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          const esito = await resolveUnresolvedForAll(
+            input.store,
+            input.externalId,
+            input.igdbId,
+          );
+          if (esito.status === 'linked_elsewhere')
+            throw new ORPCError('CONFLICT', {
+              message: `È già collegata a «${esito.game}»: si ripunta dalla scheda del gioco`,
+            });
+          if (esito.status === 'unknown_igdb_id')
+            throw new ORPCError('NOT_FOUND', {
+              message: 'IGDB non conosce questo id',
+            });
+          return { resolved: esito.resolved };
+        }),
+
+      hide: os.admin.unresolved.hide
+        .use(authed)
+        .use(admin)
+        .handler(({ input, context }) =>
+          hideUnresolvedForAll(
+            context.user.id,
+            input.store,
+            input.externalId,
+            input.kind,
+          ),
+        ),
+
+      unhide: os.admin.unresolved.unhide
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          if (!(await unhideUnresolvedForAll(input.store, input.externalId)))
+            throw new ORPCError('NOT_FOUND', {
+              message: 'Non è nascosta per tutti',
+            });
         }),
     },
   },
