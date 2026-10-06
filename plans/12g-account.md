@@ -426,3 +426,52 @@ stessa risposta che già scarichiamo: nessuna chiamata in più.
 - cambio email e reset password: serve un sender di email;
 - l'esportazione e la cancellazione vere: step 16;
 - la card dei giochi (12e).
+
+## Sessione non fresca (06/10/2026)
+
+**Trovato in produzione**: «Active sessions» mostra «I couldn't read your
+sessions». La chiamata `list-sessions` risponde 403 con
+`{"code":"SESSION_NOT_FRESH"}`: Better Auth rifiuta l'operazione a una sessione
+più vecchia di `session.freshAge` (un giorno di default) finché non si rifà il
+login. Non è un guasto: è la schermata che mette ogni errore sotto la stessa
+frase. Env e CORS in produzione sono a posto (controllati nel container).
+
+**Letto il sorgente di Better Auth 1.6.27**: il controllo di freschezza
+(`freshSessionMiddleware`) è **solo** su `list-sessions` e `unlink-account`
+(che non usiamo). Revoca di una sessione, «Esci dagli altri dispositivi»,
+cambio password e `update-user` usano `sensitiveSessionMiddleware`, che non
+guarda l'età. La prima versione di questo piano supponeva il contrario.
+
+**Scartato**: gestire il codice nell'interfaccia («devi accedere di nuovo» e un
+bottone che fa `signOut()`). Per rivedere i propri dispositivi si dovrebbe
+rifare il login ogni volta che la sessione ha più di un giorno, per un'azione
+di sola lettura. **Scartato anche un `freshAge` lungo**: si misura da
+`createdAt`, che non si rinnova, e una sessione usata ogni giorno vive
+all'infinito, quindi supera qualunque soglia finita; l'errore tornerebbe a data
+fissa, e nel frattempo un cookie rubato resterebbe «fresco» per tutto il periodo.
+
+**Decisione**: `session.freshAge: 0` in
+[packages/auth/src/index.ts](../packages/auth/src/index.ts), che spegne il
+controllo.
+
+- **Cosa si perde**: `unlink-account` (non lo usiamo, e senza provider social
+  non c'è niente da scollegare) e il controllo di `delete-user` senza
+  password (l'endpoint è disabilitato: `user.deleteUser.enabled` non c'è). Lo
+  step 16 deve quindi chiedere la password lui: riga aggiunta a
+  [docs/ordine-sviluppo.md](../docs/ordine-sviluppo.md).
+- **A ogni salto di versione di Better Auth**: se un endpoint nuovo usa
+  `freshSessionMiddleware`, lì la protezione non c'è più.
+- **Il rimbalzo dell'account** ([\_app.account.tsx](../apps/web/src/routes/_app.account.tsx)):
+  quando la sessione sparisce rimanda a `/login` con `next` uguale alla sezione
+  aperta, come fa `_app._private`, così dopo l'accesso si torna al profilo e non
+  alla home. È un difetto a sé, valeva anche per una sessione scaduta.
+
+**Provarlo**: da loggati, nel DB portare `session.created_at` e `updated_at`
+della propria sessione a più di un giorno fa e aprire `/account/profilo`: la
+lista delle sessioni si carica. Da anonimi, aprire `/account/librerie`: si va a
+`/login?next=/account/librerie` e, dopo l'accesso, si torna lì. In produzione
+serve il deploy del server (la config sta lì).
+
+**Fuori**: un test automatico (è una riga di config, e `apps/web` non ha test
+di componente); il testo legale (non cambia cosa si raccoglie); una scadenza
+assoluta delle sessioni, che sarebbe un'altra decisione di prodotto.

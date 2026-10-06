@@ -4,6 +4,7 @@
     "description": "Cosa gioco adesso"
   },
   "nav": {
+    "home": "Home",
     "backlog": "Il mio backlog",
     "signOut": "Esci",
     "signIn": "Accedi",

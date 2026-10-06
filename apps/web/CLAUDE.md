@@ -23,7 +23,7 @@ query string sono separate da virgole e non in JSON, per `stringifySearch` in
 `apps/web/src/router.tsx`.
 
 **`/backlog` tiene tutto nell'URL** (`apps/web/lib/backlog-filter.ts`): i
-filtri, l'ordinamento, la vista (`view`: righe, griglia, compatta), la pagina
+filtri, l'ordinamento, la vista (`view`: griglia di default, poi righe e compatta), la pagina
 (`page`) e quanti giochi per pagina (`size`: 15, 30, 60 o 120, di default 15).
 Ogni `setFilter` riporta a pagina 1 e non
 lascia voci nella cronologia; `goToPage` sì, perché «indietro» deve tornare
@@ -63,8 +63,8 @@ le ragioni sono nel piano del 12a, il passaggio nel piano del 12b.
 **Il guscio** è il layout `_app` (`apps/web/src/routes/_app.tsx`), che avvolge
 tutte le rotte tranne accesso e registrazione: quelle stanno sotto `_guest`, a
 pagina piena. `AppShell` è **una barra sola** e un footer, senza barra
-laterale né menu a scomparsa: a sinistra il nome, che porta al catalogo; a
-destra l'avatar, col menu di backlog, account, tema, lingua e uscita, o da
+laterale né menu a scomparsa: a sinistra il nome, che porta al catalogo, o al
+backlog da loggati; a destra l'avatar, col menu di home, backlog, account, tema, lingua e uscita, o da
 anonimo tema, lingua, «Accedi» e «Registrati», che sotto `$md` in barra non
 ci stanno e vanno in un foglio aperto da un'icona (`GuestSheet`). La barra resta sempre
 visibile, col fondo della pagina e senza bordo: **in alto da `$md`, in basso

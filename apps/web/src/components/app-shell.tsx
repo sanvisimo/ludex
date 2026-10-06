@@ -20,8 +20,8 @@ const BAR_HEIGHT = 56;
  * Il guscio: la cornice di tutte le pagine tranne accesso e registrazione.
  *
  * Una barra sola, a ogni larghezza: il nome a sinistra, che porta al
- * catalogo, la ricerca in mezzo, e a destra chi è collegato, col menu che
- * porta a backlog e account. Sul desktop sta in alto, sul telefono in basso, dove arriva il
+ * catalogo, o al backlog da collegati, la ricerca in mezzo, e a destra chi è
+ * collegato, col menu che porta a home, backlog e account. Sul desktop sta in alto, sul telefono in basso, dove arriva il
  * pollice e da dove si aprono i menu. Resta sempre visibile: ha lo stesso
  * fondo della pagina, senza bordo, e il contenuto ci passa sotto.
  *
@@ -59,10 +59,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-/** Simbolo e nome, che riportano al catalogo. */
+/**
+ * Simbolo e nome. Da anonimo riportano al catalogo; da collegato al backlog,
+ * che è la pagina di chi usa l'app, e il catalogo è la voce «Home» del menu.
+ * Finché la sessione non si sa resta `/`, come il primo render del server.
+ */
 export function HomeLink() {
+  const { data: session } = useSession();
+
   return (
-    <Link to="/" className="no-underline">
+    <Link to={session ? '/backlog' : '/'} className="no-underline">
       <XStack px={8} py={2}>
         <Wordmark />
       </XStack>
