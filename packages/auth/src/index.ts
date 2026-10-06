@@ -1,6 +1,7 @@
 import { db, schema } from '@repo/db';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { admin } from 'better-auth/plugins/admin';
 
 const secret = process.env.BETTER_AUTH_SECRET;
 if (!secret) {
@@ -21,6 +22,11 @@ export const auth = betterAuth({
     // arriveranno quando ci sarà un sender configurato.
     requireEmailVerification: false,
   },
+  // Il ruolo admin (step 11a): `role`, `banned`, `banReason`, `banExpires` su
+  // `user`, `impersonatedBy` su `session`, e le chiamate per elencare utenti,
+  // cambiare ruolo, bannare e chiudere le sessioni. Il primo admin lo nomina
+  // `pnpm --filter api admin:grant`.
+  plugins: [admin()],
 });
 
 export type Auth = typeof auth;

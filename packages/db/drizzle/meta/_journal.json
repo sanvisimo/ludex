@@ -239,6 +239,13 @@
       "when": 1791192520462,
       "tag": "0033_subscription_steam_family",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1791277344688,
+      "tag": "0034_admin_plugin",
+      "breakpoints": true
     }
   ]
 }
