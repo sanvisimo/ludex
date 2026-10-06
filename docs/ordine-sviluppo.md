@@ -161,8 +161,13 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
     questo step decidesse di cancellare, dovrebbe **chiedere prima** — è
     l'unico momento in cui l'utente ha l'informazione e noi no.
 
-15. **Wishlist** — tabella separata da `backlog`, arricchita come i giochi
-    posseduti.
+15. **Wishlist e playlist** — la wishlist è una tabella separata da `backlog`,
+    arricchita come i giochi posseduti.
+
+    **Creazione di sliders/playlist** (aggiunta il 06/10/2026). Le liste in
+    homepage sono comode, e sarebbe bello che ogni utente potesse crearne di
+    sue coi filtri. Va fatta **insieme alla wishlist**. Da decidere quando si
+    apre lo step, non prima.
 
 16. **Cancellazione ed esportazione dell'account** — l'utente elimina il
     proprio account e scarica i propri dati: i diritti di cancellazione e di
