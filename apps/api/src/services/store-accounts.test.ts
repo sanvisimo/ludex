@@ -293,6 +293,30 @@ describe('account di negozio', () => {
     });
   });
 
+  it('ricollegando, un nome che non si riesce a leggere non cancella quello che c’era', async () => {
+    mockedResolve.mockResolvedValue('76561198015402862');
+    mockedPersona.mockResolvedValue('sanvisimo');
+    await linkSteamAccount(userId, 'pippo');
+
+    // Il secondo collegamento — per esempio il login famiglia — non riesce a
+    // rileggere il nome: il vecchio resta, non diventa uno SteamID64 nudo.
+    mockedPersona.mockResolvedValue(null);
+    const account = await linkSteamAccount(userId, 'pippo');
+
+    expect(account.displayName).toBe('sanvisimo');
+  });
+
+  it('ricollegando, un nome nuovo sostituisce quello vecchio', async () => {
+    mockedResolve.mockResolvedValue('76561198015402862');
+    mockedPersona.mockResolvedValue('sanvisimo');
+    await linkSteamAccount(userId, 'pippo');
+
+    mockedPersona.mockResolvedValue('simone');
+    const account = await linkSteamAccount(userId, 'pippo');
+
+    expect(account.displayName).toBe('simone');
+  });
+
   it("l'etichetta la scrive l'utente e vince sul nome del negozio", async () => {
     // È il caso Amazon: due account della stessa persona rendono lo stesso
     // `given_name`, quindi il negozio da solo non li separa.
