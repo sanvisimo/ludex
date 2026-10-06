@@ -178,10 +178,40 @@ Due conseguenze minori, scritte perché si scoprono altrimenti a cose fatte:
   perché il matcher non sa che l'hai bocciata. Su PSN sono undici ricerche: un
   costo noto, non un motivo per mettere le mani nell'import. Semmai è
   un'ottimizzazione di dopo.
-- se IGDB un giorno impara a riconoscere una voce nascosta, quella smette di
-  essere uno scarto e diventa un gioco in backlog: il nascondere **non la
-  segue**, perché l'oggetto è cambiato. Ricomparirà una volta, e lì si nasconde
-  di nuovo — dall'altro lato.
+- se una voce nascosta impara a risolversi — IGDB che cresce, un admin che la
+  collega per tutti — smette di essere uno scarto e diventa un gioco in
+  backlog, e **il nascondere la segue** (11a): il gioco entra già nascosto.
+  Collegare un gioco è un fatto del catalogo, averlo nascosto è una scelta
+  dell'utente, e la prima non cambia la seconda. Finisce fra i «non
+  interessato», perché nel backlog il tipo non c'è: Netflix nascosto come app,
+  una volta collegato, è un gioco. Non lo nasconde se l'utente quel gioco
+  l'aveva già, o se nello stesso import arriva anche da una voce visibile: lì
+  ha deciso di vederlo. Quando invece è l'utente a collegare uno scarto suo,
+  anche dal tab dei nascosti, il gioco entra visibile.
+  Fino all'11a era il contrario: il nascondere non seguiva la voce, e il gioco
+  ricompariva in libreria al primo import.
+
+### La risposta: nascosto per tutti (11a)
+
+La domanda sopra ha avuto la sua risposta allo step 11a, nella forma che il tipo
+lasciava prevedere: **un fatto si promuove, una preferenza no**.
+
+- Le regole stanno in **`global_hidden_imports`**: negozio, id esterno, nome
+  della voce, tipo, chi l'ha decisa e quando. Le decide un admin, dalla sezione
+  Scarti. `unwanted` non c'entra: lo esclude un CHECK, oltre al contratto.
+- **Promuovere** nasconde, con quel tipo, gli scarti con quella chiave che sono
+  ancora visibili. Quelli che l'utente aveva già nascosto — anche con un altro
+  tipo — restano come li ha messi lui.
+- **All'import** una voce con quella chiave **nasce** già nascosta. Solo alla
+  nascita: l'upsert di un reimport non tocca `hidden_at`, quindi chi la rimette
+  fra i «da sistemare» resta libero di farlo.
+- **Togliere la regola** smette di applicarla alle voci nuove e non tocca
+  quelle già scritte, che da lì sono di chi le ha.
+
+Lo stesso confine vale per **collegare**: «Collega per tutti» scrive la riga di
+`external_ids`, che era già del catalogo, e risolve gli scarti di ogni utente
+con quella chiave. Si ferma se la chiave è già collegata a un altro gioco:
+quello è ripuntare, che è un altro gesto (sotto).
 
 Due cose che restano da decidere, e che chi arriva dopo deve trovare scritte:
 
@@ -384,10 +414,30 @@ Da qui discendono due gesti che sembrano rimedi e non lo sono:
   reimport, dove non ce l'ha (Epic, Amazon, PSN) la voce ricade negli scarti, che
   visto da fuori assomiglia a «il gioco è sparito e non torna più».
 
-Oggi l'unico gesto che funziona davvero è cancellare a mano la riga di
-`external_ids` e rilanciare l'import: la voce torna fra gli scarti e la si
-ricollega dal dialogo di `/account`. Che sia una `DELETE` in psql è la misura di
-quanto manchi l'interfaccia.
+Fino all'11a l'unico gesto era cancellare a mano la riga di `external_ids` e
+rilanciare l'import, e **per i negozi che vanno per nome non funziona
+nemmeno quello**. È il caso Toki: l'import Nintendo aveva agganciato l'arcade
+del 1989 invece del remake del 2018. Cancellata la riga, la voce non torna fra
+gli scarti: viene ricercata per nome, e IGDB ha due «Toki» col titolo identico;
+senza l'anno — Nintendo non lo dà — decideva il numero di recensioni, e vinceva
+di nuovo l'arcade.
+
+Dall'11a i rimedi sono due, e nessuno passa da psql:
+
+- **prevenire**: a parità di nome, prima delle recensioni conta la piattaforma
+  della voce. Il matcher chiede a IGDB anche le piattaforme di ogni risultato,
+  e se fra i candidati col titolo identico uno solo è uscito su quella della
+  voce, è quello: su Switch c'è solo il remake. Vale per i negozi che dicono
+  la piattaforma per riga (PSN, Nintendo). Non corregge i collegamenti già
+  scritti.
+- **correggere**: **«Non è questo gioco»**, dalla scheda admin del gioco.
+  Ripunta la riga di `external_ids` e sposta sul gioco giusto le copie di quel
+  negozio di ogni utente che le ha — la riga di backlog intera, con stato, voto,
+  note e tag, se sul gioco sbagliato l'utente non ha altre copie e il gioco
+  giusto non ce l'ha già; altrimenti solo le copie, coi rifiuti di quel
+  negozio. È solo dell'admin, perché la riga è di tutti. Chi ha il gioco
+  sbagliato in libreria lo **segnala** dalla pagina del gioco, e può suggerire
+  quello giusto.
 
 Quindi il ri-collegamento sono **due strade verso lo stesso posto**, e chi lo
 farà deve trovarle scritte tutte e due:
@@ -397,10 +447,10 @@ farà deve trovarle scritte tutte e due:
   righe che lo step 5 descrive.
 - **il gioco è giusto per qualcun altro ma non per questa voce di libreria** —
   l'errore è nell'import: si **ripunta la riga di `external_ids`** a un altro
-  gioco, o la si toglie perché torni a essere uno scarto. `games` non si tocca,
-  e per un motivo solo ma sufficiente: quel gioco è di tutti, questa mappatura è
-  di una libreria sola.
+  gioco. `games` non si tocca, e per un motivo solo ma sufficiente: quel gioco è
+  di tutti, questa mappatura è di una libreria sola. È «Non è questo gioco»,
+  fatto all'11a; la fusione della prima strada è l'11b.
 
-Ha un parente stretto e non è un caso: è lo stesso gesto che l'admin dello step
-11 chiama «inserimento a mano dell'id esterno» per le fonti in `not_found`.
-Scritto l'id giusto, il match non si rifà — si salta.
+Ha un parente stretto e non è un caso: è lo stesso gesto che l'admin chiama
+«Inserisci id» per le fonti (11a). Scritto l'id giusto, il match non si rifà —
+si salta.

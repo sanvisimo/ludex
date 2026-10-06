@@ -172,6 +172,32 @@ direzione col CSS. Cose che non si indovinano:
 - **Tailwind resta** in `resolve-import-dialog.tsx`, `store-link-form.tsx` e
   `unlink-account-dialog.tsx`: i dialoghi dell'account non sono ancora riscritti.
 
+**La sezione admin** (`/admin`, 11a) ha la cornice dell'account, più larga, e
+rimanda via chi non ha `role = 'admin'`: è comodità, la sicurezza vera la fa il
+middleware `admin` sul server. Il link «Admin» sta nel menu dell'avatar, e
+«Apri nell'admin» sulla pagina di ogni gioco, solo per gli admin. Quattro
+sezioni, rotte figlie: `mancanti`, `scarti`, `segnalati`, `utenti`, più la
+scheda admin di un gioco, `/admin/giochi/$slug`. «Apri un gioco», la ricerca nel
+catalogo, sta nell'intestazione. I pezzi stanno in `components/admin/`. Cose
+che non si indovinano:
+
+- **In `@repo/ui` una tabella non c'è**: `AdminTable` fa righe di `XStack` coi
+  ruoli ARIA, come la vista compatta del backlog. Le colonne elastiche tagliano
+  (`overflow="hidden"`) e i blocchi di testo accanto a una copertina vogliono
+  `flex={1} minW={0}`, o il testo esce e finisce sopra la colonna accanto; le
+  colonne fisse no, perché tengono i bottoni e tagliarle nasconderebbe l'anello
+  del focus: la loro larghezza va data giusta.
+- **La ricerca IGDB è `IgdbPicker`**, una sezione e non un dialogo: il dettaglio
+  di uno scarto e «Non è questo gioco» la mettono sotto i dati, così si sceglie
+  con la voce sotto gli occhi. `IgdbPickDialog` la avvolge per chi non ha altro
+  da mostrare. Il dialogo dell'account (`resolve-import-dialog.tsx`) è ancora in
+  Tailwind e non si estende.
+- **«Inserisci id» ha due bottoni**: «Aggiungi» salva un id o un indirizzo e
+  rifiuta un nome; «Cerca» usa il testo come nome sulla fonte. OpenCritic costa
+  una delle 25 ricerche del giorno, e il dialogo lo dice prima.
+- **Le copertine dei risultati di HLTB e Metacritic** arrivano dalla loro
+  ricerca; quelle di OpenCritic no, e costerebbero il budget.
+
 **Le pagine di servizio** — `/credits`, `/privacy`, `/terms` — stanno sotto
 `_app` e sono pubbliche. Il loro link sta nel `Footer` di `app-shell.tsx`,
 con la firma, e non nel menu. I dati dei crediti (servizi,

@@ -1,6 +1,6 @@
 # Step 11a — Admin
 
-**Aperto il 05/10/2026.** Piano approvato dall'utente con tre decisioni (sotto).
+**Aperto il 05/10/2026, chiuso il 06/10/2026** su decisione dell'utente. Piano approvato dall'utente con tre decisioni (sotto).
 La fusione di due righe `games` è uscita da qui ed è il lotto **11b**, con un
 piano suo. Sotto ogni passo, man mano, cosa è stato fatto e cosa l'ha smentito.
 
@@ -518,6 +518,15 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
    collegamento sbagliato non si disfa togliendo il gioco» corretto: per i
    negozi che vanno per nome cancellare la riga non basta; e la regola nuova
    che il nascondere segue la voce quando lo scarto si risolve (passo 5).
+
+   **Fatto** (06/10/2026): [ordine-sviluppo](../docs/ordine-sviluppo.md)
+   con lo step 11 in 11a e 11b; [import-librerie](../docs/import-librerie.md)
+   con la risposta «nascosto per tutti», il nascondere che ora segue la voce
+   quando si risolve, e il collegamento sbagliato (perché per i negozi che
+   vanno per nome cancellare la riga non bastava, e i due rimedi). In più, fuori
+   dal piano ma da tenere veri: la lista degli step nel
+   [CLAUDE.md](../CLAUDE.md) della radice e un paragrafo sulla sezione admin
+   nel [CLAUDE.md del web](../apps/web/CLAUDE.md).
 
 ## Verifica
 

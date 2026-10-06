@@ -103,21 +103,23 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 10. **Import da file** — importazione di giochi da file CSV. **In analisi.**
     Il file di prova è un export di Playnite, in
     `apps/api/test/fixtures/playnite-export-2026-08.csv`.
-11. **Admin** — dove finisce ciò che nessun automatismo ha saputo chiudere. Non
-    è una cosa sola:
-    - **giochi non collegati** (senza `igdbId`, quindi mai arricchiti) e gli
-      **scarti d'import** rimasti in `unresolved_imports`. Qui casca anche la
-      terza domanda di «Ciò che non voglio vedere»: se una voce bocciata da uno
-      possa valere per tutti, ed è questo il posto dove qualcuno lo deciderebbe.
-    - **fonti in `not_found`**: il gioco è su IGDB, ma HLTB, OpenCritic o
-      Metacritic non l'hanno trovato. È un mucchio a parte e molto più grande —
-      sulla libreria di prova 455 righe contro 52 scarti d'import. Servono il
-      ritentativo forzato e soprattutto **l'inserimento a mano dell'id
-      esterno**: `game_sources.external_id` c'è già, e scritto lui il match non
-      si rifà, si salta. È la valvola per ciò che nessuna euristica prenderà
-      mai; l'alternativa è ritoccare le soglie del matcher finché non passa
-      quel gioco lì, e romperne altri due.
-    - **gestione degli utenti**.
+11. **Admin** — dove finisce ciò che nessun automatismo ha saputo chiudere.
+    Diviso in due lotti:
+    - **11a, fatto** (piano in `plans/11a-admin.md`). Il ruolo admin col
+      plugin di Better Auth, e il primo admin con
+      `pnpm --filter api admin:grant`. Una sezione `/admin` con quattro parti:
+      **dati mancanti** (fonte per stato, con «Riprova» e «Inserisci id», anche
+      su una fonte `ok` agganciata male; l'id scritto a mano è esente
+      dall'unicità), **scarti** di tutti (collegare e nascondere per tutti),
+      **segnalati** (le segnalazioni degli utenti, con la scheda admin del
+      gioco e «Non è questo gioco», che ripunta un collegamento sbagliato) e
+      **utenti** (ruolo, ban, sessioni). Sulla pagina del gioco, «Segnala un
+      errore». Nel match per nome, a parità di titolo conta la piattaforma
+      della voce: è il caso Toki, l'arcade agganciato al posto del remake.
+    - **11b, la fusione di due righe `games`** — lo stesso gioco con due id,
+      o uno senza `igdbId` e uno con —, con backlog, possessi, `external_ids`
+      e le due righe di backlog dello stesso utente. «Collega a IGDB» con un
+      id già usato rimanda qui.
 
     La riapertura _automatica_ di un `not_found` non sta qui: è enrichment, e
     la sua regola sta scritta lassù. Qui c'è solo ciò che va deciso da un umano.
