@@ -17,7 +17,14 @@ import {
   toast,
   YStack,
 } from '@repo/ui';
-import { EllipsisVertical } from '@repo/ui/icons';
+import {
+  ArrowDown,
+  ArrowUp,
+  EllipsisVertical,
+  Pencil,
+  SlidersHorizontal,
+  Trash2,
+} from '@repo/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useId, useState } from 'react';
@@ -89,6 +96,7 @@ export function PlaylistMenu({
         <DropdownMenuContent width={184}>
           {query && (
             <DropdownMenuItem
+              icon={<SlidersHorizontal size={16} />}
               onClick={() =>
                 void router.navigate({
                   to: '/backlog',
@@ -99,19 +107,24 @@ export function PlaylistMenu({
               {t('editFilters')}
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem onClick={() => setRenaming(true)}>
+          <DropdownMenuItem
+            icon={<Pencil size={16} />}
+            onClick={() => setRenaming(true)}
+          >
             {t('rename')}
           </DropdownMenuItem>
           {position && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem
+                icon={<ArrowUp size={16} />}
                 disabled={position.index === 0 || move.isPending}
                 onClick={() => move.mutate('up')}
               >
                 {t('moveUp')}
               </DropdownMenuItem>
               <DropdownMenuItem
+                icon={<ArrowDown size={16} />}
                 disabled={
                   position.index === position.count - 1 || move.isPending
                 }
@@ -122,7 +135,11 @@ export function PlaylistMenu({
             </>
           )}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setDeleting(true)}>
+          <DropdownMenuItem
+            destructive
+            icon={<Trash2 size={16} color="$red11" />}
+            onClick={() => setDeleting(true)}
+          >
             {t('delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
