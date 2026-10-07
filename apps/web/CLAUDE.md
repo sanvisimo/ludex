@@ -122,7 +122,7 @@ copia giocata più di recente (`latestPlaytime` in `lib/playtime.ts`, mostrato d
 `PlayedTime`): nella riga dei fatti di griglia e righe, e in una colonna della
 compatta da `$md`. Le altre copie, con le date, sono nella scheda del gioco.
 
-**Le playlist condivise** (`/condivisa/$token`, step 15d) sono **pubbliche**, sotto
+**Le playlist condivise** (`/shared/$token`, step 15d) sono **pubbliche**, sotto
 `_app` e fuori da `_private`: le apre chiunque abbia il link, anche da anonimo,
 con `noindex, nofollow`. Il server manda il nome e i giochi come li mostra il
 catalogo, i filtri senza i tag e lo stato di _chi guarda_; il proprietario non

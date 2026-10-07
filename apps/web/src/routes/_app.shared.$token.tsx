@@ -100,7 +100,7 @@ function SharedPlaylistPage() {
     });
   const pageHref = (next: number) =>
     router.buildLocation({
-      to: '/condivisa/$token',
+      to: '/shared/$token',
       params: { token },
       search: validatePagingSearch({ ...search, page: next }),
     }).href;
@@ -141,7 +141,7 @@ function SharedPlaylistPage() {
       ) : (
         <ButtonLink
           variant="outline"
-          href={`/login?next=${encodeURIComponent(`/condivisa/${token}`)}`}
+          href={`/login?next=${encodeURIComponent(`/shared/${token}`)}`}
         >
           {t('signInToUse')}
         </ButtonLink>

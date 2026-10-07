@@ -16,7 +16,7 @@ Due usi, entrambi voluti:
 
 ## Proposta: un link solo per tutte e due
 
-Chi condivide una playlist ottiene **un link** (`/condivisa/<token>`). Chi lo
+Chi condivide una playlist ottiene **un link** (`/shared/<token>`). Chi lo
 apre:
 
 - **vede la playlist** (A): il nome e i giochi, come le card della home;
@@ -84,7 +84,7 @@ droppedTags }`, con `games` della forma di `HomeGame`.
 - **Menu di una playlist**: «Condividi…» apre un dialogo con il link, «Copia» e
   «Smetti di condividere». Una playlist condivisa lo dice in `/playlist` (un
   segno accanto al nome).
-- **`/condivisa/$token`**: pubblica, dentro il guscio, `noindex`. Titolo, «N
+- **`/shared/$token`**: pubblica, dentro il guscio, `noindex`. Titolo, «N
   giochi», la griglia e la paginazione di `/playlist/$id` (senza azioni sulle
   card: i giochi non sono di chi guarda), e il bottone di B.
 - Sono due schermate nuove: **va deciso se disegnarle prima** (vedi sotto).
@@ -105,7 +105,7 @@ Il punto non è che funzioni, è che **non perda niente**:
 1. **Server**: colonna e migration, `share` / `unshare`, `sharedPlaylists.get`
    con i suoi test.
 2. **Chi condivide**: il dialogo e il segno in `/playlist`.
-3. **Chi apre**: `/condivisa/$token` e il bottone di B.
+3. **Chi apre**: `/shared/$token` e il bottone di B.
 4. **Documentazione**: [docs/modello-dati.md](../docs/modello-dati.md) e questo
    piano.
 
@@ -129,7 +129,7 @@ Il punto non è che funzioni, è che **non perda niente**:
   uscire, e sono stati verificati rompendo il servizio in tre punti.
 - **Chi condivide**: «Condividi…» nel menu ⋯ (dialogo con il link, «Copia» e
   «Smetti di condividere») e un segno accanto al nome in `/playlist`.
-- **Chi apre**: `/condivisa/$token` ([route](../apps/web/src/routes/_app.condivisa.$token.tsx)),
+- **Chi apre**: `/shared/$token` ([route](../apps/web/src/routes/_app.condivisa.$token.tsx)),
   e «Usa questi filtri sul mio backlog» (da anonimi: «Accedi…», che torna qui).
 
 Cosa è andato diversamente dall'analisi:

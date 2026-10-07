@@ -20,8 +20,7 @@ import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
 /** L'indirizzo che si manda: la pagina pubblica, sullo stesso sito di chi lo crea. */
-const linkOf = (token: string) =>
-  `${window.location.origin}/condivisa/${token}`;
+const linkOf = (token: string) => `${window.location.origin}/shared/${token}`;
 
 /**
  * Il corpo del dialogo «Condividi» (step 15d): crea il link, lo mostra e lo
