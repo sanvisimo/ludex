@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   defaultPageSize,
+  maxSharedPageSize,
   pageRows,
   pageSizeOptions,
   pageStep,
@@ -53,6 +54,29 @@ describe('numero per pagina', () => {
     expect(pageStep(true, 3)).toBe(3);
     expect(pageStep(true, 0)).toBe(1);
     expect(pageStep(false, 3)).toBe(7);
+  });
+});
+
+describe('il tetto della pagina pubblica', () => {
+  it('il menu non offre ciò che il server rifiuterebbe', () => {
+    for (let columns = 1; columns <= 7; columns++)
+      for (const option of pageSizeOptions(columns, maxSharedPageSize))
+        expect(option).toBeLessThanOrEqual(maxSharedPageSize);
+    // A 7 colonne il tetto di 140 tiene tutte e sei le voci, 20 righe comprese.
+    expect(pageSizeOptions(7, maxSharedPageSize)).toEqual([
+      7, 14, 35, 70, 105, 140,
+    ]);
+  });
+
+  it('con un tetto più basso le voci grandi spariscono', () => {
+    expect(pageSizeOptions(7, 60)).toEqual([7, 14, 35]);
+  });
+
+  it('un numero chiesto oltre il tetto si porta al multiplo più grande che ci sta', () => {
+    expect(snapPageSize(500, 7, maxSharedPageSize)).toBe(140);
+    expect(snapPageSize(500, 3, maxSharedPageSize)).toBe(138);
+    // Senza tetto è quello del backlog.
+    expect(snapPageSize(500, 7)).toBe(196);
   });
 });
 

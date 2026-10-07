@@ -400,8 +400,10 @@ export const contract = {
       .input(
         z.object({
           token: ShareTokenSchema,
-          // Basso: è una query che chiunque può lanciare.
-          limit: z.number().int().min(1).max(60).default(30),
+          // Più basso del backlog (200): è una query che chiunque può lanciare.
+          // 140 sono le 20 righe più grandi del menu per pagina, a 7 colonne
+          // (`maxSharedPageSize` nel web).
+          limit: z.number().int().min(1).max(140).default(30),
           offset: z.number().int().min(0).default(0),
         }),
       )

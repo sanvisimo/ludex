@@ -26,20 +26,29 @@ const LIST_STEP = 7;
 export const pageStep = (isGrid: boolean, columns: number) =>
   isGrid ? Math.max(1, columns) : LIST_STEP;
 
-/** I numeri che il menu offre per quel passo. */
-export const pageSizeOptions = (step: number) => pageRows.map((r) => r * step);
+/**
+ * Il tetto per la pagina pubblica di una playlist condivisa (`limit` di
+ * `sharedPlaylists.get`): è una query che chiunque può lanciare, quindi più
+ * basso di quello del backlog, ma abbastanza da offrire le righe del menu con
+ * le colonne che la pagina può avere (20 righe × 7 colonne).
+ */
+export const maxSharedPageSize = 140;
+
+/**
+ * I numeri che il menu offre per quel passo, entro un tetto: quelli che il
+ * server rifiuterebbe non si offrono.
+ */
+export const pageSizeOptions = (step: number, max = maxPageSize) =>
+  pageRows.map((r) => r * step).filter((size) => size <= max);
 
 /**
  * Il numero richiesto, portato al multiplo del passo più vicino. Un link con
  * `size=14` aperto su uno schermo a 3 colonne chiede 15; mai meno di una riga e
  * mai più del tetto del contratto.
  */
-export function snapPageSize(size: number, step: number) {
+export function snapPageSize(size: number, step: number, max = maxPageSize) {
   const snapped = Math.round(size / step) * step;
-  return Math.min(
-    Math.max(step, snapped),
-    Math.floor(maxPageSize / step) * step,
-  );
+  return Math.min(Math.max(step, snapped), Math.floor(max / step) * step);
 }
 
 /**

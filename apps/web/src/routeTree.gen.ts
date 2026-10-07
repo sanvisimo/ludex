@@ -32,8 +32,8 @@ import { Route as AppAdminMancantiRouteImport } from './routes/_app.admin.mancan
 import { Route as AppAdminScartiRouteImport } from './routes/_app.admin.scarti'
 import { Route as AppAdminSegnalatiRouteImport } from './routes/_app.admin.segnalati'
 import { Route as AppAdminUtentiRouteImport } from './routes/_app.admin.utenti'
-import { Route as AppCondivisaTokenRouteImport } from './routes/_app.condivisa.$token'
 import { Route as AppGamesSlugRouteImport } from './routes/_app.games.$slug'
+import { Route as AppSharedTokenRouteImport } from './routes/_app.shared.$token'
 import { Route as AppPrivatePlaylistIndexRouteImport } from './routes/_app._private.playlist.index'
 import { Route as AppPrivatePlaylistIdRouteImport } from './routes/_app._private.playlist.$id'
 import { Route as AppAdminGiochiSlugRouteImport } from './routes/_app.admin.giochi.$slug'
@@ -150,14 +150,14 @@ const AppAdminUtentiRoute = AppAdminUtentiRouteImport.update({
   path: '/utenti',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppCondivisaTokenRoute = AppCondivisaTokenRouteImport.update({
-  id: '/condivisa/$token',
-  path: '/condivisa/$token',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppGamesSlugRoute = AppGamesSlugRouteImport.update({
   id: '/games/$slug',
   path: '/games/$slug',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSharedTokenRoute = AppSharedTokenRouteImport.update({
+  id: '/shared/$token',
+  path: '/shared/$token',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPrivatePlaylistIndexRoute = AppPrivatePlaylistIndexRouteImport.update({
@@ -195,8 +195,8 @@ export interface FileRoutesByFullPath {
   '/admin/scarti': typeof AppAdminScartiRoute
   '/admin/segnalati': typeof AppAdminSegnalatiRoute
   '/admin/utenti': typeof AppAdminUtentiRoute
-  '/condivisa/$token': typeof AppCondivisaTokenRoute
   '/games/$slug': typeof AppGamesSlugRoute
+  '/shared/$token': typeof AppSharedTokenRoute
   '/account/': typeof AppAccountIndexRoute
   '/admin/': typeof AppAdminIndexRoute
   '/playlist/$id': typeof AppPrivatePlaylistIdRoute
@@ -220,8 +220,8 @@ export interface FileRoutesByTo {
   '/admin/scarti': typeof AppAdminScartiRoute
   '/admin/segnalati': typeof AppAdminSegnalatiRoute
   '/admin/utenti': typeof AppAdminUtentiRoute
-  '/condivisa/$token': typeof AppCondivisaTokenRoute
   '/games/$slug': typeof AppGamesSlugRoute
+  '/shared/$token': typeof AppSharedTokenRoute
   '/account': typeof AppAccountIndexRoute
   '/admin': typeof AppAdminIndexRoute
   '/playlist/$id': typeof AppPrivatePlaylistIdRoute
@@ -251,8 +251,8 @@ export interface FileRoutesById {
   '/_app/admin/scarti': typeof AppAdminScartiRoute
   '/_app/admin/segnalati': typeof AppAdminSegnalatiRoute
   '/_app/admin/utenti': typeof AppAdminUtentiRoute
-  '/_app/condivisa/$token': typeof AppCondivisaTokenRoute
   '/_app/games/$slug': typeof AppGamesSlugRoute
+  '/_app/shared/$token': typeof AppSharedTokenRoute
   '/_app/account/': typeof AppAccountIndexRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/_private/playlist/$id': typeof AppPrivatePlaylistIdRoute
@@ -280,8 +280,8 @@ export interface FileRouteTypes {
     | '/admin/scarti'
     | '/admin/segnalati'
     | '/admin/utenti'
-    | '/condivisa/$token'
     | '/games/$slug'
+    | '/shared/$token'
     | '/account/'
     | '/admin/'
     | '/playlist/$id'
@@ -305,8 +305,8 @@ export interface FileRouteTypes {
     | '/admin/scarti'
     | '/admin/segnalati'
     | '/admin/utenti'
-    | '/condivisa/$token'
     | '/games/$slug'
+    | '/shared/$token'
     | '/account'
     | '/admin'
     | '/playlist/$id'
@@ -335,8 +335,8 @@ export interface FileRouteTypes {
     | '/_app/admin/scarti'
     | '/_app/admin/segnalati'
     | '/_app/admin/utenti'
-    | '/_app/condivisa/$token'
     | '/_app/games/$slug'
+    | '/_app/shared/$token'
     | '/_app/account/'
     | '/_app/admin/'
     | '/_app/_private/playlist/$id'
@@ -512,18 +512,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminUtentiRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/condivisa/$token': {
-      id: '/_app/condivisa/$token'
-      path: '/condivisa/$token'
-      fullPath: '/condivisa/$token'
-      preLoaderRoute: typeof AppCondivisaTokenRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/games/$slug': {
       id: '/_app/games/$slug'
       path: '/games/$slug'
       fullPath: '/games/$slug'
       preLoaderRoute: typeof AppGamesSlugRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/shared/$token': {
+      id: '/_app/shared/$token'
+      path: '/shared/$token'
+      fullPath: '/shared/$token'
+      preLoaderRoute: typeof AppSharedTokenRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/_private/playlist/': {
@@ -617,8 +617,8 @@ interface AppRouteChildren {
   AppPrivacyRoute: typeof AppPrivacyRoute
   AppTermsRoute: typeof AppTermsRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppCondivisaTokenRoute: typeof AppCondivisaTokenRoute
   AppGamesSlugRoute: typeof AppGamesSlugRoute
+  AppSharedTokenRoute: typeof AppSharedTokenRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -630,8 +630,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppPrivacyRoute: AppPrivacyRoute,
   AppTermsRoute: AppTermsRoute,
   AppIndexRoute: AppIndexRoute,
-  AppCondivisaTokenRoute: AppCondivisaTokenRoute,
   AppGamesSlugRoute: AppGamesSlugRoute,
+  AppSharedTokenRoute: AppSharedTokenRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

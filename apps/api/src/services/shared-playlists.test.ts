@@ -149,6 +149,20 @@ describe('il link', () => {
     expect(rifiuti[0]!.message).toBe(rifiuti[1]!.message);
   });
 
+  it('il tetto per pagina è 140: una più grande non passa', async () => {
+    const userId = await createUser();
+    const { token } = await condivisa(userId);
+    const get = (limit: number) =>
+      call(
+        router.sharedPlaylists.get,
+        { token, limit },
+        { context: { headers: new Headers() } },
+      );
+
+    await expect(get(140)).resolves.toMatchObject({ total: 0 });
+    await expect(get(141)).rejects.toThrow();
+  });
+
   it('un valore che non può essere un link non arriva al database', async () => {
     await expect(
       call(

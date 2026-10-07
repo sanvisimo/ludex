@@ -76,7 +76,8 @@ droppedTags }`, con `games` della forma di `HomeGame`.
   ma con due condizioni che chi apre non può togliere: né nascosti, né
   `excluded`. Poi **riduce a `Game`** al confine del servizio, prima che qualunque
   campo personale possa uscire.
-- Il tetto per pagina è basso (60): è una query che chiunque può lanciare.
+- Il tetto per pagina è più basso del backlog (140): è una query che chiunque
+  può lanciare.
 
 ## Schermate
 
@@ -133,9 +134,12 @@ Il punto non è che funzioni, è che **non perda niente**:
 
 Cosa è andato diversamente dall'analisi:
 
-- **Il tetto per pagina del link** è 60 lato server, ma la pagina chiede il
-  numero per pagina standard (multiplo delle colonne, 14 circa): chi apre non
-  ha il menu «per pagina».
+- **Il tetto per pagina del link è 140** e non 60 come nell'analisi: sono le 20
+  righe più grandi del menu «per pagina» a 7 colonne, ed è meno del 200 delle
+  rotte del backlog. Chi apre ha lo stesso menu (`PageSizeSelect`), con le voci
+  che il server accetta. L'avevo lasciato fuori per una lettura sbagliata di
+  «cosa più semplice», che riguardava la ricerca e il riordino, non la
+  paginazione.
 - **Il nome non si precompila** quando si salvano i filtri di un link: il
   dialogo «Salva come playlist» parte vuoto. La playlist sorgente non è una
   nostra, e l'id nell'URL (`?playlist=`) serve solo alle proprie.

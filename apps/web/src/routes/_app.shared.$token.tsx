@@ -18,17 +18,24 @@ import {
   useReanchorPage,
 } from '@/components/grid-columns';
 import { CARD_WIDTH, HomeCard } from '@/components/home-band';
+import { PageSizeSelect } from '@/components/page-size-select';
 import { hasErrorCode } from '@/lib/api-error';
 import { playlistSearch, validatePagingSearch } from '@/lib/backlog-filter';
 import { api } from '@/lib/orpc';
-import { defaultPageSize, snapPageSize } from '@/lib/page-size';
+import {
+  defaultPageSize,
+  maxSharedPageSize,
+  pageSizeOptions,
+  snapPageSize,
+} from '@/lib/page-size';
 import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
 import { takeLinkClick } from '@/src/link-click';
 import { useSession } from '@/src/use-session';
 
-export const Route = createFileRoute('/_app/condivisa/$token')({
-  // Solo la pagina: chi apre non cerca né riordina, l'ordine è quello salvato.
+export const Route = createFileRoute('/_app/shared/$token')({
+  // La pagina e quanti per pagina: chi apre non cerca né riordina, l'ordine è
+  // quello salvato.
   validateSearch: validatePagingSearch,
   // Una pagina che chiunque può aprire e nessuno deve trovare per caso: è
   // raggiungibile solo da chi ha il link.
@@ -52,9 +59,16 @@ function SharedPlaylistPage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
 
-  // Un multiplo delle colonne che si vedono, come in `/backlog`; solo la griglia.
+  // Un multiplo delle colonne che si vedono, come in `/backlog`; solo la griglia,
+  // e dentro il tetto della rotta pubblica.
   const grid = useGridColumns();
-  const size = snapPageSize(defaultPageSize, grid.columns ?? 1);
+  const step = grid.columns ?? 1;
+  const sizeOptions = pageSizeOptions(step, maxSharedPageSize);
+  const size = snapPageSize(
+    search.size ?? defaultPageSize,
+    step,
+    maxSharedPageSize,
+  );
   const sizeKnown = grid.columns !== null;
   const page = search.page ?? 1;
 
@@ -64,7 +78,7 @@ function SharedPlaylistPage() {
     page,
     onChange: (next) =>
       void navigate({
-        search: () => validatePagingSearch({ page: next }),
+        search: () => validatePagingSearch({ ...search, page: next }),
         replace: true,
       }),
   });
@@ -81,12 +95,14 @@ function SharedPlaylistPage() {
   const total = data?.total ?? 0;
   const pageCount = Math.ceil(total / size);
   const goToPage = (next: number) =>
-    void navigate({ search: () => validatePagingSearch({ page: next }) });
+    void navigate({
+      search: () => validatePagingSearch({ ...search, page: next }),
+    });
   const pageHref = (next: number) =>
     router.buildLocation({
       to: '/condivisa/$token',
       params: { token },
-      search: validatePagingSearch({ page: next }),
+      search: validatePagingSearch({ ...search, page: next }),
     }).href;
 
   if (shared.error) {
@@ -172,23 +188,44 @@ function SharedPlaylistPage() {
                   <HomeCard key={game.id} game={game} fill />
                 ))}
               </Cards>
-              {pageCount > 1 && (
-                <XStack justify="center">
-                  <Pagination
-                    page={page}
-                    pageCount={pageCount}
-                    href={pageHref}
-                    onNavigate={(next, event) => {
-                      if (takeLinkClick(event)) goToPage(next);
-                    }}
-                    label={tBacklog('pages')}
-                    previousLabel={tBacklog('previousPage')}
-                    nextLabel={tBacklog('nextPage')}
-                    goToLabel={tBacklog('goToPage')}
-                    onGoTo={goToPage}
+              {/* Quanti per pagina a sinistra, le pagine a destra; sul telefono
+                  vanno a capo. La scelta c'è anche con una pagina sola, se i
+                  giochi sono più della prima voce: chi ha scelto tanti deve
+                  poter tornare indietro. */}
+              <XStack
+                flexWrap="wrap"
+                items="center"
+                justify="center"
+                $sm={{ justify: 'space-between' }}
+                gap={16}
+              >
+                {total > (sizeOptions[0] ?? 0) && (
+                  <PageSizeSelect
+                    value={size}
+                    options={sizeOptions}
+                    onChange={(next) =>
+                      // Cambiare quanti per pagina riporta alla prima.
+                      void navigate({
+                        search: () =>
+                          validatePagingSearch({ size: next, page: 1 }),
+                      })
+                    }
                   />
-                </XStack>
-              )}
+                )}
+                <Pagination
+                  page={page}
+                  pageCount={pageCount}
+                  href={pageHref}
+                  onNavigate={(next, event) => {
+                    if (takeLinkClick(event)) goToPage(next);
+                  }}
+                  label={tBacklog('pages')}
+                  previousLabel={tBacklog('previousPage')}
+                  nextLabel={tBacklog('nextPage')}
+                  goToLabel={tBacklog('goToPage')}
+                  onGoTo={goToPage}
+                />
+              </XStack>
             </>
           )
         )}

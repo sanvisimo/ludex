@@ -126,8 +126,9 @@ compatta da `$md`. Le altre copie, con le date, sono nella scheda del gioco.
 `_app` e fuori da `_private`: le apre chiunque abbia il link, anche da anonimo,
 con `noindex, nofollow`. Il server manda il nome e i giochi come li mostra il
 catalogo, i filtri senza i tag e lo stato di _chi guarda_; il proprietario non
-compare e nemmeno l'API lo restituisce. La pagina ha solo la paginazione (a
-multipli delle colonne, come `/backlog`): chi apre non cerca né riordina. «Usa
+compare e nemmeno l'API lo restituisce. La pagina ha la paginazione e il
+«per pagina» (multipli delle colonne, entro il tetto della rotta, 140, come
+`/backlog`): chi apre non cerca né riordina. «Usa
 questi filtri sul mio backlog» apre `/backlog` con `playlistSearch(query)`; da
 anonimi porta all'accesso con `?next=` e torna qui. Chi condivide usa «Condividi…»
 nel menu ⋯ (`ShareForm`): il dialogo dice cosa esce _prima_ di creare il link, e il
