@@ -1,4 +1,4 @@
-import { storeAccountName, storePageUrl } from '@repo/contracts';
+import { storeAccountName, storeGameUrl } from '@repo/contracts';
 import type { Medium, Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import {
@@ -223,7 +223,7 @@ export async function gameAdminDetail(slug: string) {
  * La pagina di un collegamento sul suo negozio, per controllare che sia giusto.
  *
  * Prima quella che l'import ha salvato su una copia: è il negozio stesso ad
- * averla data, con le regole di `storePageUrl`. Senza copie si ricava dall'id
+ * averla data, con le regole di `storeGameUrl`. Senza copie si ricava dall'id
  * dove la forma è nota (docs/negozi.md): Steam per appid, PSN per concept (gli
  * id numerici sono concept, quelli che IGDB dà), Xbox per id prodotto. GOG
  * dall'id da solo non dà una pagina ufficiale: si passa da gogdb.org, che è
@@ -234,23 +234,12 @@ function storeLinkUrl(
   externalId: string,
   storePage: string | null,
 ) {
-  if (storePage) return storePageUrl(store, storePage);
-  switch (store) {
-    case 'steam':
-      return storePageUrl('steam', `app/${externalId}`);
-    case 'psn':
-      return /^\d+$/.test(externalId)
-        ? storePageUrl('psn', `concept/${externalId}`)
-        : null;
-    case 'xbox':
-      return `https://www.xbox.com/games/store/x/${externalId}`;
-    case 'gog':
-      return /^\d+$/.test(externalId)
-        ? `https://www.gogdb.org/product/${externalId}`
-        : null;
-    default:
-      return null;
-  }
+  const official = storeGameUrl(store, externalId, storePage);
+  if (official) return official;
+  // L'admin controlla il collegamento, e gogdb.org per questo va bene.
+  return store === 'gog' && /^\d+$/.test(externalId)
+    ? `https://www.gogdb.org/product/${externalId}`
+    : null;
 }
 
 /**

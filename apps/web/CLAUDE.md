@@ -236,7 +236,9 @@ chiedere: IGDB regge quattro richieste al secondo per tutto il server.
 [modello-dati](../../docs/modello-dati.md)) ha i suoi pezzi in
 `apps/web/components/game-page.tsx`: la hero, che `Page` mette sopra il suo
 contenitore a tutta larghezza, la gallery, durata e critica col dialog
-«Dettagli», il blocco del backlog, remake e simili. Le colonne si affiancano
+«Dettagli», il blocco del backlog, la card «Links» coi negozi dove il gioco c'è
+(`StoreLinks`: `game.storeLinks`, un link per negozio, solo dove una pagina
+ufficiale c'è — `storeGameUrl` in `@repo/contracts`), remake e simili. Le colonne si affiancano
 da `$lg`; sotto, la laterale viene **prima** nell'HTML — durata, critica e
 stato sono ciò che serve a decidere — e `row-reverse` la rimette a destra sul
 desktop. Un gioco appena nato (id IGDB, dati non ancora arrivati, creato da

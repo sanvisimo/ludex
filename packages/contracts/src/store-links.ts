@@ -44,6 +44,40 @@ export function storePageUrl(
 }
 
 /**
+ * La pagina di un gioco su un negozio, per la card «Links» della scheda.
+ *
+ * Diversa da `storePageUrl`, che parte da una copia: qui il gioco è quello del
+ * catalogo, e di un negozio si sa l'id (`external_ids`) e, se qualcuno ce l'ha
+ * importato, la pagina che il negozio stesso ha dato. Prima quella, poi la
+ * forma che si ricava dall'id dove è nota (docs/negozi.md): Steam per appid,
+ * PSN per concept (gli id numerici sono concept), Xbox per id prodotto.
+ *
+ * Nullo dove un link ufficiale non c'è: GOG dall'id da solo non dà una pagina
+ * (gogdb.org non è GOG, e qui sta scritto «GOG»), Epic, Amazon e Nintendo
+ * nemmeno. Chi mostra salta quei negozi.
+ */
+export function storeGameUrl(
+  store: Store,
+  externalId: string,
+  storePage: string | null,
+): string | null {
+  // `storePageUrl` dà a GOG senza pagina il login dell'utente: qui non vale.
+  if (storePage) return storePageUrl(store, storePage);
+  switch (store) {
+    case 'steam':
+      return storePageUrl('steam', `app/${externalId}`);
+    case 'psn':
+      return /^\d+$/.test(externalId)
+        ? storePageUrl('psn', `concept/${externalId}`)
+        : null;
+    case 'xbox':
+      return `https://www.xbox.com/games/store/x/${externalId}`;
+    default:
+      return null;
+  }
+}
+
+/**
  * La copertina di una voce che non è un gioco: uno scarto d'import.
  *
  * Una voce non risolta non ha `games` né IGDB, e quindi nessuna copertina sua:

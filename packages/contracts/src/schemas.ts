@@ -220,6 +220,9 @@ export const GameDetailSchema = GameSchema.extend({
     opencritic: z.string().nullable(),
     metacritic: z.string().nullable(),
   }),
+  // Dove si compra, un link per negozio: dagli id di `external_ids` e dalla
+  // pagina che un import ha dato. Solo i negozi con un link ufficiale.
+  storeLinks: z.array(z.object({ store: StoreSchema, url: z.string() })),
 });
 
 // Risultato di ricerca su IGDB: NON è una riga `games`, è un candidato da cui
