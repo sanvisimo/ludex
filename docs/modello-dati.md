@@ -233,3 +233,28 @@ la spazzata ci riprova per sempre.
   lista si svuoterebbe da sé — il secondo lo toglie **da tutti i giochi**, per
   cascade sul raccordo, ed esiste perché altrimenti un refuso resterebbe nella
   lista per sempre.
+
+## Le playlist: una domanda, non una risposta (step 15a, 15d)
+
+`playlists` salva un `BacklogQuery` con un nome, per utente. **Non contiene i
+giochi**: la query gira a ogni apertura sul backlog di chi la possiede, quindi
+una playlist segue il backlog da sola.
+
+- **`query` è un JSONB senza versione.** Un campo nuovo è opzionale e non rompe
+  niente; rinominare o togliere un campo, o cambiare un valore di un enum, vuole
+  una migration che riscrive le righe, o Zod lo scarta in silenzio e la playlist
+  mostra più giochi del previsto. Non salva la pagina, la vista né `hidden`.
+- **I tag stanno nella query per id**, e un tag cancellato si ignora quando la
+  playlist gira: ignorarlo è meglio che svuotare la lista, e si dice quanti
+  mancano (`missingTags`).
+- **`position`** è l'ordine scelto dall'utente. Non è unico: spostare riscrive le
+  posizioni di tutte le sue playlist, e le nuove vanno in fondo.
+- **`share_token`** è il link pubblico: 128 bit casuali, unico, nullo se la
+  playlist non è condivisa. Chi ha il link la vede senza account. **Esce il
+  gioco, mai niente dell'utente**: il nome della playlist, i giochi come li
+  mostra il catalogo (`Game`), i filtri senza i tag, e lo stato di chi guarda.
+  Mai stato, voto, note, tag, possessi, ore, date, né chi è il proprietario; mai
+  i giochi nascosti né quelli `excluded`, qualunque cosa dica il filtro. Un link
+  revocato e uno inesistente rispondono allo stesso modo, e il link non va
+  nell'esportazione dell'account (c'è solo se è condivisa). La regola è provata
+  da test che cercano i valori e i nomi dei campi nella risposta pubblica.

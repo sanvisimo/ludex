@@ -43,6 +43,11 @@ export const playlists = pgTable(
     // che il prossimo spostamento richiude. A parità decide il nome.
     // Il default serve solo alla migration; chi inserisce lo scrive sempre.
     position: integer('position').notNull().default(0),
+    // Il link pubblico (step 15d): 16 byte casuali in base64url, nullo se la
+    // playlist non è condivisa. Chi ha il link la vede, senza account; revocarlo
+    // lo rimette a nullo e il link smette di funzionare, e ricondividere ne dà
+    // uno nuovo. Unico, e non indovinabile: è l'unica cosa che protegge la pagina.
+    shareToken: text('share_token').unique(),
     ...timestamps,
   },
   (table) => [

@@ -39,6 +39,8 @@ import {
   RepointPreviewSchema,
   ReportGroupSchema,
   ReportTargetSchema,
+  ShareTokenSchema,
+  SharedPlaylistSchema,
   SortDirectionSchema,
   SteamLoginRemovedSchema,
   SteamLoginStartSchema,
@@ -374,11 +376,36 @@ export const contract = {
 
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
 
+    // Il link pubblico (step 15d). `share` rende quello che c'è, o ne crea uno:
+    // chiamarla due volte dà lo stesso link. `unshare` lo toglie e il link smette
+    // di funzionare subito; ricondividere ne dà uno nuovo.
+    share: oc
+      .input(z.object({ id: z.uuid() }))
+      .output(z.object({ token: ShareTokenSchema })),
+    unshare: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+
     // Sposta di un posto verso l'alto o verso il basso nell'elenco dell'utente.
     // Spostare la prima su, o l'ultima giù, non fa niente e non è un errore.
     move: oc
       .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
       .output(z.void()),
+  },
+
+  // Le playlist condivise (step 15d): **pubbliche**, per chi ha il link. Il
+  // proprietario non compare e dei suoi giochi esce solo ciò che il catalogo già
+  // mostra; vedi `SharedPlaylistSchema`. Un link sconosciuto e uno revocato
+  // rispondono `NOT_FOUND` allo stesso modo.
+  sharedPlaylists: {
+    get: oc
+      .input(
+        z.object({
+          token: ShareTokenSchema,
+          // Basso: è una query che chiunque può lanciare.
+          limit: z.number().int().min(1).max(60).default(30),
+          offset: z.number().int().min(0).default(0),
+        }),
+      )
+      .output(SharedPlaylistSchema),
   },
 
   backlog: {

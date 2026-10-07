@@ -172,6 +172,7 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
       const names = (tagIds ?? []).flatMap((id) => tagName.get(id) ?? []);
       return {
         name: playlist.name,
+        shared: playlist.shareToken !== null,
         query: { ...query, ...(names.length > 0 && { tags: names }) },
         createdAt: playlist.createdAt,
       };

@@ -56,8 +56,11 @@ import {
   listPlaylists,
   movePlaylist,
   openPlaylist,
+  sharePlaylist,
+  unsharePlaylist,
   updatePlaylist,
 } from '../services/playlists';
+import { openSharedPlaylist } from '../services/shared-playlists';
 import {
   closeReports,
   createReports,
@@ -481,6 +484,23 @@ export const router = os.router({
         return playlist;
       }),
 
+    share: os.playlists.share
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const token = await sharePlaylist(context.user.id, input.id);
+        if (!token)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+        return { token };
+      }),
+
+    unshare: os.playlists.unshare
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const done = await unsharePlaylist(context.user.id, input.id);
+        if (!done)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+      }),
+
     move: os.playlists.move.use(authed).handler(async ({ input, context }) => {
       const moved = await movePlaylist(
         context.user.id,
@@ -497,6 +517,21 @@ export const router = os.router({
         const removed = await deletePlaylist(context.user.id, input.id);
         if (!removed)
           throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+      }),
+  },
+
+  sharedPlaylists: {
+    // Pubblica: `maybeAuthed` serve solo allo stato di chi guarda.
+    get: os.sharedPlaylists.get
+      .use(maybeAuthed)
+      .handler(async ({ input, context }) => {
+        const playlist = await openSharedPlaylist(
+          input,
+          context.user?.id ?? null,
+        );
+        if (!playlist)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+        return playlist;
       }),
   },
 

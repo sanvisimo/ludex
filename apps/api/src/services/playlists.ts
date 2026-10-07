@@ -1,7 +1,9 @@
+import { randomBytes } from 'node:crypto';
+
 import type { PlaylistQuery } from '@repo/contracts';
 import { BacklogQuerySchema, PlaylistQuerySchema } from '@repo/contracts';
 import { db, schema } from '@repo/db';
-import { and, asc, eq, inArray, sql } from '@repo/db/orm';
+import { and, asc, eq, inArray, isNull, sql } from '@repo/db/orm';
 
 import { isUniqueViolation } from '../lib/pg-error';
 import { searchBacklog } from './backlog-search';
@@ -19,6 +21,7 @@ const columns = {
   id: schema.playlists.id,
   name: schema.playlists.name,
   query: schema.playlists.query,
+  shareToken: schema.playlists.shareToken,
   createdAt: schema.playlists.createdAt,
   updatedAt: schema.playlists.updatedAt,
 };
@@ -220,4 +223,51 @@ export async function movePlaylist(
     }
     return true;
   });
+}
+
+/**
+ * Il link pubblico di una playlist (step 15d): quello che c'è, o uno nuovo.
+ * `undefined` se non esiste o non è sua.
+ *
+ * Chiamarla due volte dà lo stesso link. L'aggiornamento scrive solo dove il
+ * link è ancora nullo, così due richieste insieme non se lo sovrascrivono: la
+ * seconda rilegge quello della prima.
+ */
+export async function sharePlaylist(userId: string, id: string) {
+  const mine = and(
+    eq(schema.playlists.id, id),
+    eq(schema.playlists.userId, userId),
+  );
+  const read = async () => {
+    const [row] = await db
+      .select({ shareToken: schema.playlists.shareToken })
+      .from(schema.playlists)
+      .where(mine);
+    return row;
+  };
+
+  const current = await read();
+  if (!current) return undefined;
+  if (current.shareToken) return current.shareToken;
+
+  // 128 bit: non si indovina, ed è l'unica cosa che protegge la pagina.
+  const token = randomBytes(16).toString('base64url');
+  const [written] = await db
+    .update(schema.playlists)
+    .set({ shareToken: token })
+    .where(and(mine, isNull(schema.playlists.shareToken)))
+    .returning({ shareToken: schema.playlists.shareToken });
+  return written?.shareToken ?? (await read())?.shareToken ?? undefined;
+}
+
+/** Toglie il link: smette di funzionare subito. `false` se non è sua. */
+export async function unsharePlaylist(userId: string, id: string) {
+  const [row] = await db
+    .update(schema.playlists)
+    .set({ shareToken: null })
+    .where(
+      and(eq(schema.playlists.id, id), eq(schema.playlists.userId, userId)),
+    )
+    .returning({ id: schema.playlists.id });
+  return row !== undefined;
 }

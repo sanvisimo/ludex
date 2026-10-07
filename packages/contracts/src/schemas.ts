@@ -585,6 +585,8 @@ export const PlaylistSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   query: PlaylistQuerySchema,
+  // Il link pubblico, se la playlist è condivisa. Lo vede solo chi l'ha scritta.
+  shareToken: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -664,6 +666,9 @@ export const AccountExportSchema = z.object({
   playlists: z.array(
     z.object({
       name: z.string(),
+      // Se è condivisa. Il link no: è una chiave di accesso, non un dato che si
+      // porta altrove.
+      shared: z.boolean(),
       // I criteri come stanno salvati, ma i tag per **nome**: un id non vuol
       // dire niente fuori da Ludex, e la libreria li dà già per nome.
       query: PlaylistQuerySchema.omit({ tags: true }).extend({
@@ -728,6 +733,34 @@ export const homeBandKindValues = [
 // di chi guarda è lo stato, nullo da anonimo o se il gioco non è suo.
 export const HomeGameSchema = GameSchema.extend({
   status: BacklogStatusSchema.nullable(),
+});
+
+/**
+ * Il link di una playlist condivisa (step 15d): 22 caratteri base64url. Lo
+ * schema stringe prima di cercare, così un valore che non può essere un link non
+ * arriva al database.
+ */
+export const ShareTokenSchema = z
+  .string()
+  .min(16)
+  .max(64)
+  .regex(/^[A-Za-z0-9_-]+$/);
+
+/**
+ * Una playlist vista da chi ha il link. È tutto ciò che esce, e non c'è altro:
+ *
+ * - il nome della playlist, mai di chi l'ha scritta;
+ * - i giochi **come li vede il catalogo** (`HomeGame`): niente stato, voto, note,
+ *   tag, possessi né date del proprietario. Lo `status` è quello di chi guarda;
+ * - i filtri, per chi li vuole riusare sul proprio backlog, **senza i tag**, che
+ *   sono per id e di chi li ha scritti; `droppedTags` dice quanti erano.
+ */
+export const SharedPlaylistSchema = z.object({
+  name: z.string(),
+  total: z.number().int(),
+  games: z.array(HomeGameSchema),
+  query: PlaylistQuerySchema.omit({ tags: true }),
+  droppedTags: z.number().int(),
 });
 
 export const HomeBandSchema = z.object({
@@ -1013,5 +1046,6 @@ export type PlaylistQuery = z.infer<typeof PlaylistQuerySchema>;
 export type PlaylistQueryInput = z.input<typeof PlaylistQuerySchema>;
 export type Playlist = z.infer<typeof PlaylistSchema>;
 export type PlaylistDetail = z.infer<typeof PlaylistDetailSchema>;
+export type SharedPlaylist = z.infer<typeof SharedPlaylistSchema>;
 export type BacklogFilterOptions = z.infer<typeof BacklogFilterOptionsSchema>;
 export type FilterAttribute = z.infer<typeof FilterAttributeSchema>;
