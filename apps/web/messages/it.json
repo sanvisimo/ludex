@@ -16,7 +16,8 @@
     "terms": "Termini",
     "madeWith": "Made with ♥ in Italy & EU",
     "backToTop": "Torna su",
-    "admin": "Admin"
+    "admin": "Admin",
+    "playlists": "Playlist"
   },
   "theme": {
     "label": "Tema",
@@ -89,7 +90,63 @@
     "view": "Vista",
     "viewRows": "Righe",
     "viewGrid": "Griglia",
-    "viewCompact": "Compatta"
+    "viewCompact": "Compatta",
+    "playedLabel": "Giocate: {duration}",
+    "columnPlayed": "Giocate"
+  },
+  "playlists": {
+    "title": "Playlist",
+    "count": "{count, plural, one {# playlist} other {# playlist}}",
+    "error": "Non riesco a caricare le playlist.",
+    "emptyTitle": "Nessun gioco corrisponde ai filtri di questa playlist.",
+    "emptyHint": "La playlist è una domanda sul tuo backlog: se cambia, la lista cambia da sola.",
+    "emptySearchTitle": "Nessun gioco della playlist corrisponde alla ricerca.",
+    "emptyListTitle": "Nessuna playlist",
+    "emptyListHint": "Imposta dei filtri nel backlog e salvali con un nome.",
+    "goToBacklog": "Vai al backlog",
+    "actionsFor": "Azioni per {name}",
+    "rename": "Rinomina",
+    "delete": "Elimina",
+    "back": "Playlist",
+    "editFilters": "Modifica filtri",
+    "missingTags": "{count, plural, one {Un tag di questa playlist non esiste più: l'ho ignorato.} other {# tag di questa playlist non esistono più: li ho ignorati.}}",
+    "notFoundTitle": "Playlist non trovata",
+    "notFoundHint": "Forse è stata eliminata.",
+    "loadFailed": "Non riesco a caricare la playlist.",
+    "save": {
+      "button": "Salva come playlist",
+      "title": "Salva come playlist",
+      "description": "{count, plural, one {Salva il filtro acceso} other {Salva i # filtri accesi}} e l'ordinamento. Non la pagina né la vista.",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Per esempio: brevi per stasera",
+      "exists": "Hai già una playlist «{name}».",
+      "replace": "Sostituisci i filtri di «{name}»",
+      "orRename": "…oppure cambia il nome qui sopra.",
+      "cancel": "Annulla",
+      "submit": "Salva",
+      "saved": "Playlist «{name}» salvata",
+      "replaced": "Filtri di «{name}» sostituiti",
+      "open": "Apri",
+      "failed": "Non sono riuscito a salvare la playlist",
+      "editing": "Stai modificando «{name}»: salvando ne sostituisci i filtri.",
+      "update": "Aggiorna la playlist"
+    },
+    "renameDialog": {
+      "title": "Rinomina la playlist",
+      "nameLabel": "Nome",
+      "cancel": "Annulla",
+      "submit": "Rinomina",
+      "exists": "Hai già una playlist con questo nome.",
+      "failed": "Non sono riuscito a rinominare la playlist"
+    },
+    "deleteDialog": {
+      "title": "Eliminare «{name}»?",
+      "description": "I giochi restano nel backlog: sparisce solo la playlist.",
+      "cancel": "Annulla",
+      "confirm": "Elimina",
+      "deleted": "Playlist eliminata",
+      "failed": "Non sono riuscito a eliminare la playlist"
+    }
   },
   "hidden": {
     "hide": "Nascondi",
@@ -136,7 +193,6 @@
     "durationHint": "Restano fuori i giochi senza durata nota e quelli senza una fine: le loro ore non sono una durata. Per trovarli, spunta «Senza durata».",
     "noDuration": "Senza durata",
     "ratingHint": "Restano fuori i giochi che non hai votato.",
-    "otherLabel": "Altro",
     "criticMin": "Voto critica minimo",
     "neverPlayed": "Mai giocato",
     "gameTypesLabel": "Tipo",
@@ -160,7 +216,8 @@
     "ratingMinThumb": "Voto minimo",
     "ratingMaxThumb": "Voto massimo",
     "releasedMinThumb": "Anno minimo",
-    "releasedMaxThumb": "Anno massimo"
+    "releasedMaxThumb": "Anno massimo",
+    "statusSection": "Stato"
   },
   "addGame": {
     "trigger": "Aggiungi gioco",

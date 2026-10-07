@@ -100,10 +100,20 @@ export async function deletePlaylist(userId: string, id: string) {
  * darebbe una playlist sempre vuota, perché i tag sono in AND. Il numero di
  * quelli ignorati torna al chiamante, che deve dirlo: senza, la lista mostra più
  * giochi del previsto e nessuno sa perché.
+ *
+ * `q`, `sort` e `direction` sono la vista di chi guarda: coprono quelli salvati
+ * e **non toccano la playlist**. Una `q` chiesta sostituisce quella salvata.
  */
 export async function openPlaylist(
   userId: string,
-  input: { id: string; limit: number; offset: number },
+  input: {
+    id: string;
+    limit: number;
+    offset: number;
+    q?: string;
+    sort?: PlaylistQuery['sort'];
+    direction?: PlaylistQuery['direction'];
+  },
 ) {
   const [row] = await db
     .select(columns)
@@ -139,6 +149,11 @@ export async function openPlaylist(
     BacklogQuerySchema.parse({
       ...playlist.query,
       tags: tags.length > 0 ? tags : undefined,
+      // La vista di chi apre copre i criteri salvati, per questa apertura
+      // soltanto: la playlist restituita è sempre quella salvata.
+      ...(input.q !== undefined && { q: input.q }),
+      ...(input.sort !== undefined && { sort: input.sort }),
+      ...(input.direction !== undefined && { direction: input.direction }),
       limit: input.limit,
       offset: input.offset,
     }),

@@ -13,6 +13,7 @@ import type { ReactNode } from 'react';
  * del gioco, che va da un bordo all'altro.
  */
 export function Page({
+  eyebrow,
   title,
   subtitle,
   actions,
@@ -20,6 +21,8 @@ export function Page({
   hero,
   children,
 }: {
+  /** Una riga sopra il titolo: il link per tornare alla pagina di prima. */
+  eyebrow?: ReactNode;
   title?: ReactNode;
   subtitle?: ReactNode;
   /** I bottoni a destra del titolo; un `false` non disegna niente. */
@@ -41,6 +44,7 @@ export function Page({
             gap={16}
           >
             <YStack gap={4} shrink={1}>
+              {eyebrow}
               <Text
                 render="h1"
                 fontFamily="$heading"

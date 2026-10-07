@@ -24,12 +24,60 @@ query string sono separate da virgole e non in JSON, per `stringifySearch` in
 
 **`/backlog` tiene tutto nell'URL** (`apps/web/lib/backlog-filter.ts`): i
 filtri, l'ordinamento, la vista (`view`: griglia di default, poi righe e compatta), la pagina
-(`page`) e quanti giochi per pagina (`size`: 15, 30, 60 o 120, di default 15).
+(`page`) e quanti giochi per pagina (`size`: 14, 35, 70 o 126, di default 14).
 Ogni `setFilter` riporta a pagina 1 e non
 lascia voci nella cronologia; `goToPage` sì, perché «indietro» deve tornare
 alla pagina di prima. Una pagina oltre la fine torna alla prima e non
 all'ultima: con `count(*) over()` e nessuna riga restituita il server risponde
 `total: 0`, e l'ultima non la sa.
+
+**Le playlist** (`/playlist` e `/playlist/$id`, step 15a) sono i filtri di
+`/backlog` salvati con un nome: la query gira a ogni apertura. L'elenco è come
+la home, una fascia di card per playlist (20 al massimo, una query per fascia),
+e il nome porta alla playlist aperta. Si creano **solo**
+da `/backlog`, col bottone «Salva come playlist» (`save-playlist-dialog.tsx`),
+che compare con almeno un filtro acceso e, su un nome già preso, offre di
+sostituire. Cose che non si indovinano:
+
+- **Cosa si salva** è `toPlaylistQuery` di `lib/backlog-filter.ts`: criteri e
+  ordinamento, **non** la pagina, la vista, `size` né `hidden`. Li toglie lo
+  schema (`PlaylistQuerySchema`), non un elenco di esclusioni.
+- **Lo stato sta in due modi.** Una playlist senza `status` non filtra per
+  stato, mentre `/backlog` senza `status` nell'URL esclude `excluded`: quindi
+  `playlistSearch` (da playlist a URL, per «Modifica filtri») scrive tutti gli
+  stati.
+- **«Modifica filtri» porta con sé la playlist**: `/backlog?playlist=<id>`
+  (`playlistSearch(query, id)`). Non è un criterio e non conta fra i filtri
+  accesi: serve al dialogo «Salva come playlist», che parte dal nome di quella
+  playlist e, se il nome resta quello, la aggiorna invece di segnalare un
+  conflitto. Cambiando nome si crea una playlist nuova.
+- **`/playlist/$id` tiene nell'URL `view`, `page`, `size` e la vista di chi
+  guarda**: la ricerca (`q`) e l'ordine (`sort`, `direction`), che coprono
+  quelli salvati senza cambiarli (`validatePlaylistSearch`). I filtri sono
+  quelli salvati, e si cambiano passando da `/backlog` e sostituendo. `sort` e
+  `direction` non perdono il valore uguale al default di `/backlog`, perché il
+  default è quello della playlist: la pagina toglie ciò che coincide con lei.
+  Ricerca e tendina dell'ordine sono in `components/list-controls.tsx`, le
+  stesse di `/backlog`.
+- **Le card sono quelle di `/backlog`**, con gli stessi gesti: `ManagedEntries`
+  (`components/entry-list.tsx`) le monta in tutte e due le pagine, coi dialoghi
+  di modifica e rimozione. Una azione nuova nel menu di una card va lì.
+- **Una playlist si rilegge dopo ogni mutazione**, da un punto solo: la
+  `MutationCache` in `components/providers.tsx` invalida `playlists.get`. Una
+  mutazione nuova non deve saperne niente.
+- **I tag mancanti** (cancellati dal vocabolario) la playlist li ignora e li
+  dice con un avviso: lo conta il server (`missingTags`).
+
+**Il pannello dei filtri** (`FilterPanel`, nel drawer di `/backlog`) ha l'ordinamento
+in cima, poi «Mai giocato» come spunta semplice fuori dalle sezioni, poi una
+sezione per criterio: stato, piattaforme, store, abbonamenti, tipo, attributi,
+tag, durata, il mio voto, **voto critica**, uscita. Lo stato ha le stesse sei
+spunte dei bottoni in barra, sulla stessa selezione.
+
+**Le ore giocate nel backlog** sono un tempo solo con l'orologio, quello della
+copia giocata più di recente (`latestPlaytime` in `lib/playtime.ts`, mostrato da
+`PlayedTime`): nella riga dei fatti di griglia e righe, e in una colonna della
+compatta da `$md`. Le altre copie, con le date, sono nella scheda del gioco.
 
 Sette cose che le schermate devono sapere, perché si scoprono solo a vederle:
 

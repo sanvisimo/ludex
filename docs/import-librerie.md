@@ -86,6 +86,14 @@ negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
   del negozio, non un campo personale dello step 5. **Non si usano per indovinare
   lo stato**: due ore su un GDR da sessanta non vogliono dire "giocato", e
   `played` allo step 13 pesa.
+
+  **Dove si vedono** (deciso il 07/10/2026). Nel backlog, nelle card e nella
+  vista compatta, **un tempo solo, con l'orologio e senza data**: quello della
+  copia con l'ultima partita più recente, fra quelle che hanno ore (senza date,
+  quella con più ore; senza ore, niente). Nella scheda del gioco ci sono invece
+  tutte le copie, ognuna con ore e data. «Mai giocato» resta fra i filtri e
+  «Ultima partita» fra gli ordinamenti.
+
 - **`unresolved_imports`**: le voci che l'import non ha saputo legare a un gioco.
   Dal 9b portano anche la **piattaforma**, quando il negozio la dice: senza,
   risolvere a mano uno scarto PS5 non saprebbe su quale console scrivere il

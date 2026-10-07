@@ -24,6 +24,7 @@ import { GameCover } from '@/components/game-cover';
 import { GameDuration } from '@/components/game-duration';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { OwnershipBadges } from '@/components/ownership-badges';
+import { PlayedTime } from '@/components/played-time';
 import { EntryScore } from '@/components/entry-score';
 import { statusIcons } from '@/components/status-icon';
 import type { BacklogView } from '@/lib/backlog-filter';
@@ -210,8 +211,8 @@ function GameLink({
 }
 
 /**
- * Anno, durata e voto, in fila: le tre cose che si leggono a colpo d'occhio.
- * Il voto è il tuo, o quello della critica se non hai votato.
+ * Anno, durata, ore giocate e voto, in fila: le cose che si leggono a colpo
+ * d'occhio. Il voto è il tuo, o quello della critica se non hai votato.
  */
 function Facts({ entry }: { entry: BacklogEntry }) {
   return (
@@ -222,6 +223,7 @@ function Facts({ entry }: { entry: BacklogEntry }) {
         </Text>
       )}
       <GameDuration game={entry.game} />
+      <PlayedTime ownerships={entry.ownerships} />
       <EntryScore rating={entry.rating} game={entry.game} />
     </XStack>
   );
@@ -362,7 +364,7 @@ function GridView({
  * La compatta: una riga per gioco, a colonne, per scorrere tanta libreria in
  * poco spazio. È una tabella per chi usa un lettore di schermo (`role`), e
  * invece di scorrere di lato perde colonne: le piattaforme sotto `$lg`, il
- * voto sotto `$md`, la durata sotto `$sm`. Le soglie sono quelle della
+ * voto e ore giocate sotto `$md`, la durata sotto `$sm`. Le soglie sono quelle della
  * finestra, e la finestra non è la lista: da `$md` il guscio se ne prende 240.
  * Per questo le piattaforme non hanno una larghezza fissa ma dividono col
  * titolo lo spazio che resta, uno a due, e si troncano.
@@ -425,6 +427,14 @@ function CompactView({
           $sm={{ display: 'flex' }}
         >
           {header(t('columnDuration'))}
+        </XStack>
+        <XStack
+          role="columnheader"
+          width={72}
+          display="none"
+          $md={{ display: 'flex' }}
+        >
+          {header(t('columnPlayed'))}
         </XStack>
         <XStack
           role="columnheader"
@@ -500,6 +510,14 @@ function CompactView({
               $sm={{ display: 'flex' }}
             >
               <GameDuration game={entry.game} short />
+            </XStack>
+            <XStack
+              role="cell"
+              width={72}
+              display="none"
+              $md={{ display: 'flex' }}
+            >
+              <PlayedTime ownerships={entry.ownerships} />
             </XStack>
             <XStack
               role="cell"

@@ -9,6 +9,7 @@ import {
   BacklogFilterOptionsSchema,
   BacklogListSchema,
   BacklogQuerySchema,
+  BacklogSortSchema,
   BacklogStatusSchema,
   EnrichmentSourceSchema,
   GameAdminDetailSchema,
@@ -38,6 +39,7 @@ import {
   RepointPreviewSchema,
   ReportGroupSchema,
   ReportTargetSchema,
+  SortDirectionSchema,
   SteamLoginRemovedSchema,
   SteamLoginStartSchema,
   SourceReasonSchema,
@@ -334,12 +336,19 @@ export const contract = {
 
     // La playlist **aperta**: la sua query eseguita, con la pagina chiesta dal
     // chiamante. La paginazione non sta nella query salvata.
+    //
+    // `q`, `sort` e `direction` sono la vista di chi guarda e **non cambiano la
+    // playlist**: coprono, per questa apertura, quelli salvati. Una `q` chiesta
+    // sostituisce quella salvata, non si somma.
     get: oc
       .input(
         z.object({
           id: z.uuid(),
           limit: z.number().int().min(1).max(200).default(50),
           offset: z.number().int().min(0).default(0),
+          q: PlaylistQuerySchema.shape.q,
+          sort: BacklogSortSchema.optional(),
+          direction: SortDirectionSchema.optional(),
         }),
       )
       .output(PlaylistDetailSchema),

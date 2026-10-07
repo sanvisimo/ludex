@@ -1,7 +1,13 @@
 import { config, TamaguiProvider, Toaster } from '@repo/ui';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  MutationCache,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from 'next-themes';
 import { useState } from 'react';
+
+import { api } from '@/lib/orpc';
 
 /**
  * Tema, design system e react-query: ciò che serve a ogni pagina. Lo monta la
@@ -10,18 +16,27 @@ import { useState } from 'react';
 export function Providers({ children }: { children: React.ReactNode }) {
   // Creato dentro lo stato e non a livello di modulo: a livello di modulo un
   // solo QueryClient verrebbe condiviso fra le richieste sul server.
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 30_000,
-            // I 401 e i 404 non migliorano riprovando.
-            retry: false,
-          },
-        },
+  const [queryClient] = useState(() => {
+    const client: QueryClient = new QueryClient({
+      // Una playlist è una query sul backlog, e ogni mutazione può cambiarne il
+      // risultato: lo stato di un gioco, un tag, un nascondi. Le mutazioni
+      // invalidano `backlog.list` ognuna per conto suo e non sanno delle
+      // playlist; una playlist aperta si rilegge qui, per tutte, e quelle
+      // non aperte restano segnate come vecchie.
+      mutationCache: new MutationCache({
+        onSuccess: () =>
+          void client.invalidateQueries({ queryKey: api.playlists.get.key() }),
       }),
-  );
+      defaultOptions: {
+        queries: {
+          staleTime: 30_000,
+          // I 401 e i 404 non migliorano riprovando.
+          retry: false,
+        },
+      },
+    });
+    return client;
+  });
 
   return (
     // Un interruttore per due sistemi: next-themes scrive sull'`<html>` la

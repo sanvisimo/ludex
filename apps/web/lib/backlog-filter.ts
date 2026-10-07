@@ -3,6 +3,7 @@ import type {
   BacklogSort,
   BacklogStatus,
   GameType,
+  PlaylistQuery,
   SortDirection,
   Store,
   Subscription,
@@ -11,6 +12,7 @@ import {
   backlogSortValues,
   backlogStatusValues,
   gameTypeValues,
+  PlaylistQuerySchema,
   sortDirectionValues,
   storeValues,
   subscriptionValues,
@@ -25,7 +27,7 @@ export type BacklogView = (typeof backlogViewValues)[number];
  * `max(200)` del contratto. Una scelta fissa e non un numero libero: un link
  * con `size=7` non deve aprire una pagina che nessun menu sa rifare.
  */
-export const pageSizeValues = [6, 15, 24, 48, 99] as const;
+export const pageSizeValues = [7, 14, 35, 70, 126] as const;
 export type PageSize = (typeof pageSizeValues)[number];
 import { useCallback, useMemo } from 'react';
 
@@ -94,6 +96,12 @@ const pageSize = (raw: unknown) => {
     ? (value as PageSize)
     : undefined;
 };
+
+const uuid = (raw: unknown) =>
+  typeof raw === 'string' &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw)
+    ? raw
+    : undefined;
 
 const decimal = (raw: unknown) => {
   const value = typeof raw === 'string' ? Number(raw) : raw;
@@ -170,6 +178,11 @@ const fields = {
   // non un filtro, quindi «azzera» non ti fa uscire dai nascosti e non conta fra
   // i filtri accesi.
   hidden: field(flag, false),
+  // La playlist da cui si è arrivati con «Modifica filtri». Non è un criterio:
+  // serve solo al dialogo «Salva come playlist», che parte da quel nome invece
+  // che da un campo vuoto. Resta nell'URL finché ci si lavora, e «azzera» non lo
+  // tocca.
+  playlist: field(uuid, ''),
   sort: field(oneOf(backlogSortValues), 'addedAt' as BacklogSort),
   direction: field(oneOf(sortDirectionValues), 'desc' as SortDirection),
   // La vista: griglia (di default), righe o compatta. Sta nell'URL come l'ordinamento,
@@ -182,7 +195,7 @@ const fields = {
   // Quanti giochi per pagina. Come la vista: nell'URL, non un filtro, e non
   // ricordata fra una visita e l'altra. Cambiarla riporta a pagina 1, perché
   // la pagina 7 da 15 e la pagina 7 da 60 sono giochi diversi.
-  size: field(pageSize, 15 as PageSize),
+  size: field(pageSize, 14 as PageSize),
 };
 
 type Key = keyof typeof fields;
@@ -207,7 +220,7 @@ const sameValue = (a: unknown, b: unknown) =>
  * davvero toccato: un default o un `null` si toglie, come faceva il
  * `clearOnDefault` di nuqs.
  */
-function toSearch(state: Partial<Record<Key, unknown>>): BacklogSearch {
+export function toSearch(state: Partial<Record<Key, unknown>>): BacklogSearch {
   const search: Record<string, unknown> = {};
   for (const key of keys) {
     const value = state[key];
@@ -300,6 +313,143 @@ export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
   };
 }
 
+/**
+ * Quanti criteri sono accesi. Una funzione e non un pezzo dell'hook, perché la
+ * stessa regola conta anche i filtri di una playlist salvata.
+ */
+export function countActiveCriteria(filter: BacklogFilterState) {
+  return criteri.filter((chiave) => {
+    const value = filter[chiave];
+    if (chiave === 'status') {
+      // Il default nasconde già `excluded`: conta come filtro solo se
+      // l'utente ha cambiato la selezione.
+      const selezionati = filter.status;
+      return (
+        selezionati.length !== defaultStatus.length ||
+        defaultStatus.some((stato) => !selezionati.includes(stato))
+      );
+    }
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (typeof value === 'boolean') return value;
+    return value !== null;
+  }).length;
+}
+
+/**
+ * Da stato dell'URL a ciò che una playlist salva (step 15a): i criteri e
+ * l'ordinamento di `toQueryInput`. Non la pagina, non quanti per pagina e non
+ * la vista, e non `hidden`, che è una vista dei nascosti e non un filtro.
+ *
+ * Li toglie lo schema stesso: Zod scarta i campi che non conosce, e
+ * `PlaylistQuerySchema` non ha `hidden`, `limit` né `offset`.
+ */
+export function toPlaylistQuery(filter: BacklogFilterState): PlaylistQuery {
+  return PlaylistQuerySchema.parse(toQueryInput(filter));
+}
+
+/**
+ * Il passaggio inverso, da una playlist a uno stato che `/backlog` sa leggere.
+ *
+ * Una playlist senza `status` non filtra per stato: tutti e sei. Lo stato di
+ * `/backlog` invece, quando l'URL non ne dice, esclude `excluded`: quindi qui
+ * va scritto per intero, o aprire una playlist nel backlog nasconderebbe in
+ * silenzio i giochi «non mi interessa» che la playlist mostrava.
+ */
+export function fromPlaylistQuery(query: PlaylistQuery): BacklogFilterState {
+  return {
+    q: query.q ?? fields.q.fallback,
+    status: query.status ?? [...backlogStatusValues],
+    platforms: query.platforms ?? [],
+    stores: query.stores ?? [],
+    subscriptions: query.subscriptions ?? [],
+    excludeSubscriptions: query.excludeSubscriptions ?? [],
+    attributes: query.attributes ?? [],
+    gameTypes: query.gameTypes ?? [],
+    tags: query.tags ?? [],
+    durationMin: query.durationMin ?? null,
+    durationMax: query.durationMax ?? null,
+    noDuration: query.noDuration ?? false,
+    ratingMin: query.ratingMin ?? null,
+    ratingMax: query.ratingMax ?? null,
+    criticMin: query.criticMin ?? null,
+    releasedFrom: query.releasedFrom ?? null,
+    releasedTo: query.releasedTo ?? null,
+    neverPlayed: query.neverPlayed ?? false,
+    hidden: fields.hidden.fallback,
+    playlist: fields.playlist.fallback,
+    sort: query.sort,
+    direction: query.direction,
+    view: fields.view.fallback,
+    page: fields.page.fallback,
+    size: fields.size.fallback,
+  };
+}
+
+/**
+ * L'URL di `/backlog` che apre i filtri di una playlist. Con `playlistId` il
+ * backlog ricorda da quale arriva, e «Salva come playlist» ne propone il nome.
+ */
+export function playlistSearch(
+  query: PlaylistQuery,
+  playlistId?: string,
+): BacklogSearch {
+  return toSearch({
+    ...fromPlaylistQuery(query),
+    ...(playlistId && { playlist: playlistId }),
+  });
+}
+
+/**
+ * La vista, la pagina e quanti per pagina: l'unica parte dell'URL che
+ * `/playlist/$id` tiene. I filtri sono quelli salvati e l'ordinamento pure.
+ */
+export type PagingSearch = {
+  view?: BacklogView;
+  page?: number;
+  size?: PageSize;
+};
+
+export function validatePagingSearch(
+  raw: Record<string, unknown>,
+): PagingSearch {
+  // `toSearch` ci lascia solo ciò che c'è e non è il default.
+  return toSearch({
+    view: fields.view.parse(raw.view),
+    page: fields.page.parse(raw.page),
+    size: fields.size.parse(raw.size),
+  });
+}
+
+/**
+ * L'URL di `/playlist/$id`: la pagina più la vista di chi guarda — ricerca e
+ * ordinamento — che copre quelli salvati per quell'apertura e non si salva.
+ *
+ * `sort` e `direction` non perdono il valore uguale al default di `/backlog`,
+ * al contrario del resto: il default di una playlist è quello che ha salvato,
+ * e `addedAt` può essere proprio ciò che si sceglie su una salvata per durata.
+ * Spetta alla pagina togliere ciò che coincide con la playlist.
+ */
+export type PlaylistSearch = PagingSearch & {
+  q?: string;
+  sort?: BacklogSort;
+  direction?: SortDirection;
+};
+
+export function validatePlaylistSearch(
+  raw: Record<string, unknown>,
+): PlaylistSearch {
+  const q = fields.q.parse(raw.q)?.trim();
+  const sort = fields.sort.parse(raw.sort);
+  const direction = fields.direction.parse(raw.direction);
+  return {
+    ...validatePagingSearch(raw),
+    ...(q && { q }),
+    ...(sort && { sort }),
+    ...(direction && { direction }),
+  };
+}
+
 export function useBacklogFilter() {
   const search = route.useSearch();
   const navigate = route.useNavigate();
@@ -356,26 +506,7 @@ export function useBacklogFilter() {
 
   // Quanti criteri sono accesi: serve al bottone che li spegne, e a dire che una
   // lista vuota è vuota per via di un filtro e non perché il backlog è vuoto.
-  const activeCount = useMemo(
-    () =>
-      criteri.filter((chiave) => {
-        const value = filter[chiave];
-        if (chiave === 'status') {
-          // Il default nasconde già `excluded`: conta come filtro solo se
-          // l'utente ha cambiato la selezione.
-          const selezionati = filter.status;
-          return (
-            selezionati.length !== defaultStatus.length ||
-            defaultStatus.some((stato) => !selezionati.includes(stato))
-          );
-        }
-        if (Array.isArray(value)) return value.length > 0;
-        if (typeof value === 'string') return value.trim().length > 0;
-        if (typeof value === 'boolean') return value;
-        return value !== null;
-      }).length,
-    [filter],
-  );
+  const activeCount = useMemo(() => countActiveCriteria(filter), [filter]);
 
   return { filter, setFilter, reset, activeCount, goToPage, pageHref };
 }

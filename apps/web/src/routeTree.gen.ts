@@ -33,6 +33,8 @@ import { Route as AppAdminScartiRouteImport } from './routes/_app.admin.scarti'
 import { Route as AppAdminSegnalatiRouteImport } from './routes/_app.admin.segnalati'
 import { Route as AppAdminUtentiRouteImport } from './routes/_app.admin.utenti'
 import { Route as AppGamesSlugRouteImport } from './routes/_app.games.$slug'
+import { Route as AppPrivatePlaylistIndexRouteImport } from './routes/_app._private.playlist.index'
+import { Route as AppPrivatePlaylistIdRouteImport } from './routes/_app._private.playlist.$id'
 import { Route as AppAdminGiochiSlugRouteImport } from './routes/_app.admin.giochi.$slug'
 
 const AppRoute = AppRouteImport.update({
@@ -152,6 +154,16 @@ const AppGamesSlugRoute = AppGamesSlugRouteImport.update({
   path: '/games/$slug',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPrivatePlaylistIndexRoute = AppPrivatePlaylistIndexRouteImport.update({
+  id: '/playlist/',
+  path: '/playlist/',
+  getParentRoute: () => AppPrivateRoute,
+} as any)
+const AppPrivatePlaylistIdRoute = AppPrivatePlaylistIdRouteImport.update({
+  id: '/playlist/$id',
+  path: '/playlist/$id',
+  getParentRoute: () => AppPrivateRoute,
+} as any)
 const AppAdminGiochiSlugRoute = AppAdminGiochiSlugRouteImport.update({
   id: '/giochi/$slug',
   path: '/giochi/$slug',
@@ -180,7 +192,9 @@ export interface FileRoutesByFullPath {
   '/games/$slug': typeof AppGamesSlugRoute
   '/account/': typeof AppAccountIndexRoute
   '/admin/': typeof AppAdminIndexRoute
+  '/playlist/$id': typeof AppPrivatePlaylistIdRoute
   '/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
+  '/playlist/': typeof AppPrivatePlaylistIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
@@ -202,7 +216,9 @@ export interface FileRoutesByTo {
   '/games/$slug': typeof AppGamesSlugRoute
   '/account': typeof AppAccountIndexRoute
   '/admin': typeof AppAdminIndexRoute
+  '/playlist/$id': typeof AppPrivatePlaylistIdRoute
   '/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
+  '/playlist': typeof AppPrivatePlaylistIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -230,7 +246,9 @@ export interface FileRoutesById {
   '/_app/games/$slug': typeof AppGamesSlugRoute
   '/_app/account/': typeof AppAccountIndexRoute
   '/_app/admin/': typeof AppAdminIndexRoute
+  '/_app/_private/playlist/$id': typeof AppPrivatePlaylistIdRoute
   '/_app/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
+  '/_app/_private/playlist/': typeof AppPrivatePlaylistIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -256,7 +274,9 @@ export interface FileRouteTypes {
     | '/games/$slug'
     | '/account/'
     | '/admin/'
+    | '/playlist/$id'
     | '/admin/giochi/$slug'
+    | '/playlist/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -278,7 +298,9 @@ export interface FileRouteTypes {
     | '/games/$slug'
     | '/account'
     | '/admin'
+    | '/playlist/$id'
     | '/admin/giochi/$slug'
+    | '/playlist'
   id:
     | '__root__'
     | '/_app'
@@ -305,7 +327,9 @@ export interface FileRouteTypes {
     | '/_app/games/$slug'
     | '/_app/account/'
     | '/_app/admin/'
+    | '/_app/_private/playlist/$id'
     | '/_app/admin/giochi/$slug'
+    | '/_app/_private/playlist/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -483,6 +507,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGamesSlugRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/_private/playlist/': {
+      id: '/_app/_private/playlist/'
+      path: '/playlist'
+      fullPath: '/playlist/'
+      preLoaderRoute: typeof AppPrivatePlaylistIndexRouteImport
+      parentRoute: typeof AppPrivateRoute
+    }
+    '/_app/_private/playlist/$id': {
+      id: '/_app/_private/playlist/$id'
+      path: '/playlist/$id'
+      fullPath: '/playlist/$id'
+      preLoaderRoute: typeof AppPrivatePlaylistIdRouteImport
+      parentRoute: typeof AppPrivateRoute
+    }
     '/_app/admin/giochi/$slug': {
       id: '/_app/admin/giochi/$slug'
       path: '/giochi/$slug'
@@ -495,10 +533,14 @@ declare module '@tanstack/react-router' {
 
 interface AppPrivateRouteChildren {
   AppPrivateBacklogRoute: typeof AppPrivateBacklogRoute
+  AppPrivatePlaylistIdRoute: typeof AppPrivatePlaylistIdRoute
+  AppPrivatePlaylistIndexRoute: typeof AppPrivatePlaylistIndexRoute
 }
 
 const AppPrivateRouteChildren: AppPrivateRouteChildren = {
   AppPrivateBacklogRoute: AppPrivateBacklogRoute,
+  AppPrivatePlaylistIdRoute: AppPrivatePlaylistIdRoute,
+  AppPrivatePlaylistIndexRoute: AppPrivatePlaylistIndexRoute,
 }
 
 const AppPrivateRouteWithChildren = AppPrivateRoute._addFileChildren(

@@ -1,18 +1,10 @@
-import type { BacklogEntry, BacklogStatus } from '@repo/contracts';
 import {
   Button,
   Drawer,
   EmptyState,
-  Label,
   Pagination,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Skeleton,
   Text,
-  toast,
   ToggleGroup,
   ToggleGroupItem,
   XStack,
@@ -26,27 +18,23 @@ import {
   Rows3,
   SearchX,
 } from '@repo/ui/icons';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { AddGameDialog } from '@/components/add-game-dialog';
 import { BacklogToolbar, FilterPanel } from '@/components/backlog-filters';
-import { BacklogEntries } from '@/components/backlog-views';
-import { EditEntryDialog } from '@/components/edit-entry-dialog';
-import { RemoveEntryDialog } from '@/components/remove-entry-dialog';
-import { useApiErrorMessage } from '@/lib/api-error';
+import { ManagedEntries } from '@/components/entry-list';
+import { PageSizeSelect } from '@/components/page-size-select';
 import {
   type BacklogView,
   pageSizeValues,
-  type PageSize,
   toQueryInput,
   useBacklogFilter,
   validateBacklogSearch,
 } from '@/lib/backlog-filter';
-import { useSetEntryHidden } from '@/lib/hide-entry';
-import { api, client } from '@/lib/orpc';
+import { api } from '@/lib/orpc';
 import { Page } from '@/src/components/page';
 import { takeLinkClick } from '@/src/link-click';
 
@@ -59,9 +47,7 @@ function BacklogPage() {
   const t = useTranslations('backlog');
   const tFilters = useTranslations('filters');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const errorMessage = useApiErrorMessage();
 
-  const queryClient = useQueryClient();
   const { filter, setFilter, reset, activeCount, goToPage, pageHref } =
     useBacklogFilter();
   const inHidden = filter.hidden;
@@ -81,30 +67,6 @@ function BacklogPage() {
     api.backlog.list.queryOptions({ input: { hidden: true, limit: 1 } }),
   );
   const hiddenTotal = hiddenCount.data?.total ?? 0;
-
-  const setHidden = useSetEntryHidden();
-
-  const [editing, setEditing] = useState<BacklogEntry | null>(null);
-  const [removing, setRemoving] = useState<BacklogEntry | null>(null);
-
-  // La riga in modifica si ripesca dalla lista fresca: dopo il salvataggio
-  // `editing` sarebbe la copia vecchia, con i tag di prima.
-  const editingEntry =
-    editing === null
-      ? null
-      : (backlog.data?.entries.find((row) => row.id === editing.id) ?? editing);
-
-  async function refresh() {
-    await queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
-  }
-
-  const setStatus = useMutation({
-    mutationFn: (input: { id: string; status: BacklogStatus }) =>
-      client.backlog.setStatus(input),
-    onSuccess: refresh,
-    onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('statusFailed') })),
-  });
 
   const entries = backlog.data?.entries ?? [];
   const total = backlog.data?.total ?? 0;
@@ -231,22 +193,7 @@ function BacklogPage() {
           )
         ) : (
           <>
-            <BacklogEntries
-              view={filter.view}
-              entries={entries}
-              onStatus={(entry, status) =>
-                setStatus.mutate({ id: entry.id, status })
-              }
-              onEdit={setEditing}
-              onToggleHidden={(entry) =>
-                setHidden.mutate({
-                  id: entry.id,
-                  hidden: entry.hiddenAt === null,
-                })
-              }
-              onRemove={setRemoving}
-              hidingDisabled={setHidden.isPending}
-            />
+            <ManagedEntries view={filter.view} entries={entries} />
 
             {/* Quanti per pagina a sinistra, le pagine e «vai a» a destra; su
                 un telefono vanno a capo. La scelta c'è anche con una pagina
@@ -291,58 +238,6 @@ function BacklogPage() {
       >
         <FilterPanel />
       </Drawer>
-
-      <RemoveEntryDialog
-        entry={removing}
-        onOpenChange={(open) => {
-          if (!open) setRemoving(null);
-        }}
-      />
-
-      <EditEntryDialog
-        entry={editingEntry}
-        onOpenChange={(open) => {
-          if (!open) setEditing(null);
-        }}
-      />
     </Page>
-  );
-}
-
-/** Quanti giochi per pagina: una tendina stretta, accanto alla paginazione. */
-function PageSizeSelect({
-  value,
-  onChange,
-}: {
-  value: PageSize;
-  onChange: (size: PageSize) => void;
-}) {
-  const t = useTranslations('backlog');
-  const id = useId();
-  const items = Object.fromEntries(
-    pageSizeValues.map((size) => [String(size), String(size)]),
-  );
-  return (
-    <XStack items="center" gap={8}>
-      <Label htmlFor={id} color="$color11" fontWeight="400">
-        {t('pageSize')}
-      </Label>
-      <Select
-        items={items}
-        value={String(value)}
-        onValueChange={(next) => onChange(Number(next) as PageSize)}
-      >
-        <SelectTrigger id={id} width={80}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {pageSizeValues.map((size) => (
-            <SelectItem key={size} value={String(size)}>
-              {String(size)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </XStack>
   );
 }

@@ -82,6 +82,86 @@ describe('playlist', () => {
     expect(pagina!.total).toBe(3);
   });
 
+  describe('ordine e ricerca di chi apre', () => {
+    const nomi = (aperta: Awaited<ReturnType<typeof openPlaylist>>) =>
+      aperta!.entries.map((e) => e.game.name);
+
+    it('l’ordine chiesto copre quello salvato, e la playlist non cambia', async () => {
+      await aggiungi(userId, { name: 'Breve', hltbMainMinutes: 60 });
+      await aggiungi(userId, { name: 'Lungo', hltbMainMinutes: 3000 });
+      const playlist = await createPlaylist(userId, {
+        name: 'Per durata',
+        query: query({ sort: 'duration', direction: 'asc' }),
+      });
+      const apri = (extra: { sort?: 'name'; direction?: 'asc' | 'desc' }) =>
+        openPlaylist(userId, {
+          id: playlist!.id,
+          limit: 50,
+          offset: 0,
+          ...extra,
+        });
+
+      expect(nomi(await apri({}))).toEqual(['Breve', 'Lungo']);
+      // Solo la direzione: il criterio salvato resta.
+      expect(nomi(await apri({ direction: 'desc' }))).toEqual([
+        'Lungo',
+        'Breve',
+      ]);
+      // Un criterio diverso, nella direzione salvata.
+      const perNome = await apri({ sort: 'name' });
+      expect(nomi(perNome)).toEqual(['Breve', 'Lungo']);
+
+      // Quello salvato è sempre quello salvato.
+      expect(perNome!.query).toMatchObject({
+        sort: 'duration',
+        direction: 'asc',
+      });
+      const [ancora] = await listPlaylists(userId);
+      expect(ancora!.query).toMatchObject({ sort: 'duration' });
+    });
+
+    it('la ricerca restringe, e vale solo per quell’apertura', async () => {
+      await aggiungi(userId, { name: 'Hollow Knight' });
+      await aggiungi(userId, { name: 'Celeste' });
+      const playlist = await createPlaylist(userId, {
+        name: 'Tutti',
+        query: query({ sort: 'name', direction: 'asc' }),
+      });
+
+      const cercata = await openPlaylist(userId, {
+        id: playlist!.id,
+        limit: 50,
+        offset: 0,
+        q: 'hollow',
+      });
+      expect(nomi(cercata)).toEqual(['Hollow Knight']);
+      expect(cercata!.total).toBe(1);
+
+      expect(nomi(await open(userId, playlist!.id))).toEqual([
+        'Celeste',
+        'Hollow Knight',
+      ]);
+    });
+
+    it('la ricerca chiesta sostituisce quella salvata, non si somma', async () => {
+      await aggiungi(userId, { name: 'Hollow Knight' });
+      await aggiungi(userId, { name: 'Celeste' });
+      const playlist = await createPlaylist(userId, {
+        name: 'Solo Celeste',
+        query: query({ q: 'celeste' }),
+      });
+
+      expect(nomi(await open(userId, playlist!.id))).toEqual(['Celeste']);
+      const altra = await openPlaylist(userId, {
+        id: playlist!.id,
+        limit: 50,
+        offset: 0,
+        q: 'hollow',
+      });
+      expect(nomi(altra)).toEqual(['Hollow Knight']);
+    });
+  });
+
   it('un utente non vede, non cambia e non cancella quelle di un altro', async () => {
     const sua = await createPlaylist(userId, {
       name: 'Mia',
