@@ -106,6 +106,17 @@ sezione per criterio: stato, piattaforme, store, abbonamenti, tipo, attributi,
 tag, durata, il mio voto, **voto critica**, uscita. Lo stato ha le stesse sei
 spunte dei bottoni in barra, sulla stessa selezione.
 
+**Gli slider hanno anche i campi numerici** (`RangeFilter`, `NumberField`):
+«Da» e «A», o «Minimo» per il voto critica. Il campo si applica **uscendo o con
+Invio**, non a ogni tasto: scrivere «2000» passa da «2», che un campo con gli
+estremi in testa riscriverebbe a «1970» sotto le dita. Vuoto vuol dire «nessun
+limite», come la maniglia all'estremo (100 ore di massimo comprese); il testo si
+porta al passo e agli estremi dello slider (`lib/range-input.ts`, con i suoi
+test), e la virgola vale come il punto. «Salva come playlist» sta anche in fondo
+al pannello: il dialogo vive nella pagina (`SavePlaylistDialog`), perché il
+pannello smonta ciò che ha dentro quando si chiude, e il clic chiude il pannello
+prima di aprirlo.
+
 **Le ore giocate nel backlog** sono un tempo solo con l'orologio, quello della
 copia giocata più di recente (`latestPlaytime` in `lib/playtime.ts`, mostrato da
 `PlayedTime`): nella riga dei fatti di griglia e righe, e in una colonna della

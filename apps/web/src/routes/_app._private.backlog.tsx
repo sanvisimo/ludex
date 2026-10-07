@@ -32,6 +32,7 @@ import {
   useReanchorPage,
 } from '@/components/grid-columns';
 import { PageSizeSelect } from '@/components/page-size-select';
+import { SavePlaylistDialog } from '@/components/save-playlist-dialog';
 import {
   type BacklogView,
   toQueryInput,
@@ -52,6 +53,7 @@ function BacklogPage() {
   const t = useTranslations('backlog');
   const tFilters = useTranslations('filters');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
 
   const { filter, setFilter, reset, activeCount, goToPage, pageHref } =
     useBacklogFilter();
@@ -152,6 +154,7 @@ function BacklogPage() {
 
       <BacklogToolbar
         onOpenFilters={() => setFiltersOpen(true)}
+        onSave={() => setSaveOpen(true)}
         view={
           <ToggleGroup
             label={t('view')}
@@ -262,8 +265,18 @@ function BacklogPage() {
         title={tFilters('panelLabel')}
         closeLabel={tFilters('closePanel')}
       >
-        <FilterPanel />
+        <FilterPanel
+          // Il drawer si chiude prima di aprire il dialogo: due overlay uno
+          // sull'altro si contendono il fuoco, e il dialogo non vive dentro il
+          // drawer (smontato alla chiusura).
+          onSave={() => {
+            setFiltersOpen(false);
+            setSaveOpen(true);
+          }}
+        />
       </Drawer>
+
+      <SavePlaylistDialog open={saveOpen} onOpenChange={setSaveOpen} />
     </Page>
   );
 }

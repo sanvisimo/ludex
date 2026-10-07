@@ -184,6 +184,11 @@ Nello stesso lotto, dai commenti sul pannello e sul backlog:
   non chiede prima di sapere quante sono. Il `size` dell'URL resta il numero
   chiesto e si porta al multiplo più vicino; il default è 14. Sostituisce i
   numeri fissi `[7, 14, 35, 70, 126]`.
+- **Salva dal drawer e campi accanto agli slider** (08/10/2026): il bottone
+  «Salva come playlist» è anche in fondo al pannello dei filtri (chiude il
+  pannello e apre il dialogo, che ora vive nella pagina); durata, voto, anno e
+  voto critica hanno i campi «Da» / «A» (o «Minimo»), applicati a Invio o uscendo
+  dal campo. Il testo diventa un valore dello slider in `lib/range-input.ts`.
 - **Riordino a mano** (08/10/2026): «Sposta su» e «Sposta giù» nel menu ⋯ di
   `/playlist`, spenti in cima e in fondo. Una colonna `position` (migration
   0040, e 0041 che numera le esistenti per nome, da 0), non unica: spostare ne

@@ -25,14 +25,49 @@ import { toPlaylistQuery, useBacklogFilter } from '@/lib/backlog-filter';
 import { api, client } from '@/lib/orpc';
 
 /**
- * «Salva come playlist»: il bottone in toolbar e il dialogo del nome.
+ * Il bottone «Salva come playlist». Non tiene il dialogo: lo apre chi lo
+ * monta (`SavePlaylistDialog`, a livello pagina), perché il bottone sta anche
+ * nel drawer dei filtri, che quando si chiude smonta ciò che ha dentro.
  *
- * Salva i filtri accesi **adesso** e l'ordinamento, non la pagina né la vista.
- * Da telefono è solo l'icona: la toolbar resta su una riga.
+ * Da telefono, nella toolbar, è solo l'icona e la riga resta una; nel drawer c'è
+ * posto per l'etichetta (`labelled`).
  */
-export function SavePlaylistButton() {
+export function SavePlaylistButton({
+  onOpen,
+  labelled = false,
+}: {
+  onOpen: () => void;
+  labelled?: boolean;
+}) {
   const t = useTranslations('playlists.save');
-  const [open, setOpen] = useState(false);
+
+  return (
+    <Button variant="outline" aria-label={t('button')} onClick={onOpen}>
+      <BookmarkPlus size={16} color="$color12" />
+      <XStack
+        display={labelled ? 'flex' : 'none'}
+        {...(!labelled && { $md: { display: 'flex' } })}
+        aria-hidden
+      >
+        <Text fontSize={14} fontWeight="500" color="$color12">
+          {t('button')}
+        </Text>
+      </XStack>
+    </Button>
+  );
+}
+
+/**
+ * Il dialogo del nome: salva i filtri accesi **adesso** e l'ordinamento, non la
+ * pagina né la vista.
+ */
+export function SavePlaylistDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const { filter } = useBacklogFilter();
 
   // La playlist da cui si è arrivati con «Modifica filtri», se c'è e c'è ancora:
@@ -45,34 +80,19 @@ export function SavePlaylistButton() {
   const source = playlists.data?.find((p) => p.id === filter.playlist);
 
   return (
-    <>
-      <Button
-        variant="outline"
-        aria-label={t('button')}
-        onClick={() => setOpen(true)}
-      >
-        <BookmarkPlus size={16} color="$color12" />
-        <XStack display="none" $md={{ display: 'flex' }} aria-hidden>
-          <Text fontSize={14} fontWeight="500" color="$color12">
-            {t('button')}
-          </Text>
-        </XStack>
-      </Button>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent maxW={448}>
-          {/* Si rimonta a ogni apertura: il campo riparte dal nome di
-              partenza, vuoto se non si sta modificando una playlist. */}
-          {open && (
-            <SaveForm
-              key={source?.id ?? 'new'}
-              source={source}
-              onDone={() => setOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent maxW={448}>
+        {/* Si rimonta a ogni apertura: il campo riparte dal nome di partenza,
+            vuoto se non si sta modificando una playlist. */}
+        {open && (
+          <SaveForm
+            key={source?.id ?? 'new'}
+            source={source}
+            onDone={() => onOpenChange(false)}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 

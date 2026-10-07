@@ -28,6 +28,7 @@ import { useFormatter, useTranslations } from 'use-intl';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 
 import { SearchInput, SortSelect } from '@/components/list-controls';
+import { NumberField } from '@/components/number-field';
 import { SavePlaylistButton } from '@/components/save-playlist-dialog';
 import { statusIcons } from '@/components/status-icon';
 import {
@@ -45,6 +46,7 @@ import {
   useSubscriptionLabels,
 } from '@/lib/labels';
 import { api } from '@/lib/orpc';
+import { parseRangeInput } from '@/lib/range-input';
 
 /**
  * I filtri del backlog: la barra in alto e il pannello.
@@ -75,9 +77,12 @@ const RELEASED_MAX = new Date().getFullYear();
  */
 export function BacklogToolbar({
   onOpenFilters,
+  onSave,
   view,
 }: {
   onOpenFilters: () => void;
+  /** Apre il dialogo «Salva come playlist», che sta nella pagina. */
+  onSave: () => void;
   /** La scelta della vista, messa dalla pagina in fondo alla prima riga. */
   view?: ReactNode;
 }) {
@@ -102,7 +107,7 @@ export function BacklogToolbar({
         </Button>
         {/* Salvare i filtri in una playlist ha senso con almeno un filtro
             acceso: senza, la playlist sarebbe il backlog intero. */}
-        {activeCount > 0 && <SavePlaylistButton />}
+        {activeCount > 0 && <SavePlaylistButton onOpen={onSave} />}
         {view && <XStack ml="auto">{view}</XStack>}
       </XStack>
 
@@ -394,7 +399,7 @@ export function PlaylistChips({ query }: { query: PlaylistQuery }) {
  * Gli id delle spunte portano un prefisso suo (`useId`): è montato solo a
  * drawer aperto, ma due pannelli in pagina non devono scontrarsi.
  */
-export function FilterPanel() {
+export function FilterPanel({ onSave }: { onSave: () => void }) {
   const t = useTranslations('filters');
   const storeLabels = useStoreLabels();
   const subscriptionLabels = useSubscriptionLabels();
@@ -778,10 +783,13 @@ export function FilterPanel() {
         ))}
       </Accordion>
       {activeCount > 0 && (
-        <XStack>
+        // Salvare è ciò che si vuole fare dopo aver messo a punto i filtri, e
+        // a pannello aperto: il bottone sta qui oltre che in barra.
+        <XStack flexWrap="wrap" gap={8}>
           <Button variant="outline" onClick={() => void reset()}>
             {t('reset', { count: activeCount })}
           </Button>
+          <SavePlaylistButton onOpen={onSave} labelled />
         </XStack>
       )}
     </YStack>
@@ -909,6 +917,22 @@ function RangeFilter({
   const lowValue = a <= min ? null : a;
   const highValue = double && b < max ? b : null;
 
+  // I campi accanto allo slider scrivono sullo stesso `value`: lo slider si
+  // sposta, e l'attesa di sopra porta il numero al filtro. Il minimo non supera
+  // il massimo, e viceversa. Un testo che non è un numero lascia tutto com'è.
+  const t = useTranslations('filters');
+  const setLow = (text: string) => {
+    const parsed = parseRangeInput(text, { min, max, step });
+    if (parsed === undefined) return;
+    const next = parsed ?? min;
+    setValue(double ? [Math.min(next, b), b] : [next]);
+  };
+  const setHigh = (text: string) => {
+    const parsed = parseRangeInput(text, { min, max, step });
+    if (parsed === undefined) return;
+    setValue([a, Math.max(parsed ?? max, a)]);
+  };
+
   // Lo slider solo nel browser: Tamagui calcola la posizione delle maniglie
   // misurando il binario, che sul server non c'è, e l'idratazione trovava
   // maniglie senza posizione. Al suo posto, lo stesso spazio vuoto.
@@ -939,6 +963,28 @@ function RangeFilter({
       ) : (
         <YStack height={20} />
       )}
+      {/* Gli stessi estremi, scritti a mano: lo slider è comodo per un'idea,
+          il campo per un numero preciso. */}
+      <XStack flexWrap="wrap" gap={12}>
+        <NumberField
+          label={double ? t('rangeFrom') : t('rangeMinimum')}
+          ariaLabel={thumbLabels[0] ?? t('rangeFrom')}
+          value={lowValue}
+          placeholder={String(min)}
+          disabled={disabled}
+          onCommit={setLow}
+        />
+        {double && (
+          <NumberField
+            label={t('rangeTo')}
+            ariaLabel={thumbLabels[1] ?? t('rangeTo')}
+            value={highValue}
+            placeholder={String(max)}
+            disabled={disabled}
+            onCommit={setHigh}
+          />
+        )}
+      </XStack>
       {hint && (lowValue !== null || highValue !== null) && (
         <Text fontSize={13} color="$color11">
           {hint}
