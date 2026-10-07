@@ -122,6 +122,17 @@ copia giocata più di recente (`latestPlaytime` in `lib/playtime.ts`, mostrato d
 `PlayedTime`): nella riga dei fatti di griglia e righe, e in una colonna della
 compatta da `$md`. Le altre copie, con le date, sono nella scheda del gioco.
 
+**Le playlist condivise** (`/condivisa/$token`, step 15d) sono **pubbliche**, sotto
+`_app` e fuori da `_private`: le apre chiunque abbia il link, anche da anonimo,
+con `noindex, nofollow`. Il server manda il nome e i giochi come li mostra il
+catalogo, i filtri senza i tag e lo stato di _chi guarda_; il proprietario non
+compare e nemmeno l'API lo restituisce. La pagina ha solo la paginazione (a
+multipli delle colonne, come `/backlog`): chi apre non cerca né riordina. «Usa
+questi filtri sul mio backlog» apre `/backlog` con `playlistSearch(query)`; da
+anonimi porta all'accesso con `?next=` e torna qui. Chi condivide usa «Condividi…»
+nel menu ⋯ (`ShareForm`): il dialogo dice cosa esce _prima_ di creare il link, e il
+link sta in uno stato locale del modulo, non nel `shareToken` dell'elenco.
+
 Sette cose che le schermate devono sapere, perché si scoprono solo a vederle:
 
 - **un link che sembra un bottone è `ButtonLink`** (`apps/web/src/components`), non

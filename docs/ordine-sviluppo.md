@@ -201,12 +201,12 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
       una playlist, è un'estensione possibile ma lo lega a `BacklogQuery`: non
       è nel primo giro.
 
-    **15d — Condivisione delle playlist** (aggiunta l'08/10/2026, **in analisi**,
-    piano in `plans/15d-condivisione.md`). Due usi voluti: una pagina pubblica,
-    visibile a tutti, con i giochi di una playlist e le sole informazioni
-    pubbliche del gioco; e il passaggio dei filtri a chi ha un account. La
-    proposta è un link solo per tutte e due. Niente codice finché le scelte
-    sulla privacy non sono approvate.
+    **15d — Condivisione delle playlist** (aggiunta l'08/10/2026, **costruita lo
+    stesso giorno**, piano in `plans/15d-condivisione.md`). Un link solo per due
+    usi: una pagina pubblica, visibile a tutti, con i giochi di una playlist e
+    le sole informazioni pubbliche del gioco; e il passaggio dei filtri a chi ha
+    un account. Decisioni sulla privacy: dinamica, il proprietario non compare,
+    nascosti ed `excluded` mai visibili, solo con il link e `noindex`.
 
 16. **Cancellazione ed esportazione dell'account** — **fatto il 06/10/2026**
     (piano in `plans/16-cancellazione-esportazione.md`). L'utente elimina il

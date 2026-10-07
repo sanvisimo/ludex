@@ -22,6 +22,7 @@ import {
   ArrowUp,
   EllipsisVertical,
   Pencil,
+  Share2,
   SlidersHorizontal,
   Trash2,
 } from '@repo/ui/icons';
@@ -30,11 +31,12 @@ import { useRouter } from '@tanstack/react-router';
 import { useId, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
+import { ShareForm } from '@/components/share-playlist-dialog';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { playlistSearch } from '@/lib/backlog-filter';
 import { api, client } from '@/lib/orpc';
 
-type PlaylistRef = Pick<Playlist, 'id' | 'name'>;
+type PlaylistRef = Pick<Playlist, 'id' | 'name' | 'shareToken'>;
 
 /**
  * Rinomina ed elimina una playlist: il menu «⋯» e i due dialoghi.
@@ -68,6 +70,7 @@ export function PlaylistMenu({
   const queryClient = useQueryClient();
   const [renaming, setRenaming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const move = useMutation({
     mutationFn: (direction: 'up' | 'down') =>
@@ -113,6 +116,12 @@ export function PlaylistMenu({
           >
             {t('rename')}
           </DropdownMenuItem>
+          <DropdownMenuItem
+            icon={<Share2 size={16} />}
+            onClick={() => setSharing(true)}
+          >
+            {t('share')}
+          </DropdownMenuItem>
           {position && (
             <>
               <DropdownMenuSeparator />
@@ -149,6 +158,14 @@ export function PlaylistMenu({
         <DialogContent maxW={448}>
           {renaming && (
             <RenameForm playlist={playlist} onDone={() => setRenaming(false)} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={sharing} onOpenChange={setSharing}>
+        <DialogContent maxW={512}>
+          {sharing && (
+            <ShareForm playlist={playlist} onDone={() => setSharing(false)} />
           )}
         </DialogContent>
       </Dialog>

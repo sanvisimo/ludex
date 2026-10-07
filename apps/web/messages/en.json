@@ -116,6 +116,8 @@
     "notFoundTitle": "Playlist not found",
     "notFoundHint": "It may have been deleted.",
     "loadFailed": "I can't load this playlist.",
+    "share": "Share…",
+    "sharedBadge": "Shared with a link",
     "save": {
       "button": "Save as playlist",
       "title": "Save as playlist",
@@ -149,6 +151,31 @@
       "confirm": "Delete",
       "deleted": "Playlist deleted",
       "failed": "I couldn't delete the playlist"
+    },
+    "shareDialog": {
+      "title": "Share “{name}”",
+      "description": "Anyone with the link sees the games in this playlist, even without an account. They only see what the catalogue shows for each game: no status, rating, notes or tags, and not who you are. The list is always today's.",
+      "notShared": "It isn't shared yet. When you create the link, whoever gets it can also use the same filters on their own backlog.",
+      "linkLabel": "The link",
+      "copy": "Copy",
+      "copied": "Link copied",
+      "copyFailed": "I couldn't copy it: select it from the field",
+      "stopHint": "If you stop sharing, the link stops working right away. If you share again later, the link will be a different one.",
+      "create": "Create the link",
+      "stop": "Stop sharing",
+      "stopped": "It's no longer shared",
+      "close": "Close",
+      "failed": "I couldn't change the sharing"
+    },
+    "shared": {
+      "notFoundTitle": "This playlist is gone",
+      "notFoundHint": "The link doesn't exist, or whoever made it stopped sharing it.",
+      "loadFailed": "I can't load the playlist.",
+      "empty": "No games in this playlist for now.",
+      "useFilters": "Use these filters on my backlog",
+      "signInToUse": "Sign in to use these filters",
+      "droppedTags": "{count, plural, one {One of the sharer's tags isn't copied: tags are theirs.} other {# of the sharer's tags aren't copied: tags are theirs.}}",
+      "about": "A Ludex playlist!"
     }
   },
   "hidden": {

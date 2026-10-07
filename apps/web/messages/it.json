@@ -116,6 +116,8 @@
     "notFoundTitle": "Playlist non trovata",
     "notFoundHint": "Forse è stata eliminata.",
     "loadFailed": "Non riesco a caricare la playlist.",
+    "share": "Condividi…",
+    "sharedBadge": "Condivisa con un link",
     "save": {
       "button": "Salva come playlist",
       "title": "Salva come playlist",
@@ -149,6 +151,31 @@
       "confirm": "Elimina",
       "deleted": "Playlist eliminata",
       "failed": "Non sono riuscito a eliminare la playlist"
+    },
+    "shareDialog": {
+      "title": "Condividi «{name}»",
+      "description": "Chiunque abbia il link vede i giochi di questa playlist, anche senza un account. Vede solo ciò che il catalogo mostra di ogni gioco: né lo stato, né il voto, né le note, né i tag, né chi sei. La lista è sempre quella di oggi.",
+      "notShared": "Per ora non è condivisa. Creando il link, chi lo riceve può anche usare gli stessi filtri sul suo backlog.",
+      "linkLabel": "Il link",
+      "copy": "Copia",
+      "copied": "Link copiato",
+      "copyFailed": "Non sono riuscito a copiarlo: selezionalo dal campo",
+      "stopHint": "Smettendo di condividere il link smette di funzionare subito. Se poi condividi di nuovo, il link sarà un altro.",
+      "create": "Crea il link",
+      "stop": "Smetti di condividere",
+      "stopped": "Non è più condivisa",
+      "close": "Chiudi",
+      "failed": "Non sono riuscito a cambiare la condivisione"
+    },
+    "shared": {
+      "notFoundTitle": "Questa playlist non c'è più",
+      "notFoundHint": "Il link non esiste, oppure chi l'ha creata ha smesso di condividerla.",
+      "loadFailed": "Non riesco a caricare la playlist.",
+      "empty": "Per ora nessun gioco in questa playlist.",
+      "useFilters": "Usa questi filtri sul mio backlog",
+      "signInToUse": "Accedi per usare questi filtri",
+      "droppedTags": "{count, plural, one {Un tag di chi l'ha condivisa non si copia: i tag sono suoi.} other {# tag di chi l'ha condivisa non si copiano: i tag sono suoi.}}",
+      "about": "Una playlist di Ludex!"
     }
   },
   "hidden": {

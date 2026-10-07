@@ -1,7 +1,7 @@
 # Step 15d — Condivisione delle playlist
 
-**In analisi** (08/10/2026). Niente codice finché le scelte in fondo non sono
-approvate. Viene dopo la 15a ([15a-playlist.md](15a-playlist.md)), di cui usa la
+**Costruita** l'08/10/2026, con le scelte in fondo approvate lo stesso giorno
+(il lotto si chiude quando l'utente dice che è pronto). Viene dopo la 15a ([15a-playlist.md](15a-playlist.md)), di cui usa la
 tabella `playlists`.
 
 ## Cosa si vuole
@@ -108,24 +108,36 @@ Il punto non è che funzioni, è che **non perda niente**:
 4. **Documentazione**: [docs/modello-dati.md](../docs/modello-dati.md) e questo
    piano.
 
-## Da decidere
+## Decisioni (approvate l'08/10/2026)
 
-Ho messo il default di ognuna; basta dire quale cambiare.
+1. **Dinamica**: la query gira a ogni apertura.
+2. **Il proprietario non compare.**
+3. **Nascosti ed `excluded` mai visibili.**
+4. **Chi apre non cerca né riordina**, la cosa più semplice: solo la paginazione.
+5. **Solo con il link**: nessun elenco pubblico, pagina `noindex, nofollow`.
+6. **Nessun disegno prima del codice.**
 
-1. **Dinamica o fotografia.** Default: **dinamica**, la query gira a ogni
-   apertura, come per te. Chi ha il link vede i giochi di oggi. L'alternativa
-   (congelare l'elenco al momento della condivisione) toglie la sorpresa di
-   vedere cambiare la lista, ma ha bisogno di una tabella e smette di essere una
-   playlist.
-2. **Il proprietario non compare.** Default: nessun nome. Se vuoi che si possa
-   scegliere («Playlist di Mario»), è un campo in più e una domanda di privacy
-   in più.
-3. **Nascosti ed `excluded` mai visibili.** Default: sì.
-4. **Chi apre non cerca né riordina**, nel primo giro. Default: l'ordine è quello
-   salvato e basta la paginazione.
-5. **Solo con il link**: non esiste nessun elenco pubblico delle playlist
-   condivise, e la pagina è `noindex`. Default: sì.
-6. **Disegno prima del codice?** Le schermate sono due e semplici (un dialogo e
-   una pagina che è la playlist aperta senza azioni). Default: **le descrivo qui
-   e le faccio vedere a pagina vera**, senza wireframe, come per l'elenco a
-   fasce. Se vuoi il disegno, dillo.
+## Fatto
+
+- **Server**: `playlists.share_token` (migration 0042), `playlists.share` /
+  `unshare`, `sharedPlaylists.get` (pubblica, `maybeAuthed` per lo stato di chi
+  guarda), il flag `shared` nell'esportazione. Il servizio è
+  [shared-playlists.ts](../apps/api/src/services/shared-playlists.ts); i test
+  (19) in [shared-playlists.test.ts](../apps/api/src/services/shared-playlists.test.ts)
+  cercano nella risposta pubblica i valori e i _nomi dei campi_ che non devono
+  uscire, e sono stati verificati rompendo il servizio in tre punti.
+- **Chi condivide**: «Condividi…» nel menu ⋯ (dialogo con il link, «Copia» e
+  «Smetti di condividere») e un segno accanto al nome in `/playlist`.
+- **Chi apre**: `/condivisa/$token` ([route](../apps/web/src/routes/_app.condivisa.$token.tsx)),
+  e «Usa questi filtri sul mio backlog» (da anonimi: «Accedi…», che torna qui).
+
+Cosa è andato diversamente dall'analisi:
+
+- **Il tetto per pagina del link** è 60 lato server, ma la pagina chiede il
+  numero per pagina standard (multiplo delle colonne, 14 circa): chi apre non
+  ha il menu «per pagina».
+- **Il nome non si precompila** quando si salvano i filtri di un link: il
+  dialogo «Salva come playlist» parte vuoto. La playlist sorgente non è una
+  nostra, e l'id nell'URL (`?playlist=`) serve solo alle proprie.
+- **`droppedTags` conta i tag del filtro del proprietario**, esistano ancora o
+  no: dice quanti ne mancano a chi riusa i filtri, non quanti se ne sono persi.

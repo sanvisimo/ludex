@@ -1,6 +1,6 @@
 import type { Playlist } from '@repo/contracts';
 import { EmptyState, Skeleton, Text, XStack, YStack } from '@repo/ui';
-import { ListFilter } from '@repo/ui/icons';
+import { ListFilter, Share2 } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
@@ -116,6 +116,12 @@ function PlaylistBand({
             <Text fontSize={14} lineHeight={20} color="$color11">
               {tBacklog('count', { count: band.data.total })}
             </Text>
+          )}
+          {/* Chi ha il link la vede: dirlo a colpo d'occhio, senza aprire il menu. */}
+          {playlist.shareToken && (
+            <XStack role="img" aria-label={t('sharedBadge')}>
+              <Share2 size={14} color="$color11" />
+            </XStack>
           )}
           <PlaylistMenu
             playlist={playlist}
