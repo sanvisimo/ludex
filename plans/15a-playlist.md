@@ -178,7 +178,7 @@ Nello stesso lotto, dai commenti sul pannello e sul backlog:
   lasciandolo, salvare ne sostituisce i filtri, cambiandolo si crea una playlist
   nuova. Resta senza una modalità di modifica a parte, com'era deciso.
 - **Quanti per pagina seguono le colonne** (`lib/page-size.ts`,
-  `grid-columns.tsx`): colonne × 1, 2, 5, 10, 15 righe, per `/backlog` e per la
+  `grid-columns.tsx`): colonne × 1, 2, 5, 10, 15, 20 righe, per `/backlog` e per la
   playlist aperta. Le colonne si misurano con una griglia vuota (provato in
   Chrome: 1232 px → 7 colonne, 900 → 5, 700 → 4, 500 → 3, 327 → 2), e la lista
   non chiede prima di sapere quante sono. Il `size` dell'URL resta il numero

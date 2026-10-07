@@ -35,7 +35,7 @@ all'ultima: con `count(*) over()` e nessuna riga restituita il server risponde
 **Quanti giochi per pagina seguono le colonne** (`lib/page-size.ts`,
 `components/grid-columns.tsx`): un multiplo delle colonne che si vedono, così ogni
 pagina finisce a riga piena e non solo l'ultima. Il menu offre colonne × 1, 2, 5,
-10, 15 righe; `size` nell'URL è il numero chiesto e la pagina lo porta al
+10, 15, 20 righe; `size` nell'URL è il numero chiesto e la pagina lo porta al
 multiplo più vicino (`snapPageSize`), quindi un link con `size=14` su 3 colonne
 chiede 15. Cose che non si indovinano:
 

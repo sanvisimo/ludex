@@ -7,7 +7,7 @@
  */
 
 /** Le righe che il menu offre. I giochi sono righe × colonne. */
-export const pageRows = [1, 2, 5, 10, 15] as const;
+export const pageRows = [1, 2, 5, 10, 15, 20] as const;
 
 /** Quanti giochi chiede chi non ha scelto: si porta al multiplo più vicino. */
 export const defaultPageSize = 14;
