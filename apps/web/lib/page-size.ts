@@ -41,3 +41,13 @@ export function snapPageSize(size: number, step: number) {
     Math.floor(maxPageSize / step) * step,
   );
 }
+
+/**
+ * La pagina che tiene in vista il primo gioco di quella in cui si era, dopo che
+ * il numero per pagina è cambiato da solo (le colonne sono cambiate perché la
+ * finestra è cambiata). Senza, la pagina 3 da 14 e la pagina 3 da 15 non
+ * mostrano gli stessi giochi.
+ */
+export function reanchorPage(page: number, oldSize: number, newSize: number) {
+  return Math.floor(((page - 1) * oldSize) / newSize) + 1;
+}

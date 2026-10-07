@@ -32,6 +32,12 @@ alla pagina di prima. Una pagina oltre la fine torna alla prima e non
 all'ultima: con `count(*) over()` e nessuna riga restituita il server risponde
 `total: 0`, e l'ultima non la sa.
 
+**Test del web**: `pnpm --filter web test`. Vitest in Node, solo la logica pura di
+`lib/` (conversioni dei filtri, numeri per pagina, ore giocate): niente DOM e
+nessun componente, che si provano a occhio. Non carica `vite.config.ts`, quindi
+né il compilatore di Tamagui né il plugin di TanStack Start. Una logica nuova in
+`lib/` porta il suo `*.test.ts` accanto.
+
 **Quanti giochi per pagina seguono le colonne** (`lib/page-size.ts`,
 `components/grid-columns.tsx`): un multiplo delle colonne che si vedono, così ogni
 pagina finisce a riga piena e non solo l'ultima. Il menu offre colonne × 1, 2, 5,
@@ -48,8 +54,12 @@ chiede 15. Cose che non si indovinano:
   misurato**, o farebbe due richieste.
 - **Le viste righe e compatta** hanno una colonna sola, e usano il passo di una
   griglia larga (7): stessi numeri nel menu, senza pagine di un'altra misura.
-- **Ridimensionare la finestra** fino a cambiare le colonne cambia il numero per
-  pagina e rilegge la lista: la pagina resta quella, i giochi si spostano.
+- **Ridimensionare la finestra** (o cambiare vista) fino a cambiare il numero
+  per pagina rilegge la lista, e `useReanchorPage` porta la pagina a quella che
+  tiene in vista il primo gioco di prima (`reanchorPage`). Aspetta che le colonne
+  siano misurate, o il passaggio dal numero provvisorio a quello vero sembrerebbe
+  una scelta di chi guarda. Costa una richiesta in più, con la pagina vecchia.
+  Una scelta dal menu riporta a pagina 1 e non passa di qui.
 
 **Le playlist** (`/playlist` e `/playlist/$id`, step 15a) sono i filtri di
 `/backlog` salvati con un nome: la query gira a ogni apertura. L'elenco è come

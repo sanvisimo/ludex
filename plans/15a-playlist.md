@@ -184,6 +184,12 @@ Nello stesso lotto, dai commenti sul pannello e sul backlog:
   non chiede prima di sapere quante sono. Il `size` dell'URL resta il numero
   chiesto e si porta al multiplo più vicino; il default è 14. Sostituisce i
   numeri fissi `[7, 14, 35, 70, 126]`.
+- **Riancoraggio e test del web** (08/10/2026): cambiando le colonne o la vista,
+  la pagina tiene in vista il primo gioco di prima (`reanchorPage`,
+  `useReanchorPage`). `apps/web` ha ora Vitest in Node sulla logica pura di
+  `lib/`: conversioni dei filtri, numeri per pagina e riancoraggio, ore giocate.
+  Verificato rompendo il codice di proposito in tre punti: ogni rottura ha fatto
+  fallire un test.
 - **Ore giocate nel backlog** (`lib/playtime.ts`, `PlayedTime`): il tempo della
   copia giocata più di recente, con l'orologio e senza data. Ci stavo per
   scrivere che il tempo di gioco non si mostra da nessuna parte; non era vero

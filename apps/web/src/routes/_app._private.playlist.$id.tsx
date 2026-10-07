@@ -23,7 +23,11 @@ import { useTranslations } from 'use-intl';
 
 import { PlaylistChips } from '@/components/backlog-filters';
 import { ManagedEntries } from '@/components/entry-list';
-import { GridProbe, useGridColumns } from '@/components/grid-columns';
+import {
+  GridProbe,
+  useGridColumns,
+  useReanchorPage,
+} from '@/components/grid-columns';
 import { SearchInput, SortSelect } from '@/components/list-controls';
 import { PageSizeSelect } from '@/components/page-size-select';
 import { PlaylistMenu } from '@/components/playlist-menu';
@@ -96,6 +100,15 @@ function PlaylistPage() {
 
   const paging = (patch: Partial<PlaylistSearch>) =>
     validatePlaylistSearch({ ...search, ...patch });
+
+  // Cambiando le colonne, o vista, la pagina tiene in vista lo stesso gioco.
+  useReanchorPage({
+    size,
+    ready: sizeKnown,
+    page,
+    onChange: (next) =>
+      void navigate({ search: () => paging({ page: next }), replace: true }),
+  });
   // Ricerca e ordine cambiano l'insieme: si torna alla prima pagina e, come
   // nei filtri di `/backlog`, senza lasciare una voce nella cronologia a ogni
   // tasto.
@@ -240,7 +253,8 @@ function PlaylistPage() {
               <ToggleGroup
                 label={tBacklog('view')}
                 value={view}
-                // La pagina resta: le viste mostrano gli stessi giochi.
+                // La pagina resta; se la vista cambia il numero per pagina, la
+                // riancora `useReanchorPage` sullo stesso gioco.
                 onValueChange={(next) =>
                   void navigate({
                     search: () => paging({ view: next as BacklogView }),

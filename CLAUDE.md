@@ -238,6 +238,9 @@ Niente inseguimento della copertura: si testano le scritture idempotenti e la
 risoluzione dell'identità dei giochi, che sono le cose che rompendosi corrompono
 dati condivisi fra tutti gli utenti.
 
+`apps/web` ha un banco suo e piccolo: Vitest in Node sulla sola logica pura di
+`lib/` (`pnpm --filter web test`). Nessun test di componenti, e nessun database.
+
 `packages/ui` si testa diversamente, e per la ragione simmetrica: ciò che conta lì
 sono stili calcolati, focus da tastiera e contrasto, che jsdom non calcola. Quindi
 `pnpm --filter @repo/ui test` monta ogni storia in Chromium (vedi
@@ -279,6 +282,7 @@ progetto, e server e worker lavorano su una coda vuota.
 | `pnpm auth:generate`             | rigenera lo schema Better Auth            |
 | `pnpm --filter @repo/ui dev`     | Storybook, il banco del design system     |
 | `pnpm --filter @repo/ui test`    | le storie in Chromium, con axe            |
+| `pnpm --filter web test`         | la logica pura di `apps/web/lib`          |
 | `pnpm --filter mobile start`     | Metro per lo scheletro Expo               |
 
 Gli arnesi che si lanciano a mano dal workspace `api` (probe, backfill, dashboard

@@ -26,7 +26,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { AddGameDialog } from '@/components/add-game-dialog';
 import { BacklogToolbar, FilterPanel } from '@/components/backlog-filters';
 import { ManagedEntries } from '@/components/entry-list';
-import { GridProbe, useGridColumns } from '@/components/grid-columns';
+import {
+  GridProbe,
+  useGridColumns,
+  useReanchorPage,
+} from '@/components/grid-columns';
 import { PageSizeSelect } from '@/components/page-size-select';
 import {
   type BacklogView,
@@ -61,6 +65,14 @@ function BacklogPage() {
   const step = pageStep(isGrid, grid.columns ?? 1);
   const size = snapPageSize(filter.size, step);
   const sizeKnown = !isGrid || grid.columns !== null;
+
+  // Cambiando le colonne, o vista, la pagina tiene in vista lo stesso gioco.
+  useReanchorPage({
+    size,
+    ready: sizeKnown,
+    page: filter.page,
+    onChange: (page) => void setFilter({ page }),
+  });
 
   const input = useMemo(() => toQueryInput(filter, size), [filter, size]);
 
@@ -144,7 +156,8 @@ function BacklogPage() {
           <ToggleGroup
             label={t('view')}
             value={filter.view}
-            // La pagina resta: le viste mostrano gli stessi 48 giochi.
+            // La pagina resta; se la vista cambia il numero per pagina, la riancora
+            // `useReanchorPage` sullo stesso gioco.
             onValueChange={(view) =>
               setFilter({ view: view as BacklogView, page: filter.page })
             }

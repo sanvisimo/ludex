@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 
+import { reanchorPage } from '@/lib/page-size';
+
 /**
  * Le colonne della griglia del backlog. Una stringa sola, per la griglia vera e
  * per quella che le conta: se divergono, il numero per pagina non corrisponde
@@ -65,4 +67,45 @@ export function GridProbe({
       }}
     />
   );
+}
+
+/**
+ * Quando il numero per pagina cambia **da solo** — le colonne sono cambiate
+ * perché la finestra si è allargata, o perché si è cambiata vista — porta la
+ * pagina a quella che tiene in vista il primo gioco di prima. Senza, la pagina 3
+ * da 14 e la pagina 3 da 15 mostrano giochi diversi.
+ *
+ * Aspetta `ready`: finché le colonne non sono misurate il numero è provvisorio,
+ * e passare da quello a quello vero non è un cambiamento di chi guarda. Una
+ * scelta dal menu non passa di qui: riporta già a pagina 1, e da 1 non si sposta.
+ * Costa una richiesta in più, quella con la pagina vecchia e il numero nuovo,
+ * prima di quella giusta: capita ridimensionando, non a ogni apertura.
+ */
+export function useReanchorPage({
+  size,
+  ready,
+  page,
+  onChange,
+}: {
+  size: number;
+  ready: boolean;
+  page: number;
+  onChange: (page: number) => void;
+}) {
+  const previous = useRef<number | null>(null);
+  // Gli ultimi valori senza farli entrare fra le dipendenze: l'effetto deve
+  // partire quando cambia il numero, non quando cambia la pagina.
+  const latest = useRef({ page, onChange });
+  useEffect(() => {
+    latest.current = { page, onChange };
+  });
+
+  useEffect(() => {
+    if (!ready) return;
+    const before = previous.current;
+    previous.current = size;
+    if (before === null || before === size) return;
+    const next = reanchorPage(latest.current.page, before, size);
+    if (next !== latest.current.page) latest.current.onChange(next);
+  }, [size, ready]);
 }
