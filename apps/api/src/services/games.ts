@@ -1,6 +1,7 @@
+import { storeGameUrl } from '@repo/contracts';
 import type { Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, eq, inArray, sql } from '@repo/db/orm';
+import { and, asc, eq, inArray, sql } from '@repo/db/orm';
 
 import {
   findIgdbGameById,
@@ -152,7 +153,53 @@ export async function findGameDetailById(
       openCriticId: externalId('opencritic'),
       metacriticSlug: externalId('metacritic'),
     }),
+    storeLinks: await findStoreLinks(id),
   };
+}
+
+/**
+ * Dove si compra il gioco, per la card «Links» della scheda: un link per
+ * negozio, dagli id di `external_ids` e dalla pagina che l'import ha salvato su
+ * una copia di chiunque (`max(store_page)`, come la scheda admin: è un percorso
+ * del negozio, non un dato di chi l'ha importato). I negozi senza un link
+ * ufficiale (`storeGameUrl`) non compaiono: una riga ferma non serve a nessuno.
+ * Dentro un negozio vince l'id che viene prima, per avere sempre lo stesso.
+ */
+async function findStoreLinks(gameId: string) {
+  const [ids, pages] = await Promise.all([
+    db
+      .select({
+        store: schema.externalIds.source,
+        externalId: schema.externalIds.externalId,
+      })
+      .from(schema.externalIds)
+      .where(eq(schema.externalIds.gameId, gameId))
+      .orderBy(
+        asc(schema.externalIds.source),
+        asc(schema.externalIds.externalId),
+      ),
+    db
+      .select({
+        store: schema.ownerships.store,
+        storePage: sql<string | null>`max(${schema.ownerships.storePage})`,
+      })
+      .from(schema.ownerships)
+      .innerJoin(
+        schema.backlog,
+        eq(schema.backlog.id, schema.ownerships.backlogId),
+      )
+      .where(eq(schema.backlog.gameId, gameId))
+      .groupBy(schema.ownerships.store),
+  ]);
+  const pageOf = new Map(pages.map((row) => [row.store, row.storePage]));
+
+  const links: { store: Store; url: string }[] = [];
+  for (const { store, externalId } of ids) {
+    if (links.some((link) => link.store === store)) continue;
+    const url = storeGameUrl(store, externalId, pageOf.get(store) ?? null);
+    if (url) links.push({ store, url });
+  }
+  return links;
 }
 
 /**

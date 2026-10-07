@@ -252,4 +252,45 @@ describe('findGameDetailById: ciò che serve alla pagina del gioco (12d)', () =>
       metacritic: null,
     });
   });
+
+  it('dà un link per negozio, solo dove una pagina ufficiale c’è', async () => {
+    const game = await createGame();
+    const userId = await createUser();
+    await db.insert(schema.externalIds).values([
+      { gameId: game.id, source: 'steam', externalId: '1091500' },
+      // Due id dello stesso negozio: ne esce uno, sempre lo stesso.
+      { gameId: game.id, source: 'psn', externalId: '10002' },
+      { gameId: game.id, source: 'psn', externalId: '10001' },
+      // GOG con la pagina che un import ha salvato su una copia.
+      { gameId: game.id, source: 'gog', externalId: '1207658924' },
+      // Senza pagina GOG dall'id non dà un link ufficiale; Epic mai.
+      { gameId: game.id, source: 'epic', externalId: 'abc' },
+    ]);
+    const [entry] = await db
+      .insert(schema.backlog)
+      .values({ userId, gameId: game.id })
+      .returning({ id: schema.backlog.id });
+    await db.insert(schema.ownerships).values({
+      backlogId: entry!.id,
+      platformSlug: 'pc_windows',
+      store: 'gog',
+      storePage: '/en/game/cyberpunk_2077',
+    });
+
+    // L'ordine è quello dell'enum dei negozi, che è anche quello della card.
+    expect((await findGameDetailById(game.id))?.storeLinks).toEqual([
+      { store: 'steam', url: 'https://store.steampowered.com/app/1091500' },
+      { store: 'gog', url: 'https://www.gog.com/en/game/cyberpunk_2077' },
+      {
+        store: 'psn',
+        url: 'https://store.playstation.com/it-it/concept/10001',
+      },
+    ]);
+  });
+
+  it('senza id di negozio non dà nessun link', async () => {
+    const game = await createGame();
+
+    expect((await findGameDetailById(game.id))?.storeLinks).toEqual([]);
+  });
 });

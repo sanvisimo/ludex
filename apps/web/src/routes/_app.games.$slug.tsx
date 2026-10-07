@@ -19,6 +19,7 @@ import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import {
   BacklogPanel,
   DurationAndCritics,
+  StoreLinks,
   GAME_PAGE_WIDTH,
   GameGallery,
   GameHero,
@@ -214,6 +215,7 @@ function GamePage() {
               </XStack>
             )
           )}
+          <StoreLinks game={game} />
           {/* In fondo alla colonna: sotto il pannello del backlog se il gioco
               è tuo, sotto durata e critica se no. Solo da loggati: la
               segnalazione è di qualcuno. */}

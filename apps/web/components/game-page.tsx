@@ -4,7 +4,6 @@ import type {
   GameDetail,
   GameScore,
   RelatedGame,
-  Store,
 } from '@repo/contracts';
 import { storePageUrl } from '@repo/contracts';
 import {
@@ -21,7 +20,6 @@ import {
   Theme,
   XStack,
   YStack,
-  type Brand,
   type GalleryItem,
 } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
@@ -43,6 +41,7 @@ import { statusIcons } from '@/components/status-icon';
 import { useDuration } from '@/lib/duration';
 import { igdbImageUrl } from '@/lib/igdb-image';
 import { platformIconUrl } from '@/lib/platform-icons';
+import { STORE_BRAND } from '@/lib/store-brand';
 import { useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 import { useSession } from '@/src/use-session';
@@ -55,18 +54,6 @@ import { useSession } from '@/src/use-session';
  * una colonna sola, con la laterale **prima**: stato, durata e critica sono
  * ciò che serve a decidere.
  */
-
-/** Il marchio di ciascun negozio; Amazon non ne ha uno, e resta col nome. */
-const STORE_BRAND: Partial<Record<Store, Brand>> = {
-  steam: 'steam',
-  gog: 'gog',
-  epic: 'epic',
-  ea: 'ea',
-  battlenet: 'battlenet',
-  psn: 'psn',
-  xbox: 'xbox',
-  nintendo: 'nintendo',
-};
 
 /**
  * Una riga che, se c'è dove portare, è tutta un link che esce dall'app:
@@ -622,6 +609,42 @@ export function BacklogPanel({
       <XStack flexWrap="wrap" gap={8}>
         {actions}
       </XStack>
+    </Panel>
+  );
+}
+
+// --- la colonna laterale: dove si compra ---
+
+/**
+ * I negozi dove il gioco c'è, ognuno con la sua icona e il nome, tutta la riga
+ * è il link. Sta sotto il tuo backlog, come durata e critica sopra: sono gli
+ * stessi link che escono dall'app, e dicono dove andare. Senza link ufficiali
+ * (`storeLinks` vuoto) non c'è la card.
+ */
+export function StoreLinks({ game }: { game: GameDetail }) {
+  const t = useTranslations('game');
+  const storeLabels = useStoreLabels();
+
+  if (game.storeLinks.length === 0) return null;
+
+  return (
+    <Panel>
+      <PanelTitle>{t('links')}</PanelTitle>
+      <YStack gap={6}>
+        {game.storeLinks.map(({ store, url }) => {
+          const brand = STORE_BRAND[store];
+          return (
+            <LinkRow
+              key={store}
+              href={url}
+              title={t('openOn', { name: storeLabels[store] })}
+            >
+              {brand && <BrandIcon brand={brand} size={20} />}
+              <Muted flex={1}>{storeLabels[store]}</Muted>
+            </LinkRow>
+          );
+        })}
+      </YStack>
     </Panel>
   );
 }
