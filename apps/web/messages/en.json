@@ -92,7 +92,10 @@
     "viewGrid": "Grid",
     "viewCompact": "Compact",
     "playedLabel": "Played: {duration}",
-    "columnPlayed": "Played"
+    "columnPlayed": "Played",
+    "random": "Random game",
+    "randomEmpty": "You have no “to play” games to pick from.",
+    "randomFailed": "I couldn't pick a game"
   },
   "playlists": {
     "title": "Playlists",

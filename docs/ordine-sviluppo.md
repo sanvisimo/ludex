@@ -201,6 +201,14 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
       una playlist, è un'estensione possibile ma lo lega a `BacklogQuery`: non
       è nel primo giro.
 
+    **Fatto l'08/10/2026.** `backlog.random` rende `{ slug }` o `null` (un backlog
+    senza giochi «da giocare» non è un errore), scelto da SQL con `random()`
+    (`pickRandomBacklogGame`). Il bottone «Gioco a caso» sta fra le azioni in
+    cima a `/backlog`, accanto a «Aggiungi gioco», e non nella barra dei filtri:
+    è il gesto di «cosa gioco adesso», e lì si vede anche sul telefono, dove la
+    barra è già piena. Non c'è nella vista dei nascosti. Con la lista vuota un
+    avviso dice che non ci sono giochi da pescare.
+
     **15d — Condivisione delle playlist** (aggiunta l'08/10/2026, **costruita lo
     stesso giorno**, piano in `plans/15d-condivisione.md`). Un link solo per due
     usi: una pagina pubblica, visibile a tutti, con i giochi di una playlist e

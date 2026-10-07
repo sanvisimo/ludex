@@ -10,7 +10,7 @@ import { chunk } from '../lib/chunk';
 import { gameColumns } from './games';
 import { ensureUserTags } from './tags';
 import { db, schema } from '@repo/db';
-import { and, eq, inArray, sql } from '@repo/db/orm';
+import { and, eq, inArray, isNull, sql } from '@repo/db/orm';
 
 // Forma di BacklogEntrySchema: la riga, il gioco, i possessi, i tag.
 //
@@ -897,4 +897,30 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
   // possessi lo ricava dai backlog creati, che è l'unico dato che serve nel
   // resoconto.
   return { created };
+}
+
+/**
+ * Un gioco a caso fra quelli «da giocare» (step 15c): stato `backlog` e non
+ * nascosto. Rende lo slug della scheda, o `null` se non ce n'è nessuno.
+ *
+ * La scelta la fa SQL: `random()` dà a ogni candidato la stessa probabilità, e
+ * niente viene caricato in memoria per poi pescare. Ignora di proposito i filtri
+ * di `/backlog`: pescare dentro i filtri accesi lo legherebbe a `BacklogQuery`.
+ * `excluded` e nascosti non sono «da giocare», e non escono mai.
+ */
+export async function pickRandomBacklogGame(userId: string) {
+  const [row] = await db
+    .select({ slug: schema.games.slug })
+    .from(schema.backlog)
+    .innerJoin(schema.games, eq(schema.games.id, schema.backlog.gameId))
+    .where(
+      and(
+        eq(schema.backlog.userId, userId),
+        eq(schema.backlog.status, 'backlog'),
+        isNull(schema.backlog.hiddenAt),
+      ),
+    )
+    .orderBy(sql`random()`)
+    .limit(1);
+  return row?.slug ?? null;
 }

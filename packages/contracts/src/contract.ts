@@ -417,6 +417,11 @@ export const contract = {
     // Senza criteri è la lista di prima.
     list: oc.input(BacklogQuerySchema).output(BacklogListSchema),
 
+    // Un gioco a caso fra quelli «da giocare» (stato `backlog`, non nascosti),
+    // senza guardare i filtri di `/backlog`. Rende lo slug della scheda, o `null`
+    // se non ce n'è nessuno: un backlog senza giochi da giocare non è un errore.
+    random: oc.output(z.object({ slug: z.string() }).nullable()),
+
     // Di che cosa si compone il pannello dei filtri: solo i valori che compaiono
     // davvero nel backlog di chi guarda.
     filterOptions: oc.output(BacklogFilterOptionsSchema),

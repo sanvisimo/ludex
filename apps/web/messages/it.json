@@ -92,7 +92,10 @@
     "viewGrid": "Griglia",
     "viewCompact": "Compatta",
     "playedLabel": "Giocate: {duration}",
-    "columnPlayed": "Giocate"
+    "columnPlayed": "Giocate",
+    "random": "Gioco a caso",
+    "randomEmpty": "Non hai giochi «da giocare» da pescare.",
+    "randomFailed": "Non sono riuscito a pescare un gioco"
   },
   "playlists": {
     "title": "Playlist",

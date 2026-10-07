@@ -6,6 +6,7 @@ import {
   addToBacklog,
   findEntryByGame,
   findEntryById,
+  pickRandomBacklogGame,
   removeFromBacklog,
   removeOwnershipFromEntry,
   setBacklogHidden,
@@ -539,6 +540,11 @@ export const router = os.router({
     list: os.backlog.list
       .use(authed)
       .handler(({ input, context }) => searchBacklog(context.user.id, input)),
+
+    random: os.backlog.random.use(authed).handler(async ({ context }) => {
+      const slug = await pickRandomBacklogGame(context.user.id);
+      return slug ? { slug } : null;
+    }),
 
     filterOptions: os.backlog.filterOptions
       .use(authed)

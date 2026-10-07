@@ -117,6 +117,11 @@ al pannello: il dialogo vive nella pagina (`SavePlaylistDialog`), perché il
 pannello smonta ciò che ha dentro quando si chiude, e il clic chiude il pannello
 prima di aprirlo.
 
+**«Gioco a caso»** (`RandomGameButton`, step 15c) sta fra le azioni in cima a
+`/backlog`, e non nella vista dei nascosti. Chiede a `backlog.random` un gioco con
+stato `backlog` e non nascosto, **senza guardare i filtri della pagina**, e apre la
+scheda; con nessun candidato il server rende `null` e basta un avviso.
+
 **Le ore giocate nel backlog** sono un tempo solo con l'orologio, quello della
 copia giocata più di recente (`latestPlaytime` in `lib/playtime.ts`, mostrato da
 `PlayedTime`): nella riga dei fatti di griglia e righe, e in una colonna della
