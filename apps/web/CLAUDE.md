@@ -127,6 +127,22 @@ copia giocata più di recente (`latestPlaytime` in `lib/playtime.ts`, mostrato d
 `PlayedTime`): nella riga dei fatti di griglia e righe, e in una colonna della
 compatta da `$md`. Le altre copie, con le date, sono nella scheda del gioco.
 
+**Le liste a mano** (`/wishlist` e `/wishlist/$id`, step 15b) sono come le
+playlist ma con giochi scelti: una fascia per lista, e la lista aperta con ricerca,
+ordine (data di aggiunta, nome, uscita, durata, voto della critica), «per pagina» a
+multipli delle colonne e, sotto ogni card, «Ce l'ho» (`AddGameDialog` con un
+`trigger` suo: il dialogo del backlog, che chiede la piattaforma) e «Togli» (con
+«Annulla»). Si aggiunge dalla scheda del gioco, **solo se non è nel backlog**
+(`WishlistControl`): senza liste il primo «aggiungi» ne crea una che si chiama
+«Wishlist». **Il cuore** (`WishlistHeart`, in `HomeCard`) sta sulle card dei giochi che non
+hai nel backlog, da loggati: vuoto aggiunge alla prima lista (con «Annulla»), pieno
+toglie se il gioco sta in una lista sola e apre il menu delle liste se ne ha più.
+Lo dice `HomeGame.wishlisted`; la lista aperta e le fasce di `/wishlist` lo spengono
+(`showWishlist={false}`). La card sono due link alla stessa scheda e un bottone
+sovrapposto: un bottone non sta dentro un link. `SortSelect` prende `keys` per offrire solo gli ordini di una
+lista, e le mutazioni invalidano le liste dalla `MutationCache`, perché un gioco
+che entra nel backlog da qualunque strada esce dalle liste.
+
 **Le playlist condivise** (`/shared/$token`, step 15d) sono **pubbliche**, sotto
 `_app` e fuori da `_private`: le apre chiunque abbia il link, anche da anonimo,
 con `noindex, nofollow`. Il server manda il nome e i giochi come li mostra il

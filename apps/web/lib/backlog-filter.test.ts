@@ -11,6 +11,7 @@ import {
   validateBacklogSearch,
   validatePagingSearch,
   validatePlaylistSearch,
+  validateWishlistSearch,
 } from './backlog-filter';
 
 // Si testa il passaggio fra i tre modi di dire lo stesso filtro — l'URL di
@@ -202,5 +203,41 @@ describe('l’URL di una playlist aperta', () => {
 
   it('una ricerca vuota o un ordine che non esiste si scartano', () => {
     expect(validatePlaylistSearch({ q: '   ', sort: 'pippo' })).toEqual({});
+  });
+});
+
+describe("l'URL di una lista a mano", () => {
+  it('tiene ricerca, ordine, direzione, pagina e numero per pagina', () => {
+    expect(
+      validateWishlistSearch({
+        q: ' hades ',
+        sort: 'criticRating',
+        direction: 'asc',
+        page: '2',
+        size: '35',
+      }),
+    ).toEqual({
+      q: 'hades',
+      sort: 'criticRating',
+      direction: 'asc',
+      page: 2,
+      size: 35,
+    });
+  });
+
+  it("scarta un ordine che una lista non ha: il voto personale, l'ultima partita", () => {
+    expect(validateWishlistSearch({ sort: 'rating' })).toEqual({});
+    expect(validateWishlistSearch({ sort: 'lastPlayed' })).toEqual({});
+    expect(validateWishlistSearch({ sort: 'pippo' })).toEqual({});
+  });
+
+  it('`addedAt` resta: qui è il default della lista, e a decidere se toglierlo è la pagina', () => {
+    expect(validateWishlistSearch({ sort: 'addedAt' })).toEqual({
+      sort: 'addedAt',
+    });
+  });
+
+  it('non porta la vista dei filtri del backlog', () => {
+    expect(validateWishlistSearch({ view: 'rows' })).toEqual({ view: 'rows' });
   });
 });

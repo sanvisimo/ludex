@@ -119,7 +119,10 @@ possesso. Conseguenze:
 - **la wishlist è una tabella separata**, non giochi "non posseduti" dentro
   `backlog`. Così ogni query su `backlog` resta semplice. Comprato il gioco, la
   riga migra. Anche i giochi in wishlist puntano a `games` e vanno arricchiti:
-  durata e voti servono _prima_ dell'acquisto. È lo **step 15**.
+  durata e voti servono _prima_ dell'acquisto — e la spazzata dell'enrichment
+  legge tutta `games`, non solo i giochi di un backlog, quindi non serve altro.
+  È lo **step 15b**: sono **liste con nome**, a mano (vedi «Le playlist», sotto),
+  e un gioco può stare in più liste.
 - **stato**: `backlog` / `playing` / `played` / `completed` / `dropped` /
   `excluded`. `completed` è il 100%, il platinato: `played` resta «finito», e
   «completato» dice di più (12c). Lo sceglie solo l'utente: dedurlo dai trofei
@@ -258,3 +261,29 @@ una playlist segue il backlog da sola.
   revocato e uno inesistente rispondono allo stesso modo, e il link non va
   nell'esportazione dell'account (c'è solo se è condivisa). La regola è provata
   da test che cercano i valori e i nomi dei campi nella risposta pubblica.
+
+### Le liste a mano: `playlists.kind = 'wishlist'` (step 15b)
+
+`playlists` ospita due cose, distinte da `kind`: le playlist a filtro (`filter`, con
+una `query`) e le liste a mano (`wishlist`, senza). Un vincolo dice che la `query`
+c'è se e solo se il tipo è `filter`, e il nome è unico per `(utente, tipo, nome)`:
+una playlist «Brevi» e una lista «Brevi» non si contendono il nome. **Ogni
+funzione lavora sul proprio tipo e solo su quello**: un id di lista dato a una
+funzione delle playlist si comporta come un id inesistente, e viceversa. Anche
+l'ordine («Sposta su», «Sposta giù») è dentro il tipo, e solo le playlist a filtro
+si condividono.
+
+I giochi di una lista stanno in `wishlist_items(list_id, game_id, added_at)`:
+**solo il gioco e la data**. Non c'è `user_id`, che lo porta la lista, e le
+funzioni risolvono la lista filtrando per utente prima di toccare le voci.
+
+- **Un gioco o è in una lista o è nel backlog.** Quando entra nel backlog — dal
+  dialogo o da un import: `addToBacklog` e `ensureBacklogEntries`, i due soli punti
+  dove nasce una riga di `backlog` — esce da **tutte** le liste dell'utente
+  (`dropFromWishlists`). Non basta: la **lettura** di una lista esclude comunque
+  i giochi che l'utente ha nel backlog, così una strada di scrittura che se ne
+  dimenticasse non mostra un gioco già comprato.
+- **Togliere un gioco dal backlog non lo rimette in lista**, e **aggiungere a una
+  lista un gioco che hai nel backlog è un conflitto**.
+- **Il primo «aggiungi», senza liste, ne crea una che si chiama «Wishlist»**: chi
+  vuole solo mettere da parte un gioco non deve inventare un nome.

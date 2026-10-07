@@ -3,6 +3,7 @@ import { and, asc, count, desc, eq, ilike, inArray, sql } from '@repo/db/orm';
 
 import { escapeLike } from './backlog-search';
 import { gameReturning, searchGames } from './games';
+import { wishlistedGameIds } from './wishlist-sync';
 
 /**
  * La ricerca globale (12f), sul catalogo intero e non sul backlog di chi
@@ -45,7 +46,19 @@ export async function searchCatalog(
     db.select({ n: count() }).from(schema.games).where(where),
   ]);
 
-  return { games, total: totale?.n ?? 0 };
+  // Il cuore: quali stanno in una delle liste di chi cerca.
+  const wishlisted = await wishlistedGameIds(
+    viewerId,
+    games.map((game) => game.id),
+  );
+
+  return {
+    games: games.map((game) => ({
+      ...game,
+      wishlisted: wishlisted.has(game.id),
+    })),
+    total: totale?.n ?? 0,
+  };
 }
 
 /**

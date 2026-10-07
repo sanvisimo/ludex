@@ -33,7 +33,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { XIcon } from 'lucide-react';
 import { useTranslations } from 'use-intl';
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 
 import { PlatformCombobox } from '@/components/platform-combobox';
 import { useApiErrorMessage } from '@/lib/api-error';
@@ -69,7 +69,12 @@ const emptyRow = (): OwnershipRow => ({
  */
 export function AddGameDialog({
   game,
-}: { game?: { id: string; name: string } } = {}) {
+  trigger,
+}: {
+  game?: { id: string; name: string };
+  /** Il bottone che apre il dialogo, se non è quello di sempre (una card di lista). */
+  trigger?: ReactElement;
+} = {}) {
   const t = useTranslations('addGame');
   // Il tipo di una scheda IGDB arriva come valore (`dlc`, `remaster`): il nome
   // da mostrare lo mette il client, e su un gioco principale non si mostra —
@@ -190,7 +195,11 @@ export function AddGameDialog({
       }}
     >
       <DialogTrigger
-        render={<Button>{game ? t('triggerForGame') : t('trigger')}</Button>}
+        render={
+          trigger ?? (
+            <Button>{game ? t('triggerForGame') : t('trigger')}</Button>
+          )
+        }
       />
 
       <DialogContent maxW={576}>

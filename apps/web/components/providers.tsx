@@ -24,8 +24,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
       // playlist; una playlist aperta si rilegge qui, per tutte, e quelle
       // non aperte restano segnate come vecchie.
       mutationCache: new MutationCache({
-        onSuccess: () =>
-          void client.invalidateQueries({ queryKey: api.playlists.get.key() }),
+        onSuccess: () => {
+          void client.invalidateQueries({ queryKey: api.playlists.get.key() });
+          // Le liste a mano: un gioco che entra nel backlog esce dalle liste, e
+          // lo fa da qualunque mutazione lo aggiunga.
+          void client.invalidateQueries({ queryKey: api.wishlists.key() });
+          // Il cuore sulle card (home, ricerca, playlist condivise) e lo stato
+          // che portano dipendono da liste e backlog: si rileggono.
+          void client.invalidateQueries({ queryKey: api.games.home.key() });
+          void client.invalidateQueries({ queryKey: api.games.find.key() });
+          void client.invalidateQueries({
+            queryKey: api.sharedPlaylists.key(),
+          });
+        },
       }),
       defaultOptions: {
         queries: {

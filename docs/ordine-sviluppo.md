@@ -181,9 +181,13 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
     - **la tabella viene per prima**: la wishlist (15b) la riusa come «lista
       con nome».
 
-    **15b — Wishlist.** Una tabella separata da `backlog`, arricchita come i
-    giochi posseduti. Riusa la tabella delle playlist (15a) come «lista con
-    nome».
+    **15b — Wishlist** (**costruita l'08/10/2026**, piano in
+    `plans/15b-wishlist.md`). Più liste con nome, fatte a mano, separate da
+    `backlog`: stanno in `playlists` col tipo `wishlist` (la `query` diventa
+    facoltativa) e i giochi in `wishlist_items`, con solo il gioco e la data. Un
+    gioco o è in una lista o è nel backlog: entrando nel backlog esce da tutte. Si
+    aggiunge dalla scheda del gioco; `/wishlist` e `/wishlist/$id` come le
+    playlist. L'arricchimento è quello di sempre, perché `games` è condivisa.
 
     **15c — Gioco a caso** (aggiunto il 07/10/2026). Un pulsante che porta alla
     scheda di un gioco preso a caso dal proprio backlog. Aiuta a rispondere a

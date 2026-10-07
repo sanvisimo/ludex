@@ -9,6 +9,7 @@ import { db, schema } from '@repo/db';
 import { and, eq, inArray } from '@repo/db/orm';
 
 import { searchBacklog } from './backlog-search';
+import { wishlistedGameIds } from './wishlist-sync';
 
 /**
  * Una playlist vista da chi ha il link (step 15d).
@@ -38,8 +39,13 @@ export async function openSharedPlaylist(
       query: schema.playlists.query,
     })
     .from(schema.playlists)
-    .where(eq(schema.playlists.shareToken, input.token));
-  if (!row) return undefined;
+    .where(
+      and(
+        eq(schema.playlists.shareToken, input.token),
+        eq(schema.playlists.kind, 'filter'),
+      ),
+    );
+  if (!row?.query) return undefined;
 
   const { tags: saved = [], ...query } = PlaylistQuerySchema.parse(row.query);
   // Quanti tag il filtro del proprietario usa e chi apre non può avere: sono per
@@ -98,6 +104,7 @@ export async function openSharedPlaylist(
           )
       : [];
   const viewerStatus = new Map(owned.map((o) => [o.gameId, o.status]));
+  const wishlisted = await wishlistedGameIds(viewerId, ids);
 
   return {
     ...base,
@@ -107,6 +114,7 @@ export async function openSharedPlaylist(
     games: entries.map((entry) => ({
       ...GameSchema.parse(entry.game),
       status: viewerStatus.get(entry.game.id) ?? null,
+      wishlisted: wishlisted.has(entry.game.id),
     })),
   };
 }

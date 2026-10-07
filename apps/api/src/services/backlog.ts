@@ -9,6 +9,7 @@ import type {
 import { chunk } from '../lib/chunk';
 import { gameColumns } from './games';
 import { ensureUserTags } from './tags';
+import { dropFromWishlists } from './wishlist-sync';
 import { db, schema } from '@repo/db';
 import { and, eq, inArray, isNull, sql } from '@repo/db/orm';
 
@@ -144,6 +145,9 @@ export async function addToBacklog(input: {
         medium: ownership.medium ?? null,
       })),
     );
+
+    // Un gioco o è in una lista o è nel backlog (step 15b).
+    await dropFromWishlists(input.userId, [input.gameId], tx);
 
     return entry.id;
   });
@@ -513,6 +517,9 @@ export async function ensureBacklogEntries(
 
     for (const row of esistenti) byGameId.set(row.gameId, row.id);
   }
+
+  // I giochi appena entrati nel backlog escono dalle liste (step 15b).
+  await dropFromWishlists(userId, [...created]);
 
   return { byGameId, created };
 }

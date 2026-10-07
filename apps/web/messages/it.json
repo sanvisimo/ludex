@@ -17,7 +17,8 @@
     "madeWith": "Made with ♥ in Italy & EU",
     "backToTop": "Torna su",
     "admin": "Admin",
-    "playlists": "Playlist"
+    "playlists": "Playlist",
+    "wishlist": "Wishlist"
   },
   "theme": {
     "label": "Tema",
@@ -179,6 +180,67 @@
       "signInToUse": "Accedi per usare questi filtri",
       "droppedTags": "{count, plural, one {Un tag di chi l'ha condivisa non si copia: i tag sono suoi.} other {# tag di chi l'ha condivisa non si copiano: i tag sono suoi.}}",
       "about": "Una playlist di Ludex!"
+    }
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "count": "{count, plural, one {# lista} other {# liste}}",
+    "error": "Non riesco a caricare le liste.",
+    "emptyTitle": "Nessuna lista",
+    "emptyHint": "Metti da parte un gioco dalla sua scheda, o crea una lista vuota.",
+    "newList": "Nuova lista",
+    "actionsFor": "Azioni per {name}",
+    "rename": "Rinomina",
+    "delete": "Elimina",
+    "moveUp": "Sposta su",
+    "moveDown": "Sposta giù",
+    "moveFailed": "Non sono riuscito a spostare la lista",
+    "back": "Wishlist",
+    "notFoundTitle": "Lista non trovata",
+    "notFoundHint": "Forse è stata eliminata.",
+    "loadFailed": "Non riesco a caricare la lista.",
+    "emptyList": "Questa lista è vuota.",
+    "emptyListHint": "Aggiungi i giochi dalla loro scheda.",
+    "emptySearchTitle": "Nessun gioco della lista corrisponde alla ricerca.",
+    "own": "Ce l'ho",
+    "remove": "Togli",
+    "undo": "Annulla",
+    "removed": "{name} tolto dalla lista",
+    "removeFailed": "Non sono riuscito a togliere il gioco",
+    "nameDialog": {
+      "createTitle": "Nuova lista",
+      "renameTitle": "Rinomina la lista",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Per esempio: regali",
+      "cancel": "Annulla",
+      "create": "Crea",
+      "rename": "Rinomina",
+      "exists": "Hai già una lista con questo nome.",
+      "failed": "Non sono riuscito a salvare la lista"
+    },
+    "deleteDialog": {
+      "title": "Eliminare «{name}»?",
+      "description": "I giochi non vanno da nessuna parte: sparisce solo la lista.",
+      "cancel": "Annulla",
+      "confirm": "Elimina",
+      "deleted": "Lista eliminata",
+      "failed": "Non sono riuscito a eliminare la lista"
+    },
+    "control": {
+      "button": "Wishlist",
+      "inList": "In wishlist",
+      "addDefault": "Aggiungi alla wishlist",
+      "newList": "Nuova lista…",
+      "added": "Aggiunto a «{name}»",
+      "failed": "Non sono riuscito a cambiare la lista"
+    },
+    "heart": {
+      "add": "Aggiungi alla wishlist",
+      "inList": "In wishlist",
+      "added": "Aggiunto a «{name}»",
+      "removed": "Tolto da «{name}»",
+      "undo": "Annulla",
+      "failed": "Non sono riuscito a cambiare la lista"
     }
   },
   "hidden": {

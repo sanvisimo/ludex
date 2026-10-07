@@ -5,6 +5,7 @@ import type {
   GameType,
   PlaylistQuery,
   SortDirection,
+  WishlistSort,
   Store,
   Subscription,
 } from '@repo/contracts';
@@ -16,6 +17,7 @@ import {
   sortDirectionValues,
   storeValues,
   subscriptionValues,
+  wishlistSortValues,
 } from '@repo/contracts';
 import { getRouteApi, useRouter } from '@tanstack/react-router';
 
@@ -451,6 +453,24 @@ export function validatePlaylistSearch(
     ...(sort && { sort }),
     ...(direction && { direction }),
   };
+}
+
+/**
+ * L'URL di una lista aperta (`/wishlist/$id`, step 15b): come quello di una
+ * playlist, ma l'ordine è fra quelli di una lista. Una chiave che una lista non
+ * ha (il voto personale, l'ultima partita) si scarta. Il default è l'ultimo
+ * aggiunto per primo, e lo applica il server.
+ */
+export type WishlistSearch = Omit<PlaylistSearch, 'sort'> & {
+  sort?: WishlistSort;
+};
+
+export function validateWishlistSearch(
+  raw: Record<string, unknown>,
+): WishlistSearch {
+  const { sort, ...rest } = validatePlaylistSearch(raw);
+  const known = (wishlistSortValues as readonly string[]).includes(sort ?? '');
+  return { ...rest, ...(known && sort && { sort: sort as WishlistSort }) };
 }
 
 export function useBacklogFilter() {

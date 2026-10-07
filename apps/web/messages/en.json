@@ -17,7 +17,8 @@
     "madeWith": "Made with ♥ in Italy & EU",
     "backToTop": "Back to top",
     "admin": "Admin",
-    "playlists": "Playlists"
+    "playlists": "Playlists",
+    "wishlist": "Wishlist"
   },
   "theme": {
     "label": "Theme",
@@ -179,6 +180,67 @@
       "signInToUse": "Sign in to use these filters",
       "droppedTags": "{count, plural, one {One of the sharer's tags isn't copied: tags are theirs.} other {# of the sharer's tags aren't copied: tags are theirs.}}",
       "about": "A Ludex playlist!"
+    }
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "count": "{count, plural, one {# list} other {# lists}}",
+    "error": "I can't load your lists.",
+    "emptyTitle": "No lists",
+    "emptyHint": "Set a game aside from its page, or create an empty list.",
+    "newList": "New list",
+    "actionsFor": "Actions for {name}",
+    "rename": "Rename",
+    "delete": "Delete",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "moveFailed": "I couldn't move the list",
+    "back": "Wishlist",
+    "notFoundTitle": "List not found",
+    "notFoundHint": "It may have been deleted.",
+    "loadFailed": "I can't load this list.",
+    "emptyList": "This list is empty.",
+    "emptyListHint": "Add games from their page.",
+    "emptySearchTitle": "No game in this list matches your search.",
+    "own": "I own it",
+    "remove": "Remove",
+    "undo": "Undo",
+    "removed": "{name} removed from the list",
+    "removeFailed": "I couldn't remove the game",
+    "nameDialog": {
+      "createTitle": "New list",
+      "renameTitle": "Rename the list",
+      "nameLabel": "Name",
+      "namePlaceholder": "For example: gifts",
+      "cancel": "Cancel",
+      "create": "Create",
+      "rename": "Rename",
+      "exists": "You already have a list with this name.",
+      "failed": "I couldn't save the list"
+    },
+    "deleteDialog": {
+      "title": "Delete “{name}”?",
+      "description": "The games don't go anywhere: only the list goes away.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "deleted": "List deleted",
+      "failed": "I couldn't delete the list"
+    },
+    "control": {
+      "button": "Wishlist",
+      "inList": "In wishlist",
+      "addDefault": "Add to wishlist",
+      "newList": "New list…",
+      "added": "Added to “{name}”",
+      "failed": "I couldn't change the list"
+    },
+    "heart": {
+      "add": "Add to wishlist",
+      "inList": "In wishlist",
+      "added": "Added to “{name}”",
+      "removed": "Removed from “{name}”",
+      "undo": "Undo",
+      "failed": "I couldn't change the list"
     }
   },
   "hidden": {

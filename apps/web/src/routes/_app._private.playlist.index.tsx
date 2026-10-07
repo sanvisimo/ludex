@@ -149,7 +149,7 @@ function PlaylistBand({
           // della card della home.
           <HomeCard
             key={entry.id}
-            game={{ ...entry.game, status: entry.status }}
+            game={{ ...entry.game, status: entry.status, wishlisted: false }}
           />
         ))
       )}

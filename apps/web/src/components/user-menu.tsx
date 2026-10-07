@@ -18,6 +18,7 @@ import {
   YStack,
 } from '@repo/ui';
 import {
+  Heart,
   House,
   Library,
   ListFilter,
@@ -147,6 +148,12 @@ function UserDropdown({ name, isAdmin }: { name: string; isAdmin: boolean }) {
           {t('playlists')}
         </DropdownMenuItem>
         <DropdownMenuItem
+          icon={<Heart size={16} />}
+          onClick={() => void router.navigate({ to: '/wishlist' })}
+        >
+          {t('wishlist')}
+        </DropdownMenuItem>
+        <DropdownMenuItem
           icon={<User size={16} />}
           onClick={() => void router.navigate({ to: '/account' })}
         >
@@ -253,6 +260,13 @@ function UserSheet({ name, isAdmin }: { name: string; isAdmin: boolean }) {
             onNavigate={close}
           >
             {t('playlists')}
+          </SheetLink>
+          <SheetLink
+            to="/wishlist"
+            icon={<Heart size={16} />}
+            onNavigate={close}
+          >
+            {t('wishlist')}
           </SheetLink>
           <SheetLink to="/account" icon={<User size={16} />} onNavigate={close}>
             {t('account')}
@@ -404,7 +418,7 @@ function SheetLink({
   onNavigate,
   children,
 }: {
-  to: '/' | '/backlog' | '/playlist' | '/account' | '/admin';
+  to: '/' | '/backlog' | '/playlist' | '/wishlist' | '/account' | '/admin';
   icon: ReactNode;
   onNavigate: () => void;
   children: string;

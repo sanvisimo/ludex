@@ -19,6 +19,7 @@ import {
   storeValues,
   subscriptionValues,
   userTagKindValues,
+  wishlistSortValues,
 } from './vocabulary';
 
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
@@ -677,6 +678,18 @@ export const AccountExportSchema = z.object({
       createdAt: z.date(),
     }),
   ),
+  // Le liste a mano e i loro giochi, col nome e l'id IGDB per ritrovarli altrove.
+  wishlists: z.array(
+    z.object({
+      name: z.string(),
+      games: z.array(
+        z.object({
+          game: z.object({ name: z.string(), igdbId: z.number().nullable() }),
+          addedAt: z.date(),
+        }),
+      ),
+    }),
+  ),
   reports: z.array(
     z.object({
       game: z.string(),
@@ -733,6 +746,39 @@ export const homeBandKindValues = [
 // di chi guarda è lo stato, nullo da anonimo o se il gioco non è suo.
 export const HomeGameSchema = GameSchema.extend({
   status: BacklogStatusSchema.nullable(),
+  // Sta in almeno una delle liste di chi guarda (il cuore pieno sulla card). Mai
+  // vero per un gioco che ha nel backlog, e sempre falso da anonimo.
+  wishlisted: z.boolean(),
+});
+
+// --- Wishlist (step 15b) ---
+
+export const WishlistSortSchema = z.enum(wishlistSortValues);
+
+/** Una lista a mano. `count` esclude i giochi che nel frattempo hai nel backlog. */
+export const WishlistSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  count: z.number().int(),
+});
+
+/**
+ * Una lista aperta: i giochi come li mostra il catalogo. `status` è sempre
+ * `null`: i giochi che hai nel backlog non stanno in una lista, e qui non si
+ * leggono.
+ */
+export const WishlistGamesSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  total: z.number().int(),
+  games: z.array(HomeGameSchema),
+});
+
+/** Le liste dell'utente, per un gioco: in quali sta già. */
+export const WishlistMembershipSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  has: z.boolean(),
 });
 
 /**
@@ -1047,5 +1093,8 @@ export type PlaylistQueryInput = z.input<typeof PlaylistQuerySchema>;
 export type Playlist = z.infer<typeof PlaylistSchema>;
 export type PlaylistDetail = z.infer<typeof PlaylistDetailSchema>;
 export type SharedPlaylist = z.infer<typeof SharedPlaylistSchema>;
+export type Wishlist = z.infer<typeof WishlistSchema>;
+export type WishlistGames = z.infer<typeof WishlistGamesSchema>;
+export type WishlistMembership = z.infer<typeof WishlistMembershipSchema>;
 export type BacklogFilterOptions = z.infer<typeof BacklogFilterOptionsSchema>;
 export type FilterAttribute = z.infer<typeof FilterAttributeSchema>;

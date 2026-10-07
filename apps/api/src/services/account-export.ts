@@ -1,5 +1,5 @@
 import { db, schema } from '@repo/db';
-import { asc, eq, inArray } from '@repo/db/orm';
+import { and, asc, eq, inArray } from '@repo/db/orm';
 import type { AccountExport } from '@repo/contracts';
 
 /**
@@ -95,8 +95,49 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
   const playlists = await db
     .select()
     .from(schema.playlists)
-    .where(eq(schema.playlists.userId, userId))
+    .where(
+      and(
+        eq(schema.playlists.userId, userId),
+        eq(schema.playlists.kind, 'filter'),
+      ),
+    )
     .orderBy(asc(schema.playlists.position), asc(schema.playlists.name));
+
+  // Le liste a mano, con i loro giochi.
+  const lists = await db
+    .select({
+      id: schema.playlists.id,
+      name: schema.playlists.name,
+    })
+    .from(schema.playlists)
+    .where(
+      and(
+        eq(schema.playlists.userId, userId),
+        eq(schema.playlists.kind, 'wishlist'),
+      ),
+    )
+    .orderBy(asc(schema.playlists.position), asc(schema.playlists.name));
+  const listItems = lists.length
+    ? await db
+        .select({
+          listId: schema.wishlistItems.listId,
+          name: schema.games.name,
+          igdbId: schema.games.igdbId,
+          addedAt: schema.wishlistItems.addedAt,
+        })
+        .from(schema.wishlistItems)
+        .innerJoin(
+          schema.games,
+          eq(schema.games.id, schema.wishlistItems.gameId),
+        )
+        .where(
+          inArray(
+            schema.wishlistItems.listId,
+            lists.map((list) => list.id),
+          ),
+        )
+        .orderBy(asc(schema.wishlistItems.addedAt), asc(schema.games.name))
+    : [];
 
   const unresolved = await db
     .select()
@@ -167,15 +208,29 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
       hiddenAt: u.hiddenAt,
       hiddenKind: u.hiddenKind,
     })),
-    playlists: playlists.map((playlist) => {
+    wishlists: lists.map((list) => ({
+      name: list.name,
+      games: listItems
+        .filter((item) => item.listId === list.id)
+        .map((item) => ({
+          game: { name: item.name, igdbId: item.igdbId },
+          addedAt: item.addedAt,
+        })),
+    })),
+    playlists: playlists.flatMap((playlist) => {
+      // Una playlist a filtro ha sempre la query (lo dice il vincolo); il
+      // controllo serve al tipo, non a un caso che esiste.
+      if (!playlist.query) return [];
       const { tags: tagIds, ...query } = playlist.query;
       const names = (tagIds ?? []).flatMap((id) => tagName.get(id) ?? []);
-      return {
-        name: playlist.name,
-        shared: playlist.shareToken !== null,
-        query: { ...query, ...(names.length > 0 && { tags: names }) },
-        createdAt: playlist.createdAt,
-      };
+      return [
+        {
+          name: playlist.name,
+          shared: playlist.shareToken !== null,
+          query: { ...query, ...(names.length > 0 && { tags: names }) },
+          createdAt: playlist.createdAt,
+        },
+      ];
     }),
     reports,
   };

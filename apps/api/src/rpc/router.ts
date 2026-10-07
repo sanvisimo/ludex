@@ -63,6 +63,17 @@ import {
 } from '../services/playlists';
 import { openSharedPlaylist } from '../services/shared-playlists';
 import {
+  addToWishlist,
+  createWishlist,
+  deleteWishlist,
+  listWishlists,
+  moveWishlist,
+  openWishlist,
+  removeFromWishlist,
+  renameWishlist,
+  wishlistsForGame,
+} from '../services/wishlist';
+import {
   closeReports,
   createReports,
   listOpenReports,
@@ -519,6 +530,92 @@ export const router = os.router({
         if (!removed)
           throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
       }),
+  },
+
+  wishlists: {
+    list: os.wishlists.list
+      .use(authed)
+      .handler(({ context }) => listWishlists(context.user.id)),
+
+    create: os.wishlists.create
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const list = await createWishlist(context.user.id, input.name);
+        if (!list)
+          throw new ORPCError('CONFLICT', {
+            message: 'Hai già una lista con questo nome',
+          });
+        return list;
+      }),
+
+    rename: os.wishlists.rename
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const list = await renameWishlist(
+          context.user.id,
+          input.id,
+          input.name,
+        );
+        if (list === null)
+          throw new ORPCError('CONFLICT', {
+            message: 'Hai già una lista con questo nome',
+          });
+        if (!list)
+          throw new ORPCError('NOT_FOUND', { message: 'Lista inesistente' });
+        return list;
+      }),
+
+    remove: os.wishlists.remove
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        if (!(await deleteWishlist(context.user.id, input.id)))
+          throw new ORPCError('NOT_FOUND', { message: 'Lista inesistente' });
+      }),
+
+    move: os.wishlists.move.use(authed).handler(async ({ input, context }) => {
+      if (!(await moveWishlist(context.user.id, input.id, input.direction)))
+        throw new ORPCError('NOT_FOUND', { message: 'Lista inesistente' });
+    }),
+
+    get: os.wishlists.get.use(authed).handler(async ({ input, context }) => {
+      const list = await openWishlist(context.user.id, input);
+      if (!list)
+        throw new ORPCError('NOT_FOUND', { message: 'Lista inesistente' });
+      return list;
+    }),
+
+    add: os.wishlists.add.use(authed).handler(async ({ input, context }) => {
+      const result = await addToWishlist(context.user.id, input);
+      if (result.ok) return result.list;
+      if (result.reason === 'owned')
+        // Il gioco è già nel backlog: il suo posto è lì.
+        throw new ORPCError('CONFLICT', {
+          message: 'Hai già questo gioco nel backlog',
+        });
+      throw new ORPCError('NOT_FOUND', {
+        message:
+          result.reason === 'game' ? 'Gioco inesistente' : 'Lista inesistente',
+      });
+    }),
+
+    removeGame: os.wishlists.removeGame
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        if (
+          !(await removeFromWishlist(
+            context.user.id,
+            input.listId,
+            input.gameId,
+          ))
+        )
+          throw new ORPCError('NOT_FOUND', { message: 'Lista inesistente' });
+      }),
+
+    forGame: os.wishlists.forGame
+      .use(authed)
+      .handler(({ input, context }) =>
+        wishlistsForGame(context.user.id, input.gameId),
+      ),
   },
 
   sharedPlaylists: {

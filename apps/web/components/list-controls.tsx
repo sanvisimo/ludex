@@ -91,17 +91,25 @@ export function SortSelect({
   id,
   sort,
   direction,
+  keys,
   onSortChange,
   onDirectionChange,
 }: {
   id?: string;
+  /** Solo queste chiavi: una lista non ha il voto personale né l'ultima partita. */
+  keys?: readonly BacklogSort[];
   sort: BacklogSort;
   direction: SortDirection;
   onSortChange: (sort: BacklogSort) => void;
   onDirectionChange: (direction: SortDirection) => void;
 }) {
   const t = useTranslations('filters');
-  const labels = sortLabels(t);
+  const all = sortLabels(t);
+  const labels = Object.fromEntries(
+    Object.entries(all).filter(
+      ([key]) => !keys || keys.includes(key as BacklogSort),
+    ),
+  );
 
   return (
     <XStack items="center" gap={8}>

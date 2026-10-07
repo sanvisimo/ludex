@@ -51,6 +51,10 @@ import {
   SyncAllResultSchema,
   UnlinkedGameSchema,
   UnlinkImpactSchema,
+  WishlistSortSchema,
+  WishlistSchema,
+  WishlistMembershipSchema,
+  WishlistGamesSchema,
   UnresolvedGroupListSchema,
   UnresolvedImportSchema,
   UserSettingsSchema,
@@ -389,6 +393,59 @@ export const contract = {
     move: oc
       .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
       .output(z.void()),
+  },
+
+  // Le liste a mano (step 15b): giochi che non hai ancora e vuoi tenere d'occhio.
+  // Stanno in `playlists` col tipo `wishlist`, e **non si confondono** con le
+  // playlist a filtro: ognuno dei due vede e tocca solo il proprio.
+  wishlists: {
+    // Nell'ordine scelto (`move`); a parità, per nome.
+    list: oc.output(z.array(WishlistSchema)),
+
+    // `CONFLICT` se hai già una lista con quel nome, maiuscole a parte.
+    create: oc
+      .input(z.object({ name: PlaylistNameSchema }))
+      .output(WishlistSchema),
+    rename: oc
+      .input(z.object({ id: z.uuid(), name: PlaylistNameSchema }))
+      .output(WishlistSchema),
+    // Toglie la lista e le sue voci, non i giochi.
+    remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+    move: oc
+      .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
+      .output(z.void()),
+
+    // La lista aperta: ricerca sul titolo, ordine e pagina. I giochi che hai nel
+    // backlog non ci sono, anche se la voce c'è ancora.
+    get: oc
+      .input(
+        z.object({
+          id: z.uuid(),
+          q: z.string().trim().min(1).max(100).optional(),
+          sort: WishlistSortSchema.default('addedAt'),
+          direction: SortDirectionSchema.default('desc'),
+          limit: z.number().int().min(1).max(200).default(50),
+          offset: z.number().int().min(0).default(0),
+        }),
+      )
+      .output(WishlistGamesSchema),
+
+    // Mette un gioco in una lista. Senza `listId` va nella prima lista, e se non
+    // ne hai nessuna ne crea una che si chiama «Wishlist»: chi vuole solo mettere
+    // da parte un gioco non deve inventare un nome. `CONFLICT` se il gioco è già
+    // nel tuo backlog. Ripeterla non fa niente.
+    add: oc
+      .input(z.object({ gameId: z.uuid(), listId: z.uuid().optional() }))
+      .output(WishlistSchema),
+    removeGame: oc
+      .input(z.object({ listId: z.uuid(), gameId: z.uuid() }))
+      .output(z.void()),
+
+    // Le tue liste, con un `has` per dire in quali sta già il gioco: è il menu
+    // della scheda del gioco.
+    forGame: oc
+      .input(z.object({ gameId: z.uuid() }))
+      .output(z.array(WishlistMembershipSchema)),
   },
 
   // Le playlist condivise (step 15d): **pubbliche**, per chi ha il link. Il

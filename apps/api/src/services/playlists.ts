@@ -15,7 +15,12 @@ import { searchBacklog } from './backlog-search';
  * l'ha scritta, e un id altrui si comporta come un id inesistente.
  */
 
-const NAME_INDEX = 'playlists_user_name_idx';
+const NAME_INDEX = 'playlists_user_kind_name_idx';
+
+// `playlists` ospita anche le liste a mano (`wishlist`, step 15b): ogni funzione
+// di questo file lavora sulle playlist a filtro e **solo** su quelle. Un id di una
+// lista darebbe una riga senza query, e un'operazione sulla lista sbagliata.
+const isFilter = eq(schema.playlists.kind, 'filter');
 
 const columns = {
   id: schema.playlists.id,
@@ -29,7 +34,12 @@ const columns = {
 // Passa da Zod a ogni lettura: una playlist salvata prima di un campo nuovo
 // riceve il suo default, e un campo che non esiste più viene scartato invece
 // di arrivare al client.
-function read<T extends { query: PlaylistQuery }>(row: T): T {
+function read<T extends { query: PlaylistQuery | null }>(
+  row: T,
+): Omit<T, 'query'> & { query: PlaylistQuery } {
+  // Il vincolo del database lo garantisce per il tipo `filter`, e le query di
+  // questo file lo filtrano: una riga senza query qui è un errore nostro.
+  if (row.query === null) throw new Error('una playlist a filtro senza query');
   return { ...row, query: PlaylistQuerySchema.parse(row.query) };
 }
 
@@ -37,7 +47,7 @@ export async function listPlaylists(userId: string) {
   const rows = await db
     .select(columns)
     .from(schema.playlists)
-    .where(eq(schema.playlists.userId, userId))
+    .where(and(eq(schema.playlists.userId, userId), isFilter))
     .orderBy(
       asc(schema.playlists.position),
       asc(sql`lower(${schema.playlists.name})`),
@@ -56,11 +66,12 @@ export async function createPlaylist(
       .insert(schema.playlists)
       .values({
         userId,
+        kind: 'filter',
         name: input.name,
         query: input.query,
         // In fondo: una più dell'ultima. Letta qui nella stessa INSERT e non in
         // una query prima, che due salvataggi insieme leggerebbero uguale.
-        position: sql`(select coalesce(max(${schema.playlists.position}), -1) + 1 from ${schema.playlists} where ${schema.playlists.userId} = ${userId})`,
+        position: sql`(select coalesce(max(${schema.playlists.position}), -1) + 1 from ${schema.playlists} where ${schema.playlists.userId} = ${userId} and ${schema.playlists.kind} = 'filter')`,
       })
       .returning(columns);
     return read(row!);
@@ -86,6 +97,7 @@ export async function updatePlaylist(
         and(
           eq(schema.playlists.id, input.id),
           eq(schema.playlists.userId, userId),
+          isFilter,
         ),
       )
       .returning(columns);
@@ -100,7 +112,11 @@ export async function deletePlaylist(userId: string, id: string) {
   const [row] = await db
     .delete(schema.playlists)
     .where(
-      and(eq(schema.playlists.id, id), eq(schema.playlists.userId, userId)),
+      and(
+        eq(schema.playlists.id, id),
+        eq(schema.playlists.userId, userId),
+        isFilter,
+      ),
     )
     .returning({ id: schema.playlists.id });
   return row;
@@ -136,6 +152,7 @@ export async function openPlaylist(
       and(
         eq(schema.playlists.id, input.id),
         eq(schema.playlists.userId, userId),
+        isFilter,
       ),
     );
   if (!row) return undefined;
@@ -177,7 +194,8 @@ export async function openPlaylist(
 }
 
 /**
- * Sposta una playlist di un posto. `false` se non esiste o non è sua.
+ * Sposta una playlist (o, col tipo `wishlist`, una lista) di un posto. `false`
+ * se non esiste o non è sua.
  *
  * Le posizioni si riscrivono **per tutte**, da 0 e senza buchi, invece di
  * scambiarne due: dopo una cancellazione i numeri hanno dei buchi, e a pari
@@ -188,12 +206,19 @@ export async function movePlaylist(
   userId: string,
   id: string,
   direction: 'up' | 'down',
+  kind: 'filter' | 'wishlist' = 'filter',
 ) {
   return db.transaction(async (tx) => {
     const rows = await tx
       .select({ id: schema.playlists.id, position: schema.playlists.position })
       .from(schema.playlists)
-      .where(eq(schema.playlists.userId, userId))
+      // L'ordine è dentro il tipo: spostare una playlist non tocca le liste.
+      .where(
+        and(
+          eq(schema.playlists.userId, userId),
+          eq(schema.playlists.kind, kind),
+        ),
+      )
       .orderBy(
         asc(schema.playlists.position),
         asc(sql`lower(${schema.playlists.name})`),
@@ -237,6 +262,7 @@ export async function sharePlaylist(userId: string, id: string) {
   const mine = and(
     eq(schema.playlists.id, id),
     eq(schema.playlists.userId, userId),
+    isFilter,
   );
   const read = async () => {
     const [row] = await db
@@ -266,7 +292,11 @@ export async function unsharePlaylist(userId: string, id: string) {
     .update(schema.playlists)
     .set({ shareToken: null })
     .where(
-      and(eq(schema.playlists.id, id), eq(schema.playlists.userId, userId)),
+      and(
+        eq(schema.playlists.id, id),
+        eq(schema.playlists.userId, userId),
+        isFilter,
+      ),
     )
     .returning({ id: schema.playlists.id });
   return row !== undefined;
