@@ -202,3 +202,124 @@ export async function beginSteamQrLogin(
     cancel: () => session.cancelLoginAttempt(),
   };
 }
+
+// --- Il token web incollato ---
+//
+// L'altro modo di avere la famiglia, senza che il server apra una sessione su
+// Steam. L'utente è già dentro Steam nel suo browser: la pagina
+// `store.steampowered.com/pointssummary/ajaxgetasyncconfig` gli rende un
+// `webapi_token`, che per `GetOwnedGames` e per la famiglia vale come l'access
+// token del QR (stessa audience, stessa durata: 24 ore, misurato il 05/10/2026).
+// Lo incolla qui, come si fa per GOG o Nintendo.
+//
+// Il prezzo: **non si rinnova**. Non c'è un refresh token e il server non ne
+// chiede uno, quindi non crea nessun dispositivo su Steam — è il motivo per cui
+// esiste, dopo i due blocchi dell'account (docs/negozi.md). Scaduto, la famiglia
+// aspetta un token nuovo; il profilo continua con la chiave.
+
+/** Il credenziale del token web: un access token con la sua scadenza, e basta. */
+export type SteamWebCredentials = {
+  accessToken: string;
+  /** Epoch in millisecondi. */
+  expiresAt: number;
+};
+
+/**
+ * Il credenziale di un account Steam: del QR (col refresh token) o del token web
+ * (senza). Si distinguono dal refresh token, che sul secondo non c'è.
+ */
+export type SteamStoredCredentials = SteamCredentials | SteamWebCredentials;
+
+export const hasRefreshToken = (
+  credentials: SteamStoredCredentials,
+): credentials is SteamCredentials =>
+  'refreshToken' in credentials && typeof credentials.refreshToken === 'string';
+
+export type SteamWebTokenReason =
+  /** Non è un token: né il JSON della pagina né una stringa JWT. */
+  | 'format'
+  /** È un token di Steam ma non quello giusto: un refresh token, o senza account. */
+  | 'wrong_kind'
+  /** Scaduto: dura 24 ore. */
+  | 'expired';
+
+export class SteamWebTokenError extends Error {
+  constructor(readonly reason: SteamWebTokenReason) {
+    super(
+      {
+        format: 'Non trovo il token: incolla il testo intero della pagina',
+        wrong_kind: 'Questo non è un token web di Steam',
+        expired:
+          'Il token è scaduto: la pagina ne dà uno nuovo a ogni apertura',
+      }[reason],
+    );
+    this.name = 'SteamWebTokenError';
+  }
+}
+
+/**
+ * Il token web dentro ciò che l'utente ha incollato, e di chi è.
+ *
+ * Accetta le tre forme che uno ha davvero sotto mano: il JSON intero della pagina
+ * (`{"data":{"webapi_token":"…"}}`), il solo valore, con o senza virgolette. Il
+ * token **non si verifica**: lo ha emesso Steam e la firma non è nostra da
+ * controllare — se è falso, la prima chiamata risponde 401. Di lui si legge solo
+ * ciò che serve a collegare l'account, senza una richiesta: lo SteamID64 (`sub`)
+ * e la scadenza (`exp`).
+ */
+export function parseSteamWebToken(
+  input: string,
+  now = Date.now(),
+): { steamId: string; credentials: SteamWebCredentials } {
+  const token = extractToken(input.trim());
+
+  let claims: { sub?: unknown; exp?: unknown; aud?: unknown };
+  try {
+    claims = JSON.parse(
+      Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8'),
+    );
+  } catch {
+    throw new SteamWebTokenError('format');
+  }
+  if (token.split('.').length !== 3 || typeof claims !== 'object' || !claims) {
+    throw new SteamWebTokenError('format');
+  }
+
+  const audience = Array.isArray(claims.aud) ? claims.aud : [];
+  // Un refresh token ha `renew` fra le audience: è un'altra cosa, vale mesi e
+  // rinnova da solo. Qui non lo si vuole, perché è proprio ciò che il token web
+  // evita di chiedere.
+  if (
+    typeof claims.sub !== 'string' ||
+    !/^\d{17}$/.test(claims.sub) ||
+    audience.includes('renew')
+  ) {
+    throw new SteamWebTokenError('wrong_kind');
+  }
+
+  const expiresAt = typeof claims.exp === 'number' ? claims.exp * 1000 : 0;
+  if (expiresAt <= now) throw new SteamWebTokenError('expired');
+
+  return {
+    steamId: claims.sub,
+    credentials: { accessToken: token, expiresAt },
+  };
+}
+
+/** Il valore del token da ciò che è stato incollato: JSON della pagina o stringa nuda. */
+function extractToken(text: string): string {
+  if (text.startsWith('{')) {
+    try {
+      const json = JSON.parse(text) as {
+        webapi_token?: unknown;
+        data?: { webapi_token?: unknown };
+      };
+      const found = json.data?.webapi_token ?? json.webapi_token;
+      if (typeof found === 'string') return found.trim();
+    } catch {
+      // Cade sotto: non è un JSON, e il controllo del formato lo dirà.
+    }
+    throw new SteamWebTokenError('format');
+  }
+  return text.replace(/^["']|["']$/g, '');
+}

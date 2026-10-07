@@ -503,3 +503,31 @@ Fatta il 05/10/2026: la riga di `steam:family-probe` in
   Nessun probe o prova contro un account vero senza averlo concordato.
 - Il commit e la PR, quando l'utente lo chiede. `apps/web/src/routes/_app.games.$slug.tsx`
   è una modifica dell'utente, non del lotto: non va nel commit.
+
+## Lotto «due strade» (07/10/2026): QR o token del browser
+
+Dopo il secondo blocco (vedi «Il secondo blocco» in
+[docs/negozi.md](../docs/negozi.md)) il login si offre in **due modi, a scelta
+dell'utente**, e se ne limita il costo su Steam. Branch `feat/9f-steam-token`.
+
+Fatto, con test (nessuna richiesta a Steam):
+
+1. **Credenziale a due forme** — `SteamCredentials` (QR, con refresh token) o
+   `SteamWebCredentials` (token del browser, solo access token e scadenza).
+   `parseSteamWebToken` legge SteamID64 e scadenza dal JWT, senza rete, e rifiuta ciò
+   che non è un token web (un refresh token compreso). `apps/api/src/external/steam-auth.ts`.
+2. **L'import non pota la famiglia a token scaduto** — `steamAccessToken` rende
+   `null` per un token web scaduto, e `importSteamLibrary` ricade sul profilo
+   (`familySkipped`) senza `needs_reauth`. `apps/api/src/services/steam-import.ts`,
+   `store-accounts.ts`.
+3. **Una sola sessione QR per account** — `startSteamLogin` rifiuta (`SteamLoginExistsError`,
+   `PRECONDITION_FAILED`) se c'è già un login QR vivo, salvo `replace`; il controllo
+   sta prima di ogni richiesta a Steam. `apps/api/src/services/steam-login.ts`.
+4. **API** — `accounts.steamLogin.token`, `start` con `replace`, e `loginKind` /
+   `loginExpiresAt` nell'elenco degli account. `packages/contracts`, `apps/api/src/rpc/router.ts`.
+5. **Schermata** — la scelta fra QR e token in `steam-link.tsx`, il pannello del token
+   (`steam-token-panel.tsx`), l'avviso prima di un secondo QR, il badge «Token scaduto»
+   sulla scheda. **La struttura non è stata disegnata prima**: si corregge sulla pagina.
+
+Da fare dopo la risposta dell'Assistenza: provare il token incollato sul vero,
+con un solo account e un solo incolla.

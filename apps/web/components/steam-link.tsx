@@ -1,7 +1,6 @@
 import {
   Alert,
   AlertDescription,
-  Badge,
   Button,
   Input,
   Label,
@@ -15,24 +14,28 @@ import { useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { SteamQrPanel } from '@/components/steam-qr-panel';
+import { SteamTokenPanel } from '@/components/steam-token-panel';
 import { hasErrorCode, useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
 /**
- * Collegare Steam, in uno dei due modi: il login col QR, o il solo profilo.
+ * Collegare Steam, in uno dei tre modi: il QR dell'app, il token del browser, o
+ * il solo profilo.
  *
- * **Sono due modi della stessa riga**, non due account: la chiave è lo SteamID64,
- * quindi fare l'uno dopo l'altro aggiorna l'account invece di aggiungerne uno.
- * Per questo il nome facoltativo sta sotto tutti e due e vale per entrambi.
+ * **Sono modi della stessa riga**, non account diversi: la chiave è lo SteamID64,
+ * quindi farne uno dopo l'altro aggiorna l'account invece di aggiungerne uno.
+ * Per questo il nome facoltativo sta sotto tutti e vale per ciascuno.
  *
- * Il login sta **sopra**: è il modo che porta più cose — la famiglia, il profilo
- * anche privato, la data d'acquisto — e il profilo resta come era per chi lo
- * preferisce.
+ * I due login portano più cose — la famiglia, il profilo anche privato, la data
+ * d'acquisto — e **li sceglie l'utente**, perché costano cose diverse a Steam: il
+ * QR crea un dispositivo nuovo («Galaxy S25») nel suo elenco di Steam Guard e si
+ * rinnova da solo; il token del browser non crea niente, ma dura 24 ore. Il
+ * profilo resta come era per chi lo preferisce.
  *
  * `loginOnly` per ricollegare un login scaduto o aggiungerlo a un account che
- * aveva solo il profilo: lì si va dritti al QR, e col profilo non c'è niente da
- * fare. `accountId` dice di quale account si tratta, e il server rifiuta un login
- * fatto con un altro.
+ * aveva solo il profilo: si sceglie fra i due login, e col profilo non c'è niente
+ * da fare. `accountId` dice di quale account si tratta, e il server rifiuta un
+ * login fatto con un altro.
  */
 export function SteamLink({
   accountId,
@@ -51,7 +54,7 @@ export function SteamLink({
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
 
-  const [qr, setQr] = useState(loginOnly ?? false);
+  const [mode, setMode] = useState<'choose' | 'qr' | 'token'>('choose');
   const [profile, setProfile] = useState('');
   const [label, setLabel] = useState('');
   // Il profilo è privato: la libreria non si può leggere, e il messaggio sta nel
@@ -90,20 +93,26 @@ export function SteamLink({
     },
   });
 
-  if (qr) {
+  if (mode !== 'choose') {
     return (
       <YStack gap={12}>
-        {!loginOnly && (
-          <Button
-            variant="ghost"
-            size="sm"
-            self="flex-start"
-            onClick={() => setQr(false)}
-          >
-            ← {t('back')}
-          </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          self="flex-start"
+          onClick={() => setMode('choose')}
+        >
+          ← {t('back')}
+        </Button>
+        {mode === 'qr' ? (
+          <SteamQrPanel label={label} accountId={accountId} onDone={onLinked} />
+        ) : (
+          <SteamTokenPanel
+            label={label}
+            accountId={accountId}
+            onDone={onLinked}
+          />
         )}
-        <SteamQrPanel label={label} accountId={accountId} onDone={onLinked} />
       </YStack>
     );
   }
@@ -116,72 +125,107 @@ export function SteamLink({
         </Alert>
       )}
 
+      <Text fontSize={13} color="$color11">
+        {t('chooseLogin')}
+      </Text>
+
       <YStack
-        gap={12}
+        gap={8}
         p={16}
         rounded={12}
         borderWidth={1}
         borderColor="$borderColor"
         bg="$color2"
       >
-        <Badge variant="success" self="flex-start">
-          {t('recommended')}
-        </Badge>
-        <Button self="flex-start" onClick={() => setQr(true)}>
+        <Button self="flex-start" onClick={() => setMode('qr')}>
           {t('button')}
         </Button>
-        <YStack gap={2}>
-          <Text fontSize={14}>✓ {t('benefitFamily')}</Text>
-          <Text fontSize={14}>✓ {t('benefitPrivate')}</Text>
-          <Text fontSize={14}>✓ {t('benefitDate')}</Text>
-        </YStack>
+        <Text fontSize={14}>✓ {t('qrAuto')}</Text>
+        <Text fontSize={14}>⚠ {t('qrDevice')}</Text>
         <Text fontSize={12} color="$color11">
           {t('phoneHint')}
         </Text>
       </YStack>
 
-      <Text fontSize={13} color="$color11" text="center">
-        — {t('or')} —
-      </Text>
-
-      <YStack gap={8}>
-        <Label htmlFor="collega-steam">{t('profileTitle')}</Label>
-        <XStack flexWrap="wrap" gap={8}>
-          <Input
-            id="collega-steam"
-            minW={256}
-            flex={1}
-            value={profile}
-            onChange={(event) => setProfile(event.target.value)}
-            placeholder={tSteam('placeholder')}
-          />
-          <Button
-            variant="outline"
-            onClick={() => link.mutate()}
-            disabled={profile.trim().length === 0 || link.isPending}
-          >
-            {tAdd('submit')}
-          </Button>
-        </XStack>
+      <YStack
+        gap={8}
+        p={16}
+        rounded={12}
+        borderWidth={1}
+        borderColor="$borderColor"
+        bg="$color2"
+      >
+        <Button
+          self="flex-start"
+          variant="outline"
+          onClick={() => setMode('token')}
+        >
+          {t('tokenButton')}
+        </Button>
+        <Text fontSize={14}>✓ {t('tokenNoDeviceShort')}</Text>
+        <Text fontSize={14}>⚠ {t('tokenDaily')}</Text>
         <Text fontSize={12} color="$color11">
-          {tSteam('hint')}
+          {t('browserHint')}
         </Text>
       </YStack>
 
-      <YStack gap={8}>
-        <Label htmlFor="etichetta-steam">{tStore('labelField')}</Label>
-        <Input
-          id="etichetta-steam"
-          value={label}
-          onChange={(event) => setLabel(event.target.value)}
-          placeholder={tStore('labelPlaceholder')}
-          maxLength={60}
-        />
-        {/* Facoltativa, e detto: con un account solo non serve a niente. */}
-        <Text fontSize={12} color="$color11">
-          {tStore('labelHint')}
+      <YStack gap={2}>
+        <Text fontSize={13} color="$color11">
+          {t('bothInclude')}
         </Text>
+        <Text fontSize={14}>✓ {t('benefitFamily')}</Text>
+        <Text fontSize={14}>✓ {t('benefitPrivate')}</Text>
+        <Text fontSize={14}>✓ {t('benefitDate')}</Text>
       </YStack>
+
+      {/* Il profilo e il nome non servono a chi ricollega un login: l'account
+          c'è già, e col profilo non c'è niente da rifare. */}
+      {!loginOnly && (
+        <>
+          <Text fontSize={13} color="$color11" text="center">
+            — {t('or')} —
+          </Text>
+
+          <YStack gap={8}>
+            <Label htmlFor="collega-steam">{t('profileTitle')}</Label>
+            <XStack flexWrap="wrap" gap={8}>
+              <Input
+                id="collega-steam"
+                minW={256}
+                flex={1}
+                value={profile}
+                onChange={(event) => setProfile(event.target.value)}
+                placeholder={tSteam('placeholder')}
+              />
+              <Button
+                variant="outline"
+                onClick={() => link.mutate()}
+                disabled={profile.trim().length === 0 || link.isPending}
+              >
+                {tAdd('submit')}
+              </Button>
+            </XStack>
+            <Text fontSize={12} color="$color11">
+              {tSteam('hint')}
+            </Text>
+          </YStack>
+
+          <YStack gap={8}>
+            <Label htmlFor="etichetta-steam">{tStore('labelField')}</Label>
+            <Input
+              id="etichetta-steam"
+              value={label}
+              onChange={(event) => setLabel(event.target.value)}
+              placeholder={tStore('labelPlaceholder')}
+              maxLength={60}
+            />
+            {/* Facoltativa, e detto: con un account solo non serve a niente. */}
+            <Text fontSize={12} color="$color11">
+              {tStore('labelHint')}
+            </Text>
+          </YStack>
+        </>
+      )}
     </YStack>
   );
 }

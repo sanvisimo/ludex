@@ -3,9 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   beginSteamQrLogin,
   jwtExpiresAt,
+  parseSteamWebToken,
   refreshSteamTokens,
   SteamAuthError,
   SteamQrTimeoutError,
+  SteamWebTokenError,
 } from './steam-auth';
 
 // Il confine è `steam-session`: si finge lì, non su `fetch`. La libreria parla
@@ -259,5 +261,82 @@ describe('beginSteamQrLogin', () => {
     session.cancel();
 
     expect(fake.cancelled).toBe(true);
+  });
+});
+
+describe('parseSteamWebToken', () => {
+  const NOW = Date.UTC(2026, 9, 7, 9, 0, 0);
+  const STEAM_ID = '76561190000000042';
+
+  const webToken = (claims: Record<string, unknown> = {}) =>
+    [
+      'intestazione',
+      Buffer.from(
+        JSON.stringify({
+          sub: STEAM_ID,
+          aud: ['web', 'mobile'],
+          exp: NOW / 1000 + 86_000,
+          ...claims,
+        }),
+      ).toString('base64url'),
+      'firma',
+    ].join('.');
+
+  const reasonOf = (input: string) => {
+    try {
+      parseSteamWebToken(input, NOW);
+    } catch (error) {
+      return error instanceof SteamWebTokenError ? error.reason : error;
+    }
+    return null;
+  };
+
+  it('legge di chi è il token e quando scade, senza una richiesta', () => {
+    const token = webToken();
+
+    expect(parseSteamWebToken(token, NOW)).toEqual({
+      steamId: STEAM_ID,
+      credentials: { accessToken: token, expiresAt: NOW + 86_000_000 },
+    });
+  });
+
+  it('accetta il JSON intero della pagina, il solo valore e il valore fra virgolette', () => {
+    const token = webToken();
+    const forme = [
+      JSON.stringify({ data: { webapi_token: token, other: 1 } }),
+      JSON.stringify({ webapi_token: token }),
+      token,
+      `"${token}"`,
+      `  ${token}\n`,
+    ];
+
+    for (const forma of forme) {
+      expect(parseSteamWebToken(forma, NOW).credentials.accessToken).toBe(
+        token,
+      );
+    }
+  });
+
+  it('rifiuta ciò che non è un token', () => {
+    expect(reasonOf('')).toBe('format');
+    expect(reasonOf('spazzatura')).toBe('format');
+    expect(reasonOf('{"data":{}}')).toBe('format');
+    expect(reasonOf('{ non json')).toBe('format');
+  });
+
+  it('rifiuta un refresh token: è un credenziale che vale mesi e si rinnova', () => {
+    expect(
+      reasonOf(webToken({ aud: ['web', 'renew', 'derive', 'mobile'] })),
+    ).toBe('wrong_kind');
+  });
+
+  it('rifiuta un token senza uno SteamID64', () => {
+    expect(reasonOf(webToken({ sub: 'qualcuno' }))).toBe('wrong_kind');
+    expect(reasonOf(webToken({ sub: undefined }))).toBe('wrong_kind');
+  });
+
+  it('rifiuta un token scaduto', () => {
+    expect(reasonOf(webToken({ exp: NOW / 1000 - 1 }))).toBe('expired');
+    expect(reasonOf(webToken({ exp: undefined }))).toBe('expired');
   });
 });

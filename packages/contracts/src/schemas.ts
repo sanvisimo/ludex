@@ -344,6 +344,11 @@ export const StoreAccountSchema = z.object({
   // anche privato) dal solo profilo pubblico, che di credenziale non ne ha. Per
   // gli altri negozi è sempre vero finché sono collegati.
   hasLogin: z.boolean(),
+  // Solo Steam, e solo con un login: `qr` si rinnova da sé, `token` è il token
+  // web incollato e dura 24 ore. Nullo altrove. La UI dice «scaduto» da qui.
+  loginKind: z.enum(['qr', 'token']).nullish(),
+  // Quando scade il token web. Nullo per il QR, che non ha una scadenza da dire.
+  loginExpiresAt: z.date().nullish(),
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
   // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
   syncing: z.boolean(),

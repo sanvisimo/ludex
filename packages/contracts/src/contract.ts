@@ -210,9 +210,27 @@ export const contract = {
           z.object({
             label: z.string().trim().max(60).nullish(),
             accountId: z.uuid().nullish(),
+            // Un QR confermato è un dispositivo nuovo su Steam. Se c'è già un
+            // login vivo `start` risponde PRECONDITION_FAILED, e la schermata
+            // lo ripete con `replace` solo dopo che l'utente ha confermato.
+            replace: z.boolean().nullish(),
           }),
         )
         .output(SteamLoginStartSchema),
+
+      // Il token web incollato: l'altro modo di collegare Steam con la famiglia,
+      // **senza sessione sul nostro conto**. Vale 24 ore e non si rinnova. Il
+      // token non è valido: BAD_REQUEST. Su un ricollegamento di un altro
+      // account: CONFLICT, come per `link`.
+      token: oc
+        .input(
+          z.object({
+            token: z.string().trim().min(1).max(8000),
+            label: z.string().trim().max(60).nullish(),
+            accountId: z.uuid().nullish(),
+          }),
+        )
+        .output(StoreAccountSchema),
 
       status: oc
         .input(z.object({ loginId: z.uuid() }))

@@ -9,10 +9,10 @@ import {
 } from '@repo/ui';
 import { LoaderCircle } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
-import { useApiErrorMessage } from '@/lib/api-error';
+import { hasErrorCode, useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
 /**
@@ -52,21 +52,34 @@ export function SteamQrPanel({
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
 
+  // C'è già un login vivo: rifarlo crea un altro dispositivo su Steam, e il
+  // server lo dice prima di aprire una sessione. Si va avanti solo dopo che
+  // l'utente ha confermato, e da lì in poi ogni nuovo codice è già confermato.
+  const [existing, setExisting] = useState(false);
+  const [replace, setReplace] = useState(false);
+
   const start = useMutation({
-    mutationFn: () =>
+    mutationFn: (replaceExisting: boolean) =>
       client.accounts.steamLogin.start({
         label: label?.trim() || null,
         accountId: accountId ?? null,
+        replace: replaceExisting,
       }),
-    onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('startFailed') })),
+    onSuccess: () => setExisting(false),
+    onError: (error) => {
+      if (hasErrorCode(error, 'PRECONDITION_FAILED')) {
+        setExisting(true);
+        return;
+      }
+      toast.error(errorMessage(error, { fallback: t('startFailed') }));
+    },
   });
 
   // Una volta, all'apertura. In sviluppo React monta due volte: la seconda
   // `start` annulla la prima sul server (una sessione per utente), e `start.data`
   // è quella dell'ultima chiamata.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => start.mutate(), []);
+  useEffect(() => start.mutate(false), []);
 
   const loginId = start.data?.loginId;
   const status = useQuery({
@@ -99,10 +112,30 @@ export function SteamQrPanel({
   }, [state, queryClient, t, onDone]);
 
   const newCode = (
-    <Button variant="outline" onClick={() => start.mutate()}>
+    <Button variant="outline" onClick={() => start.mutate(replace)}>
       {t('newCode')}
     </Button>
   );
+
+  if (existing && !start.isPending) {
+    return (
+      <YStack gap={12}>
+        <Alert variant="destructive">
+          <AlertDescription>{t('existing')}</AlertDescription>
+        </Alert>
+        <Button
+          variant="outline"
+          self="flex-start"
+          onClick={() => {
+            setReplace(true);
+            start.mutate(true);
+          }}
+        >
+          {t('existingConfirm')}
+        </Button>
+      </YStack>
+    );
+  }
 
   if (start.isError) {
     return (
@@ -110,7 +143,7 @@ export function SteamQrPanel({
         <Alert variant="destructive" width="100%">
           <AlertDescription>{t('startFailed')}</AlertDescription>
         </Alert>
-        <Button variant="outline" onClick={() => start.mutate()}>
+        <Button variant="outline" onClick={() => start.mutate(replace)}>
           {t('retry')}
         </Button>
       </YStack>
@@ -163,7 +196,7 @@ export function SteamQrPanel({
               : t('failed')}
           </AlertDescription>
         </Alert>
-        <Button variant="outline" onClick={() => start.mutate()}>
+        <Button variant="outline" onClick={() => start.mutate(replace)}>
           {t('retry')}
         </Button>
       </YStack>
