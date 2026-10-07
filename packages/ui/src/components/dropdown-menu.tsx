@@ -11,8 +11,9 @@ import { Check } from '../icons';
  * clic fuori, `role="menu"` e `menuitem` — e qui ci sono i nomi di prima:
  * `DropdownMenu`, `…Trigger`, `…Content`, `…Group`, `…Label`, `…Item`,
  * `…RadioGroup`, `…RadioItem`, `…Separator`. Le altre voci di shadcn — le
- * spunte, i sottomenu, le scorciatoie, la variante `destructive` — non le
- * usava nessuno.
+ * spunte, i sottomenu, le scorciatoie — non le usava nessuno. La voce
+ * `destructive` è tornata con le playlist, ma come tinta, non come variante di
+ * shadcn.
  *
  * Due traduzioni, perché le schermate non cambino:
  *
@@ -91,9 +92,15 @@ export function DropdownMenuSeparator() {
 }
 
 /** Il testo della voce, che è anche ciò su cui cerca il typeahead. */
-function ItemText({ children }: { children: ReactNode }) {
+function ItemText({
+  children,
+  color = '$color12',
+}: {
+  children: ReactNode;
+  color?: '$color12' | '$red11';
+}) {
   return typeof children === 'string' || typeof children === 'number' ? (
-    <Menu.ItemTitle fontSize={14} lineHeight={20} color="$color12">
+    <Menu.ItemTitle fontSize={14} lineHeight={20} color={color}>
       {children}
     </Menu.ItemTitle>
   ) : (
@@ -115,18 +122,37 @@ type DropdownMenuItemProps = Omit<GetProps<typeof Menu.Item>, 'onSelect'> & {
   onClick?: () => void;
   /** Un'icona prima del testo, come le voci del foglio mobile. Facoltativa. */
   icon?: ReactNode;
+  /**
+   * Una voce che toglie qualcosa: il testo in rosso e il fondo rosso al passaggio,
+   * con le tinte di `Button variant="destructive"`. L'icona la colora chi la
+   * passa (`color="$red11"`). Non sostituisce la conferma: avvisa soltanto.
+   */
+  destructive?: boolean;
 };
+
+const destructiveStyle = {
+  focusStyle: { bg: '$red4' },
+  pressStyle: { bg: '$red5' },
+} as const;
 
 export function DropdownMenuItem({
   onClick,
   icon,
+  destructive = false,
   children,
   ...props
 }: DropdownMenuItemProps) {
   return (
-    <Menu.Item {...itemStyle} onSelect={onClick} {...props}>
+    <Menu.Item
+      {...itemStyle}
+      {...(destructive && destructiveStyle)}
+      onSelect={onClick}
+      {...props}
+    >
       {icon}
-      <ItemText>{children}</ItemText>
+      <ItemText color={destructive ? '$red11' : '$color12'}>
+        {children}
+      </ItemText>
     </Menu.Item>
   );
 }

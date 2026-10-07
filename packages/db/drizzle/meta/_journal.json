@@ -274,6 +274,41 @@
       "when": 1791291390043,
       "tag": "0038_game_reports",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1791386289214,
+      "tag": "0039_right_abomination",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1791394148824,
+      "tag": "0040_naive_carmella_unuscione",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1791394149419,
+      "tag": "0041_playlist_positions",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1791395135362,
+      "tag": "0042_workable_blue_blade",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1791396602710,
+      "tag": "0043_vengeful_crusher_hogan",
+      "breakpoints": true
     }
   ]
 }

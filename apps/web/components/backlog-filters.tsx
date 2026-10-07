@@ -1,6 +1,7 @@
 import type {
   BacklogStatus,
   GameType,
+  PlaylistQuery,
   Store,
   Subscription,
   UserTagKind,
@@ -14,31 +15,30 @@ import {
   Badge,
   Button,
   Checkbox,
-  Input,
   Label,
   ScrollView,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Slider,
   Text,
   XStack,
   YStack,
 } from '@repo/ui';
-import {
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
-  SlidersHorizontal,
-  X,
-} from '@repo/ui/icons';
+import { SlidersHorizontal, X } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'use-intl';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 
+import { SearchInput, SortSelect } from '@/components/list-controls';
+import { NumberField } from '@/components/number-field';
+import { SavePlaylistButton } from '@/components/save-playlist-dialog';
 import { statusIcons } from '@/components/status-icon';
-import { toggle, useBacklogFilter, without } from '@/lib/backlog-filter';
+import {
+  type BacklogFilterState,
+  defaultStatus,
+  fromPlaylistQuery,
+  toggle,
+  useBacklogFilter,
+  without,
+} from '@/lib/backlog-filter';
 import {
   useGameTypeLabels,
   useStatusLabels,
@@ -46,6 +46,7 @@ import {
   useSubscriptionLabels,
 } from '@/lib/labels';
 import { api } from '@/lib/orpc';
+import { parseRangeInput } from '@/lib/range-input';
 
 /**
  * I filtri del backlog: la barra in alto e il pannello.
@@ -76,9 +77,12 @@ const RELEASED_MAX = new Date().getFullYear();
  */
 export function BacklogToolbar({
   onOpenFilters,
+  onSave,
   view,
 }: {
   onOpenFilters: () => void;
+  /** Apre il dialogo «Salva come playlist», che sta nella pagina. */
+  onSave: () => void;
   /** La scelta della vista, messa dalla pagina in fondo alla prima riga. */
   view?: ReactNode;
 }) {
@@ -92,12 +96,18 @@ export function BacklogToolbar({
           resta, fino a 320. */}
       <XStack items="center" gap={8}>
         <YStack flex={1} minW={0} maxW={320}>
-          <SearchField />
+          <SearchInput
+            value={filter.q}
+            onChange={(q) => void setFilter({ q: q || null })}
+          />
         </YStack>
         <Button variant="outline" onClick={onOpenFilters}>
           <SlidersHorizontal size={16} color="$color12" />
           {t('filtersButton', { count: activeCount })}
         </Button>
+        {/* Salvare i filtri in una playlist ha senso con almeno un filtro
+            acceso: senza, la playlist sarebbe il backlog intero. */}
+        {activeCount > 0 && <SavePlaylistButton onOpen={onSave} />}
         {view && <XStack ml="auto">{view}</XStack>}
       </XStack>
 
@@ -158,95 +168,14 @@ function SortControl() {
       <Label htmlFor={id} color="$color11">
         {t('sortLabel')}
       </Label>
-      <XStack items="center" gap={8}>
-        <YStack flex={1} minW={0}>
-          <Select
-            items={sortLabels(t)}
-            value={filter.sort}
-            onValueChange={(value) =>
-              setFilter({ sort: value as keyof ReturnType<typeof sortLabels> })
-            }
-          >
-            <SelectTrigger id={id} width="100%">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(sortLabels(t)).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </YStack>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() =>
-            setFilter({
-              direction: filter.direction === 'asc' ? 'desc' : 'asc',
-            })
-          }
-          aria-label={t(
-            filter.direction === 'asc' ? 'ascending' : 'descending',
-          )}
-        >
-          {filter.direction === 'asc' ? (
-            <ArrowUpNarrowWide size={16} color="$color12" />
-          ) : (
-            <ArrowDownWideNarrow size={16} color="$color12" />
-          )}
-        </Button>
-      </XStack>
+      <SortSelect
+        id={id}
+        sort={filter.sort}
+        direction={filter.direction}
+        onSortChange={(sort) => setFilter({ sort })}
+        onDirectionChange={(direction) => setFilter({ direction })}
+      />
     </YStack>
-  );
-}
-
-function sortLabels(t: ReturnType<typeof useTranslations<'filters'>>) {
-  return {
-    addedAt: t('sortAddedAt'),
-    name: t('sortName'),
-    released: t('sortReleased'),
-    duration: t('sortDuration'),
-    rating: t('sortRating'),
-    criticRating: t('sortCriticRating'),
-    lastPlayed: t('sortLastPlayed'),
-  };
-}
-
-/**
- * Il campo di ricerca.
- *
- * Ha uno stato locale perché l'URL si scrive **in ritardo**: la casella deve
- * rispondere a ogni tasto, la ricerca no. Senza il ritardo partirebbe una
- * richiesta per lettera, e una pagina nella cronologia del router per lettera.
- */
-function SearchField() {
-  const t = useTranslations('filters');
-  const { filter, setFilter } = useBacklogFilter();
-  const [text, setText] = useState(filter.q);
-
-  // Riallinea quando il filtro cambia da fuori: il bottone che azzera tutto, o
-  // un URL incollato. Senza, la casella resterebbe con dentro la vecchia parola.
-  useEffect(() => setText(filter.q), [filter.q]);
-
-  // Il ritardo è sulla scrittura: lo stato — e quindi la query — segue l'URL,
-  // quindi ritardare l'uno ritarda l'altra. Ogni tasto riparte da capo.
-  useEffect(() => {
-    if (text === filter.q) return;
-    const timer = setTimeout(() => void setFilter({ q: text || null }), 350);
-    return () => clearTimeout(timer);
-  }, [text, filter.q, setFilter]);
-
-  return (
-    <Input
-      value={text}
-      onChange={(event) => setText(event.target.value)}
-      placeholder={t('searchPlaceholder')}
-      aria-label={t('searchPlaceholder')}
-      width="100%"
-      maxLength={100}
-    />
   );
 }
 
@@ -282,104 +211,115 @@ function useRangeText() {
 const hours = (minutes: number | null) =>
   minutes === null ? null : Math.round((minutes / 60) * 10) / 10;
 
-/** I filtri accesi, uno per chip, ciascuno con la sua x. */
-function ActiveChips() {
+type Chip = {
+  key: string;
+  label: string;
+  /** Cosa `setFilter` deve scrivere per spegnerlo: un dato, non un gesto. */
+  clear: Parameters<ReturnType<typeof useBacklogFilter>['setFilter']>[0];
+};
+
+/**
+ * I filtri accesi di uno stato, uno per chip. Una funzione dello stato e non
+ * dell'URL, perché li disegnano due pagine: `/backlog`, dove ogni chip si
+ * spegne, e la playlist, dove sono solo un riassunto.
+ */
+function useFilterChips(filter: BacklogFilterState): Chip[] {
   const t = useTranslations('filters');
   const storeLabels = useStoreLabels();
   const subscriptionLabels = useSubscriptionLabels();
   const gameTypeLabels = useGameTypeLabels();
   const range = useRangeText();
-  const { filter, setFilter, reset, activeCount } = useBacklogFilter();
   const { options, tags } = useFilterOptions();
 
   const h = (value: string) => t('hoursValue', { value });
-  const chips: { key: string; label: string; remove: () => void }[] = [
+  const chips: Chip[] = [
     ...filter.platforms.map((slug) => ({
       key: `platform-${slug}`,
       label:
         options?.platforms.find((platform) => platform.slug === slug)?.name ??
         slug,
-      remove: () => setFilter({ platforms: toggle(filter.platforms, slug) }),
+      clear: { platforms: toggle(filter.platforms, slug) },
     })),
     ...filter.stores.map((store) => ({
       key: `store-${store}`,
       label: storeLabels[store],
-      remove: () => setFilter({ stores: toggle(filter.stores, store) }),
+      clear: { stores: toggle(filter.stores, store) },
     })),
     ...filter.subscriptions.map((subscription) => ({
       key: `subscription-${subscription}`,
       label: subscriptionLabels[subscription],
-      remove: () =>
-        setFilter({
-          subscriptions: toggle(filter.subscriptions, subscription),
-        }),
+      clear: { subscriptions: toggle(filter.subscriptions, subscription) },
     })),
     ...filter.excludeSubscriptions.map((subscription) => ({
       key: `exclude-subscription-${subscription}`,
       label: t('withoutSubscription', {
         label: subscriptionLabels[subscription],
       }),
-      remove: () =>
-        setFilter({
-          excludeSubscriptions: toggle(
-            filter.excludeSubscriptions,
-            subscription,
-          ),
-        }),
+      clear: {
+        excludeSubscriptions: toggle(filter.excludeSubscriptions, subscription),
+      },
     })),
     ...filter.gameTypes.map((type) => ({
       key: `type-${type}`,
       label: gameTypeLabels[type],
-      remove: () => setFilter({ gameTypes: toggle(filter.gameTypes, type) }),
+      clear: { gameTypes: toggle(filter.gameTypes, type) },
     })),
     ...filter.attributes.map((id) => ({
       key: `attribute-${id}`,
       label:
         options?.attributes.find((row) => row.id === id)?.name ?? String(id),
-      remove: () => setFilter({ attributes: toggle(filter.attributes, id) }),
+      clear: { attributes: toggle(filter.attributes, id) },
     })),
     ...filter.tags.map((id) => ({
       key: `tag-${id}`,
       label: tags.find((tag) => tag.id === id)?.name ?? id,
-      remove: () => setFilter({ tags: toggle(filter.tags, id) }),
+      clear: { tags: toggle(filter.tags, id) },
     })),
   ];
   if (filter.durationMin !== null || filter.durationMax !== null)
     chips.push({
       key: 'duration',
       label: `${t('durationShort')} ${range(hours(filter.durationMin), hours(filter.durationMax), h)}`,
-      remove: () => setFilter({ durationMin: null, durationMax: null }),
+      clear: { durationMin: null, durationMax: null },
     });
   if (filter.ratingMin !== null || filter.ratingMax !== null)
     chips.push({
       key: 'rating',
       label: `${t('ratingShort')} ${range(filter.ratingMin, filter.ratingMax)}`,
-      remove: () => setFilter({ ratingMin: null, ratingMax: null }),
+      clear: { ratingMin: null, ratingMax: null },
     });
   if (filter.releasedFrom !== null || filter.releasedTo !== null)
     chips.push({
       key: 'released',
       label: `${t('releasedShort')} ${range(filter.releasedFrom, filter.releasedTo, String)}`,
-      remove: () => setFilter({ releasedFrom: null, releasedTo: null }),
+      clear: { releasedFrom: null, releasedTo: null },
     });
   if (filter.criticMin !== null)
     chips.push({
       key: 'critic',
       label: `${t('criticShort')} ${range(filter.criticMin, null)}`,
-      remove: () => setFilter({ criticMin: null }),
+      clear: { criticMin: null },
     });
   if (filter.noDuration)
     chips.push({
       key: 'no-duration',
       label: t('noDuration'),
-      remove: () => setFilter({ noDuration: null }),
+      clear: { noDuration: null },
     });
   if (filter.neverPlayed)
     chips.push({
       key: 'never-played',
       label: t('neverPlayed'),
-      remove: () => setFilter({ neverPlayed: null }),
+      clear: { neverPlayed: null },
     });
+  return chips;
+}
+
+/** I filtri accesi, uno per chip, ciascuno con la sua x. */
+function ActiveChips() {
+  const t = useTranslations('filters');
+  const { filter, setFilter, reset, activeCount } = useBacklogFilter();
+  const chips = useFilterChips(filter);
 
   // Il numero su «azzera» conta anche ricerca e stato, che hanno il loro
   // posto a vista e non un chip: il bottone resta anche senza chip.
@@ -392,7 +332,7 @@ function ActiveChips() {
           key={chip.key}
           size="sm"
           variant="secondary"
-          onClick={chip.remove}
+          onClick={() => setFilter(chip.clear)}
           aria-label={t('removeChip', { label: chip.label })}
         >
           {chip.label}
@@ -407,6 +347,51 @@ function ActiveChips() {
 }
 
 /**
+ * I filtri salvati di una playlist, in sola lettura: gli stessi chip di
+ * `/backlog`, senza la x. Per cambiarli si apre il backlog.
+ *
+ * I tag stanno nella playlist per id: quelli che il vocabolario non ha più non
+ * hanno un nome da mostrare, e li dice già l'avviso sopra. Si tolgono qui, ma
+ * solo a vocabolario arrivato: prima, ogni tag sembrerebbe cancellato.
+ */
+export function PlaylistChips({ query }: { query: PlaylistQuery }) {
+  const { tags } = useFilterOptions();
+  const known = new Set(tags.map((tag) => tag.id));
+  const filter = fromPlaylistQuery(query);
+  const chips = useFilterChips({
+    ...filter,
+    tags: tags.length > 0 ? filter.tags.filter((id) => known.has(id)) : [],
+  });
+  // In `/backlog` lo stato ha i suoi bottoni sempre a vista e non un chip; qui
+  // non ci sono, e una playlist che mostra solo i giochi «in corso» deve dirlo.
+  // Le playlist senza stato, o con quello di default, non hanno niente da dire.
+  const statusLabels = useStatusLabels();
+  const sameAsDefault =
+    query.status === undefined ||
+    (query.status.length === defaultStatus.length &&
+      defaultStatus.every((status) => query.status?.includes(status)));
+
+  return (
+    <XStack flexWrap="wrap" items="center" gap={6}>
+      {/* In `/backlog` la ricerca ha il suo campo; qui il campo è un'altra
+          cosa (la ricerca di chi guarda), e quella salvata nella playlist
+          deve restare visibile. */}
+      {query.q && <Badge variant="secondary">{`“${query.q}”`}</Badge>}
+      {!sameAsDefault && (
+        <Badge variant="secondary">
+          {query.status?.map((status) => statusLabels[status]).join(', ')}
+        </Badge>
+      )}
+      {chips.map((chip) => (
+        <Badge key={chip.key} variant="secondary">
+          {chip.label}
+        </Badge>
+      ))}
+    </XStack>
+  );
+}
+
+/**
  * Il pannello: l'ordinamento in cima, poi una sezione per criterio, con
  * quanti valori sono accesi accanto al titolo anche a sezione chiusa, e in
  * fondo «azzera». Sta nel `Drawer`, a ogni larghezza.
@@ -414,7 +399,7 @@ function ActiveChips() {
  * Gli id delle spunte portano un prefisso suo (`useId`): è montato solo a
  * drawer aperto, ma due pannelli in pagina non devono scontrarsi.
  */
-export function FilterPanel() {
+export function FilterPanel({ onSave }: { onSave: () => void }) {
   const t = useTranslations('filters');
   const storeLabels = useStoreLabels();
   const subscriptionLabels = useSubscriptionLabels();
@@ -424,6 +409,11 @@ export function FilterPanel() {
   const { filter, setFilter, reset, activeCount } = useBacklogFilter();
   const { options, tags } = useFilterOptions();
   const prefix = useId();
+
+  const statusLabels = useStatusLabels();
+  const statusFiltered =
+    filter.status.length !== defaultStatus.length ||
+    defaultStatus.some((status) => !filter.status.includes(status));
 
   const attributi = options?.attributes ?? [];
   const h = (value: string) => t('hoursValue', { value });
@@ -440,6 +430,32 @@ export function FilterPanel() {
     active: number;
     body: ReactNode;
   }[] = [
+    {
+      // Gli stessi sei dei bottoni in barra, sulla stessa selezione: spuntare
+      // qui o là è lo stesso gesto. Il numero compare solo se la selezione non
+      // è il default, che nasconde `excluded`.
+      value: 'status',
+      label: t('statusSection'),
+      active: statusFiltered ? filter.status.length : 0,
+      body: (
+        <CheckList
+          prefix={`${prefix}-status`}
+          items={backlogStatusValues.map((status) => ({
+            value: status,
+            label: statusLabels[status],
+          }))}
+          selected={filter.status}
+          onToggle={(value) =>
+            setFilter({
+              status: toggle<BacklogStatus>(
+                filter.status,
+                value as BacklogStatus,
+              ),
+            })
+          }
+        />
+      ),
+    },
     {
       value: 'platforms',
       label: t('platformsLabel'),
@@ -691,6 +707,22 @@ export function FilterPanel() {
       ),
     },
     {
+      value: 'critic',
+      label: t('criticShort'),
+      active: filter.criticMin !== null ? 1 : 0,
+      body: (
+        <RangeFilter
+          min={0}
+          max={100}
+          step={1}
+          low={filter.criticMin}
+          text={(low) => range(low, null)}
+          thumbLabels={[t('criticMin')]}
+          onCommit={(criticMin) => setFilter({ criticMin })}
+        />
+      ),
+    },
+    {
       value: 'released',
       label: t('releasedShort'),
       active:
@@ -710,40 +742,6 @@ export function FilterPanel() {
         />
       ),
     },
-    {
-      value: 'other',
-      label: t('otherLabel'),
-      active:
-        (filter.criticMin !== null ? 1 : 0) + (filter.neverPlayed ? 1 : 0),
-      body: (
-        <YStack gap={16}>
-          <YStack gap={6}>
-            <Text fontSize={13} color="$color11">
-              {t('criticShort')}
-            </Text>
-            <RangeFilter
-              min={0}
-              max={100}
-              step={1}
-              low={filter.criticMin}
-              text={(low) => range(low, null)}
-              thumbLabels={[t('criticMin')]}
-              onCommit={(criticMin) => setFilter({ criticMin })}
-            />
-          </YStack>
-          <XStack gap={8} items="center">
-            <Checkbox
-              id={`${prefix}-never-played`}
-              checked={filter.neverPlayed}
-              onCheckedChange={(checked) =>
-                setFilter({ neverPlayed: checked === true || null })
-              }
-            />
-            <Label htmlFor={`${prefix}-never-played`}>{t('neverPlayed')}</Label>
-          </XStack>
-        </YStack>
-      ),
-    },
   ];
 
   // Aperte all'inizio le sezioni che hanno qualcosa di acceso: chi apre il
@@ -757,6 +755,17 @@ export function FilterPanel() {
   return (
     <YStack gap={16}>
       <SortControl />
+      {/* Un sì o un no, non un elenco: fuori dalle sezioni. */}
+      <XStack gap={8} items="center">
+        <Checkbox
+          id={`${prefix}-never-played`}
+          checked={filter.neverPlayed}
+          onCheckedChange={(checked) =>
+            setFilter({ neverPlayed: checked === true || null })
+          }
+        />
+        <Label htmlFor={`${prefix}-never-played`}>{t('neverPlayed')}</Label>
+      </XStack>
       <Accordion value={open} onValueChange={setOpen}>
         {sections.map((section) => (
           <AccordionItem key={section.value} value={section.value}>
@@ -774,10 +783,13 @@ export function FilterPanel() {
         ))}
       </Accordion>
       {activeCount > 0 && (
-        <XStack>
+        // Salvare è ciò che si vuole fare dopo aver messo a punto i filtri, e
+        // a pannello aperto: il bottone sta qui oltre che in barra.
+        <XStack flexWrap="wrap" gap={8}>
           <Button variant="outline" onClick={() => void reset()}>
             {t('reset', { count: activeCount })}
           </Button>
+          <SavePlaylistButton onOpen={onSave} labelled />
         </XStack>
       )}
     </YStack>
@@ -905,6 +917,22 @@ function RangeFilter({
   const lowValue = a <= min ? null : a;
   const highValue = double && b < max ? b : null;
 
+  // I campi accanto allo slider scrivono sullo stesso `value`: lo slider si
+  // sposta, e l'attesa di sopra porta il numero al filtro. Il minimo non supera
+  // il massimo, e viceversa. Un testo che non è un numero lascia tutto com'è.
+  const t = useTranslations('filters');
+  const setLow = (text: string) => {
+    const parsed = parseRangeInput(text, { min, max, step });
+    if (parsed === undefined) return;
+    const next = parsed ?? min;
+    setValue(double ? [Math.min(next, b), b] : [next]);
+  };
+  const setHigh = (text: string) => {
+    const parsed = parseRangeInput(text, { min, max, step });
+    if (parsed === undefined) return;
+    setValue([a, Math.max(parsed ?? max, a)]);
+  };
+
   // Lo slider solo nel browser: Tamagui calcola la posizione delle maniglie
   // misurando il binario, che sul server non c'è, e l'idratazione trovava
   // maniglie senza posizione. Al suo posto, lo stesso spazio vuoto.
@@ -935,6 +963,28 @@ function RangeFilter({
       ) : (
         <YStack height={20} />
       )}
+      {/* Gli stessi estremi, scritti a mano: lo slider è comodo per un'idea,
+          il campo per un numero preciso. */}
+      <XStack flexWrap="wrap" gap={12}>
+        <NumberField
+          label={double ? t('rangeFrom') : t('rangeMinimum')}
+          ariaLabel={thumbLabels[0] ?? t('rangeFrom')}
+          value={lowValue}
+          placeholder={String(min)}
+          disabled={disabled}
+          onCommit={setLow}
+        />
+        {double && (
+          <NumberField
+            label={t('rangeTo')}
+            ariaLabel={thumbLabels[1] ?? t('rangeTo')}
+            value={highValue}
+            placeholder={String(max)}
+            disabled={disabled}
+            onCommit={setHigh}
+          />
+        )}
+      </XStack>
       {hint && (lowValue !== null || highValue !== null) && (
         <Text fontSize={13} color="$color11">
           {hint}

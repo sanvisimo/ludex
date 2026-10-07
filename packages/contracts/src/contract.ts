@@ -9,6 +9,7 @@ import {
   BacklogFilterOptionsSchema,
   BacklogListSchema,
   BacklogQuerySchema,
+  BacklogSortSchema,
   BacklogStatusSchema,
   EnrichmentSourceSchema,
   GameAdminDetailSchema,
@@ -30,10 +31,17 @@ import {
   OpenReportSchema,
   OwnershipInputSchema,
   PlatformSchema,
+  PlaylistDetailSchema,
+  PlaylistNameSchema,
+  PlaylistQuerySchema,
+  PlaylistSchema,
   RatingSchema,
   RepointPreviewSchema,
   ReportGroupSchema,
   ReportTargetSchema,
+  ShareTokenSchema,
+  SharedPlaylistSchema,
+  SortDirectionSchema,
   SteamLoginRemovedSchema,
   SteamLoginStartSchema,
   SourceReasonSchema,
@@ -43,6 +51,10 @@ import {
   SyncAllResultSchema,
   UnlinkedGameSchema,
   UnlinkImpactSchema,
+  WishlistSortSchema,
+  WishlistSchema,
+  WishlistMembershipSchema,
+  WishlistGamesSchema,
   UnresolvedGroupListSchema,
   UnresolvedImportSchema,
   UserSettingsSchema,
@@ -323,12 +335,149 @@ export const contract = {
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
   },
 
+  // Le playlist (step 15a): filtri del backlog salvati con un nome. Tutte
+  // partono dall'utente: una playlist altrui è `NOT_FOUND`, non «vietata».
+  playlists: {
+    // Nell'ordine che l'utente ha scelto (`move`); a parità, per nome.
+    list: oc.output(z.array(PlaylistSchema)),
+
+    // La playlist **aperta**: la sua query eseguita, con la pagina chiesta dal
+    // chiamante. La paginazione non sta nella query salvata.
+    //
+    // `q`, `sort` e `direction` sono la vista di chi guarda e **non cambiano la
+    // playlist**: coprono, per questa apertura, quelli salvati. Una `q` chiesta
+    // sostituisce quella salvata, non si somma.
+    get: oc
+      .input(
+        z.object({
+          id: z.uuid(),
+          limit: z.number().int().min(1).max(200).default(50),
+          offset: z.number().int().min(0).default(0),
+          q: PlaylistQuerySchema.shape.q,
+          sort: BacklogSortSchema.optional(),
+          direction: SortDirectionSchema.optional(),
+        }),
+      )
+      .output(PlaylistDetailSchema),
+
+    // `CONFLICT` se l'utente ha già una playlist con quel nome, senza guardare
+    // le maiuscole. Va in fondo all'elenco.
+    create: oc
+      .input(z.object({ name: PlaylistNameSchema, query: PlaylistQuerySchema }))
+      .output(PlaylistSchema),
+
+    // Rinomina, riscrive i filtri, o tutte e due. Chi non manda un campo lo
+    // lascia com'è.
+    update: oc
+      .input(
+        z.object({
+          id: z.uuid(),
+          name: PlaylistNameSchema.optional(),
+          query: PlaylistQuerySchema.optional(),
+        }),
+      )
+      .output(PlaylistSchema),
+
+    remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+
+    // Il link pubblico (step 15d). `share` rende quello che c'è, o ne crea uno:
+    // chiamarla due volte dà lo stesso link. `unshare` lo toglie e il link smette
+    // di funzionare subito; ricondividere ne dà uno nuovo.
+    share: oc
+      .input(z.object({ id: z.uuid() }))
+      .output(z.object({ token: ShareTokenSchema })),
+    unshare: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+
+    // Sposta di un posto verso l'alto o verso il basso nell'elenco dell'utente.
+    // Spostare la prima su, o l'ultima giù, non fa niente e non è un errore.
+    move: oc
+      .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
+      .output(z.void()),
+  },
+
+  // Le liste a mano (step 15b): giochi che non hai ancora e vuoi tenere d'occhio.
+  // Stanno in `playlists` col tipo `wishlist`, e **non si confondono** con le
+  // playlist a filtro: ognuno dei due vede e tocca solo il proprio.
+  wishlists: {
+    // Nell'ordine scelto (`move`); a parità, per nome.
+    list: oc.output(z.array(WishlistSchema)),
+
+    // `CONFLICT` se hai già una lista con quel nome, maiuscole a parte.
+    create: oc
+      .input(z.object({ name: PlaylistNameSchema }))
+      .output(WishlistSchema),
+    rename: oc
+      .input(z.object({ id: z.uuid(), name: PlaylistNameSchema }))
+      .output(WishlistSchema),
+    // Toglie la lista e le sue voci, non i giochi.
+    remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+    move: oc
+      .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
+      .output(z.void()),
+
+    // La lista aperta: ricerca sul titolo, ordine e pagina. I giochi che hai nel
+    // backlog non ci sono, anche se la voce c'è ancora.
+    get: oc
+      .input(
+        z.object({
+          id: z.uuid(),
+          q: z.string().trim().min(1).max(100).optional(),
+          sort: WishlistSortSchema.default('addedAt'),
+          direction: SortDirectionSchema.default('desc'),
+          limit: z.number().int().min(1).max(200).default(50),
+          offset: z.number().int().min(0).default(0),
+        }),
+      )
+      .output(WishlistGamesSchema),
+
+    // Mette un gioco in una lista. Senza `listId` va nella prima lista, e se non
+    // ne hai nessuna ne crea una che si chiama «Wishlist»: chi vuole solo mettere
+    // da parte un gioco non deve inventare un nome. `CONFLICT` se il gioco è già
+    // nel tuo backlog. Ripeterla non fa niente.
+    add: oc
+      .input(z.object({ gameId: z.uuid(), listId: z.uuid().optional() }))
+      .output(WishlistSchema),
+    removeGame: oc
+      .input(z.object({ listId: z.uuid(), gameId: z.uuid() }))
+      .output(z.void()),
+
+    // Le tue liste, con un `has` per dire in quali sta già il gioco: è il menu
+    // della scheda del gioco.
+    forGame: oc
+      .input(z.object({ gameId: z.uuid() }))
+      .output(z.array(WishlistMembershipSchema)),
+  },
+
+  // Le playlist condivise (step 15d): **pubbliche**, per chi ha il link. Il
+  // proprietario non compare e dei suoi giochi esce solo ciò che il catalogo già
+  // mostra; vedi `SharedPlaylistSchema`. Un link sconosciuto e uno revocato
+  // rispondono `NOT_FOUND` allo stesso modo.
+  sharedPlaylists: {
+    get: oc
+      .input(
+        z.object({
+          token: ShareTokenSchema,
+          // Più basso del backlog (200): è una query che chiunque può lanciare.
+          // 140 sono le 20 righe più grandi del menu per pagina, a 7 colonne
+          // (`maxSharedPageSize` nel web).
+          limit: z.number().int().min(1).max(140).default(30),
+          offset: z.number().int().min(0).default(0),
+        }),
+      )
+      .output(SharedPlaylistSchema),
+  },
+
   backlog: {
     // Il filtraggio dello step 7 sta qui dentro e non in una `search` gemella:
     // la forma di una riga di backlog è definita in un posto solo, e due
     // procedure che rendono la stessa cosa divergerebbero al primo campo nuovo.
     // Senza criteri è la lista di prima.
     list: oc.input(BacklogQuerySchema).output(BacklogListSchema),
+
+    // Un gioco a caso fra quelli «da giocare» (stato `backlog`, non nascosti),
+    // senza guardare i filtri di `/backlog`. Rende lo slug della scheda, o `null`
+    // se non ce n'è nessuno: un backlog senza giochi da giocare non è un errore.
+    random: oc.output(z.object({ slug: z.string() }).nullable()),
 
     // Di che cosa si compone il pannello dei filtri: solo i valori che compaiono
     // davvero nel backlog di chi guarda.

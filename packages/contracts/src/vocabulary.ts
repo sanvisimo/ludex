@@ -237,6 +237,22 @@ export const relatedKindValues = ['remake', 'remaster', 'similar'] as const;
 // dove filtrare per categoria e filtrare per tag sono due gesti diversi.
 export const userTagKindValues = ['tag', 'category'] as const;
 
+// Che cosa è una riga di `playlists` (step 15a, 15b): una query salvata sul
+// backlog (`filter`) o una lista di giochi scelti a mano, che non sono nel
+// backlog (`wishlist`). Sta nel vocabolario perché l'enum del database e il
+// client devono conoscerlo senza poter importare `@repo/db`.
+export const playlistKindValues = ['filter', 'wishlist'] as const;
+
+// Come si ordina una lista (step 15b). Sono i dati del gioco, più la data in cui
+// è entrato nella lista: una lista non ha stato, voto personale né possessi.
+export const wishlistSortValues = [
+  'addedAt',
+  'name',
+  'released',
+  'duration',
+  'criticRating',
+] as const;
+
 // Le chiavi di ordinamento del backlog (step 7). Stanno nel vocabolario e non
 // solo nello schema Zod perché il client deve poterle enumerare per costruire la
 // tendina, e perché i parser dell'URL vogliono la lista, non il tipo.
@@ -285,6 +301,7 @@ export const AUTO_SYNC_EVERY_DAYS: Record<
 
 export type BacklogStatus = (typeof backlogStatusValues)[number];
 export type UserTagKind = (typeof userTagKindValues)[number];
+export type WishlistSort = (typeof wishlistSortValues)[number];
 export type AttributeKind = (typeof attributeKindValues)[number];
 export type RelatedKind = (typeof relatedKindValues)[number];
 export type Store = (typeof storeValues)[number];

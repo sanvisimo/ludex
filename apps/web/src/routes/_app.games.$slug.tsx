@@ -24,6 +24,7 @@ import {
   GameHero,
   RelatedRow,
 } from '@/components/game-page';
+import { WishlistControl } from '@/components/wishlist-control';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useSetEntryHidden } from '@/lib/hide-entry';
 import { api, client } from '@/lib/orpc';
@@ -205,7 +206,13 @@ function GamePage() {
               }
             />
           ) : (
-            session.data && <AddGameDialog game={game} />
+            session.data && (
+              // Il gioco non è tuo: o lo metti da parte in una lista, o ce l'hai.
+              <XStack gap={8} items="center" flexWrap="wrap">
+                <AddGameDialog game={game} />
+                <WishlistControl game={game} />
+              </XStack>
+            )
           )}
           {/* In fondo alla colonna: sotto il pannello del backlog se il gioco
               è tuo, sotto durata e critica se no. Solo da loggati: la

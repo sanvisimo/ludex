@@ -8,7 +8,9 @@ import {
   addToBacklog,
   ensureOwnerships,
   findEntryById,
+  pickRandomBacklogGame,
   removeOwnershipFromEntry,
+  setBacklogHidden,
   updateBacklogEntry,
 } from './backlog';
 import { unlinkStoreAccount } from './store-accounts';
@@ -768,5 +770,62 @@ describe('togliere una copia', () => {
       .where(eq(schema.ownershipRejections.backlogId, entryId));
     expect(rimasti).toHaveLength(0);
     expect(await possessi()).toHaveLength(1);
+  });
+});
+
+describe('pickRandomBacklogGame (step 15c)', () => {
+  async function add(
+    userId: string,
+    name: string,
+    status: 'backlog' | 'playing' | 'excluded' | 'completed' = 'backlog',
+  ) {
+    const game = await createGame({ name });
+    const id = await addToBacklog({
+      userId,
+      gameId: game.id,
+      status,
+      ownerships: [{ platformSlug: 'pc_windows', store: 'steam' }],
+    });
+    return { id, slug: game.slug };
+  }
+
+  it('senza giochi «da giocare» rende null, non un errore', async () => {
+    const userId = await createUser();
+    expect(await pickRandomBacklogGame(userId)).toBeNull();
+
+    await add(userId, 'In corso', 'playing');
+    expect(await pickRandomBacklogGame(userId)).toBeNull();
+  });
+
+  it('pesca solo fra quelli da giocare e non nascosti, mai quelli degli altri', async () => {
+    const userId = await createUser();
+    const altro = await createUser();
+    const buono = await add(userId, 'Da giocare');
+    await add(userId, 'In corso', 'playing');
+    await add(userId, 'Finito', 'completed');
+    await add(userId, 'Non mi interessa', 'excluded');
+    const nascosto = await add(userId, 'Nascosto');
+    await setBacklogHidden(userId, nascosto.id, true);
+    await add(altro, 'Dell’altro');
+
+    // Un solo candidato: ogni pescata lo trova.
+    for (let i = 0; i < 10; i++)
+      expect(await pickRandomBacklogGame(userId)).toBe(buono.slug);
+  });
+
+  it('ogni candidato ha la sua possibilità', async () => {
+    const userId = await createUser();
+    const slugs = new Set([
+      (await add(userId, 'Uno')).slug,
+      (await add(userId, 'Due')).slug,
+      (await add(userId, 'Tre')).slug,
+    ]);
+
+    const trovati = new Set<string | null>();
+    // Con tre candidati, 60 pescate lasciano fuori uno di loro con probabilità
+    // 3 × (2/3)^60, cioè mai.
+    for (let i = 0; i < 60; i++)
+      trovati.add(await pickRandomBacklogGame(userId));
+    expect(trovati).toEqual(slugs);
   });
 });

@@ -3,7 +3,9 @@ import type {
   BacklogSort,
   BacklogStatus,
   GameType,
+  PlaylistQuery,
   SortDirection,
+  WishlistSort,
   Store,
   Subscription,
 } from '@repo/contracts';
@@ -11,23 +13,20 @@ import {
   backlogSortValues,
   backlogStatusValues,
   gameTypeValues,
+  PlaylistQuerySchema,
   sortDirectionValues,
   storeValues,
   subscriptionValues,
+  wishlistSortValues,
 } from '@repo/contracts';
 import { getRouteApi, useRouter } from '@tanstack/react-router';
 
 export const backlogViewValues = ['grid', 'rows', 'compact'] as const;
 export type BacklogView = (typeof backlogViewValues)[number];
 
-/**
- * Quanti giochi per pagina si possono chiedere. 15 di default, e tutti sotto il
- * `max(200)` del contratto. Una scelta fissa e non un numero libero: un link
- * con `size=7` non deve aprire una pagina che nessun menu sa rifare.
- */
-export const pageSizeValues = [6, 15, 24, 48, 99] as const;
-export type PageSize = (typeof pageSizeValues)[number];
 import { useCallback, useMemo } from 'react';
+
+import { defaultPageSize, maxPageSize } from './page-size';
 
 /**
  * Lo stato del filtro vive nell'**URL**, non in React.
@@ -88,12 +87,20 @@ const pageNumber = (raw: unknown) => {
   return value !== undefined && value >= 1 ? value : undefined;
 };
 
+// Qualunque numero che il contratto accetta: i multipli giusti li sceglie la
+// pagina, in base alle colonne che vede (vedi `snapPageSize`).
 const pageSize = (raw: unknown) => {
   const value = integer(raw);
-  return (pageSizeValues as readonly number[]).includes(value ?? -1)
-    ? (value as PageSize)
+  return value !== undefined && value >= 1 && value <= maxPageSize
+    ? value
     : undefined;
 };
+
+const uuid = (raw: unknown) =>
+  typeof raw === 'string' &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw)
+    ? raw
+    : undefined;
 
 const decimal = (raw: unknown) => {
   const value = typeof raw === 'string' ? Number(raw) : raw;
@@ -170,6 +177,11 @@ const fields = {
   // non un filtro, quindi «azzera» non ti fa uscire dai nascosti e non conta fra
   // i filtri accesi.
   hidden: field(flag, false),
+  // La playlist da cui si è arrivati con «Modifica filtri». Non è un criterio:
+  // serve solo al dialogo «Salva come playlist», che parte da quel nome invece
+  // che da un campo vuoto. Resta nell'URL finché ci si lavora, e «azzera» non lo
+  // tocca.
+  playlist: field(uuid, ''),
   sort: field(oneOf(backlogSortValues), 'addedAt' as BacklogSort),
   direction: field(oneOf(sortDirectionValues), 'desc' as SortDirection),
   // La vista: griglia (di default), righe o compatta. Sta nell'URL come l'ordinamento,
@@ -181,8 +193,9 @@ const fields = {
   page: field(pageNumber, 1),
   // Quanti giochi per pagina. Come la vista: nell'URL, non un filtro, e non
   // ricordata fra una visita e l'altra. Cambiarla riporta a pagina 1, perché
-  // la pagina 7 da 15 e la pagina 7 da 60 sono giochi diversi.
-  size: field(pageSize, 15 as PageSize),
+  // la pagina 7 da 14 e la pagina 7 da 70 sono giochi diversi. È il numero
+  // *chiesto*: la pagina lo porta al multiplo delle colonne più vicino.
+  size: field(pageSize, defaultPageSize),
 };
 
 type Key = keyof typeof fields;
@@ -207,7 +220,7 @@ const sameValue = (a: unknown, b: unknown) =>
  * davvero toccato: un default o un `null` si toglie, come faceva il
  * `clearOnDefault` di nuqs.
  */
-function toSearch(state: Partial<Record<Key, unknown>>): BacklogSearch {
+export function toSearch(state: Partial<Record<Key, unknown>>): BacklogSearch {
   const search: Record<string, unknown> = {};
   for (const key of keys) {
     const value = state[key];
@@ -265,7 +278,12 @@ const criteri = [
  * contratto è un campo **assente**. Mandare `q: ''` o `platforms: []` al server
  * significherebbe chiedergli di filtrare per niente, e lo schema li rifiuterebbe.
  */
-export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
+export function toQueryInput(
+  filter: BacklogFilterState,
+  // Quanti giochi chiedere davvero: `filter.size` portato al multiplo delle
+  // colonne. Senza, quello dell'URL così com'è.
+  size: number = filter.size,
+): BacklogQueryInput {
   const vuoto = <T>(value: T[]) => (value.length > 0 ? value : undefined);
 
   return {
@@ -295,9 +313,164 @@ export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
     hidden: filter.hidden || undefined,
     sort: filter.sort,
     direction: filter.direction,
-    limit: filter.size,
-    offset: (filter.page - 1) * filter.size,
+    limit: size,
+    offset: (filter.page - 1) * size,
   };
+}
+
+/**
+ * Quanti criteri sono accesi. Una funzione e non un pezzo dell'hook, perché la
+ * stessa regola conta anche i filtri di una playlist salvata.
+ */
+export function countActiveCriteria(filter: BacklogFilterState) {
+  return criteri.filter((chiave) => {
+    const value = filter[chiave];
+    if (chiave === 'status') {
+      // Il default nasconde già `excluded`: conta come filtro solo se
+      // l'utente ha cambiato la selezione.
+      const selezionati = filter.status;
+      return (
+        selezionati.length !== defaultStatus.length ||
+        defaultStatus.some((stato) => !selezionati.includes(stato))
+      );
+    }
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (typeof value === 'boolean') return value;
+    return value !== null;
+  }).length;
+}
+
+/**
+ * Da stato dell'URL a ciò che una playlist salva (step 15a): i criteri e
+ * l'ordinamento di `toQueryInput`. Non la pagina, non quanti per pagina e non
+ * la vista, e non `hidden`, che è una vista dei nascosti e non un filtro.
+ *
+ * Li toglie lo schema stesso: Zod scarta i campi che non conosce, e
+ * `PlaylistQuerySchema` non ha `hidden`, `limit` né `offset`.
+ */
+export function toPlaylistQuery(filter: BacklogFilterState): PlaylistQuery {
+  return PlaylistQuerySchema.parse(toQueryInput(filter));
+}
+
+/**
+ * Il passaggio inverso, da una playlist a uno stato che `/backlog` sa leggere.
+ *
+ * Una playlist senza `status` non filtra per stato: tutti e sei. Lo stato di
+ * `/backlog` invece, quando l'URL non ne dice, esclude `excluded`: quindi qui
+ * va scritto per intero, o aprire una playlist nel backlog nasconderebbe in
+ * silenzio i giochi «non mi interessa» che la playlist mostrava.
+ */
+export function fromPlaylistQuery(query: PlaylistQuery): BacklogFilterState {
+  return {
+    q: query.q ?? fields.q.fallback,
+    status: query.status ?? [...backlogStatusValues],
+    platforms: query.platforms ?? [],
+    stores: query.stores ?? [],
+    subscriptions: query.subscriptions ?? [],
+    excludeSubscriptions: query.excludeSubscriptions ?? [],
+    attributes: query.attributes ?? [],
+    gameTypes: query.gameTypes ?? [],
+    tags: query.tags ?? [],
+    durationMin: query.durationMin ?? null,
+    durationMax: query.durationMax ?? null,
+    noDuration: query.noDuration ?? false,
+    ratingMin: query.ratingMin ?? null,
+    ratingMax: query.ratingMax ?? null,
+    criticMin: query.criticMin ?? null,
+    releasedFrom: query.releasedFrom ?? null,
+    releasedTo: query.releasedTo ?? null,
+    neverPlayed: query.neverPlayed ?? false,
+    hidden: fields.hidden.fallback,
+    playlist: fields.playlist.fallback,
+    sort: query.sort,
+    direction: query.direction,
+    view: fields.view.fallback,
+    page: fields.page.fallback,
+    size: fields.size.fallback,
+  };
+}
+
+/**
+ * L'URL di `/backlog` che apre i filtri di una playlist. Con `playlistId` il
+ * backlog ricorda da quale arriva, e «Salva come playlist» ne propone il nome.
+ */
+export function playlistSearch(
+  query: PlaylistQuery,
+  playlistId?: string,
+): BacklogSearch {
+  return toSearch({
+    ...fromPlaylistQuery(query),
+    ...(playlistId && { playlist: playlistId }),
+  });
+}
+
+/**
+ * La vista, la pagina e quanti per pagina: l'unica parte dell'URL che
+ * `/playlist/$id` tiene. I filtri sono quelli salvati e l'ordinamento pure.
+ */
+export type PagingSearch = {
+  view?: BacklogView;
+  page?: number;
+  size?: number;
+};
+
+export function validatePagingSearch(
+  raw: Record<string, unknown>,
+): PagingSearch {
+  // `toSearch` ci lascia solo ciò che c'è e non è il default.
+  return toSearch({
+    view: fields.view.parse(raw.view),
+    page: fields.page.parse(raw.page),
+    size: fields.size.parse(raw.size),
+  });
+}
+
+/**
+ * L'URL di `/playlist/$id`: la pagina più la vista di chi guarda — ricerca e
+ * ordinamento — che copre quelli salvati per quell'apertura e non si salva.
+ *
+ * `sort` e `direction` non perdono il valore uguale al default di `/backlog`,
+ * al contrario del resto: il default di una playlist è quello che ha salvato,
+ * e `addedAt` può essere proprio ciò che si sceglie su una salvata per durata.
+ * Spetta alla pagina togliere ciò che coincide con la playlist.
+ */
+export type PlaylistSearch = PagingSearch & {
+  q?: string;
+  sort?: BacklogSort;
+  direction?: SortDirection;
+};
+
+export function validatePlaylistSearch(
+  raw: Record<string, unknown>,
+): PlaylistSearch {
+  const q = fields.q.parse(raw.q)?.trim();
+  const sort = fields.sort.parse(raw.sort);
+  const direction = fields.direction.parse(raw.direction);
+  return {
+    ...validatePagingSearch(raw),
+    ...(q && { q }),
+    ...(sort && { sort }),
+    ...(direction && { direction }),
+  };
+}
+
+/**
+ * L'URL di una lista aperta (`/wishlist/$id`, step 15b): come quello di una
+ * playlist, ma l'ordine è fra quelli di una lista. Una chiave che una lista non
+ * ha (il voto personale, l'ultima partita) si scarta. Il default è l'ultimo
+ * aggiunto per primo, e lo applica il server.
+ */
+export type WishlistSearch = Omit<PlaylistSearch, 'sort'> & {
+  sort?: WishlistSort;
+};
+
+export function validateWishlistSearch(
+  raw: Record<string, unknown>,
+): WishlistSearch {
+  const { sort, ...rest } = validatePlaylistSearch(raw);
+  const known = (wishlistSortValues as readonly string[]).includes(sort ?? '');
+  return { ...rest, ...(known && sort && { sort: sort as WishlistSort }) };
 }
 
 export function useBacklogFilter() {
@@ -356,26 +529,7 @@ export function useBacklogFilter() {
 
   // Quanti criteri sono accesi: serve al bottone che li spegne, e a dire che una
   // lista vuota è vuota per via di un filtro e non perché il backlog è vuoto.
-  const activeCount = useMemo(
-    () =>
-      criteri.filter((chiave) => {
-        const value = filter[chiave];
-        if (chiave === 'status') {
-          // Il default nasconde già `excluded`: conta come filtro solo se
-          // l'utente ha cambiato la selezione.
-          const selezionati = filter.status;
-          return (
-            selezionati.length !== defaultStatus.length ||
-            defaultStatus.some((stato) => !selezionati.includes(stato))
-          );
-        }
-        if (Array.isArray(value)) return value.length > 0;
-        if (typeof value === 'string') return value.trim().length > 0;
-        if (typeof value === 'boolean') return value;
-        return value !== null;
-      }).length,
-    [filter],
-  );
+  const activeCount = useMemo(() => countActiveCriteria(filter), [filter]);
 
   return { filter, setFilter, reset, activeCount, goToPage, pageHref };
 }

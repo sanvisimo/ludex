@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { useState } from 'react';
 import { expect, fn, screen, userEvent, waitFor, within } from 'storybook/test';
 
-import { EyeOff, Library, SunMoon, User } from '../icons';
+import { EyeOff, Library, SunMoon, Trash2, User } from '../icons';
 import { XStack } from '../primitives';
 import { Button } from './button';
 import {
@@ -82,6 +82,43 @@ export const WithIcons: Story = {
     await userEvent.click(canvas.getByText('Menu'));
     const item = await screen.findByRole('menuitem', { name: 'Backlog' });
     await expect(item.querySelector('svg')).not.toBeNull();
+  },
+};
+
+/**
+ * Una voce che toglie qualcosa, in rosso e con la sua icona: resta una voce di
+ * menu come le altre — si raggiunge, si legge e chiama il suo `onClick`.
+ */
+export const Destructive: Story = {
+  render: ({ onHide }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="ghost">Menu</Button>} />
+      <DropdownMenuContent width={208}>
+        <DropdownMenuItem icon={<User size={16} />}>Rinomina</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          destructive
+          icon={<Trash2 size={16} color="$red11" />}
+          onClick={() => onHide('delete')}
+        >
+          Elimina
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ),
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByText('Menu'));
+    const item = await screen.findByRole('menuitem', { name: 'Elimina' });
+    await expect(item.querySelector('svg')).not.toBeNull();
+    // Rosso, e diverso dalle voci normali: non si indovina da un colore
+    // preciso, ma il testo non deve avere il colore del testo ordinario.
+    const normal = await screen.findByRole('menuitem', { name: 'Rinomina' });
+    await expect(
+      getComputedStyle(within(item).getByText('Elimina')).color,
+    ).not.toBe(getComputedStyle(within(normal).getByText('Rinomina')).color);
+    await userEvent.click(item);
+    await expect(args.onHide).toHaveBeenCalledWith('delete');
   },
 };
 

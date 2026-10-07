@@ -8,6 +8,7 @@ import { GameCover } from '@/components/game-cover';
 import { GameDuration } from '@/components/game-duration';
 import { ScrollRow } from '@/components/scroll-row';
 import { statusIcons } from '@/components/status-icon';
+import { WishlistHeart } from '@/components/wishlist-heart';
 import { useStatusLabels } from '@/lib/labels';
 
 /**
@@ -29,20 +30,40 @@ export const CARD_WIDTH = 136;
 export function HomeCard({
   game,
   fill = false,
+  showWishlist = true,
 }: {
   game: HomeGame;
   fill?: boolean;
+  /**
+   * Il cuore della wishlist. Si spegne dove i giochi sono già tutti in lista
+   * (la lista aperta, le fasce di `/wishlist`): lì il cuore sarebbe sempre pieno.
+   */
+  showWishlist?: boolean;
 }) {
   const statusLabels = useStatusLabels();
 
+  // A blocco: un `<a>` è in riga, e attorno a un'immagine lascia lo spazio
+  // della linea di testo sotto la copertina.
+  const linkStyle = {
+    color: 'inherit',
+    textDecoration: 'none',
+    display: 'block',
+  } as const;
+
   return (
-    <Link
-      to="/games/$slug"
-      params={{ slug: game.slug }}
-      style={{ color: 'inherit', textDecoration: 'none' }}
-    >
-      <YStack width={fill ? '100%' : CARD_WIDTH} gap={6}>
-        <YStack position="relative" overflow="hidden" rounded={6}>
+    <YStack width={fill ? '100%' : CARD_WIDTH} gap={6}>
+      {/* La copertina e il titolo sono due link alla stessa scheda: il cuore è un
+          bottone, e un bottone non sta dentro un link. */}
+      <YStack position="relative" overflow="hidden" rounded={6}>
+        <Link
+          to="/games/$slug"
+          params={{ slug: game.slug }}
+          style={linkStyle}
+          // Il titolo qui sotto è già il link per la tastiera e i lettori di
+          // schermo; la copertina serve al mouse e al dito.
+          tabIndex={-1}
+          aria-hidden
+        >
           <GameCover
             imageId={game.coverImageId}
             name={game.name}
@@ -81,20 +102,30 @@ export function HomeCard({
               />
             </XStack>
           )}
-        </YStack>
-        <Text fontSize={14} lineHeight={20} color="$color12" numberOfLines={2}>
-          {game.name}
-        </Text>
-        <XStack flexWrap="wrap" items="center" columnGap={8}>
-          {game.firstReleaseDate && (
-            <Text fontSize={14} lineHeight={20} color="$color11">
-              {game.firstReleaseDate.getFullYear()}
-            </Text>
-          )}
-          <GameDuration game={game} short />
-        </XStack>
+        </Link>
+        {showWishlist && <WishlistHeart game={game} />}
       </YStack>
-    </Link>
+      <Link to="/games/$slug" params={{ slug: game.slug }} style={linkStyle}>
+        <YStack gap={6}>
+          <Text
+            fontSize={14}
+            lineHeight={20}
+            color="$color12"
+            numberOfLines={2}
+          >
+            {game.name}
+          </Text>
+          <XStack flexWrap="wrap" items="center" columnGap={8}>
+            {game.firstReleaseDate && (
+              <Text fontSize={14} lineHeight={20} color="$color11">
+                {game.firstReleaseDate.getFullYear()}
+              </Text>
+            )}
+            <GameDuration game={game} short />
+          </XStack>
+        </YStack>
+      </Link>
+    </YStack>
   );
 }
 

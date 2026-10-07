@@ -46,11 +46,13 @@ export function useLiveUpdates() {
     const importFinished = () => {
       invalidate(api.accounts.key());
       invalidate(api.backlog.key());
+      invalidate(api.playlists.key());
       invalidate(api.imports.key());
     };
 
     const gamesChanged = (gameIds?: string[]) => {
       invalidate(api.backlog.key());
+      invalidate(api.playlists.key());
       invalidate(api.games.home.key());
       // Senza id vuol dire «tutte le schede aperte»: la riconnessione. Gli
       // eventi parlano di id e le schede si aprono per slug: si riconoscono

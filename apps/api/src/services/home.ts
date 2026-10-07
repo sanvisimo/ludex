@@ -18,6 +18,7 @@ import {
 
 import { haUnaFine } from './backlog-search';
 import { gameColumns } from './games';
+import { wishlistedGameIds } from './wishlist-sync';
 
 /**
  * La home (12e): il catalogo a fasce, **uguale per tutti**. Chi guarda cambia
@@ -229,6 +230,7 @@ export async function listHomeBands(
 
   const byId = new Map(games.map((game) => [game.id, game]));
   const statusById = new Map(owned.map((row) => [row.gameId, row.status]));
+  const wishlisted = await wishlistedGameIds(viewerId, all);
 
   return bands
     .map((band, index) => ({
@@ -237,7 +239,15 @@ export async function listHomeBands(
       // `IN` non conserva l'ordine: lo rimette quello della fascia.
       games: idsPerBand[index]!.flatMap((id) => {
         const game = byId.get(id);
-        return game ? [{ ...game, status: statusById.get(id) ?? null }] : [];
+        return game
+          ? [
+              {
+                ...game,
+                status: statusById.get(id) ?? null,
+                wishlisted: wishlisted.has(id),
+              },
+            ]
+          : [];
       }),
     }))
     .filter((band) => band.games.length > 0);

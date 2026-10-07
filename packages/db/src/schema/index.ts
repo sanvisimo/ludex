@@ -13,6 +13,8 @@ export * from './sources';
 export * from './scores';
 export * from './imports';
 export * from './tags';
+export * from './playlists';
+export * from './wishlist';
 export * from './settings';
 export * from './reports';
 export * from './relations';

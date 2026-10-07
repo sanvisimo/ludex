@@ -33,6 +33,11 @@ import { Route as AppAdminScartiRouteImport } from './routes/_app.admin.scarti'
 import { Route as AppAdminSegnalatiRouteImport } from './routes/_app.admin.segnalati'
 import { Route as AppAdminUtentiRouteImport } from './routes/_app.admin.utenti'
 import { Route as AppGamesSlugRouteImport } from './routes/_app.games.$slug'
+import { Route as AppSharedTokenRouteImport } from './routes/_app.shared.$token'
+import { Route as AppPrivatePlaylistIndexRouteImport } from './routes/_app._private.playlist.index'
+import { Route as AppPrivatePlaylistIdRouteImport } from './routes/_app._private.playlist.$id'
+import { Route as AppPrivateWishlistIndexRouteImport } from './routes/_app._private.wishlist.index'
+import { Route as AppPrivateWishlistIdRouteImport } from './routes/_app._private.wishlist.$id'
 import { Route as AppAdminGiochiSlugRouteImport } from './routes/_app.admin.giochi.$slug'
 
 const AppRoute = AppRouteImport.update({
@@ -152,6 +157,31 @@ const AppGamesSlugRoute = AppGamesSlugRouteImport.update({
   path: '/games/$slug',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSharedTokenRoute = AppSharedTokenRouteImport.update({
+  id: '/shared/$token',
+  path: '/shared/$token',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPrivatePlaylistIndexRoute = AppPrivatePlaylistIndexRouteImport.update({
+  id: '/playlist/',
+  path: '/playlist/',
+  getParentRoute: () => AppPrivateRoute,
+} as any)
+const AppPrivatePlaylistIdRoute = AppPrivatePlaylistIdRouteImport.update({
+  id: '/playlist/$id',
+  path: '/playlist/$id',
+  getParentRoute: () => AppPrivateRoute,
+} as any)
+const AppPrivateWishlistIndexRoute = AppPrivateWishlistIndexRouteImport.update({
+  id: '/wishlist/',
+  path: '/wishlist/',
+  getParentRoute: () => AppPrivateRoute,
+} as any)
+const AppPrivateWishlistIdRoute = AppPrivateWishlistIdRouteImport.update({
+  id: '/wishlist/$id',
+  path: '/wishlist/$id',
+  getParentRoute: () => AppPrivateRoute,
+} as any)
 const AppAdminGiochiSlugRoute = AppAdminGiochiSlugRouteImport.update({
   id: '/giochi/$slug',
   path: '/giochi/$slug',
@@ -178,9 +208,14 @@ export interface FileRoutesByFullPath {
   '/admin/segnalati': typeof AppAdminSegnalatiRoute
   '/admin/utenti': typeof AppAdminUtentiRoute
   '/games/$slug': typeof AppGamesSlugRoute
+  '/shared/$token': typeof AppSharedTokenRoute
   '/account/': typeof AppAccountIndexRoute
   '/admin/': typeof AppAdminIndexRoute
+  '/playlist/$id': typeof AppPrivatePlaylistIdRoute
+  '/wishlist/$id': typeof AppPrivateWishlistIdRoute
   '/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
+  '/playlist/': typeof AppPrivatePlaylistIndexRoute
+  '/wishlist/': typeof AppPrivateWishlistIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
@@ -200,9 +235,14 @@ export interface FileRoutesByTo {
   '/admin/segnalati': typeof AppAdminSegnalatiRoute
   '/admin/utenti': typeof AppAdminUtentiRoute
   '/games/$slug': typeof AppGamesSlugRoute
+  '/shared/$token': typeof AppSharedTokenRoute
   '/account': typeof AppAccountIndexRoute
   '/admin': typeof AppAdminIndexRoute
+  '/playlist/$id': typeof AppPrivatePlaylistIdRoute
+  '/wishlist/$id': typeof AppPrivateWishlistIdRoute
   '/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
+  '/playlist': typeof AppPrivatePlaylistIndexRoute
+  '/wishlist': typeof AppPrivateWishlistIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -228,9 +268,14 @@ export interface FileRoutesById {
   '/_app/admin/segnalati': typeof AppAdminSegnalatiRoute
   '/_app/admin/utenti': typeof AppAdminUtentiRoute
   '/_app/games/$slug': typeof AppGamesSlugRoute
+  '/_app/shared/$token': typeof AppSharedTokenRoute
   '/_app/account/': typeof AppAccountIndexRoute
   '/_app/admin/': typeof AppAdminIndexRoute
+  '/_app/_private/playlist/$id': typeof AppPrivatePlaylistIdRoute
+  '/_app/_private/wishlist/$id': typeof AppPrivateWishlistIdRoute
   '/_app/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
+  '/_app/_private/playlist/': typeof AppPrivatePlaylistIndexRoute
+  '/_app/_private/wishlist/': typeof AppPrivateWishlistIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -254,9 +299,14 @@ export interface FileRouteTypes {
     | '/admin/segnalati'
     | '/admin/utenti'
     | '/games/$slug'
+    | '/shared/$token'
     | '/account/'
     | '/admin/'
+    | '/playlist/$id'
+    | '/wishlist/$id'
     | '/admin/giochi/$slug'
+    | '/playlist/'
+    | '/wishlist/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -276,9 +326,14 @@ export interface FileRouteTypes {
     | '/admin/segnalati'
     | '/admin/utenti'
     | '/games/$slug'
+    | '/shared/$token'
     | '/account'
     | '/admin'
+    | '/playlist/$id'
+    | '/wishlist/$id'
     | '/admin/giochi/$slug'
+    | '/playlist'
+    | '/wishlist'
   id:
     | '__root__'
     | '/_app'
@@ -303,9 +358,14 @@ export interface FileRouteTypes {
     | '/_app/admin/segnalati'
     | '/_app/admin/utenti'
     | '/_app/games/$slug'
+    | '/_app/shared/$token'
     | '/_app/account/'
     | '/_app/admin/'
+    | '/_app/_private/playlist/$id'
+    | '/_app/_private/wishlist/$id'
     | '/_app/admin/giochi/$slug'
+    | '/_app/_private/playlist/'
+    | '/_app/_private/wishlist/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -483,6 +543,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGamesSlugRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/shared/$token': {
+      id: '/_app/shared/$token'
+      path: '/shared/$token'
+      fullPath: '/shared/$token'
+      preLoaderRoute: typeof AppSharedTokenRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/_private/playlist/': {
+      id: '/_app/_private/playlist/'
+      path: '/playlist'
+      fullPath: '/playlist/'
+      preLoaderRoute: typeof AppPrivatePlaylistIndexRouteImport
+      parentRoute: typeof AppPrivateRoute
+    }
+    '/_app/_private/playlist/$id': {
+      id: '/_app/_private/playlist/$id'
+      path: '/playlist/$id'
+      fullPath: '/playlist/$id'
+      preLoaderRoute: typeof AppPrivatePlaylistIdRouteImport
+      parentRoute: typeof AppPrivateRoute
+    }
+    '/_app/_private/wishlist/': {
+      id: '/_app/_private/wishlist/'
+      path: '/wishlist'
+      fullPath: '/wishlist/'
+      preLoaderRoute: typeof AppPrivateWishlistIndexRouteImport
+      parentRoute: typeof AppPrivateRoute
+    }
+    '/_app/_private/wishlist/$id': {
+      id: '/_app/_private/wishlist/$id'
+      path: '/wishlist/$id'
+      fullPath: '/wishlist/$id'
+      preLoaderRoute: typeof AppPrivateWishlistIdRouteImport
+      parentRoute: typeof AppPrivateRoute
+    }
     '/_app/admin/giochi/$slug': {
       id: '/_app/admin/giochi/$slug'
       path: '/giochi/$slug'
@@ -495,10 +590,18 @@ declare module '@tanstack/react-router' {
 
 interface AppPrivateRouteChildren {
   AppPrivateBacklogRoute: typeof AppPrivateBacklogRoute
+  AppPrivatePlaylistIdRoute: typeof AppPrivatePlaylistIdRoute
+  AppPrivateWishlistIdRoute: typeof AppPrivateWishlistIdRoute
+  AppPrivatePlaylistIndexRoute: typeof AppPrivatePlaylistIndexRoute
+  AppPrivateWishlistIndexRoute: typeof AppPrivateWishlistIndexRoute
 }
 
 const AppPrivateRouteChildren: AppPrivateRouteChildren = {
   AppPrivateBacklogRoute: AppPrivateBacklogRoute,
+  AppPrivatePlaylistIdRoute: AppPrivatePlaylistIdRoute,
+  AppPrivateWishlistIdRoute: AppPrivateWishlistIdRoute,
+  AppPrivatePlaylistIndexRoute: AppPrivatePlaylistIndexRoute,
+  AppPrivateWishlistIndexRoute: AppPrivateWishlistIndexRoute,
 }
 
 const AppPrivateRouteWithChildren = AppPrivateRoute._addFileChildren(
@@ -557,6 +660,7 @@ interface AppRouteChildren {
   AppTermsRoute: typeof AppTermsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppGamesSlugRoute: typeof AppGamesSlugRoute
+  AppSharedTokenRoute: typeof AppSharedTokenRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -569,6 +673,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTermsRoute: AppTermsRoute,
   AppIndexRoute: AppIndexRoute,
   AppGamesSlugRoute: AppGamesSlugRoute,
+  AppSharedTokenRoute: AppSharedTokenRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

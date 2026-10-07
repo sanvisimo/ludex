@@ -17,7 +17,15 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { House, Library, LogOut, Shield, User } from '@repo/ui/icons';
+import {
+  Heart,
+  House,
+  Library,
+  ListFilter,
+  LogOut,
+  Shield,
+  User,
+} from '@repo/ui/icons';
 import { useMatchRoute, useRouter } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
 import { useState, type ComponentProps, type ReactNode } from 'react';
@@ -134,6 +142,18 @@ function UserDropdown({ name, isAdmin }: { name: string; isAdmin: boolean }) {
           {t('backlog')}
         </DropdownMenuItem>
         <DropdownMenuItem
+          icon={<ListFilter size={16} />}
+          onClick={() => void router.navigate({ to: '/playlist' })}
+        >
+          {t('playlists')}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          icon={<Heart size={16} />}
+          onClick={() => void router.navigate({ to: '/wishlist' })}
+        >
+          {t('wishlist')}
+        </DropdownMenuItem>
+        <DropdownMenuItem
           icon={<User size={16} />}
           onClick={() => void router.navigate({ to: '/account' })}
         >
@@ -233,6 +253,20 @@ function UserSheet({ name, isAdmin }: { name: string; isAdmin: boolean }) {
             onNavigate={close}
           >
             {t('backlog')}
+          </SheetLink>
+          <SheetLink
+            to="/playlist"
+            icon={<ListFilter size={16} />}
+            onNavigate={close}
+          >
+            {t('playlists')}
+          </SheetLink>
+          <SheetLink
+            to="/wishlist"
+            icon={<Heart size={16} />}
+            onNavigate={close}
+          >
+            {t('wishlist')}
           </SheetLink>
           <SheetLink to="/account" icon={<User size={16} />} onNavigate={close}>
             {t('account')}
@@ -384,7 +418,7 @@ function SheetLink({
   onNavigate,
   children,
 }: {
-  to: '/' | '/backlog' | '/account' | '/admin';
+  to: '/' | '/backlog' | '/playlist' | '/wishlist' | '/account' | '/admin';
   icon: ReactNode;
   onNavigate: () => void;
   children: string;
