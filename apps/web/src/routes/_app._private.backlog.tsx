@@ -26,15 +26,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { AddGameDialog } from '@/components/add-game-dialog';
 import { BacklogToolbar, FilterPanel } from '@/components/backlog-filters';
 import { ManagedEntries } from '@/components/entry-list';
+import { GridProbe, useGridColumns } from '@/components/grid-columns';
 import { PageSizeSelect } from '@/components/page-size-select';
 import {
   type BacklogView,
-  pageSizeValues,
   toQueryInput,
   useBacklogFilter,
   validateBacklogSearch,
 } from '@/lib/backlog-filter';
 import { api } from '@/lib/orpc';
+import { pageSizeOptions, pageStep, snapPageSize } from '@/lib/page-size';
 import { Page } from '@/src/components/page';
 import { takeLinkClick } from '@/src/link-click';
 
@@ -52,10 +53,20 @@ function BacklogPage() {
     useBacklogFilter();
   const inHidden = filter.hidden;
 
-  const input = useMemo(() => toQueryInput(filter), [filter]);
+  // Quanti giochi per pagina: un multiplo delle colonne che si vedono, così le
+  // pagine finiscono a riga piena. Le colonne si misurano nel browser; la
+  // lista aspetta di sapere quante sono, o chiederebbe due volte.
+  const grid = useGridColumns();
+  const isGrid = filter.view === 'grid';
+  const step = pageStep(isGrid, grid.columns ?? 1);
+  const size = snapPageSize(filter.size, step);
+  const sizeKnown = !isGrid || grid.columns !== null;
+
+  const input = useMemo(() => toQueryInput(filter, size), [filter, size]);
 
   const backlog = useQuery({
     ...api.backlog.list.queryOptions({ input }),
+    enabled: sizeKnown,
     // La lista precedente resta a schermo mentre arriva quella nuova: senza,
     // ogni tasto nel campo di ricerca farebbe lampeggiare gli scheletri.
     placeholderData: (precedente) => precedente,
@@ -70,7 +81,7 @@ function BacklogPage() {
 
   const entries = backlog.data?.entries ?? [];
   const total = backlog.data?.total ?? 0;
-  const pageCount = Math.ceil(total / filter.size);
+  const pageCount = Math.ceil(total / size);
 
   // Una pagina oltre l'ultima — un link vecchio, o un gioco nascosto
   // dall'ultima pagina che aveva solo lui — torna alla prima invece di dire
@@ -154,7 +165,8 @@ function BacklogPage() {
       {/* Tutta la larghezza alla lista: i filtri stanno nel drawer, anche
           sul desktop, dove una colonna fissa accanto alla barra del guscio
           sembrava un secondo menu. */}
-      <YStack gap={16}>
+      <YStack gap={16} position="relative">
+        <GridProbe probeRef={grid.ref} />
         {backlog.error ? (
           <Text fontSize={14} color="$red11">
             {t('error')}
@@ -206,9 +218,10 @@ function BacklogPage() {
               $sm={{ justify: 'space-between' }}
               gap={16}
             >
-              {total > pageSizeValues[0] && (
+              {total > pageSizeOptions(step)[0]! && (
                 <PageSizeSelect
-                  value={filter.size}
+                  value={size}
+                  options={pageSizeOptions(step)}
                   onChange={(size) => void setFilter({ size })}
                 />
               )}

@@ -22,14 +22,9 @@ import { getRouteApi, useRouter } from '@tanstack/react-router';
 export const backlogViewValues = ['grid', 'rows', 'compact'] as const;
 export type BacklogView = (typeof backlogViewValues)[number];
 
-/**
- * Quanti giochi per pagina si possono chiedere. 15 di default, e tutti sotto il
- * `max(200)` del contratto. Una scelta fissa e non un numero libero: un link
- * con `size=7` non deve aprire una pagina che nessun menu sa rifare.
- */
-export const pageSizeValues = [7, 14, 35, 70, 126] as const;
-export type PageSize = (typeof pageSizeValues)[number];
 import { useCallback, useMemo } from 'react';
+
+import { defaultPageSize, maxPageSize } from './page-size';
 
 /**
  * Lo stato del filtro vive nell'**URL**, non in React.
@@ -90,10 +85,12 @@ const pageNumber = (raw: unknown) => {
   return value !== undefined && value >= 1 ? value : undefined;
 };
 
+// Qualunque numero che il contratto accetta: i multipli giusti li sceglie la
+// pagina, in base alle colonne che vede (vedi `snapPageSize`).
 const pageSize = (raw: unknown) => {
   const value = integer(raw);
-  return (pageSizeValues as readonly number[]).includes(value ?? -1)
-    ? (value as PageSize)
+  return value !== undefined && value >= 1 && value <= maxPageSize
+    ? value
     : undefined;
 };
 
@@ -194,8 +191,9 @@ const fields = {
   page: field(pageNumber, 1),
   // Quanti giochi per pagina. Come la vista: nell'URL, non un filtro, e non
   // ricordata fra una visita e l'altra. Cambiarla riporta a pagina 1, perché
-  // la pagina 7 da 15 e la pagina 7 da 60 sono giochi diversi.
-  size: field(pageSize, 14 as PageSize),
+  // la pagina 7 da 14 e la pagina 7 da 70 sono giochi diversi. È il numero
+  // *chiesto*: la pagina lo porta al multiplo delle colonne più vicino.
+  size: field(pageSize, defaultPageSize),
 };
 
 type Key = keyof typeof fields;
@@ -278,7 +276,12 @@ const criteri = [
  * contratto è un campo **assente**. Mandare `q: ''` o `platforms: []` al server
  * significherebbe chiedergli di filtrare per niente, e lo schema li rifiuterebbe.
  */
-export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
+export function toQueryInput(
+  filter: BacklogFilterState,
+  // Quanti giochi chiedere davvero: `filter.size` portato al multiplo delle
+  // colonne. Senza, quello dell'URL così com'è.
+  size: number = filter.size,
+): BacklogQueryInput {
   const vuoto = <T>(value: T[]) => (value.length > 0 ? value : undefined);
 
   return {
@@ -308,8 +311,8 @@ export function toQueryInput(filter: BacklogFilterState): BacklogQueryInput {
     hidden: filter.hidden || undefined,
     sort: filter.sort,
     direction: filter.direction,
-    limit: filter.size,
-    offset: (filter.page - 1) * filter.size,
+    limit: size,
+    offset: (filter.page - 1) * size,
   };
 }
 
@@ -407,7 +410,7 @@ export function playlistSearch(
 export type PagingSearch = {
   view?: BacklogView;
   page?: number;
-  size?: PageSize;
+  size?: number;
 };
 
 export function validatePagingSearch(

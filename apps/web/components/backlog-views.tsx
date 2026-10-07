@@ -21,6 +21,7 @@ import { useTranslations } from 'use-intl';
 
 import { EntryTags } from '@/components/entry-tags';
 import { GameCover } from '@/components/game-cover';
+import { GRID_TEMPLATE } from '@/components/grid-columns';
 import { GameDuration } from '@/components/game-duration';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { OwnershipBadges } from '@/components/ownership-badges';
@@ -311,7 +312,7 @@ function GridView({
       m={0}
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(152px, 1fr))',
+        gridTemplateColumns: GRID_TEMPLATE,
         gap: 12,
       }}
     >

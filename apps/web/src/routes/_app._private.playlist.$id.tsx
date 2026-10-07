@@ -23,19 +23,24 @@ import { useTranslations } from 'use-intl';
 
 import { PlaylistChips } from '@/components/backlog-filters';
 import { ManagedEntries } from '@/components/entry-list';
+import { GridProbe, useGridColumns } from '@/components/grid-columns';
 import { SearchInput, SortSelect } from '@/components/list-controls';
 import { PageSizeSelect } from '@/components/page-size-select';
 import { PlaylistMenu } from '@/components/playlist-menu';
 import { hasErrorCode } from '@/lib/api-error';
 import {
   type BacklogView,
-  type PageSize,
-  pageSizeValues,
   type PlaylistSearch,
   playlistSearch,
   validatePlaylistSearch,
 } from '@/lib/backlog-filter';
 import { api } from '@/lib/orpc';
+import {
+  defaultPageSize,
+  pageSizeOptions,
+  pageStep,
+  snapPageSize,
+} from '@/lib/page-size';
 import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
 import { takeLinkClick } from '@/src/link-click';
@@ -62,7 +67,11 @@ function PlaylistPage() {
 
   const view: BacklogView = search.view ?? 'grid';
   const page = search.page ?? 1;
-  const size: PageSize = search.size ?? pageSizeValues[1];
+  // Un multiplo delle colonne che si vedono, come in `/backlog`.
+  const grid = useGridColumns();
+  const step = pageStep(view === 'grid', grid.columns ?? 1);
+  const size = snapPageSize(search.size ?? defaultPageSize, step);
+  const sizeKnown = view !== 'grid' || grid.columns !== null;
 
   const playlist = useQuery({
     ...api.playlists.get.queryOptions({
@@ -78,6 +87,7 @@ function PlaylistPage() {
     // La pagina di prima resta a schermo mentre arriva la nuova, ma solo di
     // questa playlist: aprirne un'altra non deve mostrare i giochi della prima.
     placeholderData: (previous) => (previous?.id === id ? previous : undefined),
+    enabled: sizeKnown,
   });
 
   const entries = playlist.data?.entries ?? [];
@@ -257,7 +267,8 @@ function PlaylistPage() {
         </YStack>
       )}
 
-      <YStack gap={16}>
+      <YStack gap={16} position="relative">
+        <GridProbe probeRef={grid.ref} />
         {playlist.isPending ? (
           <YStack gap={8}>
             {Array.from({ length: 3 }).map((_, index) => (
@@ -283,9 +294,10 @@ function PlaylistPage() {
               $sm={{ justify: 'space-between' }}
               gap={16}
             >
-              {total > pageSizeValues[0] && (
+              {total > pageSizeOptions(step)[0]! && (
                 <PageSizeSelect
                   value={size}
+                  options={pageSizeOptions(step)}
                   onChange={(next) =>
                     // Cambiare quanti per pagina riporta alla prima.
                     void navigate({

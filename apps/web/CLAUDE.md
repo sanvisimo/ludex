@@ -24,12 +24,32 @@ query string sono separate da virgole e non in JSON, per `stringifySearch` in
 
 **`/backlog` tiene tutto nell'URL** (`apps/web/lib/backlog-filter.ts`): i
 filtri, l'ordinamento, la vista (`view`: griglia di default, poi righe e compatta), la pagina
-(`page`) e quanti giochi per pagina (`size`: 14, 35, 70 o 126, di default 14).
+(`page`) e quanti giochi per pagina (`size`, di default 14: il numero _chiesto_,
+vedi sotto).
 Ogni `setFilter` riporta a pagina 1 e non
 lascia voci nella cronologia; `goToPage` sì, perché «indietro» deve tornare
 alla pagina di prima. Una pagina oltre la fine torna alla prima e non
 all'ultima: con `count(*) over()` e nessuna riga restituita il server risponde
 `total: 0`, e l'ultima non la sa.
+
+**Quanti giochi per pagina seguono le colonne** (`lib/page-size.ts`,
+`components/grid-columns.tsx`): un multiplo delle colonne che si vedono, così ogni
+pagina finisce a riga piena e non solo l'ultima. Il menu offre colonne × 1, 2, 5,
+10, 15 righe; `size` nell'URL è il numero chiesto e la pagina lo porta al
+multiplo più vicino (`snapPageSize`), quindi un link con `size=14` su 3 colonne
+chiede 15. Cose che non si indovinano:
+
+- **Le colonne si misurano, non si calcolano**: `GridProbe` è una griglia vuota,
+  invisibile e fuori dal flusso, con lo stesso `GRID_TEMPLATE` della griglia vera,
+  e `useGridColumns` ne legge le colonne risolte dal browser. Serve una sonda e
+  non la griglia vera perché questa compare con la prima risposta, che dipende
+  proprio da quanti giochi chiedere. Una griglia `auto-fill` senza figli ha comunque
+  le sue colonne (provato in Chrome). La lista **non chiede finché non ha
+  misurato**, o farebbe due richieste.
+- **Le viste righe e compatta** hanno una colonna sola, e usano il passo di una
+  griglia larga (7): stessi numeri nel menu, senza pagine di un'altra misura.
+- **Ridimensionare la finestra** fino a cambiare le colonne cambia il numero per
+  pagina e rilegge la lista: la pagina resta quella, i giochi si spostano.
 
 **Le playlist** (`/playlist` e `/playlist/$id`, step 15a) sono i filtri di
 `/backlog` salvati con un nome: la query gira a ogni apertura. L'elenco è come
