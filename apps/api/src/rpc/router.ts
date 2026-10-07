@@ -51,6 +51,13 @@ import { exportAccount } from '../services/account-export';
 import { listUsers } from '../services/admin-users';
 import { listHomeBands } from '../services/home';
 import {
+  createPlaylist,
+  deletePlaylist,
+  listPlaylists,
+  openPlaylist,
+  updatePlaylist,
+} from '../services/playlists';
+import {
   closeReports,
   createReports,
   listOpenReports,
@@ -435,6 +442,51 @@ export const router = os.router({
       if (!removed)
         throw new ORPCError('NOT_FOUND', { message: 'Tag inesistente' });
     }),
+  },
+
+  playlists: {
+    list: os.playlists.list
+      .use(authed)
+      .handler(({ context }) => listPlaylists(context.user.id)),
+
+    get: os.playlists.get.use(authed).handler(async ({ input, context }) => {
+      const playlist = await openPlaylist(context.user.id, input);
+      if (!playlist)
+        throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+      return playlist;
+    }),
+
+    create: os.playlists.create
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const playlist = await createPlaylist(context.user.id, input);
+        if (!playlist)
+          throw new ORPCError('CONFLICT', {
+            message: 'Hai già una playlist con questo nome',
+          });
+        return playlist;
+      }),
+
+    update: os.playlists.update
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const playlist = await updatePlaylist(context.user.id, input);
+        if (playlist === null)
+          throw new ORPCError('CONFLICT', {
+            message: 'Hai già una playlist con questo nome',
+          });
+        if (!playlist)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+        return playlist;
+      }),
+
+    remove: os.playlists.remove
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const removed = await deletePlaylist(context.user.id, input.id);
+        if (!removed)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+      }),
   },
 
   backlog: {

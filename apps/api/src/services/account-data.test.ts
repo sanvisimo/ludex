@@ -62,6 +62,16 @@ async function populate(userId: string, game?: { id: string }) {
   await db
     .insert(schema.backlogTags)
     .values({ backlogId: entryId, tagId: tag!.id });
+  await db.insert(schema.playlists).values({
+    userId,
+    name: 'Da rigiocare, in breve',
+    query: {
+      tags: [tag!.id],
+      durationMax: 120,
+      sort: 'addedAt',
+      direction: 'desc',
+    },
+  });
   await db.insert(schema.ownershipRejections).values({
     backlogId: entryId,
     platformSlug: 'pc_windows',
@@ -121,6 +131,12 @@ async function leftovers(userId: string) {
         .from(schema.userTags)
         .where(eq(schema.userTags.userId, userId)),
     ),
+    playlists: own(
+      await db
+        .select()
+        .from(schema.playlists)
+        .where(eq(schema.playlists.userId, userId)),
+    ),
     unresolved: own(
       await db
         .select()
@@ -149,6 +165,7 @@ const NONE = {
   backlog: 0,
   storeAccounts: 0,
   userTags: 0,
+  playlists: 0,
   unresolved: 0,
   reports: 0,
   settings: 0,
@@ -277,6 +294,16 @@ describe('esportare i dati', () => {
         },
       ],
     });
+    // I tag della playlist escono per nome: un id non dice niente fuori da qui.
+    expect(data.playlists).toEqual([
+      expect.objectContaining({
+        name: 'Da rigiocare, in breve',
+        query: expect.objectContaining({
+          tags: ['Da rigiocare'],
+          durationMax: 120,
+        }),
+      }),
+    ]);
     expect(data.storeAccounts).toHaveLength(1);
     expect(data.unresolvedImports).toHaveLength(1);
     expect(data.reports).toHaveLength(1);

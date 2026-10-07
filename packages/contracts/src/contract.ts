@@ -30,6 +30,10 @@ import {
   OpenReportSchema,
   OwnershipInputSchema,
   PlatformSchema,
+  PlaylistDetailSchema,
+  PlaylistNameSchema,
+  PlaylistQuerySchema,
+  PlaylistSchema,
   RatingSchema,
   RepointPreviewSchema,
   ReportGroupSchema,
@@ -320,6 +324,44 @@ export const contract = {
     // per quello basta togliere la spunta: qui il tag **sparisce da tutti i
     // giochi**, per via del cascade sul raccordo. Esiste perché con una lista da
     // spuntare un refuso resterebbe a schermo per sempre.
+    remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+  },
+
+  // Le playlist (step 15a): filtri del backlog salvati con un nome. Tutte
+  // partono dall'utente: una playlist altrui è `NOT_FOUND`, non «vietata».
+  playlists: {
+    list: oc.output(z.array(PlaylistSchema)),
+
+    // La playlist **aperta**: la sua query eseguita, con la pagina chiesta dal
+    // chiamante. La paginazione non sta nella query salvata.
+    get: oc
+      .input(
+        z.object({
+          id: z.uuid(),
+          limit: z.number().int().min(1).max(200).default(50),
+          offset: z.number().int().min(0).default(0),
+        }),
+      )
+      .output(PlaylistDetailSchema),
+
+    // `CONFLICT` se l'utente ha già una playlist con quel nome, senza guardare
+    // le maiuscole.
+    create: oc
+      .input(z.object({ name: PlaylistNameSchema, query: PlaylistQuerySchema }))
+      .output(PlaylistSchema),
+
+    // Rinomina, riscrive i filtri, o tutte e due. Chi non manda un campo lo
+    // lascia com'è.
+    update: oc
+      .input(
+        z.object({
+          id: z.uuid(),
+          name: PlaylistNameSchema.optional(),
+          query: PlaylistQuerySchema.optional(),
+        }),
+      )
+      .output(PlaylistSchema),
+
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
   },
 

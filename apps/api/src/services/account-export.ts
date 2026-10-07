@@ -84,6 +84,20 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
         .where(inArray(schema.backlogTags.backlogId, ids))
     : [];
 
+  // Le playlist tengono i tag per id, e un id non dice niente fuori da Ludex:
+  // nel file ci vanno i nomi. Un tag già cancellato non ha più un nome, e si
+  // lascia fuori come fa la playlist quando gira.
+  const vocabulary = await db
+    .select({ id: schema.userTags.id, name: schema.userTags.name })
+    .from(schema.userTags)
+    .where(eq(schema.userTags.userId, userId));
+  const tagName = new Map(vocabulary.map((tag) => [tag.id, tag.name] as const));
+  const playlists = await db
+    .select()
+    .from(schema.playlists)
+    .where(eq(schema.playlists.userId, userId))
+    .orderBy(asc(schema.playlists.name));
+
   const unresolved = await db
     .select()
     .from(schema.unresolvedImports)
@@ -153,6 +167,15 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
       hiddenAt: u.hiddenAt,
       hiddenKind: u.hiddenKind,
     })),
+    playlists: playlists.map((playlist) => {
+      const { tags: tagIds, ...query } = playlist.query;
+      const names = (tagIds ?? []).flatMap((id) => tagName.get(id) ?? []);
+      return {
+        name: playlist.name,
+        query: { ...query, ...(names.length > 0 && { tags: names }) },
+        createdAt: playlist.createdAt,
+      };
+    }),
     reports,
   };
 }

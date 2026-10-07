@@ -439,78 +439,6 @@ export const UserSettingsSchema = z.object({
   autoSyncLibrary: z.boolean(),
 });
 
-// L'esportazione dell'account (step 16, GDPR art. 20): tutto ciò che Ludex ha
-// della persona, in una forma che un altro servizio sa leggere. **Senza token
-// dei negozi, senza hash della password, senza sessioni**: non sono dati suoi.
-// I giochi ci stanno col nome e l'id IGDB, per ritrovarli altrove.
-export const AccountExportSchema = z.object({
-  exportedAt: z.date(),
-  profile: z.object({
-    name: z.string(),
-    email: z.string(),
-    createdAt: z.date(),
-  }),
-  settings: UserSettingsSchema,
-  storeAccounts: z.array(
-    z.object({
-      store: StoreSchema,
-      storeName: z.string().nullable(),
-      label: z.string().nullable(),
-      linkedAt: z.date(),
-      lastSyncAt: z.date().nullable(),
-    }),
-  ),
-  library: z.array(
-    z.object({
-      game: z.object({ name: z.string(), igdbId: z.number().nullable() }),
-      status: BacklogStatusSchema,
-      rating: z.number().nullable(),
-      notes: z.string().nullable(),
-      addedAt: z.date(),
-      hiddenAt: z.date().nullable(),
-      tags: z.array(z.object({ kind: UserTagKindSchema, name: z.string() })),
-      ownerships: z.array(
-        z.object({
-          platform: z.string(),
-          store: StoreSchema.nullable(),
-          account: z.string().nullable(),
-          medium: MediumSchema.nullable(),
-          subscription: SubscriptionSchema.nullable(),
-          playtimeMinutes: z.number().nullable(),
-          lastPlayedAt: z.date().nullable(),
-          acquiredAt: z.date().nullable(),
-          storePage: z.string().nullable(),
-        }),
-      ),
-    }),
-  ),
-  unresolvedImports: z.array(
-    z.object({
-      store: StoreSchema,
-      name: z.string(),
-      externalId: z.string(),
-      platform: z.string().nullable(),
-      playtimeMinutes: z.number().nullable(),
-      hiddenAt: z.date().nullable(),
-      hiddenKind: HiddenKindSchema.nullable(),
-    }),
-  ),
-  reports: z.array(
-    z.object({
-      game: z.string(),
-      igdbId: z.number().nullable(),
-      store: StoreSchema.nullable(),
-      source: z.string().nullable(),
-      suggestedName: z.string().nullable(),
-      suggestedIgdbId: z.number().nullable(),
-      note: z.string().nullable(),
-      createdAt: z.date(),
-      resolvedAt: z.date().nullable(),
-    }),
-  ),
-});
-export type AccountExport = z.infer<typeof AccountExportSchema>;
-
 // Una voce di libreria che l'import non ha saputo legare a un gioco. Il nome è
 // quello del negozio: è tutto ciò che si può mostrare per farla riconoscere.
 export const UnresolvedImportSchema = z.object({
@@ -631,6 +559,134 @@ export const BacklogListSchema = z.object({
   entries: z.array(BacklogEntrySchema),
   total: z.number().int(),
 });
+
+// --- Playlist (step 15a) ---
+
+/**
+ * Ciò che una playlist ricorda: i criteri e l'ordinamento di `BacklogQuery`.
+ *
+ * Non `limit` e `offset`, che sono la pagina in cui si sta guardando, e non
+ * `hidden`, che è una vista e non un filtro: una playlist dei nascosti
+ * sarebbe una playlist che si apre vuota. Zod scarta i campi che non conosce,
+ * quindi una playlist salvata con un campo poi tolto non si rompe: mostra solo
+ * più giochi. Per questo togliere o rinominare un campo vuole una migration
+ * (vedi `playlists`, nello schema).
+ */
+export const PlaylistQuerySchema = BacklogFilterSchema.omit({
+  hidden: true,
+}).extend({
+  sort: BacklogSortSchema.default('addedAt'),
+  direction: SortDirectionSchema.default('desc'),
+});
+
+export const PlaylistNameSchema = z.string().trim().min(1).max(80);
+
+export const PlaylistSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  query: PlaylistQuerySchema,
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+/**
+ * Una playlist aperta: la sua query eseguita, più quello che l'utente deve
+ * sapere sul modo in cui è stata eseguita.
+ *
+ * `missingTags` sono i tag salvati nella query che non esistono più. Si
+ * ignorano, non svuotano la playlist: ma la lista mostra più giochi del
+ * previsto, e senza questo numero nessuno sa perché.
+ */
+export const PlaylistDetailSchema = PlaylistSchema.extend({
+  entries: z.array(BacklogEntrySchema),
+  total: z.number().int(),
+  missingTags: z.number().int(),
+});
+
+// Sta dopo le playlist, che contiene, e non vicino alle altre preferenze:
+// `const` non si legge prima della sua riga.
+// L'esportazione dell'account (step 16, GDPR art. 20): tutto ciò che Ludex ha
+// della persona, in una forma che un altro servizio sa leggere. **Senza token
+// dei negozi, senza hash della password, senza sessioni**: non sono dati suoi.
+// I giochi ci stanno col nome e l'id IGDB, per ritrovarli altrove.
+export const AccountExportSchema = z.object({
+  exportedAt: z.date(),
+  profile: z.object({
+    name: z.string(),
+    email: z.string(),
+    createdAt: z.date(),
+  }),
+  settings: UserSettingsSchema,
+  storeAccounts: z.array(
+    z.object({
+      store: StoreSchema,
+      storeName: z.string().nullable(),
+      label: z.string().nullable(),
+      linkedAt: z.date(),
+      lastSyncAt: z.date().nullable(),
+    }),
+  ),
+  library: z.array(
+    z.object({
+      game: z.object({ name: z.string(), igdbId: z.number().nullable() }),
+      status: BacklogStatusSchema,
+      rating: z.number().nullable(),
+      notes: z.string().nullable(),
+      addedAt: z.date(),
+      hiddenAt: z.date().nullable(),
+      tags: z.array(z.object({ kind: UserTagKindSchema, name: z.string() })),
+      ownerships: z.array(
+        z.object({
+          platform: z.string(),
+          store: StoreSchema.nullable(),
+          account: z.string().nullable(),
+          medium: MediumSchema.nullable(),
+          subscription: SubscriptionSchema.nullable(),
+          playtimeMinutes: z.number().nullable(),
+          lastPlayedAt: z.date().nullable(),
+          acquiredAt: z.date().nullable(),
+          storePage: z.string().nullable(),
+        }),
+      ),
+    }),
+  ),
+  unresolvedImports: z.array(
+    z.object({
+      store: StoreSchema,
+      name: z.string(),
+      externalId: z.string(),
+      platform: z.string().nullable(),
+      playtimeMinutes: z.number().nullable(),
+      hiddenAt: z.date().nullable(),
+      hiddenKind: HiddenKindSchema.nullable(),
+    }),
+  ),
+  playlists: z.array(
+    z.object({
+      name: z.string(),
+      // I criteri come stanno salvati, ma i tag per **nome**: un id non vuol
+      // dire niente fuori da Ludex, e la libreria li dà già per nome.
+      query: PlaylistQuerySchema.omit({ tags: true }).extend({
+        tags: z.array(z.string()).optional(),
+      }),
+      createdAt: z.date(),
+    }),
+  ),
+  reports: z.array(
+    z.object({
+      game: z.string(),
+      igdbId: z.number().nullable(),
+      store: StoreSchema.nullable(),
+      source: z.string().nullable(),
+      suggestedName: z.string().nullable(),
+      suggestedIgdbId: z.number().nullable(),
+      note: z.string().nullable(),
+      createdAt: z.date(),
+      resolvedAt: z.date().nullable(),
+    }),
+  ),
+});
+export type AccountExport = z.infer<typeof AccountExportSchema>;
 
 /**
  * Di che cosa si compone il pannello dei filtri per *questo* utente.
@@ -953,5 +1009,9 @@ export type SortDirection = z.infer<typeof SortDirectionSchema>;
 // a `apps/api`; il client ne manda una versione con quei quattro opzionali.
 export type BacklogQuery = z.infer<typeof BacklogQuerySchema>;
 export type BacklogQueryInput = z.input<typeof BacklogQuerySchema>;
+export type PlaylistQuery = z.infer<typeof PlaylistQuerySchema>;
+export type PlaylistQueryInput = z.input<typeof PlaylistQuerySchema>;
+export type Playlist = z.infer<typeof PlaylistSchema>;
+export type PlaylistDetail = z.infer<typeof PlaylistDetailSchema>;
 export type BacklogFilterOptions = z.infer<typeof BacklogFilterOptionsSchema>;
 export type FilterAttribute = z.infer<typeof FilterAttributeSchema>;
