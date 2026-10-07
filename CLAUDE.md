@@ -163,7 +163,9 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
 12. UI
 13. AI: raccomandazione, provider LLM, embedding
 14. Gestione abbonamenti
-15. Wishlist e playlist (liste dell'utente coi filtri)
+15. Playlist, wishlist e gioco a caso: 15a Playlist (filtri del backlog
+    salvati con un nome, per prima) · 15b Wishlist (riusa la tabella delle
+    playlist) · 15c Gioco a caso (un pulsante in `/backlog`)
 16. Cancellazione ed esportazione dell'account
 
 Poi il mobile. Non anticipare step successivi: se una feature appartiene allo

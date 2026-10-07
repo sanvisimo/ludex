@@ -161,12 +161,12 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
     questo step decidesse di cancellare, dovrebbe **chiedere prima** — è
     l'unico momento in cui l'utente ha l'informazione e noi no.
 
-15. **Wishlist e playlist** — la wishlist è una tabella separata da `backlog`,
-    arricchita come i giochi posseduti.
+15. **Playlist, wishlist e gioco a caso** — tre pezzi, nell'ordine 15a, 15b,
+    15c. La 15b riusa la tabella della 15a; la 15c non dipende dalle altre due.
 
-    **Creazione di sliders/playlist** (aggiunta il 06/10/2026). Le liste in
-    homepage sono comode, e sarebbe bello che ogni utente potesse crearne di
-    sue coi filtri. Va fatta **insieme alla wishlist**. Decisioni prese il
+    **15a — Playlist** (aggiunta il 06/10/2026, **da fare per prima**). I filtri
+    del backlog salvati con un nome. Le liste in homepage sono comode, e sarebbe
+    bello che ogni utente potesse crearne di sue. Decisioni prese il
     06/10/2026:
     - **leggono il backlog** (non il catalogo), e sono **dinamiche**: una
       playlist è un `BacklogQuery` salvato con un nome, per utente, e la query
@@ -178,8 +178,28 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
       salvate. Altrimenti Zod scarta il campo in silenzio e la playlist
       mostrerebbe più giochi del previsto. I tag sono salvati per id: uno
       cancellato si ignora, e la playlist lo dice.
-    - **prima la tabella delle playlist**: la wishlist può riusarla come
-      «lista con nome».
+    - **la tabella viene per prima**: la wishlist (15b) la riusa come «lista
+      con nome».
+
+    **15b — Wishlist.** Una tabella separata da `backlog`, arricchita come i
+    giochi posseduti. Riusa la tabella delle playlist (15a) come «lista con
+    nome».
+
+    **15c — Gioco a caso** (aggiunto il 07/10/2026). Un pulsante che porta alla
+    scheda di un gioco preso a caso dal proprio backlog. Aiuta a rispondere a
+    «cosa gioco adesso» senza ragionamento: la scelta è SQL, l'LLM non c'entra
+    e non dipende dallo step 13. Decisioni prese il 07/10/2026:
+    - **pesca fra i giochi dell'utente con stato `backlog` («da giocare») e non
+      nascosti** (`hidden_at` nullo). Una procedura oRPC ne restituisce uno; il
+      pulsante fa `navigate` alla scheda del gioco. Con il backlog vuoto non c'è
+      niente da aprire: il pulsante è disabilitato o lo dice.
+    - **sta nella toolbar di `/backlog`**, non in homepage: la home è il
+      catalogo di tutti, uguale per tutti anche da anonimi, e non parla della
+      libreria di chi guarda. Il punto preciso si fissa col wireframe, quando
+      arriva lo step.
+    - **ignora i filtri della pagina**. Pescare dentro i filtri attivi, o dentro
+      una playlist, è un'estensione possibile ma lo lega a `BacklogQuery`: non
+      è nel primo giro.
 
 16. **Cancellazione ed esportazione dell'account** — **fatto il 06/10/2026**
     (piano in `plans/16-cancellazione-esportazione.md`). L'utente elimina il
