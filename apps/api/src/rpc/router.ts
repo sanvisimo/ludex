@@ -54,6 +54,7 @@ import {
   createPlaylist,
   deletePlaylist,
   listPlaylists,
+  movePlaylist,
   openPlaylist,
   updatePlaylist,
 } from '../services/playlists';
@@ -479,6 +480,16 @@ export const router = os.router({
           throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
         return playlist;
       }),
+
+    move: os.playlists.move.use(authed).handler(async ({ input, context }) => {
+      const moved = await movePlaylist(
+        context.user.id,
+        input.id,
+        input.direction,
+      );
+      if (!moved)
+        throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+    }),
 
     remove: os.playlists.remove
       .use(authed)

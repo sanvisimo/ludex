@@ -64,7 +64,9 @@ chiede 15. Cose che non si indovinano:
 **Le playlist** (`/playlist` e `/playlist/$id`, step 15a) sono i filtri di
 `/backlog` salvati con un nome: la query gira a ogni apertura. L'elenco è come
 la home, una fascia di card per playlist (20 al massimo, una query per fascia),
-e il nome porta alla playlist aperta. Si creano **solo**
+e il nome porta alla playlist aperta. L'ordine è quello scelto dall'utente
+(«Sposta su» e «Sposta giù» nel menu ⋯, `playlists.move`); le nuove vanno in fondo.
+Si creano **solo**
 da `/backlog`, col bottone «Salva come playlist» (`save-playlist-dialog.tsx`),
 che compare con almeno un filtro acceso e, su un nome già preso, offre di
 sostituire. Cose che non si indovinano:

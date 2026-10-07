@@ -53,8 +53,12 @@ function PlaylistsPage() {
         />
       ) : (
         <YStack gap={24}>
-          {rows.map((playlist) => (
-            <PlaylistBand key={playlist.id} playlist={playlist} />
+          {rows.map((playlist, index) => (
+            <PlaylistBand
+              key={playlist.id}
+              playlist={playlist}
+              position={{ index, count: rows.length }}
+            />
           ))}
         </YStack>
       )}
@@ -64,13 +68,19 @@ function PlaylistsPage() {
 
 /**
  * Una playlist: nome (il link alla playlist aperta), quanti giochi, il menu, e
- * le prime card.
+ * le prime card. L'ordine è quello che l'utente ha scelto, dal menu.
  *
  * Una playlist vuota resta in elenco, con la sua riga: senza, non si potrebbe
  * né rinominare né eliminare. Una query per fascia, in parallelo: con le
  * playlist di una persona sono poche.
  */
-function PlaylistBand({ playlist }: { playlist: Playlist }) {
+function PlaylistBand({
+  playlist,
+  position,
+}: {
+  playlist: Playlist;
+  position: { index: number; count: number };
+}) {
   const t = useTranslations('playlists');
   const tBacklog = useTranslations('backlog');
   const band = useQuery(
@@ -107,7 +117,11 @@ function PlaylistBand({ playlist }: { playlist: Playlist }) {
               {tBacklog('count', { count: band.data.total })}
             </Text>
           )}
-          <PlaylistMenu playlist={playlist} query={playlist.query} />
+          <PlaylistMenu
+            playlist={playlist}
+            query={playlist.query}
+            position={position}
+          />
         </XStack>
       }
       itemCount={entries.length}

@@ -35,7 +35,11 @@ export async function listPlaylists(userId: string) {
     .select(columns)
     .from(schema.playlists)
     .where(eq(schema.playlists.userId, userId))
-    .orderBy(asc(sql`lower(${schema.playlists.name})`));
+    .orderBy(
+      asc(schema.playlists.position),
+      asc(sql`lower(${schema.playlists.name})`),
+      asc(schema.playlists.id),
+    );
   return rows.map(read);
 }
 
@@ -47,7 +51,14 @@ export async function createPlaylist(
   try {
     const [row] = await db
       .insert(schema.playlists)
-      .values({ userId, name: input.name, query: input.query })
+      .values({
+        userId,
+        name: input.name,
+        query: input.query,
+        // In fondo: una più dell'ultima. Letta qui nella stessa INSERT e non in
+        // una query prima, che due salvataggi insieme leggerebbero uguale.
+        position: sql`(select coalesce(max(${schema.playlists.position}), -1) + 1 from ${schema.playlists} where ${schema.playlists.userId} = ${userId})`,
+      })
       .returning(columns);
     return read(row!);
   } catch (error) {
@@ -160,4 +171,53 @@ export async function openPlaylist(
   );
 
   return { ...playlist, ...result, missingTags: saved.length - tags.length };
+}
+
+/**
+ * Sposta una playlist di un posto. `false` se non esiste o non è sua.
+ *
+ * Le posizioni si riscrivono **per tutte**, da 0 e senza buchi, invece di
+ * scambiarne due: dopo una cancellazione i numeri hanno dei buchi, e a pari
+ * posizione — le playlist nate prima del riordino, o due salvate insieme —
+ * "scambiare" non avrebbe un senso. Sono poche, e in una transazione.
+ */
+export async function movePlaylist(
+  userId: string,
+  id: string,
+  direction: 'up' | 'down',
+) {
+  return db.transaction(async (tx) => {
+    const rows = await tx
+      .select({ id: schema.playlists.id, position: schema.playlists.position })
+      .from(schema.playlists)
+      .where(eq(schema.playlists.userId, userId))
+      .orderBy(
+        asc(schema.playlists.position),
+        asc(sql`lower(${schema.playlists.name})`),
+        asc(schema.playlists.id),
+      )
+      // Due spostamenti insieme si mettono in fila invece di leggere lo stesso
+      // ordine e scriversi addosso.
+      .for('update');
+
+    const from = rows.findIndex((row) => row.id === id);
+    if (from === -1) return false;
+
+    const to = direction === 'up' ? from - 1 : from + 1;
+    const ordered = rows.map((row) => row.id);
+    if (to >= 0 && to < ordered.length) {
+      const [moved] = ordered.splice(from, 1);
+      ordered.splice(to, 0, moved!);
+    }
+
+    for (const [position, playlistId] of ordered.entries()) {
+      if (rows.find((row) => row.id === playlistId)!.position === position)
+        continue;
+      await tx
+        .update(schema.playlists)
+        .set({ position })
+        .where(eq(schema.playlists.id, playlistId));
+    }
+    return true;
+  });
 }

@@ -55,7 +55,7 @@ Tre schermate nuove o toccate, e un punto nel menu.
      modifica a parte.
 2. **`/playlist`, l'elenco** (disegno 2b). ~~Una riga per playlist, con nome e
    «N filtri».~~ **Cambiato il 07/10/2026, dopo averlo visto: come la home**,
-   una fascia per playlist che scorre di lato, nello stesso ordine per nome
+   una fascia per playlist che scorre di lato, nell'ordine scelto dall'utente (vedi «Riordino» sotto)
    (decisione sotto, nessun disegno nuovo: il frame 2 del disegno è superato).
    Vuoto: un testo che manda a `/backlog`. **Niente «Nuova playlist» qui**: si
    crea da `/backlog`, coi filtri già impostati.
@@ -184,6 +184,13 @@ Nello stesso lotto, dai commenti sul pannello e sul backlog:
   non chiede prima di sapere quante sono. Il `size` dell'URL resta il numero
   chiesto e si porta al multiplo più vicino; il default è 14. Sostituisce i
   numeri fissi `[7, 14, 35, 70, 126]`.
+- **Riordino a mano** (08/10/2026): «Sposta su» e «Sposta giù» nel menu ⋯ di
+  `/playlist`, spenti in cima e in fondo. Una colonna `position` (migration
+  0040, e 0041 che numera le esistenti per nome, da 0), non unica: spostare ne
+  riscrive le posizioni per tutte le playlist dell'utente, in una transazione,
+  così i buchi di una cancellazione si richiudono. Le nuove vanno in fondo.
+  L'elenco e l'esportazione seguono quell'ordine. Il trascinamento si vedrà
+  dopo. `playlists.move` non è un errore sulla prima «su» o sull'ultima «giù».
 - **Riancoraggio e test del web** (08/10/2026): cambiando le colonne o la vista,
   la pagina tiene in vista il primo gioco di prima (`reanchorPage`,
   `useReanchorPage`). `apps/web` ha ora Vitest in Node sulla logica pura di

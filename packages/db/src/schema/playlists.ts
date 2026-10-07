@@ -2,6 +2,7 @@ import type { PlaylistQuery } from '@repo/contracts';
 import { sql } from 'drizzle-orm';
 import {
   index,
+  integer,
   jsonb,
   pgTable,
   text,
@@ -37,6 +38,11 @@ export const playlists = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     query: jsonb('query').$type<PlaylistQuery>().notNull(),
+    // L'ordine in cui l'utente le vede, da 0. Non è unico: spostare una
+    // playlist riscrive le posizioni di tutte, e una cancellata lascia un buco
+    // che il prossimo spostamento richiude. A parità decide il nome.
+    // Il default serve solo alla migration; chi inserisce lo scrive sempre.
+    position: integer('position').notNull().default(0),
     ...timestamps,
   },
   (table) => [

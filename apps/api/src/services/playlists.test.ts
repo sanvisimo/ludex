@@ -6,10 +6,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createGame, createUser } from '../../test/factories';
 import { addToBacklog, updateBacklogEntry } from './backlog';
+import { exportAccount } from './account-export';
 import {
   createPlaylist,
   deletePlaylist,
   listPlaylists,
+  movePlaylist,
   openPlaylist,
   updatePlaylist,
 } from './playlists';
@@ -159,6 +161,114 @@ describe('playlist', () => {
         q: 'hollow',
       });
       expect(nomi(altra)).toEqual(['Hollow Knight']);
+    });
+  });
+
+  describe('ordine a mano', () => {
+    const nomiInOrdine = async (id: string) =>
+      (await listPlaylists(id)).map((playlist) => playlist.name);
+
+    /** Tre playlist con nomi che non sono in ordine alfabetico, nell'ordine dato. */
+    async function tre(id: string) {
+      const ids: Record<string, string> = {};
+      for (const name of ['Zeta', 'Alfa', 'Mela'])
+        ids[name] = (await createPlaylist(id, { name, query: query() }))!.id;
+      return ids;
+    }
+
+    it('le nuove vanno in fondo, non al posto che avrebbero per nome', async () => {
+      await tre(userId);
+      expect(await nomiInOrdine(userId)).toEqual(['Zeta', 'Alfa', 'Mela']);
+    });
+
+    it('sposta su e giù di un posto', async () => {
+      const ids = await tre(userId);
+
+      expect(await movePlaylist(userId, ids.Mela!, 'up')).toBe(true);
+      expect(await nomiInOrdine(userId)).toEqual(['Zeta', 'Mela', 'Alfa']);
+
+      expect(await movePlaylist(userId, ids.Zeta!, 'down')).toBe(true);
+      expect(await nomiInOrdine(userId)).toEqual(['Mela', 'Zeta', 'Alfa']);
+    });
+
+    it('la prima su e l’ultima giù non fanno niente, e non sono un errore', async () => {
+      const ids = await tre(userId);
+
+      expect(await movePlaylist(userId, ids.Zeta!, 'up')).toBe(true);
+      expect(await movePlaylist(userId, ids.Mela!, 'down')).toBe(true);
+      expect(await nomiInOrdine(userId)).toEqual(['Zeta', 'Alfa', 'Mela']);
+    });
+
+    it('un’altra persona non può spostare le mie, né le sue ne risentono', async () => {
+      const mie = await tre(userId);
+      await createPlaylist(altro, { name: 'Sua', query: query() });
+      await createPlaylist(altro, { name: 'Altra', query: query() });
+
+      expect(await movePlaylist(altro, mie.Mela!, 'up')).toBe(false);
+      expect(await nomiInOrdine(userId)).toEqual(['Zeta', 'Alfa', 'Mela']);
+
+      await movePlaylist(userId, mie.Mela!, 'up');
+      expect(await nomiInOrdine(altro)).toEqual(['Sua', 'Altra']);
+    });
+
+    it('una playlist che non esiste non si sposta', async () => {
+      expect(
+        await movePlaylist(
+          userId,
+          '00000000-0000-4000-8000-000000000000',
+          'up',
+        ),
+      ).toBe(false);
+    });
+
+    it('dopo una cancellazione l’ordine tiene, e spostare richiude il buco', async () => {
+      const ids = await tre(userId);
+      await deletePlaylist(userId, ids.Alfa!);
+      const nuova = await createPlaylist(userId, {
+        name: 'Nuova',
+        query: query(),
+      });
+
+      expect(await nomiInOrdine(userId)).toEqual(['Zeta', 'Mela', 'Nuova']);
+      await movePlaylist(userId, nuova!.id, 'up');
+      expect(await nomiInOrdine(userId)).toEqual(['Zeta', 'Nuova', 'Mela']);
+
+      const posizioni = await db
+        .select({ position: schema.playlists.position })
+        .from(schema.playlists)
+        .where(eq(schema.playlists.userId, userId));
+      expect(posizioni.map((p) => p.position).sort()).toEqual([0, 1, 2]);
+    });
+
+    it('a pari posizione, come le playlist di prima del riordino, decide il nome', async () => {
+      // Scritte come le lasciava la migration: tutte a 0.
+      await db.insert(schema.playlists).values(
+        ['Charlie', 'alfa', 'Bravo'].map((name) => ({
+          userId,
+          name,
+          query: query(),
+          position: 0,
+        })),
+      );
+      expect(await nomiInOrdine(userId)).toEqual(['alfa', 'Bravo', 'Charlie']);
+
+      const bravo = (await listPlaylists(userId)).find(
+        (p) => p.name === 'Bravo',
+      )!;
+      await movePlaylist(userId, bravo.id, 'up');
+      expect(await nomiInOrdine(userId)).toEqual(['Bravo', 'alfa', 'Charlie']);
+    });
+
+    it('l’esportazione segue l’ordine scelto', async () => {
+      const ids = await tre(userId);
+      await movePlaylist(userId, ids.Mela!, 'up');
+
+      const file = await exportAccount(userId);
+      expect(file.playlists.map((p) => p.name)).toEqual([
+        'Zeta',
+        'Mela',
+        'Alfa',
+      ]);
     });
   });
 

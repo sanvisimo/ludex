@@ -38,9 +38,16 @@ type PlaylistRef = Pick<Playlist, 'id' | 'name'>;
 export function PlaylistMenu({
   playlist,
   query,
+  position,
   onDeleted,
 }: {
   playlist: PlaylistRef;
+  /**
+   * Il posto nell'elenco: con questo il menu offre «Sposta su» e «Sposta giù»,
+   * spenti in cima e in fondo. Dove la playlist non sta in un elenco (la pagina
+   * aperta) non si passa.
+   */
+  position?: { index: number; count: number };
   /**
    * I filtri salvati: con questi il menu offre «Modifica filtri». Dove la
    * pagina ha già un bottone suo per farlo (la playlist aperta) non si passano.
@@ -50,8 +57,20 @@ export function PlaylistMenu({
 }) {
   const t = useTranslations('playlists');
   const router = useRouter();
+  const errorMessage = useApiErrorMessage();
+  const queryClient = useQueryClient();
   const [renaming, setRenaming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const move = useMutation({
+    mutationFn: (direction: 'up' | 'down') =>
+      client.playlists.move({ id: playlist.id, direction }),
+    // Solo l'elenco: le fasce sono per id, e i loro giochi non sono cambiati.
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: api.playlists.list.key() }),
+    onError: (error) =>
+      toast.error(errorMessage(error, { fallback: t('moveFailed') })),
+  });
 
   return (
     <>
@@ -83,6 +102,25 @@ export function PlaylistMenu({
           <DropdownMenuItem onClick={() => setRenaming(true)}>
             {t('rename')}
           </DropdownMenuItem>
+          {position && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={position.index === 0 || move.isPending}
+                onClick={() => move.mutate('up')}
+              >
+                {t('moveUp')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={
+                  position.index === position.count - 1 || move.isPending
+                }
+                onClick={() => move.mutate('down')}
+              >
+                {t('moveDown')}
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setDeleting(true)}>
             {t('delete')}

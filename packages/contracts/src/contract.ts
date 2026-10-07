@@ -332,6 +332,7 @@ export const contract = {
   // Le playlist (step 15a): filtri del backlog salvati con un nome. Tutte
   // partono dall'utente: una playlist altrui è `NOT_FOUND`, non «vietata».
   playlists: {
+    // Nell'ordine che l'utente ha scelto (`move`); a parità, per nome.
     list: oc.output(z.array(PlaylistSchema)),
 
     // La playlist **aperta**: la sua query eseguita, con la pagina chiesta dal
@@ -354,7 +355,7 @@ export const contract = {
       .output(PlaylistDetailSchema),
 
     // `CONFLICT` se l'utente ha già una playlist con quel nome, senza guardare
-    // le maiuscole.
+    // le maiuscole. Va in fondo all'elenco.
     create: oc
       .input(z.object({ name: PlaylistNameSchema, query: PlaylistQuerySchema }))
       .output(PlaylistSchema),
@@ -372,6 +373,12 @@ export const contract = {
       .output(PlaylistSchema),
 
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+
+    // Sposta di un posto verso l'alto o verso il basso nell'elenco dell'utente.
+    // Spostare la prima su, o l'ultima giù, non fa niente e non è un errore.
+    move: oc
+      .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
+      .output(z.void()),
   },
 
   backlog: {

@@ -96,7 +96,7 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
     .select()
     .from(schema.playlists)
     .where(eq(schema.playlists.userId, userId))
-    .orderBy(asc(schema.playlists.name));
+    .orderBy(asc(schema.playlists.position), asc(schema.playlists.name));
 
   const unresolved = await db
     .select()
