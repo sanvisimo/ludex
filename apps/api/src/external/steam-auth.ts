@@ -1,11 +1,21 @@
 // L'autenticazione Steam, per l'utente che ha fatto il login (9f). Come `psn.ts`
 // per i token: sta fuori da `services/` perché è l'accesso a un servizio esterno.
 //
-// Il login è quello dell'app Steam sul telefono, col QR, e la libreria è
-// `steam-session` — `MobileApp` è l'unica piattaforma i cui token si rinnovano
-// da un server (`WebBrowser` risponde `AccessDenied`, `SteamClient` vuole una
-// sessione CM aperta). Misurato il 05/10/2026, in docs/negozi.md: il refresh
-// token dura 211–212 giorni, l'access token 24 ore e mezza.
+// Il login è quello di un browser, col QR approvato nell'app Steam, e la libreria
+// è `steam-session` con la piattaforma `WebBrowser`. **Non `MobileApp`**: i tre
+// blocchi dell'account (05, 07 e 08/10/2026) sono arrivati tutti dopo un QR
+// fatto come app Android, il «Galaxy S25» di default della libreria — un
+// dispositivo mobile che si autorizza col QR, cosa che sull'app vera non esiste,
+// e che Steam sembra segnalare. Lo stesso schema e lo stesso workaround
+// (`WebBrowser` con uno user agent non di default) sono sul forum del
+// manutentore: https://dev.doctormckay.com/topic/5758-i-get-my-account-banned-when-i-log-in-with-a-qr-code/
+// Aneddotico, non confermato da lui: lo dice docs/negozi.md.
+//
+// Il prezzo: un refresh token web **non si rinnova** da un server
+// (`refreshAccessToken` e `renewRefreshToken` rispondono `AccessDenied`). Si
+// prende l'access token di nuovo con `getWebCookies()`, che fa quello che fa un
+// browser quando riapre Steam, e quando muore il refresh token si rifà il QR.
+// La durata del refresh token web si legge dal JWT al primo login: non misurata.
 //
 // Il credenziale ha la stessa forma di GOG, Epic e PSN, così `storeAccessToken`
 // lo rinnova senza sapere di che negozio sia.
@@ -68,19 +78,51 @@ export function jwtExpiresAt(token: string): number {
 }
 
 /**
- * Un access token nuovo dal refresh token, e un refresh token nuovo **se Steam
- * lo emette**.
+ * Lo user agent del login. Una stringa nostra e fissa, non quella di default
+ * della libreria: è proprio il default che sul forum del manutentore chi veniva
+ * bloccato non aveva cambiato. Quella di un Chrome su Linux, che è ciò che il
+ * server è, e che compare così fra i dispositivi di Steam Guard dell'utente.
+ */
+export const STEAM_LOGIN_USER_AGENT =
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
+
+const newSession = () =>
+  new LoginSession(EAuthTokenPlatformType.WebBrowser, {
+    userAgent: STEAM_LOGIN_USER_AGENT,
+  });
+
+/**
+ * L'access token dai cookie di `getWebCookies()`: quello di `steamLoginSecure`,
+ * che vale `SteamID64||token` codificato. Con il browser i cookie sono uno per
+ * dominio; si preferisce quello dello store, lo stesso da cui l'altra strada
+ * (il token incollato) prende `webapi_token`.
+ */
+function accessTokenFromCookies(cookies: string[]): string {
+  const secure = cookies.filter((c) => c.startsWith('steamLoginSecure='));
+  const cookie =
+    secure.find((c) => /domain=store\.steampowered\.com/i.test(c)) ?? secure[0];
+  const value = cookie?.split(';')[0]?.slice('steamLoginSecure='.length);
+  const token = value ? decodeURIComponent(value).split('||')[1] : undefined;
+  if (!token || jwtExpiresAt(token) <= 0) {
+    // Non è il credenziale a essere morto: è Steam che ha risposto altro.
+    throw new Error('Steam non ha restituito un access token web');
+  }
+  return token;
+}
+
+/**
+ * Un access token nuovo dal refresh token, come lo prenderebbe un browser che
+ * riapre Steam. Il refresh token **non cambia**: un token web non si rinnova da
+ * un server, e quando scade serve un nuovo QR (`refreshExpiresAt` dice quando).
  *
- * Con un token appena emesso Steam non ne emette uno nuovo (misurato): quando
- * comincia a farlo non lo sappiamo. Se lo emette, **il vecchio muore subito**, e
- * il chiamante deve riscrivere il credenziale prima di fare altro — `storeAccessToken`
- * lo fa. Il refresh token che rende questa funzione è quello da tenere, sia che
- * sia nuovo sia che sia lo stesso.
+ * Un credenziale salvato dal vecchio login (`MobileApp`, prima del 08/10/2026)
+ * non è un refresh token web: il setter lo rifiuta, e diventa `SteamAuthError`
+ * — l'utente rifà il login col percorso nuovo.
  */
 export async function refreshSteamTokens(
   refreshToken: string,
 ): Promise<SteamCredentials> {
-  const session = new LoginSession(EAuthTokenPlatformType.MobileApp);
+  const session = newSession();
 
   try {
     // Il setter controlla che sia un refresh token, della piattaforma giusta: un
@@ -92,8 +134,9 @@ export async function refreshSteamTokens(
     );
   }
 
+  let accessToken: string;
   try {
-    await session.renewRefreshToken();
+    accessToken = accessTokenFromCookies(await session.getWebCookies());
   } catch (error) {
     const eresult = (error as { eresult?: number }).eresult;
     if (eresult !== undefined && REFUSED.has(eresult)) {
@@ -105,17 +148,17 @@ export async function refreshSteamTokens(
   }
 
   return {
-    accessToken: session.accessToken,
-    refreshToken: session.refreshToken,
-    expiresAt: jwtExpiresAt(session.accessToken),
-    refreshExpiresAt: jwtExpiresAt(session.refreshToken),
+    accessToken,
+    refreshToken,
+    expiresAt: jwtExpiresAt(accessToken),
+    refreshExpiresAt: jwtExpiresAt(refreshToken),
   };
 }
 
 // --- Il login col QR ---
 //
 // L'utente apre l'app Steam sul telefono (Steam Guard → «Accedi con un codice
-// QR»), inquadra il QR e conferma. Il server tiene aperta la sessione mentre
+// QR»), inquadra il QR e conferma: per Steam è l'accesso di un browser. Il server tiene aperta la sessione mentre
 // aspetta: è per questo che il login non è una mutazione che prende un valore
 // incollato, come negli altri negozi, ma una sessione con un inizio e una fine.
 //
@@ -164,7 +207,7 @@ export async function beginSteamQrLogin(
   onScanned: () => void,
   timeoutMs = QR_TIMEOUT_MS,
 ): Promise<SteamQrSession> {
-  const session = new LoginSession(EAuthTokenPlatformType.MobileApp);
+  const session = newSession();
   session.loginTimeout = timeoutMs;
 
   const result = new Promise<SteamLogin>((resolve, reject) => {
@@ -172,21 +215,23 @@ export async function beginSteamQrLogin(
     session.on('timeout', () => reject(new SteamQrTimeoutError()));
     session.on('error', reject);
     session.on('authenticated', () => {
-      // L'access token non arriva con l'autenticazione: si chiede dal refresh
-      // token, che è quello che si tiene.
+      // L'access token si prende come fa un browser, dai cookie web: sul
+      // refresh token è la sola strada, `refreshAccessToken` per `WebBrowser` è
+      // negato.
       session
-        .refreshAccessToken()
-        .then(() =>
+        .getWebCookies()
+        .then((cookies) => {
+          const accessToken = accessTokenFromCookies(cookies);
           resolve({
             steamId: session.steamID.getSteamID64(),
             credentials: {
-              accessToken: session.accessToken,
+              accessToken,
               refreshToken: session.refreshToken,
-              expiresAt: jwtExpiresAt(session.accessToken),
+              expiresAt: jwtExpiresAt(accessToken),
               refreshExpiresAt: jwtExpiresAt(session.refreshToken),
             },
-          }),
-        )
+          });
+        })
         .catch(reject);
     });
   });

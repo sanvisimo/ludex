@@ -8,6 +8,7 @@ import {
   SteamAuthError,
   SteamQrTimeoutError,
   SteamWebTokenError,
+  STEAM_LOGIN_USER_AGENT,
 } from './steam-auth';
 
 // Il confine è `steam-session`: si finge lì, non su `fetch`. La libreria parla
@@ -19,23 +20,27 @@ import {
 
 const fake = vi.hoisted(() => ({
   setterError: null as Error | null,
-  renewError: null as (Error & { eresult?: number }) | null,
-  /** Il refresh token nuovo, se Steam ne emette uno. */
-  issued: null as string | null,
+  cookiesError: null as (Error & { eresult?: number }) | null,
+  /** I cookie che `getWebCookies()` rende; vuoti = quelli con `access`. */
+  cookies: null as string[] | null,
   access: '',
+  /** Con quali opzioni e piattaforma è stata creata la sessione. */
+  platform: 0,
+  options: undefined as { userAgent?: string } | undefined,
+  /** Se la libreria è stata usata per rinnovare, cosa il web non ammette. */
+  renewCalls: 0,
   // Il QR: gli ascoltatori che la libreria vera registrerebbe, e cosa risponde.
   handlers: {} as Record<string, (...args: unknown[]) => void>,
   qrUrl: 'https://s.team/q/1/abc' as string | undefined,
   /** Il refresh token che il login ha dato, e che la libreria avrebbe messo sulla sessione. */
   loginRefresh: '',
   steamId: '76561190000000042',
-  accessError: null as Error | null,
   cancelled: false,
   timeout: 0,
 }));
 
 vi.mock('steam-session', () => ({
-  EAuthTokenPlatformType: { MobileApp: 3 },
+  EAuthTokenPlatformType: { MobileApp: 3, WebBrowser: 1 },
   EResult: {
     InvalidPassword: 5,
     AccessDenied: 15,
@@ -49,10 +54,15 @@ vi.mock('steam-session', () => ({
     27: 'Expired',
   },
   LoginSession: class {
-    accessToken = '';
     #refreshToken = '';
 
     loginTimeout = 0;
+
+    constructor(platform: number, options?: { userAgent?: string }) {
+      fake.platform = platform;
+      fake.options = options;
+    }
+
     steamID = { getSteamID64: () => fake.steamId };
 
     on(event: string, handler: (...args: unknown[]) => void) {
@@ -64,9 +74,12 @@ vi.mock('steam-session', () => ({
       fake.timeout = this.loginTimeout;
       return { qrChallengeUrl: fake.qrUrl };
     }
+    async getWebCookies() {
+      if (fake.cookiesError) throw fake.cookiesError;
+      return fake.cookies ?? [loginSecure(fake.access)];
+    }
     async refreshAccessToken() {
-      if (fake.accessError) throw fake.accessError;
-      this.accessToken = fake.access;
+      fake.renewCalls++;
     }
     cancelLoginAttempt() {
       fake.cancelled = true;
@@ -81,14 +94,14 @@ vi.mock('steam-session', () => ({
     }
 
     async renewRefreshToken() {
-      if (fake.renewError) throw fake.renewError;
-      this.accessToken = fake.access;
-      if (!fake.issued) return false;
-      this.#refreshToken = fake.issued;
-      return true;
+      fake.renewCalls++;
     }
   },
 }));
+
+/** Il cookie `steamLoginSecure` come lo rende la libreria: `SteamID||token`, codificato. */
+const loginSecure = (token: string, domain = 'store.steampowered.com') =>
+  `steamLoginSecure=${encodeURIComponent(`76561190000000042||${token}`)}; Path=/; Secure; Domain=${domain}`;
 
 const jwt = (expSeconds: number) =>
   [
@@ -103,12 +116,13 @@ const refused = (eresult?: number) =>
 describe('refreshSteamTokens', () => {
   beforeEach(() => {
     fake.setterError = null;
-    fake.renewError = null;
-    fake.issued = null;
+    fake.cookiesError = null;
+    fake.cookies = null;
+    fake.renewCalls = 0;
     fake.access = jwt(2_000);
   });
 
-  it('rende un access token nuovo e tiene il refresh token se Steam non ne emette', async () => {
+  it('rende un access token nuovo dai cookie web e tiene lo stesso refresh token', async () => {
     const refreshToken = jwt(9_000);
 
     const credentials = await refreshSteamTokens(refreshToken);
@@ -121,15 +135,34 @@ describe('refreshSteamTokens', () => {
     });
   });
 
-  it('prende il refresh token nuovo quando Steam lo emette', async () => {
-    // Il vecchio muore subito: quello che questa funzione rende è quello da
-    // tenere, e `storeAccessToken` lo riscrive prima di usarlo.
-    fake.issued = jwt(20_000);
+  it('è un browser: piattaforma web, user agent nostro, nessun rinnovo da server', async () => {
+    await refreshSteamTokens(jwt(9_000));
 
-    const credentials = await refreshSteamTokens(jwt(9_000));
+    expect(fake.platform).toBe(1);
+    expect(fake.options?.userAgent).toBe(STEAM_LOGIN_USER_AGENT);
+    expect(fake.renewCalls).toBe(0);
+  });
 
-    expect(credentials.refreshToken).toBe(fake.issued);
-    expect(credentials.refreshExpiresAt).toBe(20_000_000);
+  it('fra più cookie preferisce quello dello store', async () => {
+    const store = jwt(2_000);
+    fake.cookies = [
+      loginSecure(jwt(3_000), 'steamcommunity.com'),
+      loginSecure(store),
+      'sessionid=abc; Domain=store.steampowered.com',
+    ];
+
+    expect((await refreshSteamTokens(jwt(9_000))).accessToken).toBe(store);
+  });
+
+  it('senza un cookie di accesso non è il credenziale a essere morto: il job riprova', async () => {
+    fake.cookies = ['sessionid=abc; Domain=store.steampowered.com'];
+    const senza = await refreshSteamTokens(jwt(9_000)).catch((e) => e);
+    expect(senza).not.toBeInstanceOf(SteamAuthError);
+    expect(senza.message).toBe('Steam non ha restituito un access token web');
+
+    fake.cookies = [loginSecure('non-un-jwt')];
+    const rotto = await refreshSteamTokens(jwt(9_000)).catch((e) => e);
+    expect(rotto).not.toBeInstanceOf(SteamAuthError);
   });
 
   it.each([
@@ -140,7 +173,7 @@ describe('refreshSteamTokens', () => {
   ])(
     'un rifiuto di Steam (%s) è un errore di autenticazione',
     async (name, code) => {
-      fake.renewError = refused(code);
+      fake.cookiesError = refused(code);
 
       await expect(refreshSteamTokens(jwt(9_000))).rejects.toThrow(
         SteamAuthError,
@@ -152,19 +185,20 @@ describe('refreshSteamTokens', () => {
   it('una rete che cade o Steam in affanno non lo sono: il job deve riprovare', async () => {
     // Un `Timeout` ha il suo eresult ma non è un rifiuto, e un errore di rete
     // non ne ha affatto. In nessuno dei due casi l'utente deve rifare il QR.
-    fake.renewError = refused(16);
+    fake.cookiesError = refused(16);
     const timeout = await refreshSteamTokens(jwt(9_000)).catch((e) => e);
     expect(timeout).not.toBeInstanceOf(SteamAuthError);
 
-    fake.renewError = refused();
+    fake.cookiesError = refused();
     const rete = await refreshSteamTokens(jwt(9_000)).catch((e) => e);
     expect(rete).not.toBeInstanceOf(SteamAuthError);
     expect(rete.message).toBe('Steam');
   });
 
-  it('un credenziale che non è un refresh token Steam è un errore di autenticazione', async () => {
+  it('un credenziale che non è un refresh token web è un errore di autenticazione', async () => {
     // Il setter di `steam-session` lo rifiuta con un errore senza eresult: non è
-    // la rete, e riprovare darebbe lo stesso risultato.
+    // la rete, e riprovare darebbe lo stesso risultato. Vale anche per il
+    // refresh token `MobileApp` del vecchio login: l'audience non è `web`.
     fake.setterError = new Error('Not a valid Steam token');
 
     await expect(refreshSteamTokens('spazzatura')).rejects.toThrow(
@@ -185,9 +219,18 @@ describe('beginSteamQrLogin', () => {
     fake.qrUrl = 'https://s.team/q/1/abc';
     fake.loginRefresh = jwt(9_000);
     fake.access = jwt(2_000);
-    fake.accessError = null;
+    fake.cookiesError = null;
+    fake.cookies = null;
+    fake.renewCalls = 0;
     fake.cancelled = false;
     fake.timeout = 0;
+  });
+
+  it('apre il QR come un browser, non come l’app del telefono', async () => {
+    await beginSteamQrLogin(() => {});
+
+    expect(fake.platform).toBe(1);
+    expect(fake.options?.userAgent).toBe(STEAM_LOGIN_USER_AGENT);
   });
 
   it("rende l'indirizzo del QR, e concede cinque minuti", async () => {
@@ -220,6 +263,8 @@ describe('beginSteamQrLogin', () => {
         refreshExpiresAt: 9_000_000,
       },
     });
+    // Una richiesta di meno a Steam: il token sta già nei cookie.
+    expect(fake.renewCalls).toBe(0);
   });
 
   it('un QR non confermato in tempo è un errore a parte', async () => {
@@ -239,7 +284,7 @@ describe('beginSteamQrLogin', () => {
   });
 
   it("se l'access token non si ottiene il login non è riuscito", async () => {
-    fake.accessError = new Error('Steam non risponde');
+    fake.cookiesError = new Error('Steam non risponde');
     const session = await beginSteamQrLogin(() => {});
 
     fake.handlers.authenticated!();

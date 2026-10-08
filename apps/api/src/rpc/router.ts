@@ -81,7 +81,6 @@ import {
 } from '../services/reports';
 import {
   removeSteamLogin,
-  SteamLoginExistsError,
   startSteamLogin,
   steamLoginStatus,
 } from '../services/steam-login';
@@ -266,16 +265,6 @@ export const router = os.router({
           return startSteamLogin(context.user.id, {
             label: input.label,
             relinking,
-            replace: input.replace ?? false,
-          }).catch((error: unknown) => {
-            // Un login vivo c'è già, e rifarlo è un dispositivo in più su Steam:
-            // la schermata chiede conferma e rimanda con `replace`.
-            if (error instanceof SteamLoginExistsError) {
-              throw new ORPCError('PRECONDITION_FAILED', {
-                message: error.message,
-              });
-            }
-            throw error;
           });
         }),
 
