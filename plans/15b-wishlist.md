@@ -209,7 +209,21 @@ Strade (da scegliere):
 2. **Un'opzione sulla lista a mano** («lista ordinata»), con le due regole sopra
    che cambiano a seconda dell'opzione. Meno codice di schema, più `if` sparsi.
 
-Da decidere anche, senza fretta: se le playlist aperte si **condividono** (oggi
-solo quelle a filtro hanno il link, 15d; una top 20 è il caso in cui avrebbe più
-senso) e come si **aggiunge** un gioco (dalla scheda, come per la wishlist, o
-da una ricerca dentro la lista).
+Da decidere anche, senza fretta:
+
+- se le playlist aperte si **condividono** (oggi solo quelle a filtro hanno il
+  link, 15d; una top 20 è il caso in cui avrebbe più senso);
+- se possono essere **pubbliche** (08/10/2026): è un'altra cosa dal link. Il
+  link del 15d è privato — chi lo ha la vede, ma non c'è un elenco, la pagina è
+  `noindex` e il proprietario non compare. Una playlist pubblica si **trova**:
+  compare in un elenco o in una pagina del profilo, forse indicizzabile, e
+  quindi porta una domanda che il 15d aveva chiuso, cioè **se il nome di chi
+  l'ha fatta si vede**. Vanno decise insieme: dove si trovano (un elenco
+  «Playlist della community», la scheda di un gioco che dice in quali playlist
+  pubbliche compare, o solo la ricerca), se si indicizzano, e se si possono
+  segnalare. Se si fa, va riletta anche la privacy (`lib/legal.ts`), perché i
+  testi descrivono ciò che Ludex mostra davvero. Una forma intermedia a tre
+  livelli — privata, con link, pubblica — sulla stessa colonna di visibilità
+  al posto del solo `share_token`;
+- come si **aggiunge** un gioco (dalla scheda, come per la wishlist, o da una
+  ricerca dentro la lista).
