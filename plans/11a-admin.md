@@ -569,6 +569,31 @@ quindi non vanno aggiunte alla lista delle tabelle escluse dal troncamento.
 - Ripuntare un collegamento **dalla pagina del gioco**, per ogni utente: no,
   solo admin (vedi «Il caso Toki»). Dalla pagina del gioco si segnala.
 - Cancellazione ed esportazione dell'account: step 16.
+- **Da rivedere: la tabella degli stati in admin e i link** (08/10/2026, visto
+  in uso, web). In «Dati mancanti» ci sono giochi con stato **OK** che compaiono
+  in tabella **senza dati**: da capire se è la query della lista (un OK senza
+  voto non è un errore, ma finisce fra i «Da sistemare»?) o il dato. Da
+  guardare insieme ai link della tabella e della scheda admin. Non ancora
+  analizzato.
+- **Da decidere: il link alla fonte quando non c'è il voto** (08/10/2026,
+  pagina del gioco, web). Alcuni giochi hanno il riferimento OpenCritic o
+  Metacritic ma nessun voto, e oggi il link sparisce: in `game-page.tsx` le
+  righe dei voti si filtrano su `score !== undefined`, e in `CriticScores` il
+  link sta sul nome della fonte, che compare solo col voto. Il link va mostrato
+  comunque. Strade:
+  1. **nella card «Links»**, accanto ai negozi (`StoreLinks`), per le fonti che
+     hanno un riferimento ma non un voto;
+  2. **nella sezione dei voti**, con una riga «OpenCritic · nessun voto» e il
+     nome come link;
+  3. (altra idea) **una card «Fonti» a parte**, con IGDB, HLTB, OpenCritic e
+     Metacritic **sempre**, voto o no, e «Links» che resta solo dei negozi: un
+     posto solo dove cercare i link, e non due regole diverse a seconda del
+     voto.
+
+  Per OpenCritic, prima di scegliere, riguardare cosa chiedono i termini
+  sulle schermate (vedi [apps/api/CLAUDE.md](../apps/api/CLAUDE.md)): il link
+  vicino al voto è una loro richiesta, e senza voto il vincolo potrebbe non
+  applicarsi.
 - **La durata nascosta sulle card** (06/10/2026, web). **Fatto il 06/10/2026**, a parte.
   [game-duration.tsx](../apps/web/components/game-duration.tsx) la nasconde
   quando HLTB dice `hasSolo = false`, regola nata per Counter-Strike. Sbaglia
