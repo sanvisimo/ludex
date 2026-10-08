@@ -101,6 +101,11 @@ export function StoreAccountCard({
   const [removingLogin, setRemovingLogin] = useState(false);
   const tSteam = useTranslations('account.steamLogin');
   const isSteam = account.store === 'steam';
+  // Il token del browser, scaduto: vedi il badge più sotto.
+  const tokenExpired =
+    account.loginKind === 'token' &&
+    account.loginExpiresAt != null &&
+    account.loginExpiresAt.getTime() <= now.getTime();
 
   const syncing = account.syncing;
   // Ricollegare si può solo dove c'è un collegamento da rifare. `store` sul
@@ -223,6 +228,11 @@ export function StoreAccountCard({
                   {tSteam('signIn')}
                 </DropdownMenuItem>
               )}
+              {isSteam && account.loginKind === 'token' && (
+                <DropdownMenuItem onClick={() => setLoggingIn(true)}>
+                  {tSteam('newToken')}
+                </DropdownMenuItem>
+              )}
               {isSteam && account.hasLogin && (
                 <DropdownMenuItem
                   onClick={() => setRemovingLogin(true)}
@@ -251,18 +261,46 @@ export function StoreAccountCard({
           {isSteam &&
             (account.hasLogin ? (
               <XStack items="center" gap={8} flexWrap="wrap">
-                <Badge
-                  variant={
-                    account.status === 'needs_reauth' ? 'secondary' : 'success'
-                  }
-                >
-                  {account.status === 'needs_reauth'
-                    ? tSteam('badgeDead')
-                    : tSteam('badgeOn')}
-                </Badge>
-                <Text fontSize={13} color="$color11">
-                  · {tSteam('familyIncluded')}
-                </Text>
+                {tokenExpired ? (
+                  // Il token del browser dura 24 ore e non si rinnova: la
+                  // famiglia resta com'era all'ultimo import, il profilo
+                  // continua da solo. Non è un account da ricollegare.
+                  <>
+                    <Badge variant="secondary">
+                      {tSteam('badgeTokenExpired')}
+                    </Badge>
+                    <Text fontSize={13} color="$color11">
+                      · {tSteam('familyFrozen')}
+                    </Text>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      px={0}
+                      onClick={() => setLoggingIn(true)}
+                    >
+                      {tSteam('newToken')}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Badge
+                      variant={
+                        account.status === 'needs_reauth'
+                          ? 'secondary'
+                          : 'success'
+                      }
+                    >
+                      {account.status === 'needs_reauth'
+                        ? tSteam('badgeDead')
+                        : tSteam('badgeOn')}
+                    </Badge>
+                    <Text fontSize={13} color="$color11">
+                      · {tSteam('familyIncluded')}
+                      {account.loginKind === 'token' &&
+                        ` · ${tSteam('tokenKind')}`}
+                    </Text>
+                  </>
+                )}
               </XStack>
             ) : (
               <XStack items="center" gap={8} flexWrap="wrap">

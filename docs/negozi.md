@@ -598,6 +598,76 @@ interruttore spento, restare col solo profilo pubblico (che non tocca l'account)
 oppure capire dalla documentazione di Valve o dall'Assistenza se questo tipo di
 login è accettato.
 
+### Il secondo blocco (07/10/2026) e le due strade
+
+**Steam ha bloccato l'account una seconda volta**, il 7 ottobre alle 9:23 (Torino), con lo
+stesso messaggio. L'Assistenza aveva sbloccato quello del 05/10 senza dire cosa fosse
+scattato. Stavolta **nessun probe e nessun token falso**: il blocco è venuto dall'uso
+normale del login.
+
+**Cosa mostra «Recently seen devices»** (Steam Guard → «Gestisci i dispositivi»),
+letto dall'utente il 07/10/2026:
+
+| Ora     | Dispositivo                   | Da dove                             |
+| ------- | ----------------------------- | ----------------------------------- |
+| 9:22    | «Galaxy S25» (mobile)         | il nostro QR, dall'istanza locale   |
+| 9:23    | «Galaxy S25» (mobile)         | il nostro QR, dall'istanza locale   |
+| 9:28    | «Galaxy S25» (mobile)         | il nostro QR, dal mini PC           |
+| 9:47    | «Chrome on Windows» (browser) | il browser dell'utente              |
+| (prima) | «Pixel 9a» (mobile)           | il telefono vero, anche lui «nuovo» |
+
+Tutti «New Device, first seen less than 2 weeks ago»: dopo un recupero le sessioni
+ripartono da zero, quindi «nuovo» non distingue i nostri dai suoi.
+
+**Cosa si sa, e cosa no.**
+
+- **Il login in sé non è il problema**: moltissimi strumenti fanno login Steam con la
+  stessa libreria, e non vengono bloccati. Neanche l'indirizzo: le sessioni partivano
+  dalla rete dell'utente, a Torino, e il blocco è scattato da locale, non solo dal server.
+- **Sono tre QR in sei minuti**, e per Steam ciascuno è un dispositivo mobile nuovo,
+  su un account appena recuperato. Il 05/10 erano 4-5 in poche ore. È l'ipotesi
+  principale, **non accertata**: l'Assistenza non dice cosa scatti.
+- **Come ci presentiamo**: `steam-session` con `MobileApp` si dichiara l'app Android
+  (user agent `okhttp/4.9.2`, versione `3.10.3`, dispositivo «Galaxy S25»), e
+  l'utente ha un altro telefono. Non si sa se conti.
+- Dai token salvati (`iat`) l'import delle 9:23:04 è venuto 8 secondi dopo il QR
+  delle 9:22:56: login e uso del token non si possono separare.
+
+**Le due strade, e la scelta è dell'utente.**
+
+|          | QR dall'app Steam                             | Token dal browser                          |
+| -------- | --------------------------------------------- | ------------------------------------------ |
+| Su Steam | un dispositivo «Galaxy S25» nuovo             | **niente**: il server non apre sessioni    |
+| Durata   | refresh token ~211 giorni, si rinnova da solo | access token 24 ore, **non si rinnova**    |
+| Famiglia | si aggiorna da sola                           | si aggiorna quando se ne incolla uno nuovo |
+
+Il token è `webapi_token` della pagina
+`store.steampowered.com/pointssummary/ajaxgetasyncconfig`, aperta dal browser dove
+l'utente è già dentro Steam (misurato il 05/10/2026: stessa audience e stessa durata
+dell'access token, famiglia identica). Il server ne legge lo SteamID64 (`sub`) e la
+scadenza (`exp`) **senza una richiesta**, e lo salva come credenziale senza refresh
+token (`SteamWebCredentials`). Un refresh token incollato per errore si rifiuta: vale
+mesi, ed è ciò che questa strada evita di chiedere.
+
+Con un token scaduto o rifiutato **l'import non va in `needs_reauth`**: legge la libreria
+propria dal profilo con la chiave e **non tocca la famiglia**, né aggiungendo né
+potando (`familySkipped` nel resoconto). Le copie `steam_family` restano finché
+l'utente non incolla un token nuovo o toglie il login. Col QR, invece, un rifiuto è un
+login morto come prima.
+
+**Una sola sessione QR per account.** Se l'account ha già un login QR vivo,
+`steamLogin.start` risponde `PRECONDITION_FAILED` **prima** di qualunque richiesta a
+Steam, e la schermata avvisa che rifarlo crea un altro dispositivo; si rimanda con
+`replace`. Un login morto (`needs_reauth`), un token web o un ricollegamento di un altro
+account non fanno scattare l'avviso. Resta fuori dal codice: due istanze di Ludex
+(locale e mini PC) con database diversi fanno ciascuna il suo login, e Steam le conta
+come due dispositivi. **Una sola istanza per account Steam.**
+
+**Non provato dal vero**: i test girano con la libreria e Steam finti, e nessuna
+richiesta a Steam è partita in questo lavoro. Resta da vedere se un token web usato
+da un server è accettato da Steam senza avvisi: si saprà al primo incolla vero,
+dopo che l'Assistenza ha risposto sul blocco.
+
 ## Nintendo (9d)
 
 Nessuna API per sviluppatori: è il backend dell'app Nintendo (`com.nintendo.znej`) per

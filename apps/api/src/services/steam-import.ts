@@ -18,7 +18,7 @@ import { hasPersonalData } from './personal-data';
 import {
   requireReauth,
   type StoreAccountRow,
-  storeAccessToken,
+  steamAccessToken,
 } from './store-accounts';
 
 /**
@@ -39,6 +39,12 @@ import {
 export type SteamImportReport = ImportReport & {
   /** Solo col login: cosa è successo alle copie della famiglia. */
   family?: FamilyReport;
+  /**
+   * C'è un login ma il token non c'era più (il token web incollato dura 24 ore):
+   * la libreria propria è stata letta dal profilo e **la famiglia non è stata
+   * toccata**, né aggiunta né tolta.
+   */
+  familySkipped?: boolean;
 };
 
 export type FamilyReport = {
@@ -255,30 +261,36 @@ export async function importSteamLibrary(
   account: StoreAccountRow,
 ): Promise<SteamImportReport> {
   // Senza credenziale: il profilo pubblico, come allo step 4.
-  if (!account.credentials) {
-    const library = await fetchSteamLibrary(account.externalAccountId);
-    return importLibrary(
-      account,
-      library.map((entry) => ({
-        ...entry,
-        storePage: storePage(entry.externalId),
-      })),
-    );
-  }
+  if (!account.credentials) return importFromProfile(account);
 
   const steamId = account.externalAccountId;
-  const accessToken = await storeAccessToken(account);
+  const { accessToken, renewable } = await steamAccessToken(account);
 
-  let library: SteamLibraryEntry[];
-  let family: SteamFamilyLibrary;
-  try {
-    library = await fetchSteamLibrary(steamId, accessToken);
-    family = await fetchSteamFamilyLibrary(accessToken, steamId);
-  } catch (error) {
-    // Il token era valido un istante fa e Steam lo rifiuta lo stesso: revocato
-    // mentre giravamo. Stessa uscita del rinnovo fallito.
-    if (error instanceof SteamUnauthorizedError) return requireReauth(account);
-    throw error;
+  let library: SteamLibraryEntry[] | null = null;
+  let family: SteamFamilyLibrary | null = null;
+  if (accessToken) {
+    try {
+      library = await fetchSteamLibrary(steamId, accessToken);
+      family = await fetchSteamFamilyLibrary(accessToken, steamId);
+    } catch (error) {
+      if (!(error instanceof SteamUnauthorizedError)) throw error;
+      // Il token era valido un istante fa e Steam lo rifiuta lo stesso: revocato
+      // mentre giravamo. Col QR è un login morto, e va ricollegato; col token
+      // web è solo un token che non vale più, e si ricade sul profilo.
+      if (renewable) return requireReauth(account);
+      library = null;
+      family = null;
+    }
+  }
+
+  // Niente token valido, e non c'è modo di averne uno da soli: **la famiglia non
+  // si tocca**. Potarla vorrebbe dire far sparire le copie di un parente perché
+  // sono passate 24 ore da un incolla, e al token successivo tornerebbero.
+  if (library === null || family === null) {
+    console.log(
+      `[import] steam: token web scaduto o rifiutato, la famiglia resta com'è`,
+    );
+    return { ...(await importFromProfile(account)), familySkipped: true };
   }
 
   const { entries, familyCount } = buildSteamEntries(library, family, steamId);
@@ -303,4 +315,18 @@ export async function importSteamLibrary(
   );
 
   return { ...report, family: { copies: familyCount, removed, kept } };
+}
+
+/** La libreria propria dal profilo pubblico, con la chiave dell'applicazione. */
+async function importFromProfile(
+  account: StoreAccountRow,
+): Promise<SteamImportReport> {
+  const library = await fetchSteamLibrary(account.externalAccountId);
+  return importLibrary(
+    account,
+    library.map((entry) => ({
+      ...entry,
+      storePage: storePage(entry.externalId),
+    })),
+  );
 }

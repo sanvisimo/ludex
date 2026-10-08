@@ -13,14 +13,23 @@ import {
   beginSteamQrLogin,
   type SteamLogin,
   SteamQrTimeoutError,
+  SteamWebTokenError,
 } from '../external/steam-auth';
 import { decryptCredentials, resetStoreTokenKey } from '../lib/crypto';
 import { enqueueImport } from '../queue/imports';
 import {
   removeSteamLogin,
+  SteamLoginExistsError,
   startSteamLogin,
   steamLoginStatus,
 } from './steam-login';
+import {
+  linkSteamLogin,
+  linkSteamWebToken,
+  listStoreAccounts,
+  StoreAccountMismatchError,
+  steamAccessToken,
+} from './store-accounts';
 
 // Il confine è `steam-auth`, che è l'unico a parlare con `steam-session`: qui si
 // finge il QR, e si guarda cosa il server ne fa — lo stato che racconta, la riga
@@ -360,5 +369,220 @@ describe('togliere il solo login', () => {
     expect(
       (await accountsOf(userId)).find((a) => a.id === account.id),
     ).toMatchObject({ credentials: expect.anything() });
+  });
+});
+
+// --- Una sola sessione per account, e il token web incollato ---
+//
+// Il 07/10/2026 tre QR in sei minuti hanno fatto bloccare l'account: ogni QR
+// confermato è un «Galaxy S25» nuovo in Steam Guard. Qui si controlla che non
+// se ne apra un altro per distrazione, e che l'altro modo — il token del browser —
+// non ne crei nessuno.
+
+/** Un token web come lo dà la pagina dello store: JWT con lo SteamID in `sub`. */
+const webToken = (
+  steamId = STEAM_ID,
+  expiresInMs = 86_000_000,
+  aud: string[] = ['web', 'mobile'],
+) =>
+  [
+    'intestazione',
+    Buffer.from(
+      JSON.stringify({
+        sub: steamId,
+        aud,
+        exp: Math.floor((Date.now() + expiresInMs) / 1000),
+      }),
+    ).toString('base64url'),
+    'firma',
+  ].join('.');
+
+describe('una sola sessione QR per account', () => {
+  let userId: string;
+
+  beforeEach(async () => {
+    process.env.STORE_TOKEN_KEY = Buffer.alloc(32, 7).toString('base64');
+    resetStoreTokenKey();
+    userId = await createUser();
+    mockedPersona.mockResolvedValue('sanvisimo');
+    mockedBegin.mockClear();
+  });
+
+  it('con un login QR già vivo non apre una sessione su Steam', async () => {
+    await linkSteamLogin(userId, login());
+
+    await expect(startSteamLogin(userId)).rejects.toThrow(
+      SteamLoginExistsError,
+    );
+
+    // Il controllo sta prima di qualunque richiesta a Steam.
+    expect(mockedBegin).not.toHaveBeenCalled();
+  });
+
+  it('con `replace` lo apre: la scelta è dell’utente, dopo l’avviso', async () => {
+    await linkSteamLogin(userId, login());
+    fakeQr();
+
+    const started = await startSteamLogin(userId, { replace: true });
+
+    expect(started.qrUrl).toBeDefined();
+    expect(mockedBegin).toHaveBeenCalledOnce();
+  });
+
+  it('un token web non è una sessione: il QR parte senza avvisi', async () => {
+    await linkSteamWebToken(userId, webToken());
+    fakeQr();
+
+    await startSteamLogin(userId);
+
+    expect(mockedBegin).toHaveBeenCalledOnce();
+  });
+
+  it('un login morto (needs_reauth) si rifà senza conferma', async () => {
+    const account = await linkSteamLogin(userId, login());
+    await db
+      .update(schema.storeAccounts)
+      .set({ status: 'needs_reauth' })
+      .where(eq(schema.storeAccounts.id, account.id));
+    fakeQr();
+
+    await startSteamLogin(userId, { relinking: account });
+
+    expect(mockedBegin).toHaveBeenCalledOnce();
+  });
+
+  it('su un ricollegamento guarda solo quell’account, non gli altri', async () => {
+    await linkSteamLogin(userId, login('76561190000000001'));
+    const senza = await seedAccount(userId, STEAM_ID);
+    fakeQr();
+
+    await startSteamLogin(userId, { relinking: senza });
+
+    expect(mockedBegin).toHaveBeenCalledOnce();
+  });
+});
+
+describe('collegare Steam col token web', () => {
+  let userId: string;
+
+  beforeEach(async () => {
+    process.env.STORE_TOKEN_KEY = Buffer.alloc(32, 7).toString('base64');
+    resetStoreTokenKey();
+    userId = await createUser();
+    mockedPersona.mockResolvedValue('sanvisimo');
+  });
+
+  it('scrive la riga senza refresh token, con lo SteamID del token', async () => {
+    const token = webToken();
+
+    const account = await linkSteamWebToken(userId, token, { label: 'casa' });
+
+    const [riga] = await accountsOf(userId);
+    expect(riga).toMatchObject({
+      id: account.id,
+      store: 'steam',
+      externalAccountId: STEAM_ID,
+      displayName: 'sanvisimo',
+      label: 'casa',
+      status: 'ok',
+    });
+    const credenziale = decryptCredentials<Record<string, unknown>>(
+      riga!.credentials!,
+    );
+    expect(credenziale).toMatchObject({ accessToken: token });
+    // È il punto: nessun refresh token, nessuna sessione che il server possa
+    // rinnovare da solo.
+    expect(credenziale).not.toHaveProperty('refreshToken');
+  });
+
+  it('sostituisce un login QR sulla stessa riga: scegliere l’altro modo è una scelta', async () => {
+    const qr = await linkSteamLogin(userId, login());
+
+    await linkSteamWebToken(userId, webToken());
+
+    const righe = await accountsOf(userId);
+    expect(righe).toHaveLength(1);
+    expect(righe[0]!.id).toBe(qr.id);
+    expect(
+      decryptCredentials<Record<string, unknown>>(righe[0]!.credentials!),
+    ).not.toHaveProperty('refreshToken');
+  });
+
+  it('su un ricollegamento di un altro account non tocca niente', async () => {
+    const atteso = await seedAccount(userId, '76561190000000001');
+
+    await expect(
+      linkSteamWebToken(userId, webToken(STEAM_ID), { relinking: atteso }),
+    ).rejects.toThrow(StoreAccountMismatchError);
+
+    expect((await accountsOf(userId))[0]).toMatchObject({ credentials: null });
+  });
+
+  it('un token che non va non scrive niente', async () => {
+    await expect(linkSteamWebToken(userId, 'spazzatura')).rejects.toThrow(
+      SteamWebTokenError,
+    );
+    await expect(
+      linkSteamWebToken(userId, webToken(STEAM_ID, -1000)),
+    ).rejects.toThrow(SteamWebTokenError);
+    await expect(
+      linkSteamWebToken(userId, webToken(STEAM_ID, 86_000_000, ['renew'])),
+    ).rejects.toThrow(SteamWebTokenError);
+
+    expect(await accountsOf(userId)).toHaveLength(0);
+  });
+
+  it('rende il token finché vale e poi nulla: non si rinnova', async () => {
+    const valido = await linkSteamWebToken(userId, webToken());
+    const [riga] = await accountsOf(userId);
+
+    expect(await steamAccessToken(riga!)).toMatchObject({
+      accessToken: expect.stringContaining('.'),
+      renewable: false,
+    });
+
+    // Passano le 24 ore: nessun refresh token da cui ripartire.
+    const credenziale = decryptCredentials<{ accessToken: string }>(
+      riga!.credentials!,
+    );
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.now() + 90_000_000);
+    try {
+      expect(await steamAccessToken(riga!)).toEqual({
+        accessToken: null,
+        renewable: false,
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(credenziale.accessToken).toContain('.');
+    expect(valido.id).toBe(riga!.id);
+    // E non è un account da ricollegare.
+    expect((await accountsOf(userId))[0]!.status).toBe('ok');
+  });
+
+  it('l’elenco dice che tipo di login è, e quando scade il token', async () => {
+    const solo = await seedAccount(userId, '76561190000000001');
+    await linkSteamWebToken(userId, webToken(STEAM_ID));
+    await linkSteamLogin(userId, login('76561190000000002'));
+
+    const elenco = await listStoreAccounts(userId);
+    const byId = new Map(elenco.map((a) => [a.externalAccountId, a]));
+
+    expect(byId.get(solo.externalAccountId)).toMatchObject({
+      hasLogin: false,
+      loginKind: null,
+      loginExpiresAt: null,
+    });
+    expect(byId.get(STEAM_ID)).toMatchObject({
+      hasLogin: true,
+      loginKind: 'token',
+      loginExpiresAt: expect.any(Date),
+    });
+    expect(byId.get('76561190000000002')).toMatchObject({
+      hasLogin: true,
+      loginKind: 'qr',
+      loginExpiresAt: null,
+    });
   });
 });

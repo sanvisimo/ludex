@@ -81,6 +81,7 @@ import {
 } from '../services/reports';
 import {
   removeSteamLogin,
+  SteamLoginExistsError,
   startSteamLogin,
   steamLoginStatus,
 } from '../services/steam-login';
@@ -95,6 +96,7 @@ import {
 import { deleteUserTag, listUserTags } from '../services/tags';
 import {
   findStoreAccount,
+  linkSteamWebToken,
   linkStore,
   listStoreAccounts,
   renameStoreAccount,
@@ -113,6 +115,7 @@ import {
 import { getUserSettings, updateUserSettings } from '../services/user-settings';
 import { eventForUser, liveEvents } from '../lib/events';
 import { SteamLibraryNotVisibleError } from '../external/steam';
+import { SteamWebTokenError } from '../external/steam-auth';
 import { enqueueImport, isImportRunning } from '../queue/imports';
 import { admin, authed, maybeAuthed, os } from './context';
 import { asAdminAuthCall } from './admin-auth';
@@ -263,7 +266,46 @@ export const router = os.router({
           return startSteamLogin(context.user.id, {
             label: input.label,
             relinking,
+            replace: input.replace ?? false,
+          }).catch((error: unknown) => {
+            // Un login vivo c'è già, e rifarlo è un dispositivo in più su Steam:
+            // la schermata chiede conferma e rimanda con `replace`.
+            if (error instanceof SteamLoginExistsError) {
+              throw new ORPCError('PRECONDITION_FAILED', {
+                message: error.message,
+              });
+            }
+            throw error;
           });
+        }),
+
+      token: os.accounts.steamLogin.token
+        .use(authed)
+        .handler(async ({ input, context }) => {
+          const relinking = await relinkTarget(
+            context.user.id,
+            'steam',
+            input.accountId,
+          );
+          const account = await linkSteamWebToken(
+            context.user.id,
+            input.token,
+            { label: input.label, relinking },
+          ).catch((error: unknown) => {
+            if (error instanceof SteamWebTokenError) {
+              throw new ORPCError('BAD_REQUEST', {
+                message: error.message,
+                // La schermata dice cosa non va dalla `reason`, non dal testo.
+                data: { reason: error.reason },
+              });
+            }
+            if (error instanceof StoreAccountMismatchError) {
+              throw new ORPCError('CONFLICT', { message: error.message });
+            }
+            throw error;
+          });
+          await enqueueImport('steam', { storeAccountId: account.id });
+          return { ...account, syncing: true };
         }),
 
       status: os.accounts.steamLogin.status

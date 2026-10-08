@@ -52,9 +52,12 @@ import {
   resolveSteamId,
 } from '../external/steam';
 import {
+  hasRefreshToken,
+  parseSteamWebToken,
   refreshSteamTokens,
   SteamAuthError,
   type SteamLogin,
+  type SteamStoredCredentials,
 } from '../external/steam-auth';
 import { encryptCredentials, decryptCredentials } from '../lib/crypto';
 import { enqueueImport, isImportRunning } from '../queue/imports';
@@ -162,12 +165,59 @@ export async function listStoreAccounts(userId: string) {
     )
     .orderBy(schema.storeAccounts.store, schema.storeAccounts.createdAt);
 
+  // Come è fatto il login Steam non si legge dal DB senza aprire la credenziale:
+  // lo si ricava qui, per i soli account Steam che ne hanno una.
+  const steamLogins = new Map(
+    (
+      await db
+        .select({
+          id: schema.storeAccounts.id,
+          credentials: schema.storeAccounts.credentials,
+        })
+        .from(schema.storeAccounts)
+        .where(
+          and(
+            eq(schema.storeAccounts.userId, userId),
+            eq(schema.storeAccounts.store, 'steam'),
+            sql`${schema.storeAccounts.credentials} is not null`,
+          ),
+        )
+    ).map((row) => [row.id, steamLoginInfo(row.credentials)]),
+  );
+
   return Promise.all(
     rows.map(async (row) => ({
       ...row,
+      loginKind: steamLogins.get(row.id)?.kind ?? null,
+      loginExpiresAt: steamLogins.get(row.id)?.expiresAt ?? null,
       syncing: await isImportRunning(row.id),
     })),
   );
+}
+
+/**
+ * Che tipo di login Steam è quello salvato, e quando scade se non si rinnova.
+ *
+ * `qr`: col refresh token, si rinnova da sé e non ha una scadenza che interessi
+ * (nessuna data: la pagina non ha niente da dire finché funziona). `token`: il
+ * token web incollato, che muore dopo 24 ore e va rimesso a mano — la data serve
+ * alla scheda per dire «scaduto».
+ */
+function steamLoginInfo(credentials: Buffer | null): {
+  kind: 'qr' | 'token';
+  expiresAt: Date | null;
+} | null {
+  if (!credentials) return null;
+  try {
+    const parsed = decryptCredentials<SteamStoredCredentials>(credentials);
+    return hasRefreshToken(parsed)
+      ? { kind: 'qr', expiresAt: null }
+      : { kind: 'token', expiresAt: new Date(parsed.expiresAt) };
+  } catch {
+    // Illeggibile: non si sa cosa sia, e `storeAccessToken` lo scoprirà al
+    // prossimo import e chiederà di ricollegare.
+    return null;
+  }
 }
 
 /**
@@ -542,6 +592,98 @@ export async function linkSteamLogin(
     expiresAt: new Date(login.credentials.expiresAt),
     expectedExternalAccountId: options.relinking?.externalAccountId,
   });
+}
+
+/**
+ * Collega Steam dal token web incollato: la famiglia, **senza una sessione sul
+ * nostro conto su Steam**.
+ *
+ * Lo SteamID64 viene dal token stesso (`sub`), quindi non serve una richiesta per
+ * sapere di chi è, e un ricollegamento controlla che sia l'account atteso come
+ * per il QR. Il token **sostituisce** il login che c'era: scegliere l'altro modo
+ * è una scelta, e tenere un refresh token che l'utente non vuole più sarebbe una
+ * sessione aperta su Steam di cui nessuno si ricorda.
+ */
+export async function linkSteamWebToken(
+  userId: string,
+  pasted: string,
+  options: LinkOptions = {},
+) {
+  const { steamId, credentials } = parseSteamWebToken(pasted);
+
+  return upsertAccount({
+    userId,
+    store: 'steam',
+    externalAccountId: steamId,
+    displayName: await fetchSteamPersonaName(steamId),
+    label: options.label,
+    credentials,
+    expiresAt: new Date(credentials.expiresAt),
+    expectedExternalAccountId: options.relinking?.externalAccountId,
+  });
+}
+
+/**
+ * C'è già un login col QR vivo? Se sì, rifarlo crea **un altro dispositivo** sul
+ * conto Steam dell'utente («Galaxy S25», una voce in più in Steam Guard).
+ *
+ * Il 07/10/2026 tre QR in sei minuti hanno fatto bloccare l'account: ogni
+ * «ricollega» era un dispositivo nuovo. Con `externalAccountId` si guarda quel
+ * solo account (un ricollegamento); senza, tutti quelli dell'utente.
+ */
+export async function hasLiveSteamQrLogin(
+  userId: string,
+  externalAccountId?: string,
+): Promise<boolean> {
+  const rows = await db
+    .select({ credentials: schema.storeAccounts.credentials })
+    .from(schema.storeAccounts)
+    .where(
+      and(
+        eq(schema.storeAccounts.userId, userId),
+        eq(schema.storeAccounts.store, 'steam'),
+        eq(schema.storeAccounts.status, 'ok'),
+        sql`${schema.storeAccounts.credentials} is not null`,
+        ...(externalAccountId
+          ? [eq(schema.storeAccounts.externalAccountId, externalAccountId)]
+          : []),
+      ),
+    );
+  return rows.some((row) => steamLoginInfo(row.credentials)?.kind === 'qr');
+}
+
+/**
+ * L'access token Steam da usare adesso, o nulla se non ce n'è uno valido.
+ *
+ * Col QR rinnova da sé (`storeAccessToken`). Col token web **non può**: scaduto,
+ * rende `null` e l'import continua dal profilo senza toccare la famiglia. Non è
+ * `needs_reauth`: l'account sta benissimo, ha solo bisogno di un token nuovo
+ * quando l'utente vuole la famiglia aggiornata.
+ */
+export async function steamAccessToken(
+  account: StoreAccountRow,
+): Promise<{ accessToken: string | null; renewable: boolean }> {
+  if (!account.credentials) {
+    throw new Error('Nessun account steam collegato');
+  }
+
+  let credentials: SteamStoredCredentials;
+  try {
+    credentials = decryptCredentials<SteamStoredCredentials>(
+      account.credentials,
+    );
+  } catch {
+    return requireReauth(account);
+  }
+
+  if (hasRefreshToken(credentials)) {
+    return { accessToken: await storeAccessToken(account), renewable: true };
+  }
+  return {
+    accessToken:
+      credentials.expiresAt > Date.now() ? credentials.accessToken : null,
+    renewable: false,
+  };
 }
 
 // --- GOG: refresh token cifrato ---

@@ -20,7 +20,7 @@ import {
 } from '../external/steam';
 import { enqueueEnrichment, enqueuePostImport } from '../queue/enrichment';
 import { importSteamLibrary } from './steam-import';
-import { StoreReauthRequiredError, storeAccessToken } from './store-accounts';
+import { StoreReauthRequiredError, steamAccessToken } from './store-accounts';
 
 // Il confine è il client di Steam, non `fetch`: le classi d'errore restano vere,
 // perché l'import ci fa `instanceof`.
@@ -33,7 +33,7 @@ vi.mock('../external/steam', async (importOriginal) => ({
 // cosa l'import fa col token, non come lo si ottiene.
 vi.mock('./store-accounts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./store-accounts')>()),
-  storeAccessToken: vi.fn(),
+  steamAccessToken: vi.fn(),
 }));
 vi.mock('../external/igdb', () => ({
   findIgdbGamesByExternalIds: vi.fn(),
@@ -50,7 +50,7 @@ vi.mock('../queue/enrichment', () => ({
 
 const mockedLibrary = vi.mocked(fetchSteamLibrary);
 const mockedFamily = vi.mocked(fetchSteamFamilyLibrary);
-const mockedToken = vi.mocked(storeAccessToken);
+const mockedToken = vi.mocked(steamAccessToken);
 const mockedResolve = vi.mocked(findIgdbGamesByExternalIds);
 const mockedSearch = vi.mocked(searchIgdbGames);
 const mockedEnqueue = vi.mocked(enqueueEnrichment);
@@ -474,7 +474,7 @@ describe('importSteamLibrary col login (9f)', () => {
   beforeEach(async () => {
     userId = await createUser();
     account = await withLogin(userId, ME);
-    mockedToken.mockResolvedValue('token');
+    mockedToken.mockResolvedValue({ accessToken: 'token', renewable: true });
     mockedSearch.mockResolvedValue([]);
     mockedLibrary.mockResolvedValue([]);
   });
@@ -734,6 +734,52 @@ describe('importSteamLibrary col login (9f)', () => {
       StoreReauthRequiredError,
     );
     expect(mockedFamily).not.toHaveBeenCalled();
+  });
+
+  // --- il token web incollato: senza refresh token, scade e non si rinnova ---
+
+  it('con un token web scaduto legge dal profilo e non tocca la famiglia', async () => {
+    mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+    igdbKnowsAll(['400']);
+    await importSteamLibrary(account);
+    expect((await byApp(userId)).get('400')?.subscription).toBe('steam_family');
+
+    // Passano le 24 ore: nessun token valido, e nessun modo di rinnovarlo.
+    mockedToken.mockResolvedValue({ accessToken: null, renewable: false });
+    mockedLibrary.mockClear();
+    mockedFamily.mockClear();
+    mockedLibrary.mockResolvedValue([]);
+
+    const report = await importSteamLibrary(account);
+
+    expect(report.familySkipped).toBe(true);
+    // La libreria propria dal profilo, con la chiave: senza il token.
+    expect(mockedLibrary).toHaveBeenCalledWith(account.externalAccountId);
+    expect(mockedFamily).not.toHaveBeenCalled();
+    // La copia della famiglia è ancora lì: non è uscita, è scaduto un token.
+    expect((await byApp(userId)).get('400')?.subscription).toBe('steam_family');
+    const [riga] = await db
+      .select({ status: schema.storeAccounts.status })
+      .from(schema.storeAccounts)
+      .where(eq(schema.storeAccounts.id, account.id));
+    expect(riga?.status).toBe('ok');
+  });
+
+  it('un token web rifiutato da Steam non manda l’account in needs_reauth', async () => {
+    mockedToken.mockResolvedValue({ accessToken: 'token', renewable: false });
+    mockedLibrary
+      .mockRejectedValueOnce(new SteamUnauthorizedError('GetOwnedGames', 401))
+      .mockResolvedValue([]);
+
+    const report = await importSteamLibrary(account);
+
+    expect(report.familySkipped).toBe(true);
+    expect(mockedFamily).not.toHaveBeenCalled();
+    const [riga] = await db
+      .select({ status: schema.storeAccounts.status })
+      .from(schema.storeAccounts)
+      .where(eq(schema.storeAccounts.id, account.id));
+    expect(riga?.status).toBe('ok');
   });
 
   it('una copia tolta a mano non rientra al reimport', async () => {
