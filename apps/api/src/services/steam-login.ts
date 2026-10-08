@@ -9,7 +9,6 @@ import { enqueueImport } from '../queue/imports';
 import { pruneFamilyCopies } from './steam-import';
 import {
   findStoreAccount,
-  hasLiveSteamQrLogin,
   type LinkOptions,
   linkSteamLogin,
   StoreAccountMismatchError,
@@ -76,23 +75,11 @@ const GONE: SteamLoginStatus = {
 };
 
 /**
- * C'è già un login col QR vivo, e rifarlo crea un altro dispositivo su Steam.
- * Non è un errore da nascondere: la schermata lo dice e chiede conferma.
- */
-export class SteamLoginExistsError extends Error {
-  constructor() {
-    super('Hai già un login Steam attivo: rifarlo crea un altro dispositivo');
-    this.name = 'SteamLoginExistsError';
-  }
-}
-
-/**
  * Apre un login col QR.
  *
- * **Se l'account ha già un login vivo non se ne apre un altro**, salvo
- * `replace`: ogni QR confermato è un dispositivo nuovo nell'elenco di Steam
- * Guard dell'utente, e tre in sei minuti (07/10/2026) hanno fatto bloccare
- * l'account. Il controllo sta **prima** di qualunque richiesta a Steam.
+ * Rifarlo è sempre permesso: un secondo account Steam va collegabile, e
+ * ricollegare lo stesso non ha nessun avviso da dare — il blocco non è venuto dai
+ * dispositivi in più (l'utente li ha rifatti a decine altrove senza conseguenze).
  *
  * **Una sola sessione attiva per utente**: aprirne una seconda annulla la prima.
  * Senza, chi apre il dialogo, lo chiude e lo riapre lascia un QR vivo per ogni
@@ -100,15 +87,8 @@ export class SteamLoginExistsError extends Error {
  */
 export async function startSteamLogin(
   userId: string,
-  options: LinkOptions & { replace?: boolean } = {},
+  options: LinkOptions = {},
 ) {
-  if (
-    !options.replace &&
-    (await hasLiveSteamQrLogin(userId, options.relinking?.externalAccountId))
-  ) {
-    throw new SteamLoginExistsError();
-  }
-
   for (const [id, pending] of logins) {
     if (pending.userId !== userId) continue;
     pending.cancel();

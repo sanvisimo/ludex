@@ -222,10 +222,6 @@ export const contract = {
           z.object({
             label: z.string().trim().max(60).nullish(),
             accountId: z.uuid().nullish(),
-            // Un QR confermato è un dispositivo nuovo su Steam. Se c'è già un
-            // login vivo `start` risponde PRECONDITION_FAILED, e la schermata
-            // lo ripete con `replace` solo dopo che l'utente ha confermato.
-            replace: z.boolean().nullish(),
           }),
         )
         .output(SteamLoginStartSchema),

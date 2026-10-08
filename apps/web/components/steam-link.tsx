@@ -141,7 +141,6 @@ export function SteamLink({
           {t('button')}
         </Button>
         <Text fontSize={14}>✓ {t('qrAuto')}</Text>
-        <Text fontSize={14}>⚠ {t('qrDevice')}</Text>
         <Text fontSize={12} color="$color11">
           {t('phoneHint')}
         </Text>
@@ -162,7 +161,6 @@ export function SteamLink({
         >
           {t('tokenButton')}
         </Button>
-        <Text fontSize={14}>✓ {t('tokenNoDeviceShort')}</Text>
         <Text fontSize={14}>⚠ {t('tokenDaily')}</Text>
         <Text fontSize={12} color="$color11">
           {t('browserHint')}

@@ -376,11 +376,13 @@ e altri quattro), un posto libero e due ex membri, 453 giochi in
 `GetOwnedGames`. Il probe non scrive niente e non stampa token: dei token
 mostra solo audience e scadenze, lette dal JWT.
 
-**Il login.** Col QR dell'app Steam, con `steam-session` e piattaforma
-`MobileApp`. Il README della libreria dice che è l'unica piattaforma i cui token
-si rinnovano da un server (`WebBrowser` risponde `AccessDenied`, `SteamClient`
-vuole una sessione CM aperta); non l'abbiamo provato, perché il probe usa solo
-`MobileApp`.
+**Il login.** Col QR approvato nell'app Steam, con `steam-session`. **Dall'08/10/2026
+la piattaforma è `WebBrowser`**, non più `MobileApp` (vedi «Il terzo blocco»). La
+tabella sotto è stata misurata il 05/10 con `MobileApp`, l'unica piattaforma i cui
+token si rinnovano da un server (`WebBrowser` risponde `AccessDenied`, `SteamClient`
+vuole una sessione CM aperta): per `WebBrowser` la durata del refresh token **non è
+ancora misurata**, e l'access token si prende con `getWebCookies()` invece che con
+`refreshAccessToken`.
 
 | Cosa                                   | Misurato                                                                                                        |
 | -------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
@@ -637,8 +639,8 @@ ripartono da zero, quindi «nuovo» non distingue i nostri dai suoi.
 
 |          | QR dall'app Steam                             | Token dal browser                          |
 | -------- | --------------------------------------------- | ------------------------------------------ |
-| Su Steam | un dispositivo «Galaxy S25» nuovo             | **niente**: il server non apre sessioni    |
-| Durata   | refresh token ~211 giorni, si rinnova da solo | access token 24 ore, **non si rinnova**    |
+| Su Steam | un dispositivo nuovo (dall'08/10: un browser) | **niente**: il server non apre sessioni    |
+| Durata   | refresh token (mesi), access token 24 ore     | access token 24 ore, **non si rinnova**    |
 | Famiglia | si aggiorna da sola                           | si aggiorna quando se ne incolla uno nuovo |
 
 Il token è `webapi_token` della pagina
@@ -655,18 +657,62 @@ potando (`familySkipped` nel resoconto). Le copie `steam_family` restano finché
 l'utente non incolla un token nuovo o toglie il login. Col QR, invece, un rifiuto è un
 login morto come prima.
 
-**Una sola sessione QR per account.** Se l'account ha già un login QR vivo,
-`steamLogin.start` risponde `PRECONDITION_FAILED` **prima** di qualunque richiesta a
-Steam, e la schermata avvisa che rifarlo crea un altro dispositivo; si rimanda con
-`replace`. Un login morto (`needs_reauth`), un token web o un ricollegamento di un altro
-account non fanno scattare l'avviso. Resta fuori dal codice: due istanze di Ludex
-(locale e mini PC) con database diversi fanno ciascuna il suo login, e Steam le conta
-come due dispositivi. **Una sola istanza per account Steam.**
+**Nessun avviso sul secondo login.** Si era aggiunto (`SteamLoginExistsError`,
+`PRECONDITION_FAILED`, `replace`) sull'idea che più dispositivi nuovi in pochi minuti
+facessero scattare il blocco, ed è stato tolto l'08/10/2026: contava anche un secondo
+account Steam, che va collegabile, e l'utente ha rifatto il login su molti dispositivi
+in quei giorni senza conseguenze, bloccato solo dai login di Ludex. Resta che aprire
+un QR annulla il precedente **dello stesso utente** (una sessione in memoria alla volta).
+Due istanze di Ludex (locale e mini PC) con database diversi fanno ciascuna il suo
+login: una sola istanza per account Steam, per ordine, non per un avviso.
 
 **Non provato dal vero**: i test girano con la libreria e Steam finti, e nessuna
 richiesta a Steam è partita in questo lavoro. Resta da vedere se un token web usato
 da un server è accettato da Steam senza avvisi: si saprà al primo incolla vero,
 dopo che l'Assistenza ha risposto sul blocco.
+
+### Il terzo blocco (08/10/2026) e il QR come un browser
+
+Con **un solo** QR dal mini PC (10:23, un solo «Galaxy S25», niente doppio login)
+Steam ha bloccato di nuovo l'account, citando quel dispositivo. Tre blocchi su tre,
+tutti dopo un QR `MobileApp`; il 07/10 il blocco era arrivato circa due ore e mezza dopo
+il login (9:23 → 11:50), quindi la valutazione di Steam è ritardata, e il doppio login
+non era la causa.
+
+**Cosa dice il forum del manutentore.** Il thread
+[«I get my account banned when I log in with a QR code»](https://dev.doctormckay.com/topic/5758-i-get-my-account-banned-when-i-log-in-with-a-qr-code/)
+(giugno 2025) è il nostro caso: `LoginSession(MobileApp)` + `startWithQR()`, account
+segnalato «accessed by someone else» dopo qualche ora, tre volte, dispositivo «Galaxy
+S22» (da noi, nella 1.9.4, «Galaxy S25»). Chi è passato a `WebBrowser` con uno user
+agent diverso da quello di default non è stato bloccato (almeno 4 ore, più a lungo per
+un secondo utente), e uno scrive che il blocco scatta solo col QR fatto come app
+mobile, perché sull'app vera quel login non esiste e Steam lo nota. **Sono segnalazioni
+di utenti: il manutentore non ha risposto né confermato.** L'esempio ufficiale
+`login-with-qr.ts` usa comunque `MobileApp`, quindi non prova il contrario.
+
+**Cosa abbiamo cambiato.**
+
+- Il QR si apre come `WebBrowser`, con uno user agent nostro (`STEAM_LOGIN_USER_AGENT`,
+  un Chrome su Linux: il default della libreria è proprio ciò che chi veniva bloccato
+  non aveva cambiato). Per Steam è l'accesso di un browser autorizzato col QR, cosa
+  che esiste.
+- L'access token viene da `getWebCookies()` (cookie `steamLoginSecure`, quello dello
+  store), come negli esempi. Prima si forzava `refreshAccessToken()` subito dopo il
+  login: era ridondante (la libreria lo fa da sé per `MobileApp` se il token manca)
+  e il commento sbagliato. Non era la causa.
+- Un refresh token web **non si rinnova da un server**: ogni circa 24 ore il job rifà
+  `getWebCookies()` dal refresh token (una richiesta web, come un browser che riapre
+  Steam) e il refresh token resta lo stesso. Quando muore serve un nuovo QR;
+  `refreshExpiresAt` dice quando. Un credenziale `MobileApp` del vecchio login non
+  vale più (audience `mobile`, non `web`): diventa `needs_reauth`.
+
+**Non provato dal vero.** I test girano con la libreria finta e nessuna richiesta a
+Steam è partita. Restano da verificare, col primo login vero: che l'access token del
+cookie dello store sia accettato da `GetOwnedGames` e dalla famiglia (stessa audience
+del `webapi_token`, ma non misurata), la durata del refresh token web, e soprattutto
+**se il blocco non scatta**: ci vogliono almeno tre o quattro ore dopo il QR. Prova da
+fare con un account di prova o dopo lo sblocco, **un solo login**. Il probe
+`steam:family-probe` fa ancora il login `MobileApp`: non va lanciato.
 
 ## Nintendo (9d)
 

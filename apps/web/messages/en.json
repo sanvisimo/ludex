@@ -812,8 +812,6 @@
       "tokenDaily": "Lasts 24 hours: paste it again to refresh the family",
       "browserHint": "You need the browser where you're already signed in to Steam: copy some text and paste it here.",
       "bothInclude": "With either:",
-      "existing": "You already have an active Steam login. Doing it again creates another device in your Steam Guard list, and several new devices within minutes can get the account locked. If the login works, you don't need this.",
-      "existingConfirm": "I understand, create a new device",
       "tokenStep1": "1. Open this page in the browser where you're already signed in to Steam",
       "tokenOpen": "Open the Steam page",
       "tokenStep2": "2. Select all the text that appears and copy it",
