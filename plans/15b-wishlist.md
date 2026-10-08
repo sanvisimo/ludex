@@ -182,3 +182,34 @@ vuoto per metterlo da parte e pieno se sta in una lista.
 - **La card si divide in due link** (copertina e titolo, alla stessa scheda) più il
   cuore, che è un bottone sovrapposto: un bottone non sta dentro un link.
   Il menu delle liste si monta solo quando serve, non uno per card.
+
+## Da decidere: playlist «aperte» (08/10/2026, idea dell'utente)
+
+Una lista di giochi **scelti a mano, nell'ordine voluto**, che non segue il
+backlog: es. «i 20 RPG più belli di sempre». Si sceglie un gioco alla volta e
+lo si aggiunge alla playlist; l'ordine è quello deciso da chi la fa. Non è
+ancora analizzata né approvata.
+
+Si appoggia alle liste a mano (`wishlist_items`, le pagine `/wishlist`), ma **non
+è la wishlist con un altro nome**: due regole della wishlist qui non valgono.
+
+- **Giochi che hai già.** Una wishlist esclude quelli nel backlog, e aggiungerne
+  uno è un conflitto. In una playlist aperta ci stanno anche i giochi tuoi (un
+  «top 20» ha quelli che hai giocato).
+- **L'ordine.** La wishlist ordina per data, nome, uscita, durata, voto: non ha
+  una posizione scelta. Qui serve una colonna `position` su `wishlist_items` e un
+  modo di spostare un gioco su e giù (come «Sposta su / giù» delle liste, ma per
+  i giochi).
+
+Strade (da scegliere):
+1. **Un terzo `kind` di `playlists`** (`curated`), con le sue regole: nome unico
+   nel tipo, nessun conflitto col backlog, `position` sulle voci. Le pagine
+   riusano `/wishlist/$id`. È la più pulita, perché ogni tipo conserva le sue
+   regole.
+2. **Un'opzione sulla lista a mano** («lista ordinata»), con le due regole sopra
+   che cambiano a seconda dell'opzione. Meno codice di schema, più `if` sparsi.
+
+Da decidere anche, senza fretta: se le playlist aperte si **condividono** (oggi
+solo quelle a filtro hanno il link, 15d; una top 20 è il caso in cui avrebbe più
+senso) e come si **aggiunge** un gioco (dalla scheda, come per la wishlist, o
+da una ricerca dentro la lista).
