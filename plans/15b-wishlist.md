@@ -222,8 +222,9 @@ Da decidere anche, senza fretta:
   «Playlist della community», la scheda di un gioco che dice in quali playlist
   pubbliche compare, o solo la ricerca), se si indicizzano, e se si possono
   segnalare. Se si fa, va riletta anche la privacy (`lib/legal.ts`), perché i
-  testi descrivono ciò che Ludex mostra davvero. Una forma intermedia a tre
-  livelli — privata, con link, pubblica — sulla stessa colonna di visibilità
-  al posto del solo `share_token`;
+  testi descrivono ciò che Ludex mostra davvero. **Deciso (08/10/2026): tre
+  livelli** — privata, con link, pubblica — sulla stessa colonna di
+  visibilità, al posto del solo `share_token`. Restano aperte le domande
+  sopra (nome di chi l'ha fatta, dove si trova, indicizzazione, segnalazioni);
 - come si **aggiunge** un gioco (dalla scheda, come per la wishlist, o da una
   ricerca dentro la lista).
