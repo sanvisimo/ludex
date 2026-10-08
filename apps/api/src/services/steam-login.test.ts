@@ -19,7 +19,6 @@ import { decryptCredentials, resetStoreTokenKey } from '../lib/crypto';
 import { enqueueImport } from '../queue/imports';
 import {
   removeSteamLogin,
-  SteamLoginExistsError,
   startSteamLogin,
   steamLoginStatus,
 } from './steam-login';
@@ -397,7 +396,7 @@ const webToken = (
     'firma',
   ].join('.');
 
-describe('una sola sessione QR per account', () => {
+describe('aprire un QR con un login già presente', () => {
   let userId: string;
 
   beforeEach(async () => {
@@ -408,57 +407,16 @@ describe('una sola sessione QR per account', () => {
     mockedBegin.mockClear();
   });
 
-  it('con un login QR già vivo non apre una sessione su Steam', async () => {
-    await linkSteamLogin(userId, login());
-
-    await expect(startSteamLogin(userId)).rejects.toThrow(
-      SteamLoginExistsError,
-    );
-
-    // Il controllo sta prima di qualunque richiesta a Steam.
-    expect(mockedBegin).not.toHaveBeenCalled();
-  });
-
-  it('con `replace` lo apre: la scelta è dell’utente, dopo l’avviso', async () => {
-    await linkSteamLogin(userId, login());
+  it('si apre sempre: un secondo account va collegabile, e rifare lo stesso non ha avvisi', async () => {
+    const primo = await linkSteamLogin(userId, login('76561190000000001'));
     fakeQr();
 
-    const started = await startSteamLogin(userId, { replace: true });
-
-    expect(started.qrUrl).toBeDefined();
-    expect(mockedBegin).toHaveBeenCalledOnce();
-  });
-
-  it('un token web non è una sessione: il QR parte senza avvisi', async () => {
-    await linkSteamWebToken(userId, webToken());
-    fakeQr();
-
+    // Un altro account Steam: nessun login suo, il QR parte.
     await startSteamLogin(userId);
+    // Lo stesso account che ha già il login: parte lo stesso.
+    await startSteamLogin(userId, { relinking: primo });
 
-    expect(mockedBegin).toHaveBeenCalledOnce();
-  });
-
-  it('un login morto (needs_reauth) si rifà senza conferma', async () => {
-    const account = await linkSteamLogin(userId, login());
-    await db
-      .update(schema.storeAccounts)
-      .set({ status: 'needs_reauth' })
-      .where(eq(schema.storeAccounts.id, account.id));
-    fakeQr();
-
-    await startSteamLogin(userId, { relinking: account });
-
-    expect(mockedBegin).toHaveBeenCalledOnce();
-  });
-
-  it('su un ricollegamento guarda solo quell’account, non gli altri', async () => {
-    await linkSteamLogin(userId, login('76561190000000001'));
-    const senza = await seedAccount(userId, STEAM_ID);
-    fakeQr();
-
-    await startSteamLogin(userId, { relinking: senza });
-
-    expect(mockedBegin).toHaveBeenCalledOnce();
+    expect(mockedBegin).toHaveBeenCalledTimes(2);
   });
 });
 

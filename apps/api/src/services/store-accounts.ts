@@ -624,35 +624,6 @@ export async function linkSteamWebToken(
 }
 
 /**
- * C'è già un login col QR vivo? Se sì, rifarlo crea **un altro dispositivo** sul
- * conto Steam dell'utente («Galaxy S25», una voce in più in Steam Guard).
- *
- * Il 07/10/2026 tre QR in sei minuti hanno fatto bloccare l'account: ogni
- * «ricollega» era un dispositivo nuovo. Con `externalAccountId` si guarda quel
- * solo account (un ricollegamento); senza, tutti quelli dell'utente.
- */
-export async function hasLiveSteamQrLogin(
-  userId: string,
-  externalAccountId?: string,
-): Promise<boolean> {
-  const rows = await db
-    .select({ credentials: schema.storeAccounts.credentials })
-    .from(schema.storeAccounts)
-    .where(
-      and(
-        eq(schema.storeAccounts.userId, userId),
-        eq(schema.storeAccounts.store, 'steam'),
-        eq(schema.storeAccounts.status, 'ok'),
-        sql`${schema.storeAccounts.credentials} is not null`,
-        ...(externalAccountId
-          ? [eq(schema.storeAccounts.externalAccountId, externalAccountId)]
-          : []),
-      ),
-    );
-  return rows.some((row) => steamLoginInfo(row.credentials)?.kind === 'qr');
-}
-
-/**
  * L'access token Steam da usare adesso, o nulla se non ce n'è uno valido.
  *
  * Col QR rinnova da sé (`storeAccessToken`). Col token web **non può**: scaduto,

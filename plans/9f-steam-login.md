@@ -520,10 +520,10 @@ Fatto, con test (nessuna richiesta a Steam):
    `null` per un token web scaduto, e `importSteamLibrary` ricade sul profilo
    (`familySkipped`) senza `needs_reauth`. `apps/api/src/services/steam-import.ts`,
    `store-accounts.ts`.
-3. **Una sola sessione QR per account** — `startSteamLogin` rifiuta (`SteamLoginExistsError`,
-   `PRECONDITION_FAILED`) se c'è già un login QR vivo, salvo `replace`; il controllo
+3. ~~**Una sola sessione QR per account**~~ — **tolto l'08/10/2026** (vedi sotto): il
+   rifiuto (`SteamLoginExistsError`, `PRECONDITION_FAILED`) se c'era già un login QR, salvo `replace`; il controllo
    sta prima di ogni richiesta a Steam. `apps/api/src/services/steam-login.ts`.
-4. **API** — `accounts.steamLogin.token`, `start` con `replace`, e `loginKind` /
+4. **API** — `accounts.steamLogin.token`, `start` (con `replace`, tolto), e `loginKind` /
    `loginExpiresAt` nell'elenco degli account. `packages/contracts`, `apps/api/src/rpc/router.ts`.
 5. **Schermata** — la scelta fra QR e token in `steam-link.tsx`, il pannello del token
    (`steam-token-panel.tsx`), l'avviso prima di un secondo QR, il badge «Token scaduto»
@@ -531,3 +531,29 @@ Fatto, con test (nessuna richiesta a Steam):
 
 Da fare dopo la risposta dell'Assistenza: provare il token incollato sul vero,
 con un solo account e un solo incolla.
+
+## Terzo blocco (08/10/2026): il QR come un browser
+
+Tre blocchi su tre dopo un QR `MobileApp`, l'ultimo con un solo login; stesso schema
+segnalato sul forum del manutentore, con `WebBrowser` + user agent non di default come
+workaround (vedi «Il terzo blocco» in [docs/negozi.md](../docs/negozi.md)).
+
+Fatto, con test (nessuna richiesta a Steam):
+
+1. **Il QR è `WebBrowser`** con `STEAM_LOGIN_USER_AGENT`; l'access token viene da
+   `getWebCookies()`. Tolta la `refreshAccessToken()` ridondante e il suo commento.
+2. **`refreshSteamTokens`** rifà `getWebCookies()` dal refresh token (non rinnova da
+   server, il refresh token resta lo stesso). Un credenziale `MobileApp` del vecchio
+   login è rifiutato dal setter → `SteamAuthError` → `needs_reauth`.
+   `apps/api/src/external/steam-auth.ts` e il suo test.
+
+Da fare dopo lo sblocco dell'account (o su un account di prova), **un solo login**:
+vedere se l'access token del cookie è accettato da `GetOwnedGames` e dalla famiglia,
+leggere la durata del refresh token web dal JWT, e aspettare almeno quattro ore per
+sapere se il blocco scatta. `steam:family-probe` fa ancora il login `MobileApp`: da
+aggiornare prima di usarlo.
+
+**Tolto l'avviso sul secondo login (08/10/2026).** `hasLiveSteamQrLogin`,
+`SteamLoginExistsError`, `replace` e la conferma nel pannello QR: bloccavano un secondo
+account Steam e si basavano su un'ipotesi (troppi dispositivi) smentita dall'utente.
+Resta l'annullamento del QR precedente dello stesso utente.

@@ -812,8 +812,6 @@
       "tokenDaily": "Vale 24 ore: per aggiornare la famiglia lo incolli di nuovo",
       "browserHint": "Serve il browser dove sei già dentro Steam: copi un testo e lo incolli qui.",
       "bothInclude": "Con tutti e due:",
-      "existing": "Hai già un login Steam attivo. Rifarlo crea un altro dispositivo nel tuo elenco di Steam Guard, e più dispositivi nuovi in pochi minuti possono far bloccare l'account. Se il login funziona, non serve.",
-      "existingConfirm": "Ho capito, crea un nuovo dispositivo",
       "tokenStep1": "1. Apri questa pagina nel browser dove sei già dentro Steam",
       "tokenOpen": "Apri la pagina di Steam",
       "tokenStep2": "2. Seleziona tutto il testo che compare e copialo",
