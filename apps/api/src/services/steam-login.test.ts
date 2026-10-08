@@ -409,6 +409,8 @@ describe('aprire un QR con un login già presente', () => {
 
   it('si apre sempre: un secondo account va collegabile, e rifare lo stesso non ha avvisi', async () => {
     const primo = await linkSteamLogin(userId, login('76561190000000001'));
+    // Una risposta finta per ogni apertura.
+    fakeQr();
     fakeQr();
 
     // Un altro account Steam: nessun login suo, il QR parte.
