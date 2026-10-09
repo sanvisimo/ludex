@@ -958,6 +958,10 @@
         "title": "Importa da un file CSV",
         "text": "Porta in Ludex una libreria che hai già altrove, per esempio l'export di Playnite."
       },
+      "ea": {
+        "title": "La libreria EA",
+        "text": "EA non permette un collegamento che duri: la libreria si importerà una volta sola, quando vuoi tu."
+      },
       "steamNintendo": {
         "title": "Steam con login e Nintendo",
         "text": "Sono pronti e li stiamo provando su un server vero: appena reggono, si aprono a tutti."
@@ -1007,8 +1011,7 @@
       "stores": {
         "title": "Più negozi",
         "p1": "GOG, Epic Games e Amazon Games.",
-        "p2": "PlayStation, anche i dischi e i giochi di PS Plus.",
-        "p3": "EA, con un'importazione una tantum."
+        "p2": "PlayStation, anche i dischi e i giochi di PS Plus."
       },
       "critic": {
         "title": "Voti, durate e filtri",

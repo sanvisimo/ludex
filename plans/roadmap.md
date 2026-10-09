@@ -16,6 +16,9 @@ segnalazioni spostate dalla mail alle issue di GitHub.
   - idea: pallino grigio tratteggiato, `Badge` grigio;
   - fatto: pallino pieno con la spunta, «Fatto · mese» al posto dell'etichetta.
     Le aree (Import, Playlist…) sono etichette grigie, senza colori loro.
+- **L'invito alle issue sta in una colonna a destra** da `$lg` (1024 px), larga
+  280 e ferma in vista mentre si scorre; sotto `$lg` va in fondo, dopo la
+  timeline. La pagina è larga 1120 px, contro gli 896 delle altre.
 - **Scritta a mano** in `lib/roadmap.ts`, per chi usa l'app: non si ricava da
   `docs/ordine-sviluppo.md`, che è il diario di chi sviluppa. Le voci fatte sono
   tappe con due-quattro punti; le altre una frase.
@@ -31,6 +34,8 @@ segnalazioni spostate dalla mail alle issue di GitHub.
 - «In corso» oggi non ha voci, e il tipo le prevede già.
 - I mesi delle voci fatte sono approssimati: la storia dei commit è fatta di
   merge, non di step. Si correggono in `lib/roadmap.ts`.
+- **EA è «In arrivo»**, non fatto (corretto il 09/10/2026): l'importazione una
+  tantum non c'è ancora.
 - Dentro «In arrivo» c'è «Steam con login e Nintendo»: sono costruiti e provati
   sul mini PC, ma il rilascio agli altri utenti aspetta l'esito.
 - Le idee mostrate sono quelle **ancora da decidere** (playlist aperte, Xbox):

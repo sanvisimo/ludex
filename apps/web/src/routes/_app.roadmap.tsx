@@ -21,17 +21,41 @@ function RoadmapPage() {
   const t = useTranslations('roadmap') as Translate;
 
   return (
-    <Page title={t('title')} subtitle={t('subtitle')}>
-      <YStack render="ol" m={0} p={0} style={{ listStyle: 'none' }}>
-        {roadmap.map((entry, index) => (
-          <Entry
-            key={entry.id}
-            entry={entry}
-            last={index === roadmap.length - 1}
-          />
-        ))}
-      </YStack>
-      <Invitation />
+    <Page title={t('title')} subtitle={t('subtitle')} maxW={1120}>
+      {/* La timeline a sinistra e l'invito a destra da `$lg`; sotto, l'invito
+          viene dopo, in fondo. Come nella pagina del gioco, sotto la soglia la
+          colonna principale vuole `flexBasis: 'auto'`: la base 0 di `flex={1}`
+          le darebbe un'altezza zero. */}
+      <XStack
+        gap={32}
+        items="flex-start"
+        $max-lg={{ flexDirection: 'column', items: 'stretch' }}
+      >
+        <YStack
+          flex={1}
+          minW={0}
+          $max-lg={{ width: '100%', flexBasis: 'auto' }}
+        >
+          <YStack render="ol" m={0} p={0} style={{ listStyle: 'none' }}>
+            {roadmap.map((entry, index) => (
+              <Entry
+                key={entry.id}
+                entry={entry}
+                last={index === roadmap.length - 1}
+              />
+            ))}
+          </YStack>
+        </YStack>
+        {/* In colonna resta in vista mentre si scorre la timeline, che è lunga. */}
+        <YStack
+          width={280}
+          shrink={0}
+          $max-lg={{ width: '100%' }}
+          style={{ position: 'sticky', top: 72 }}
+        >
+          <Invitation />
+        </YStack>
+      </XStack>
     </Page>
   );
 }

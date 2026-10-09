@@ -41,6 +41,7 @@ export const roadmap: RoadmapEntry[] = [
   { id: 'subscriptions', status: 'next', areas: ['library'] },
   { id: 'sourceLinks', status: 'next', areas: ['game', 'critic'] },
   { id: 'csv', status: 'next', areas: ['import'] },
+  { id: 'ea', status: 'next', areas: ['import'] },
   { id: 'steamNintendo', status: 'next', areas: ['import'] },
   { id: 'ai', status: 'next', areas: ['ai'] },
   { id: 'mobile', status: 'next', areas: ['mobile'] },
@@ -79,7 +80,7 @@ export const roadmap: RoadmapEntry[] = [
     status: 'done',
     areas: ['import'],
     month: '2026-10',
-    points: 3,
+    points: 2,
   },
   {
     id: 'critic',
