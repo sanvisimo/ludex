@@ -889,6 +889,7 @@
   "critic": {
     "title": "Voti della critica",
     "none": "Nessun voto della critica per questo gioco.",
+    "noScore": "nessun voto",
     "byPlatform": "Per piattaforma",
     "reviews": "{count, plural, one {# recensione} other {# recensioni}}",
     "recommended": "{percent}% lo consiglia",

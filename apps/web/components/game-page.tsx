@@ -383,6 +383,9 @@ export function DurationAndCritics({
   ).filter(([, minutes]) => minutes !== null);
 
   const platforms = (entry?.ownerships ?? []).map((o) => o.platformSlug);
+  // Una fonte senza voto resta in elenco se sappiamo dov'è la sua pagina: il
+  // link serve lo stesso, e così non sta in due posti (OpenCritic lo vuole
+  // vicino al voto, e senza voto la riga è il posto).
   const scores = [
     {
       source: 'opencritic' as const,
@@ -403,7 +406,7 @@ export function DurationAndCritics({
       ),
       link: game.links.igdb,
     },
-  ].filter((row) => row.score !== undefined);
+  ].filter((row) => row.score !== undefined || row.link !== null);
 
   return (
     <Panel>
@@ -454,8 +457,14 @@ export function DurationAndCritics({
             >
               <BrandIcon brand={source} size={20} />
               <Muted flex={1}>{tCritic(source)}</Muted>
-              {score!.tier && <Muted fontSize={13}>{score!.tier}</Muted>}
-              <Strong>{Math.round(score!.score)}</Strong>
+              {score ? (
+                <>
+                  {score.tier && <Muted fontSize={13}>{score.tier}</Muted>}
+                  <Strong>{Math.round(score.score)}</Strong>
+                </>
+              ) : (
+                <Muted fontSize={13}>{tCritic('noScore')}</Muted>
+              )}
             </LinkRow>
           ))}
         </YStack>
