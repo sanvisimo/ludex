@@ -11,6 +11,7 @@
     "menu": "Menu",
     "signUp": "Sign up",
     "account": "Account",
+    "roadmap": "Roadmap",
     "credits": "Credits",
     "privacy": "Privacy",
     "terms": "Terms",
@@ -919,13 +920,126 @@
     "removed": "Removed from your backlog",
     "failed": "I couldn't remove the game"
   },
+  "roadmap": {
+    "title": "Roadmap",
+    "subtitle": "What is here, what is coming and what is still just an idea.",
+    "status": {
+      "doing": "In progress",
+      "next": "Coming up",
+      "idea": "Idea",
+      "done": "Done"
+    },
+    "areas": {
+      "import": "Import",
+      "library": "Library",
+      "game": "Game page",
+      "critic": "Critics",
+      "playlists": "Playlists",
+      "account": "Account",
+      "admin": "Admin",
+      "ai": "AI",
+      "mobile": "Mobile"
+    },
+    "cta": {
+      "title": "Got an idea, or found a problem?",
+      "text": "Tell us on GitHub: bug reports and ideas all live in the issues.",
+      "button": "Open an issue"
+    },
+    "items": {
+      "subscriptions": {
+        "title": "Subscriptions",
+        "text": "PS Plus, Game Pass and the rest: telling apart the games in your library that are yours from the ones that are there while the subscription lasts."
+      },
+      "sourceLinks": {
+        "title": "Source links, even without a score",
+        "text": "If a game has a page on OpenCritic or Metacritic but no score yet, its page will still show the link."
+      },
+      "merge": {
+        "title": "Duplicate games, merged",
+        "text": "When the same game shows up twice in the catalogue, the two are merged into one, without losing anyone's status, rating or tags."
+      },
+      "csv": {
+        "title": "Import from a CSV file",
+        "text": "Bring a library you already keep elsewhere into Ludex, for example a Playnite export."
+      },
+      "ea": {
+        "title": "The EA library",
+        "text": "EA doesn't allow a link that lasts: the library will be imported once, whenever you choose."
+      },
+      "steamNintendo": {
+        "title": "Steam with login, and Nintendo",
+        "text": "They are ready and we are trying them on a real server: as soon as they hold up, they open to everyone."
+      },
+      "ai": {
+        "title": "What to play now, with AI",
+        "text": "Tell Ludex how much time you have, what you play on and what you feel like, and it suggests something from your backlog."
+      },
+      "mobile": {
+        "title": "The phone app",
+        "text": "Your backlog always in your pocket, with the same library and playlists as the web."
+      },
+      "openPlaylists": {
+        "title": "Open playlists",
+        "text": "Lists of hand-picked games in the order you want: \"the 20 best RPGs ever\". Private, with a link, or public."
+      },
+      "xbox": {
+        "title": "The Xbox library",
+        "text": "Xbox gives back what you played, not what you own: before building it we have to decide what to show."
+      },
+      "playlists": {
+        "title": "Playlists, wishlists and random game",
+        "p1": "Save your backlog filters under a name: the playlist keeps itself up to date.",
+        "p2": "Wishlist: set aside games you don't have yet, with a heart on the cards.",
+        "p3": "\"Random game\": a button that opens a game from your backlog.",
+        "p4": "Share a playlist with a link, without showing who you are."
+      },
+      "account": {
+        "title": "Your account",
+        "p1": "Export your data to a file.",
+        "p2": "Delete your account, with your password.",
+        "p3": "Linked libraries, games to sort out and hidden ones in one place."
+      },
+      "admin": {
+        "title": "Fixing what doesn't add up",
+        "p1": "\"Report an error\" on every game page.",
+        "p2": "Import entries nobody could recognise are linked by hand.",
+        "p3": "A wrong link is re-pointed to the right game."
+      },
+      "gamePage": {
+        "title": "The game page and the home",
+        "p1": "Gallery, description, remakes and similar games.",
+        "p2": "Length and critic scores at a glance.",
+        "p3": "Links to the stores that have the game.",
+        "p4": "A home made of bands, and search across the catalogue."
+      },
+      "stores": {
+        "title": "More stores",
+        "p1": "GOG, Epic Games and Amazon Games.",
+        "p2": "PlayStation, including discs and PS Plus games."
+      },
+      "critic": {
+        "title": "Scores, lengths and filters",
+        "p1": "OpenCritic and Metacritic scores, per platform too.",
+        "p2": "How long a game takes, from HowLongToBeat.",
+        "p3": "Search and filters on the backlog, including score and length."
+      },
+      "start": {
+        "title": "The first backlog",
+        "p1": "Sign up and sign in.",
+        "p2": "Add a game by hand, with search on IGDB.",
+        "p3": "Import your Steam library.",
+        "p4": "Rating, notes, tags and copies of every game."
+      }
+    }
+  },
   "credits": {
     "title": "Credits and licences",
     "subtitle": "Who makes Ludex possible: the data, the software and the icons.",
     "about": {
       "text": "Ludex is free software, born to keep your backlog always at hand and manage it the way you like. Suggestions and new ideas are welcome. With love  ♥",
       "source": "Source code",
-      "contact": "Suggestions and ideas"
+      "contact": "Suggestions and ideas",
+      "issues": "GitHub issues"
     },
     "services": {
       "title": "Services and data sources",

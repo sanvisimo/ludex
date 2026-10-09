@@ -169,8 +169,11 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
     delle playlist (un link pubblico)
 16. Cancellazione ed esportazione dell'account
 
-Poi il mobile. Non anticipare step successivi: se una feature appartiene allo
-step 13, non implementarla mentre si lavora sull'1.
+Poi il mobile. I numeri sono nomi e non si rinumerano: **quello che resta si fa
+in quest'ordine** (09/10/2026) — 11b · 9c · 10 · 14 · 9e · 13 · mobile, con le
+ragioni in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.md). Non anticipare
+step successivi: se una feature appartiene allo step 13, non implementarla
+mentre si lavora sull'11b.
 
 ## Note operative
 

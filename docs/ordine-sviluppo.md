@@ -2,6 +2,31 @@
 
 Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli altri file: [modello-dati](modello-dati.md), [import-librerie](import-librerie.md), [negozi](negozi.md), [ordine-sviluppo](ordine-sviluppo.md), [scelte-scartate](scelte-scartate.md).
 
+## Ordine di lavoro dei passi che restano
+
+I numeri degli step sono nomi, non una sequenza: compaiono nei piani, nei
+commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
+in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
+[roadmap](../apps/web/lib/roadmap.ts) pubblica:
+
+1. **11b — Fusione**: va decisa la sorte di stati, voti e tag quando due righe
+   si fondono. Tocca dati condivisi fra tutti gli utenti, quindi è delicata.
+2. **9c — EA**: importazione una tantum. Prima va misurato il formato, ma il
+   resto è la pipeline che esiste già.
+3. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
+   e la deduplica.
+4. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
+   decise.
+5. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
+   da zero.
+6. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+   accanto al vettore, ranking, prompt e schermata.
+7. **Mobile**: un'app nuova, con le sue schermate.
+
+Fuori da questa lista restano due cose piccole, che si fanno quando capita: il
+rilascio agli altri utenti di 9d e 9f (aspetta l'esito della prova sul mini PC)
+e il link alle fonti senza voto nella pagina del gioco.
+
 1. **Registrazione e auth**
 2. **Inserimento manuale + prima UI web** — `backlog` con possesso, piattaforme e
    stato di completamento. Include la **ricerca IGDB** per scegliere il gioco da

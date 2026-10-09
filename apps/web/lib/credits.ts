@@ -157,5 +157,12 @@ export const platformIconsLicense = '/platforms/LICENSE.md';
 export const repoUrl = 'https://github.com/sanvisimo/ludex';
 export const licenseUrl = 'https://www.gnu.org/licenses/agpl-3.0.html';
 
-/** Dove arrivano suggerimenti e idee. Un posto solo, qui. */
+/** Dove arrivano suggerimenti, idee e segnalazioni: le issue, in pubblico. */
+export const issuesUrl = `${repoUrl}/issues`;
+
+/**
+ * Il contatto per ciò che **non** può essere pubblico: i diritti sui propri
+ * dati e la chiusura dell'account (informativa e condizioni). Suggerimenti e
+ * segnalazioni stanno nelle issue, `issuesUrl`.
+ */
 export const contactEmail = 'sanvi.simo@proton.me';
