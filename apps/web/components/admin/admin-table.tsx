@@ -10,6 +10,12 @@ export type AdminColumn<T> = {
   header: ReactNode;
   width?: number;
   flex?: number;
+  /**
+   * Una colonna elastica non scende sotto questa larghezza: sotto, la tabella
+   * scorre di lato. Senza, stretta la finestra, un numero finiva spezzato a
+   * metà e un motivo restava una colonna di tre parole.
+   */
+  minWidth?: number;
   render: (row: T) => ReactNode;
 };
 
@@ -30,6 +36,16 @@ export function AdminTable<T>({
   rows: T[];
   rowKey: (row: T) => string;
 }) {
+  // La larghezza sotto cui la tabella scorre: quella delle colonne che hanno una
+  // misura, più i vuoti. Mai meno di 640, com'è sempre stato.
+  const minW = Math.max(
+    640,
+    columns.reduce(
+      (sum, column) => sum + (column.width ?? column.minWidth ?? 0),
+      24 + 12 * (columns.length - 1),
+    ),
+  );
+
   return (
     <YStack
       role="table"
@@ -49,7 +65,7 @@ export function AdminTable<T>({
         bg="$color2"
         borderBottomWidth={1}
         borderColor="$borderColor"
-        minW={640}
+        minW={minW}
       >
         {columns.map((column) => (
           <Cell key={column.key} column={column} role="columnheader">
@@ -68,7 +84,7 @@ export function AdminTable<T>({
           py={6}
           gap={12}
           items="center"
-          minW={640}
+          minW={minW}
           borderTopWidth={index === 0 ? 0 : 1}
           borderColor="$borderColor"
           hoverStyle={{ bg: '$color2' }}
@@ -105,7 +121,7 @@ function Cell<T>({
     <XStack
       role={role}
       flex={column.flex ?? 1}
-      minW={0}
+      minW={column.minWidth ?? 0}
       overflow="hidden"
       items="center"
       gap={6}
@@ -119,20 +135,28 @@ function Cell<T>({
  * Il testo di una cella: una riga, tagliata se non ci sta. Accanto a una
  * copertina va dentro un blocco con `flex={1} minW={0}`, o il taglio non
  * scatta: il blocco resterebbe largo quanto il testo.
+ *
+ * Con `wrap` va invece a capo — in mezzo a una parola solo se la parola non ci
+ * sta nemmeno da sola —: serve dove il testo **è** l'informazione, il motivo di
+ * un errore o uno slug lungo, e tagliarlo lo renderebbe illeggibile. La riga si
+ * alza quanto serve.
  */
 export function CellText({
   children,
   muted = false,
+  wrap = false,
 }: {
   children: ReactNode;
   muted?: boolean;
+  wrap?: boolean;
 }) {
   return (
     <Text
       fontSize={13}
       lineHeight={18}
       color={muted ? '$color11' : '$color12'}
-      numberOfLines={1}
+      numberOfLines={wrap ? undefined : 1}
+      {...(wrap ? { style: { overflowWrap: 'break-word' } } : {})}
     >
       {children}
     </Text>

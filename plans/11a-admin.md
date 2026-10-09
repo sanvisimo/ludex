@@ -575,6 +575,19 @@ quindi non vanno aggiunte alla lista delle tabelle escluse dal troncamento.
   voto non è un errore, ma finisce fra i «Da sistemare»?) o il dato. Da
   guardare insieme ai link della tabella e della scheda admin. Non ancora
   analizzato.
+- **La tabella «Fonti» della scheda admin** (09/10/2026, visto in uso, web).
+  Era illeggibile: ogni cella si tagliava a una riga, e proprio il motivo
+  dell'errore e lo slug di Metacritic finivano tagliati. **Fatto lo stesso
+  giorno**, a decisione dell'utente: `CellText` ha `wrap` (a capo, in mezzo a
+  una parola solo se non ci sta da sola) usato per Id e Motivo; le colonne
+  elastiche hanno `minWidth`, e la tabella scorre di lato sotto la somma delle
+  misure invece di spezzare i numeri; lo stato è un `Badge` coi colori degli
+  stati (`ok` verde, `not_found` ambra, `failed` rosso, `pending` grigio), il
+  motivo in evidenza e il messaggio sotto, in grigio. Le altre tabelle admin non
+  cambiano: `wrap` e `minWidth` sono spenti di default. Provata con una risposta
+  simulata a 1280 e 900 px, nei due temi. **Resta da rivedere** la tabella dei
+  link ai negozi nella stessa scheda e quelle di «Dati mancanti» (stato e link),
+  che hanno lo stesso taglio a una riga.
 - **Il link alla fonte quando non c'è il voto** (08/10/2026,
   pagina del gioco, web). Alcuni giochi hanno il riferimento OpenCritic o
   Metacritic ma nessun voto, e oggi il link sparisce: in `game-page.tsx` le
