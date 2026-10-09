@@ -55,9 +55,9 @@ import { takeLinkClick } from '@/src/link-click';
 const PAGE_SIZE = 20;
 
 type Search = {
-  fonte?: EnrichmentSource;
-  gruppo?: MissingBucket;
-  motivo?: SourceReason;
+  source?: EnrichmentSource;
+  bucket?: MissingBucket;
+  reason?: SourceReason;
   q?: string;
   page?: number;
 };
@@ -67,13 +67,13 @@ const oneOf =
   (value: unknown): T | undefined =>
     (values as readonly unknown[]).includes(value) ? (value as T) : undefined;
 
-export const Route = createFileRoute('/_app/admin/mancanti')({
+export const Route = createFileRoute('/_app/admin/missing')({
   // Fonte, stato, motivo, ricerca e pagina stanno nell'indirizzo, come i
   // filtri del backlog: «indietro» torna dov'eri.
   validateSearch: (search: Record<string, unknown>): Search => ({
-    fonte: oneOf(enrichmentSourceValues)(search.fonte),
-    gruppo: oneOf(missingBucketValues)(search.gruppo),
-    motivo: oneOf(sourceReasonValues)(search.motivo),
+    source: oneOf(enrichmentSourceValues)(search.source),
+    bucket: oneOf(missingBucketValues)(search.bucket),
+    reason: oneOf(sourceReasonValues)(search.reason),
     q: typeof search.q === 'string' && search.q ? search.q : undefined,
     page:
       typeof search.page === 'number' && search.page > 1
@@ -125,12 +125,12 @@ function MissingSection() {
   // Senza una fonte nell'indirizzo si apre la prima che ha qualcosa da
   // sistemare: arrivare su una lista vuota sarebbe un giro a vuoto.
   const source =
-    search.fonte ??
+    search.source ??
     enrichmentSourceValues.find(
       (value) => fixableOf(summary.data, value) > 0,
     ) ??
     'hltb';
-  const bucket = search.gruppo ?? 'fixable';
+  const bucket = search.bucket ?? 'fixable';
 
   return (
     <YStack gap={24}>
@@ -150,7 +150,7 @@ function MissingSection() {
           label={t('missing.source')}
           value={source}
           onValueChange={(value) =>
-            void navigate({ search: { fonte: value as EnrichmentSource } })
+            void navigate({ search: { source: value as EnrichmentSource } })
           }
         >
           {enrichmentSourceValues.map((value) => (
@@ -172,7 +172,7 @@ function MissingSection() {
               variant={value === bucket ? 'secondary' : 'outline'}
               aria-pressed={value === bucket}
               onPress={() =>
-                void navigate({ search: { fonte: source, gruppo: value } })
+                void navigate({ search: { source, bucket: value } })
               }
             >
               {`${t(`bucket.${value}`)} ${countOf(summary.data, source, value)}`}
@@ -194,7 +194,7 @@ function MissingSection() {
         <MissingList
           source={source}
           bucket={bucket}
-          reason={search.motivo}
+          reason={search.reason}
           q={search.q}
           page={search.page ?? 1}
           title={
@@ -242,10 +242,7 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
             : t('missing.emptyScore')
           : null;
     return (
-      <Link
-        from={Route.fullPath}
-        search={{ fonte: row.source, gruppo: bucket }}
-      >
+      <Link from={Route.fullPath} search={{ source: row.source, bucket }}>
         <Text
           fontSize={13}
           lineHeight={18}
@@ -284,7 +281,7 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
         rows={rows}
         rowKey={(row) => row.source}
       />
-      <Link to="/admin/scarti">
+      <Link to="/admin/unresolved">
         <Text fontSize={13} color="$color11" textDecorationLine="underline">
           {t('missing.openUnresolved', { count: summary.unresolvedImports })}
         </Text>
@@ -380,7 +377,7 @@ function MissingList({
         <>
           <GameCover imageId={row.coverImageId} name={row.name} width={24} />
           <YStack flex={1} minW={0}>
-            <Link to="/admin/giochi/$slug" params={{ slug: row.slug }}>
+            <Link to="/admin/games/$slug" params={{ slug: row.slug }}>
               <CellText>{row.name}</CellText>
             </Link>
           </YStack>
@@ -464,7 +461,7 @@ function MissingList({
               void navigate({
                 search: (prev) => ({
                   ...prev,
-                  motivo: next === 'all' ? undefined : (next as SourceReason),
+                  reason: next === 'all' ? undefined : (next as SourceReason),
                   page: undefined,
                 }),
               })

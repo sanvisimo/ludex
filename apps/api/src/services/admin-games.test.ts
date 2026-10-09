@@ -350,14 +350,12 @@ describe('la scheda admin di un gioco', () => {
     await db
       .insert(schema.externalIds)
       .values({ gameId: arcade.id, source: 'steam', externalId: '1058320' });
-    await db
-      .insert(schema.gameSources)
-      .values({
-        gameId: arcade.id,
-        source: 'hltb',
-        status: 'ok',
-        externalId: '5023',
-      });
+    await db.insert(schema.gameSources).values({
+      gameId: arcade.id,
+      source: 'hltb',
+      status: 'ok',
+      externalId: '5023',
+    });
 
     const detail = await gameAdminDetail(arcade.slug);
 

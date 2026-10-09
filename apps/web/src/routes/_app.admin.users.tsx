@@ -44,7 +44,7 @@ import { useSession } from '@/src/use-session';
 
 type Search = { q?: string };
 
-export const Route = createFileRoute('/_app/admin/utenti')({
+export const Route = createFileRoute('/_app/admin/users')({
   validateSearch: (search: Record<string, unknown>): Search => ({
     q: typeof search.q === 'string' && search.q ? search.q : undefined,
   }),

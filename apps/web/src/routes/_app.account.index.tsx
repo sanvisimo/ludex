@@ -4,6 +4,6 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 // del menu dell'avatar resta quello di prima.
 export const Route = createFileRoute('/_app/account/')({
   beforeLoad: () => {
-    throw redirect({ to: '/account/profilo', replace: true });
+    throw redirect({ to: '/account/profile', replace: true });
   },
 });

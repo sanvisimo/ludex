@@ -77,7 +77,7 @@ export function SetSourceIdDialog({
   const [invalid, setInvalid] = useState(false);
 
   useEffect(() => {
-    setValue('');
+    setValue(row?.name ?? '');
     setInvalid(false);
     search.reset();
     // `search` cambia a ogni render: qui conta solo la riga.

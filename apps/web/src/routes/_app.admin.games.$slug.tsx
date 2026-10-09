@@ -32,7 +32,7 @@ import { api, client } from '@/lib/orpc';
 import { ExternalLink } from '@/src/components/external-link';
 
 // `giochi_` e non `giochi`: la scheda non sta dentro la lista, le sta accanto.
-export const Route = createFileRoute('/_app/admin/giochi/$slug')({
+export const Route = createFileRoute('/_app/admin/games/$slug')({
   component: GameAdminPage,
 });
 

@@ -287,7 +287,7 @@ Resta aperta la terza domanda, **la scheda dell'account senza nickname**
 («Account Nintendo» e gli ultimi quattro caratteri dell'id): non è stata decisa e non è
 nel codice. Verificato: `check-types`, `lint`, `pnpm --filter api test` (542 verdi, 15 nuovi
 sul controllo del campo); **non guardato a schermo**: il dialogo «Aggiungi libreria» sta
-su `/account/librerie`.
+su `/account/libraries`.
 
 **Cosa è stato fatto**
 

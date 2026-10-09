@@ -25,8 +25,8 @@ dell'account).
   Nascosti. Sul telefono il menu è una riga di voci scorrevole in alto, non una
   colonna. I conteggi (26, 17) stanno accanto alle voci.
 - **Sotto-rotte**, come il backlog tiene lo stato nell'URL:
-  `/account/profilo`, `/account/librerie`, `/account/da-sistemare`,
-  `/account/nascosti`. `/account` rimanda al profilo. Il tab dei nascosti è un
+  `/account/profile`, `/account/libraries`, `/account/needs-attention`,
+  `/account/hidden`. `/account` rimanda al profilo. Il tab dei nascosti è un
   parametro di ricerca.
 - **Profilo**: dati con **modifica del nome**; **cambio password**; **sessioni
   attive** con «esci dagli altri dispositivi»; **scarica i miei dati** e
@@ -467,9 +467,9 @@ controllo.
   alla home. È un difetto a sé, valeva anche per una sessione scaduta.
 
 **Provarlo**: da loggati, nel DB portare `session.created_at` e `updated_at`
-della propria sessione a più di un giorno fa e aprire `/account/profilo`: la
-lista delle sessioni si carica. Da anonimi, aprire `/account/librerie`: si va a
-`/login?next=/account/librerie` e, dopo l'accesso, si torna lì. In produzione
+della propria sessione a più di un giorno fa e aprire `/account/profile`: la
+lista delle sessioni si carica. Da anonimi, aprire `/account/libraries`: si va a
+`/login?next=/account/libraries` e, dopo l'accesso, si torna lì. In produzione
 serve il deploy del server (la config sta lì).
 
 **Fuori**: un test automatico (è una riga di config, e `apps/web` non ha test

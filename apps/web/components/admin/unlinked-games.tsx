@@ -60,7 +60,7 @@ export function UnlinkedGames({ q }: { q?: string }) {
       flex: 2,
       render: (game) => (
         <YStack flex={1} minW={0}>
-          <Link to="/admin/giochi/$slug" params={{ slug: game.slug }}>
+          <Link to="/admin/games/$slug" params={{ slug: game.slug }}>
             <CellText>{game.name}</CellText>
           </Link>
         </YStack>

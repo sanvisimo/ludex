@@ -114,10 +114,10 @@ rimandato dal [12e](12e-home.md) a un lotto a parte, con uno slug nostro.
    sua storia e i test in Chromium (axe compreso): il `Combobox` sceglie un
    valore fra voci che ha già, qui le voci arrivano dal server e Invio cerca.
    All'inizio nessuna voce è evidenziata, così Invio porta alla pagina; la
-   freccia giù entra nella lista. Sulla pagina `/cerca` la barra non ha il
+   freccia giù entra nella lista. Sulla pagina `/search` la barra non ha il
    campo, perché la pagina ha il suo.
 
-5. **La pagina `/cerca?q=…`**: la griglia dei nostri, a pagine, con la card
+5. **La pagina `/search?q=…`**: la griglia dei nostri, a pagine, con la card
    della home; sotto, da loggato, i risultati IGDB nella stessa griglia, senza
    pagine (IGDB ne dà un numero fisso).
 
@@ -143,7 +143,7 @@ Fanno ancora parte di questo lotto.
    di Ludex prendono fino a dieci posti, e IGDB riempie quelli che restano.
    IGDB si chiede quindi **dopo** i nostri, e con dieci giochi nostri non si
    chiede affatto: costa un attimo di attesa in più sui risultati IGDB, e fa
-   risparmiare richieste al rate limit. La pagina `/cerca` resta com'era.
+   risparmiare richieste al rate limit. La pagina `/search` resta com'era.
 
    **Fatto** (`igdbFillsUpTo` in `useGameSearch`). Provato con Playwright:
    12 giochi «Zelda» in catalogo danno 10 voci e nessuna chiamata a IGDB;

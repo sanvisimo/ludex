@@ -202,6 +202,7 @@ Si appoggia alle liste a mano (`wishlist_items`, le pagine `/wishlist`), ma **no
   i giochi).
 
 Strade (da scegliere):
+
 1. **Un terzo `kind` di `playlists`** (`curated`), con le sue regole: nome unico
    nel tipo, nessun conflitto col backlog, `position` sulle voci. Le pagine
    riusano `/wishlist/$id`. È la più pulita, perché ogni tipo conserva le sue

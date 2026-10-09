@@ -176,7 +176,7 @@ utente adesso, promuovibile dopo»: questo è il «dopo». La forma:
 
    **Fatto** (06/10/2026), otto frame, approvati. Due cose che il piano non
    diceva: la **scheda admin di un gioco** è una pagina sua,
-   `/admin/giochi/:slug`, che mette insieme i gesti delle fonti (passo 4) e
+   `/admin/games/:slug`, che mette insieme i gesti delle fonti (passo 4) e
    dei collegamenti (passo 6) su un gioco solo, ed è da lì che si fa
    «Inserisci id» su una fonte `ok`; le **segnalazioni stanno dentro
    Giochi**, col conteggio nel menu. Sulla pagina del gioco, chi il gioco non
@@ -343,7 +343,7 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
      vedrebbe il messaggio generico del login.
 
 8. **Web**: `/admin` col menu a sinistra come `/account`, sotto-rotte
-   `mancanti`, `scarti`, `giochi`, `utenti`. Il link compare solo agli admin;
+   `missing`, `unresolved`, `games`, `users`. Il link compare solo agli admin;
    la rotta rimanda via chi non lo è (la sicurezza vera la fa il middleware).
    La sezione «Dati mancanti», che era un «da capire», è decisa al passo 4.
 
@@ -428,7 +428,7 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
      ([unlinked-games.tsx](../apps/web/components/admin/unlinked-games.tsx));
    - **«Giochi» è diventato «Segnalati»**
      ([\_app.admin.segnalati.tsx](../apps/web/src/routes/_app.admin.segnalati.tsx)),
-     solo segnalazioni; la scheda resta a `/admin/giochi/:slug` (non più
+     solo segnalazioni; la scheda resta a `/admin/games/:slug` (non più
      `giochi_`, perché la lista sopra non c'è più) e «indietro» torna da dove
      si è venuti; **«Apri un gioco»** sta nell'intestazione di tutto l'admin
      ([catalog-finder.tsx](../apps/web/components/admin/catalog-finder.tsx));
@@ -505,7 +505,7 @@ null`, perché cancellare l'account dell'admin non tolga la regola.
 
    **8g fatto** (06/10/2026):
    [account-filters.tsx](../apps/web/components/account-filters.tsx), un
-   componente per le due pagine, con `q` e `negozio` nell'indirizzo. Le voci
+   componente per le due pagine, con `q` e `store` nell'indirizzo. Le voci
    d'import si filtrano sul client, dove arrivano già tutte; i giochi nascosti
    sul server, coi filtri del backlog (`q`, e `stores` = almeno una copia di
    quel negozio), perché se ne portano al massimo 100. Con un filtro che non

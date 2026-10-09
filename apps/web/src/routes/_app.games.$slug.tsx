@@ -228,7 +228,7 @@ function GamePage() {
                 <ButtonLink
                   size="sm"
                   variant="ghost"
-                  href={`/admin/giochi/${game.slug}`}
+                  href={`/admin/games/${game.slug}`}
                 >
                   {tReport('admin')}
                 </ButtonLink>

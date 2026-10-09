@@ -26,7 +26,7 @@ segnalazioni spostate dalla mail alle issue di GitHub.
   riquadro in fondo alla roadmap. **La mail resta** in informativa e condizioni:
   è il contatto per i diritti sui dati e per chiudere l'account, e non può
   essere una issue pubblica. «Segnala un errore» sulla scheda del gioco è un'altra
-  cosa (va in `/admin/segnalati`) e non cambia.
+  cosa (va in `/admin/reported`) e non cambia.
 - Niente template per le issue, per ora.
 
 ## Da sapere

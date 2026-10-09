@@ -21,7 +21,7 @@ import { useSession } from '@/src/use-session';
 /**
  * La ricerca globale (12f): prima i giochi di Ludex, poi — solo da loggati —
  * quelli IGDB che Ludex non ha ancora. Qui i pezzi che servono alla tendina
- * nella barra e alla pagina `/cerca`.
+ * nella barra e alla pagina `/search`.
  */
 
 /** Da quanti caratteri si cerca: sotto, il server rifiuta la richiesta. */
@@ -167,7 +167,7 @@ export function GameSearchBox() {
 
   const goToResults = (value: string) => {
     setQuery('');
-    void navigate({ to: '/cerca', search: { q: value } });
+    void navigate({ to: '/search', search: { q: value } });
   };
 
   const onSelect = (option: string) => {

@@ -14,7 +14,7 @@ import { useTranslations } from 'use-intl';
 import { useStoreLabels } from '@/lib/labels';
 
 /** I filtri delle pagine «Da sistemare» e «Nascosti» (11a): nell'indirizzo. */
-export type AccountFilter = { q?: string; negozio?: Store };
+export type AccountFilter = { q?: string; store?: Store };
 
 /** Lettura dei filtri dall'indirizzo: un valore che non è un negozio si ignora. */
 export function readAccountFilter(
@@ -22,8 +22,8 @@ export function readAccountFilter(
 ): AccountFilter {
   return {
     q: typeof search.q === 'string' && search.q ? search.q : undefined,
-    negozio: (storeValues as readonly unknown[]).includes(search.negozio)
-      ? (search.negozio as Store)
+    store: (storeValues as readonly unknown[]).includes(search.store)
+      ? (search.store as Store)
       : undefined,
   };
 }
@@ -33,7 +33,7 @@ export function matchesAccountFilter(
   entry: { name: string; store: Store },
   filter: AccountFilter,
 ) {
-  if (filter.negozio && entry.store !== filter.negozio) return false;
+  if (filter.store && entry.store !== filter.store) return false;
   if (filter.q && !entry.name.toLowerCase().includes(filter.q.toLowerCase()))
     return false;
   return true;
@@ -70,11 +70,11 @@ export function AccountFilters({
           ['all', t('allStores')],
           ...storeValues.map((value) => [value, storeLabels[value]]),
         ])}
-        value={filter.negozio ?? 'all'}
+        value={filter.store ?? 'all'}
         onValueChange={(next) =>
           onChange({
             ...filter,
-            negozio: next === 'all' ? undefined : (next as Store),
+            store: next === 'all' ? undefined : (next as Store),
           })
         }
       >
