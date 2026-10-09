@@ -954,6 +954,10 @@
         "title": "I link alle fonti, anche senza voto",
         "text": "Se un gioco ha la pagina su OpenCritic o Metacritic ma ancora nessun voto, la scheda mostrerà comunque il link."
       },
+      "betterAdmin": {
+        "title": "Un admin migliore",
+        "text": "Tabelle e link più chiari per sistemare ciò che manca nella libreria di Ludex, con meno fatica."
+      },
       "merge": {
         "title": "Giochi doppi, uniti in uno",
         "text": "Quando lo stesso gioco compare due volte in catalogo, si uniscono in uno solo, senza perdere stato, voto e tag di nessuno."
