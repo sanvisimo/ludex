@@ -29,20 +29,23 @@ export type RelayedEvent =
       storeAccountId: string;
       userId: string;
     }
-  | { type: 'games'; gameIds: string[] };
+  | { type: 'games'; gameIds: string[] }
+  | { type: 'sources' };
 
 /**
  * Cosa di un evento può vedere un utente, o `null` se non lo riguarda.
  *
  * Gli import sono del proprietario dell'account. I giochi sono di tutti:
  * `games` è condivisa, un id non dice niente di nessuno, e filtrarli per
- * backlog vorrebbe dire una query per evento e per connessione.
+ * backlog vorrebbe dire una query per evento e per connessione. `sources` non
+ * porta niente: dice solo che qualcosa è cambiato, e chi non ha aperto l'admin
+ * non rilegge nulla.
  */
 export function eventForUser(
   event: RelayedEvent,
   userId: string,
 ): LiveEvent | null {
-  if (event.type === 'games') return event;
+  if (event.type === 'games' || event.type === 'sources') return event;
   if (event.userId !== userId) return null;
   return {
     type: 'import',
@@ -82,6 +85,32 @@ export async function flushGameChanges() {
   const gameIds = [...pendingGames];
   pendingGames.clear();
   await publishEvent({ type: 'games', gameIds });
+}
+
+/**
+ * Ogni quanto, al massimo, parte un evento `sources`. Una spazzata accoda cento
+ * giochi per fonte: un evento per job rileggerebbe la tabella dell'admin cento
+ * volte, due secondi la rileggono a blocchi e la riga sparisce comunque in tempo
+ * per chi sta guardando.
+ */
+const SOURCES_FLUSH_MS = 2_000;
+
+let sourcesTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Un enrichment è finito, con qualunque esito: parte col prossimo blocco. */
+export function notifySourcesChanged() {
+  sourcesTimer ??= setTimeout(
+    () => void flushSourcesChanged(),
+    SOURCES_FLUSH_MS,
+  );
+}
+
+/** Spedisce subito l'evento in attesa. Il worker la chiama anche chiudendo. */
+export async function flushSourcesChanged() {
+  if (!sourcesTimer) return;
+  clearTimeout(sourcesTimer);
+  sourcesTimer = null;
+  await publishEvent({ type: 'sources' });
 }
 
 // --- lato server -------------------------------------------------------------

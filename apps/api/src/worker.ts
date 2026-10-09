@@ -9,7 +9,9 @@ import { UnrecoverableError, Worker, type Job } from 'bullmq';
 import { openCriticEnabled, openCriticQuota } from './external/opencritic';
 import {
   flushGameChanges,
+  flushSourcesChanged,
   notifyGameChanged,
+  notifySourcesChanged,
   publishEvent,
 } from './lib/events';
 import { redisConnection } from './queue/connection';
@@ -166,8 +168,16 @@ const worker = new Worker<EnrichmentJob>(
   },
 );
 
+// Lo stato di una fonte cambia con qualunque esito — `ok`, `not_found`, `failed`
+// — e «Dati mancanti» dell'admin lo legge: `notifyGameChanged` non basta, parla
+// solo dei giochi che una pagina mostra.
+worker.on('completed', (job) => {
+  if (job.data.type === 'enrich') notifySourcesChanged();
+});
+
 worker.on('failed', (job, error) => {
   console.error(`[enrichment] job ${job?.id} fallito:`, error.message);
+  if (job?.data.type === 'enrich') notifySourcesChanged();
 });
 
 // L'unico punto in cui un negozio diventa una funzione, come `enrichers` qui
@@ -330,7 +340,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
     console.log(`\n${signal}: chiudo i worker…`);
     await Promise.all([worker.close(), importsWorker.close()]);
     // L'ultimo blocco di giochi non aspetta il suo timer: il processo muore.
-    await flushGameChanges();
+    await Promise.all([flushGameChanges(), flushSourcesChanged()]);
     process.exit(0);
   });
 }
