@@ -325,12 +325,19 @@ che non si indovinano:
 - **Le copertine dei risultati di HLTB e Metacritic** arrivano dalla loro
   ricerca; quelle di OpenCritic no, e costerebbero il budget.
 
-**Le pagine di servizio** — `/credits`, `/privacy`, `/terms` — stanno sotto
-`_app` e sono pubbliche. Il loro link sta nel `Footer` di `app-shell.tsx`,
+**Le pagine di servizio** — `/roadmap`, `/credits`, `/privacy`, `/terms` — stanno
+sotto `_app` e sono pubbliche. Il loro link sta nel `Footer` di `app-shell.tsx`,
 con la firma, e non nel menu. I dati dei crediti (servizi,
 software, icone, indirizzo del sorgente, email di contatto) sono in
 `lib/credits.ts`, e i testi di informativa e condizioni, in italiano e inglese,
-in `lib/legal.ts`. **I testi legali descrivono ciò che Ludex raccoglie davvero**:
+in `lib/legal.ts`. **La roadmap** è una timeline sola (`_app.roadmap.tsx`): prima il futuro, poi il
+fatto dal più recente. L'elenco è scritto a mano in `lib/roadmap.ts` — id, stato,
+aree, mese — con i testi in `roadmap.items.<id>` nei due file dei messaggi. Il
+colore è uno, il teal: gli stati si distinguono per come è riempito il pallino
+e l'etichetta, mai per la tinta. **Segnalazioni e idee vanno alle issue di
+GitHub** (`issuesUrl` in `lib/credits.ts`); la mail (`contactEmail`) resta solo
+per informativa e condizioni, cioè per ciò che non può essere pubblico.
+**I testi legali descrivono ciò che Ludex raccoglie davvero**:
 cambiano le colonne di `user`, `session` o `store_accounts`, un cookie, un
 fornitore, e va aggiornato il testo con la sua data. Un link che esce
 dall'app è `ExternalLink`. Per OpenCritic vincolano anche le schermate, non solo

@@ -11,8 +11,8 @@ import type { ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
 import {
-  contactEmail,
   icons,
+  issuesUrl,
   licenseUrl,
   platformIconsLicense,
   repoUrl,
@@ -42,9 +42,7 @@ function CreditsPage() {
           <ExternalLink href={licenseUrl}>AGPL-3.0</ExternalLink>
           {' · '}
           {t('about.contact')}:{' '}
-          <ExternalLink href={`mailto:${contactEmail}`}>
-            {contactEmail}
-          </ExternalLink>
+          <ExternalLink href={issuesUrl}>{t('about.issues')}</ExternalLink>
         </Body>
       </YStack>
       {/* Tutte aperte tranne il software: è l'elenco più lungo, e quello che

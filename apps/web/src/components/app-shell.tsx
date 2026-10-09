@@ -170,6 +170,7 @@ function Footer() {
         <FooterText>{t('madeWith')}</FooterText>
       </XStack>
       <XStack flexWrap="wrap" justify="center" columnGap={12}>
+        <FooterLink to="/roadmap">{t('roadmap')}</FooterLink>
         <FooterLink to="/credits">{t('credits')}</FooterLink>
         <FooterLink to="/privacy">{t('privacy')}</FooterLink>
         <FooterLink to="/terms">{t('terms')}</FooterLink>
@@ -190,7 +191,7 @@ function FooterLink({
   to,
   children,
 }: {
-  to: '/credits' | '/privacy' | '/terms';
+  to: '/roadmap' | '/credits' | '/privacy' | '/terms';
   children: string;
 }) {
   const router = useRouter();
