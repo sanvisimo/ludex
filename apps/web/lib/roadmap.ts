@@ -36,12 +36,13 @@ export type RoadmapEntry = {
 /**
  * Nell'ordine in cui si leggono: prima il futuro (in corso, poi in arrivo, poi
  * le idee), poi il fatto dal più recente al più vecchio. «In arrivo» segue
- * l'ordine di lavoro di `docs/ordine-sviluppo.md`, dopo le due cose piccole.
+ * l'ordine di lavoro di `docs/ordine-sviluppo.md`; «in corso» è ciò che si sta
+ * facendo adesso, e una voce passa a «fatto» quando l'utente dice che è pronta.
  */
 export const roadmap: RoadmapEntry[] = [
-  { id: 'sourceLinks', status: 'next', areas: ['game', 'critic'] },
-  { id: 'steamNintendo', status: 'next', areas: ['import'] },
-  { id: 'merge', status: 'next', areas: ['admin'] },
+  { id: 'steamNintendo', status: 'doing', areas: ['import'] },
+  { id: 'merge', status: 'doing', areas: ['admin'] },
+  { id: 'betterAdmin', status: 'next', areas: ['admin', 'library'] },
   { id: 'ea', status: 'next', areas: ['import'] },
   { id: 'csv', status: 'next', areas: ['import'] },
   { id: 'subscriptions', status: 'next', areas: ['library'] },
@@ -49,6 +50,13 @@ export const roadmap: RoadmapEntry[] = [
   { id: 'ai', status: 'next', areas: ['ai'] },
   { id: 'mobile', status: 'next', areas: ['mobile'] },
   { id: 'openPlaylists', status: 'idea', areas: ['playlists'] },
+  {
+    id: 'sourceLinks',
+    status: 'done',
+    areas: ['game', 'critic'],
+    month: '2026-10',
+    points: 2,
+  },
   {
     id: 'playlists',
     status: 'done',

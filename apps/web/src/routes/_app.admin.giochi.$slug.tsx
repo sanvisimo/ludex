@@ -1,5 +1,6 @@
 import type { GameAdminDetail } from '@repo/contracts';
 import {
+  Badge,
   Button,
   EmptyState,
   Skeleton,
@@ -57,6 +58,14 @@ function GameAdminPage() {
   if (detail.isError) return <EmptyState title={t('game.notFound')} />;
   return <GameAdmin detail={detail.data} />;
 }
+
+/** Lo stato di una fonte, nel colore dello stato: ok, da guardare, rotto, in attesa. */
+const STATUS_BADGE = {
+  ok: 'success',
+  not_found: 'warning',
+  failed: 'error',
+  pending: 'secondary',
+} as const;
 
 function GameAdmin({ detail }: { detail: GameAdminDetail }) {
   const t = useTranslations('admin');
@@ -162,12 +171,19 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       key: 'state',
       header: t('game.state'),
       width: 110,
-      render: (row) => <CellText>{t(`status.${row.status}`)}</CellText>,
+      // Lo stato è la cosa che l'occhio cerca: un `Badge` coi colori degli
+      // stati del design system, non testo uguale al resto.
+      render: (row) => (
+        <Badge variant={STATUS_BADGE[row.status]}>
+          {t(`status.${row.status}`)}
+        </Badge>
+      ),
     },
     {
       key: 'id',
       header: t('game.id'),
       flex: 1,
+      minWidth: 120,
       // Il link alla scheda sulla fonte, per controllare che sia quella giusta.
       render: (row) => {
         const id =
@@ -176,10 +192,10 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
         const label = `${id}${row.manual ? ` · ${t('missing.manual')}` : ''}`;
         return row.url ? (
           <ExternalLink href={row.url}>
-            <CellText>{label} ↗</CellText>
+            <CellText wrap>{label} ↗</CellText>
           </ExternalLink>
         ) : (
-          <CellText>{label}</CellText>
+          <CellText wrap>{label}</CellText>
         );
       },
     },
@@ -187,10 +203,24 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       key: 'reason',
       header: t('game.reason'),
       flex: 2,
+      minWidth: 160,
       render: (row) => (
-        <YStack flex={1} minW={0}>
-          <CellText>{row.reason ? t(`reason.${row.reason}`) : ''}</CellText>
-          {row.error ? <CellText muted>{row.error}</CellText> : null}
+        <YStack flex={1} minW={0} gap={2}>
+          {row.reason ? (
+            <Text
+              fontSize={13}
+              lineHeight={18}
+              fontWeight="600"
+              color="$color12"
+            >
+              {t(`reason.${row.reason}`)}
+            </Text>
+          ) : null}
+          {row.error ? (
+            <CellText muted wrap>
+              {row.error}
+            </CellText>
+          ) : null}
         </YStack>
       ),
     },

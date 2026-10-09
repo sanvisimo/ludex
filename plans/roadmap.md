@@ -40,7 +40,11 @@ segnalazioni spostate dalla mail alle issue di GitHub.
   sul mini PC, ma il rilascio agli altri utenti aspetta l'esito.
 - **«In arrivo» segue l'ordine di lavoro** deciso il 09/10/2026 (11b, EA, CSV,
   abbonamenti, Xbox, AI, mobile, in [ordine-sviluppo](../docs/ordine-sviluppo.md)),
-  dopo due cose piccole: il link alle fonti senza voto e il rilascio di Steam con
-  login e Nintendo. Xbox è passata da «Idea» a «In arrivo» perché è nell'ordine,
-  anche se il suo significato è ancora da decidere.
+  dopo «Un admin migliore» (la revisione di tabella e link in admin, da
+  `plans/11a-admin.md`). Xbox è passata da «Idea» a «In arrivo» perché è
+  nell'ordine, anche se il suo significato è ancora da decidere.
+- **«In corso»** (il pallino pieno con l'alone) è ciò che si sta facendo adesso:
+  dal 09/10/2026 «Steam con login e Nintendo» e «Giochi doppi, uniti in uno».
+  Lo stato c'era già nel tipo (`doing`) e nello stile, ma nessuna voce lo usava.
+- «I link alle fonti» è passata a «Fatto» il 09/10/2026.
 - L'unica idea è **le playlist aperte**: vedi [15b-wishlist.md](15b-wishlist.md).

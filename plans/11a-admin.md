@@ -575,7 +575,20 @@ quindi non vanno aggiunte alla lista delle tabelle escluse dal troncamento.
   voto non è un errore, ma finisce fra i «Da sistemare»?) o il dato. Da
   guardare insieme ai link della tabella e della scheda admin. Non ancora
   analizzato.
-- **Da decidere: il link alla fonte quando non c'è il voto** (08/10/2026,
+- **La tabella «Fonti» della scheda admin** (09/10/2026, visto in uso, web).
+  Era illeggibile: ogni cella si tagliava a una riga, e proprio il motivo
+  dell'errore e lo slug di Metacritic finivano tagliati. **Fatto lo stesso
+  giorno**, a decisione dell'utente: `CellText` ha `wrap` (a capo, in mezzo a
+  una parola solo se non ci sta da sola) usato per Id e Motivo; le colonne
+  elastiche hanno `minWidth`, e la tabella scorre di lato sotto la somma delle
+  misure invece di spezzare i numeri; lo stato è un `Badge` coi colori degli
+  stati (`ok` verde, `not_found` ambra, `failed` rosso, `pending` grigio), il
+  motivo in evidenza e il messaggio sotto, in grigio. Le altre tabelle admin non
+  cambiano: `wrap` e `minWidth` sono spenti di default. Provata con una risposta
+  simulata a 1280 e 900 px, nei due temi. **Resta da rivedere** la tabella dei
+  link ai negozi nella stessa scheda e quelle di «Dati mancanti» (stato e link),
+  che hanno lo stesso taglio a una riga.
+- **Il link alla fonte quando non c'è il voto** (08/10/2026,
   pagina del gioco, web). Alcuni giochi hanno il riferimento OpenCritic o
   Metacritic ma nessun voto, e oggi il link sparisce: in `game-page.tsx` le
   righe dei voti si filtrano su `score !== undefined`, e in `CriticScores` il
@@ -590,10 +603,18 @@ quindi non vanno aggiunte alla lista delle tabelle escluse dal troncamento.
      posto solo dove cercare i link, e non due regole diverse a seconda del
      voto.
 
+  **Deciso e fatto il 09/10/2026: la strada 2.** La riga della fonte compare
+  anche senza voto, con il nome come link e «nessun voto» al posto del numero
+  (`DurationAndCritics` in `game-page.tsx`). La 3 avrebbe messo lo stesso link in
+  due posti, e OpenCritic lo vuole vicino al voto: la riga è quel posto. Le righe
+  sono OpenCritic, Metacritic e IGDB; HLTB ha il suo link nell'intestazione dei
+  tempi. Provata con una risposta simulata a 1280 px: con voto e senza.
+
   Per OpenCritic, prima di scegliere, riguardare cosa chiedono i termini
   sulle schermate (vedi [apps/api/CLAUDE.md](../apps/api/CLAUDE.md)): il link
   vicino al voto è una loro richiesta, e senza voto il vincolo potrebbe non
   applicarsi.
+
 - **La durata nascosta sulle card** (06/10/2026, web). **Fatto il 06/10/2026**, a parte.
   [game-duration.tsx](../apps/web/components/game-duration.tsx) la nasconde
   quando HLTB dice `hasSolo = false`, regola nata per Counter-Strike. Sbaglia

@@ -236,7 +236,7 @@ chiedere: IGDB regge quattro richieste al secondo per tutto il server.
 [modello-dati](../../docs/modello-dati.md)) ha i suoi pezzi in
 `apps/web/components/game-page.tsx`: la hero, che `Page` mette sopra il suo
 contenitore a tutta larghezza, la gallery, durata e critica col dialog
-«Dettagli», il blocco del backlog, la card «Links» coi negozi dove il gioco c'è
+«Dettagli», il blocco del backlog (una fonte senza voto resta fra i voti, con «nessun voto» e il nome come link), la card «Links» coi negozi dove il gioco c'è
 (`StoreLinks`: `game.storeLinks`, un link per negozio, solo dove una pagina
 ufficiale c'è — `storeGameUrl` in `@repo/contracts`), remake e simili. Le colonne si affiancano
 da `$lg`; sotto, la laterale viene **prima** nell'HTML — durata, critica e
@@ -313,7 +313,10 @@ che non si indovinano:
   (`overflow="hidden"`) e i blocchi di testo accanto a una copertina vogliono
   `flex={1} minW={0}`, o il testo esce e finisce sopra la colonna accanto; le
   colonne fisse no, perché tengono i bottoni e tagliarle nasconderebbe l'anello
-  del focus: la loro larghezza va data giusta.
+  del focus: la loro larghezza va data giusta. Dove il testo **è**
+  l'informazione — il motivo di un errore, uno slug — `CellText` ha `wrap` e la
+  colonna un `minWidth`: sotto la somma delle misure la tabella scorre di lato
+  (`AdminTable` la calcola, mai meno di 640) invece di spezzare i numeri.
 - **La ricerca IGDB è `IgdbPicker`**, una sezione e non un dialogo: il dettaglio
   di uno scarto e «Non è questo gioco» la mettono sotto i dati, così si sceglie
   con la voce sotto gli occhi. `IgdbPickDialog` la avvolge per chi non ha altro

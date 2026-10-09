@@ -215,6 +215,13 @@ l'ordine cambiato in corsa. Un piano che vive solo nella cartella di Claude è
 un piano che nessun altro vede e che sparisce cambiando macchina; e siccome
 sta nel repo, i link ai file sono relativi a `plans/`, cioè `../`.
 
+**La roadmap pubblica si aggiorna con lo sviluppo** (`apps/web/lib/roadmap.ts` e i
+due file dei messaggi): una voce passa a «in corso» **quando il lavoro comincia**
+— se non c'è ancora, ci entra direttamente lì —, a «fatto» quando l'utente dice
+che il lotto è pronto, e una feature decisa ma non ancora cominciata sta in «in
+arrivo». Vale per ciò che chi usa l'app vede; il lavoro interno (refactor, test,
+documentazione) non ci va.
+
 ### Test
 
 `pnpm test` (turbo) oppure `pnpm --filter api test`. Vitest, e **contro un Postgres
