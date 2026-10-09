@@ -35,18 +35,20 @@ export type RoadmapEntry = {
 
 /**
  * Nell'ordine in cui si leggono: prima il futuro (in corso, poi in arrivo, poi
- * le idee), poi il fatto dal più recente al più vecchio.
+ * le idee), poi il fatto dal più recente al più vecchio. «In arrivo» segue
+ * l'ordine di lavoro di `docs/ordine-sviluppo.md`, dopo le due cose piccole.
  */
 export const roadmap: RoadmapEntry[] = [
-  { id: 'subscriptions', status: 'next', areas: ['library'] },
   { id: 'sourceLinks', status: 'next', areas: ['game', 'critic'] },
-  { id: 'csv', status: 'next', areas: ['import'] },
-  { id: 'ea', status: 'next', areas: ['import'] },
   { id: 'steamNintendo', status: 'next', areas: ['import'] },
+  { id: 'merge', status: 'next', areas: ['admin'] },
+  { id: 'ea', status: 'next', areas: ['import'] },
+  { id: 'csv', status: 'next', areas: ['import'] },
+  { id: 'subscriptions', status: 'next', areas: ['library'] },
+  { id: 'xbox', status: 'next', areas: ['import'] },
   { id: 'ai', status: 'next', areas: ['ai'] },
   { id: 'mobile', status: 'next', areas: ['mobile'] },
   { id: 'openPlaylists', status: 'idea', areas: ['playlists'] },
-  { id: 'xbox', status: 'idea', areas: ['import'] },
   {
     id: 'playlists',
     status: 'done',

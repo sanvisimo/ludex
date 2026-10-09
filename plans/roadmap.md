@@ -38,5 +38,9 @@ segnalazioni spostate dalla mail alle issue di GitHub.
   tantum non c'è ancora.
 - Dentro «In arrivo» c'è «Steam con login e Nintendo»: sono costruiti e provati
   sul mini PC, ma il rilascio agli altri utenti aspetta l'esito.
-- Le idee mostrate sono quelle **ancora da decidere** (playlist aperte, Xbox):
-  vedi [15b-wishlist.md](15b-wishlist.md).
+- **«In arrivo» segue l'ordine di lavoro** deciso il 09/10/2026 (11b, EA, CSV,
+  abbonamenti, Xbox, AI, mobile, in [ordine-sviluppo](../docs/ordine-sviluppo.md)),
+  dopo due cose piccole: il link alle fonti senza voto e il rilascio di Steam con
+  login e Nintendo. Xbox è passata da «Idea» a «In arrivo» perché è nell'ordine,
+  anche se il suo significato è ancora da decidere.
+- L'unica idea è **le playlist aperte**: vedi [15b-wishlist.md](15b-wishlist.md).

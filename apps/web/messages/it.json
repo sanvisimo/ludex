@@ -954,6 +954,10 @@
         "title": "I link alle fonti, anche senza voto",
         "text": "Se un gioco ha la pagina su OpenCritic o Metacritic ma ancora nessun voto, la scheda mostrerà comunque il link."
       },
+      "merge": {
+        "title": "Giochi doppi, uniti in uno",
+        "text": "Quando lo stesso gioco compare due volte in catalogo, si uniscono in uno solo, senza perdere stato, voto e tag di nessuno."
+      },
       "csv": {
         "title": "Importa da un file CSV",
         "text": "Porta in Ludex una libreria che hai già altrove, per esempio l'export di Playnite."

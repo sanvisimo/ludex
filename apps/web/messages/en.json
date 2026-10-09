@@ -954,6 +954,10 @@
         "title": "Source links, even without a score",
         "text": "If a game has a page on OpenCritic or Metacritic but no score yet, its page will still show the link."
       },
+      "merge": {
+        "title": "Duplicate games, merged",
+        "text": "When the same game shows up twice in the catalogue, the two are merged into one, without losing anyone's status, rating or tags."
+      },
       "csv": {
         "title": "Import from a CSV file",
         "text": "Bring a library you already keep elsewhere into Ludex, for example a Playnite export."
