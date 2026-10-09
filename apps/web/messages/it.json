@@ -952,8 +952,9 @@
         "text": "PS Plus, Game Pass e gli altri: capire quali giochi della tua libreria sono tuoi e quali ci sono finché l'abbonamento resta attivo."
       },
       "sourceLinks": {
-        "title": "I link alle fonti, anche senza voto",
-        "text": "Se un gioco ha la pagina su OpenCritic o Metacritic ma ancora nessun voto, la scheda mostrerà comunque il link."
+        "title": "I link alle fonti",
+        "p1": "Ogni fonte con una pagina sul suo sito ha il link: IGDB, OpenCritic, Metacritic e HowLongToBeat.",
+        "p2": "Anche quando non c'è il voto: la riga resta, con «nessun voto»."
       },
       "betterAdmin": {
         "title": "Un admin migliore",

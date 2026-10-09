@@ -23,9 +23,9 @@ in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
    accanto al vettore, ranking, prompt e schermata.
 7. **Mobile**: un'app nuova, con le sue schermate.
 
-Fuori da questa lista restano due cose piccole, che si fanno quando capita: il
-rilascio agli altri utenti di 9d e 9f (aspetta l'esito della prova sul mini PC)
-e il link alle fonti senza voto nella pagina del gioco.
+Fuori da questa lista resta una cosa piccola, che si fa quando capita: il
+rilascio agli altri utenti di 9d e 9f (aspetta l'esito della prova sul mini PC).
+Il link alle fonti senza voto nella pagina del gioco è fatto (09/10/2026).
 
 1. **Registrazione e auth**
 2. **Inserimento manuale + prima UI web** — `backlog` con possesso, piattaforme e
