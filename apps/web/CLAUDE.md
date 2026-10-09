@@ -313,7 +313,10 @@ che non si indovinano:
   (`overflow="hidden"`) e i blocchi di testo accanto a una copertina vogliono
   `flex={1} minW={0}`, o il testo esce e finisce sopra la colonna accanto; le
   colonne fisse no, perché tengono i bottoni e tagliarle nasconderebbe l'anello
-  del focus: la loro larghezza va data giusta.
+  del focus: la loro larghezza va data giusta. Dove il testo **è**
+  l'informazione — il motivo di un errore, uno slug — `CellText` ha `wrap` e la
+  colonna un `minWidth`: sotto la somma delle misure la tabella scorre di lato
+  (`AdminTable` la calcola, mai meno di 640) invece di spezzare i numeri.
 - **La ricerca IGDB è `IgdbPicker`**, una sezione e non un dialogo: il dettaglio
   di uno scarto e «Non è questo gioco» la mettono sotto i dati, così si sceglie
   con la voce sotto gli occhi. `IgdbPickDialog` la avvolge per chi non ha altro
