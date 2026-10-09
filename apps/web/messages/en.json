@@ -889,6 +889,7 @@
   "critic": {
     "title": "Critic scores",
     "none": "No critic score for this game.",
+    "noScore": "no score",
     "byPlatform": "By platform",
     "reviews": "{count, plural, one {# review} other {# reviews}}",
     "recommended": "{percent}% recommend it",
