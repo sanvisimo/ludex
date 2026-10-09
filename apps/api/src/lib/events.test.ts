@@ -39,4 +39,9 @@ describe('eventForUser', () => {
     const event = { type: 'games' as const, gameIds: [account] };
     expect(eventForUser(event, 'chiunque')).toEqual(event);
   });
+
+  it("consegna a tutti l'evento delle fonti: non porta dati", () => {
+    const event = { type: 'sources' as const };
+    expect(eventForUser(event, 'chiunque')).toEqual(event);
+  });
 });

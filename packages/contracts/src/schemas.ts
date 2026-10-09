@@ -437,6 +437,9 @@ export const LiveEventSchema = z.discriminatedUnion('type', [
     type: z.literal('games'),
     gameIds: z.array(z.uuid()),
   }),
+  // Un enrichment è finito, con qualunque esito: lo stato di una fonte è
+  // cambiato, e «Dati mancanti» dell'admin lo legge.
+  z.object({ type: z.literal('sources') }),
 ]);
 
 // Le preferenze dell'utente. Complete in uscita anche per chi non ha mai

@@ -67,8 +67,13 @@ export function useLiveUpdates() {
       });
     };
 
+    // Lo stato di una fonte è cambiato: lo legge «Dati mancanti» dell'admin, e
+    // una query non montata non si rilegge, quindi agli altri non costa niente.
+    const sourcesChanged = () => invalidate(api.admin.missing.key());
+
     function handle(event: LiveEvent) {
       if (event.type === 'games') return gamesChanged(event.gameIds);
+      if (event.type === 'sources') return sourcesChanged();
       if (event.phase === 'started') return invalidate(api.accounts.key());
       importFinished();
     }
@@ -83,6 +88,7 @@ export function useLiveUpdates() {
           if (reconnecting) {
             importFinished();
             gamesChanged();
+            sourcesChanged();
           }
           delay = RETRY_MIN_MS;
           for await (const event of events) handle(event);
