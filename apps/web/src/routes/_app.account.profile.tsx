@@ -5,7 +5,7 @@ import { ActiveSessions } from '@/components/active-sessions';
 import { ChangePassword } from '@/components/change-password';
 import { ProfileDetails } from '@/components/profile-details';
 
-export const Route = createFileRoute('/_app/account/profilo')({
+export const Route = createFileRoute('/_app/account/profile')({
   component: ProfileSection,
 });
 

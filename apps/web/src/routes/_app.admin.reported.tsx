@@ -12,7 +12,7 @@ import {
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
-export const Route = createFileRoute('/_app/admin/segnalati')({
+export const Route = createFileRoute('/_app/admin/reported')({
   component: ReportedSection,
 });
 
@@ -65,7 +65,7 @@ function ReportList() {
       flex: 2,
       render: (report) => (
         <YStack flex={1} minW={0}>
-          <Link to="/admin/giochi/$slug" params={{ slug: report.slug }}>
+          <Link to="/admin/games/$slug" params={{ slug: report.slug }}>
             <CellText>{report.name}</CellText>
           </Link>
         </YStack>
@@ -116,7 +116,7 @@ function ReportList() {
       width: 170,
       render: (report) => (
         <>
-          <Link to="/admin/giochi/$slug" params={{ slug: report.slug }}>
+          <Link to="/admin/games/$slug" params={{ slug: report.slug }}>
             <Text fontSize={13} textDecorationLine="underline">
               {t('games.open')}
             </Text>

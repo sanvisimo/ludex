@@ -52,7 +52,7 @@ export function CatalogFinder() {
             found.data.games.map((game) => (
               <Link
                 key={game.id}
-                to="/admin/giochi/$slug"
+                to="/admin/games/$slug"
                 params={{ slug: game.slug }}
               >
                 <XStack

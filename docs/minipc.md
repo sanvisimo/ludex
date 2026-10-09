@@ -25,15 +25,15 @@ Regola dell'infrastruttura: i database stanno su NVMe in `/opt/docker/`, mai su 
 
 ## Servizi
 
-| Servizio | Ruolo | Esposizione |
-|---|---|---|
-| `postgres` | database (container `ludex-postgres`) | nessuna porta pubblicata, solo rete dello stack (`postgres:5432`) |
-| `redis` | code | `127.0.0.1:6380`, serve alla dashboard |
-| `migrate` | applica le migration a ogni `up` ed esce; idempotente | — |
-| `api` | backend | `127.0.0.1:3005` |
-| `worker` | processo BullMQ, servizio a parte | — |
-| `web` | frontend | `127.0.0.1:8095` → 8085 nel container (la 8085 dell'host è di Komf) |
-| `dashboard` | dashboard BullMQ, `network_mode: host` | `127.0.0.1:3002`, solo via tunnel SSH |
+| Servizio    | Ruolo                                                 | Esposizione                                                         |
+| ----------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
+| `postgres`  | database (container `ludex-postgres`)                 | nessuna porta pubblicata, solo rete dello stack (`postgres:5432`)   |
+| `redis`     | code                                                  | `127.0.0.1:6380`, serve alla dashboard                              |
+| `migrate`   | applica le migration a ogni `up` ed esce; idempotente | —                                                                   |
+| `api`       | backend                                               | `127.0.0.1:3005`                                                    |
+| `worker`    | processo BullMQ, servizio a parte                     | —                                                                   |
+| `web`       | frontend                                              | `127.0.0.1:8095` → 8085 nel container (la 8085 dell'host è di Komf) |
+| `dashboard` | dashboard BullMQ, `network_mode: host`                | `127.0.0.1:3002`, solo via tunnel SSH                               |
 
 `api` e `worker` partono solo se `migrate` termina con successo e Redis è healthy.
 
@@ -58,6 +58,7 @@ Note sull'override (Compose ≥ 2.24):
   ```
 
   Se serve un client grafico: porta su loopback (`127.0.0.1:5433:5432` nell'override) più tunnel SSH. Non applicato.
+
 - **Log:** `cd /opt/docker/ludex/app && sudo docker compose logs -f api worker`
 
 ## CI/CD
@@ -68,10 +69,10 @@ Note sull'override (Compose ≥ 2.24):
 
 Modello degli errori, a due livelli:
 
-| Tipo | Quando | Effetto |
-|---|---|---|
+| Tipo    | Quando                                          | Effetto                                                                                                     |
+| ------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `abort` | errore transitorio (pull fallito, dump fallito) | solo Kuma, si riprova al giro dopo; un dump fallito **rimanda** il deploy, non blocca l'immagine per sempre |
-| `fail` | l'immagine non parte | un solo messaggio Telegram, ID dell'immagine in `.deploy/failed` così non si ripete ogni 5 minuti |
+| `fail`  | l'immagine non parte                            | un solo messaggio Telegram, ID dell'immagine in `.deploy/failed` così non si ripete ogni 5 minuti           |
 
 Notifiche: Telegram con `TELEGRAM_TOKEN` / `TELEGRAM_CHAT_ID` da `/opt/scripts/telegram.env`. Monitor push su Uptime Kuma, heartbeat 900 s, URL LAN `http://192.168.1.19:3001/api/push/<TOKEN>` (non il dominio pubblico: col tunnel di mezzo un guasto del tunnel farebbe diventare rosso il monitor sbagliato).
 

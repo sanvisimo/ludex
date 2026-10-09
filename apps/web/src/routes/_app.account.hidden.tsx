@@ -17,15 +17,15 @@ import { ResolveImportDialog } from '@/components/resolve-import-dialog';
 const isHiddenKind = (value: unknown): value is HiddenKind =>
   (hiddenKindValues as readonly unknown[]).includes(value);
 
-export const Route = createFileRoute('/_app/account/nascosti')({
+export const Route = createFileRoute('/_app/account/hidden')({
   // Il tab sta nell'indirizzo, come i filtri del backlog: «indietro» torna al
   // tab di prima e un link riapre quello giusto. Un valore che non è un tipo
   // si ignora.
   validateSearch: (
     search: Record<string, unknown>,
-  ): { tipo?: HiddenKind } & AccountFilter => ({
+  ): { kind?: HiddenKind } & AccountFilter => ({
     ...readAccountFilter(search),
-    tipo: isHiddenKind(search.tipo) ? search.tipo : undefined,
+    kind: isHiddenKind(search.kind) ? search.kind : undefined,
   }),
   component: HiddenSection,
 });
@@ -44,10 +44,10 @@ function HiddenSection() {
   const tEmpty = useTranslations('account.hiddenEmpty');
   const tEntries = useTranslations('account.hiddenEntries');
   const tFilters = useTranslations('account.filters');
-  const { tipo, q, negozio } = Route.useSearch();
+  const { kind: pickedKind, q, store } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const filter = useMemo(() => ({ q, negozio }), [q, negozio]);
-  const filtered = q !== undefined || negozio !== undefined;
+  const filter = useMemo(() => ({ q, store }), [q, store]);
+  const filtered = q !== undefined || store !== undefined;
   const [resolving, setResolving] = useState<UnresolvedImport | null>(null);
 
   const { isPending, counts, byKind, gamesTotal, gamesShown } =
@@ -58,7 +58,9 @@ function HiddenSection() {
     0,
   );
   const active: HiddenKind =
-    tipo ?? hiddenKindValues.find((kind) => (counts[kind] ?? 0) > 0) ?? 'app';
+    pickedKind ??
+    hiddenKindValues.find((kind) => (counts[kind] ?? 0) > 0) ??
+    'app';
 
   return (
     <>
@@ -93,7 +95,7 @@ function HiddenSection() {
             onValueChange={(value) =>
               void navigate({
                 // Cambiare tab tiene i filtri.
-                search: (prev) => ({ ...prev, tipo: value as HiddenKind }),
+                search: (prev) => ({ ...prev, kind: value as HiddenKind }),
               })
             }
           >

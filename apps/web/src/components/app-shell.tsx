@@ -84,7 +84,7 @@ export function HomeLink() {
 function BarSearch() {
   const t = useTranslations('search');
   const onSearchPage = useRouterState({
-    select: (state) => state.location.pathname === '/cerca',
+    select: (state) => state.location.pathname === '/search',
   });
 
   if (onSearchPage) return <XStack flex={1} />;
@@ -103,7 +103,7 @@ function BarSearch() {
         $max-md={{ display: 'flex' }}
       >
         <ButtonLink
-          href="/cerca"
+          href="/search"
           variant="ghost"
           size="icon"
           width={40}

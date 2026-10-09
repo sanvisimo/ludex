@@ -22,7 +22,7 @@ import { UnlinkAccountDialog } from '@/components/unlink-account-dialog';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
-export const Route = createFileRoute('/_app/account/librerie')({
+export const Route = createFileRoute('/_app/account/libraries')({
   component: LibrariesSection,
 });
 

@@ -227,8 +227,8 @@ mentre si cerca: le righe di `games` non si cancellano. I pezzi sono in
 `components/game-search.tsx`; il campo con la tendina è `SearchField` di
 `@repo/ui`. La tendina ha dieci posti: prima i giochi di Ludex, e IGDB
 riempie quelli che restano, chiesto dopo e solo se ne restano. In barra il
-campo sta da `$md`; sotto c'è un'icona che porta a `/cerca`, la pagina con tutti i risultati: griglia con la card della home, a
-pagine da 30, testo e pagina nell'URL come il backlog. Su `/cerca` la barra non
+campo sta da `$md`; sotto c'è un'icona che porta a `/search`, la pagina con tutti i risultati: griglia con la card della home, a
+pagine da 30, testo e pagina nell'URL come il backlog. Su `/search` la barra non
 ha il campo, perché la pagina ha il suo. La scrittura aspetta 300 ms prima di
 chiedere: IGDB regge quattro richieste al secondo per tutto il server.
 
@@ -249,7 +249,7 @@ catalogo da loggati un bottone che li crea (`useOpenIgdbHit`), da ospiti
 niente; attenuati se non sono tuoi.
 
 **La pagina account** (`/account`) è un layout, `_app.account.tsx`, con quattro
-sezioni che sono rotte figlie: `profilo`, `librerie`, `da-sistemare`, `nascosti`.
+sezioni che sono rotte figlie: `profile`, `libraries`, `needs-attention`, `hidden`.
 `/account` da solo rimanda al profilo (`replace`). Il menu è `AccountNav`: una
 colonna da `$md`, una riga che scorre sotto, un `YStack` solo che cambia
 direzione col CSS. Cose che non si indovinano:
@@ -278,7 +278,7 @@ direzione col CSS. Cose che non si indovinano:
   — un gioco ritirato da Steam dà 404 — cade sul riquadro con l'icona del negozio
   (`UnresolvedCover`), e l'icona accanto al nome è il link alla pagina dove un
   link c'è. Le righe già in tabella la prendono al prossimo import.
-- **Nascosti** è a tab nell'URL (`?tipo=dlc`), e senza `?tipo` si apre il primo tab
+- **Nascosti** è a tab nell'URL (`?kind=dlc`), e senza `?kind` si apre il primo tab
   che ha qualcosa. «Non interessato» è l'unico con due mucchi, e li unisce per data
   di nascondimento; i giochi si portano al massimo 100 (`GAMES_LIMIT`), e il
   numero del tab è il totale vero.
@@ -303,8 +303,8 @@ direzione col CSS. Cose che non si indovinano:
 rimanda via chi non ha `role = 'admin'`: è comodità, la sicurezza vera la fa il
 middleware `admin` sul server. Il link «Admin» sta nel menu dell'avatar, e
 «Apri nell'admin» sulla pagina di ogni gioco, solo per gli admin. Quattro
-sezioni, rotte figlie: `mancanti`, `scarti`, `segnalati`, `utenti`, più la
-scheda admin di un gioco, `/admin/giochi/$slug`. «Apri un gioco», la ricerca nel
+sezioni, rotte figlie: `missing`, `unresolved`, `reported`, `users`, più la
+scheda admin di un gioco, `/admin/games/$slug`. «Apri un gioco», la ricerca nel
 catalogo, sta nell'intestazione. I pezzi stanno in `components/admin/`. Cose
 che non si indovinano:
 

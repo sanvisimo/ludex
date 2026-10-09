@@ -15,31 +15,31 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppPrivateRouteImport } from './routes/_app._private'
 import { Route as AppAccountRouteImport } from './routes/_app.account'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
-import { Route as AppCercaRouteImport } from './routes/_app.cerca'
 import { Route as AppCreditsRouteImport } from './routes/_app.credits'
 import { Route as AppPrivacyRouteImport } from './routes/_app.privacy'
 import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
+import { Route as AppSearchRouteImport } from './routes/_app.search'
 import { Route as AppTermsRouteImport } from './routes/_app.terms'
 import { Route as GuestLoginRouteImport } from './routes/_guest.login'
 import { Route as GuestRegisterRouteImport } from './routes/_guest.register'
 import { Route as AppPrivateBacklogRouteImport } from './routes/_app._private.backlog'
 import { Route as AppAccountIndexRouteImport } from './routes/_app.account.index'
-import { Route as AppAccountDaSistemareRouteImport } from './routes/_app.account.da-sistemare'
-import { Route as AppAccountLibrerieRouteImport } from './routes/_app.account.librerie'
-import { Route as AppAccountNascostiRouteImport } from './routes/_app.account.nascosti'
-import { Route as AppAccountProfiloRouteImport } from './routes/_app.account.profilo'
+import { Route as AppAccountHiddenRouteImport } from './routes/_app.account.hidden'
+import { Route as AppAccountLibrariesRouteImport } from './routes/_app.account.libraries'
+import { Route as AppAccountNeedsAttentionRouteImport } from './routes/_app.account.needs-attention'
+import { Route as AppAccountProfileRouteImport } from './routes/_app.account.profile'
 import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
-import { Route as AppAdminMancantiRouteImport } from './routes/_app.admin.mancanti'
-import { Route as AppAdminScartiRouteImport } from './routes/_app.admin.scarti'
-import { Route as AppAdminSegnalatiRouteImport } from './routes/_app.admin.segnalati'
-import { Route as AppAdminUtentiRouteImport } from './routes/_app.admin.utenti'
+import { Route as AppAdminMissingRouteImport } from './routes/_app.admin.missing'
+import { Route as AppAdminReportedRouteImport } from './routes/_app.admin.reported'
+import { Route as AppAdminUnresolvedRouteImport } from './routes/_app.admin.unresolved'
+import { Route as AppAdminUsersRouteImport } from './routes/_app.admin.users'
 import { Route as AppGamesSlugRouteImport } from './routes/_app.games.$slug'
 import { Route as AppSharedTokenRouteImport } from './routes/_app.shared.$token'
 import { Route as AppPrivatePlaylistIndexRouteImport } from './routes/_app._private.playlist.index'
 import { Route as AppPrivatePlaylistIdRouteImport } from './routes/_app._private.playlist.$id'
 import { Route as AppPrivateWishlistIndexRouteImport } from './routes/_app._private.wishlist.index'
 import { Route as AppPrivateWishlistIdRouteImport } from './routes/_app._private.wishlist.$id'
-import { Route as AppAdminGiochiSlugRouteImport } from './routes/_app.admin.giochi.$slug'
+import { Route as AppAdminGamesSlugRouteImport } from './routes/_app.admin.games.$slug'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -68,11 +68,6 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCercaRoute = AppCercaRouteImport.update({
-  id: '/cerca',
-  path: '/cerca',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppCreditsRoute = AppCreditsRouteImport.update({
   id: '/credits',
   path: '/credits',
@@ -86,6 +81,11 @@ const AppPrivacyRoute = AppPrivacyRouteImport.update({
 const AppRoadmapRoute = AppRoadmapRouteImport.update({
   id: '/roadmap',
   path: '/roadmap',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSearchRoute = AppSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTermsRoute = AppTermsRouteImport.update({
@@ -113,24 +113,25 @@ const AppAccountIndexRoute = AppAccountIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAccountRoute,
 } as any)
-const AppAccountDaSistemareRoute = AppAccountDaSistemareRouteImport.update({
-  id: '/da-sistemare',
-  path: '/da-sistemare',
+const AppAccountHiddenRoute = AppAccountHiddenRouteImport.update({
+  id: '/hidden',
+  path: '/hidden',
   getParentRoute: () => AppAccountRoute,
 } as any)
-const AppAccountLibrerieRoute = AppAccountLibrerieRouteImport.update({
-  id: '/librerie',
-  path: '/librerie',
+const AppAccountLibrariesRoute = AppAccountLibrariesRouteImport.update({
+  id: '/libraries',
+  path: '/libraries',
   getParentRoute: () => AppAccountRoute,
 } as any)
-const AppAccountNascostiRoute = AppAccountNascostiRouteImport.update({
-  id: '/nascosti',
-  path: '/nascosti',
-  getParentRoute: () => AppAccountRoute,
-} as any)
-const AppAccountProfiloRoute = AppAccountProfiloRouteImport.update({
-  id: '/profilo',
-  path: '/profilo',
+const AppAccountNeedsAttentionRoute =
+  AppAccountNeedsAttentionRouteImport.update({
+    id: '/needs-attention',
+    path: '/needs-attention',
+    getParentRoute: () => AppAccountRoute,
+  } as any)
+const AppAccountProfileRoute = AppAccountProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AppAccountRoute,
 } as any)
 const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
@@ -138,24 +139,24 @@ const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppAdminMancantiRoute = AppAdminMancantiRouteImport.update({
-  id: '/mancanti',
-  path: '/mancanti',
+const AppAdminMissingRoute = AppAdminMissingRouteImport.update({
+  id: '/missing',
+  path: '/missing',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppAdminScartiRoute = AppAdminScartiRouteImport.update({
-  id: '/scarti',
-  path: '/scarti',
+const AppAdminReportedRoute = AppAdminReportedRouteImport.update({
+  id: '/reported',
+  path: '/reported',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppAdminSegnalatiRoute = AppAdminSegnalatiRouteImport.update({
-  id: '/segnalati',
-  path: '/segnalati',
+const AppAdminUnresolvedRoute = AppAdminUnresolvedRouteImport.update({
+  id: '/unresolved',
+  path: '/unresolved',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppAdminUtentiRoute = AppAdminUtentiRouteImport.update({
-  id: '/utenti',
-  path: '/utenti',
+const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppGamesSlugRoute = AppGamesSlugRouteImport.update({
@@ -188,9 +189,9 @@ const AppPrivateWishlistIdRoute = AppPrivateWishlistIdRouteImport.update({
   path: '/wishlist/$id',
   getParentRoute: () => AppPrivateRoute,
 } as any)
-const AppAdminGiochiSlugRoute = AppAdminGiochiSlugRouteImport.update({
-  id: '/giochi/$slug',
-  path: '/giochi/$slug',
+const AppAdminGamesSlugRoute = AppAdminGamesSlugRouteImport.update({
+  id: '/games/$slug',
+  path: '/games/$slug',
   getParentRoute: () => AppAdminRoute,
 } as any)
 
@@ -198,57 +199,57 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/account': typeof AppAccountRouteWithChildren
   '/admin': typeof AppAdminRouteWithChildren
-  '/cerca': typeof AppCercaRoute
   '/credits': typeof AppCreditsRoute
   '/privacy': typeof AppPrivacyRoute
   '/roadmap': typeof AppRoadmapRoute
+  '/search': typeof AppSearchRoute
   '/terms': typeof AppTermsRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
   '/backlog': typeof AppPrivateBacklogRoute
-  '/account/da-sistemare': typeof AppAccountDaSistemareRoute
-  '/account/librerie': typeof AppAccountLibrerieRoute
-  '/account/nascosti': typeof AppAccountNascostiRoute
-  '/account/profilo': typeof AppAccountProfiloRoute
-  '/admin/mancanti': typeof AppAdminMancantiRoute
-  '/admin/scarti': typeof AppAdminScartiRoute
-  '/admin/segnalati': typeof AppAdminSegnalatiRoute
-  '/admin/utenti': typeof AppAdminUtentiRoute
+  '/account/hidden': typeof AppAccountHiddenRoute
+  '/account/libraries': typeof AppAccountLibrariesRoute
+  '/account/needs-attention': typeof AppAccountNeedsAttentionRoute
+  '/account/profile': typeof AppAccountProfileRoute
+  '/admin/missing': typeof AppAdminMissingRoute
+  '/admin/reported': typeof AppAdminReportedRoute
+  '/admin/unresolved': typeof AppAdminUnresolvedRoute
+  '/admin/users': typeof AppAdminUsersRoute
   '/games/$slug': typeof AppGamesSlugRoute
   '/shared/$token': typeof AppSharedTokenRoute
   '/account/': typeof AppAccountIndexRoute
   '/admin/': typeof AppAdminIndexRoute
   '/playlist/$id': typeof AppPrivatePlaylistIdRoute
   '/wishlist/$id': typeof AppPrivateWishlistIdRoute
-  '/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
+  '/admin/games/$slug': typeof AppAdminGamesSlugRoute
   '/playlist/': typeof AppPrivatePlaylistIndexRoute
   '/wishlist/': typeof AppPrivateWishlistIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
-  '/cerca': typeof AppCercaRoute
   '/credits': typeof AppCreditsRoute
   '/privacy': typeof AppPrivacyRoute
   '/roadmap': typeof AppRoadmapRoute
+  '/search': typeof AppSearchRoute
   '/terms': typeof AppTermsRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
   '/backlog': typeof AppPrivateBacklogRoute
-  '/account/da-sistemare': typeof AppAccountDaSistemareRoute
-  '/account/librerie': typeof AppAccountLibrerieRoute
-  '/account/nascosti': typeof AppAccountNascostiRoute
-  '/account/profilo': typeof AppAccountProfiloRoute
-  '/admin/mancanti': typeof AppAdminMancantiRoute
-  '/admin/scarti': typeof AppAdminScartiRoute
-  '/admin/segnalati': typeof AppAdminSegnalatiRoute
-  '/admin/utenti': typeof AppAdminUtentiRoute
+  '/account/hidden': typeof AppAccountHiddenRoute
+  '/account/libraries': typeof AppAccountLibrariesRoute
+  '/account/needs-attention': typeof AppAccountNeedsAttentionRoute
+  '/account/profile': typeof AppAccountProfileRoute
+  '/admin/missing': typeof AppAdminMissingRoute
+  '/admin/reported': typeof AppAdminReportedRoute
+  '/admin/unresolved': typeof AppAdminUnresolvedRoute
+  '/admin/users': typeof AppAdminUsersRoute
   '/games/$slug': typeof AppGamesSlugRoute
   '/shared/$token': typeof AppSharedTokenRoute
   '/account': typeof AppAccountIndexRoute
   '/admin': typeof AppAdminIndexRoute
   '/playlist/$id': typeof AppPrivatePlaylistIdRoute
   '/wishlist/$id': typeof AppPrivateWishlistIdRoute
-  '/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
+  '/admin/games/$slug': typeof AppAdminGamesSlugRoute
   '/playlist': typeof AppPrivatePlaylistIndexRoute
   '/wishlist': typeof AppPrivateWishlistIndexRoute
 }
@@ -259,30 +260,30 @@ export interface FileRoutesById {
   '/_app/_private': typeof AppPrivateRouteWithChildren
   '/_app/account': typeof AppAccountRouteWithChildren
   '/_app/admin': typeof AppAdminRouteWithChildren
-  '/_app/cerca': typeof AppCercaRoute
   '/_app/credits': typeof AppCreditsRoute
   '/_app/privacy': typeof AppPrivacyRoute
   '/_app/roadmap': typeof AppRoadmapRoute
+  '/_app/search': typeof AppSearchRoute
   '/_app/terms': typeof AppTermsRoute
   '/_guest/login': typeof GuestLoginRoute
   '/_guest/register': typeof GuestRegisterRoute
   '/_app/': typeof AppIndexRoute
   '/_app/_private/backlog': typeof AppPrivateBacklogRoute
-  '/_app/account/da-sistemare': typeof AppAccountDaSistemareRoute
-  '/_app/account/librerie': typeof AppAccountLibrerieRoute
-  '/_app/account/nascosti': typeof AppAccountNascostiRoute
-  '/_app/account/profilo': typeof AppAccountProfiloRoute
-  '/_app/admin/mancanti': typeof AppAdminMancantiRoute
-  '/_app/admin/scarti': typeof AppAdminScartiRoute
-  '/_app/admin/segnalati': typeof AppAdminSegnalatiRoute
-  '/_app/admin/utenti': typeof AppAdminUtentiRoute
+  '/_app/account/hidden': typeof AppAccountHiddenRoute
+  '/_app/account/libraries': typeof AppAccountLibrariesRoute
+  '/_app/account/needs-attention': typeof AppAccountNeedsAttentionRoute
+  '/_app/account/profile': typeof AppAccountProfileRoute
+  '/_app/admin/missing': typeof AppAdminMissingRoute
+  '/_app/admin/reported': typeof AppAdminReportedRoute
+  '/_app/admin/unresolved': typeof AppAdminUnresolvedRoute
+  '/_app/admin/users': typeof AppAdminUsersRoute
   '/_app/games/$slug': typeof AppGamesSlugRoute
   '/_app/shared/$token': typeof AppSharedTokenRoute
   '/_app/account/': typeof AppAccountIndexRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/_private/playlist/$id': typeof AppPrivatePlaylistIdRoute
   '/_app/_private/wishlist/$id': typeof AppPrivateWishlistIdRoute
-  '/_app/admin/giochi/$slug': typeof AppAdminGiochiSlugRoute
+  '/_app/admin/games/$slug': typeof AppAdminGamesSlugRoute
   '/_app/_private/playlist/': typeof AppPrivatePlaylistIndexRoute
   '/_app/_private/wishlist/': typeof AppPrivateWishlistIndexRoute
 }
@@ -292,57 +293,57 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/admin'
-    | '/cerca'
     | '/credits'
     | '/privacy'
     | '/roadmap'
+    | '/search'
     | '/terms'
     | '/login'
     | '/register'
     | '/backlog'
-    | '/account/da-sistemare'
-    | '/account/librerie'
-    | '/account/nascosti'
-    | '/account/profilo'
-    | '/admin/mancanti'
-    | '/admin/scarti'
-    | '/admin/segnalati'
-    | '/admin/utenti'
+    | '/account/hidden'
+    | '/account/libraries'
+    | '/account/needs-attention'
+    | '/account/profile'
+    | '/admin/missing'
+    | '/admin/reported'
+    | '/admin/unresolved'
+    | '/admin/users'
     | '/games/$slug'
     | '/shared/$token'
     | '/account/'
     | '/admin/'
     | '/playlist/$id'
     | '/wishlist/$id'
-    | '/admin/giochi/$slug'
+    | '/admin/games/$slug'
     | '/playlist/'
     | '/wishlist/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/cerca'
     | '/credits'
     | '/privacy'
     | '/roadmap'
+    | '/search'
     | '/terms'
     | '/login'
     | '/register'
     | '/backlog'
-    | '/account/da-sistemare'
-    | '/account/librerie'
-    | '/account/nascosti'
-    | '/account/profilo'
-    | '/admin/mancanti'
-    | '/admin/scarti'
-    | '/admin/segnalati'
-    | '/admin/utenti'
+    | '/account/hidden'
+    | '/account/libraries'
+    | '/account/needs-attention'
+    | '/account/profile'
+    | '/admin/missing'
+    | '/admin/reported'
+    | '/admin/unresolved'
+    | '/admin/users'
     | '/games/$slug'
     | '/shared/$token'
     | '/account'
     | '/admin'
     | '/playlist/$id'
     | '/wishlist/$id'
-    | '/admin/giochi/$slug'
+    | '/admin/games/$slug'
     | '/playlist'
     | '/wishlist'
   id:
@@ -352,30 +353,30 @@ export interface FileRouteTypes {
     | '/_app/_private'
     | '/_app/account'
     | '/_app/admin'
-    | '/_app/cerca'
     | '/_app/credits'
     | '/_app/privacy'
     | '/_app/roadmap'
+    | '/_app/search'
     | '/_app/terms'
     | '/_guest/login'
     | '/_guest/register'
     | '/_app/'
     | '/_app/_private/backlog'
-    | '/_app/account/da-sistemare'
-    | '/_app/account/librerie'
-    | '/_app/account/nascosti'
-    | '/_app/account/profilo'
-    | '/_app/admin/mancanti'
-    | '/_app/admin/scarti'
-    | '/_app/admin/segnalati'
-    | '/_app/admin/utenti'
+    | '/_app/account/hidden'
+    | '/_app/account/libraries'
+    | '/_app/account/needs-attention'
+    | '/_app/account/profile'
+    | '/_app/admin/missing'
+    | '/_app/admin/reported'
+    | '/_app/admin/unresolved'
+    | '/_app/admin/users'
     | '/_app/games/$slug'
     | '/_app/shared/$token'
     | '/_app/account/'
     | '/_app/admin/'
     | '/_app/_private/playlist/$id'
     | '/_app/_private/wishlist/$id'
-    | '/_app/admin/giochi/$slug'
+    | '/_app/admin/games/$slug'
     | '/_app/_private/playlist/'
     | '/_app/_private/wishlist/'
   fileRoutesById: FileRoutesById
@@ -429,13 +430,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/cerca': {
-      id: '/_app/cerca'
-      path: '/cerca'
-      fullPath: '/cerca'
-      preLoaderRoute: typeof AppCercaRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/credits': {
       id: '/_app/credits'
       path: '/credits'
@@ -455,6 +449,13 @@ declare module '@tanstack/react-router' {
       path: '/roadmap'
       fullPath: '/roadmap'
       preLoaderRoute: typeof AppRoadmapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/search': {
+      id: '/_app/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AppSearchRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/terms': {
@@ -492,32 +493,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccountIndexRouteImport
       parentRoute: typeof AppAccountRoute
     }
-    '/_app/account/da-sistemare': {
-      id: '/_app/account/da-sistemare'
-      path: '/da-sistemare'
-      fullPath: '/account/da-sistemare'
-      preLoaderRoute: typeof AppAccountDaSistemareRouteImport
+    '/_app/account/hidden': {
+      id: '/_app/account/hidden'
+      path: '/hidden'
+      fullPath: '/account/hidden'
+      preLoaderRoute: typeof AppAccountHiddenRouteImport
       parentRoute: typeof AppAccountRoute
     }
-    '/_app/account/librerie': {
-      id: '/_app/account/librerie'
-      path: '/librerie'
-      fullPath: '/account/librerie'
-      preLoaderRoute: typeof AppAccountLibrerieRouteImport
+    '/_app/account/libraries': {
+      id: '/_app/account/libraries'
+      path: '/libraries'
+      fullPath: '/account/libraries'
+      preLoaderRoute: typeof AppAccountLibrariesRouteImport
       parentRoute: typeof AppAccountRoute
     }
-    '/_app/account/nascosti': {
-      id: '/_app/account/nascosti'
-      path: '/nascosti'
-      fullPath: '/account/nascosti'
-      preLoaderRoute: typeof AppAccountNascostiRouteImport
+    '/_app/account/needs-attention': {
+      id: '/_app/account/needs-attention'
+      path: '/needs-attention'
+      fullPath: '/account/needs-attention'
+      preLoaderRoute: typeof AppAccountNeedsAttentionRouteImport
       parentRoute: typeof AppAccountRoute
     }
-    '/_app/account/profilo': {
-      id: '/_app/account/profilo'
-      path: '/profilo'
-      fullPath: '/account/profilo'
-      preLoaderRoute: typeof AppAccountProfiloRouteImport
+    '/_app/account/profile': {
+      id: '/_app/account/profile'
+      path: '/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof AppAccountProfileRouteImport
       parentRoute: typeof AppAccountRoute
     }
     '/_app/admin/': {
@@ -527,32 +528,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminIndexRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/admin/mancanti': {
-      id: '/_app/admin/mancanti'
-      path: '/mancanti'
-      fullPath: '/admin/mancanti'
-      preLoaderRoute: typeof AppAdminMancantiRouteImport
+    '/_app/admin/missing': {
+      id: '/_app/admin/missing'
+      path: '/missing'
+      fullPath: '/admin/missing'
+      preLoaderRoute: typeof AppAdminMissingRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/admin/scarti': {
-      id: '/_app/admin/scarti'
-      path: '/scarti'
-      fullPath: '/admin/scarti'
-      preLoaderRoute: typeof AppAdminScartiRouteImport
+    '/_app/admin/reported': {
+      id: '/_app/admin/reported'
+      path: '/reported'
+      fullPath: '/admin/reported'
+      preLoaderRoute: typeof AppAdminReportedRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/admin/segnalati': {
-      id: '/_app/admin/segnalati'
-      path: '/segnalati'
-      fullPath: '/admin/segnalati'
-      preLoaderRoute: typeof AppAdminSegnalatiRouteImport
+    '/_app/admin/unresolved': {
+      id: '/_app/admin/unresolved'
+      path: '/unresolved'
+      fullPath: '/admin/unresolved'
+      preLoaderRoute: typeof AppAdminUnresolvedRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/admin/utenti': {
-      id: '/_app/admin/utenti'
-      path: '/utenti'
-      fullPath: '/admin/utenti'
-      preLoaderRoute: typeof AppAdminUtentiRouteImport
+    '/_app/admin/users': {
+      id: '/_app/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AppAdminUsersRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/games/$slug': {
@@ -597,11 +598,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPrivateWishlistIdRouteImport
       parentRoute: typeof AppPrivateRoute
     }
-    '/_app/admin/giochi/$slug': {
-      id: '/_app/admin/giochi/$slug'
-      path: '/giochi/$slug'
-      fullPath: '/admin/giochi/$slug'
-      preLoaderRoute: typeof AppAdminGiochiSlugRouteImport
+    '/_app/admin/games/$slug': {
+      id: '/_app/admin/games/$slug'
+      path: '/games/$slug'
+      fullPath: '/admin/games/$slug'
+      preLoaderRoute: typeof AppAdminGamesSlugRouteImport
       parentRoute: typeof AppAdminRoute
     }
   }
@@ -628,18 +629,18 @@ const AppPrivateRouteWithChildren = AppPrivateRoute._addFileChildren(
 )
 
 interface AppAccountRouteChildren {
-  AppAccountDaSistemareRoute: typeof AppAccountDaSistemareRoute
-  AppAccountLibrerieRoute: typeof AppAccountLibrerieRoute
-  AppAccountNascostiRoute: typeof AppAccountNascostiRoute
-  AppAccountProfiloRoute: typeof AppAccountProfiloRoute
+  AppAccountHiddenRoute: typeof AppAccountHiddenRoute
+  AppAccountLibrariesRoute: typeof AppAccountLibrariesRoute
+  AppAccountNeedsAttentionRoute: typeof AppAccountNeedsAttentionRoute
+  AppAccountProfileRoute: typeof AppAccountProfileRoute
   AppAccountIndexRoute: typeof AppAccountIndexRoute
 }
 
 const AppAccountRouteChildren: AppAccountRouteChildren = {
-  AppAccountDaSistemareRoute: AppAccountDaSistemareRoute,
-  AppAccountLibrerieRoute: AppAccountLibrerieRoute,
-  AppAccountNascostiRoute: AppAccountNascostiRoute,
-  AppAccountProfiloRoute: AppAccountProfiloRoute,
+  AppAccountHiddenRoute: AppAccountHiddenRoute,
+  AppAccountLibrariesRoute: AppAccountLibrariesRoute,
+  AppAccountNeedsAttentionRoute: AppAccountNeedsAttentionRoute,
+  AppAccountProfileRoute: AppAccountProfileRoute,
   AppAccountIndexRoute: AppAccountIndexRoute,
 }
 
@@ -648,21 +649,21 @@ const AppAccountRouteWithChildren = AppAccountRoute._addFileChildren(
 )
 
 interface AppAdminRouteChildren {
-  AppAdminMancantiRoute: typeof AppAdminMancantiRoute
-  AppAdminScartiRoute: typeof AppAdminScartiRoute
-  AppAdminSegnalatiRoute: typeof AppAdminSegnalatiRoute
-  AppAdminUtentiRoute: typeof AppAdminUtentiRoute
+  AppAdminMissingRoute: typeof AppAdminMissingRoute
+  AppAdminReportedRoute: typeof AppAdminReportedRoute
+  AppAdminUnresolvedRoute: typeof AppAdminUnresolvedRoute
+  AppAdminUsersRoute: typeof AppAdminUsersRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
-  AppAdminGiochiSlugRoute: typeof AppAdminGiochiSlugRoute
+  AppAdminGamesSlugRoute: typeof AppAdminGamesSlugRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
-  AppAdminMancantiRoute: AppAdminMancantiRoute,
-  AppAdminScartiRoute: AppAdminScartiRoute,
-  AppAdminSegnalatiRoute: AppAdminSegnalatiRoute,
-  AppAdminUtentiRoute: AppAdminUtentiRoute,
+  AppAdminMissingRoute: AppAdminMissingRoute,
+  AppAdminReportedRoute: AppAdminReportedRoute,
+  AppAdminUnresolvedRoute: AppAdminUnresolvedRoute,
+  AppAdminUsersRoute: AppAdminUsersRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
-  AppAdminGiochiSlugRoute: AppAdminGiochiSlugRoute,
+  AppAdminGamesSlugRoute: AppAdminGamesSlugRoute,
 }
 
 const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
@@ -673,10 +674,10 @@ interface AppRouteChildren {
   AppPrivateRoute: typeof AppPrivateRouteWithChildren
   AppAccountRoute: typeof AppAccountRouteWithChildren
   AppAdminRoute: typeof AppAdminRouteWithChildren
-  AppCercaRoute: typeof AppCercaRoute
   AppCreditsRoute: typeof AppCreditsRoute
   AppPrivacyRoute: typeof AppPrivacyRoute
   AppRoadmapRoute: typeof AppRoadmapRoute
+  AppSearchRoute: typeof AppSearchRoute
   AppTermsRoute: typeof AppTermsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppGamesSlugRoute: typeof AppGamesSlugRoute
@@ -687,10 +688,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppPrivateRoute: AppPrivateRouteWithChildren,
   AppAccountRoute: AppAccountRouteWithChildren,
   AppAdminRoute: AppAdminRouteWithChildren,
-  AppCercaRoute: AppCercaRoute,
   AppCreditsRoute: AppCreditsRoute,
   AppPrivacyRoute: AppPrivacyRoute,
   AppRoadmapRoute: AppRoadmapRoute,
+  AppSearchRoute: AppSearchRoute,
   AppTermsRoute: AppTermsRoute,
   AppIndexRoute: AppIndexRoute,
   AppGamesSlugRoute: AppGamesSlugRoute,

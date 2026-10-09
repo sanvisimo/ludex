@@ -49,7 +49,7 @@ export function useHiddenItems(filter: AccountFilter = {}) {
         hidden: true,
         limit: GAMES_LIMIT,
         q: filter.q,
-        stores: filter.negozio ? [filter.negozio] : undefined,
+        stores: filter.store ? [filter.store] : undefined,
       },
     }),
   );

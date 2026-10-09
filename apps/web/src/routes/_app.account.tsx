@@ -18,8 +18,8 @@ export const Route = createFileRoute('/_app/account')({
 
 /**
  * La cornice dell'account: il titolo, il menu delle sezioni e, accanto, la
- * sezione aperta. Ogni sezione è una rotta (`/account/profilo`, `librerie`,
- * `da-sistemare`, `nascosti`), così l'indirizzo dice dove sei e «indietro»
+ * sezione aperta. Ogni sezione è una rotta (`/account/profile`, `libraries`,
+ * `needs-attention`, `hidden`), così l'indirizzo dice dove sei e «indietro»
  * torna alla sezione di prima.
  */
 function AccountLayout() {

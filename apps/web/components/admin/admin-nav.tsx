@@ -9,10 +9,10 @@ import { api } from '@/lib/orpc';
 import { takeLinkClick } from '@/src/link-click';
 
 type AdminSection =
-  | '/admin/mancanti'
-  | '/admin/scarti'
-  | '/admin/segnalati'
-  | '/admin/utenti';
+  | '/admin/missing'
+  | '/admin/unresolved'
+  | '/admin/reported'
+  | '/admin/users';
 
 /**
  * Il menu delle sezioni admin, con la stessa forma di quello dell'account:
@@ -47,24 +47,24 @@ export function AdminNav() {
         },
       } as object)}
     >
-      <SectionLink to="/admin/mancanti" icon={<Database size={16} />}>
+      <SectionLink to="/admin/missing" icon={<Database size={16} />}>
         {t('missing')}
       </SectionLink>
       <SectionLink
-        to="/admin/scarti"
+        to="/admin/unresolved"
         icon={<Inbox size={16} />}
         count={scarti.data?.total}
       >
         {t('unresolved')}
       </SectionLink>
       <SectionLink
-        to="/admin/segnalati"
+        to="/admin/reported"
         icon={<Flag size={16} />}
         count={segnalazioni.data?.total}
       >
         {t('reported')}
       </SectionLink>
-      <SectionLink to="/admin/utenti" icon={<Users size={16} />}>
+      <SectionLink to="/admin/users" icon={<Users size={16} />}>
         {t('users')}
       </SectionLink>
     </YStack>

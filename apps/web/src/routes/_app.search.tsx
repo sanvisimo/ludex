@@ -23,7 +23,7 @@ type SearchParams = { q?: string; page?: number };
 // pagine, e sotto — da loggati — quelli IGDB che Ludex non ha ancora. Il
 // testo e la pagina stanno nell'URL, come i filtri del backlog: un link a una
 // ricerca la riapre uguale.
-export const Route = createFileRoute('/_app/cerca')({
+export const Route = createFileRoute('/_app/search')({
   validateSearch: (raw: Record<string, unknown>): SearchParams => {
     // `?q=1942` scritto a mano arriva come numero: il parser dell'URL è JSON.
     const q =
@@ -87,7 +87,7 @@ function SearchPage() {
 
   const pageHref = (target: number) =>
     router.buildLocation({
-      to: '/cerca',
+      to: '/search',
       search: { q, page: target > 1 ? target : undefined },
     }).href;
   // Cambiare pagina lascia una voce nella cronologia: «indietro» torna alla

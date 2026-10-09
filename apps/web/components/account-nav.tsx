@@ -9,10 +9,10 @@ import { api } from '@/lib/orpc';
 import { takeLinkClick } from '@/src/link-click';
 
 type AccountSection =
-  | '/account/profilo'
-  | '/account/librerie'
-  | '/account/da-sistemare'
-  | '/account/nascosti';
+  | '/account/profile'
+  | '/account/libraries'
+  | '/account/needs-attention'
+  | '/account/hidden';
 
 /**
  * I numeri accanto alle voci: quante cose aspettano in «da sistemare», e
@@ -72,21 +72,21 @@ export function AccountNav() {
         },
       } as object)}
     >
-      <SectionLink to="/account/profilo" icon={<User size={16} />}>
+      <SectionLink to="/account/profile" icon={<User size={16} />}>
         {t('profile')}
       </SectionLink>
-      <SectionLink to="/account/librerie" icon={<Library size={16} />}>
+      <SectionLink to="/account/libraries" icon={<Library size={16} />}>
         {t('libraries')}
       </SectionLink>
       <SectionLink
-        to="/account/da-sistemare"
+        to="/account/needs-attention"
         icon={<ListChecks size={16} />}
         count={toFix}
       >
         {t('toFix')}
       </SectionLink>
       <SectionLink
-        to="/account/nascosti"
+        to="/account/hidden"
         icon={<EyeOff size={16} />}
         count={hidden}
       >

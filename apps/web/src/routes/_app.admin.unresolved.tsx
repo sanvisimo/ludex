@@ -59,17 +59,17 @@ import { takeLinkClick } from '@/src/link-click';
 const PAGE_SIZE = 20;
 
 type Search = {
-  vista?: 'nascosti';
-  negozio?: Store;
+  view?: 'hidden';
+  store?: Store;
   q?: string;
   page?: number;
 };
 
-export const Route = createFileRoute('/_app/admin/scarti')({
+export const Route = createFileRoute('/_app/admin/unresolved')({
   validateSearch: (search: Record<string, unknown>): Search => ({
-    vista: search.vista === 'nascosti' ? 'nascosti' : undefined,
-    negozio: (storeValues as readonly unknown[]).includes(search.negozio)
-      ? (search.negozio as Store)
+    view: search.view === 'hidden' ? 'hidden' : undefined,
+    store: (storeValues as readonly unknown[]).includes(search.store)
+      ? (search.store as Store)
       : undefined,
     q: typeof search.q === 'string' && search.q ? search.q : undefined,
     page:
@@ -106,25 +106,25 @@ function UnresolvedSection() {
 
       <Tabs
         label={t('title')}
-        value={search.vista ?? 'open'}
+        value={search.view ?? 'open'}
         onValueChange={(value) =>
           void navigate({
-            search: { vista: value === 'nascosti' ? 'nascosti' : undefined },
+            search: { view: value === 'hidden' ? 'hidden' : undefined },
           })
         }
       >
         <TabsTab value="open" count={openCount.data?.total}>
           {t('open')}
         </TabsTab>
-        <TabsTab value="nascosti" count={hiddenRules.data?.length}>
+        <TabsTab value="hidden" count={hiddenRules.data?.length}>
           {t('globalHidden')}
         </TabsTab>
       </Tabs>
 
-      {search.vista === 'nascosti' ? (
+      {search.view === 'hidden' ? (
         <GlobalHiddenList rules={hiddenRules} />
       ) : (
-        <OpenList store={search.negozio} q={search.q} page={search.page ?? 1} />
+        <OpenList store={search.store} q={search.q} page={search.page ?? 1} />
       )}
     </YStack>
   );
@@ -347,7 +347,7 @@ function OpenList({
             void navigate({
               search: (prev) => ({
                 ...prev,
-                negozio: next === 'all' ? undefined : (next as Store),
+                store: next === 'all' ? undefined : (next as Store),
                 page: undefined,
               }),
             })

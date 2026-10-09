@@ -15,7 +15,7 @@ import { ResolveImportDialog } from '@/components/resolve-import-dialog';
 import { UnresolvedImports } from '@/components/unresolved-imports';
 import { api } from '@/lib/orpc';
 
-export const Route = createFileRoute('/_app/account/da-sistemare')({
+export const Route = createFileRoute('/_app/account/needs-attention')({
   // Nome e negozio stanno nell'indirizzo, come i filtri del backlog.
   validateSearch: readAccountFilter,
   component: ToFixSection,
