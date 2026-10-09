@@ -113,8 +113,8 @@ function Entry({ entry, last }: { entry: RoadmapEntry; last: boolean }) {
           render="h2"
           m={0}
           fontFamily="$heading"
-          fontSize={18}
-          lineHeight={26}
+          fontSize={20}
+          lineHeight={28}
           fontWeight="600"
           color={done ? '$accent11' : '$color12'}
         >
