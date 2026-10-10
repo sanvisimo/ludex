@@ -12,8 +12,8 @@ in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
 1. **11b — Fusione**: va decisa la sorte di stati, voti e tag quando due righe
    si fondono. Tocca dati condivisi fra tutti gli utenti, quindi è delicata.
 2. **15e — Wishlist dei negozi** (aggiunta il 10/10/2026): importare le
-   wishlist di Steam e GOG nelle liste a mano. Gli endpoint ci sono, ma nessuno
-   è misurato: prima una richiesta di verifica, poi l'analisi. Vedi «Le
+   wishlist di Steam, GOG e PlayStation nelle liste a mano; Xbox e gli altri
+   da valutare. Gli endpoint ci sono, ma nessuno è misurato: prima una richiesta di verifica, poi l'analisi. Vedi «Le
    wishlist dei negozi» in [negozi](negozi.md).
 3. **9c — EA**: importazione una tantum. Prima va misurato il formato, ma il
    resto è la pipeline che esiste già.
@@ -251,8 +251,10 @@ Il link alle fonti senza voto nella pagina del gioco è fatto (09/10/2026).
 
     **15e — Wishlist dei negozi** (aggiunta il 10/10/2026, **da fare**, dopo
     l'11b). Le wishlist di Steam (`IWishlistService/GetWishlist`, con la chiave,
-    senza sessione) e di GOG (`embed.gog.com/user/wishlist.json`) nelle liste a
-    mano di 15b. Gli altri negozi non hanno un'API pubblica che si sia trovata.
+    senza sessione), di GOG (`embed.gog.com/user/wishlist.json`) e di PlayStation
+    (`metGetStoreWishlist`, solo l'account autenticato) nelle liste a mano di
+    15b. Xbox non dovrebbe essere complessa e gli altri negozi si valutano di
+    volta in volta.
     Gli endpoint e ciò che resta da misurare sono in
     [negozi](negozi.md#le-wishlist-dei-negozi-15e-da-fare); le decisioni
     (una lista per negozio e account, cosa fa la rimozione) si prendono

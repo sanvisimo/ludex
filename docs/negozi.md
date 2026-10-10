@@ -825,7 +825,9 @@ Nessun import legge le wishlist dei negozi: quelle di Ludex sono a mano
 ([15b](../plans/15b-wishlist.md)). Il lotto 15e le porterebbe dentro, e per ora
 è solo documentazione: **nessuna richiesta è partita** e niente di quanto segue è
 misurato. Fonti: la documentazione che l'utente ha incollato il 10/10/2026, e una
-ricerca in sola lettura lo stesso giorno.
+ricerca in sola lettura lo stesso giorno. **Tre negozi grossi hanno un endpoint**
+(Steam, GOG, PlayStation), quindi la funzione si può fare; gli altri si valutano di
+volta in volta.
 
 **Steam.** Due metodi di `IWishlistService`, non documentati da Valve nella
 Steamworks Web API ma elencati dalla documentazione non ufficiale delle interfacce:
@@ -862,11 +864,36 @@ Le chiavi sono gli **id prodotto di GOG**, gli stessi delle copie che importiamo
 accetti il token di `auth.gog.com` che già usiamo per la libreria di Galaxy o voglia
 i cookie del sito.
 
-**Gli altri negozi** (ricerca del 10/10/2026, non esaustiva): per **PSN**,
-**Nintendo** e **Xbox** non risulta nessuna API pubblica, solo pagine con login o
-endpoint privati da ricavare (con il rischio per l'account che la libreria non
-ufficiale di PSN dichiara); per **Epic** non è emerso nessun endpoint, e le librerie
-non ufficiali non la trattano. Non sono nel lotto.
+**PlayStation.** `GET https://m.np.playstation.com/api/graphql/v1/op?operationName=metGetStoreWishlist`,
+sullo stesso host delle librerie PSN che già leggiamo (`gamelist`, `userProfile`).
+Dalla documentazione non ufficiale che usa anche `psn-api`
+([andshrew/PlayStation-Trophies](https://andshrew.github.io/PlayStation-Trophies/#/misc/Store),
+`docs/misc/Store.md`):
+
+- parametri: `variables={}` e `extensions={"persistedQuery":{"version":1,"sha256Hash":"571149e8aa4d76af7dd33b92e1d6f8f828ebc5fa8f0f6bf51a8324a0e6d71324"}}`;
+- intestazioni: `apollographql-client-name: PlayStationApp-Android` e
+  `content-type: application/json`, più il token come Bearer;
+- **legge solo la wishlist dell'account che si autentica**, non quella di altri;
+- risposta: `data.storeWishlist`, un elenco di `Product` con `id` (per esempio
+  `UP0102-CUSA07104_00-SLUS201840000001`), `name`, `platforms` (`PS4`, `PS5`),
+  `boxArt`, `storeDisplayClassification` e il prezzo (con le offerte PS Plus). **Non
+  c'è una data di aggiunta.**
+
+**Non misurato**: se il token che già usiamo per le librerie basta, e per quanto
+l'hash della query persistente resta valido: è legato all'app Android, e se Sony
+cambia la query smette di funzionare. È la parte più fragile. `psn-api` non
+risulta esporre una funzione per la wishlist (le sue funzioni elencate sono di
+trofei, titoli e profilo), e noi non la usiamo: il client di [psn.ts](../apps/api/src/external/psn.ts)
+è scritto a mano.
+
+**Gli altri negozi: da valutare**, di volta in volta, quando serve.
+**Xbox** non dovrebbe essere complesso (valutazione dell'utente, 10/10/2026):
+il punto di partenza indicato è il repository
+[microsoft/xbox-live-api](https://github.com/microsoft/xbox-live-api), che però è l'SDK
+Xbox Live per chi sviluppa giochi, e una ricerca nel codice per «wishlist» non
+trova niente: **non è verificato** che offra la wishlist di un utente. **Nintendo** ha
+una wish list sull'eShop e sul sito, ma nessuna API pubblica per leggerla;
+**Epic** non ne mostra una nelle librerie non ufficiali che abbiamo guardato.
 
 **Da decidere nell'analisi**, prima del codice:
 
@@ -875,8 +902,9 @@ non ufficiali non la trattano. Non sono nel lotto.
 - se un gioco tolto dalla wishlist del negozio esce anche dalla lista di Ludex;
 - la regola che c'è già: entrando nel backlog un gioco esce da tutte le liste, quindi
   una wishlist importata non deve riportarlo dentro;
-- l'identità: gli appid Steam e gli id prodotto GOG si risolvono su IGDB come per la
-  libreria, e una riga non risolta cade fra gli scarti;
+- l'identità: gli appid Steam, gli id prodotto GOG e i prodotti PlayStation (per
+  nome, come la libreria PSN) si risolvono su IGDB, e una riga non risolta cade fra
+  gli scarti;
 - la cadenza: con la chiave Steam è una richiesta per account e non tocca il login,
   ma l'aggiornamento automatico (sette giorni) è per la libreria, non per questa.
 
