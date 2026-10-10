@@ -706,13 +706,32 @@ di utenti: il manutentore non ha risposto né confermato.** L'esempio ufficiale
   `refreshExpiresAt` dice quando. Un credenziale `MobileApp` del vecchio login non
   vale più (audience `mobile`, non `web`): diventa `needs_reauth`.
 
-**Non provato dal vero.** I test girano con la libreria finta e nessuna richiesta a
-Steam è partita. Restano da verificare, col primo login vero: che l'access token del
-cookie dello store sia accettato da `GetOwnedGames` e dalla famiglia (stessa audience
-del `webapi_token`, ma non misurata), la durata del refresh token web, e soprattutto
-**se il blocco non scatta**: ci vogliono almeno tre o quattro ore dopo il QR. Prova da
-fare con un account di prova o dopo lo sblocco, **un solo login**. Il probe
-`steam:family-probe` fa ancora il login `MobileApp`: non va lanciato.
+**Provato dal vero (08–10/10/2026), sul mini PC, con due account.** Un account di
+prova (`sanvitest`) e quello principale dell'utente, lo stesso bloccato tre volte:
+
+- **Il login.** `sanvitest` autorizzato l'08/10 alle 15:53 (l'ora che dà Steam Guard),
+  il principale alle 22:05. In Steam Guard compare un solo «Chrome on Linux», mai un
+  «Galaxy». Nessun avviso e nessun blocco, né in Steam Guard né in Ludex.
+- **Il token si usa.** L'access token preso dai cookie dello store è accettato:
+  `sanvitest` risulta «Signed in», con la famiglia, e importa; il principale importa
+  alle 22:52 con lo stato `ok`.
+- **Il rinnovo da server.** Il 10/10 alle 01:02 (ora locale) i due account, con il
+  token scaduto da circa 9 e 3 ore, hanno preso un access token nuovo con
+  `getWebCookies()` dal refresh token, senza un nuovo login: nuova scadenza a 24h15 e
+  24h04 dal rinnovo, `status` ok. Il rinnovo parte dentro un'importazione: quel giorno
+  l'ha fatto partire un ↻ a mano, perché l'aggiornamento automatico di Steam è a
+  sette giorni.
+- **Il nome.** Con la chiave API nuova, un secondo QR su `sanvitest` (10/10, circa
+  12:35) ne ha riscritto il nome, senza scollegare l'account. Quel secondo login,
+  sullo stesso account, non ha avuto blocchi in quasi sei ore.
+- **Il principale.** L'utente ha riferito il 10/10 sera: nessun blocco né per come si
+  usa il login, né per come si usa la chiave.
+
+**Cosa non dice.** Sono due account sullo stesso indirizzo, osservati per giorni e non
+per settimane; il principale ha **un solo rinnovo** provato; la **durata del refresh
+token web non è misurata** (il credenziale è cifrato nel database, e `refreshExpiresAt`
+sta dentro); e resta aperta la domanda di prodotto, molti utenti da un solo server.
+Il probe `steam:family-probe` fa ancora il login `MobileApp`: non va lanciato.
 
 ## Nintendo (9d)
 
@@ -768,7 +787,7 @@ lo ha confermato). Si saltano, come i DLC di Epic che collassano sul gioco. Se i
 | Cosa                             | Misurato                                                                                                                                                                                                                                                                       |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | il login                         | PKCE su `accounts.nintendo.com`; l'utente accede **nel suo browser**. «Select this account» non si clicca (punta a `npf…://`): **clic destro → copia l'indirizzo del link**                                                                                                    |
-| credenziali                      | session token **730 giorni**; access token e `id_token` **15 minuti**. Il rinnovo è una POST sola e non cambia il session token (che non ruoti è ciò che assume il client di riferimento, **non provato** su un rinnovo vero)                                                  |
+| credenziali                      | session token **730 giorni**; access token e `id_token` **15 minuti**. Il rinnovo è una POST sola e non cambia il session token. **Provato dal server l'08/10/2026** (un solo account): il session token del 05/10 valeva ancora tre giorni dopo, stato `ok`                   |
 | GraphQL delle Virtual Game Cards | `wb.lp1.savanna.srv.nintendo.net/graphql` (**`*.srv.nintendo.net`, non nintendo.com**); senza cookie; **accetta l'`id_token` del login dell'app** (HTTP 200, gli stessi 19 titoli) oltre a quello del portale, che vive 14 minuti e si ricava dalla pagina con la sessione web |
 | header e variabili               | `x-nintendo-savanna-client-id` (lo stesso del portale, **non so se uguale per tutti**), `shopId` 3, `language` `en`, `nasLanguage` `en-US`, e il **paese dell'account** (`IT`)                                                                                                 |
 | storico                          | `app-api.znej.nintendo.com/api/v2.0/users/me/play_histories`, una richiesta, 37 titoli; `platform` **`HAC`**, `deviceType` assente                                                                                                                                             |
@@ -804,6 +823,11 @@ lo ha confermato). Si saltano, come i DLC di Epic che collassano sul gioco. Se i
 - i giochi **in prestito o di un altro account** (`ownerNaId` diverso da `userNaId`, o
   `isLending`) non si trattano: si importano come gli altri e si contano in un log. Non
   ce ne sono sull'account di prova, quindi **non è misurato** come si presentino.
+
+**Rinnovo da server provato (08/10/2026).** Con l'account dell'utente, loggato dal 05/10:
+a un'importazione del 08/10 alle 22:51 il server ha rinnovato l'access token (scadenza
+14 minuti dopo) col session token salvato tre giorni prima, e lo stato è rimasto `ok`,
+senza blocchi da Nintendo. Un solo account, un solo indirizzo.
 
 **Il rischio, da decidere prima di rilasciare.** Il login lo fa l'utente dal suo
 browser, ma il rinnovo lo fa il **server**, a ogni import, e ora con **due identità non
