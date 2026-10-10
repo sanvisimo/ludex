@@ -819,6 +819,67 @@ rinnovo periodico dal server è troppo, è `AUTO_SYNC_EVERY_DAYS.nintendo`. Se i
 risponde 401 su un token fresco, la prima riga da guardare è `SAVANNA_CLIENT_ID` in
 `apps/api/src/external/nintendo.ts`.
 
+## Le wishlist dei negozi (15e, da fare)
+
+Nessun import legge le wishlist dei negozi: quelle di Ludex sono a mano
+([15b](../plans/15b-wishlist.md)). Il lotto 15e le porterebbe dentro, e per ora
+è solo documentazione: **nessuna richiesta è partita** e niente di quanto segue è
+misurato. Fonti: la documentazione che l'utente ha incollato il 10/10/2026, e una
+ricerca in sola lettura lo stesso giorno.
+
+**Steam.** Due metodi di `IWishlistService`, non documentati da Valve nella
+Steamworks Web API ma elencati dalla documentazione non ufficiale delle interfacce:
+
+- `GET https://api.steampowered.com/IWishlistService/GetWishlist/v1?steamId=<SteamID64>&key=<chiave>`
+  — **con la chiave dell'applicazione**: non apre nessuna sessione, come
+  `GetOwnedGames` per un account col solo profilo, quindi non c'entra con i blocchi
+  del login (vedi sopra). È il metodo che basterebbe: servono gli appid.
+- `GET https://api.steampowered.com/IWishlistService/GetWishlistSortedFiltered/v1` —
+  la wishlist a pagine, con ordinamenti e filtri e, a richiesta, i dati dello
+  store. Parametri: `steamid` (uint64), `context`, `data_request` («se passato,
+  rende i dati dell'elemento»), `sort_order`, `filters`, `start_index` («i dati in
+  questo intervallo sono riempiti con StoreBrowse»), `page_size`, `share_token`
+  («determina quali elementi si vedono e i filtri effettivi»). Più pesante di quello
+  che serve.
+
+**Non misurato**, e da vedere con **una** richiesta prima di scrivere codice: la forma
+della risposta (si dice appid, priorità e data di aggiunta), se la wishlist si legge
+solo quando è pubblica, e se accetta anche l'`access_token` del login (a wishlist
+privata).
+
+**GOG.** `GET https://embed.gog.com/user/wishlist.json` rende la wishlist
+dell'account:
+
+```json
+{
+  "wishlist": { "1207658750": true, "1207658928": true },
+  "checksum": "e7c70b9b758318ed2f08b4450272296c"
+}
+```
+
+Le chiavi sono gli **id prodotto di GOG**, gli stessi delle copie che importiamo.
+**Non misurato**: l'autenticazione. L'esempio non la mostra, e non sappiamo se
+accetti il token di `auth.gog.com` che già usiamo per la libreria di Galaxy o voglia
+i cookie del sito.
+
+**Gli altri negozi** (ricerca del 10/10/2026, non esaustiva): per **PSN**,
+**Nintendo** e **Xbox** non risulta nessuna API pubblica, solo pagine con login o
+endpoint privati da ricavare (con il rischio per l'account che la libreria non
+ufficiale di PSN dichiara); per **Epic** non è emerso nessun endpoint, e le librerie
+non ufficiali non la trattano. Non sono nel lotto.
+
+**Da decidere nell'analisi**, prima del codice:
+
+- dove vanno i giochi: una lista per negozio e account, in `playlists` col tipo
+  `wishlist`, senza mescolarsi con le liste fatte a mano;
+- se un gioco tolto dalla wishlist del negozio esce anche dalla lista di Ludex;
+- la regola che c'è già: entrando nel backlog un gioco esce da tutte le liste, quindi
+  una wishlist importata non deve riportarlo dentro;
+- l'identità: gli appid Steam e gli id prodotto GOG si risolvono su IGDB come per la
+  libreria, e una riga non risolta cade fra gli scarti;
+- la cadenza: con la chiave Steam è una richiesta per account e non tocca il login,
+  ma l'aggiornamento automatico (sette giorni) è per la libreria, non per questa.
+
 ## La data d'acquisto
 
 Diventa `ownerships.acquired_at` della copia, e la più vecchia delle copie

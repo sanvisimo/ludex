@@ -11,17 +11,21 @@ in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
 
 1. **11b — Fusione**: va decisa la sorte di stati, voti e tag quando due righe
    si fondono. Tocca dati condivisi fra tutti gli utenti, quindi è delicata.
-2. **9c — EA**: importazione una tantum. Prima va misurato il formato, ma il
+2. **15e — Wishlist dei negozi** (aggiunta il 10/10/2026): importare le
+   wishlist di Steam e GOG nelle liste a mano. Gli endpoint ci sono, ma nessuno
+   è misurato: prima una richiesta di verifica, poi l'analisi. Vedi «Le
+   wishlist dei negozi» in [negozi](negozi.md).
+3. **9c — EA**: importazione una tantum. Prima va misurato il formato, ma il
    resto è la pipeline che esiste già.
-3. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
+4. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
    e la deduplica.
-4. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
+5. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
    decise.
-5. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
+6. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
    da zero.
-6. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+7. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-7. **Mobile**: un'app nuova, con le sue schermate.
+8. **Mobile**: un'app nuova, con le sue schermate.
 
 Fuori da questa lista resta una cosa piccola, che si fa quando capita: il
 rilascio agli altri utenti di 9d e 9f (aspetta l'esito della prova sul mini PC).
@@ -244,6 +248,15 @@ Il link alle fonti senza voto nella pagina del gioco è fatto (09/10/2026).
     le sole informazioni pubbliche del gioco; e il passaggio dei filtri a chi ha
     un account. Decisioni sulla privacy: dinamica, il proprietario non compare,
     nascosti ed `excluded` mai visibili, solo con il link e `noindex`.
+
+    **15e — Wishlist dei negozi** (aggiunta il 10/10/2026, **da fare**, dopo
+    l'11b). Le wishlist di Steam (`IWishlistService/GetWishlist`, con la chiave,
+    senza sessione) e di GOG (`embed.gog.com/user/wishlist.json`) nelle liste a
+    mano di 15b. Gli altri negozi non hanno un'API pubblica che si sia trovata.
+    Gli endpoint e ciò che resta da misurare sono in
+    [negozi](negozi.md#le-wishlist-dei-negozi-15e-da-fare); le decisioni
+    (una lista per negozio e account, cosa fa la rimozione) si prendono
+    nell'analisi, prima del codice.
 
 16. **Cancellazione ed esportazione dell'account** — **fatto il 06/10/2026**
     (piano in `plans/16-cancellazione-esportazione.md`). L'utente elimina il

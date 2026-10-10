@@ -38,8 +38,8 @@ segnalazioni spostate dalla mail alle issue di GitHub.
   tantum non c'è ancora.
 - Dentro «In arrivo» c'è «Steam con login e Nintendo»: sono costruiti e provati
   sul mini PC, ma il rilascio agli altri utenti aspetta l'esito.
-- **«In arrivo» segue l'ordine di lavoro** deciso il 09/10/2026 (11b, EA, CSV,
-  abbonamenti, Xbox, AI, mobile, in [ordine-sviluppo](../docs/ordine-sviluppo.md)),
+- **«In arrivo» segue l'ordine di lavoro** deciso il 09/10/2026 (11b, wishlist
+  dei negozi, EA, CSV, abbonamenti, Xbox, AI, mobile, in [ordine-sviluppo](../docs/ordine-sviluppo.md)),
   dopo «Un admin migliore» (la revisione di tabella e link in admin, da
   `plans/11a-admin.md`). Xbox è passata da «Idea» a «In arrivo» perché è
   nell'ordine, anche se il suo significato è ancora da decidere.

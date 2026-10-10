@@ -968,6 +968,10 @@
         "title": "Import from a CSV file",
         "text": "Bring a library you already keep elsewhere into Ludex, for example a Playnite export."
       },
+      "storeWishlists": {
+        "title": "Store wishlists",
+        "text": "Bring your Steam and GOG wishlists into Ludex, inside your lists."
+      },
       "ea": {
         "title": "The EA library",
         "text": "EA doesn't allow a link that lasts: the library will be imported once, whenever you choose."
