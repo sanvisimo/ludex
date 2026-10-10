@@ -166,7 +166,7 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
 15. Playlist, wishlist e gioco a caso: 15a Playlist (filtri del backlog
     salvati con un nome, per prima) · 15b Wishlist (riusa la tabella delle
     playlist) · 15c Gioco a caso (un pulsante in `/backlog`) · 15d Condivisione
-    delle playlist (un link pubblico) · 15e Wishlist dei negozi (Steam e GOG)
+    delle playlist (un link pubblico) · 15e Wishlist dei negozi (Steam, GOG, PSN)
 16. Cancellazione ed esportazione dell'account
 
 Poi il mobile. I numeri sono nomi e non si rinumerano: **quello che resta si fa
