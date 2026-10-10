@@ -42,7 +42,7 @@ export type RoadmapEntry = {
 export const roadmap: RoadmapEntry[] = [
   { id: 'steamNintendo', status: 'doing', areas: ['import'] },
   { id: 'merge', status: 'doing', areas: ['admin'] },
-  { id: 'betterAdmin', status: 'next', areas: ['admin', 'library'] },
+  { id: 'betterAdmin', status: 'doing', areas: ['admin', 'library'] },
   { id: 'storeWishlists', status: 'next', areas: ['import', 'playlists'] },
   { id: 'ea', status: 'next', areas: ['import'] },
   { id: 'csv', status: 'next', areas: ['import'] },
