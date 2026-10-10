@@ -728,7 +728,7 @@ prova (`sanvitest`) e quello principale dell'utente, lo stesso bloccato tre volt
   usa il login, né per come si usa la chiave.
 
 **Cosa non dice.** Sono due account sullo stesso indirizzo, osservati per giorni e non
-per settimane; il principale ha **un solo rinnovo** provato; la **durata del refresh
+per settimane; la **durata del refresh
 token web non è misurata** (il credenziale è cifrato nel database, e `refreshExpiresAt`
 sta dentro); e resta aperta la domanda di prodotto, molti utenti da un solo server.
 Il probe `steam:family-probe` fa ancora il login `MobileApp`: non va lanciato.

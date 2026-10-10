@@ -552,7 +552,7 @@ Fatto, con test (nessuna richiesta a Steam):
 nessun blocco e un solo «Chrome on Linux» in Steam Guard; l'access token del cookie
 dello store è accettato dall'import; rinnovo da server di entrambi il 10/10 alle 01:02;
 nome via chiave API; secondo QR su `sanvitest` senza blocco in quasi sei ore. **Aperto**:
-durata del refresh token web, un solo rinnovo sul principale, e il rilascio agli altri
+durata del refresh token web, stessa cosa sul principale, e il rilascio agli altri
 utenti. `steam:family-probe` fa ancora il login `MobileApp`: da aggiornare prima di usarlo.
 
 **Tolto l'avviso sul secondo login (08/10/2026).** `hasLiveSteamQrLogin`,

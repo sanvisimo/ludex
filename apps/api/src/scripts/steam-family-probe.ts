@@ -7,7 +7,7 @@ import QRCode from 'qrcode';
 import { EAuthTokenPlatformType, LoginSession } from 'steam-session';
 
 import { fetchSteamFamilyLibrary, fetchSteamLibrary } from '../external/steam';
-import { refreshSteamTokens } from '../external/steam-auth';
+import { refreshSteamTokens, STEAM_LOGIN_USER_AGENT } from '../external/steam-auth';
 
 // Misure per il 9f (Steam con login e Family). **Non scrive niente**: né sul DB
 // né su disco, a parte il file col QR.
@@ -170,7 +170,9 @@ const sezione = async (titolo: string, fn: () => Promise<void>) => {
 
 // --- 1. login col QR ---
 
-const session = new LoginSession(EAuthTokenPlatformType.MobileApp);
+const session = new LoginSession(EAuthTokenPlatformType.WebBrowser, {
+  userAgent: STEAM_LOGIN_USER_AGENT,
+});
 // Cinque minuti: il tempo di prendere il telefono.
 session.loginTimeout = 300_000;
 
@@ -618,7 +620,9 @@ await sezione('rinnovo', async () => {
   console.log(`  scadenza spostata di:  ${giorni(dopo - prima)} giorni`);
 
   // Il vecchio è davvero morto? È ciò che decide se serve il lock sulla riga.
-  const prova = new LoginSession(EAuthTokenPlatformType.MobileApp);
+  const prova = new LoginSession(EAuthTokenPlatformType.WebBrowser, {
+    userAgent: STEAM_LOGIN_USER_AGENT,
+  });
   prova.refreshToken = vecchio;
   try {
     await prova.refreshAccessToken();
