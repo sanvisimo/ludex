@@ -547,11 +547,13 @@ Fatto, con test (nessuna richiesta a Steam):
    login è rifiutato dal setter → `SteamAuthError` → `needs_reauth`.
    `apps/api/src/external/steam-auth.ts` e il suo test.
 
-Da fare dopo lo sblocco dell'account (o su un account di prova), **un solo login**:
-vedere se l'access token del cookie è accettato da `GetOwnedGames` e dalla famiglia,
-leggere la durata del refresh token web dal JWT, e aspettare almeno quattro ore per
-sapere se il blocco scatta. `steam:family-probe` fa ancora il login `MobileApp`: da
-aggiornare prima di usarlo.
+**Provato il 08–10/10/2026** (vedi «Il terzo blocco» in
+[docs/negozi.md](../docs/negozi.md)): QR `WebBrowser` su `sanvitest` e sul principale,
+nessun blocco e un solo «Chrome on Linux» in Steam Guard; l'access token del cookie
+dello store è accettato dall'import; rinnovo da server di entrambi il 10/10 alle 01:02;
+nome via chiave API; secondo QR su `sanvitest` senza blocco in quasi sei ore. **Aperto**:
+durata del refresh token web, un solo rinnovo sul principale, e il rilascio agli altri
+utenti. `steam:family-probe` fa ancora il login `MobileApp`: da aggiornare prima di usarlo.
 
 **Tolto l'avviso sul secondo login (08/10/2026).** `hasLiveSteamQrLogin`,
 `SteamLoginExistsError`, `replace` e la conferma nel pannello QR: bloccavano un secondo
