@@ -20,6 +20,7 @@ import {
   CellText,
   type AdminColumn,
 } from '@/components/admin/admin-table';
+import { MergeDialog } from '@/components/admin/merge-dialog';
 import { RepointDialog } from '@/components/admin/repoint-dialog';
 import {
   SetSourceIdDialog,
@@ -76,6 +77,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
   const router = useRouter();
   const [repointing, setRepointing] = useState<Link | null>(null);
   const [setting, setSetting] = useState<SourceToSet | null>(null);
+  const [merging, setMerging] = useState(false);
   const { game } = detail;
 
   const refresh = () =>
@@ -304,6 +306,9 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
             </Text>
           </Link>
         </YStack>
+        <Button size="sm" variant="outline" onPress={() => setMerging(true)}>
+          {t('game.merge')}
+        </Button>
       </XStack>
 
       <YStack gap={8}>
@@ -410,6 +415,21 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
           if (!open) setRepointing(null);
         }}
         onDone={refresh}
+      />
+      <MergeDialog
+        open={merging}
+        game={game}
+        onOpenChange={setMerging}
+        onDone={async (survivor) => {
+          await refresh();
+          // Se questo era l'assorbito il suo indirizzo non c'è più: si va al
+          // gioco che resta.
+          await router.navigate({
+            to: '/admin/games/$slug',
+            params: { slug: survivor.slug },
+            replace: true,
+          });
+        }}
       />
       <SetSourceIdDialog
         row={setting}

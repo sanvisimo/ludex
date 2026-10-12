@@ -457,7 +457,8 @@ farà deve trovarle scritte tutte e due:
   l'errore è nell'import: si **ripunta la riga di `external_ids`** a un altro
   gioco. `games` non si tocca, e per un motivo solo ma sufficiente: quel gioco è
   di tutti, questa mappatura è di una libreria sola. È «Non è questo gioco»,
-  fatto all'11a; la fusione della prima strada è l'11b.
+  fatto all'11a; la fusione della prima strada è l'11b, fatta il 12/10/2026
+  (`admin-merge.ts`, regole in [ordine-sviluppo](ordine-sviluppo.md)).
 
 Ha un parente stretto e non è un caso: è lo stesso gesto che l'admin chiama
 «Inserisci id» per le fonti (11a). Scritto l'id giusto, il match non si rifà —

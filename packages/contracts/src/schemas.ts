@@ -1055,6 +1055,51 @@ export const RepointPreviewSchema = z.object({
   ),
 });
 
+// --- Fusione di due giochi (11b) ---
+
+export const MergeGameSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  igdbId: z.number().int().nullable(),
+});
+
+// «Collega a IGDB»: o il gioco è collegato, o l'id è già di un altro e i due
+// vanno fusi — e allora rende quell'altro, da cui parte il dialog.
+export const LinkIgdbResultSchema = z.discriminatedUnion('status', [
+  z.object({ status: z.literal('linked') }),
+  z.object({ status: z.literal('taken'), game: MergeGameSchema }),
+]);
+
+// Cosa farebbe la fusione, utente per utente. Le coppie sono nell'ordine
+// `[sopravvissuto, assorbito]`.
+export const MergePreviewSchema = z.object({
+  survivor: MergeGameSchema,
+  absorbed: MergeGameSchema,
+  // Chi ha solo l'assorbito: la riga cambia gioco, intatta.
+  moved: z.number().int(),
+  // Chi ha solo il sopravvissuto: non cambia niente.
+  onlySurvivor: z.number().int(),
+  // Chi li ha tutti e due: una riga sola, con i campi decisi dalle regole.
+  both: z.array(
+    z.object({
+      userName: z.string(),
+      statuses: z.tuple([BacklogStatusSchema, BacklogStatusSchema]),
+      status: BacklogStatusSchema,
+      ratings: z.tuple([z.number().nullable(), z.number().nullable()]),
+      rating: z.number().nullable(),
+    }),
+  ),
+  externalIds: z.number().int(),
+  wishlistItems: z.number().int(),
+});
+
+export const MergeResultSchema = z.object({
+  survivor: MergeGameSchema,
+  movedUsers: z.number().int(),
+  mergedUsers: z.number().int(),
+});
+
 // --- Utenti (11a, passo 7) ---
 
 export const AdminRoleSchema = z.enum(['admin', 'user']);
@@ -1080,6 +1125,10 @@ export type OpenReport = z.infer<typeof OpenReportSchema>;
 export type ReportGroup = z.infer<typeof ReportGroupSchema>;
 export type GameAdminDetail = z.infer<typeof GameAdminDetailSchema>;
 export type RepointPreview = z.infer<typeof RepointPreviewSchema>;
+export type MergeGame = z.infer<typeof MergeGameSchema>;
+export type LinkIgdbResult = z.infer<typeof LinkIgdbResultSchema>;
+export type MergePreview = z.infer<typeof MergePreviewSchema>;
+export type MergeResult = z.infer<typeof MergeResultSchema>;
 export type MissingSummary = z.infer<typeof MissingSummarySchema>;
 export type UnresolvedGroup = z.infer<typeof UnresolvedGroupSchema>;
 export type GlobalHiddenImport = z.infer<typeof GlobalHiddenImportSchema>;

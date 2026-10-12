@@ -49,6 +49,7 @@ import {
   repointLink,
 } from '../services/admin-games';
 import { exportAccount } from '../services/account-export';
+import { mergeGames, previewMerge } from '../services/admin-merge';
 import { listUsers } from '../services/admin-users';
 import { listHomeBands } from '../services/home';
 import {
@@ -137,6 +138,19 @@ async function relinkTarget(
     throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
   }
   return account;
+}
+
+/** I rifiuti della fusione (11b), uguali per l'anteprima e per la conferma. */
+function mergeRefusal(status: 'not_found' | 'same_game' | 'both_linked') {
+  if (status === 'not_found')
+    return new ORPCError('NOT_FOUND', { message: 'Gioco inesistente' });
+  if (status === 'same_game')
+    return new ORPCError('CONFLICT', {
+      message: 'Sono lo stesso gioco: non c’è niente da fondere',
+    });
+  return new ORPCError('CONFLICT', {
+    message: 'Hanno entrambi un id IGDB: sono due giochi diversi',
+  });
 }
 
 export const router = os.router({
@@ -877,14 +891,41 @@ export const router = os.router({
             throw new ORPCError('CONFLICT', {
               message: 'Il gioco ha già un id IGDB',
             });
-          if (esito.status === 'taken')
-            throw new ORPCError('CONFLICT', {
-              message: `L'id è già di «${esito.game}»: i due giochi vanno fusi (11b)`,
-            });
           if (esito.status === 'unknown_igdb_id')
             throw new ORPCError('NOT_FOUND', {
               message: 'IGDB non conosce questo id',
             });
+          // Id già di un altro gioco: non è un errore, è il punto da cui parte
+          // la fusione.
+          return esito.status === 'taken'
+            ? esito
+            : { status: 'linked' as const };
+        }),
+
+      mergePreview: os.admin.games.mergePreview
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          const esito = await previewMerge(input.gameId, input.otherId);
+          if (esito.status !== 'ok') throw mergeRefusal(esito.status);
+          return esito.preview;
+        }),
+
+      merge: os.admin.games.merge
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => {
+          const esito = await mergeGames(
+            context.user.id,
+            input.gameId,
+            input.otherId,
+          );
+          if (esito.status !== 'ok') throw mergeRefusal(esito.status);
+          return {
+            survivor: esito.survivor,
+            movedUsers: esito.movedUsers,
+            mergedUsers: esito.mergedUsers,
+          };
         }),
 
       detail: os.admin.games.detail

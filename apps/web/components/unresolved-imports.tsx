@@ -13,12 +13,13 @@ import {
   YStack,
   toast,
 } from '@repo/ui';
-import { ChevronDown } from '@repo/ui/icons';
+import { ChevronDown, EyeOff, Link2 } from '@repo/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'use-intl';
 
 import { UnresolvedRow } from '@/components/unresolved-row';
 import { useApiErrorMessage } from '@/lib/api-error';
+import { HIDDEN_KIND_ICON } from '@/lib/hidden-kind-icons';
 import { useHiddenKindLabels } from '@/lib/hide-entry';
 import { api, client } from '@/lib/orpc';
 
@@ -26,6 +27,11 @@ import { api, client } from '@/lib/orpc';
 // è una preferenza: nel menu stanno in due gruppi per la stessa ragione per cui
 // sono due cose diverse nel modello (vedi `hiddenKindValues`).
 const notAGame = hiddenKindValues.filter((kind) => kind !== 'unwanted');
+
+function KindIcon({ kind }: { kind: HiddenKind }) {
+  const Icon = HIDDEN_KIND_ICON[kind];
+  return <Icon size={16} />;
+}
 
 /**
  * Gli scarti d'import **da sistemare**: le voci della libreria che nessun gioco
@@ -92,6 +98,7 @@ export function UnresolvedImports({
               variant="outline"
               onClick={() => onResolve(entry)}
             >
+              <Link2 size={16} color="$color12" />
               {t('resolve')}
             </Button>
             <DropdownMenu align="end">
@@ -102,6 +109,7 @@ export function UnresolvedImports({
                     variant="ghost"
                     disabled={setHidden.isPending}
                   >
+                    <EyeOff size={16} color="$color12" />
                     {tHidden('hide')}
                     <ChevronDown size={16} color="$color12" />
                   </Button>
@@ -113,6 +121,7 @@ export function UnresolvedImports({
                   {notAGame.map((kind) => (
                     <DropdownMenuItem
                       key={kind}
+                      icon={<KindIcon kind={kind} />}
                       onClick={() => setHidden.mutate({ id: entry.id, kind })}
                     >
                       {kindLabels[kind]}
@@ -121,6 +130,7 @@ export function UnresolvedImports({
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
+                  icon={<KindIcon kind="unwanted" />}
                   onClick={() =>
                     setHidden.mutate({ id: entry.id, kind: 'unwanted' })
                   }

@@ -4,7 +4,7 @@ import type {
   UnresolvedImport,
 } from '@repo/contracts';
 import { Button, EmptyState, Text, YStack, toast } from '@repo/ui';
-import { EyeOff } from '@repo/ui/icons';
+import { Eye, EyeOff, Link2 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
@@ -172,6 +172,7 @@ export function HiddenList({
                 variant="outline"
                 onClick={() => onResolve(item.entry)}
               >
+                <Link2 size={16} color="$color12" />
                 {tUnresolved('resolve')}
               </Button>
               <Button
@@ -180,6 +181,7 @@ export function HiddenList({
                 onClick={() => unhide.mutate(item.entry.id)}
                 disabled={unhide.isPending}
               >
+                <Eye size={16} color="$color12" />
                 {tHidden('unhide')}
               </Button>
             </UnresolvedRow>

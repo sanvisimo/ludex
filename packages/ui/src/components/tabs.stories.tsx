@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
 import { Text, Theme, XStack, YStack } from '../primitives';
+import { AppWindow, Gift, ThumbsDown } from '../icons';
 import { Tabs, TabsTab } from './tabs';
 
 const meta = {
@@ -47,6 +48,34 @@ export const Default: Story = {
     children: null,
   },
   render: () => <Demo />,
+};
+
+function IconsDemo() {
+  const [value, setValue] = useState('app');
+  return (
+    <Tabs value={value} onValueChange={setValue} label="Tipo di voce">
+      <TabsTab value="app" icon={AppWindow} count={11}>
+        App
+      </TabsTab>
+      <TabsTab value="extra" icon={Gift} count={6}>
+        Contenuto extra
+      </TabsTab>
+      <TabsTab value="unwanted" icon={ThumbsDown}>
+        Non interessato
+      </TabsTab>
+    </Tabs>
+  );
+}
+
+/** Con un'icona prima del nome: ne cambia il colore chi la disegna, col tab. */
+export const WithIcons: Story = {
+  args: {
+    value: 'app',
+    onValueChange: () => {},
+    label: 'Tipo',
+    children: null,
+  },
+  render: () => <IconsDemo />,
 };
 
 /**

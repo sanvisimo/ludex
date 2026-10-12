@@ -92,6 +92,12 @@ describe('le procedure admin.*', () => {
     ],
     ['games.unlinked', router.admin.games.unlinked, {}],
     ['games.linkIgdb', router.admin.games.linkIgdb, { gameId, igdbId: 1 }],
+    [
+      'games.mergePreview',
+      router.admin.games.mergePreview,
+      { gameId, otherId: gameId },
+    ],
+    ['games.merge', router.admin.games.merge, { gameId, otherId: gameId }],
     ['games.detail', router.admin.games.detail, { slug: 'toki' }],
     [
       'links.repointPreview',

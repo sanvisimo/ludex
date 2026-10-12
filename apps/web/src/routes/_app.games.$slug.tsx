@@ -8,6 +8,7 @@ import {
   YStack,
   toast,
 } from '@repo/ui';
+import { Eye, EyeOff, Pencil, Shield, Trash2 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -25,6 +26,7 @@ import {
   GameHero,
   RelatedRow,
 } from '@/components/game-page';
+import { RemoveEntryDialog } from '@/components/remove-entry-dialog';
 import { WishlistControl } from '@/components/wishlist-control';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useSetEntryHidden } from '@/lib/hide-entry';
@@ -101,6 +103,7 @@ function GamePage() {
   // Solo un interruttore: la riga da passare al dialog è sempre quella fresca
   // della query, non una copia congelata al momento del click.
   const [editing, setEditing] = useState(false);
+  const [removing, setRemoving] = useState(false);
 
   const setStatus = useMutation({
     mutationFn: (input: { id: string; status: BacklogStatus }) =>
@@ -187,6 +190,7 @@ function GamePage() {
               actions={
                 <>
                   <Button variant="outline" onPress={() => setEditing(true)}>
+                    <Pencil size={16} color="$color12" />
                     {t('edit')}
                   </Button>
                   <Button
@@ -199,9 +203,21 @@ function GamePage() {
                     }
                     disabled={setHidden.isPending}
                   >
+                    {entry.hiddenAt === null ? (
+                      <EyeOff size={16} color="$color11" />
+                    ) : (
+                      <Eye size={16} color="$color11" />
+                    )}
                     {entry.hiddenAt === null
                       ? tHidden('hide')
                       : tHidden('unhide')}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onPress={() => setRemoving(true)}
+                  >
+                    <Trash2 size={16} color="$red11" />
+                    {t('remove')}
                   </Button>
                 </>
               }
@@ -230,6 +246,7 @@ function GamePage() {
                   variant="ghost"
                   href={`/admin/games/${game.slug}`}
                 >
+                  <Shield size={14} color="$color11" />
                   {tReport('admin')}
                 </ButtonLink>
               ) : null}
@@ -288,6 +305,11 @@ function GamePage() {
       <EditEntryDialog
         entry={editing ? entry : null}
         onOpenChange={setEditing}
+      />
+
+      <RemoveEntryDialog
+        entry={removing ? entry : null}
+        onOpenChange={setRemoving}
       />
     </Page>
   );

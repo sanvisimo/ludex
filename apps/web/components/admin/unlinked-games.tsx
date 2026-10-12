@@ -1,4 +1,4 @@
-import type { IgdbSearchHit } from '@repo/contracts';
+import type { IgdbSearchHit, MergeGame } from '@repo/contracts';
 import { Button, EmptyState, Skeleton, toast, YStack } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
@@ -11,7 +11,8 @@ import {
   type AdminColumn,
 } from '@/components/admin/admin-table';
 import { IgdbPickDialog } from '@/components/admin/igdb-pick-dialog';
-import { hasErrorCode, useApiErrorMessage } from '@/lib/api-error';
+import { MergeDialog } from '@/components/admin/merge-dialog';
+import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
 type Unlinked = {
@@ -36,21 +37,27 @@ export function UnlinkedGames({ q }: { q?: string }) {
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
   const [linking, setLinking] = useState<Unlinked | null>(null);
+  // L'id scelto è già di un altro gioco: i due si fondono (11b).
+  const [merging, setMerging] = useState<{
+    game: Unlinked;
+    other: MergeGame;
+  } | null>(null);
 
   const link = useMutation({
     mutationFn: ({ game, hit }: { game: Unlinked; hit: IgdbSearchHit }) =>
       client.admin.games.linkIgdb({ gameId: game.id, igdbId: hit.igdbId }),
-    onSuccess: async () => {
+    onSuccess: async (result, { game }) => {
+      if (result.status === 'taken') {
+        setLinking(null);
+        setMerging({ game, other: result.game });
+        return;
+      }
       await queryClient.invalidateQueries({ queryKey: api.admin.key() });
       toast.success(t('linked'));
       setLinking(null);
     },
     onError: (error) =>
-      toast.error(
-        hasErrorCode(error, 'CONFLICT')
-          ? t('taken')
-          : errorMessage(error, { fallback: t('linkFailed') }),
-      ),
+      toast.error(errorMessage(error, { fallback: t('linkFailed') })),
   });
 
   const columns: AdminColumn<Unlinked>[] = [
@@ -123,6 +130,19 @@ export function UnlinkedGames({ q }: { q?: string }) {
         pending={link.isPending}
         onPick={(hit) => linking && link.mutate({ game: linking, hit })}
       />
+      {merging ? (
+        <MergeDialog
+          open
+          game={merging.game}
+          other={merging.other}
+          onOpenChange={(open) => {
+            if (!open) setMerging(null);
+          }}
+          onDone={() =>
+            queryClient.invalidateQueries({ queryKey: api.admin.key() })
+          }
+        />
+      ) : null}
     </>
   );
 }

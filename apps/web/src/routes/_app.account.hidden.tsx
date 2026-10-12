@@ -13,6 +13,7 @@ import {
 } from '@/components/account-filters';
 import { HiddenList, useHiddenItems } from '@/components/hidden-list';
 import { ResolveImportDialog } from '@/components/resolve-import-dialog';
+import { HIDDEN_KIND_ICON } from '@/lib/hidden-kind-icons';
 
 const isHiddenKind = (value: unknown): value is HiddenKind =>
   (hiddenKindValues as readonly unknown[]).includes(value);
@@ -100,7 +101,12 @@ function HiddenSection() {
             }
           >
             {hiddenKindValues.map((kind) => (
-              <TabsTab key={kind} value={kind} count={counts[kind]}>
+              <TabsTab
+                key={kind}
+                value={kind}
+                count={counts[kind]}
+                icon={HIDDEN_KIND_ICON[kind]}
+              >
                 {t(`tabs.${kind}`)}
               </TabsTab>
             ))}

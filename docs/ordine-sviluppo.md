@@ -9,28 +9,27 @@ commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
 in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
 [roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
-1. **11b — Fusione**: va decisa la sorte di stati, voti e tag quando due righe
-   si fondono. Tocca dati condivisi fra tutti gli utenti, quindi è delicata.
-2. **15e — Wishlist dei negozi** (aggiunta il 10/10/2026): importare le
+1. **15e — Wishlist dei negozi** (aggiunta il 10/10/2026): importare le
    wishlist di Steam, GOG e PlayStation nelle liste a mano; Xbox e gli altri
    da valutare. Gli endpoint ci sono, ma nessuno è misurato: prima una richiesta di verifica, poi l'analisi. Vedi «Le
    wishlist dei negozi» in [negozi](negozi.md).
-3. **9c — EA**: importazione una tantum. Prima va misurato il formato, ma il
+2. **9c — EA**: importazione una tantum. Prima va misurato il formato, ma il
    resto è la pipeline che esiste già.
-4. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
+3. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
    e la deduplica.
-5. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
+4. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
    decise.
-6. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
+5. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
    da zero.
-7. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+6. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-8. **Mobile**: un'app nuova, con le sue schermate.
+7. **Mobile**: un'app nuova, con le sue schermate.
 
 Steam con login (9f) e Nintendo (9d) sono segnati «fatti» nella roadmap pubblica dal
 12/10/2026, dopo quattro giorni di prova sul mini PC senza blocchi (vedi «Il terzo
 blocco» in [negozi](negozi.md)). Il link alle fonti senza voto nella pagina del gioco
-è fatto (09/10/2026).
+è fatto (09/10/2026). La fusione di due giochi (11b) è fatta (12/10/2026): vedi
+«11b» più sotto e `plans/11b-fusione.md`.
 
 1. **Registrazione e auth**
 2. **Inserimento manuale + prima UI web** — `backlog` con possesso, piattaforme e
@@ -154,8 +153,16 @@ blocco» in [negozi](negozi.md)). Il link alle fonti senza voto nella pagina del
       della voce: è il caso Toki, l'arcade agganciato al posto del remake.
     - **11b, la fusione di due righe `games`** — lo stesso gioco con due id,
       o uno senza `igdbId` e uno con —, con backlog, possessi, `external_ids`
-      e le due righe di backlog dello stesso utente. «Collega a IGDB» con un
-      id già usato rimanda qui.
+      e le due righe di backlog dello stesso utente. **Fatta il 12/10/2026**
+      (piano in `plans/11b-fusione.md`, codice in
+      `apps/api/src/services/admin-merge.ts`). Parte da «Collega a IGDB» con
+      un id già usato, e da «Fondi con…» sulla scheda admin del gioco, con
+      un'anteprima utente per utente; non si disfa. Sopravvive il gioco con
+      `igdbId`; chi aveva entrambe le righe ne ha una, con `excluded` che vince
+      su ogni stato (altrimenti il più avanzato), il voto della riga modificata
+      per ultima, le note unite, e tag, copie e rifiuti sommati. La riga
+      assorbita si cancella, a cose spostate: il suo vecchio indirizzo dà 404.
+      Le regole sono in `merge-rules.ts`, con i test.
 
     La riapertura _automatica_ di un `not_found` non sta qui: è enrichment, e
     la sua regola sta scritta lassù. Qui c'è solo ciò che va deciso da un umano.
@@ -275,7 +282,7 @@ blocco» in [negozi](negozi.md)). Il link alle fonti senza voto nella pagina del
     backlog (la cascata passerebbe lo stesso, ma per l'ordine delle FK). Le
     domande originali:
     - **cosa si porta via la cancellazione.** Le FK dell'utente sono in
-      cascade, ma `games` è condivisa e **non si cancella mai**: se ne vanno
+      cascade, ma `games` è condivisa: se ne vanno
       backlog, possessi, tag, account dei negozi e i loro token, e restano i
       giochi.
     - **cosa contiene l'esportazione**: backlog, possessi, voti, note, tag,

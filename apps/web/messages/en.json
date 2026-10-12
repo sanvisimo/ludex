@@ -358,6 +358,7 @@
     "notInBacklogHint": "This game isn't in your backlog. You can add it from the backlog page.",
     "coverAlt": "{name} cover",
     "edit": "Edit",
+    "remove": "Remove",
     "hiddenNotice": "Hidden from your list: still yours, it just doesn't show up.",
     "developers": "Developer",
     "publishers": "Publisher",
@@ -962,7 +963,9 @@
       },
       "merge": {
         "title": "Duplicate games, merged",
-        "text": "When the same game shows up twice in the catalogue, the two are merged into one, without losing anyone's status, rating or tags."
+        "p1": "When the same game shows up twice in the catalogue, an admin merges the two into one.",
+        "p2": "Anyone who had both ends up with a single entry: status, rating, notes, tags and copies are kept, and “Not interested” beats the other statuses.",
+        "p3": "The address of the absorbed game no longer exists: it leads to “game not found”."
       },
       "csv": {
         "title": "Import from a CSV file",
@@ -1259,7 +1262,6 @@
       "linkIgdbTitle": "Link “{name}” to IGDB",
       "linked": "Linked: IGDB data is on its way",
       "linkFailed": "Couldn't link it",
-      "taken": "That id already belongs to another game: the two must be merged, which is batch 11b.",
       "emptyReports": "No open reports.",
       "emptyUnlinked": "Every game has an IGDB id.",
       "failed": "Couldn't load the games"
@@ -1284,7 +1286,8 @@
       "reports": "Open reports",
       "noReports": "No open reports.",
       "notFound": "No such game",
-      "open": "Open the page"
+      "open": "Open the page",
+      "merge": "Merge with…"
     },
     "repoint": {
       "title": "Not this game",
@@ -1306,6 +1309,28 @@
       "failed": "Couldn't repoint it",
       "sameGame": "The link already points to this game.",
       "previewFailed": "Couldn't prepare the preview"
+    },
+    "merge": {
+      "title": "Merge two games",
+      "description": "“{name}” and another game are the same game: only one is kept.",
+      "find": "Find the other game in the catalogue…",
+      "findEmpty": "No game with that name.",
+      "preview": "What happens",
+      "survives": "“{name}” stays ({igdb}).",
+      "noIgdb": "no IGDB id",
+      "absorbed": "“{name}” is merged in and goes away: its address (/games/{slug}) will give a 404.",
+      "counts": "{moved, plural, =0 {Nobody has only the absorbed game} one {# user has only the absorbed game: their entry moves to the game that stays, untouched} other {# users have only the absorbed game: their entries move to the game that stays, untouched}}; {both, plural, =0 {nobody has both} one {# has both} other {# have both}}; {only, plural, =0 {nobody has only the one that stays} one {# has only the one that stays} other {# have only the one that stays}}.",
+      "bothStatus": "status: {a} + {b} → {result}",
+      "bothRating": "rating: {a} + {b} → {result}",
+      "bothRest": "For those who have both, notes are joined, tags and copies are added up (an identical copy stays one), and “hidden” only if both were. “Not interested” beats the other statuses.",
+      "rest": "{ids, plural, =0 {No store ids} one {# store id} other {# store ids}} and {wishlist, plural, =0 {no list entries} one {# list entry} other {# list entries}} move too; reports follow. Critic scores and sources stay those of the game that stays.",
+      "irreversible": "A merge can't be undone.",
+      "back": "Pick another",
+      "cancel": "Cancel",
+      "confirm": "Merge",
+      "done": "Merged: {users, plural, =0 {no users touched} one {# user} other {# users}}",
+      "failed": "I couldn't merge them",
+      "previewFailed": "I couldn't prepare the preview"
     },
     "reported": {
       "title": "Reported"
