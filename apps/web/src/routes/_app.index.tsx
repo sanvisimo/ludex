@@ -1,11 +1,14 @@
 import { Card, CardContent, Skeleton, Text, XStack, YStack } from '@repo/ui';
+import { Gamepad2 } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
 
 import { CARD_WIDTH, HomeBandRow } from '@/components/home-band';
 import { api } from '@/lib/orpc';
+import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
+import { useSession } from '@/src/use-session';
 
 // La home (12e): il catalogo a fasce, uguale per tutti. Da loggati le card
 // dei giochi che hai portano lo stato; nient'altro cambia. Volutamente
@@ -15,11 +18,24 @@ export const Route = createFileRoute('/_app/')({ component: HomePage });
 function HomePage() {
   const t = useTranslations('catalog');
   const { data, isPending, error } = useQuery(api.games.home.queryOptions());
+  const { data: session } = useSession();
 
   return (
     // Larga come il backlog: le fasce vivono di card, e su uno schermo largo
     // se ne vedono di più.
-    <Page title={t('title')} subtitle={t('subtitle')} maxW={1280}>
+    <Page
+      title={t('title')}
+      subtitle={t('subtitle')}
+      maxW={1280}
+      actions={
+        session && (
+          <ButtonLink href="/backlog" variant="outline">
+            <Gamepad2 size={16} color="$color12" />
+            {t('goToBacklog')}
+          </ButtonLink>
+        )
+      }
+    >
       {error ? (
         <Text fontSize={14} color="$red11">
           {t('error')}

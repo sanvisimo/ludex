@@ -34,6 +34,7 @@
   },
   "catalog": {
     "title": "Catalogue",
+    "goToBacklog": "Backlog",
     "subtitle": "The catalogue Ludex knows so far.",
     "error": "I can't load the catalogue.",
     "empty": "No games yet. The catalogue fills up as games get added."
@@ -67,6 +68,7 @@
     "error": "I can't load the backlog.",
     "emptyTitle": "Your backlog is empty.",
     "emptyHint": "Add your first game: search the title, pick the platform you own it on, and it shows up here.",
+    "addLibrary": "Add library",
     "remove": "Remove",
     "statusFailed": "I couldn't change the status",
     "edit": "Edit",
