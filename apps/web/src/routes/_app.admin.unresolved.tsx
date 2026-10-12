@@ -30,7 +30,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { ChevronDown } from '@repo/ui/icons';
+import { ChevronDown, Eye, EyeOff, Link2 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createFileRoute,
@@ -300,12 +300,14 @@ function OpenList({
             variant="outline"
             onPress={() => setDetail({ row, searching: true })}
           >
+            <Link2 size={14} />
             {t('link')}
           </Button>
           <DropdownMenu align="end">
             <DropdownMenuTrigger
               render={
                 <Button size="sm" variant="outline" disabled={hide.isPending}>
+                  <EyeOff size={14} />
                   {t('hide')}
                   <ChevronDown size={14} />
                 </Button>
@@ -517,6 +519,7 @@ function GlobalHiddenList({
           disabled={unhide.isPending}
           onPress={() => unhide.mutate(rule)}
         >
+          <Eye size={14} />
           {t('unhide')}
         </Button>
       ),

@@ -42,10 +42,11 @@ function AdminLayout() {
   }
 
   return (
-    // Più larga dell'account: le sezioni sono tabelle.
+    // Fluida e non più larga: le sezioni sono tabelle, e a 1200 il testo si
+    // tagliava con lo schermo mezzo vuoto.
     // «Apri un gioco» sta nell'intestazione: c'è da qualunque sezione, perché
     // un collegamento sbagliato che nessuno ha segnalato si trova così.
-    <Page title={t('title')} maxW={1200} actions={<CatalogFinder />}>
+    <Page title={t('title')} maxW="100%" actions={<CatalogFinder />}>
       <XStack
         gap={24}
         items="flex-start"

@@ -17,18 +17,21 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
+import { Check, Plus, Search } from '@repo/ui/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { GameCover } from '@/components/game-cover';
 import { hasErrorCode, useApiErrorMessage } from '@/lib/api-error';
-import { client } from '@/lib/orpc';
+import { useGameTypeLabels } from '@/lib/labels';
+import { api, client } from '@/lib/orpc';
+import { ExternalLink } from '@/src/components/external-link';
 
 /** Una fonte su cui si scrive l'id: la riga di «Dati mancanti» o della scheda. */
 export type SourceToSet = Pick<
   MissingRow,
-  'gameId' | 'name' | 'coverImageId' | 'status' | 'reason' | 'error'
+  'gameId' | 'slug' | 'name' | 'coverImageId' | 'status' | 'reason' | 'error'
 > & { source: ManualSource };
 
 /**
@@ -71,6 +74,8 @@ export function SetSourceIdDialog({
   onSaved: () => Promise<unknown>;
 }) {
   const t = useTranslations('admin');
+  const tStore = useTranslations('store');
+  const gameTypeLabels = useGameTypeLabels();
   const errorMessage = useApiErrorMessage();
   const [value, setValue] = useState('');
   const [asked, setAsked] = useState('');
@@ -102,6 +107,19 @@ export function SetSourceIdDialog({
     enabled: row !== null && asked !== '',
     retry: false,
   });
+
+  // Tutto ciò che sappiamo del gioco, per scegliere con i dati sotto gli
+  // occhi. È la stessa query della scheda admin: se si arriva da lì, c'è già.
+  const detail = useQuery({
+    ...api.admin.games.detail.queryOptions({
+      input: { slug: row?.slug ?? '' },
+    }),
+    enabled: row !== null,
+  });
+  const game = detail.data?.game;
+  const current = detail.data?.sources.find(
+    (source) => source.source === row?.source,
+  );
 
   const search = useMutation({
     mutationFn: () =>
@@ -138,7 +156,7 @@ export function SetSourceIdDialog({
 
   return (
     <Dialog open={row !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={600}>
+      <DialogContent maxW={720}>
         <DialogHeader>
           <DialogTitle>{t('setId.title', { source: sourceName })}</DialogTitle>
         </DialogHeader>
@@ -164,6 +182,60 @@ export function SetSourceIdDialog({
                       : t(`status.${row.status}`),
                   })}
                 </Text>
+                {game ? (
+                  <Text fontSize={13} color="$color11">
+                    {[
+                      game.firstReleaseDate?.getFullYear(),
+                      game.gameType ? gameTypeLabels[game.gameType] : null,
+                      game.igdbId ? null : t('game.noIgdb'),
+                      t('game.users', { count: game.users }),
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </Text>
+                ) : null}
+                {/* Da dove viene il gioco, coi link alle pagine: per
+                    riconoscere la scheda giusta sulla fonte si guarda lì. */}
+                {game?.igdbId && game.igdbSlug ? (
+                  <Text fontSize={13} color="$color11">
+                    IGDB {game.igdbId} ·{' '}
+                    <ExternalLink
+                      href={`https://www.igdb.com/games/${game.igdbSlug}`}
+                    >
+                      {game.igdbSlug} ↗
+                    </ExternalLink>
+                  </Text>
+                ) : null}
+                {detail.data?.links.map((link) => (
+                  <Text key={link.id} fontSize={13} color="$color11">
+                    {tStore(link.source)} ·{' '}
+                    {link.url ? (
+                      <ExternalLink href={link.url}>
+                        {link.externalId} ↗
+                      </ExternalLink>
+                    ) : (
+                      link.externalId
+                    )}{' '}
+                    ·{' '}
+                    {t('game.copiesCount', {
+                      users: link.users,
+                      copies: link.copies,
+                    })}
+                  </Text>
+                ))}
+                {current?.externalId ? (
+                  <Text fontSize={13} color="$color11">
+                    {sourceName} ·{' '}
+                    {current.url ? (
+                      <ExternalLink href={current.url}>
+                        {current.externalId} ↗
+                      </ExternalLink>
+                    ) : (
+                      current.externalId
+                    )}
+                    {current.manual ? ` · ${t('missing.manual')}` : ''}
+                  </Text>
+                ) : null}
               </YStack>
             </XStack>
           ) : null}
@@ -182,7 +254,7 @@ export function SetSourceIdDialog({
               >
                 {candidates.map((candidate) => (
                   <XStack key={candidate.id} items="center" gap={8}>
-                    <Text flex={1} minW={0} fontSize={13} numberOfLines={1}>
+                    <Text flex={1} minW={0} fontSize={13}>
                       {candidate.name} · {candidate.id}
                       {candidate.score ? ` · ${candidate.score}` : ''}
                     </Text>
@@ -191,6 +263,7 @@ export function SetSourceIdDialog({
                       variant="outline"
                       onPress={() => setValue(candidate.id)}
                     >
+                      <Check size={14} />
                       {t('setId.use')}
                     </Button>
                   </XStack>
@@ -215,6 +288,7 @@ export function SetSourceIdDialog({
                 disabled={value.trim().length < 2 || search.isPending}
                 onPress={() => search.mutate()}
               >
+                <Search size={16} />
                 {t('setId.search')}
               </Button>
               <Button
@@ -222,6 +296,7 @@ export function SetSourceIdDialog({
                 disabled={value.trim() === '' || save.isPending}
                 onPress={() => save.mutate(value.trim())}
               >
+                <Plus size={16} />
                 {t('setId.add')}
               </Button>
             </XStack>
@@ -295,7 +370,13 @@ export function SetSourceIdDialog({
                     >
                       <SourceThumb src={hit.image} />
                       <YStack flex={1} minW={0}>
-                        <Text fontSize={14} fontWeight="500" numberOfLines={1}>
+                        <Text
+                          fontSize={14}
+                          fontWeight="500"
+                          {...({
+                            style: { overflowWrap: 'break-word' },
+                          } as object)}
+                        >
                           {hit.name}
                           {hit.releaseYear ? ` (${hit.releaseYear})` : ''}
                         </Text>
@@ -309,6 +390,7 @@ export function SetSourceIdDialog({
                         disabled={save.isPending}
                         onPress={() => save.mutate(hit.id)}
                       >
+                        <Check size={14} />
                         {t('setId.choose')}
                       </Button>
                     </XStack>

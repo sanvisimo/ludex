@@ -27,7 +27,8 @@ export function Page({
   subtitle?: ReactNode;
   /** I bottoni a destra del titolo; un `false` non disegna niente. */
   actions?: ReactNode;
-  maxW?: number;
+  /** In pixel, o `100%` per una pagina fluida come l'admin. */
+  maxW?: number | '100%';
   hero?: ReactNode;
   children: ReactNode;
 }) {
