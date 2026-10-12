@@ -358,6 +358,7 @@
     "notInBacklogHint": "This game isn't in your backlog. You can add it from the backlog page.",
     "coverAlt": "{name} cover",
     "edit": "Edit",
+    "remove": "Remove",
     "hiddenNotice": "Hidden from your list: still yours, it just doesn't show up.",
     "developers": "Developer",
     "publishers": "Publisher",

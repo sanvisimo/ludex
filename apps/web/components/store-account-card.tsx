@@ -25,7 +25,16 @@ import {
   YStack,
   toast,
 } from '@repo/ui';
-import { EllipsisVertical, RefreshCw } from '@repo/ui/icons';
+import {
+  EllipsisVertical,
+  KeyRound,
+  Link2,
+  LogIn,
+  LogOut,
+  Pencil,
+  RefreshCw,
+  Unlink,
+} from '@repo/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 import { useFormatter, useNow, useTranslations } from 'use-intl';
@@ -213,28 +222,38 @@ export function StoreAccountCard({
               }
             />
             <DropdownMenuContent width={192}>
-              <DropdownMenuItem onClick={onRename}>
+              <DropdownMenuItem icon={<Pencil size={16} />} onClick={onRename}>
                 {account.label ? t('renameEdit') : t('renameAdd')}
               </DropdownMenuItem>
               {relinkStore && (
-                <DropdownMenuItem onClick={() => setRelinking(true)}>
+                <DropdownMenuItem
+                  icon={<Link2 size={16} />}
+                  onClick={() => setRelinking(true)}
+                >
                   {t('reconnect')}
                 </DropdownMenuItem>
               )}
               {/* Le due voci nuove del 9f: sono due modi della stessa riga, e
                   l'una esclude l'altra — si offre quella che manca. */}
               {isSteam && !account.hasLogin && (
-                <DropdownMenuItem onClick={() => setLoggingIn(true)}>
+                <DropdownMenuItem
+                  icon={<LogIn size={16} />}
+                  onClick={() => setLoggingIn(true)}
+                >
                   {tSteam('signIn')}
                 </DropdownMenuItem>
               )}
               {isSteam && account.loginKind === 'token' && (
-                <DropdownMenuItem onClick={() => setLoggingIn(true)}>
+                <DropdownMenuItem
+                  icon={<KeyRound size={16} />}
+                  onClick={() => setLoggingIn(true)}
+                >
                   {tSteam('newToken')}
                 </DropdownMenuItem>
               )}
               {isSteam && account.hasLogin && (
                 <DropdownMenuItem
+                  icon={<LogOut size={16} />}
                   onClick={() => setRemovingLogin(true)}
                   disabled={busy || syncing}
                 >
@@ -242,7 +261,11 @@ export function StoreAccountCard({
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onUnlink} disabled={busy || syncing}>
+              <DropdownMenuItem
+                icon={<Unlink size={16} />}
+                onClick={onUnlink}
+                disabled={busy || syncing}
+              >
                 {t('unlink')}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -353,6 +376,7 @@ export function StoreAccountCard({
           <XStack items="center" justify="space-between" gap={8}>
             {relinkStore ? (
               <Button onClick={() => setRelinking(true)}>
+                <Link2 size={16} color="$black1" />
                 {t('reconnect')}
               </Button>
             ) : (

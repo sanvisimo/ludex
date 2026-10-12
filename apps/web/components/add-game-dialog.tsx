@@ -30,6 +30,7 @@ import {
   Skeleton,
   toast,
 } from '@repo/ui';
+import { Plus } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { XIcon } from 'lucide-react';
 import { useTranslations } from 'use-intl';
@@ -197,7 +198,10 @@ export function AddGameDialog({
       <DialogTrigger
         render={
           trigger ?? (
-            <Button>{game ? t('triggerForGame') : t('trigger')}</Button>
+            <Button>
+             <Plus size={16} color="$black1" />
+              {game ? t('triggerForGame') : t('trigger')}
+            </Button>
           )
         }
       />

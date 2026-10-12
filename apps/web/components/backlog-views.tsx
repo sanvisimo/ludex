@@ -14,7 +14,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { EllipsisVertical } from '@repo/ui/icons';
+import { Eye, EyeOff, EllipsisVertical, Pencil, Trash2 } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
@@ -153,17 +153,27 @@ function EntryActions({
         }
       />
       <DropdownMenuContent width={184}>
-        <DropdownMenuItem onClick={() => onEdit(entry)}>
+        <DropdownMenuItem
+          icon={<Pencil size={16} />}
+          onClick={() => onEdit(entry)}
+        >
           {t('edit')}
         </DropdownMenuItem>
         <DropdownMenuItem
+          icon={
+            entry.hiddenAt === null ? <EyeOff size={16} /> : <Eye size={16} />
+          }
           disabled={hidingDisabled}
           onClick={() => onToggleHidden(entry)}
         >
           {entry.hiddenAt === null ? tHidden('hide') : tHidden('unhide')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => onRemove(entry)}>
+        <DropdownMenuItem
+          destructive
+          icon={<Trash2 size={16} color="$red11" />}
+          onClick={() => onRemove(entry)}
+        >
           {t('remove')}
         </DropdownMenuItem>
       </DropdownMenuContent>

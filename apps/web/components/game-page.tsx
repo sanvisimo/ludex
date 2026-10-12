@@ -22,6 +22,7 @@ import {
   YStack,
   type GalleryItem,
 } from '@repo/ui';
+import { Info } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
@@ -471,6 +472,7 @@ export function DurationAndCritics({
       )}
 
       <Button variant="outline" onPress={() => setOpen(true)}>
+        <Info size={16} color="$color12" />
         {t('details')}
       </Button>
       <Dialog modal open={open} onOpenChange={setOpen}>

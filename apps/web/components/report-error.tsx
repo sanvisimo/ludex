@@ -22,6 +22,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
+import { Flag } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
@@ -77,6 +78,7 @@ export function ReportError({
           </Text>
         ) : null}
         <Button size="sm" variant="ghost" onPress={() => setOpen(true)}>
+          <Flag size={14} color="$color11" />
           {last ? t('again') : t('open')}
         </Button>
       </XStack>

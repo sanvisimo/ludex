@@ -6,6 +6,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
+import type { Circle } from '@tamagui/lucide-icons-2';
 import { ScrollView, Text, XStack } from 'tamagui';
 
 import { Badge } from './badge';
@@ -100,11 +101,16 @@ export type TabsTabProps = {
   value: string;
   /** Un numero accanto al nome, come le voci nascoste di quel tipo. Zero non si scrive. */
   count?: number;
+  /**
+   * Un'icona prima del nome, come componente (una di `@repo/ui/icons`): il tab
+   * ne sceglie il colore, scuro da acceso e attenuato da spento, come il testo.
+   */
+  icon?: typeof Circle;
   children: string;
 };
 
 /** Un tab. Il nome è testo, e il numero un `Badge` piccolo accanto, non attaccato. */
-export function TabsTab({ value, count, children }: TabsTabProps) {
+export function TabsTab({ value, count, icon: Icon, children }: TabsTabProps) {
   const { value: selectedValue, select } = useContext(TabsContext);
   const selected = value === selectedValue;
   const ref = useRef<HTMLElement | null>(null);
@@ -149,6 +155,9 @@ export function TabsTab({ value, count, children }: TabsTabProps) {
         outlineOffset: -2,
       }}
     >
+      {Icon ? (
+        <Icon size={16} color={selected ? '$color12' : '$color11'} />
+      ) : null}
       <Text
         fontSize={14}
         lineHeight={20}
