@@ -356,7 +356,10 @@ In entrambi i casi **`games` non si tocca mai**: la scheda, i metadata e la
 mappatura in `external_ids` restano nel catalogo condiviso, e il prossimo utente
 che importa quel gioco non ne ripaga l'enrichment perché qualcun altro ha
 scollegato un account. E in entrambi i casi gli scarti se ne vanno: senza
-l'account sono voci di una libreria che non sappiamo più leggere.
+l'account sono voci di una libreria che non sappiamo più leggere. Se ne va anche la
+**wishlist di quel negozio** (15e), con le sue voci da sistemare: nel ramo `purge` per
+il cascade, nel ramo `keep` perché la riga dell'account sopravvive e una lista di
+negozio non si cancella da sola, e resterebbe orfana.
 
 Poiché «cancella» è irreversibile e la sua portata **non si vede da fuori** — un
 gioco che sta anche su GOG non sparisce — il dialogo conta prima di eseguire:

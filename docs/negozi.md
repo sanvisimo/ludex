@@ -859,16 +859,15 @@ rinnovo periodico dal server è troppo, è `AUTO_SYNC_EVERY_DAYS.nintendo`. Se i
 risponde 401 su un token fresco, la prima riga da guardare è `SAVANNA_CLIENT_ID` in
 `apps/api/src/external/nintendo.ts`.
 
-## Le wishlist dei negozi (15e, da fare)
+## Le wishlist dei negozi (15e)
 
-Nessun import legge le wishlist dei negozi: quelle di Ludex sono a mano
-([15b](../plans/15b-wishlist.md)). Il lotto 15e le porterebbe dentro, in corso dal
-12/10/2026 ([piano](../plans/15e-wishlist-negozi.md)). Fonti: la documentazione che
-l'utente ha incollato il 10/10/2026, una ricerca in sola lettura lo stesso giorno, e
-le **misure del 12/10/2026** (sotto, «Misurato»). **Tre negozi grossi hanno un
-endpoint** (Steam, GOG, PlayStation), quindi la funzione si può fare; gli altri si
-valutano di volta in volta. Dove sotto c'è scritto «non misurato» e la misura c'è,
-vale «Misurato».
+Le wishlist di Ludex a mano sono un'altra cosa ([15b](../plans/15b-wishlist.md)): il
+lotto 15e (12–13/10/2026, [piano](../plans/15e-wishlist-negozi.md)) porta dentro quelle
+dei negozi, in sola lettura e **a richiesta**. Fonti: la documentazione che l'utente ha
+incollato il 10/10/2026, una ricerca in sola lettura lo stesso giorno, e le **misure del
+12 e 13/10/2026** (sotto, «Misurato»). **Tre negozi grossi hanno un endpoint** (Steam,
+GOG, PlayStation); gli altri si valutano di volta in volta. Dove sotto c'è scritto «non
+misurato» e la misura c'è, vale «Misurato». Com'è fatto, in fondo alla sezione.
 
 **Steam.** Due metodi di `IWishlistService`, non documentati da Valve nella
 Steamworks Web API ma elencati dalla documentazione non ufficiale delle interfacce:
@@ -1007,20 +1006,41 @@ trova niente: **non è verificato** che offra la wishlist di un utente. **Ninten
 una wish list sull'eShop e sul sito, ma nessuna API pubblica per leggerla;
 **Epic** non ne mostra una nelle librerie non ufficiali che abbiamo guardato.
 
-**Da decidere nell'analisi**, prima del codice (decise il 12/10/2026, vedi
-[il piano](../plans/15e-wishlist-negozi.md)):
+**Com'è fatto** (decisioni del 12/10/2026, aggiornate il 13/10 dopo averlo visto in
+uso; il modello dei dati è in [modello-dati](modello-dati.md)):
 
-- dove vanno i giochi: una lista per negozio e account, in `playlists` col tipo
-  `wishlist`, senza mescolarsi con le liste fatte a mano;
-- se un gioco tolto dalla wishlist del negozio esce anche dalla lista di Ludex;
-- la regola che c'è già: entrando nel backlog un gioco esce da tutte le liste, quindi
-  una wishlist importata non deve riportarlo dentro;
-- l'identità: gli appid Steam e gli id prodotto GOG si risolvono su IGDB; i
-  prodotti PlayStation per **titleId** (il pezzo di mezzo dell'id, come la libreria
-  PSN) e poi per nome, e si scrive il titleId. Una riga non risolta sta in
-  `wishlist_unresolved`;
-- la cadenza: con la chiave Steam è una richiesta per account e non tocca il login,
-  ma l'aggiornamento automatico (sette giorni) è per la libreria, non per questa.
+- **Una lista per account**, creata la prima volta che l'utente la importa
+  (il cuore sulla scheda dell'account, `accounts.syncWishlist`), mai al collegamento.
+  Rispecchia il negozio: ciò che il negozio non ha più esce, un gioco già nel backlog
+  resta e si vede con lo stato.
+- **Identità.** Steam e GOG per id: `external_ids`, poi IGDB per id, poi il nome dagli
+  endpoint pubblici di sopra (al massimo 40 voci per aggiornamento, 1500 ms su Steam e
+  300 ms su GOG; i DLC e simili non si cercano per nome), poi `resolveByName`. PSN per
+  **titleId** (`wishlistKey`) e poi per nome; quando una voce si risolve si scrive il
+  titleId in `external_ids`, mai l'id intero. Ciò che non si riconosce va in
+  `wishlist_unresolved`, e si collega a mano a un gioco di IGDB o si nasconde.
+- **Credenziali.** Steam col login se c'è, la chiave altrimenti; una risposta vuota senza
+  il token non dice se la wishlist è vuota o privata, e alza `SteamWishlistNotVisibleError`
+  **senza toccare la lista** (l'errore è `not_visible` e la scheda dice di rendere
+  pubblici i «Dettagli dei giochi»). GOG e PSN col token del negozio; un rifiuto manda
+  l'account in `needs_reauth` come per la libreria.
+- **Il job** sta nella coda degli import come tipo a parte, `{ type: 'wishlist' }`, con la
+  sua chiave di deduplicazione (`<id>:wishlist`), e manda l'evento `wishlist` (non
+  `import`). Le decisioni — chi si importa, cosa non si riprova — sono in
+  `services/import-jobs.ts`, perché `worker.ts` non si può caricare in un test. L'esito
+  si scrive sull'account.
+- **Cadenza.** A richiesta, e **in automatico solo per le liste che esistono**, con lo
+  stesso interruttore «Auto» della libreria e la soglia del negozio (PSN 3 giorni, gli
+  altri 7), da `wishlist_synced_at`: la spazzata degli import ogni 6 ore
+  (`findAccountsDueForWishlist`). Una lista cancellata non si ricrea da sola; `not_visible`
+  e `reauth` non si riprovano finché non interviene l'utente, `failed` sì.
+- **Cancellare** una lista di negozio è possibile (non mentre il suo import gira): sparisce
+  con le sue voci non riconosciute, e la scheda dell'account torna com'era prima del primo
+  import. Scollegando l'account sparisce anche la sua lista.
+- **Misure e limiti.** `appdetails` di Steam: 220 richieste in 377 s, nessun 429 e nessun
+  errore: il nostro ritmo regge, la soglia dichiarata (circa 200 ogni 5 minuti) non è stata
+  raggiunta né misurata. `boxArt` di PSN è `{ url }`. Gli arnesi per rifare le misure sono
+  in [apps/api/CLAUDE.md](../apps/api/CLAUDE.md).
 
 ## La data d'acquisto
 

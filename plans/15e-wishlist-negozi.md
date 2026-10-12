@@ -1,9 +1,10 @@
 # Step 15e — Wishlist dei negozi
 
 **Piano approvato il 12/10/2026** (lista per negozio e account, sola lettura,
-aggiornamento solo a mano). In roadmap «In corso» dal 12/10/2026; il lotto si
-chiude quando l'utente dice che è pronto. Le fonti e ciò che non è misurato sono
-in [docs/negozi.md](../docs/negozi.md#le-wishlist-dei-negozi-15e-da-fare); le liste
+aggiornamento solo a mano; il 13/10 anche automatico, per le liste che esistono).
+In roadmap «In corso» dal 12/10/2026 e **«Fatto» dal 13/10/2026**, quando l'utente
+ha detto che il lotto è pronto. Restano fuori i test rimandati (sezione sotto). Le fonti e ciò che non è misurato sono
+in [docs/negozi.md](../docs/negozi.md#le-wishlist-dei-negozi-15e); le liste
 a mano su cui si appoggia sono la [15b](15b-wishlist.md).
 
 ## Cosa si fa
@@ -186,8 +187,10 @@ Ogni passo ha il suo «ok, procedi».
    - **Da fare, a vederla:** l'aspetto si rifinisce sulla pagina vera; il test con
      Playwright non è stato fatto. Il roadmap pubblico passa a «fatto» quando
      l'utente dice che il lotto è pronto.
-5. **Documentazione:** `docs/negozi.md`, `docs/ordine-sviluppo.md`,
-   `apps/web/CLAUDE.md`.
+5. ~~**Documentazione**~~ **fatta il 13/10/2026:** `docs/negozi.md` («Com'è fatto»),
+   `docs/modello-dati.md` (le liste di negozio), `docs/ordine-sviluppo.md` (15e e
+   l'esportazione), `docs/import-librerie.md` (scollegare), `apps/web/CLAUDE.md` (le
+   schermate) e `apps/api/CLAUDE.md` (i quattro arnesi).
 
 ## Passo 3 — avanzamento
 

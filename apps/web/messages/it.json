@@ -1025,7 +1025,9 @@
       },
       "storeWishlists": {
         "title": "Le wishlist dei negozi",
-        "text": "Porta in Ludex le wishlist di Steam, GOG e PlayStation, dentro le tue liste. Gli altri negozi si valutano uno alla volta."
+        "p1": "Dalla scheda di un account Steam, GOG o PlayStation importi la sua wishlist in una lista a parte. Si aggiorna insieme alla libreria, se l'aggiornamento automatico è acceso, e la puoi cancellare quando vuoi.",
+        "p2": "Un gioco che hai già nel backlog resta nella lista, con il suo stato. Ciò che Ludex non riconosce lo colleghi a mano a un gioco, o lo metti da parte se non è un gioco.",
+        "p3": "Se un import non riesce, la scheda e la pagina delle liste dicono perché, e a fine importazione ricevi un avviso."
       },
       "ea": {
         "title": "La libreria EA",

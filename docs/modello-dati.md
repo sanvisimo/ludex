@@ -301,3 +301,48 @@ funzioni risolvono la lista filtrando per utente prima di toccare le voci.
   lista un gioco che hai nel backlog è un conflitto**.
 - **Il primo «aggiungi», senza liste, ne crea una che si chiama «Wishlist»**: chi
   vuole solo mettere da parte un gioco non deve inventare un nome.
+
+### Le wishlist dei negozi: `playlists.kind = 'store_wishlist'` (step 15e)
+
+Una per **account collegato** (Steam, GOG, PlayStation), nella stessa tabella delle
+altre liste, con `store_account_id` valorizzato **se e solo se** il tipo è
+`store_wishlist` (un vincolo, `playlists_kind_store_account_check`) e un indice unico
+su `store_account_id`: una lista per account. Il nome lo compone il sistema alla
+creazione («Steam · sanvitest») e poi è dell'utente. I giochi stanno in
+`wishlist_items`, come per le liste a mano.
+
+La differenza che conta è **chi le scrive**: l'import, non l'utente. Una lista di
+negozio **rispecchia il negozio** — un gioco che il negozio non ha più esce, uno che
+c'è entra — e non se ne aggiungono né se ne tolgono giochi a mano. Si rinomina, si
+sposta (dentro il proprio gruppo: le liste a mano vengono prima) e si elimina; per
+il resto, `playlists.ts` e `wishlist.ts` distinguono i tipi con `kind::text`, perché
+un valore appena aggiunto a un enum non si può usare come letterale nella stessa
+transazione della migration che lo crea (`55P04`).
+
+- **Un gioco già nel backlog resta in lista** e la lista lo mostra con il suo
+  stato: è l'opposto delle liste a mano, dove esce da tutte le liste entrando nel
+  backlog. Qui la lista dice cosa c'è nel negozio, e l'utente può aver preso il gioco
+  altrove (un regalo su Epic che Steam non toglie dalla wishlist).
+- **Ciò che non si riconosce sta in `wishlist_unresolved`**, per utente e account
+  (chiave unica `(store_account_id, external_id)`), e **non** in `unresolved_imports`:
+  quella tabella è degli scarti della libreria e `importLibrary` ne cancella ogni
+  volta ciò che non è nella libreria dell'account, quindi una voce di wishlist
+  sparirebbe al primo import di libreria. `hidden_at` è una scelta dell'utente e un
+  nuovo aggiornamento non la tocca; nome e copertina invece si riscrivono.
+- **L'identità** passa da `external_ids`: appid Steam e id prodotto GOG come per la
+  libreria; PlayStation per il **`titleId`**, il pezzo di mezzo dell'id di prodotto
+  (`EP3643-PPSA06465_00-…` → `PPSA06465_00`), che è la chiave che la libreria PSN
+  già scrive. Il titleId è **per console**: l'id PS5 di un gioco posseduto su PS4 non
+  coincide, e si ripiega sul nome. Vedi [negozi](negozi.md).
+- **L'esito dell'ultimo import** sta sull'account: `store_accounts.wishlist_synced_at`
+  (l'ultimo riuscito; nullo = mai importata) e `wishlist_error` (`not_visible`,
+  `reauth`, `failed`; nullo se l'ultimo è andato bene). Non c'entrano con
+  `last_sync_at`, che è della libreria.
+- **Scollegare l'account** toglie anche la sua lista e le sue voci non riconosciute:
+  con `purge` ci pensa il cascade; con `keep` la riga dell'account sopravvive, e
+  `unlinkStoreAccount` le toglie a mano, o la lista resterebbe orfana e immutabile.
+- **Cancellare la lista** (`deleteStoreWishlist`) toglie lista, voci e non
+  riconosciuti, e azzera data ed errore sull'account. Non mentre il suo import gira.
+  Le scelte sulle voci nascoste si perdono: un nuovo import le riporta come nuove.
+- **L'esportazione dell'account** ha `storeWishlists`: per account, i giochi in lista
+  e le voci non riconosciute.

@@ -1025,7 +1025,9 @@
       },
       "storeWishlists": {
         "title": "Store wishlists",
-        "text": "Bring your Steam, GOG and PlayStation wishlists into Ludex, inside your lists. The other stores will be looked at one at a time."
+        "p1": "From the card of a Steam, GOG or PlayStation account you import its wishlist into a list of its own. It updates along with the library when automatic updates are on, and you can delete it whenever you like.",
+        "p2": "A game you already have in your backlog stays in the list, with its status. What Ludex doesn't recognise you link to a game by hand, or set aside if it isn't a game.",
+        "p3": "If an import fails, the card and the lists page say why, and you get a notice when it finishes."
       },
       "ea": {
         "title": "The EA library",
