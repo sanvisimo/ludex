@@ -956,7 +956,9 @@
       },
       "betterAdmin": {
         "title": "A better admin",
-        "text": "Clearer tables and links to fix what's missing in the Ludex library, with less effort."
+        "p1": "The admin page uses the full width and the tables read better: the reason for each entry wraps instead of being cut off.",
+        "p2": "Actions have an icon, and where there is nothing to retry the buttons are gone.",
+        "p3": "The “Set id” and “Link” dialogs show the game's cover, stores and links, and the search starts on its own from the name."
       },
       "merge": {
         "title": "Duplicate games, merged",

@@ -956,7 +956,9 @@
       },
       "betterAdmin": {
         "title": "Un admin migliore",
-        "text": "Tabelle e link più chiari per sistemare ciò che manca nella libreria di Ludex, con meno fatica."
+        "p1": "La pagina dell'admin occupa tutta la larghezza e le tabelle si leggono meglio: il motivo di ogni voce va a capo invece di tagliarsi.",
+        "p2": "Le azioni hanno un'icona, e dove non c'è niente da ritentare i bottoni non ci sono più.",
+        "p3": "I dialoghi «Inserisci id» e «Collega» mostrano copertina, negozi e link del gioco, e la ricerca parte da sola dal nome."
       },
       "merge": {
         "title": "Giochi doppi, uniti in uno",
