@@ -1259,7 +1259,6 @@
       "linkIgdbTitle": "Collega «{name}» a IGDB",
       "linked": "Collegato: arrivano i dati da IGDB",
       "linkFailed": "Non sono riuscito a collegarlo",
-      "taken": "Quell'id è già di un altro gioco: i due vanno fusi, ed è il lotto 11b.",
       "emptyReports": "Nessuna segnalazione aperta.",
       "emptyUnlinked": "Tutti i giochi hanno un id IGDB.",
       "failed": "Non sono riuscito a leggere i giochi"
@@ -1284,7 +1283,8 @@
       "reports": "Segnalazioni aperte",
       "noReports": "Nessuna segnalazione aperta.",
       "notFound": "Gioco inesistente",
-      "open": "Apri la pagina"
+      "open": "Apri la pagina",
+      "merge": "Fondi con…"
     },
     "repoint": {
       "title": "Non è questo gioco",
@@ -1305,6 +1305,28 @@
       "done": "Ripuntato: {copies, plural, =0 {nessuna copia} one {# copia} other {# copie}} spostate",
       "failed": "Non sono riuscito a ripuntarlo",
       "sameGame": "Il collegamento punta già a questo gioco.",
+      "previewFailed": "Non sono riuscito a preparare l'anteprima"
+    },
+    "merge": {
+      "title": "Fondi due giochi",
+      "description": "«{name}» e un altro gioco sono lo stesso gioco: ne resta uno solo.",
+      "find": "Cerca l'altro gioco nel catalogo…",
+      "findEmpty": "Nessun gioco con questo nome.",
+      "preview": "Cosa succede",
+      "survives": "Resta «{name}» ({igdb}).",
+      "noIgdb": "senza id IGDB",
+      "absorbed": "«{name}» si fonde dentro e sparisce: il suo indirizzo (/games/{slug}) darà 404.",
+      "counts": "{moved, plural, =0 {Nessun utente ha solo l'assorbito} one {# utente ha solo l'assorbito: la sua riga passa al gioco che resta, intatta} other {# utenti hanno solo l'assorbito: le loro righe passano al gioco che resta, intatte}}; {both, plural, =0 {nessuno li ha tutti e due} one {# li ha tutti e due} other {# li hanno tutti e due}}; {only, plural, =0 {nessuno ha solo quello che resta} one {# ha solo quello che resta} other {# hanno solo quello che resta}}.",
+      "bothStatus": "stato: {a} + {b} → {result}",
+      "bothRating": "voto: {a} + {b} → {result}",
+      "bothRest": "Per chi li ha tutti e due le note si uniscono, i tag e i possessi si sommano (una copia uguale resta una), «nascosto» solo se lo erano entrambi. «Non mi interessa» vince sugli altri stati.",
+      "rest": "Si spostano anche {ids, plural, =0 {nessun id di negozio} one {# id di negozio} other {# id di negozio}} e {wishlist, plural, =0 {nessuna voce di lista} one {# voce di lista} other {# voci di lista}}; le segnalazioni seguono. Voti della critica e fonti restano quelli del gioco che resta.",
+      "irreversible": "La fusione non si disfa.",
+      "back": "Scegli un altro",
+      "cancel": "Annulla",
+      "confirm": "Fondi",
+      "done": "Fusi: {users, plural, =0 {nessun utente toccato} one {# utente} other {# utenti}}",
+      "failed": "Non sono riuscito a fonderli",
       "previewFailed": "Non sono riuscito a preparare l'anteprima"
     },
     "reported": {

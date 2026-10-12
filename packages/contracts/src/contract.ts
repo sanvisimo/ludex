@@ -21,9 +21,12 @@ import {
   HomeBandSchema,
   HomeGameSchema,
   IgdbSearchHitSchema,
+  LinkIgdbResultSchema,
   LinkableStoreSchema,
   LiveEventSchema,
   ManualSourceSchema,
+  MergePreviewSchema,
+  MergeResultSchema,
   MissingBucketSchema,
   MissingListSchema,
   MissingSummarySchema,
@@ -713,12 +716,24 @@ export const contract = {
           }),
         ),
 
-      // «Collega a IGDB», solo se l'id è libero: altrimenti è l'11b.
+      // «Collega a IGDB». Se l'id è già di un altro gioco non scrive niente e
+      // rende quell'altro: i due vanno fusi (11b).
       linkIgdb: oc
         .input(
           z.object({ gameId: z.uuid(), igdbId: z.number().int().positive() }),
         )
-        .output(z.void()),
+        .output(LinkIgdbResultSchema),
+
+      // La fusione di due giochi, anteprima: non scrive niente. I due id si
+      // passano in qualunque ordine; sopravvive quello con `igdbId`.
+      mergePreview: oc
+        .input(z.object({ gameId: z.uuid(), otherId: z.uuid() }))
+        .output(MergePreviewSchema),
+
+      // La fusione. Non si disfa.
+      merge: oc
+        .input(z.object({ gameId: z.uuid(), otherId: z.uuid() }))
+        .output(MergeResultSchema),
 
       // La scheda admin di un gioco.
       detail: oc

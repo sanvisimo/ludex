@@ -323,12 +323,17 @@ describe('«Collega a IGDB»', () => {
   });
 
   it("si rifiuta se l'id è già di un altro gioco: quella è una fusione", async () => {
-    await createGame({ igdbId: 555, name: 'Il gioco vero' });
+    const vero = await createGame({ igdbId: 555, name: 'Il gioco vero' });
     const gioco = await createGame({ igdbId: null });
 
     expect(await linkGameToIgdb(gioco.id, 555)).toEqual({
       status: 'taken',
-      game: 'Il gioco vero',
+      game: {
+        id: vero.id,
+        name: 'Il gioco vero',
+        slug: vero.slug,
+        igdbId: 555,
+      },
     });
   });
 });

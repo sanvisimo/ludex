@@ -70,7 +70,8 @@ export async function listUnlinkedGames(input: {
 
 /**
  * «Collega a IGDB» per un gioco che non ce l'ha. Solo se l'id è libero: se è
- * già di un altro gioco, i due sono lo stesso gioco e vanno fusi, che è l'11b.
+ * già di un altro gioco, i due sono lo stesso gioco e vanno fusi (11b,
+ * `admin-merge.ts`), e rende quell'altro perché il dialog parta da lì.
  */
 export async function linkGameToIgdb(gameId: string, igdbId: number) {
   const game = await db.query.games.findFirst({
@@ -81,7 +82,16 @@ export async function linkGameToIgdb(gameId: string, igdbId: number) {
   if (game.igdbId !== null) return { status: 'already_linked' as const };
 
   const altro = await findGameByIgdbId(igdbId);
-  if (altro) return { status: 'taken' as const, game: altro.name };
+  if (altro)
+    return {
+      status: 'taken' as const,
+      game: {
+        id: altro.id,
+        name: altro.name,
+        slug: altro.slug,
+        igdbId: altro.igdbId,
+      },
+    };
 
   if (!(await findIgdbGameById(igdbId)))
     return { status: 'unknown_igdb_id' as const };
