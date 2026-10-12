@@ -7,7 +7,10 @@ import QRCode from 'qrcode';
 import { EAuthTokenPlatformType, LoginSession } from 'steam-session';
 
 import { fetchSteamFamilyLibrary, fetchSteamLibrary } from '../external/steam';
-import { refreshSteamTokens, STEAM_LOGIN_USER_AGENT } from '../external/steam-auth';
+import {
+  refreshSteamTokens,
+  STEAM_LOGIN_USER_AGENT,
+} from '../external/steam-auth';
 
 // Misure per il 9f (Steam con login e Family). **Non scrive niente**: né sul DB
 // né su disco, a parte il file col QR.
@@ -22,10 +25,13 @@ import { refreshSteamTokens, STEAM_LOGIN_USER_AGENT } from '../external/steam-au
 //
 //   pnpm --filter api steam:family-probe [--qr=percorso.svg] [--private-check[=secondi]]
 //
-// Fa il login col QR dell'app Steam (la scansione la fa l'utente) e poi
-// risponde alle domande che il piano non può chiudere a tavolino:
+// Fa il login col QR dell'app Steam **come un browser** (`WebBrowser`, con lo
+// stesso user agent del server: `STEAM_LOGIN_USER_AGENT`), la scansione la fa
+// l'utente, e poi risponde alle domande che il piano non può chiudere a tavolino:
 //
-//  1. quanto durano access e refresh token, e il rinnovo funziona?
+//  1. quanto durano access e refresh token, e il rinnovo funziona? Con
+//     `WebBrowser` il refresh token non si rinnova da un server e l'access token si
+//     prende dai cookie web (`getWebCookies`), non da `refreshAccessToken`;
 //  2. quale token accetta `IFamilyGroupsService`: quello ricavato dal refresh
 //     token o il `webapi_token` che Playnite legge dalla pagina dello store?
 //  3. com'è fatta la famiglia, e cosa torna da `GetSharedLibraryApps` con
@@ -204,14 +210,34 @@ const steamId = session.steamID.getSteamID64();
 console.log(`\nlogin riuscito: ${session.accountName}`);
 
 // --- 2. token e scadenze ---
+//
+// Con `WebBrowser` `refreshAccessToken()` e `renewRefreshToken()` sono negati
+// (`AccessDenied`): l'access token si prende dai cookie web, come fa
+// `refreshSteamTokens`. I cookie si chiedono **una volta**, e servono anche alla
+// sezione 7.
+
+/** Il cookie `steamLoginSecure`, quello dello store se c'è. */
+const storeCookie = (cookies: string[]) =>
+  cookies.find(
+    (c) => c.startsWith('steamLoginSecure=') && /steampowered/.test(c),
+  ) ?? cookies.find((c) => c.startsWith('steamLoginSecure='));
+
+/** L'access token dentro un cookie `steamLoginSecure` (`SteamID||token`, codificato). */
+const tokenOfCookie = (cookie: string | undefined) =>
+  decodeURIComponent(
+    (cookie ?? '').split(';')[0]!.split('=').slice(1).join('='),
+  ).split('||')[1] ?? '';
+
+let cookies: string[] = [];
+let accessToken = '';
 
 await sezione('token', async () => {
   console.log(`  refresh token:  ${descrivi(session.refreshToken)}`);
-  await session.refreshAccessToken();
-  console.log(`  access token:   ${descrivi(session.accessToken)}`);
+  cookies = await session.getWebCookies();
+  accessToken = tokenOfCookie(storeCookie(cookies));
+  if (!accessToken) throw new Error('nessun steamLoginSecure nei cookie');
+  console.log(`  access token:   ${descrivi(accessToken)}`);
 });
-
-const accessToken = session.accessToken;
 
 // --- 3. profilo, e GetOwnedGames con la chiave e col token ---
 
@@ -485,14 +511,10 @@ await sezione('GetSharedLibraryApps con la sola chiave', async () => {
 // --- 7. la strada di Playnite: cookie web → webapi_token ---
 
 await sezione('webapi_token dai cookie web', async () => {
-  const cookies = await session.getWebCookies();
   console.log(
     `  cookie:                ${cookies.length}  (${cookies.map((c) => c.split('=')[0]).join(', ')})`,
   );
-  const secure =
-    cookies.find(
-      (c) => c.startsWith('steamLoginSecure=') && /steampowered/.test(c),
-    ) ?? cookies.find((c) => c.startsWith('steamLoginSecure='));
+  const secure = storeCookie(cookies);
   if (!secure) {
     console.log('  nessun steamLoginSecure');
     return;
@@ -602,37 +624,11 @@ await sezione('il nostro client', async () => {
 
 // --- 8. il rinnovo ---
 //
-// Per ultimo: se Steam emette un refresh token nuovo, il vecchio muore, e da qui
-// in poi la sessione tiene in mano il nuovo.
-
-await sezione('rinnovo', async () => {
-  const vecchio = session.refreshToken;
-  const prima = decodeJwt(vecchio).exp ?? 0;
-  const rinnovato = await session.renewRefreshToken();
-  console.log(
-    `  nuovo refresh token:   ${rinnovato ? 'emesso' : 'non emesso (resta il vecchio)'}`,
-  );
-  console.log(`  access token nuovo:    ${descrivi(session.accessToken)}`);
-  if (!rinnovato) return;
-
-  const dopo = decodeJwt(session.refreshToken).exp ?? 0;
-  console.log(`  refresh token nuovo:   ${descrivi(session.refreshToken)}`);
-  console.log(`  scadenza spostata di:  ${giorni(dopo - prima)} giorni`);
-
-  // Il vecchio è davvero morto? È ciò che decide se serve il lock sulla riga.
-  const prova = new LoginSession(EAuthTokenPlatformType.WebBrowser, {
-    userAgent: STEAM_LOGIN_USER_AGENT,
-  });
-  prova.refreshToken = vecchio;
-  try {
-    await prova.refreshAccessToken();
-    console.log('  il vecchio refresh token funziona ancora');
-  } catch (error) {
-    console.log(
-      `  il vecchio refresh token è invalidato: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
-});
+// Con `WebBrowser` non c'è un rinnovo del refresh token da un server:
+// `renewRefreshToken()` risponde `AccessDenied`, e il refresh token resta quello del
+// login fino alla sua scadenza. Il rinnovo dell'access token è la sezione «il nostro
+// client» (`refreshSteamTokens`, via `getWebCookies()`); la durata del refresh token
+// è nella riga «refresh token» della sezione «token».
 
 // --- 9. profilo privato, se richiesto ---
 
