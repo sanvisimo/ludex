@@ -59,17 +59,22 @@ export function AdminTable<T>({
       <XStack
         role="row"
         px={12}
-        py={8}
+        py={10}
         gap={12}
         items="center"
-        bg="$color2"
+        bg="$color3"
         borderBottomWidth={1}
         borderColor="$borderColor"
         minW={minW}
       >
         {columns.map((column) => (
           <Cell key={column.key} column={column} role="columnheader">
-            <Text fontSize={12} lineHeight={16} color="$color11">
+            <Text
+              fontSize={12}
+              lineHeight={16}
+              fontWeight="600"
+              color="$color11"
+            >
               {column.header}
             </Text>
           </Cell>
@@ -81,7 +86,7 @@ export function AdminTable<T>({
           role="row"
           key={rowKey(row)}
           px={12}
-          py={6}
+          py={10}
           gap={12}
           items="center"
           minW={minW}

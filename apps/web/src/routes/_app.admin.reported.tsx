@@ -1,5 +1,6 @@
 import type { ReportGroup } from '@repo/contracts';
 import { Button, EmptyState, Skeleton, Text, toast, YStack } from '@repo/ui';
+import { Archive } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
@@ -127,6 +128,7 @@ function ReportList() {
             disabled={archive.isPending}
             onPress={() => archive.mutate(report)}
           >
+            <Archive size={14} />
             {t('games.archive')}
           </Button>
         </>

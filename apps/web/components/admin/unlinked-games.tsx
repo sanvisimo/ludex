@@ -1,5 +1,6 @@
 import type { IgdbSearchHit } from '@repo/contracts';
 import { Button, EmptyState, Skeleton, toast, YStack } from '@repo/ui';
+import { Link2 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -92,6 +93,7 @@ export function UnlinkedGames({ q }: { q?: string }) {
       width: 140,
       render: (game) => (
         <Button size="sm" variant="outline" onPress={() => setLinking(game)}>
+          <Link2 size={14} />
           {t('linkIgdb')}
         </Button>
       ),

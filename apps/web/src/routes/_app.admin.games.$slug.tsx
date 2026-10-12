@@ -1,6 +1,5 @@
 import type { GameAdminDetail } from '@repo/contracts';
 import {
-  Badge,
   Button,
   EmptyState,
   Skeleton,
@@ -10,6 +9,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
+import { Archive, Hash, RotateCw, Unlink } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -25,6 +25,7 @@ import {
   SetSourceIdDialog,
   type SourceToSet,
 } from '@/components/admin/set-source-id-dialog';
+import { StatusBadge } from '@/components/admin/status-badge';
 import { GameCover } from '@/components/game-cover';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useGameTypeLabels } from '@/lib/labels';
@@ -58,14 +59,6 @@ function GameAdminPage() {
   if (detail.isError) return <EmptyState title={t('game.notFound')} />;
   return <GameAdmin detail={detail.data} />;
 }
-
-/** Lo stato di una fonte, nel colore dello stato: ok, da guardare, rotto, in attesa. */
-const STATUS_BADGE = {
-  ok: 'success',
-  not_found: 'warning',
-  failed: 'error',
-  pending: 'secondary',
-} as const;
 
 function GameAdmin({ detail }: { detail: GameAdminDetail }) {
   const t = useTranslations('admin');
@@ -154,6 +147,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       width: 170,
       render: (link) => (
         <Button size="sm" variant="outline" onPress={() => setRepointing(link)}>
+          <Unlink size={14} />
           {t('game.notThis')}
         </Button>
       ),
@@ -171,13 +165,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       key: 'state',
       header: t('game.state'),
       width: 110,
-      // Lo stato è la cosa che l'occhio cerca: un `Badge` coi colori degli
-      // stati del design system, non testo uguale al resto.
-      render: (row) => (
-        <Badge variant={STATUS_BADGE[row.status]}>
-          {t(`status.${row.status}`)}
-        </Badge>
-      ),
+      render: (row) => <StatusBadge status={row.status} />,
     },
     {
       key: 'id',
@@ -237,6 +225,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
               disabled={retry.isPending}
               onPress={() => retry.mutate(row)}
             >
+              <RotateCw size={14} />
               {t('missing.retry')}
             </Button>
           </Tooltip>
@@ -247,6 +236,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
               onPress={() =>
                 setSetting({
                   gameId: game.id,
+                  slug: game.slug,
                   name: game.name,
                   coverImageId: game.coverImageId,
                   status: row.status,
@@ -256,6 +246,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
                 })
               }
             >
+              <Hash size={14} />
               {t('missing.setId')}
             </Button>
           ) : null}
@@ -393,6 +384,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
                 disabled={archive.isPending}
                 onPress={() => archive.mutate(report)}
               >
+                <Archive size={14} />
                 {t('games.archive')}
               </Button>
             </XStack>
@@ -440,6 +432,7 @@ function ReportFix({
     if (!link) return null;
     return (
       <Button size="sm" onPress={() => onRepoint(link)}>
+        <Unlink size={14} />
         {t('game.notThis')}
       </Button>
     );
@@ -452,6 +445,7 @@ function ReportFix({
       onPress={() =>
         onSetId({
           gameId: detail.game.id,
+          slug: detail.game.slug,
           name: detail.game.name,
           coverImageId: detail.game.coverImageId,
           status: source?.status ?? 'pending',
@@ -461,6 +455,7 @@ function ReportFix({
         })
       }
     >
+      <Hash size={14} />
       {t('missing.setId')}
     </Button>
   );

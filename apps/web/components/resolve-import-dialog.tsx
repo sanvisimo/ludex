@@ -1,33 +1,33 @@
-import type { IgdbSearchHit, UnresolvedImport } from '@repo/contracts';
+import { storePageUrl } from '@repo/contracts';
+import type { UnresolvedImport } from '@repo/contracts';
 import {
-  Button,
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  Input,
-  Label,
-  Skeleton,
-  XStack,
+  Text,
   toast,
+  XStack,
+  YStack,
 } from '@repo/ui';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'use-intl';
-import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useFormatter, useTranslations } from 'use-intl';
 
-import { useApiErrorMessage } from '@/lib/api-error';
-import { useGameTypeLabels } from '@/lib/labels';
-import { api, client } from '@/lib/orpc';
-import { GameCover } from '@/components/game-cover';
+import { IgdbPicker } from '@/components/admin/igdb-pick-dialog';
 import { UnresolvedCover } from '@/components/unresolved-row';
+import { useApiErrorMessage } from '@/lib/api-error';
+import { useStoreLabels } from '@/lib/labels';
+import { api, client } from '@/lib/orpc';
+import { ExternalLink } from '@/src/components/external-link';
 
 /**
  * Sistema a mano una voce che l'import non ha saputo risolvere.
  *
- * La ricerca parte dal nome che dava il negozio, che è quasi sempre sbagliato in
- * modo utile ("Starbound - Unstable" → "Starbound"): si può correggere prima di
- * cercare, invece di ripartire da zero.
+ * In testa tutto ciò che sappiamo della voce — negozio e account, id, ore, date,
+ * il link alla sua pagina — con la copertina del negozio della stessa misura di
+ * quelle dei risultati: si sceglie confrontando. Sotto, `IgdbPicker`: la ricerca
+ * parte dal nome che dava il negozio, che è quasi sempre sbagliato in modo utile
+ * ("Starbound - Unstable" → "Starbound"), e si può correggere prima di cercare.
  */
 export function ResolveImportDialog({
   entry,
@@ -37,22 +37,10 @@ export function ResolveImportDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const t = useTranslations('account.unresolved');
-  // Il tipo di una scheda IGDB arriva come valore (`dlc`, `remaster`): il nome
-  // da mostrare lo mette il client, e su un gioco principale non si mostra —
-  // è la normalità, non un'informazione.
-  const gameTypeLabels = useGameTypeLabels();
-  const hitType = (type: IgdbSearchHit['gameType']) =>
-    type && type !== 'main_game' ? gameTypeLabels[type] : null;
+  const format = useFormatter();
+  const storeLabels = useStoreLabels();
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
-
-  const [query, setQuery] = useState('');
-  const [submitted, setSubmitted] = useState<string | null>(null);
-
-  const search = useQuery({
-    ...api.games.search.queryOptions({ input: { query: submitted ?? '' } }),
-    enabled: submitted !== null && submitted.trim().length >= 2,
-  });
 
   const resolve = useMutation({
     mutationFn: (igdbId: number) =>
@@ -65,115 +53,92 @@ export function ResolveImportDialog({
         queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),
       ]);
       toast.success(t('resolved', { name: created.game.name }));
-      setQuery('');
-      setSubmitted(null);
       onOpenChange(false);
     },
     onError: (error) =>
       toast.error(errorMessage(error, { fallback: t('resolveFailed') })),
   });
 
+  // Una data e non «3 giorni fa»: il tempo relativo dipende dall'ora di chi lo
+  // calcola, e server e browser scriverebbero due testi diversi.
+  const date = (value: Date) => format.dateTime(value, { dateStyle: 'medium' });
+  const pageUrl = entry ? storePageUrl(entry.store, entry.storePage) : null;
+  const facts = entry
+    ? [
+        entry.playtimeMinutes
+          ? t('hours', { hours: Math.round(entry.playtimeMinutes / 60) })
+          : null,
+        entry.lastPlayedAt
+          ? t('lastPlayedOn', { date: date(entry.lastPlayedAt) })
+          : null,
+        entry.hiddenAt
+          ? t('hiddenOn', { date: date(entry.hiddenAt) })
+          : t('addedOn', { date: date(entry.createdAt) }),
+      ].filter(Boolean)
+    : [];
+
   return (
-    <Dialog
-      open={entry !== null}
-      onOpenChange={(open) => {
-        if (!open) {
-          setQuery('');
-          setSubmitted(null);
-        }
-        onOpenChange(open);
-      }}
-    >
-      <DialogContent maxW={512}>
+    <Dialog open={entry !== null} onOpenChange={onOpenChange}>
+      <DialogContent maxW={720}>
         <DialogHeader>
           <DialogTitle>{t('resolveTitle')}</DialogTitle>
         </DialogHeader>
 
-        {/* La copertina della voce a sinistra del testo, della stessa misura di
-            quelle dei risultati: si confronta a colpo d'occhio con la lista
-            che sta sotto, invece di ricordarsela. */}
-        <XStack gap={12} items="flex-start">
-          {entry && (
-            <UnresolvedCover
+        {entry ? (
+          <YStack gap={16}>
+            <XStack gap={16} items="flex-start">
+              <UnresolvedCover
+                key={entry.id}
+                entry={entry}
+                width={90}
+                height={128}
+              />
+              <YStack flex={1} minW={0} gap={6}>
+                <Text fontSize={14} fontWeight="500" color="$color12">
+                  {entry.name}
+                </Text>
+                <Text fontSize={13} color="$color11">
+                  {[storeLabels[entry.store], entry.storeName]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Text>
+                <YStack>
+                  <Text fontSize={12} color="$color11">
+                    {t('externalId')}
+                  </Text>
+                  {/* Intero, e selezionabile: è ciò che si copia per cercarlo. */}
+                  <Text
+                    fontSize={13}
+                    color="$color12"
+                    {...({
+                      style: { wordBreak: 'break-all', userSelect: 'text' },
+                    } as object)}
+                  >
+                    {entry.externalId}
+                  </Text>
+                </YStack>
+                <Text fontSize={13} color="$color11">
+                  {facts.join(' · ')}
+                </Text>
+                {pageUrl ? (
+                  <Text fontSize={13}>
+                    <ExternalLink href={pageUrl}>
+                      {t('openOn', { store: storeLabels[entry.store] })} ↗
+                    </ExternalLink>
+                  </Text>
+                ) : null}
+              </YStack>
+            </XStack>
+
+            {/* Rimontato a ogni voce: riparte dal suo nome, e lo cerca. */}
+            <IgdbPicker
               key={entry.id}
-              entry={entry}
-              width={90}
-              height={128}
+              initialQuery={entry.name}
+              pending={resolve.isPending}
+              onPick={(hit) => resolve.mutate(hit.igdbId)}
             />
-          )}
-          <DialogDescription flex={1} minW={0}>
-            {t('resolveDescription', {
-              name: entry?.name ?? '',
-              store: `${entry?.store}/${entry?.storeName}`,
-            })}
-          </DialogDescription>
-        </XStack>
-
-        <div className="grid gap-3">
-          <Label htmlFor="cerca">{t('searchLabel')}</Label>
-          <div className="flex gap-2">
-            <Input
-              flex={1}
-              id="cerca"
-              value={query || (entry?.name ?? '')}
-              onChange={(event) => setQuery(event.target.value)}
-              autoFocus
-            />
-            <Button
-              type="button"
-              variant="outline"
-              shrink={0}
-              onClick={() => setSubmitted(query || (entry?.name ?? ''))}
-            >
-              {t('search')}
-            </Button>
-          </div>
-
-          {submitted !== null && (
-            <div className="max-h-64 overflow-y-auto rounded-lg ring-1 ring-foreground/10">
-              {search.isFetching ? (
-                <div className="grid gap-2 p-2">
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <Skeleton
-                      key={index}
-                      height={40}
-                      width="100%"
-                      rounded={6}
-                    />
-                  ))}
-                </div>
-              ) : search.error ? (
-                <p className="p-3 text-destructive">{t('searchFailed')}</p>
-              ) : search.data?.length === 0 ? (
-                <p className="p-3 text-muted-foreground">{t('noResults')}</p>
-              ) : (
-                <ul className="grid gap-0.5 p-1">
-                  {search.data?.map((hit) => (
-                    <li key={hit.igdbId} className="flex">
-                      <GameCover imageId={hit.cover} name={hit.name} />
-                      <button
-                        type="button"
-                        disabled={resolve.isPending}
-                        onClick={() => resolve.mutate(hit.igdbId)}
-                        className="w-full rounded-md px-3 py-2 text-left hover:bg-muted disabled:opacity-50"
-                      >
-                        <span className="font-medium">
-                          {hit.name}
-                          {hit.releaseYear ? ` (${hit.releaseYear})` : ''}
-                        </span>
-                        <span className="block text-muted-foreground">
-                          {[hitType(hit.gameType), hit.developer]
-                            .filter(Boolean)
-                            .join(' · ') || '—'}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </div>
+          </YStack>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

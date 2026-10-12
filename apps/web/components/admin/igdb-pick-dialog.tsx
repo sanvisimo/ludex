@@ -13,6 +13,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
+import { Check, Search } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
@@ -74,6 +75,7 @@ export function IgdbPicker({
             shrink={0}
             onPress={() => setSubmitted(query)}
           >
+            <Search size={16} />
             {t('search')}
           </Button>
         </XStack>
@@ -119,7 +121,11 @@ export function IgdbPicker({
                     omonime, il Pulstar del 1995 da quello del 2014. */}
                 <GameCover imageId={hit.cover} name={hit.name} width={72} />
                 <YStack flex={1} minW={0}>
-                  <Text fontSize={14} fontWeight="500" numberOfLines={1}>
+                  <Text
+                    fontSize={14}
+                    fontWeight="500"
+                    {...({ style: { overflowWrap: 'break-word' } } as object)}
+                  >
                     {hit.name}
                     {hit.releaseYear ? ` (${hit.releaseYear})` : ''}
                   </Text>
@@ -141,6 +147,7 @@ export function IgdbPicker({
                   disabled={pending}
                   onPress={() => onPick(hit)}
                 >
+                  <Check size={14} />
                   {t('choose')}
                 </Button>
               </XStack>

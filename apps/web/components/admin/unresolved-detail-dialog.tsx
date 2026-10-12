@@ -19,7 +19,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { ChevronDown } from '@repo/ui/icons';
+import { ChevronDown, EyeOff, Link2 } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'use-intl';
@@ -152,12 +152,14 @@ export function UnresolvedDetailDialog({
                 variant={search ? 'secondary' : 'default'}
                 onPress={() => setSearch(true)}
               >
+                <Link2 size={16} />
                 {t('link')}
               </Button>
               <DropdownMenu align="start">
                 <DropdownMenuTrigger
                   render={
                     <Button variant="outline" disabled={hidePending}>
+                      <EyeOff size={16} />
                       {t('hide')}
                       <ChevronDown size={14} />
                     </Button>

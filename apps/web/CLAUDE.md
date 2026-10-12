@@ -296,11 +296,11 @@ direzione col CSS. Cose che non si indovinano:
   l'account ha il login (`hasLogin`) e il menu ha «Accedi con Steam» e «Togli il
   login». Un import fallito **non arriva alla schermata**, per questo il profilo
   privato si controlla al collegamento e l'avviso sta nel dialogo.
-- **Tailwind resta** in `resolve-import-dialog.tsx`, `store-link-form.tsx` e
-  `unlink-account-dialog.tsx`: i dialoghi dell'account non sono ancora riscritti.
+- **Tailwind resta** in `store-link-form.tsx` e `unlink-account-dialog.tsx`: i
+  dialoghi dell'account non sono ancora tutti riscritti.
 
-**La sezione admin** (`/admin`, 11a) ha la cornice dell'account, più larga, e
-rimanda via chi non ha `role = 'admin'`: è comodità, la sicurezza vera la fa il
+**La sezione admin** (`/admin`, 11a) ha la cornice dell'account ma **fluida**
+(`maxW="100%"`: le sezioni sono tabelle), e rimanda via chi non ha `role = 'admin'`: è comodità, la sicurezza vera la fa il
 middleware `admin` sul server. Il link «Admin» sta nel menu dell'avatar, e
 «Apri nell'admin» sulla pagina di ogni gioco, solo per gli admin. Quattro
 sezioni, rotte figlie: `missing`, `unresolved`, `reported`, `users`, più la
@@ -317,11 +317,16 @@ che non si indovinano:
   l'informazione — il motivo di un errore, uno slug — `CellText` ha `wrap` e la
   colonna un `minWidth`: sotto la somma delle misure la tabella scorre di lato
   (`AdminTable` la calcola, mai meno di 640) invece di spezzare i numeri.
+- **Lo stato di una fonte è `StatusBadge`**, lo stesso verde/giallo/rosso nella
+  scheda del gioco e nella lista dei dati mancanti. In «Found but empty» e
+  «Fine as is» la lista **non ha bottoni**: non c'è niente da ritentare, e un id
+  sbagliato si corregge dalla scheda del gioco. I bottoni di azione hanno
+  l'icona (lucide, `@repo/ui/icons`); filtri e Annulla/Conferma no.
 - **La ricerca IGDB è `IgdbPicker`**, una sezione e non un dialogo: il dettaglio
   di uno scarto e «Non è questo gioco» la mettono sotto i dati, così si sceglie
   con la voce sotto gli occhi. `IgdbPickDialog` la avvolge per chi non ha altro
-  da mostrare. Il dialogo dell'account (`resolve-import-dialog.tsx`) è ancora in
-  Tailwind e non si estende.
+  da mostrare. Il dialogo dell'account (`resolve-import-dialog.tsx`) la usa
+  anch'esso, con in testa i dati della voce.
 - **«Inserisci id» ha due bottoni**: «Aggiungi» salva un id o un indirizzo e
   rifiuta un nome; «Cerca» usa il testo come nome sulla fonte. OpenCritic costa
   una delle 25 ricerche del giorno, e il dialogo lo dice prima.

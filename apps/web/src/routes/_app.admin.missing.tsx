@@ -27,6 +27,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
+import { Hash, RotateCw } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createFileRoute,
@@ -46,6 +47,7 @@ import {
   SetSourceIdDialog,
   type SourceToSet,
 } from '@/components/admin/set-source-id-dialog';
+import { StatusBadge } from '@/components/admin/status-badge';
 import { UnlinkedGames } from '@/components/admin/unlinked-games';
 import { GameCover } from '@/components/game-cover';
 import { useApiErrorMessage } from '@/lib/api-error';
@@ -372,7 +374,8 @@ function MissingList({
     {
       key: 'game',
       header: t('missing.game'),
-      flex: 2,
+      flex: 3,
+      minWidth: 200,
       render: (row) => (
         <>
           <GameCover imageId={row.coverImageId} name={row.name} width={24} />
@@ -388,13 +391,33 @@ function MissingList({
       key: 'reason',
       header: t('missing.reasonColumn'),
       flex: 3,
+      minWidth: 240,
+      // Il motivo è l'informazione: il titolo in grassetto come nella scheda
+      // del gioco, il dettaglio a capo. Senza motivo, lo stato nel suo colore.
       render: (row) => (
-        <YStack flex={1} minW={0}>
-          <CellText>
-            {row.reason ? t(`reason.${row.reason}`) : t(`status.${row.status}`)}
-            {row.manual ? ` · ${t('missing.manual')}` : ''}
-          </CellText>
-          {row.error ? <CellText muted>{row.error}</CellText> : null}
+        <YStack flex={1} minW={0} gap={2}>
+          <XStack items="center" gap={8} flexWrap="wrap">
+            {row.reason ? (
+              <Text
+                fontSize={13}
+                lineHeight={18}
+                fontWeight="600"
+                color="$color12"
+              >
+                {t(`reason.${row.reason}`)}
+              </Text>
+            ) : (
+              <StatusBadge status={row.status} />
+            )}
+            {row.manual ? (
+              <CellText muted>{t('missing.manual')}</CellText>
+            ) : null}
+          </XStack>
+          {row.error ? (
+            <CellText muted wrap>
+              {row.error}
+            </CellText>
+          ) : null}
         </YStack>
       ),
     },
@@ -404,34 +427,42 @@ function MissingList({
       width: 56,
       render: (row) => <CellText>{row.users}</CellText>,
     },
-    {
-      key: 'actions',
-      header: '',
-      width: 196,
-      render: (row) => (
-        <>
-          <Tooltip content={t('missing.retryHint')}>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={retry.isPending}
-              onPress={() => retry.mutate(row)}
-            >
-              {t('missing.retry')}
-            </Button>
-          </Tooltip>
-          {isManualRow(row) ? (
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => setSetting({ ...row, source: row.source })}
-            >
-              {t('missing.setId')}
-            </Button>
-          ) : null}
-        </>
-      ),
-    },
+    // Trovato ma vuoto, e «va bene così»: lì non c'è niente da ritentare. Un id
+    // sbagliato si corregge dalla scheda del gioco, dal nome nella riga.
+    ...(bucket === 'empty' || bucket === 'fine'
+      ? []
+      : [
+          {
+            key: 'actions',
+            header: '',
+            width: 230,
+            render: (row: MissingRow) => (
+              <>
+                <Tooltip content={t('missing.retryHint')}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={retry.isPending}
+                    onPress={() => retry.mutate(row)}
+                  >
+                    <RotateCw size={14} />
+                    {t('missing.retry')}
+                  </Button>
+                </Tooltip>
+                {isManualRow(row) ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onPress={() => setSetting({ ...row, source: row.source })}
+                  >
+                    <Hash size={14} />
+                    {t('missing.setId')}
+                  </Button>
+                ) : null}
+              </>
+            ),
+          } satisfies AdminColumn<MissingRow>,
+        ]),
   ];
 
   const total = list.data?.total ?? 0;
