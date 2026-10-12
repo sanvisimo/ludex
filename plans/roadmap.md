@@ -36,15 +36,15 @@ segnalazioni spostate dalla mail alle issue di GitHub.
   merge, non di step. Si correggono in `lib/roadmap.ts`.
 - **EA è «In arrivo»**, non fatto (corretto il 09/10/2026): l'importazione una
   tantum non c'è ancora.
-- Dentro «In arrivo» c'è «Steam con login e Nintendo»: sono costruiti e provati
-  sul mini PC, ma il rilascio agli altri utenti aspetta l'esito.
+- «Steam con login e Nintendo» è passata a «Fatto» il 12/10/2026: provati sul mini PC
+  per quattro giorni senza blocchi (era «In corso» dal 09/10).
 - **«In arrivo» segue l'ordine di lavoro** deciso il 09/10/2026 (11b, wishlist
   dei negozi, EA, CSV, abbonamenti, Xbox, AI, mobile, in [ordine-sviluppo](../docs/ordine-sviluppo.md)),
   dopo «Un admin migliore» (la revisione di tabella e link in admin, da
   `plans/11a-admin.md`). Xbox è passata da «Idea» a «In arrivo» perché è
   nell'ordine, anche se il suo significato è ancora da decidere.
 - **«In corso»** (il pallino pieno con l'alone) è ciò che si sta facendo adesso:
-  dal 09/10/2026 «Steam con login e Nintendo» e «Giochi doppi, uniti in uno».
+  dal 09/10/2026 «Giochi doppi, uniti in uno» e, dal 10/10, «Un admin migliore».
   Lo stato c'era già nel tipo (`doing`) e nello stile, ma nessuna voce lo usava.
 - «I link alle fonti» è passata a «Fatto» il 09/10/2026.
 - L'unica idea è **le playlist aperte**: vedi [15b-wishlist.md](15b-wishlist.md).

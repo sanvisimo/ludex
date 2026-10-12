@@ -718,9 +718,11 @@ prova (`sanvitest`) e quello principale dell'utente, lo stesso bloccato tre volt
 - **Il rinnovo da server.** Il 10/10 alle 01:02 (ora locale) i due account, con il
   token scaduto da circa 9 e 3 ore, hanno preso un access token nuovo con
   `getWebCookies()` dal refresh token, senza un nuovo login: nuova scadenza a 24h15 e
-  24h04 dal rinnovo, `status` ok. Il rinnovo parte dentro un'importazione: quel giorno
-  l'ha fatto partire un ↻ a mano, perché l'aggiornamento automatico di Steam è a
-  sette giorni.
+  24h04 dal rinnovo, `status` ok. **Il principale lo ha rifatto l'11/10 alle 10:24**,
+  con il token scaduto da 9h18: nuova scadenza a 24h03, `status` ok. Il rinnovo parte
+  dentro un'importazione, e in tutti e due i casi l'ha fatta partire un ↻ a mano,
+  perché l'aggiornamento automatico di Steam è a sette giorni. Quell'11/10, nello
+  stesso giro di ↻, `sanvitest` non si è rinnovato: il token era ancora valido.
 - **Il nome.** Con la chiave API nuova, un secondo QR su `sanvitest` (10/10, circa
   12:35) ne ha riscritto il nome, senza scollegare l'account. Quel secondo login,
   sullo stesso account, non ha avuto blocchi in quasi sei ore.
@@ -728,10 +730,23 @@ prova (`sanvitest`) e quello principale dell'utente, lo stesso bloccato tre volt
   usa il login, né per come si usa la chiave.
 
 **Cosa non dice.** Sono due account sullo stesso indirizzo, osservati per giorni e non
-per settimane; la **durata del refresh
-token web non è misurata** (il credenziale è cifrato nel database, e `refreshExpiresAt`
-sta dentro); e resta aperta la domanda di prodotto, molti utenti da un solo server.
-Il probe `steam:family-probe` fa ancora il login `MobileApp`: non va lanciato.
+per settimane; il principale ha **due rinnovi** provati (10/10 e 11/10) e `sanvitest`
+uno; la **durata del refresh token web non è misurata** (il credenziale è cifrato nel
+database, e `refreshExpiresAt` sta dentro); e resta aperta la domanda di prodotto, molti
+utenti da un solo server.
+
+**Il probe `steam:family-probe`** fa ora il login `WebBrowser` con lo stesso user agent,
+ma le sue sezioni «token» e «rinnovo» chiamano ancora `refreshAccessToken()` e
+`renewRefreshToken()`, che per `WebBrowser` non valgono (la libreria risponde
+`AccessDenied`): il token andrebbe preso da `getWebCookies()`, come fa il codice. **Non è
+stato rieseguito dopo il cambio**, e fa un login vero: non lanciarlo senza averlo
+concordato.
+
+**12/10/2026: Steam con login e Nintendo sono segnati «fatti» nella roadmap
+pubblica.** Dopo quattro giorni di prova sul mini PC senza blocchi su nessuno dei due
+negozi. Non c'è un interruttore che li tenga chiusi agli altri utenti: la decisione è
+la dicitura, e il rischio di molti utenti da un solo indirizzo resta non misurato. Se
+un blocco arriva, va scritto qui e il login si spegne.
 
 ## Nintendo (9d)
 
@@ -787,7 +802,7 @@ lo ha confermato). Si saltano, come i DLC di Epic che collassano sul gioco. Se i
 | Cosa                             | Misurato                                                                                                                                                                                                                                                                       |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | il login                         | PKCE su `accounts.nintendo.com`; l'utente accede **nel suo browser**. «Select this account» non si clicca (punta a `npf…://`): **clic destro → copia l'indirizzo del link**                                                                                                    |
-| credenziali                      | session token **730 giorni**; access token e `id_token` **15 minuti**. Il rinnovo è una POST sola e non cambia il session token. **Provato dal server l'08/10/2026** (un solo account): il session token del 05/10 valeva ancora tre giorni dopo, stato `ok`                   |
+| credenziali                      | session token **730 giorni**; access token e `id_token` **15 minuti**. Il rinnovo è una POST sola e non cambia il session token. **Provato dal server l'08/10 e l'11/10/2026** (un solo account): il session token del 05/10 valeva ancora sei giorni dopo, stato `ok`         |
 | GraphQL delle Virtual Game Cards | `wb.lp1.savanna.srv.nintendo.net/graphql` (**`*.srv.nintendo.net`, non nintendo.com**); senza cookie; **accetta l'`id_token` del login dell'app** (HTTP 200, gli stessi 19 titoli) oltre a quello del portale, che vive 14 minuti e si ricava dalla pagina con la sessione web |
 | header e variabili               | `x-nintendo-savanna-client-id` (lo stesso del portale, **non so se uguale per tutti**), `shopId` 3, `language` `en`, `nasLanguage` `en-US`, e il **paese dell'account** (`IT`)                                                                                                 |
 | storico                          | `app-api.znej.nintendo.com/api/v2.0/users/me/play_histories`, una richiesta, 37 titoli; `platform` **`HAC`**, `deviceType` assente                                                                                                                                             |
@@ -824,10 +839,11 @@ lo ha confermato). Si saltano, come i DLC di Epic che collassano sul gioco. Se i
   `isLending`) non si trattano: si importano come gli altri e si contano in un log. Non
   ce ne sono sull'account di prova, quindi **non è misurato** come si presentino.
 
-**Rinnovo da server provato (08/10/2026).** Con l'account dell'utente, loggato dal 05/10:
-a un'importazione del 08/10 alle 22:51 il server ha rinnovato l'access token (scadenza
-14 minuti dopo) col session token salvato tre giorni prima, e lo stato è rimasto `ok`,
-senza blocchi da Nintendo. Un solo account, un solo indirizzo.
+**Rinnovo da server provato (08/10 e 11/10/2026).** Con l'account dell'utente, loggato
+dal 05/10: a un'importazione dell'08/10 alle 22:51 il server ha rinnovato l'access token
+(scadenza 14 minuti dopo) col session token salvato tre giorni prima, e l'ha rifatto
+l'11/10 alle 10:23, sei giorni dopo il login; lo stato è rimasto `ok`, senza blocchi da
+Nintendo. Un solo account, un solo indirizzo.
 
 **Il rischio, da decidere prima di rilasciare.** Il login lo fa l'utente dal suo
 browser, ma il rinnovo lo fa il **server**, a ogni import, e ora con **due identità non

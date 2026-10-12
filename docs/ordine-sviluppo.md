@@ -27,9 +27,10 @@ in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
    accanto al vettore, ranking, prompt e schermata.
 8. **Mobile**: un'app nuova, con le sue schermate.
 
-Fuori da questa lista resta una cosa piccola, che si fa quando capita: il
-rilascio agli altri utenti di 9d e 9f (aspetta l'esito della prova sul mini PC).
-Il link alle fonti senza voto nella pagina del gioco è fatto (09/10/2026).
+Steam con login (9f) e Nintendo (9d) sono segnati «fatti» nella roadmap pubblica dal
+12/10/2026, dopo quattro giorni di prova sul mini PC senza blocchi (vedi «Il terzo
+blocco» in [negozi](negozi.md)). Il link alle fonti senza voto nella pagina del gioco
+è fatto (09/10/2026).
 
 1. **Registrazione e auth**
 2. **Inserimento manuale + prima UI web** — `backlog` con possesso, piattaforme e
@@ -117,9 +118,10 @@ Il link alle fonti senza voto nella pagina del gioco è fatto (09/10/2026).
      codice nell'indirizzo di un pulsante che non si clicca, session token da due
      anni, risoluzione per nome. Vedi «Nintendo (9d)» in [negozi](negozi.md) e
      `plans/9d-nintendo.md`. **Rilasciato sul mini PC dal 06/10/2026**, per
-     provarlo su un server attivo; il rilascio agli altri utenti resta da
-     decidere: il rinnovo lo fa il server con due identità non nostre (l'app e
-     il portale).
+     provarlo su un server attivo; rinnovi da server provati l'08 e l'11/10, senza
+     blocchi, e segnato «fatto» nella roadmap il 12/10/2026. Resta non misurato
+     il caso di molti utenti da un solo indirizzo: il rinnovo lo fa il server con
+     due identità non nostre (l'app e il portale).
    - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
      prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
      librerie», e per ora è volutamente aperta.
@@ -129,8 +131,10 @@ Il link alle fonti senza voto nella pagina del gioco è fatto (09/10/2026).
      stessa risposta del PSN Plus: entra, marcato `steam_family`. **Fatto, e dal 06/10/2026
      rilasciato sul mini PC** per provarlo su un server attivo: Steam ha
      bloccato temporaneamente l'account dell'utente, e la prova serve a sapere
-     se un login da server è accettato. Il rilascio agli altri utenti aspetta
-     l'esito. Vedi «Il blocco dell'account» in
+     se un login da server è accettato. **Dopo i tre blocchi, il QR come
+     browser (`WebBrowser`) ha retto quattro giorni senza blocchi** sul mini PC, su
+     due account; segnato «fatto» nella roadmap il 12/10/2026. Vedi «Il blocco
+     dell'account» in
      [negozi](negozi.md) e il piano in `plans/9f-steam-login.md`.
 10. **Import da file** — importazione di giochi da file CSV. **In analisi.**
     Il file di prova è un export di Playnite, in

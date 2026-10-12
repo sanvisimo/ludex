@@ -978,7 +978,9 @@
       },
       "steamNintendo": {
         "title": "Steam with login, and Nintendo",
-        "text": "They are ready and we are trying them on a real server: as soon as they hold up, they open to everyone."
+        "p1": "Steam: sign in with the QR from the Steam app, or paste a token from your browser, and import the family library too.",
+        "p2": "Nintendo: the digital library and the play history, including the cartridges you've started.",
+        "p3": "The QR login renews itself: you don't have to redo it at every update."
       },
       "ai": {
         "title": "What to play now, with AI",
