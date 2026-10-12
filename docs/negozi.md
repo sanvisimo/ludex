@@ -736,11 +736,11 @@ database, e `refreshExpiresAt` sta dentro); e resta aperta la domanda di prodott
 utenti da un solo server.
 
 **Il probe `steam:family-probe`** fa ora il login `WebBrowser` con lo stesso user agent,
-ma le sue sezioni «token» e «rinnovo» chiamano ancora `refreshAccessToken()` e
-`renewRefreshToken()`, che per `WebBrowser` non valgono (la libreria risponde
-`AccessDenied`): il token andrebbe preso da `getWebCookies()`, come fa il codice. **Non è
-stato rieseguito dopo il cambio**, e fa un login vero: non lanciarlo senza averlo
-concordato.
+e prende l'access token da `getWebCookies()` come il codice (corretto il 12/10/2026: prima
+chiamava `refreshAccessToken()` e `renewRefreshToken()`, che per `WebBrowser` non valgono).
+La sezione «rinnovo» non c'è più, perché un refresh token web non si rinnova da un
+server. **Non è stato rieseguito dopo il cambio**, e fa un login vero: non lanciarlo
+senza averlo concordato.
 
 **12/10/2026: Steam con login e Nintendo sono segnati «fatti» nella roadmap
 pubblica.** Dopo quattro giorni di prova sul mini PC senza blocchi su nessuno dei due
