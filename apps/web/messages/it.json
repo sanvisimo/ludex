@@ -963,7 +963,9 @@
       },
       "merge": {
         "title": "Giochi doppi, uniti in uno",
-        "text": "Quando lo stesso gioco compare due volte in catalogo, si uniscono in uno solo, senza perdere stato, voto e tag di nessuno."
+        "p1": "Quando lo stesso gioco compare due volte in catalogo, un amministratore li unisce in uno solo.",
+        "p2": "Chi li aveva tutti e due si ritrova con una voce sola: stato, voto, note, tag e copie restano, e «Non mi interessa» vince sugli altri stati.",
+        "p3": "L'indirizzo della scheda assorbita non esiste più: porta a «gioco non trovato»."
       },
       "csv": {
         "title": "Importa da un file CSV",

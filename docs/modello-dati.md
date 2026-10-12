@@ -105,6 +105,20 @@ chiamata di dettaglio e senza richieste in più:
 Il link alla pagina del negozio invece è **della copia**, non del gioco:
 `ownerships.store_page`, in [import-librerie](import-librerie.md).
 
+### Fondere due righe: l'unica volta che `games` perde una riga
+
+Una riga di `games` non si cancella, **tranne l'assorbita di una fusione**
+(11b, `apps/api/src/services/admin-merge.ts`): lo stesso gioco con due id lo
+fonde un admin, e la riga che resta è quella con `igdbId` (altrimenti la più
+vecchia). La cancellazione viene **dopo** aver spostato tutto ciò che la
+puntava, e la transazione si annulla se un backlog è rimasto lì — la cascata
+non deve portarsi via niente. Due giochi con `igdbId` non si fondono: sono due
+giochi IGDB. Le regole per chi aveva entrambe le righe (`excluded` vince, poi
+lo stato più avanzato; il voto della riga modificata per ultima; note unite;
+tag, copie e rifiuti sommati) sono in `merge-rules.ts`. Punteggi, fonti,
+attributi e giochi legati restano quelli del sopravvissuto: l'enrichment li
+riscrive.
+
 ## `backlog` = possesso
 
 Se esiste la riga in `backlog`, l'utente possiede il gioco. Punto: nessun flag di

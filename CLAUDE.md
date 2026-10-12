@@ -127,7 +127,9 @@ e [docs/import-librerie.md](docs/import-librerie.md). Queste valgono sempre:
 - **Nessuna query può assumere che i metadata siano popolati**: un gioco senza
   `igdbId` è solo non ancora risolto.
 - **Una riga di `games` non si cancella**: le FK sono in cascade e si
-  porterebbero via i backlog di tutti gli utenti.
+  porterebbero via i backlog di tutti gli utenti. Unica eccezione, la riga
+  assorbita da una fusione (11b), cancellata dopo aver spostato tutto: vedi
+  [docs/modello-dati.md](docs/modello-dati.md).
 - **`backlog` = possesso**: una riga per gioco e utente, con stato e voto. Le
   copie stanno in `ownerships` (piattaforma, negozio, account, supporto,
   abbonamento). La wishlist è una tabella a parte (step 15).
@@ -170,10 +172,10 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
 16. Cancellazione ed esportazione dell'account
 
 Poi il mobile. I numeri sono nomi e non si rinumerano: **quello che resta si fa
-in quest'ordine** (09/10/2026) — 11b · 15e · 9c · 10 · 14 · 9e · 13 · mobile, con le
+in quest'ordine** (09/10/2026) — 15e · 9c · 10 · 14 · 9e · 13 · mobile, con le
 ragioni in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.md). Non anticipare
 step successivi: se una feature appartiene allo step 13, non implementarla
-mentre si lavora sull'11b.
+mentre si lavora sulla 15e.
 
 ## Note operative
 

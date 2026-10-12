@@ -963,7 +963,9 @@
       },
       "merge": {
         "title": "Duplicate games, merged",
-        "text": "When the same game shows up twice in the catalogue, the two are merged into one, without losing anyone's status, rating or tags."
+        "p1": "When the same game shows up twice in the catalogue, an admin merges the two into one.",
+        "p2": "Anyone who had both ends up with a single entry: status, rating, notes, tags and copies are kept, and “Not interested” beats the other statuses.",
+        "p3": "The address of the absorbed game no longer exists: it leads to “game not found”."
       },
       "csv": {
         "title": "Import from a CSV file",

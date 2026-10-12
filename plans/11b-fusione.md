@@ -1,9 +1,9 @@
 # Step 11b — Fusione di due giochi
 
 **Piano approvato il 12/10/2026** (stato: `excluded` vince; la riga assorbita si
-cancella). **Costruito lo stesso giorno**, da provare a mano in un browser:
-api, contratto e dialog ci sono, i test passano (vedi «Com'è andata» in fondo).
-Il lotto si chiude quando l'utente dice che è pronto. Viene dopo l'11a
+cancella). **Costruito e chiuso lo stesso giorno**: api, contratto e dialog ci
+sono, i test passano (vedi «Com'è andata» in fondo), e la voce `merge` della
+roadmap pubblica è «fatto». Viene dopo l'11a
 ([11a-admin.md](11a-admin.md)), di cui riusa il gesto «anteprima, poi conferma»
 di «Non è questo gioco» (`planRepoint` in
 [admin-games.ts](../apps/api/src/services/admin-games.ts)).
@@ -51,25 +51,25 @@ cosa si decide per loro. La conferma è una sola transazione.
 Le due righe di `backlog` diventano una, quella del sopravvissuto (o la prima
 creata, se è meglio per le FK: l'importante è che la riga che resta sia una).
 
-| Campo | Regola |
-| --- | --- |
-| stato | `excluded` se una delle due lo è (è un giudizio esplicito, e non deve sparire in silenzio); altrimenti il più avanzato: `completed > played > playing > dropped > backlog` |
-| voto | se ce n'è uno solo, quello; se sono due, quello della riga **modificata per ultima** (`updatedAt`) |
-| note | **concatenate**, la più vecchia per prima, separate da una riga vuota; se sono uguali, una sola. Sono testo dell'utente: non si butta |
-| tag | **unione** su `backlog_tags` (i `user_tags` sono per utente, gli id coincidono) |
-| `hiddenAt` | nascosto **solo se lo sono entrambe** |
-| `addedAt` | il più vecchio |
-| possessi | tutti sulla riga che resta; a parità di chiave (`ownerships_backlog_platform_store_key`, `NULLS NOT DISTINCT`) una copia sola |
-| rifiuti (`ownership_rejections`) | spostati; sulla stessa chiave una sola; **un rifiuto che combacia con un possesso presente cade**, perché il possesso lo contraddice |
+| Campo                            | Regola                                                                                                                                                                     |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| stato                            | `excluded` se una delle due lo è (è un giudizio esplicito, e non deve sparire in silenzio); altrimenti il più avanzato: `completed > played > playing > dropped > backlog` |
+| voto                             | se ce n'è uno solo, quello; se sono due, quello della riga **modificata per ultima** (`updatedAt`)                                                                         |
+| note                             | **concatenate**, la più vecchia per prima, separate da una riga vuota; se sono uguali, una sola. Sono testo dell'utente: non si butta                                      |
+| tag                              | **unione** su `backlog_tags` (i `user_tags` sono per utente, gli id coincidono)                                                                                            |
+| `hiddenAt`                       | nascosto **solo se lo sono entrambe**                                                                                                                                      |
+| `addedAt`                        | il più vecchio                                                                                                                                                             |
+| possessi                         | tutti sulla riga che resta; a parità di chiave (`ownerships_backlog_platform_store_key`, `NULLS NOT DISTINCT`) una copia sola                                              |
+| rifiuti (`ownership_rejections`) | spostati; sulla stessa chiave una sola; **un rifiuto che combacia con un possesso presente cade**, perché il possesso lo contraddice                                       |
 
 ### Le tabelle del gioco
 
-| Tabella | Regola |
-| --- | --- |
-| `external_ids` | si spostano (la chiave unique è su `source + external_id`, non possono collidere) |
-| `wishlist_items` | si spostano; sulla PK `(list_id, game_id)` una riga sola |
-| `game_reports` | si spostano; se ne risultano due **aperte** per lo stesso utente e la stessa cosa, la seconda si chiude |
-| `game_scores`, `game_sources`, `game_attributes`, `game_related` | **tengono quelle del sopravvissuto**, le altre cadono: l'enrichment le riscrive |
+| Tabella                                                          | Regola                                                                                                  |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `external_ids`                                                   | si spostano (la chiave unique è su `source + external_id`, non possono collidere)                       |
+| `wishlist_items`                                                 | si spostano; sulla PK `(list_id, game_id)` una riga sola                                                |
+| `game_reports`                                                   | si spostano; se ne risultano due **aperte** per lo stesso utente e la stessa cosa, la seconda si chiude |
+| `game_scores`, `game_sources`, `game_attributes`, `game_related` | **tengono quelle del sopravvissuto**, le altre cadono: l'enrichment le riscrive                         |
 
 ### Dopo
 
