@@ -573,6 +573,7 @@ export function BacklogPanel({
             // Senza icona il negozio si scrive: è il caso di Amazon.
             !brand && storeName,
             ownership.storeAccount?.label,
+            ownership.storeAccount?.displayName,
             ownership.subscription && tSubscription(ownership.subscription),
             ownership.medium === 'physical' && tMedium('physical'),
           ]
