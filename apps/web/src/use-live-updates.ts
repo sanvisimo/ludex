@@ -74,6 +74,7 @@ export function useLiveUpdates() {
     function handle(event: LiveEvent) {
       if (event.type === 'games') return gamesChanged(event.gameIds);
       if (event.type === 'sources') return sourcesChanged();
+      if (event.type === 'wishlist') return invalidate(api.wishlists.key());
       if (event.phase === 'started') return invalidate(api.accounts.key());
       importFinished();
     }
@@ -89,6 +90,7 @@ export function useLiveUpdates() {
             importFinished();
             gamesChanged();
             sourcesChanged();
+            invalidate(api.wishlists.key());
           }
           delay = RETRY_MIN_MS;
           for await (const event of events) handle(event);

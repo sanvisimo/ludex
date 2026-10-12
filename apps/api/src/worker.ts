@@ -25,9 +25,9 @@ import {
 } from './queue/enrichment';
 import {
   IMPORTS_QUEUE,
-  type ImportJob,
-  type ImportsSweepJob,
+  type ImportsAnyJob,
   isImportsSweep,
+  isImportsWishlist,
   scheduleImportsSweep,
 } from './queue/imports';
 import {
@@ -53,6 +53,10 @@ import {
   type StoreAccountRow,
   StoreReauthRequiredError,
 } from './services/store-accounts';
+import {
+  findLinkedAccount,
+  runWishlistImportJob,
+} from './services/import-jobs';
 
 // Secondo entrypoint di apps/api. Stesso codebase e stessi servizi di server.ts,
 // ma qui non si espone HTTP: i job non devono girare nel processo che serve le
@@ -200,7 +204,7 @@ const importers: Partial<
 
 // Coda a parte: un import genera centinaia di job di enrichment, e sulla stessa
 // coda finirebbe in fila dietro il lavoro che ha appena prodotto.
-const importsWorker = new Worker<ImportJob | ImportsSweepJob>(
+const importsWorker = new Worker<ImportsAnyJob>(
   IMPORTS_QUEUE,
   async (job) => {
     if (isImportsSweep(job.data)) {
@@ -211,23 +215,11 @@ const importsWorker = new Worker<ImportJob | ImportsSweepJob>(
       return { queued };
     }
 
-    const { storeAccountId } = job.data;
-
-    // L'account si rilegge qui e non arriva dentro il job: fra l'accodamento e
-    // adesso può essere stato scollegato, o il suo token rinnovato da qualcun
-    // altro. Un job che porta con sé una copia della riga lavora su una verità
-    // vecchia di minuti.
-    const account = await db.query.storeAccounts.findFirst({
-      where: eq(schema.storeAccounts.id, storeAccountId),
-    });
-
-    // Scollegato mentre il job aspettava in coda. Non è un guasto e riprovare
-    // non lo aggiusta: l'utente ha detto che quell'account non lo vuole più.
-    if (!account || account.status === 'unlinked') {
-      throw new UnrecoverableError(
-        `L'account ${storeAccountId} non è più collegato`,
-      );
+    if (isImportsWishlist(job.data)) {
+      return runWishlistImportJob(job.data.storeAccountId);
     }
+
+    const account = await findLinkedAccount(job.data.storeAccountId);
 
     try {
       const importer = importers[account.store];
@@ -289,7 +281,7 @@ const importsWorker = new Worker<ImportJob | ImportsSweepJob>(
  * dopo verrebbe a smentirlo.
  */
 async function publishImportEvent(
-  job: Job<ImportJob | ImportsSweepJob> | undefined,
+  job: Job<ImportsAnyJob> | undefined,
   phase: 'started' | 'finished',
 ) {
   if (!job || isImportsSweep(job.data)) return;
@@ -301,7 +293,7 @@ async function publishImportEvent(
     });
     if (account)
       await publishEvent({
-        type: 'import',
+        type: isImportsWishlist(job.data) ? 'wishlist' : 'import',
         phase,
         storeAccountId,
         userId: account.userId,

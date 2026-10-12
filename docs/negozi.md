@@ -862,12 +862,13 @@ risponde 401 su un token fresco, la prima riga da guardare è `SAVANNA_CLIENT_ID
 ## Le wishlist dei negozi (15e, da fare)
 
 Nessun import legge le wishlist dei negozi: quelle di Ludex sono a mano
-([15b](../plans/15b-wishlist.md)). Il lotto 15e le porterebbe dentro, e per ora
-è solo documentazione: **nessuna richiesta è partita** e niente di quanto segue è
-misurato. Fonti: la documentazione che l'utente ha incollato il 10/10/2026, e una
-ricerca in sola lettura lo stesso giorno. **Tre negozi grossi hanno un endpoint**
-(Steam, GOG, PlayStation), quindi la funzione si può fare; gli altri si valutano di
-volta in volta.
+([15b](../plans/15b-wishlist.md)). Il lotto 15e le porterebbe dentro, in corso dal
+12/10/2026 ([piano](../plans/15e-wishlist-negozi.md)). Fonti: la documentazione che
+l'utente ha incollato il 10/10/2026, una ricerca in sola lettura lo stesso giorno, e
+le **misure del 12/10/2026** (sotto, «Misurato»). **Tre negozi grossi hanno un
+endpoint** (Steam, GOG, PlayStation), quindi la funzione si può fare; gli altri si
+valutano di volta in volta. Dove sotto c'è scritto «non misurato» e la misura c'è,
+vale «Misurato».
 
 **Steam.** Due metodi di `IWishlistService`, non documentati da Valve nella
 Steamworks Web API ma elencati dalla documentazione non ufficiale delle interfacce:
@@ -926,6 +927,77 @@ risulta esporre una funzione per la wishlist (le sue funzioni elencate sono di
 trofei, titoli e profilo), e noi non la usiamo: il client di [psn.ts](../apps/api/src/external/psn.ts)
 è scritto a mano.
 
+**Misurato il 12/10/2026** (`steam:wishlist-probe`, `gog:wishlist-probe`,
+`psn:wishlist-probe`: una richiesta per negozio, lanciate dall'utente):
+
+- **GOG: funziona col Bearer di `auth.gog.com`**, senza cookie. 200 e
+  `application/json`, 9 elementi sull'account di prova: `{"wishlist": {"<id>": true, …}, "checksum": "…"}`. **Niente data di aggiunta**, solo l'id e `true`. Gli id sono i
+  product id di GOG, e **1 su 9 era già in `external_ids`**: gli altri vanno
+  risolti su IGDB come gli scarti della libreria, e la maggior parte della
+  wishlist è fatta di giochi che Ludex non ha ancora.
+- **PSN: funziona col Bearer del nostro client**, sul gateway `m.np.playstation.com`
+  della documentazione (la libreria acquisti usa `web.np.playstation.com`: sono due
+  host diversi, e per la wishlist vale `m.np`). **L'hash della query persistente
+  del 10/10 vale ancora.** 200, 3 prodotti: `id` (`EP0002-CUSA13801_00-…`, un id
+  di **prodotto**, lo stesso pezzo finale dell'indirizzo della pagina del negozio:
+  non il `conceptId` della libreria, ma il suo pezzo di mezzo è il `titleId` che
+  `external_ids` tiene per PSN. Misurato il 13/10/2026 su 336 copie PSN della
+  libreria di sviluppo: in 335 il pezzo di mezzo coincide con un id già salvato;
+  l'eccezione è un gioco su due console, dove il titleId è **per console**), `name` (con
+  marchi come «Sekiro™» e l'edizione nel titolo), `platforms` (`["PS4"]`, `["PS5"]`
+  o `["PS4","PS5"]`), `boxArt` (**`{"__typename":"Media","url":"https://image.api.playstation.com/…png"}`**,
+  presente 3 su 3, misurato il 13/10/2026: è la forma che il client legge),
+  `storeDisplayClassification` e `price`. **Niente data di aggiunta.** Un prodotto che esce su entrambe le console è una voce sola,
+  non due come nella libreria.
+- **Steam: funziona con la chiave, ma solo se «Dettagli dei giochi» è
+  pubblico.** La prima richiesta su `sanvitest` rese `{"response":{}}`, senza
+  elenco: i dettagli dei giochi erano «solo amici». Resi pubblici, la seconda
+  richiesta (dell'utente) rese 3 elementi, `response.items`, ciascuno
+  `{"appid", "priority", "date_added"}`: l'appid è un numero, `priority` 0 per tutti
+  e **`date_added` in secondi dall'epoch**. Il parametro `steamid` in minuscolo era
+  giusto. Come `GetOwnedGames`, una risposta vuota **non distingue** wishlist
+  vuota da dettagli non visibili: la UI deve dire la stessa cosa che dice per la
+  libreria (`SteamLibraryNotVisibleError`) senza poter sapere quale delle due sia.
+  **Col token del login** (`access_token` salvato, una richiesta, `--account`) la
+  stessa risposta: 200 e gli stessi 3 elementi, stessa forma. Con
+  i dettagli dei giochi **privati** (confermato dall'utente): il token del login
+  apre la wishlist come apre la libreria.
+
+**I nomi di Steam e GOG** (misurati il 12/10/2026, una richiesta anonima per negozio,
+senza account né token): né `GetWishlist` né `wishlist.json` dicono il titolo, solo
+gli id. Per le voci che IGDB non riconosce, il nome viene da due endpoint **pubblici**:
+
+- **Steam:** `GET https://store.steampowered.com/api/appdetails?appids=<appid>&filters=basic&l=english`
+  rende `{"<appid>": {"success": true, "data": {"type", "name", "steam_appid",
+"is_free", "header_image", …}}}` (200, `application/json`, `cache-control:
+public,max-age=3600`). Per l'appid di prova rese `type: "game"` e il nome giusto.
+  Per un appid che lo store non conosce rende 200 con `{"<appid>": {"success":
+  false}}` (misurato con `999999999`), e vale il ripiego «App <appid>». Con
+  `filters=basic` una sola app per richiesta. **Limite: non raggiunto.**
+  `steam:appdetails-probe` (13/10/2026, anonimo, un appid diverso a richiesta)
+  fece 220 richieste in 377 s, tutte 200, nessun 429: il ritmo vero è di circa
+  1,7 s a richiesta (la latenza si somma alla pausa di 1500 ms), quindi in una
+  finestra di cinque minuti ne passarono al più circa 176. La soglia dichiarata
+  (circa 200 ogni cinque minuti) resta quindi **non superata e non misurata**:
+  sappiamo solo che il nostro ritmo regge. Un primo giro cadde alla richiesta 86
+  con un errore di rete (`fetch` senza risposta HTTP, causa non stampata) e non si
+  ripeté nel secondo: non è un 429. La copertina non serve: la compone
+  `storeCoverUrl` dall'appid.
+- **GOG:** `GET https://api.gog.com/products/<id>` rende `title`, `slug`,
+  `game_type` (`game`, `pack`, `dlc`: per l'id di prova `pack`), `is_secret`,
+  `links.product_card` (`https://www.gog.com/game/<slug>`, da cui la pagina del
+  negozio `game/<slug>`), `images.logo2x` (con `//` davanti: va `https:`) e le altre
+  immagini. 200, `application/json`, `cache-control: max-age=86400`.
+
+Si chiedono **solo per le voci non riconosciute** dopo la ricerca per id (una
+richiesta per voce, mai per tutta la lista), e servono a due cose: un nome leggibile
+in `wishlist_unresolved`, e la ricerca per nome su IGDB che altrimenti non si
+potrebbe fare. `type` e `game_type` dicono se è un DLC.
+
+Ne segue che **la data di aggiunta c'è solo su Steam** (`date_added`): GOG e PSN non
+dicono quando il gioco è entrato in wishlist, e lì `wishlist_items.added_at` sarà il
+momento in cui l'import l'ha visto la prima volta.
+
 **Gli altri negozi: da valutare**, di volta in volta, quando serve.
 **Xbox** non dovrebbe essere complesso (valutazione dell'utente, 10/10/2026):
 il punto di partenza indicato è il repository
@@ -935,16 +1007,18 @@ trova niente: **non è verificato** che offra la wishlist di un utente. **Ninten
 una wish list sull'eShop e sul sito, ma nessuna API pubblica per leggerla;
 **Epic** non ne mostra una nelle librerie non ufficiali che abbiamo guardato.
 
-**Da decidere nell'analisi**, prima del codice:
+**Da decidere nell'analisi**, prima del codice (decise il 12/10/2026, vedi
+[il piano](../plans/15e-wishlist-negozi.md)):
 
 - dove vanno i giochi: una lista per negozio e account, in `playlists` col tipo
   `wishlist`, senza mescolarsi con le liste fatte a mano;
 - se un gioco tolto dalla wishlist del negozio esce anche dalla lista di Ludex;
 - la regola che c'è già: entrando nel backlog un gioco esce da tutte le liste, quindi
   una wishlist importata non deve riportarlo dentro;
-- l'identità: gli appid Steam, gli id prodotto GOG e i prodotti PlayStation (per
-  nome, come la libreria PSN) si risolvono su IGDB, e una riga non risolta cade fra
-  gli scarti;
+- l'identità: gli appid Steam e gli id prodotto GOG si risolvono su IGDB; i
+  prodotti PlayStation per **titleId** (il pezzo di mezzo dell'id, come la libreria
+  PSN) e poi per nome, e si scrive il titleId. Una riga non risolta sta in
+  `wishlist_unresolved`;
 - la cadenza: con la chiave Steam è una richiesta per account e non tocca il login,
   ma l'aggiornamento automatico (sette giorni) è per la libreria, non per questa.
 

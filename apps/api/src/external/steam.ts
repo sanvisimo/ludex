@@ -130,6 +130,126 @@ export async function fetchSteamLibrary(
   }));
 }
 
+const WISHLIST_URL =
+  'https://api.steampowered.com/IWishlistService/GetWishlist/v1';
+
+export type SteamWishlistEntry = {
+  /** L'appid, come stringa: la forma in cui vive in `external_ids`. */
+  externalId: string;
+  /**
+   * Il nome **non c'è**: `GetWishlist` rende solo appid, priorità e data. Chi
+   * deve mostrare una voce che non si risolve ripiega su «App <appid>» come fa la
+   * libreria quando manca il nome, e sul link alla pagina del negozio.
+   */
+  name: string;
+  /** Quando è entrata nella wishlist (`date_added`, in secondi dall'epoch). */
+  addedAt: Date | null;
+};
+
+type WishlistResponse = {
+  response?: {
+    items?: { appid: number; priority?: number; date_added?: number }[];
+  };
+};
+
+/**
+ * La wishlist di un account (15e), con il token se c'è e con la chiave altrimenti.
+ *
+ * **Con la chiave la wishlist si legge solo se «Dettagli dei giochi» è pubblico**;
+ * col token dell'utente (9f) si legge comunque, come la libreria — misurato il
+ * 12/10/2026 su un account con i dettagli privati. In ogni caso una wishlist
+ * vuota e una non visibile hanno **la stessa risposta**, `{"response":{}}`, e
+ * da qui non si distinguono: a deciderlo è chi chiama, che sa se ha usato il
+ * token.
+ *
+ * Un rifiuto col token è il credenziale che non vale più (`SteamUnauthorizedError`,
+ * come per la libreria); con la chiave resta un errore qualunque. Il messaggio non
+ * porta mai l'URL, che contiene il token o la chiave.
+ */
+export async function fetchSteamWishlist(
+  steamId: string,
+  accessToken?: string,
+): Promise<SteamWishlistEntry[]> {
+  const url = new URL(WISHLIST_URL);
+  if (accessToken) url.searchParams.set('access_token', accessToken);
+  else url.searchParams.set('key', apiKey());
+  url.searchParams.set('steamid', steamId);
+
+  const response = await fetch(url);
+  if (accessToken && (response.status === 401 || response.status === 403)) {
+    throw new SteamUnauthorizedError('GetWishlist', response.status);
+  }
+  if (!response.ok) {
+    throw new Error(
+      `Steam GetWishlist: ${response.status} ${(await response.text()).slice(0, 300)}`,
+    );
+  }
+
+  const body = (await response.json()) as WishlistResponse;
+  return (body.response?.items ?? []).map((item) => ({
+    externalId: String(item.appid),
+    name: `App ${item.appid}`,
+    addedAt: item.date_added ? new Date(item.date_added * 1000) : null,
+  }));
+}
+
+/**
+ * La wishlist è vuota, o non si vede: **non si distingue**.
+ *
+ * Con la chiave Steam risponde `{"response":{}}` sia a una wishlist vuota sia a
+ * una con i «Dettagli dei giochi» non pubblici (misurato il 12/10/2026). Per la
+ * libreria la differenza la dice `game_count`; qui non c'è niente. Chi legge senza
+ * il token dell'utente e riceve un elenco vuoto non sa se togliere tutto dalla
+ * lista di Ludex o non toccarla: **non la tocca**, e lo dice con questo errore.
+ * Col token (il login) l'utente vede comunque la sua wishlist, e un elenco vuoto è
+ * vuoto davvero.
+ */
+export class SteamWishlistNotVisibleError extends Error {
+  constructor(steamId: string) {
+    super(
+      `Steam non ha restituito nessuna voce per ${steamId}: la wishlist è vuota oppure i «Dettagli dei giochi» non sono pubblici. ` +
+        'Rendili pubblici, oppure accedi con Steam.',
+    );
+    this.name = 'SteamWishlistNotVisibleError';
+  }
+}
+
+export type SteamAppDetails = {
+  name: string;
+  /** `game`, ma anche `dlc`, `demo`, `music`, `software`… */
+  type: string | null;
+};
+
+/**
+ * Il nome di un'app, dall'endpoint **pubblico** dello store (senza chiave né
+ * account), lo stesso di `fetchSteamMetacriticSlug` più in basso. Una richiesta per
+ * app: con un filtro ne accetta una sola. Misurato il 12/10/2026.
+ *
+ * Rende `null` per un'app che lo store non conosce più (`success: false`, non
+ * misurato), e alza su qualunque altra risposta: un 429 o un 5xx non sono «l'app
+ * non c'è», e chi chiama deve poter smettere di chiedere.
+ */
+export async function fetchSteamAppDetails(
+  appId: string,
+): Promise<SteamAppDetails | null> {
+  const url = new URL(APP_DETAILS_URL);
+  url.searchParams.set('appids', appId);
+  url.searchParams.set('filters', 'basic');
+  url.searchParams.set('l', 'english');
+
+  const response = await fetch(url, { headers: { 'User-Agent': 'Ludex/0.1' } });
+  if (!response.ok) throw new Error(`Steam appdetails: ${response.status}`);
+
+  const body = (await response.json()) as Record<
+    string,
+    { success?: boolean; data?: { name?: string; type?: string } } | undefined
+  >;
+  const entry = body[appId];
+  const name = entry?.data?.name?.trim();
+  if (!entry?.success || !name) return null;
+  return { name, type: entry.data?.type ?? null };
+}
+
 const PLAYER_SUMMARIES_URL =
   'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/';
 

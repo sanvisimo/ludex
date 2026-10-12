@@ -35,6 +35,21 @@ describe('eventForUser', () => {
     ).toBeNull();
   });
 
+  it("consegna l'evento della wishlist al proprietario, e a nessun altro", () => {
+    const event = {
+      type: 'wishlist' as const,
+      phase: 'started' as const,
+      storeAccountId: account,
+      userId: 'io',
+    };
+    expect(eventForUser(event, 'io')).toEqual({
+      type: 'wishlist',
+      phase: 'started',
+      storeAccountId: account,
+    });
+    expect(eventForUser(event, 'altro')).toBeNull();
+  });
+
   it('consegna i giochi a tutti: il catalogo è condiviso', () => {
     const event = { type: 'games' as const, gameIds: [account] };
     expect(eventForUser(event, 'chiunque')).toEqual(event);

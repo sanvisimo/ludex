@@ -194,8 +194,8 @@ export async function openPlaylist(
 }
 
 /**
- * Sposta una playlist (o, col tipo `wishlist`, una lista) di un posto. `false`
- * se non esiste o non è sua.
+ * Sposta una playlist (o, coi tipi `wishlist` e `store_wishlist`, una lista) di un
+ * posto. `false` se non esiste o non è sua.
  *
  * Le posizioni si riscrivono **per tutte**, da 0 e senza buchi, invece di
  * scambiarne due: dopo una cancellazione i numeri hanno dei buchi, e a pari
@@ -206,7 +206,7 @@ export async function movePlaylist(
   userId: string,
   id: string,
   direction: 'up' | 'down',
-  kind: 'filter' | 'wishlist' = 'filter',
+  kind: 'filter' | 'wishlist' | 'store_wishlist' = 'filter',
 ) {
   return db.transaction(async (tx) => {
     const rows = await tx

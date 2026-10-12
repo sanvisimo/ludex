@@ -75,6 +75,11 @@ import {
   wishlistsForGame,
 } from '../services/wishlist';
 import {
+  listWishlistUnresolved,
+  resolveWishlistUnresolved,
+  setWishlistUnresolvedHidden,
+} from '../services/wishlist-unresolved';
+import {
   closeReports,
   createReports,
   listOpenReports,
@@ -100,6 +105,7 @@ import {
   linkStore,
   listStoreAccounts,
   renameStoreAccount,
+  requestWishlistImport,
   setStoreAccountAutoSync,
   StoreAccountMismatchError,
   storeLoginUrl,
@@ -417,6 +423,29 @@ export const router = os.router({
       await enqueueImport(account.store, { storeAccountId: account.id });
     }),
 
+    syncWishlist: os.accounts.syncWishlist
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const outcome = await requestWishlistImport(
+          context.user.id,
+          input.accountId,
+        );
+        if (outcome === 'not_found')
+          throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+        if (outcome === 'unsupported')
+          throw new ORPCError('BAD_REQUEST', {
+            message: 'Questo negozio non ha una wishlist da importare',
+          });
+        if (outcome === 'needs_reauth')
+          throw new ORPCError('FORBIDDEN', {
+            message: 'Il collegamento è scaduto: ricollega l’account',
+          });
+        if (outcome === 'running')
+          throw new ORPCError('CONFLICT', {
+            message: 'Importazione già in corso',
+          });
+      }),
+
     syncAll: os.accounts.syncAll
       .use(authed)
       .handler(({ context }) => syncAllStoreAccounts(context.user.id)),
@@ -628,6 +657,48 @@ export const router = os.router({
         throw new ORPCError('NOT_FOUND', { message: 'Lista inesistente' });
       return list;
     }),
+
+    unresolved: {
+      list: os.wishlists.unresolved.list
+        .use(authed)
+        .handler(async ({ input, context }) => {
+          const rows = await listWishlistUnresolved(
+            context.user.id,
+            input.listId,
+          );
+          if (!rows)
+            throw new ORPCError('NOT_FOUND', { message: 'Lista inesistente' });
+          return rows;
+        }),
+
+      resolve: os.wishlists.unresolved.resolve
+        .use(authed)
+        .handler(async ({ input, context }) => {
+          const esito = await resolveWishlistUnresolved(
+            context.user.id,
+            input.id,
+            input.igdbId,
+          );
+          if (esito.status === 'not_found')
+            throw new ORPCError('NOT_FOUND', { message: 'Voce inesistente' });
+          if (esito.status === 'unknown_igdb_id')
+            throw new ORPCError('NOT_FOUND', {
+              message: 'IGDB non conosce questo id',
+            });
+        }),
+
+      setHidden: os.wishlists.unresolved.setHidden
+        .use(authed)
+        .handler(async ({ input, context }) => {
+          const row = await setWishlistUnresolvedHidden(
+            context.user.id,
+            input.id,
+            input.hidden,
+          );
+          if (!row)
+            throw new ORPCError('NOT_FOUND', { message: 'Voce inesistente' });
+        }),
+    },
 
     add: os.wishlists.add.use(authed).handler(async ({ input, context }) => {
       const result = await addToWishlist(context.user.id, input);

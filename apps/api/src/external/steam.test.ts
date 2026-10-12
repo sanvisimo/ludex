@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   fetchSteamFamilyLibrary,
   fetchSteamLibrary,
+  fetchSteamWishlist,
   resolveSteamId,
   SteamLibraryNotVisibleError,
   SteamProfileNotFoundError,
@@ -304,5 +305,75 @@ describe('fetchSteamFamilyLibrary', () => {
     await expect(fetchSteamFamilyLibrary(TOKEN, ME)).rejects.toBeInstanceOf(
       SteamUnauthorizedError,
     );
+  });
+});
+
+describe('fetchSteamWishlist', () => {
+  const urlOf = () => fetchMock.mock.calls[0]![0] as URL;
+
+  it('con la chiave manda la chiave e lo SteamID, e legge appid e data', async () => {
+    jsonOnce({
+      response: {
+        items: [
+          { appid: 1621690, priority: 0, date_added: 1791806181 },
+          { appid: 499170, priority: 0 },
+        ],
+      },
+    });
+
+    const wishlist = await fetchSteamWishlist('76561198626785118');
+
+    expect(urlOf().pathname).toBe('/IWishlistService/GetWishlist/v1');
+    expect(urlOf().searchParams.get('key')).toBe('chiave-di-prova');
+    expect(urlOf().searchParams.get('steamid')).toBe('76561198626785118');
+    expect(urlOf().searchParams.has('access_token')).toBe(false);
+    expect(wishlist).toEqual([
+      {
+        externalId: '1621690',
+        // Il nome non c'è su Steam: si ripiega, come per la libreria.
+        name: 'App 1621690',
+        addedAt: new Date(1791806181 * 1000),
+      },
+      { externalId: '499170', name: 'App 499170', addedAt: null },
+    ]);
+  });
+
+  it('col token manda il token e non la chiave', async () => {
+    jsonOnce({ response: { items: [{ appid: 10, date_added: 1 }] } });
+
+    await fetchSteamWishlist('76561198626785118', 'token-di-prova');
+
+    expect(urlOf().searchParams.get('access_token')).toBe('token-di-prova');
+    expect(urlOf().searchParams.has('key')).toBe(false);
+  });
+
+  it('una risposta vuota è una lista vuota: da qui non si distingue da «non visibile»', async () => {
+    jsonOnce({ response: {} });
+    await expect(fetchSteamWishlist('76561198626785118')).resolves.toEqual([]);
+  });
+
+  it('un rifiuto col token è il credenziale morto, con la chiave un errore qualunque', async () => {
+    jsonOnce({}, false, 401);
+    await expect(
+      fetchSteamWishlist('76561198626785118', 'token-di-prova'),
+    ).rejects.toBeInstanceOf(SteamUnauthorizedError);
+
+    jsonOnce({}, false, 403);
+    const error = await fetchSteamWishlist('76561198626785118').catch(
+      (e: unknown) => e,
+    );
+    expect(error).toBeInstanceOf(Error);
+    expect(error).not.toBeInstanceOf(SteamUnauthorizedError);
+  });
+
+  it('un errore del server non porta mai né la chiave né il token', async () => {
+    jsonOnce({ error: 'giù' }, false, 500);
+    const error = (await fetchSteamWishlist(
+      '76561198626785118',
+      'token-segreto',
+    ).catch((e: unknown) => e)) as Error;
+    expect(error.message).toContain('500');
+    expect(error.message).not.toContain('token-segreto');
+    expect(error.message).not.toContain('chiave-di-prova');
   });
 });

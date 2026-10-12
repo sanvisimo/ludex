@@ -1,4 +1,8 @@
-import type { LinkableStore, Store } from '@repo/contracts/vocabulary';
+import {
+  type LinkableStore,
+  type Store,
+  wishlistStoreValues,
+} from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, eq, inArray, ne, sql } from '@repo/db/orm';
 
@@ -60,7 +64,12 @@ import {
   type SteamStoredCredentials,
 } from '../external/steam-auth';
 import { encryptCredentials, decryptCredentials } from '../lib/crypto';
-import { enqueueImport, isImportRunning } from '../queue/imports';
+import {
+  enqueueImport,
+  enqueueWishlistImport,
+  isImportRunning,
+  isWishlistImportRunning,
+} from '../queue/imports';
 import { hasPersonalData } from './personal-data';
 
 /**
@@ -260,6 +269,26 @@ export async function syncAllStoreAccounts(userId: string) {
 }
 
 /**
+ * Chiede l'import della wishlist di un account (15e). Rende l'esito invece di
+ * alzare: è il router a sapere come dirlo (`ORPCError`), e qui si decide solo se
+ * si può.
+ *
+ * Come per la libreria, un credenziale morto non si sblocca riprovando. Il
+ * controllo «già in corso» dice la verità invece di far finta di aver accodato,
+ * anche se la coda deduplicherebbe comunque.
+ */
+export async function requestWishlistImport(userId: string, accountId: string) {
+  const account = await findStoreAccount(userId, accountId);
+  if (!account || account.status === 'unlinked') return 'not_found' as const;
+  if (!(wishlistStoreValues as readonly string[]).includes(account.store))
+    return 'unsupported' as const;
+  if (account.status === 'needs_reauth') return 'needs_reauth' as const;
+  if (await isWishlistImportRunning(account.id)) return 'running' as const;
+  await enqueueWishlistImport(account.store, { storeAccountId: account.id });
+  return 'queued' as const;
+}
+
+/**
  * Un account dell'utente, per id.
  *
  * Sempre in AND con lo `userId`: senza, un id indovinato darebbe accesso
@@ -439,7 +468,10 @@ function orphanEntries(accountId: string) {
  *
  * In entrambi i casi gli scarti se ne vanno: senza l'account collegato sono voci
  * di una libreria che non sappiamo più leggere. Nel ramo `purge` li porta via il
- * `cascade`, nel ramo `keep` vanno tolti a mano.
+ * `cascade`, nel ramo `keep` vanno tolti a mano. Lo stesso vale per la **wishlist
+ * del negozio** (15e), la sua lista e le sue voci non riconosciute: una lista di
+ * negozio non si cancella da sé, quindi senza questo resterebbe, orfana e
+ * immutabile, legata a un account che non si può più leggere.
  *
  * E in nessuno dei due casi si tocca `games`: la scheda del gioco, i suoi
  * metadata e la mappatura in `external_ids` restano nel catalogo condiviso. Il
@@ -459,6 +491,13 @@ export async function unlinkStoreAccount(
       await tx
         .delete(schema.unresolvedImports)
         .where(eq(schema.unresolvedImports.storeAccountId, accountId));
+      // Le voci della lista se ne vanno con lei (cascade).
+      await tx
+        .delete(schema.playlists)
+        .where(eq(schema.playlists.storeAccountId, accountId));
+      await tx
+        .delete(schema.wishlistUnresolved)
+        .where(eq(schema.wishlistUnresolved.storeAccountId, accountId));
 
       const [row] = await tx
         .update(schema.storeAccounts)

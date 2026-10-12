@@ -58,6 +58,7 @@ import {
   WishlistSchema,
   WishlistMembershipSchema,
   WishlistGamesSchema,
+  WishlistUnresolvedSchema,
   UnresolvedGroupListSchema,
   UnresolvedImportSchema,
   UserSettingsSchema,
@@ -298,6 +299,13 @@ export const contract = {
     // Rilancia l'import della libreria di un account già collegato.
     sync: oc.input(z.object({ accountId: z.uuid() })).output(z.void()),
 
+    // Importa (o aggiorna) la wishlist del negozio di un account, 15e: **su
+    // richiesta**, mai in automatico. La lista nasce al primo import e lì si
+    // aggiorna. `FORBIDDEN` se l'account va ricollegato, `CONFLICT` se
+    // l'importazione è già in corso, `BAD_REQUEST` se il negozio non ha una
+    // wishlist che si legga.
+    syncWishlist: oc.input(z.object({ accountId: z.uuid() })).output(z.void()),
+
     // Rilancia l'import di tutti gli account collegati. Non fallisce per uno
     // solo: chi è da ricollegare o sta già importando si salta e si conta.
     syncAll: oc.output(SyncAllResultSchema),
@@ -457,6 +465,28 @@ export const contract = {
     removeGame: oc
       .input(z.object({ listId: z.uuid(), gameId: z.uuid() }))
       .output(z.void()),
+
+    // Le voci di una **lista di negozio** (15e) che l'import non ha saputo legare
+    // a un gioco, nascoste comprese. `NOT_FOUND` se la lista non è una tua lista
+    // di negozio.
+    unresolved: {
+      list: oc
+        .input(z.object({ listId: z.uuid() }))
+        .output(z.array(WishlistUnresolvedSchema)),
+
+      // L'utente sceglie il gioco giusto su IGDB: entra nella lista di quell'account
+      // (non nel backlog) e la voce sparisce. Su Steam e GOG vale per tutti da quel
+      // momento; su PSN fino al prossimo aggiornamento della lista.
+      resolve: oc
+        .input(z.object({ id: z.uuid(), igdbId: z.number().int().positive() }))
+        .output(z.void()),
+
+      // Mette da parte una voce che non è un gioco, o la rimette fra quelle da
+      // sistemare.
+      setHidden: oc
+        .input(z.object({ id: z.uuid(), hidden: z.boolean() }))
+        .output(z.void()),
+    },
 
     // Le tue liste, con un `has` per dire in quali sta già il gioco: è il menu
     // della scheda del gioco.

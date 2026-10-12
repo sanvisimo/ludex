@@ -309,6 +309,20 @@
       "when": 1791396602710,
       "tag": "0043_vengeful_crusher_hogan",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1791808885684,
+      "tag": "0044_playlist_kind_store_wishlist",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1791808973629,
+      "tag": "0045_store_wishlists",
+      "breakpoints": true
     }
   ]
 }

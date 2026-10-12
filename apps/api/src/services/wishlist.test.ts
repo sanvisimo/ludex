@@ -3,7 +3,7 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createGame, createUser } from '../../test/factories';
+import { createGame, createUser, linkStoreAccount } from '../../test/factories';
 import { exportAccount } from './account-export';
 import { searchCatalog } from './catalog-search';
 import { listHomeBands } from './home';
@@ -605,5 +605,289 @@ describe('il cuore sulle card (wishlisted)', () => {
       wishlisted: true,
       status: null,
     });
+  });
+});
+
+// Le liste di negozio (step 15e) stanno nella stessa tabella delle liste a mano e
+// si vedono, aprono, rinominano e spostano come loro. Il resto — aggiungere,
+// togliere, cancellare, il cuore — è delle sole liste a mano, e una lista di
+// negozio per quelle funzioni è un id inesistente.
+describe('le liste di negozio', () => {
+  let userId: string;
+  let altro: string;
+
+  beforeEach(async () => {
+    userId = await createUser();
+    altro = await createUser();
+  });
+
+  async function dalNegozio(
+    owner: string,
+    name: string,
+    store: 'steam' | 'gog' | 'psn' = 'steam',
+    games: { id: string }[] = [],
+  ) {
+    const account = await linkStoreAccount(owner, store);
+    const [list] = await db
+      .insert(schema.playlists)
+      .values({
+        userId: owner,
+        kind: 'store_wishlist',
+        name,
+        query: null,
+        storeAccountId: account.id,
+      })
+      .returning();
+    for (const game of games)
+      await db
+        .insert(schema.wishlistItems)
+        .values({ listId: list!.id, gameId: game.id });
+    return { list: list!, account };
+  }
+
+  it('vengono dopo quelle a mano, e dicono di quale negozio e account sono', async () => {
+    const { list, account } = await dalNegozio(userId, 'Steam · prova');
+    const a = await lista(userId, 'Zeta');
+
+    const tutte = await listWishlists(userId);
+    expect(tutte.map((l) => l.name)).toEqual(['Zeta', 'Steam · prova']);
+    expect(tutte[0]).not.toHaveProperty('store');
+    expect(tutte[1]).toMatchObject({
+      id: list.id,
+      store: 'steam',
+      storeAccountId: account.id,
+    });
+    expect(tutte[0]!.id).toBe(a.id);
+  });
+
+  it('un gioco che hai già resta in lista, con lo stato: la lista rispecchia il negozio', async () => {
+    const g1 = await gioco({ name: 'Hades' });
+    const g2 = await gioco({ name: 'Altro' });
+    const { list } = await dalNegozio(userId, 'Steam', 'steam', [g1, g2]);
+    await ensureBacklogEntries(userId, [g1.id]);
+
+    // Il conto è quello del negozio: due giochi, anche se uno lo hai già.
+    expect((await listWishlists(userId))[0]!.count).toBe(2);
+    const aperta = await open(userId, list.id, {
+      sort: 'name',
+      direction: 'asc',
+    });
+    expect(aperta!.total).toBe(2);
+    expect(aperta!.games.map((g) => [g.name, g.status])).toEqual([
+      ['Altro', null],
+      ['Hades', 'backlog'],
+    ]);
+  });
+
+  it('lo stato è quello di chi guarda, non di un altro', async () => {
+    const g = await gioco();
+    const { list } = await dalNegozio(userId, 'Steam', 'steam', [g]);
+    await ensureBacklogEntries(altro, [g.id]);
+
+    expect((await open(userId, list.id))!.games[0]!.status).toBeNull();
+  });
+
+  it('a mano invece il gioco che hai nel backlog non si vede, né si conta', async () => {
+    const g1 = await gioco();
+    const g2 = await gioco();
+    const l = await lista(userId);
+    await addToWishlist(userId, { gameId: g1.id, listId: l.id });
+    await addToWishlist(userId, { gameId: g2.id, listId: l.id });
+    await db
+      .insert(schema.backlog)
+      .values({ userId, gameId: g1.id, status: 'backlog' });
+
+    expect((await listWishlists(userId))[0]!.count).toBe(1);
+    expect((await open(userId, l.id))!.games.map((g) => g.id)).toEqual([g2.id]);
+  });
+
+  it('si aprono, con il negozio, e il cuore non è pieno', async () => {
+    const g = await gioco({ name: 'Desiderato' });
+    const { list, account } = await dalNegozio(userId, 'GOG', 'gog', [g]);
+
+    const aperta = await open(userId, list.id);
+    expect(aperta).toMatchObject({
+      id: list.id,
+      store: 'gog',
+      storeAccountId: account.id,
+      total: 1,
+    });
+    expect(aperta!.games[0]).toMatchObject({
+      name: 'Desiderato',
+      status: null,
+      wishlisted: false,
+    });
+  });
+
+  it('quelle degli altri non si leggono, rinominano né spostano', async () => {
+    const { list } = await dalNegozio(altro, 'Steam');
+
+    expect(await listWishlists(userId)).toEqual([]);
+    expect(await open(userId, list.id)).toBeUndefined();
+    expect(await renameWishlist(userId, list.id, 'Mia')).toBeUndefined();
+    expect(await moveWishlist(userId, list.id, 'up')).toBe(false);
+  });
+
+  it('si rinominano, e il nome di una lista di negozio non è unico', async () => {
+    const { list } = await dalNegozio(userId, 'Steam');
+    const { list: seconda } = await dalNegozio(userId, 'Steam');
+
+    // Due account con lo stesso nome non si contendono niente.
+    expect(
+      (await listWishlists(userId)).filter((l) => l.name === 'Steam'),
+    ).toHaveLength(2);
+    expect(await renameWishlist(userId, list.id, 'Regali Steam')).toMatchObject(
+      { name: 'Regali Steam', store: 'steam' },
+    );
+    // Neppure su un nome uguale: nessun conflitto.
+    expect(
+      await renameWishlist(userId, seconda.id, 'REGALI STEAM'),
+    ).toMatchObject({ name: 'REGALI STEAM' });
+  });
+
+  it('si spostano fra loro, senza toccare le liste a mano', async () => {
+    const m1 = await lista(userId, 'M1');
+    const m2 = await lista(userId, 'M2');
+    const { list: n1 } = await dalNegozio(userId, 'N1');
+    const { list: n2 } = await dalNegozio(userId, 'N2', 'gog');
+    await db
+      .update(schema.playlists)
+      .set({ position: 1 })
+      .where(eq(schema.playlists.id, n2.id));
+
+    expect((await listWishlists(userId)).map((l) => l.name)).toEqual([
+      'M1',
+      'M2',
+      'N1',
+      'N2',
+    ]);
+
+    // La prima di negozio «su» non esce dal suo gruppo.
+    expect(await moveWishlist(userId, n1.id, 'up')).toBe(true);
+    expect((await listWishlists(userId)).map((l) => l.name)).toEqual([
+      'M1',
+      'M2',
+      'N1',
+      'N2',
+    ]);
+
+    expect(await moveWishlist(userId, n2.id, 'up')).toBe(true);
+    expect((await listWishlists(userId)).map((l) => l.name)).toEqual([
+      'M1',
+      'M2',
+      'N2',
+      'N1',
+    ]);
+    expect(
+      (
+        await db.query.playlists.findMany({
+          where: eq(schema.playlists.userId, userId),
+        })
+      )
+        .filter((l) => l.kind === 'wishlist')
+        .map((l) => [l.id, l.position]),
+    ).toEqual(
+      expect.arrayContaining([
+        [m1.id, 0],
+        [m2.id, 1],
+      ]),
+    );
+  });
+
+  it('non si cancellano, né ci si aggiunge o toglie a mano', async () => {
+    const g = await gioco();
+    const { list } = await dalNegozio(userId, 'Steam', 'steam', [g]);
+
+    expect(await deleteWishlist(userId, list.id)).toBe(false);
+    expect(await removeFromWishlist(userId, list.id, g.id)).toBe(false);
+    expect(
+      await addToWishlist(userId, { gameId: g.id, listId: list.id }),
+    ).toEqual({ ok: false, reason: 'list' });
+    // Rimasta com'era.
+    expect((await open(userId, list.id))!.total).toBe(1);
+  });
+
+  it('non sono bersaglio di «aggiungi» senza lista, né entrano nel menu o nel cuore', async () => {
+    const g = await gioco();
+    await dalNegozio(userId, 'Steam', 'steam', [g]);
+
+    // Nessuna lista a mano: ne nasce una, la lista di negozio non è la «prima».
+    const res = await addToWishlist(userId, { gameId: g.id });
+    expect(res.ok && res.list.name).toBe(DEFAULT_LIST_NAME);
+    expect(res.ok && res.list.store).toBeUndefined();
+
+    const menu = await wishlistsForGame(userId, g.id);
+    expect(menu.map((m) => m.name)).toEqual([DEFAULT_LIST_NAME]);
+
+    // Il gioco che sta solo in una lista di negozio non ha il cuore pieno.
+    const solo = await gioco();
+    await dalNegozio(userId, 'GOG', 'gog', [solo]);
+    expect([...(await wishlistedGameIds(userId, [solo.id]))]).toEqual([]);
+  });
+
+  it('una playlist a filtro non si scambia per una lista di negozio', async () => {
+    const p = await createPlaylist(userId, { name: 'Brevi', query: query() });
+    expect(await open(userId, p!.id)).toBeUndefined();
+    expect(await renameWishlist(userId, p!.id, 'X')).toBeUndefined();
+    expect(await moveWishlist(userId, p!.id, 'up')).toBe(false);
+  });
+
+  it('il database non ammette una lista di negozio senza account, né viceversa', async () => {
+    const account = await linkStoreAccount(userId, 'steam');
+
+    await expect(
+      db.insert(schema.playlists).values({
+        userId,
+        kind: 'store_wishlist',
+        name: 'Senza account',
+        query: null,
+      }),
+    ).rejects.toThrow();
+    await expect(
+      db.insert(schema.playlists).values({
+        userId,
+        kind: 'wishlist',
+        name: 'A mano con account',
+        query: null,
+        storeAccountId: account.id,
+      }),
+    ).rejects.toThrow();
+
+    // Una lista per account.
+    await db.insert(schema.playlists).values({
+      userId,
+      kind: 'store_wishlist',
+      name: 'Una',
+      query: null,
+      storeAccountId: account.id,
+    });
+    await expect(
+      db.insert(schema.playlists).values({
+        userId,
+        kind: 'store_wishlist',
+        name: 'Due',
+        query: null,
+        storeAccountId: account.id,
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('scollegare l’account porta via la lista e i suoi giochi, non i giochi', async () => {
+    const g = await gioco();
+    const { list, account } = await dalNegozio(userId, 'Steam', 'steam', [g]);
+
+    await db
+      .delete(schema.storeAccounts)
+      .where(eq(schema.storeAccounts.id, account.id));
+
+    expect(await open(userId, list.id)).toBeUndefined();
+    expect(
+      await db.query.wishlistItems.findMany({
+        where: eq(schema.wishlistItems.listId, list.id),
+      }),
+    ).toEqual([]);
+    expect(
+      await db.query.games.findFirst({ where: eq(schema.games.id, g.id) }),
+    ).toBeDefined();
   });
 });

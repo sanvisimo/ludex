@@ -1,5 +1,5 @@
 import { db, schema } from '@repo/db';
-import { and, asc, eq, inArray } from '@repo/db/orm';
+import { and, asc, eq, inArray, sql } from '@repo/db/orm';
 import type { AccountExport } from '@repo/contracts';
 
 /**
@@ -139,6 +139,54 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
         .orderBy(asc(schema.wishlistItems.addedAt), asc(schema.games.name))
     : [];
 
+  // Le wishlist dei negozi: i giochi in lista e, accanto, le voci non riconosciute
+  // (nascoste comprese) dello stesso account.
+  const storeLists = await db
+    .select({
+      id: schema.playlists.id,
+      name: schema.playlists.name,
+      storeAccountId: schema.playlists.storeAccountId,
+      store: schema.storeAccounts.store,
+    })
+    .from(schema.playlists)
+    .innerJoin(
+      schema.storeAccounts,
+      eq(schema.storeAccounts.id, schema.playlists.storeAccountId),
+    )
+    .where(
+      and(
+        eq(schema.playlists.userId, userId),
+        eq(sql`${schema.playlists.kind}::text`, 'store_wishlist'),
+      ),
+    )
+    .orderBy(asc(schema.playlists.position), asc(schema.playlists.name));
+  const storeItems = storeLists.length
+    ? await db
+        .select({
+          listId: schema.wishlistItems.listId,
+          name: schema.games.name,
+          igdbId: schema.games.igdbId,
+          addedAt: schema.wishlistItems.addedAt,
+        })
+        .from(schema.wishlistItems)
+        .innerJoin(
+          schema.games,
+          eq(schema.games.id, schema.wishlistItems.gameId),
+        )
+        .where(
+          inArray(
+            schema.wishlistItems.listId,
+            storeLists.map((list) => list.id),
+          ),
+        )
+        .orderBy(asc(schema.wishlistItems.addedAt), asc(schema.games.name))
+    : [];
+  const storeUnresolved = await db
+    .select()
+    .from(schema.wishlistUnresolved)
+    .where(eq(schema.wishlistUnresolved.userId, userId))
+    .orderBy(asc(schema.wishlistUnresolved.name));
+
   const unresolved = await db
     .select()
     .from(schema.unresolvedImports)
@@ -215,6 +263,27 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
         .map((item) => ({
           game: { name: item.name, igdbId: item.igdbId },
           addedAt: item.addedAt,
+        })),
+    })),
+    storeWishlists: storeLists.map((list) => ({
+      store: list.store,
+      account: list.storeAccountId
+        ? (accountName.get(list.storeAccountId) ?? null)
+        : null,
+      name: list.name,
+      games: storeItems
+        .filter((item) => item.listId === list.id)
+        .map((item) => ({
+          game: { name: item.name, igdbId: item.igdbId },
+          addedAt: item.addedAt,
+        })),
+      unresolved: storeUnresolved
+        .filter((row) => row.storeAccountId === list.storeAccountId)
+        .map((row) => ({
+          name: row.name,
+          externalId: row.externalId,
+          addedAt: row.addedAt,
+          hiddenAt: row.hiddenAt,
         })),
     })),
     playlists: playlists.flatMap((playlist) => {

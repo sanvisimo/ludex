@@ -1,0 +1,1 @@
+ALTER TYPE "public"."playlist_kind" ADD VALUE 'store_wishlist';

@@ -28,7 +28,12 @@ import {
   resetStoreTokenKey,
   sameCredentials,
 } from '../lib/crypto';
-import { enqueueImport, isImportRunning } from '../queue/imports';
+import {
+  enqueueImport,
+  enqueueWishlistImport,
+  isImportRunning,
+  isWishlistImportRunning,
+} from '../queue/imports';
 import {
   linkNintendoAccount,
   nintendoCredentials,
@@ -40,6 +45,7 @@ import {
   StoreReauthRequiredError,
   storeAccessToken,
   storeLoginUrl,
+  requestWishlistImport,
   syncAllStoreAccounts,
   unlinkImpact,
   unlinkStoreAccount,
@@ -64,6 +70,8 @@ vi.mock('../external/nintendo', async (importOriginal) => ({
 vi.mock('../queue/imports', () => ({
   isImportRunning: vi.fn(),
   enqueueImport: vi.fn(),
+  isWishlistImportRunning: vi.fn(),
+  enqueueWishlistImport: vi.fn(),
 }));
 
 const mockedResolve = vi.mocked(resolveSteamId);
@@ -75,6 +83,8 @@ const mockedRefreshNintendo = vi.mocked(refreshNintendoTokens);
 const mockedProfileNintendo = vi.mocked(fetchNintendoProfile);
 const mockedRunning = vi.mocked(isImportRunning);
 const mockedEnqueue = vi.mocked(enqueueImport);
+const mockedWishlistRunning = vi.mocked(isWishlistImportRunning);
+const mockedWishlistEnqueue = vi.mocked(enqueueWishlistImport);
 
 /**
  * Un gioco nel backlog con un possesso, e da quale account viene.
@@ -222,6 +232,54 @@ describe('account di negozio', () => {
 
     expect(await db.select().from(schema.storeAccounts)).toHaveLength(0);
   });
+
+  it.each(['keep', 'purge'] as const)(
+    'scollegando con `%s` porta via anche la wishlist di quell’account, e non quella degli altri',
+    async (mode) => {
+      const wishlistOf = async (
+        storeAccountId: string,
+        store: 'amazon' | 'gog',
+      ) => {
+        const [list] = await db
+          .insert(schema.playlists)
+          .values({
+            userId,
+            kind: 'store_wishlist',
+            name: `${store} · prova`,
+            query: null,
+            storeAccountId,
+          })
+          .returning({ id: schema.playlists.id });
+        const game = await createGame();
+        await db
+          .insert(schema.wishlistItems)
+          .values({ listId: list!.id, gameId: game.id });
+        await db.insert(schema.wishlistUnresolved).values({
+          userId,
+          storeAccountId,
+          store,
+          externalId: '1',
+          name: 'Voce non riconosciuta',
+        });
+      };
+      const account = await linkStoreAccount(userId, 'amazon');
+      const other = await linkStoreAccount(userId, 'gog');
+      await wishlistOf(account.id, 'amazon');
+      await wishlistOf(other.id, 'gog');
+
+      await unlinkStoreAccount(userId, account.id, mode);
+
+      // Una lista di negozio non si cancella da sé: se restasse, sarebbe orfana.
+      const lists = await db.select().from(schema.playlists);
+      expect(lists.map((l) => l.storeAccountId)).toEqual([other.id]);
+      expect(await db.select().from(schema.wishlistItems)).toHaveLength(1);
+      expect(
+        (await db.select().from(schema.wishlistUnresolved)).map(
+          (row) => row.storeAccountId,
+        ),
+      ).toEqual([other.id]);
+    },
+  );
 
   it('conta cosa porterebbe via lo scollegamento, prima di portarlo via', async () => {
     const account = await linkStoreAccount(userId, 'amazon');
@@ -378,6 +436,64 @@ describe('account di negozio', () => {
       unlinkStoreAccount(userId, altrui.id, 'purge'),
     ).resolves.toBeNull();
     expect(await db.select().from(schema.storeAccounts)).toHaveLength(1);
+  });
+
+  describe('importa la wishlist (15e)', () => {
+    beforeEach(() => {
+      mockedWishlistEnqueue.mockClear();
+      mockedWishlistRunning.mockReset().mockResolvedValue(false);
+    });
+
+    it('accoda quella del negozio dell’account, senza toccare la libreria', async () => {
+      const gog = await linkStoreAccount(userId, 'gog');
+
+      await expect(requestWishlistImport(userId, gog.id)).resolves.toBe(
+        'queued',
+      );
+      expect(mockedWishlistEnqueue).toHaveBeenCalledWith('gog', {
+        storeAccountId: gog.id,
+      });
+      expect(mockedEnqueue).not.toHaveBeenCalled();
+    });
+
+    it('non accoda se è già in corso, se va ricollegato o se il negozio non ne ha una', async () => {
+      const steam = await linkStoreAccount(userId, 'steam');
+      const scaduto = await linkStoreAccount(userId, 'psn');
+      const epic = await linkStoreAccount(userId, 'epic');
+      await db
+        .update(schema.storeAccounts)
+        .set({ status: 'needs_reauth' })
+        .where(eq(schema.storeAccounts.id, scaduto.id));
+      mockedWishlistRunning.mockImplementation(async (id) => id === steam.id);
+
+      await expect(requestWishlistImport(userId, steam.id)).resolves.toBe(
+        'running',
+      );
+      await expect(requestWishlistImport(userId, scaduto.id)).resolves.toBe(
+        'needs_reauth',
+      );
+      await expect(requestWishlistImport(userId, epic.id)).resolves.toBe(
+        'unsupported',
+      );
+      expect(mockedWishlistEnqueue).not.toHaveBeenCalled();
+    });
+
+    it('un account di un altro utente o scollegato non esiste', async () => {
+      const altro = await linkStoreAccount(await createUser(), 'gog');
+      const scollegato = await linkStoreAccount(userId, 'gog');
+      await db
+        .update(schema.storeAccounts)
+        .set({ status: 'unlinked' })
+        .where(eq(schema.storeAccounts.id, scollegato.id));
+
+      await expect(requestWishlistImport(userId, altro.id)).resolves.toBe(
+        'not_found',
+      );
+      await expect(requestWishlistImport(userId, scollegato.id)).resolves.toBe(
+        'not_found',
+      );
+      expect(mockedWishlistEnqueue).not.toHaveBeenCalled();
+    });
   });
 
   describe('aggiorna tutti gli account', () => {
