@@ -978,7 +978,9 @@
       },
       "steamNintendo": {
         "title": "Steam con login e Nintendo",
-        "text": "Sono pronti e li stiamo provando su un server vero: appena reggono, si aprono a tutti."
+        "p1": "Steam: accedi con il QR dell'app Steam, oppure incolla un token dal browser, e importa anche la libreria della famiglia.",
+        "p2": "Nintendo: la libreria digitale e lo storico di gioco, anche le cartucce che hai avviato.",
+        "p3": "Il login col QR si rinnova da solo: non va rifatto a ogni aggiornamento."
       },
       "ai": {
         "title": "Cosa gioco adesso, con l'AI",

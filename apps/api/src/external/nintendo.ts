@@ -62,8 +62,8 @@ export type NintendoCredentials = {
    * `refreshToken` perché è la forma che il rinnovo comune dei negozi OAuth si
    * aspetta (`OAuthCredentials`), ma **non ruota**: il rinnovo rende un access
    * token nuovo e lascia il session token com'è. Che non ruoti è ciò che il
-   * client di riferimento assume, e un rinnovo da server dell'08/10/2026 (session
-   * token di tre giorni prima ancora valido) è coerente, su un solo account.
+   * client di riferimento assume, e due rinnovi da server (08 e 11/10/2026, session
+   * token di tre e sei giorni prima ancora valido) sono coerenti, su un solo account.
    */
   refreshToken: string;
   /** Epoch in millisecondi. L'access token dura 900 secondi. */
