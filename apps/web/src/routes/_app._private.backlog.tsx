@@ -14,6 +14,7 @@ import {
   EyeOff,
   Gamepad2,
   LayoutGrid,
+  Library,
   List,
   Rows3,
   SearchX,
@@ -33,6 +34,7 @@ import {
 } from '@/components/grid-columns';
 import { PageSizeSelect } from '@/components/page-size-select';
 import { RandomGameButton } from '@/components/random-game-button';
+import { ButtonLink } from '@/src/components/button-link';
 import { SavePlaylistDialog } from '@/components/save-playlist-dialog';
 import {
   type BacklogView,
@@ -221,6 +223,12 @@ function BacklogPage() {
               icon={<Gamepad2 size={24} color="$color11" />}
               title={t('emptyTitle')}
               description={t('emptyHint')}
+              action={
+                <ButtonLink href="/account/libraries">
+                  <Library size={16} color="$color12" />
+                  {t('addLibrary')}
+                </ButtonLink>
+              }
             />
           )
         ) : (
