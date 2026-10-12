@@ -29,13 +29,19 @@ export type RelayedEvent =
       storeAccountId: string;
       userId: string;
     }
+  | {
+      type: 'wishlist';
+      phase: 'started' | 'finished';
+      storeAccountId: string;
+      userId: string;
+    }
   | { type: 'games'; gameIds: string[] }
   | { type: 'sources' };
 
 /**
  * Cosa di un evento può vedere un utente, o `null` se non lo riguarda.
  *
- * Gli import sono del proprietario dell'account. I giochi sono di tutti:
+ * Gli import (di libreria e di wishlist) sono del proprietario dell'account. I giochi sono di tutti:
  * `games` è condivisa, un id non dice niente di nessuno, e filtrarli per
  * backlog vorrebbe dire una query per evento e per connessione. `sources` non
  * porta niente: dice solo che qualcosa è cambiato, e chi non ha aperto l'admin
@@ -48,7 +54,7 @@ export function eventForUser(
   if (event.type === 'games' || event.type === 'sources') return event;
   if (event.userId !== userId) return null;
   return {
-    type: 'import',
+    type: event.type,
     phase: event.phase,
     storeAccountId: event.storeAccountId,
   };

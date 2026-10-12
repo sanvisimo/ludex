@@ -40,6 +40,8 @@ function LibrariesSection() {
   // quando rileggere sono gli eventi del guscio (`useLiveUpdates`).
   const accounts = useQuery(api.accounts.list.queryOptions());
   const settings = useQuery(api.settings.get.queryOptions());
+  // Le wishlist di negozio, una per account (15e): la scheda ne mostra il riepilogo.
+  const lists = useQuery(api.wishlists.list.queryOptions());
 
   // Basta che UN negozio stia importando perché il bottone «aggiorna tutti»
   // resti spento: la pagina non deve sapere quale.
@@ -130,6 +132,9 @@ function LibrariesSection() {
               <StoreAccountCard
                 key={account.id}
                 account={account}
+                wishlist={lists.data?.find(
+                  (list) => list.storeAccountId === account.id,
+                )}
                 busy={syncing}
                 autoSyncLibrary={settings.data?.autoSyncLibrary ?? true}
                 onRename={() => setRenaming(account)}

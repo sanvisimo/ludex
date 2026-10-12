@@ -44,24 +44,34 @@ export type ImportJob = { storeAccountId: string };
  */
 export type ImportsSweepJob = { type: 'sweep' };
 
-export const importsQueue = new Queue<ImportJob | ImportsSweepJob>(
-  IMPORTS_QUEUE,
-  {
-    connection: redisConnection,
-    defaultJobOptions: {
-      attempts: 3,
-      backoff: { type: 'exponential', delay: 10_000 },
-      // Tenuti più a lungo dei job di enrichment: sono pochi e l'utente vuole
-      // sapere com'è andata l'ultima importazione.
-      removeOnComplete: { count: 50 },
-      removeOnFail: { count: 100 },
-    },
-  },
-);
+/**
+ * L'import della **wishlist** di un account (15e): su richiesta, mai dalla
+ * spazzata. Anche qui l'account e nient'altro, e per lo stesso motivo un tipo a
+ * parte: i job `{ storeAccountId }` già in Redis sono di libreria e devono
+ * restarlo.
+ */
+export type ImportsWishlistJob = { type: 'wishlist'; storeAccountId: string };
 
-export const isImportsSweep = (
-  job: ImportJob | ImportsSweepJob,
-): job is ImportsSweepJob => 'type' in job && job.type === 'sweep';
+export type ImportsAnyJob = ImportJob | ImportsSweepJob | ImportsWishlistJob;
+
+export const importsQueue = new Queue<ImportsAnyJob>(IMPORTS_QUEUE, {
+  connection: redisConnection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 10_000 },
+    // Tenuti più a lungo dei job di enrichment: sono pochi e l'utente vuole
+    // sapere com'è andata l'ultima importazione.
+    removeOnComplete: { count: 50 },
+    removeOnFail: { count: 100 },
+  },
+});
+
+export const isImportsSweep = (job: ImportsAnyJob): job is ImportsSweepJob =>
+  'type' in job && job.type === 'sweep';
+
+export const isImportsWishlist = (
+  job: ImportsAnyJob,
+): job is ImportsWishlistJob => 'type' in job && job.type === 'wishlist';
 
 /**
  * La chiave di deduplicazione: un import **per account**.
@@ -100,6 +110,39 @@ export async function enqueueImport(store: Store, job: ImportJob) {
 export async function isImportRunning(storeAccountId: string) {
   const jobId = await importsQueue.getDeduplicationJobId(
     dedupKey(storeAccountId),
+  );
+  return jobId !== null;
+}
+
+/**
+ * La chiave dell'import della wishlist: **sua**, non quella della libreria. Le
+ * due cose scrivono tabelle diverse e un utente può chiedere la wishlist mentre la
+ * libreria si importa (o l'inverso): con la stessa chiave la seconda richiesta
+ * verrebbe scartata in silenzio. Uno alla volta ci pensa già la concorrenza 1
+ * del worker.
+ */
+const wishlistDedupKey = (storeAccountId: string) =>
+  `${storeAccountId}:wishlist`;
+
+/**
+ * Accoda l'import della wishlist di un account. Deduplicato come quello della
+ * libreria: premere due volte non ne fa partire due.
+ */
+export async function enqueueWishlistImport(
+  store: Store,
+  job: { storeAccountId: string },
+) {
+  return importsQueue.add(
+    `${store}:wishlist`,
+    { type: 'wishlist', storeAccountId: job.storeAccountId },
+    { deduplication: { id: wishlistDedupKey(job.storeAccountId) } },
+  );
+}
+
+/** C'è un import della wishlist in corso per questo account? */
+export async function isWishlistImportRunning(storeAccountId: string) {
+  const jobId = await importsQueue.getDeduplicationJobId(
+    wishlistDedupKey(storeAccountId),
   );
   return jobId !== null;
 }

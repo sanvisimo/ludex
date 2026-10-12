@@ -1,5 +1,14 @@
 import type { Wishlist } from '@repo/contracts';
-import { Button, EmptyState, Skeleton, Text, XStack, YStack } from '@repo/ui';
+import {
+  Badge,
+  BrandIcon,
+  Button,
+  EmptyState,
+  Skeleton,
+  Text,
+  XStack,
+  YStack,
+} from '@repo/ui';
 import { Heart, Plus } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
@@ -8,8 +17,11 @@ import { useTranslations } from 'use-intl';
 
 import { CARD_WIDTH, HomeCard } from '@/components/home-band';
 import { ScrollRow } from '@/components/scroll-row';
+import { StoreImportNotices } from '@/components/store-import-notices';
 import { NewListDialog, WishlistMenu } from '@/components/wishlist-menu';
+import { useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
+import { STORE_BRAND } from '@/lib/store-brand';
 import { Page } from '@/src/components/page';
 
 export const Route = createFileRoute('/_app/_private/wishlist/')({
@@ -30,6 +42,13 @@ function WishlistsPage() {
   const [creating, setCreating] = useState(false);
   const lists = useQuery(api.wishlists.list.queryOptions());
   const rows = lists.data ?? [];
+  // Gli account dicono se una wishlist si sta importando: al primo import la
+  // lista non esiste ancora, e senza questo la pagina resterebbe vuota.
+  const accounts = useQuery(api.accounts.list.queryOptions());
+  const importing = accounts.data?.some((row) => row.wishlistSyncing) ?? false;
+  // Le liste a mano e quelle dei negozi (15e), nell'ordine in cui arrivano.
+  const mine = rows.filter((list) => !list.store);
+  const fromStores = rows.filter((list) => list.store);
 
   const newList = (
     <Button variant="outline" onClick={() => setCreating(true)}>
@@ -46,13 +65,15 @@ function WishlistsPage() {
       subtitle={lists.data ? t('count', { count: rows.length }) : ' '}
       actions={newList}
     >
+      {accounts.data && <StoreImportNotices accounts={accounts.data} />}
+
       {lists.error ? (
         <Text fontSize={14} color="$red11">
           {t('error')}
         </Text>
       ) : lists.isPending ? (
         <BandSkeleton />
-      ) : rows.length === 0 ? (
+      ) : rows.length === 0 && importing ? null : rows.length === 0 ? (
         <EmptyState
           icon={<Heart size={24} color="$color11" />}
           title={t('emptyTitle')}
@@ -61,13 +82,39 @@ function WishlistsPage() {
         />
       ) : (
         <YStack gap={24}>
-          {rows.map((list, index) => (
-            <WishlistBand
-              key={list.id}
-              list={list}
-              position={{ index, count: rows.length }}
-            />
-          ))}
+          {/* Due sezioni solo se ci sono tutte e due: spostare su e giù vale
+              dentro il proprio gruppo, e il server le ordina così. */}
+          {[
+            { key: 'mine', rows: mine },
+            { key: 'stores', rows: fromStores },
+          ].map((group) =>
+            group.rows.length === 0 ? null : (
+              <YStack key={group.key} gap={24}>
+                {mine.length > 0 && fromStores.length > 0 && (
+                  <Text
+                    render="h2"
+                    fontFamily="$heading"
+                    fontSize={14}
+                    lineHeight={20}
+                    fontWeight="600"
+                    color="$color11"
+                    m={0}
+                  >
+                    {group.key === 'mine'
+                      ? t('store.sections.mine')
+                      : t('store.sections.stores')}
+                  </Text>
+                )}
+                {group.rows.map((list, index) => (
+                  <WishlistBand
+                    key={list.id}
+                    list={list}
+                    position={{ index, count: group.rows.length }}
+                  />
+                ))}
+              </YStack>
+            ),
+          )}
         </YStack>
       )}
 
@@ -90,6 +137,8 @@ function WishlistBand({
 }) {
   const t = useTranslations('wishlist');
   const tBacklog = useTranslations('backlog');
+  const storeLabels = useStoreLabels();
+  const brand = list.store ? STORE_BRAND[list.store] : undefined;
   const band = useQuery(
     api.wishlists.get.queryOptions({
       input: { id: list.id, limit: BAND_SIZE, offset: 0 },
@@ -101,6 +150,13 @@ function WishlistBand({
     <ScrollRow
       title={
         <XStack items="center" gap={8} shrink={1} minW={0}>
+          {brand && list.store && (
+            <BrandIcon
+              brand={brand}
+              size={20}
+              label={storeLabels[list.store]}
+            />
+          )}
           <Link
             to="/wishlist/$id"
             params={{ id: list.id }}
@@ -124,6 +180,17 @@ function WishlistBand({
               {tBacklog('count', { count: band.data.total })}
             </Text>
           )}
+          {list.unresolved ? (
+            <Link
+              to="/wishlist/$id"
+              params={{ id: list.id }}
+              style={{ textDecoration: 'none' }}
+            >
+              <Badge variant="warning">
+                {t('store.unresolvedChip', { count: list.unresolved })}
+              </Badge>
+            </Link>
+          ) : null}
           <WishlistMenu list={list} position={position} />
         </XStack>
       }
@@ -138,7 +205,7 @@ function WishlistBand({
         <CardSkeletons />
       ) : games.length === 0 ? (
         <Text fontSize={14} lineHeight={20} color="$color11">
-          {t('emptyList')}
+          {list.store ? t('store.emptyList') : t('emptyList')}
         </Text>
       ) : (
         games.map((game) => (

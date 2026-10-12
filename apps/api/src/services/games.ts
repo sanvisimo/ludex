@@ -440,6 +440,12 @@ export type ExternalGameLink = {
 export async function linkExternalGames(
   source: Store,
   links: ExternalGameLink[],
+  // Falso per chi risolve voci che **non hanno** un id come quello che
+  // `external_ids` tiene per quella sorgente (una voce di wishlist PSN in cui non
+  // si trova un `titleId`): i giochi si trovano o si creano lo stesso e la mappa
+  // `externalId → gioco` torna, ma niente si scrive in una tabella condivisa fra
+  // tutti gli utenti.
+  { persistIds = true }: { persistIds?: boolean } = {},
 ) {
   const byExternalId = new Map<string, string>();
   const createdGameIds: string[] = [];
@@ -510,7 +516,7 @@ export async function linkExternalGames(
         row.gameId !== undefined,
     );
 
-  for (const page of chunk(mappature, WRITE_CHUNK)) {
+  for (const page of persistIds ? chunk(mappature, WRITE_CHUNK) : []) {
     const inserted = await db
       .insert(schema.externalIds)
       .values(

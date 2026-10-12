@@ -84,6 +84,28 @@ async function populate(userId: string, game?: { id: string }) {
     externalId: '999',
     name: 'Voce non risolta',
   });
+  // La wishlist del negozio: la lista, un gioco e una voce da sistemare.
+  const [storeList] = await db
+    .insert(schema.playlists)
+    .values({
+      userId,
+      kind: 'store_wishlist',
+      name: 'Steam · prova',
+      query: null,
+      storeAccountId: account.id,
+    })
+    .returning({ id: schema.playlists.id });
+  await db
+    .insert(schema.wishlistItems)
+    .values({ listId: storeList!.id, gameId: game.id });
+  await db.insert(schema.wishlistUnresolved).values({
+    userId,
+    storeAccountId: account.id,
+    store: 'steam',
+    externalId: '777',
+    name: 'Voce di wishlist',
+    addedAt: new Date('2026-10-01T10:00:00Z'),
+  });
   await db.insert(schema.gameReports).values({
     userId,
     gameId: game.id,
@@ -143,6 +165,12 @@ async function leftovers(userId: string) {
         .from(schema.unresolvedImports)
         .where(eq(schema.unresolvedImports.userId, userId)),
     ),
+    wishlistUnresolved: own(
+      await db
+        .select()
+        .from(schema.wishlistUnresolved)
+        .where(eq(schema.wishlistUnresolved.userId, userId)),
+    ),
     reports: own(
       await db
         .select()
@@ -167,6 +195,7 @@ const NONE = {
   userTags: 0,
   playlists: 0,
   unresolved: 0,
+  wishlistUnresolved: 0,
   reports: 0,
   settings: 0,
 };
@@ -210,6 +239,8 @@ describe('cancellare l’account', () => {
     expect(await db.select().from(schema.ownershipRejections)).toHaveLength(1);
     expect(await db.select().from(schema.ownerships)).toHaveLength(1);
     expect(await db.select().from(schema.backlogTags)).toHaveLength(1);
+    // Anche la wishlist del negozio: le voci della lista se ne vanno con lei.
+    expect(await db.select().from(schema.wishlistItems)).toHaveLength(1);
     // …quelli di Luigi sono al loro posto, e il gioco condiviso c'è ancora.
     expect((await leftovers(luigi.userId)).backlog).toBe(1);
     expect(
@@ -270,6 +301,31 @@ describe('esportare i dati', () => {
       .set({ label: 'Account di famiglia' })
       .where(eq(schema.storeAccounts.userId, mario.userId));
 
+    // Una seconda wishlist dello stesso utente, di un altro negozio: le voci non
+    // devono mescolarsi fra le due.
+    const gog = await linkStoreAccount(mario.userId, 'gog');
+    const celeste = await createGame({ name: 'Celeste', igdbId: 26226 });
+    const [gogList] = await db
+      .insert(schema.playlists)
+      .values({
+        userId: mario.userId,
+        kind: 'store_wishlist',
+        name: 'GOG · prova',
+        query: null,
+        storeAccountId: gog.id,
+      })
+      .returning({ id: schema.playlists.id });
+    await db
+      .insert(schema.wishlistItems)
+      .values({ listId: gogList!.id, gameId: celeste.id });
+    await db.insert(schema.wishlistUnresolved).values({
+      userId: mario.userId,
+      storeAccountId: gog.id,
+      store: 'gog',
+      externalId: '1207',
+      name: 'Voce GOG',
+    });
+
     const data = await call(router.accountData.export, undefined, {
       context: { headers: mario.headers },
     });
@@ -304,8 +360,51 @@ describe('esportare i dati', () => {
         }),
       }),
     ]);
-    expect(data.storeAccounts).toHaveLength(1);
+    expect(data.storeAccounts).toHaveLength(2);
     expect(data.unresolvedImports).toHaveLength(1);
+    // La wishlist del negozio, col gioco e la voce da sistemare; le liste a mano
+    // restano un'altra cosa.
+    expect(data.storeWishlists).toEqual([
+      {
+        store: 'gog',
+        account: null,
+        name: 'GOG · prova',
+        games: [
+          {
+            game: { name: 'Celeste', igdbId: 26226 },
+            addedAt: expect.any(Date),
+          },
+        ],
+        unresolved: [
+          {
+            name: 'Voce GOG',
+            externalId: '1207',
+            addedAt: null,
+            hiddenAt: null,
+          },
+        ],
+      },
+      {
+        store: 'steam',
+        account: 'Account di famiglia',
+        name: 'Steam · prova',
+        games: [
+          {
+            game: { name: 'Hollow Knight', igdbId: 14593 },
+            addedAt: expect.any(Date),
+          },
+        ],
+        unresolved: [
+          {
+            name: 'Voce di wishlist',
+            externalId: '777',
+            addedAt: new Date('2026-10-01T10:00:00Z'),
+            hiddenAt: null,
+          },
+        ],
+      },
+    ]);
+    expect(data.wishlists).toEqual([]);
     expect(data.reports).toHaveLength(1);
     expect(data.settings).toEqual({ autoSyncLibrary: true });
 

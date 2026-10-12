@@ -143,6 +143,34 @@ sovrapposto: un bottone non sta dentro un link. `SortSelect` prende `keys` per o
 lista, e le mutazioni invalidano le liste dalla `MutationCache`, perché un gioco
 che entra nel backlog da qualunque strada esce dalle liste.
 
+**Le wishlist dei negozi** (step 15e) stanno nelle stesse pagine delle liste a mano,
+con alcune differenze che non si indovinano:
+
+- **`/wishlist`** ha due sezioni («Le mie liste», «Dai negozi») **solo se ci sono
+  tutte e due**: lo spostamento vale dentro il proprio gruppo, e il server le ordina
+  così. Una lista di negozio ha l'icona del negozio e l'etichetta «N da sistemare»
+  (`Wishlist.unresolved`, voci nascoste escluse). In cima, `StoreImportNotices`: una
+  riga per ogni account che importa o il cui ultimo import è fallito — al primo import
+  la lista non esiste, e senza quella riga la pagina sarebbe vuota —, e mentre uno
+  importa non si mostra «Nessuna lista».
+- **La lista aperta** non ha «Togli» (si allinea al negozio) e non ha «Ce l'ho» se il
+  gioco è già nel backlog, dove la card porta il suo stato (`readOnly` in
+  `WishlistCard`). Ha «Aggiorna wishlist» (`useSyncWishlist`, la stessa mutazione della
+  scheda), lo stato dell'ultimo import sotto il titolo (`StoreListStatus`) e, se ci sono
+  voci non riconosciute, una barra che apre `WishlistUnresolvedDialog`: «Collega…»
+  (`IgdbPicker`, come per gli scarti della libreria) e «Nascondi»; le nascoste sono sotto
+  «Mostra le nascoste» e si rimettono con «Ripristina». `WishlistMenu` guarda `store`: si
+  rinomina, si sposta e si **elimina** (dialogo con un testo suo; non mentre l'import gira).
+- **La scheda dell'account** ha il cuore accanto al ↻ (Steam, GOG, PSN, non sulle schede
+  da ricollegare) e `StoreWishlistRow`: «in importazione…», l'errore col suo perché
+  (`useWishlistErrorText`, un punto solo), o «Wishlist · N giochi» col link e «aggiornata X
+  fa». Il badge «Signed in» di Steam sta sotto l'intestazione, **fuori** dal gruppo ancorato
+  in fondo.
+- **Gli eventi.** L'evento `wishlist` rilegge le liste e gli account. Sul `finished`
+  `useLiveUpdates` rilegge gli account (saltando la cache) e dice l'esito con un avviso, **anche
+  per gli aggiornamenti automatici**; se l'account risulta ancora «in importazione» è un tentativo
+  che BullMQ riprova e non dice niente.
+
 **Le playlist condivise** (`/shared/$token`, step 15d) sono **pubbliche**, sotto
 `_app` e fuori da `_private`: le apre chiunque abbia il link, anche da anonimo,
 con `noindex, nofollow`. Il server manda il nome e i giochi come li mostra il

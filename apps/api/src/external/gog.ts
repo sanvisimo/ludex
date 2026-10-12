@@ -302,6 +302,112 @@ export async function fetchGogLibrary(
   return entries;
 }
 
+const WISHLIST_URL = 'https://embed.gog.com/user/wishlist.json';
+
+export type GogWishlistEntry = {
+  /** Il product id, lo stesso delle copie che importiamo. */
+  externalId: string;
+  /**
+   * Il nome **non c'è**: la wishlist rende solo gli id. Chi mostra una voce che non
+   * si risolve ripiega su «GOG <id>», come la libreria quando manca il titolo.
+   */
+  name: string;
+};
+
+type WishlistResponse = {
+  wishlist?: Record<string, unknown>;
+  checksum?: string;
+};
+
+/**
+ * La wishlist dell'account (15e): `user/wishlist.json` col Bearer di
+ * `auth.gog.com`, lo stesso della libreria. Misurato il 12/10/2026: non servono i
+ * cookie del sito, e **non c'è una data di aggiunta**.
+ *
+ * Una risposta che non è la forma attesa (senza l'oggetto `wishlist`) alza invece
+ * di rendere una lista vuota: un elenco vuoto vorrebbe dire svuotare la lista
+ * di Ludex, e GOG che cambia forma non è un utente che ha tolto tutto.
+ *
+ * Nessun redirect seguito: se GOG rimanda a una pagina di login il token non
+ * basta, ed è `GogAuthError` — il credenziale da rifare.
+ */
+export async function fetchGogWishlist(
+  accessToken: string,
+): Promise<GogWishlistEntry[]> {
+  const response = await fetch(WISHLIST_URL, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    redirect: 'manual',
+  });
+  if (
+    response.status === 401 ||
+    response.status === 403 ||
+    (response.status >= 300 && response.status < 400)
+  ) {
+    throw new GogAuthError('GOG ha rifiutato il token di accesso');
+  }
+  if (!response.ok) {
+    throw new Error(`GOG user/wishlist.json: ${response.status}`);
+  }
+
+  const body = (await response.json()) as WishlistResponse;
+  if (
+    !body.wishlist ||
+    typeof body.wishlist !== 'object' ||
+    Array.isArray(body.wishlist)
+  ) {
+    throw new Error('GOG user/wishlist.json: risposta senza wishlist');
+  }
+
+  return Object.keys(body.wishlist).map((id) => ({
+    externalId: id,
+    name: `GOG ${id}`,
+  }));
+}
+
+export type GogProduct = {
+  title: string;
+  /** Da cui la pagina del negozio, `/game/<slug>`. */
+  slug: string | null;
+  /** `game`, ma anche `pack`, `dlc`: misurato `pack` per un contenuto aggiuntivo. */
+  gameType: string | null;
+  /** Un logo, non una copertina: basta a riconoscere la voce. */
+  imageUrl: string | null;
+};
+
+type ProductResponse = {
+  title?: string;
+  slug?: string;
+  game_type?: string;
+  images?: { logo2x?: string | null };
+};
+
+/**
+ * La scheda pubblica di un prodotto, da `api.gog.com/products/<id>` (senza token
+ * né account). Misurata il 12/10/2026. Serve per le voci della wishlist che IGDB
+ * non riconosce: la wishlist dà solo gli id.
+ *
+ * Rende `null` se il prodotto non esiste più (404) e alza su ogni altra risposta,
+ * come `fetchSteamAppDetails`.
+ */
+export async function fetchGogProduct(id: string): Promise<GogProduct | null> {
+  const response = await fetch(`https://api.gog.com/products/${id}`);
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`GOG products: ${response.status}`);
+
+  const body = (await response.json()) as ProductResponse;
+  const title = body.title?.trim();
+  if (!title) return null;
+
+  const logo = body.images?.logo2x;
+  return {
+    title,
+    slug: body.slug || null,
+    gameType: body.game_type ?? null,
+    // Il negozio manda gli indirizzi senza schema, `//images-2.gog-statics.com/…`.
+    imageUrl: logo ? (logo.startsWith('//') ? `https:${logo}` : logo) : null,
+  };
+}
+
 type GalaxyReleasesResponse = {
   items?: {
     /** `gog`, ma anche `steam`, `epic`, `psn`…: Galaxy integra gli altri negozi. */

@@ -172,10 +172,10 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
 16. Cancellazione ed esportazione dell'account
 
 Poi il mobile. I numeri sono nomi e non si rinumerano: **quello che resta si fa
-in quest'ordine** (09/10/2026) — 15e · 9c · 10 · 14 · 9e · 13 · mobile, con le
+in quest'ordine** (09/10/2026) — 9c · 10 · 14 · 9e · 13 · mobile (la 15e è fatta dal 13/10/2026), con le
 ragioni in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.md). Non anticipare
 step successivi: se una feature appartiene allo step 13, non implementarla
-mentre si lavora sulla 15e.
+mentre si lavora sulla 9c.
 
 ## Note operative
 

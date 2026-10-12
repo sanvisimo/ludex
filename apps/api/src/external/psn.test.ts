@@ -1,6 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { parseNpsso, parsePlayDuration } from './psn';
+import {
+  fetchPsnWishlist,
+  parseNpsso,
+  parsePlayDuration,
+  PsnAuthError,
+} from './psn';
 import {
   toPlatformSlug,
   toPlayedPlatformSlug,
@@ -106,5 +111,144 @@ describe('toPlayedPlatformSlug', () => {
 
   it('rende null quando né la categoria né il prefisso dicono niente', () => {
     expect(toPlayedPlatformSlug('ps3_game', 'NPEB01234_00')).toBe(null);
+  });
+});
+
+describe('fetchPsnWishlist', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    fetchMock.mockReset();
+    vi.stubGlobal('fetch', fetchMock);
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const respond = (body: unknown, status = 200) =>
+    fetchMock.mockResolvedValueOnce({
+      ok: status >= 200 && status < 300,
+      status,
+      json: async () => body,
+      text: async () => JSON.stringify(body),
+    });
+
+  const prodotto = (over: Record<string, unknown> = {}) => ({
+    __typename: 'Product',
+    id: 'EP0002-CUSA13801_00-SEKIROGAME000001',
+    name: '  Sekiro™: Shadows Die Twice - Game of the Year Edition ',
+    platforms: ['PS4'],
+    storeDisplayClassification: 'FULL_GAME',
+    boxArt: { url: 'https://image.api.playstation.com/sekiro.png' },
+    price: { basePrice: '$59.99' },
+    ...over,
+  });
+
+  it('chiama m.np con la query persistente e le intestazioni misurate', async () => {
+    respond({ data: { storeWishlist: [prodotto()] } });
+
+    await fetchPsnWishlist('token-di-prova');
+
+    const [url, init] = fetchMock.mock.calls[0]!;
+    const u = url as URL;
+    expect(u.origin + u.pathname).toBe(
+      'https://m.np.playstation.com/api/graphql/v1/op',
+    );
+    expect(u.searchParams.get('operationName')).toBe('metGetStoreWishlist');
+    expect(u.searchParams.get('variables')).toBe('{}');
+    expect(JSON.parse(u.searchParams.get('extensions')!)).toEqual({
+      persistedQuery: {
+        version: 1,
+        sha256Hash:
+          '571149e8aa4d76af7dd33b92e1d6f8f828ebc5fa8f0f6bf51a8324a0e6d71324',
+      },
+    });
+    expect(init.headers).toMatchObject({
+      Authorization: 'Bearer token-di-prova',
+      'apollographql-client-name': 'PlayStationApp-Android',
+    });
+  });
+
+  it('rende un prodotto per voce, con le piattaforme e senza i prezzi', async () => {
+    respond({
+      data: {
+        storeWishlist: [
+          prodotto(),
+          prodotto({
+            id: 'EP3643-PPSA06465_00-3571249245584917',
+            name: 'Cult of the Lamb',
+            platforms: ['PS4', 'PS5'],
+            boxArt: null,
+          }),
+        ],
+      },
+    });
+
+    const wishlist = await fetchPsnWishlist('t');
+
+    expect(wishlist).toEqual([
+      {
+        externalId: 'EP0002-CUSA13801_00-SEKIROGAME000001',
+        name: 'Sekiro™: Shadows Die Twice - Game of the Year Edition',
+        platforms: ['PS4'],
+        classification: 'FULL_GAME',
+        imageUrl: 'https://image.api.playstation.com/sekiro.png',
+      },
+      {
+        externalId: 'EP3643-PPSA06465_00-3571249245584917',
+        name: 'Cult of the Lamb',
+        platforms: ['PS4', 'PS5'],
+        classification: 'FULL_GAME',
+        imageUrl: null,
+      },
+    ]);
+  });
+
+  it('salta le voci senza id o senza nome', async () => {
+    respond({
+      data: {
+        storeWishlist: [
+          prodotto({ id: null }),
+          prodotto({ name: '   ' }),
+          prodotto({ id: 'buono', name: 'Buono' }),
+        ],
+      },
+    });
+    expect((await fetchPsnWishlist('t')).map((p) => p.externalId)).toEqual([
+      'buono',
+    ]);
+  });
+
+  it('una wishlist vuota è una lista vuota', async () => {
+    respond({ data: { storeWishlist: [] } });
+    await expect(fetchPsnWishlist('t')).resolves.toEqual([]);
+  });
+
+  it('una risposta di un’altra forma, o un errore GraphQL, non è una lista vuota', async () => {
+    // L'hash della query persistente può smettere di valere: Sony lo dice con un
+    // errore. Scambiarlo per una lista vuota farebbe svuotare quella dell'utente.
+    respond({ errors: [{ message: 'PersistedQueryNotFound' }] });
+    await expect(fetchPsnWishlist('t')).rejects.toThrow(
+      /PersistedQueryNotFound/,
+    );
+
+    respond({ data: { storeWishlist: null } });
+    await expect(fetchPsnWishlist('t')).rejects.toThrow(/senza storeWishlist/);
+
+    respond({ data: {} });
+    await expect(fetchPsnWishlist('t')).rejects.toThrow(/senza storeWishlist/);
+  });
+
+  it('un rifiuto è il credenziale da rifare, un 500 un errore col corpo', async () => {
+    respond({}, 401);
+    await expect(fetchPsnWishlist('t')).rejects.toBeInstanceOf(PsnAuthError);
+
+    respond({ message: 'giù' }, 500);
+    const error = (await fetchPsnWishlist('t').catch(
+      (e: unknown) => e,
+    )) as Error;
+    expect(error).not.toBeInstanceOf(PsnAuthError);
+    expect(error.message).toContain('500');
+    expect(error.message).toContain('giù');
   });
 });

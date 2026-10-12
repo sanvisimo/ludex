@@ -30,6 +30,18 @@ export const storeValues = [
   'nintendo',
 ] as const;
 
+// I negozi di cui si importa la wishlist (15e): Steam, GOG e PlayStation. Gli
+// altri non ne hanno una che si legga (o non si collegano ancora): per loro
+// `accounts.syncWishlist` rende `BAD_REQUEST`.
+export const wishlistStoreValues = ['steam', 'gog', 'psn'] as const;
+
+// Perché l'ultimo import della wishlist di un account non è andato a buon fine,
+// per dirlo sulla scheda. `not_visible`: Steam rende l'elenco vuoto e i «Dettagli
+// dei giochi» vanno resi pubblici (o si accede con Steam). `reauth`: il
+// collegamento è scaduto. `failed`: tutto il resto, di solito una rete che cade e
+// che BullMQ riprova.
+export const wishlistErrorValues = ['not_visible', 'reauth', 'failed'] as const;
+
 // I negozi che si possono collegare **oggi**, in ordine di comparsa.
 //
 // Sottoinsieme di `storeValues`, che è invece l'elenco dei posti da cui un gioco
@@ -239,9 +251,15 @@ export const userTagKindValues = ['tag', 'category'] as const;
 
 // Che cosa è una riga di `playlists` (step 15a, 15b): una query salvata sul
 // backlog (`filter`) o una lista di giochi scelti a mano, che non sono nel
-// backlog (`wishlist`). Sta nel vocabolario perché l'enum del database e il
-// client devono conoscerlo senza poter importare `@repo/db`.
-export const playlistKindValues = ['filter', 'wishlist'] as const;
+// backlog (`wishlist`), o la wishlist di un negozio (`store_wishlist`, step 15e):
+// una lista di sola lettura legata a un account, che l'import allinea al negozio.
+// Sta nel vocabolario perché l'enum del database e il client devono conoscerlo
+// senza poter importare `@repo/db`.
+export const playlistKindValues = [
+  'filter',
+  'wishlist',
+  'store_wishlist',
+] as const;
 
 // Come si ordina una lista (step 15b). Sono i dati del gioco, più la data in cui
 // è entrato nella lista: una lista non ha stato, voto personale né possessi.
@@ -305,6 +323,8 @@ export type WishlistSort = (typeof wishlistSortValues)[number];
 export type AttributeKind = (typeof attributeKindValues)[number];
 export type RelatedKind = (typeof relatedKindValues)[number];
 export type Store = (typeof storeValues)[number];
+export type WishlistStore = (typeof wishlistStoreValues)[number];
+export type WishlistError = (typeof wishlistErrorValues)[number];
 export type LinkableStore = (typeof linkableStoreValues)[number];
 export type StoreAccountStatus = (typeof storeAccountStatusValues)[number];
 export type ScoreSource = (typeof scoreSourceValues)[number];

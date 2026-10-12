@@ -484,6 +484,110 @@ async function graphql<T>(
 }
 
 /**
+ * La wishlist del Playstation Store, `metGetStoreWishlist`, su **un altro host**
+ * della libreria acquisti: `m.np.playstation.com`, quello di `gamelist` e del
+ * profilo. Misurato il 12/10/2026 col Bearer del nostro client, e con l'hash che la
+ * documentazione non ufficiale dava il 10/10: valeva ancora. È la parte fragile
+ * (una *persisted query* di Sony, legata all'app Android), e quando cambia la
+ * risposta è un errore GraphQL che lo dice — `fetchPsnWishlist` lo alza, **non
+ * lo scambia per una lista vuota**.
+ */
+const WISHLIST_URL = 'https://m.np.playstation.com/api/graphql/v1/op';
+const WISHLIST_QUERY_HASH =
+  '571149e8aa4d76af7dd33b92e1d6f8f828ebc5fa8f0f6bf51a8324a0e6d71324';
+
+export type PsnWishlistEntry = {
+  /**
+   * L'id di prodotto del negozio (`EP0002-CUSA13801_00-…`), lo stesso pezzo finale
+   * dell'indirizzo della pagina. **Non** è il `titleId` delle librerie né il
+   * `conceptId`, ma il `titleId` ne è il pezzo di mezzo: è quello che `external_ids`
+   * tiene, e lo si ricava con `wishlistKey`. L'id intero non va scritto.
+   */
+  externalId: string;
+  name: string;
+  /** `PS4`, `PS5`, o entrambe: il prodotto è uno anche se esce su due console. */
+  platforms: string[];
+  /** `FULL_GAME`, e quello che Sony chiama le altre cose (edizioni, componenti). */
+  classification: string | null;
+  imageUrl: string | null;
+};
+
+type WishlistResponse = {
+  data?: {
+    storeWishlist?:
+      | {
+          id?: string;
+          name?: string;
+          platforms?: string[] | null;
+          storeDisplayClassification?: string | null;
+          boxArt?: { url?: string } | null;
+        }[]
+      | null;
+  };
+  errors?: { message?: string }[];
+};
+
+export async function fetchPsnWishlist(
+  accessToken: string,
+): Promise<PsnWishlistEntry[]> {
+  const url = new URL(WISHLIST_URL);
+  url.searchParams.set('operationName', 'metGetStoreWishlist');
+  url.searchParams.set('variables', '{}');
+  url.searchParams.set(
+    'extensions',
+    JSON.stringify({
+      persistedQuery: { version: 1, sha256Hash: WISHLIST_QUERY_HASH },
+    }),
+  );
+
+  // Le intestazioni della richiesta misurata, non quelle di `graphql()`: è la
+  // stessa a cui Sony ha risposto, e cambiarla vorrebbe dire non sapere più se
+  // funziona.
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'content-type': 'application/json',
+      'apollographql-client-name': 'PlayStationApp-Android',
+      'X-PSN-Store-Locale-Override': 'en-US',
+      'Accept-Language': 'en-US',
+    },
+  });
+
+  if (response.status === 401 || response.status === 403) {
+    throw new PsnAuthError('Sony ha rifiutato il token di accesso');
+  }
+  if (!response.ok) {
+    const detail = (await response.text().catch(() => '')).slice(0, 500);
+    throw new Error(`PSN metGetStoreWishlist: ${response.status} ${detail}`);
+  }
+
+  const body = (await response.json()) as WishlistResponse;
+  if (body.errors?.length) {
+    throw new Error(
+      `PSN metGetStoreWishlist: ${body.errors[0]?.message ?? 'errore'}`,
+    );
+  }
+  const list = body.data?.storeWishlist;
+  if (!Array.isArray(list)) {
+    throw new Error('PSN metGetStoreWishlist: risposta senza storeWishlist');
+  }
+
+  return list.flatMap((product) =>
+    product.id && product.name?.trim()
+      ? [
+          {
+            externalId: product.id,
+            name: product.name.trim(),
+            platforms: product.platforms ?? [],
+            classification: product.storeDisplayClassification ?? null,
+            imageUrl: product.boxArt?.url ?? null,
+          },
+        ]
+      : [],
+  );
+}
+
+/**
  * La prima pagina **grezza**, per gli arnesi.
  *
  * Serve a una cosa che il tipo sopra non può dare: vedere quali campi Sony

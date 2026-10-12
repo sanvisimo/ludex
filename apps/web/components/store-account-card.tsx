@@ -1,5 +1,14 @@
-import type { LinkableStore, Store, StoreAccount } from '@repo/contracts';
-import { linkableStoreValues, storeAccountName } from '@repo/contracts';
+import type {
+  LinkableStore,
+  Store,
+  StoreAccount,
+  Wishlist,
+} from '@repo/contracts';
+import {
+  linkableStoreValues,
+  storeAccountName,
+  wishlistStoreValues,
+} from '@repo/contracts';
 import {
   Badge,
   BrandIcon,
@@ -27,6 +36,7 @@ import {
 } from '@repo/ui';
 import {
   EllipsisVertical,
+  Heart,
   KeyRound,
   Link2,
   LogIn,
@@ -41,6 +51,8 @@ import { useFormatter, useNow, useTranslations } from 'use-intl';
 
 import { RemoveSteamLoginDialog } from '@/components/remove-steam-login-dialog';
 import { SteamLink } from '@/components/steam-link';
+import { StoreWishlistRow } from '@/components/store-wishlist-row';
+import { useSyncWishlist } from '@/components/use-sync-wishlist';
 import { StoreLinkForm } from '@/components/store-link-form';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
@@ -69,12 +81,15 @@ const isLinkable = (store: Store): store is LinkableStore =>
 
 export function StoreAccountCard({
   account,
+  wishlist,
   busy,
   autoSyncLibrary,
   onRename,
   onUnlink,
 }: {
   account: StoreAccount;
+  /** La wishlist importata di questo account, se c'è già (15e). */
+  wishlist?: Wishlist;
   /**
    * C'è un import in corso su **un qualunque** account dell'utente. Spegne
    * «Aggiorna» e «Scollega» su tutte le schede, non solo su quella che importa:
@@ -109,6 +124,7 @@ export function StoreAccountCard({
   const [loggingIn, setLoggingIn] = useState(false);
   const [removingLogin, setRemovingLogin] = useState(false);
   const tSteam = useTranslations('account.steamLogin');
+  const tWishlist = useTranslations('wishlist.store');
   const isSteam = account.store === 'steam';
   // Il token del browser, scaduto: vedi il badge più sotto.
   const tokenExpired =
@@ -145,6 +161,12 @@ export function StoreAccountCard({
   const autoSyncChecked = autoSync.isPending
     ? (autoSync.variables ?? account.autoSync)
     : account.autoSync;
+
+  // La wishlist del negozio (15e): solo dove se ne legge una, e solo a mano.
+  const hasWishlist = (wishlistStoreValues as readonly string[]).includes(
+    account.store,
+  );
+  const syncWishlist = useSyncWishlist(account.id);
 
   const sync = useMutation({
     mutationFn: () => client.accounts.sync({ accountId: account.id }),
@@ -272,75 +294,75 @@ export function StoreAccountCard({
           </DropdownMenu>
         </XStack>
 
+        {/* Su Steam la scheda dice **come** è collegato l'account: col login
+            (e allora c'è la famiglia) o col solo profilo, dove il login si
+            offre lì accanto. Con il login scaduto non si dice «attivo»: il
+            badge rosso di sotto dice già cosa fare. */}
+        {isSteam &&
+          (account.hasLogin ? (
+            <XStack items="center" gap={8} flexWrap="wrap">
+              {tokenExpired ? (
+                // Il token del browser dura 24 ore e non si rinnova: la
+                // famiglia resta com'era all'ultimo import, il profilo
+                // continua da solo. Non è un account da ricollegare.
+                <>
+                  <Badge variant="secondary">
+                    {tSteam('badgeTokenExpired')}
+                  </Badge>
+                  <Text fontSize={13} color="$color11">
+                    · {tSteam('familyFrozen')}
+                  </Text>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    px={0}
+                    onClick={() => setLoggingIn(true)}
+                  >
+                    {tSteam('newToken')}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Badge
+                    variant={
+                      account.status === 'needs_reauth'
+                        ? 'secondary'
+                        : 'success'
+                    }
+                  >
+                    {account.status === 'needs_reauth'
+                      ? tSteam('badgeDead')
+                      : tSteam('badgeOn')}
+                  </Badge>
+                  <Text fontSize={13} color="$color11">
+                    · {tSteam('familyIncluded')}
+                    {account.loginKind === 'token' &&
+                      ` · ${tSteam('tokenKind')}`}
+                  </Text>
+                </>
+              )}
+            </XStack>
+          ) : (
+            <XStack items="center" gap={8} flexWrap="wrap">
+              <Badge variant="secondary">{tSteam('badgeProfileOnly')}</Badge>
+              {/* Senza il rientro del bottone: accanto al badge deve stare in
+                  una riga sola, e allineato al suo bordo. */}
+              <Button
+                variant="ghost"
+                size="sm"
+                px={0}
+                onClick={() => setLoggingIn(true)}
+              >
+                {tSteam('signIn')}
+              </Button>
+            </XStack>
+          ))}
+
         {/* Tutto ciò che sta sotto l'intestazione è ancorato in fondo, stato
             compreso. La griglia allunga le schede di una riga alla più alta:
             con lo stato in alto e solo i gesti in fondo, fra i due restava un
             vuoto di altezza diversa da una scheda all'altra. */}
         <YStack gap={12} mt="auto">
-          {/* Su Steam la scheda dice **come** è collegato l'account: col login
-              (e allora c'è la famiglia) o col solo profilo, dove il login si
-              offre lì accanto. Con il login scaduto non si dice «attivo»: il
-              badge rosso di sotto dice già cosa fare. */}
-          {isSteam &&
-            (account.hasLogin ? (
-              <XStack items="center" gap={8} flexWrap="wrap">
-                {tokenExpired ? (
-                  // Il token del browser dura 24 ore e non si rinnova: la
-                  // famiglia resta com'era all'ultimo import, il profilo
-                  // continua da solo. Non è un account da ricollegare.
-                  <>
-                    <Badge variant="secondary">
-                      {tSteam('badgeTokenExpired')}
-                    </Badge>
-                    <Text fontSize={13} color="$color11">
-                      · {tSteam('familyFrozen')}
-                    </Text>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      px={0}
-                      onClick={() => setLoggingIn(true)}
-                    >
-                      {tSteam('newToken')}
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Badge
-                      variant={
-                        account.status === 'needs_reauth'
-                          ? 'secondary'
-                          : 'success'
-                      }
-                    >
-                      {account.status === 'needs_reauth'
-                        ? tSteam('badgeDead')
-                        : tSteam('badgeOn')}
-                    </Badge>
-                    <Text fontSize={13} color="$color11">
-                      · {tSteam('familyIncluded')}
-                      {account.loginKind === 'token' &&
-                        ` · ${tSteam('tokenKind')}`}
-                    </Text>
-                  </>
-                )}
-              </XStack>
-            ) : (
-              <XStack items="center" gap={8} flexWrap="wrap">
-                <Badge variant="secondary">{tSteam('badgeProfileOnly')}</Badge>
-                {/* Senza il rientro del bottone: accanto al badge deve stare in
-                    una riga sola, e allineato al suo bordo. */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  px={0}
-                  onClick={() => setLoggingIn(true)}
-                >
-                  {tSteam('signIn')}
-                </Button>
-              </XStack>
-            ))}
-
           {/* Lo stato in una riga: da ricollegare, in corso, o quando è stata
             l'ultima volta. Da ricollegare vince sul resto: finché non si
             rimette a posto niente si aggiorna. */}
@@ -367,13 +389,17 @@ export function StoreAccountCard({
             </Text>
           )}
 
+          {hasWishlist && (
+            <StoreWishlistRow account={account} list={wishlist} />
+          )}
+
           {/* Una riga sola: a sinistra il gesto, a destra l'interruttore.
             «Aggiorna» è la sola icona, col suo nome nel suggerimento e
             nell'`aria-label`; «Ricollega» resta a parole, perché è il gesto da
             fare e non va nascosto. L'interruttore tiene «Auto» scritto: il
             suggerimento non compare su un telefono, e senza una parola
             accanto lo switch non direbbe cosa fa. */}
-          <XStack items="center" justify="space-between" gap={8}>
+          <XStack items="center" gap={8}>
             {relinkStore ? (
               <Button onClick={() => setRelinking(true)}>
                 <Link2 size={16} color="$black1" />
@@ -397,7 +423,30 @@ export function StoreAccountCard({
               </Tooltip>
             )}
 
-            <XStack items="center" gap={8}>
+            {/* Il cuore accanto al ↻: importa la wishlist del negozio, o la
+                aggiorna se c'è. Solo dove se ne legge una, e non da
+                ricollegare. Gira mentre quell'account la importa. */}
+            {hasWishlist && !relinkStore && (
+              <Tooltip
+                content={wishlist ? tWishlist('refresh') : tWishlist('import')}
+              >
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={
+                    wishlist ? tWishlist('refresh') : tWishlist('import')
+                  }
+                  onClick={() => syncWishlist.mutate()}
+                  disabled={account.wishlistSyncing || syncWishlist.isPending}
+                >
+                  <Spinner spinning={account.wishlistSyncing}>
+                    <Heart size={16} color="$color12" />
+                  </Spinner>
+                </Button>
+              </Tooltip>
+            )}
+
+            <XStack items="center" gap={8} ml="auto">
               <Label htmlFor={autoSyncId}>{t('autoSyncShort')}</Label>
               <Tooltip content={t('autoSync')}>
                 <Switch

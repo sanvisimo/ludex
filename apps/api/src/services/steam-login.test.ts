@@ -44,6 +44,7 @@ vi.mock('../external/steam', () => ({
 vi.mock('../queue/imports', () => ({
   isImportRunning: vi.fn(),
   enqueueImport: vi.fn(),
+  isWishlistImportRunning: vi.fn(),
 }));
 
 const mockedBegin = vi.mocked(beginSteamQrLogin);

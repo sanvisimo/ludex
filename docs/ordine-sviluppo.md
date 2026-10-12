@@ -9,21 +9,20 @@ commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
 in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
 [roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
-1. **15e — Wishlist dei negozi** (aggiunta il 10/10/2026): importare le
-   wishlist di Steam, GOG e PlayStation nelle liste a mano; Xbox e gli altri
-   da valutare. Gli endpoint ci sono, ma nessuno è misurato: prima una richiesta di verifica, poi l'analisi. Vedi «Le
-   wishlist dei negozi» in [negozi](negozi.md).
-2. **9c — EA**: importazione una tantum. Prima va misurato il formato, ma il
-   resto è la pipeline che esiste già.
-3. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
+1. **9c — EA** (**in corso dal 13/10/2026**): importazione una tantum. Prima va
+   misurato il formato, ma il resto è la pipeline che esiste già.
+2. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
    e la deduplica.
-4. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
+3. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
    decise.
-5. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
+4. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
    da zero.
-6. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+5. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-7. **Mobile**: un'app nuova, con le sue schermate.
+6. **Mobile**: un'app nuova, con le sue schermate.
+
+Le wishlist dei negozi (15e) erano la prima della lista e sono **fatte dal
+13/10/2026**: vedi «Le wishlist dei negozi» in [negozi](negozi.md).
 
 Steam con login (9f) e Nintendo (9d) sono segnati «fatti» nella roadmap pubblica dal
 12/10/2026, dopo quattro giorni di prova sul mini PC senza blocchi (vedi «Il terzo
@@ -260,16 +259,20 @@ blocco» in [negozi](negozi.md)). Il link alle fonti senza voto nella pagina del
     un account. Decisioni sulla privacy: dinamica, il proprietario non compare,
     nascosti ed `excluded` mai visibili, solo con il link e `noindex`.
 
-    **15e — Wishlist dei negozi** (aggiunta il 10/10/2026, **da fare**, dopo
-    l'11b). Le wishlist di Steam (`IWishlistService/GetWishlist`, con la chiave,
-    senza sessione), di GOG (`embed.gog.com/user/wishlist.json`) e di PlayStation
-    (`metGetStoreWishlist`, solo l'account autenticato) nelle liste a mano di
-    15b. Xbox non dovrebbe essere complessa e gli altri negozi si valutano di
-    volta in volta.
-    Gli endpoint e ciò che resta da misurare sono in
-    [negozi](negozi.md#le-wishlist-dei-negozi-15e-da-fare); le decisioni
-    (una lista per negozio e account, cosa fa la rimozione) si prendono
-    nell'analisi, prima del codice.
+    **15e — Wishlist dei negozi** (aggiunta il 10/10/2026, **fatta il
+    13/10/2026**, piano in `plans/15e-wishlist-negozi.md`). Le wishlist di Steam
+    (`IWishlistService/GetWishlist`, con la chiave o il login), di GOG
+    (`embed.gog.com/user/wishlist.json`) e di PlayStation (`metGetStoreWishlist`, solo
+    l'account autenticato), **misurate** prima di scrivere codice. Una **lista per
+    account collegato**, di sola lettura e creata a richiesta (tipo
+    `store_wishlist`, vedi [modello-dati](modello-dati.md)); le voci che l'import non
+    riconosce stanno in `wishlist_unresolved` e si collegano a mano a IGDB o si
+    nascondono. Il job è nella coda degli import, l'aggiornamento automatico rinfresca
+    solo le liste che esistono, e la lista si può cancellare. Xbox non dovrebbe essere
+    complessa e gli altri negozi si valutano di volta in volta. Dettagli in
+    [negozi](negozi.md#le-wishlist-dei-negozi-15e). **Ancora da fare:** i test del
+    router e della colla del worker, fuori dal lotto (sezione «Test rimandati» del
+    piano).
 
 16. **Cancellazione ed esportazione dell'account** — **fatto il 06/10/2026**
     (piano in `plans/16-cancellazione-esportazione.md`). L'utente elimina il
@@ -286,7 +289,7 @@ blocco» in [negozi](negozi.md)). Il link alle fonti senza voto nella pagina del
       backlog, possessi, tag, account dei negozi e i loro token, e restano i
       giochi.
     - **cosa contiene l'esportazione**: backlog, possessi, voti, note, tag,
-      senza i token.
+      senza i token. Dal 13/10/2026 anche le wishlist dei negozi (`storeWishlists`).
     - **la conferma passa dalla password.** `session.freshAge` è 0 (vedi
       `packages/auth`), quindi Better Auth non controlla più che la sessione
       sia recente: `delete-user` va chiamato **con** la password, e il server

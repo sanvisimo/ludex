@@ -1,6 +1,7 @@
 import {
   hiddenKindValues,
   storeAccountStatusValues,
+  wishlistErrorValues,
 } from '@repo/contracts/vocabulary';
 import {
   boolean,
@@ -29,6 +30,8 @@ export const storeAccountStatus = pgEnum(
   'store_account_status',
   storeAccountStatusValues,
 );
+
+export const wishlistError = pgEnum('wishlist_error', wishlistErrorValues);
 
 // `bytea`, che drizzle-orm non espone fra i tipi di prima classe. Il driver
 // `postgres` lo rende già come Buffer e accetta un Buffer in scrittura, quindi
@@ -106,6 +109,13 @@ export const storeAccounts = pgTable(
     // Amazon su cui non si riscatta niente da un anno — e aggiornarle è solo
     // una manciata di ricerche IGDB buttate a ogni giro.
     autoSync: boolean('auto_sync').notNull().default(true),
+    // L'ultimo import della **wishlist** del negozio (15e), a parte da quello della
+    // libreria: l'una non dice niente dell'altra. `wishlist_synced_at` è l'ultimo
+    // andato a buon fine (nullo = mai importata); `wishlist_error`, se l'ultimo
+    // tentativo è fallito, dice perché, e si azzera al primo che riesce. La scheda
+    // dell'account li legge.
+    wishlistSyncedAt: timestamp('wishlist_synced_at'),
+    wishlistError: wishlistError('wishlist_error'),
     ...timestamps,
   },
   (table) => [

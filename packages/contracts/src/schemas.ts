@@ -16,6 +16,7 @@ import {
   sortDirectionValues,
   sourceReasonValues,
   storeAccountStatusValues,
+  wishlistErrorValues,
   storeValues,
   subscriptionValues,
   userTagKindValues,
@@ -28,6 +29,7 @@ export const RelatedKindSchema = z.enum(relatedKindValues);
 export const StoreSchema = z.enum(storeValues);
 export const LinkableStoreSchema = z.enum(linkableStoreValues);
 export const StoreAccountStatusSchema = z.enum(storeAccountStatusValues);
+export const WishlistErrorSchema = z.enum(wishlistErrorValues);
 export const SubscriptionSchema = z.enum(subscriptionValues);
 export const MediumSchema = z.enum(mediumValues);
 export const HiddenKindSchema = z.enum(hiddenKindValues);
@@ -356,6 +358,12 @@ export const StoreAccountSchema = z.object({
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
   // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
   syncing: z.boolean(),
+  // La wishlist del negozio (15e), a parte dalla libreria. Import in corso adesso
+  // (dalla coda, come `syncing`), l'ultimo riuscito (nullo = mai importata) e, se
+  // l'ultimo tentativo è fallito, perché.
+  wishlistSyncing: z.boolean(),
+  wishlistSyncedAt: z.date().nullable(),
+  wishlistError: WishlistErrorSchema.nullable(),
 });
 
 // Il login Steam col QR (9f). A differenza degli altri negozi non si collega con
@@ -429,6 +437,14 @@ export const LiveEventSchema = z.discriminatedUnion('type', [
   // rileggerlo lo dice.
   z.object({
     type: z.literal('import'),
+    phase: z.enum(['started', 'finished']),
+    storeAccountId: z.uuid(),
+  }),
+  // Un import della wishlist di un negozio è partito o finito (15e). Evento a
+  // parte da `import`: non tocca la libreria, quindi non rilegge backlog e
+  // scarti, ma le liste e i loro giochi.
+  z.object({
+    type: z.literal('wishlist'),
     phase: z.enum(['started', 'finished']),
     storeAccountId: z.uuid(),
   }),
@@ -701,6 +717,30 @@ export const AccountExportSchema = z.object({
       ),
     }),
   ),
+  // Le wishlist dei negozi (15e): una per account collegato, coi giochi in lista e
+  // le voci che l'import non ha saputo legare a un gioco. `account` è come l'utente
+  // chiama l'account, come per i possessi.
+  storeWishlists: z.array(
+    z.object({
+      store: StoreSchema,
+      account: z.string().nullable(),
+      name: z.string(),
+      games: z.array(
+        z.object({
+          game: z.object({ name: z.string(), igdbId: z.number().nullable() }),
+          addedAt: z.date(),
+        }),
+      ),
+      unresolved: z.array(
+        z.object({
+          name: z.string(),
+          externalId: z.string(),
+          addedAt: z.date().nullable(),
+          hiddenAt: z.date().nullable(),
+        }),
+      ),
+    }),
+  ),
   reports: z.array(
     z.object({
       game: z.string(),
@@ -766,11 +806,23 @@ export const HomeGameSchema = GameSchema.extend({
 
 export const WishlistSortSchema = z.enum(wishlistSortValues);
 
-/** Una lista a mano. `count` esclude i giochi che nel frattempo hai nel backlog. */
+/**
+ * Una lista: a mano, o (step 15e) la wishlist di un account di un negozio.
+ * `count` esclude i giochi che nel frattempo hai nel backlog.
+ *
+ * `store` e `storeAccountId` ci sono **solo** per le liste di negozio, e sono ciò
+ * che le distingue: una lista di negozio si allinea al negozio, quindi non se ne
+ * aggiungono né se ne tolgono giochi a mano.
+ */
 export const WishlistSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   count: z.number().int(),
+  store: StoreSchema.optional(),
+  storeAccountId: z.uuid().optional(),
+  // Solo per una lista di negozio: le voci che l'import non ha saputo legare a un
+  // gioco e che l'utente non ha nascosto. Il resto sta in `wishlists.unresolved`.
+  unresolved: z.number().int().optional(),
 });
 
 /**
@@ -783,6 +835,27 @@ export const WishlistGamesSchema = z.object({
   name: z.string(),
   total: z.number().int(),
   games: z.array(HomeGameSchema),
+  // Come in `WishlistSchema`: solo per una lista di negozio.
+  store: StoreSchema.optional(),
+  storeAccountId: z.uuid().optional(),
+});
+
+/**
+ * Una voce della wishlist di un negozio che l'import non ha saputo legare a un
+ * gioco (15e). `addedAt` è la data del negozio, dove la dà (Steam); `hiddenAt`
+ * dice che l'utente l'ha messa da parte.
+ */
+export const WishlistUnresolvedSchema = z.object({
+  id: z.uuid(),
+  store: StoreSchema,
+  externalId: z.string(),
+  name: z.string(),
+  imageUrl: z.string().nullable(),
+  // Un pezzo di indirizzo, nella forma di `ownerships.store_page`: il link lo
+  // compone `storePageUrl`.
+  storePage: z.string().nullable(),
+  addedAt: z.date().nullable(),
+  hiddenAt: z.date().nullable(),
 });
 
 /** Le liste dell'utente, per un gioco: in quali sta già. */
@@ -1155,6 +1228,7 @@ export type PlaylistDetail = z.infer<typeof PlaylistDetailSchema>;
 export type SharedPlaylist = z.infer<typeof SharedPlaylistSchema>;
 export type Wishlist = z.infer<typeof WishlistSchema>;
 export type WishlistGames = z.infer<typeof WishlistGamesSchema>;
+export type WishlistUnresolved = z.infer<typeof WishlistUnresolvedSchema>;
 export type WishlistMembership = z.infer<typeof WishlistMembershipSchema>;
 export type BacklogFilterOptions = z.infer<typeof BacklogFilterOptionsSchema>;
 export type FilterAttribute = z.infer<typeof FilterAttributeSchema>;

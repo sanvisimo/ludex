@@ -17,9 +17,18 @@ import { movePlaylist } from './playlists';
  * tipo**: una lista di un altro, o una playlist a filtro, si comporta come un id
  * inesistente.
  *
- * Un gioco o è in una lista o è nel backlog. Quando entra nel backlog esce dalle
- * liste (`dropFromWishlists`), e la lettura esclude comunque quelli che hai nel
- * backlog, per non mostrare mai un gioco già tuo.
+ * Un gioco o è in una lista a mano o è nel backlog. Quando entra nel backlog esce
+ * dalle liste a mano (`dropFromWishlists`), e la lettura esclude comunque quelli
+ * che hai nel backlog, per non mostrare mai un gioco già tuo.
+ *
+ * **Le liste di negozio** (step 15e, tipo `store_wishlist`) stanno nella stessa
+ * tabella e si vedono, si aprono, si rinominano e si spostano come le altre. Tutto
+ * il resto no: aggiungere, togliere e cancellare vogliono una lista a mano (`mine`,
+ * `isList`) e per una lista di negozio si comportano come per un id inesistente.
+ * Una lista di negozio la scrive solo l'import, che la allinea al negozio, e la
+ * cancella solo lo scollegamento dell'account. **Rispecchia il negozio**: i giochi
+ * che hai già nel backlog restano in lista, e si vedono con l'etichetta del loro
+ * stato (la wishlist Steam che ha ancora Hades, regalato su Epic).
  */
 
 const NAME_INDEX = 'playlists_user_kind_name_idx';
@@ -29,13 +38,25 @@ export const DEFAULT_LIST_NAME = 'Wishlist';
 
 const isList = eq(schema.playlists.kind, 'wishlist');
 
+/** Le liste a mano e quelle di negozio: ciò che si vede, apre, rinomina e sposta. */
+const isAnyList = inArray(schema.playlists.kind, [
+  'wishlist',
+  'store_wishlist',
+]);
+
 /** Le voci che si vedono: quelle di giochi che l'utente non ha nel backlog. */
 const notInBacklog = (userId: string) =>
   sql`not exists (select 1 from ${schema.backlog} where ${schema.backlog.userId} = ${userId} and ${schema.backlog.gameId} = ${schema.wishlistItems.gameId})`;
 
-/** Quante voci visibili ha una lista. */
+/**
+ * Quante voci ha una lista. In una lista a mano sono quelle che non hai nel
+ * backlog; **in una lista di negozio sono tutte**: rispecchia il negozio, e un
+ * gioco che hai già (regalato su un altro negozio, per dire) resta lì, con
+ * l'etichetta del suo stato. `::text` e non il letterale: vedi la nota sull'enum
+ * in `playlists.ts`.
+ */
 const visibleCount = (userId: string) =>
-  sql<number>`(select count(*) from ${schema.wishlistItems} where ${schema.wishlistItems.listId} = ${schema.playlists.id} and ${notInBacklog(userId)})::int`;
+  sql<number>`(select count(*) from ${schema.wishlistItems} where ${schema.wishlistItems.listId} = ${schema.playlists.id} and (${schema.playlists.kind}::text = 'store_wishlist' or ${notInBacklog(userId)}))::int`;
 
 const listColumns = (userId: string) => ({
   id: schema.playlists.id,
@@ -46,16 +67,69 @@ const listColumns = (userId: string) => ({
 const mine = (userId: string, id: string) =>
   and(eq(schema.playlists.id, id), eq(schema.playlists.userId, userId), isList);
 
-export function listWishlists(userId: string): Promise<Wishlist[]> {
-  return db
-    .select(listColumns(userId))
+/** Come `mine`, ma anche una lista di negozio. */
+const mineAny = (userId: string, id: string) =>
+  and(
+    eq(schema.playlists.id, id),
+    eq(schema.playlists.userId, userId),
+    isAnyList,
+  );
+
+/**
+ * Di quale negozio è la lista, se è di un negozio. La JOIN è sinistra: una lista a
+ * mano non ha un account.
+ */
+const storeColumns = {
+  storeAccountId: schema.playlists.storeAccountId,
+  store: schema.storeAccounts.store,
+  // Le voci da sistemare, nascoste escluse: il numero della lista. Per una lista a
+  // mano è sempre 0 e `withStore` lo toglie.
+  unresolved: sql<number>`(select count(*)::int from ${schema.wishlistUnresolved} where ${schema.wishlistUnresolved.storeAccountId} = ${schema.playlists.storeAccountId} and ${schema.wishlistUnresolved.hiddenAt} is null)`,
+};
+
+const withStore = <T extends { storeAccountId: string | null }>(
+  row: T & { store: Wishlist['store'] | null; unresolved: number },
+) => {
+  const { store, storeAccountId, unresolved, ...rest } = row;
+  return store && storeAccountId
+    ? { ...rest, store, storeAccountId, unresolved }
+    : rest;
+};
+
+/** Una lista, nel formato dell'elenco. `undefined` se non è tua. */
+async function readList(userId: string, id: string) {
+  const [row] = await db
+    .select({ ...listColumns(userId), ...storeColumns })
     .from(schema.playlists)
-    .where(and(eq(schema.playlists.userId, userId), isList))
+    .leftJoin(
+      schema.storeAccounts,
+      eq(schema.storeAccounts.id, schema.playlists.storeAccountId),
+    )
+    .where(mineAny(userId, id));
+  return row ? withStore(row) : undefined;
+}
+
+/**
+ * Prima quelle a mano, poi quelle di negozio; dentro ciascun gruppo l'ordine
+ * scelto (`move`), e a parità il nome.
+ */
+export async function listWishlists(userId: string): Promise<Wishlist[]> {
+  const rows = await db
+    .select({ ...listColumns(userId), ...storeColumns })
+    .from(schema.playlists)
+    .leftJoin(
+      schema.storeAccounts,
+      eq(schema.storeAccounts.id, schema.playlists.storeAccountId),
+    )
+    .where(and(eq(schema.playlists.userId, userId), isAnyList))
     .orderBy(
+      // `::text` e non il letterale: vedi la nota sull'enum in `playlists.ts`.
+      asc(sql`${schema.playlists.kind}::text = 'store_wishlist'`),
       asc(schema.playlists.position),
       asc(sql`lower(${schema.playlists.name})`),
       asc(schema.playlists.id),
     );
+  return rows.map(withStore);
 }
 
 /** `null` se hai già una lista con quel nome, maiuscole a parte. */
@@ -83,7 +157,11 @@ export async function createWishlist(
   }
 }
 
-/** `undefined` se non esiste (o non è tua), `null` se il nome è già preso. */
+/**
+ * `undefined` se non esiste (o non è tua), `null` se il nome è già preso. Vale
+ * anche per una lista di negozio: il suo nome lo scrive l'import **una volta**,
+ * alla creazione, e da lì è tuo (il nome di una lista di negozio non è unico).
+ */
 export async function renameWishlist(
   userId: string,
   id: string,
@@ -93,14 +171,10 @@ export async function renameWishlist(
     const [row] = await db
       .update(schema.playlists)
       .set({ name })
-      .where(mine(userId, id))
+      .where(mineAny(userId, id))
       .returning({ id: schema.playlists.id });
     if (!row) return undefined;
-    const [list] = await db
-      .select(listColumns(userId))
-      .from(schema.playlists)
-      .where(mine(userId, id));
-    return list;
+    return await readList(userId, id);
   } catch (error) {
     if (isUniqueViolation(error, NAME_INDEX)) return null;
     throw error;
@@ -116,11 +190,22 @@ export async function deleteWishlist(userId: string, id: string) {
   return row !== undefined;
 }
 
-export const moveWishlist = (
+/**
+ * Sposta una lista di un posto, **dentro il suo gruppo**: le liste a mano fra loro
+ * e quelle di negozio fra loro (restano comunque dopo le prime).
+ */
+export async function moveWishlist(
   userId: string,
   id: string,
   direction: 'up' | 'down',
-) => movePlaylist(userId, id, direction, 'wishlist');
+) {
+  const [list] = await db
+    .select({ kind: schema.playlists.kind })
+    .from(schema.playlists)
+    .where(mineAny(userId, id));
+  if (!list || list.kind === 'filter') return false;
+  return movePlaylist(userId, id, direction, list.kind);
+}
 
 export type AddResult =
   | { ok: true; list: Wishlist }
@@ -269,10 +354,22 @@ export async function openWishlist(
   },
 ): Promise<WishlistGames | undefined> {
   const [list] = await db
-    .select({ id: schema.playlists.id, name: schema.playlists.name })
+    .select({
+      id: schema.playlists.id,
+      name: schema.playlists.name,
+      ...storeColumns,
+    })
     .from(schema.playlists)
-    .where(mine(userId, input.id));
+    .leftJoin(
+      schema.storeAccounts,
+      eq(schema.storeAccounts.id, schema.playlists.storeAccountId),
+    )
+    .where(mineAny(userId, input.id));
   if (!list) return undefined;
+  const ofStore =
+    list.store && list.storeAccountId
+      ? { store: list.store, storeAccountId: list.storeAccountId }
+      : null;
 
   const direction = sql.raw(input.direction === 'asc' ? 'asc' : 'desc');
   const rows = await db
@@ -285,7 +382,8 @@ export async function openWishlist(
     .where(
       and(
         eq(schema.wishlistItems.listId, list.id),
-        notInBacklog(userId),
+        // Una lista di negozio mostra anche ciò che hai già: vedi `visibleCount`.
+        ofStore === null ? notInBacklog(userId) : undefined,
         input.q
           ? sql`${schema.games.name} ilike ${`%${escapeLike(input.q)}%`}`
           : undefined,
@@ -309,16 +407,45 @@ export async function openWishlist(
     : [];
   const byId = new Map(games.map((game) => [game.id, game]));
 
+  // Lo stato di chi guarda, solo per una lista di negozio: quelli che hai già
+  // portano l'etichetta, come sulle card della home. In una lista a mano nessuno
+  // è nel backlog, e lo stato resta nullo.
+  const owned =
+    ofStore !== null && ids.length > 0
+      ? await db
+          .select({
+            gameId: schema.backlog.gameId,
+            status: schema.backlog.status,
+          })
+          .from(schema.backlog)
+          .where(
+            and(
+              eq(schema.backlog.userId, userId),
+              inArray(schema.backlog.gameId, ids),
+            ),
+          )
+      : [];
+  const statusById = new Map(owned.map((row) => [row.gameId, row.status]));
+
   return {
     id: list.id,
     name: list.name,
+    ...ofStore,
     total: rows[0]?.total ?? 0,
     // `IN` non conserva l'ordine: lo rimette quello della ricerca.
     games: ids.flatMap((id) => {
       const game = byId.get(id);
-      // In lista per definizione: il cuore è pieno, e `wishlisted` lo dice.
+      // In una lista a mano il cuore è pieno, e `wishlisted` lo dice. In una lista
+      // di negozio no: il cuore è delle liste a mano, e quel gioco può non stare in
+      // nessuna.
       return game
-        ? [{ ...GameSchema.parse(game), status: null, wishlisted: true }]
+        ? [
+            {
+              ...GameSchema.parse(game),
+              status: statusById.get(id) ?? null,
+              wishlisted: ofStore === null,
+            },
+          ]
         : [];
     }),
   };

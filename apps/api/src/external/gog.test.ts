@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   fetchGogAcquiredDates,
   fetchGogLibrary,
+  fetchGogWishlist,
+  GogAuthError,
   gogCoverUrl,
   gogLoginUrl,
   parseGogAuthCode,
@@ -181,5 +183,70 @@ describe('fetchGogLibrary', () => {
       },
       { externalId: '1453375253', storePage: null, imageUrl: null },
     ]);
+  });
+});
+
+describe('fetchGogWishlist', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    fetchMock.mockReset();
+    vi.stubGlobal('fetch', fetchMock);
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const respond = (body: unknown, status = 200) =>
+    fetchMock.mockResolvedValueOnce({
+      ok: status >= 200 && status < 300,
+      status,
+      json: async () => body,
+    });
+
+  it('manda il Bearer, senza seguire i redirect, e rende gli id come stringhe', async () => {
+    respond({
+      wishlist: { '1207658750': true, '1179418179': true },
+      checksum: 'abc',
+    });
+
+    const wishlist = await fetchGogWishlist('token-di-prova');
+
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://embed.gog.com/user/wishlist.json');
+    expect(init.headers.Authorization).toBe('Bearer token-di-prova');
+    expect(init.redirect).toBe('manual');
+    expect(wishlist).toEqual([
+      { externalId: '1179418179', name: 'GOG 1179418179' },
+      { externalId: '1207658750', name: 'GOG 1207658750' },
+    ]);
+  });
+
+  it('una wishlist vuota è una lista vuota', async () => {
+    respond({ wishlist: {}, checksum: 'x' });
+    await expect(fetchGogWishlist('t')).resolves.toEqual([]);
+  });
+
+  it('un rifiuto, o un rimando al login, è il credenziale da rifare', async () => {
+    respond({}, 401);
+    await expect(fetchGogWishlist('t')).rejects.toBeInstanceOf(GogAuthError);
+    respond({}, 302);
+    await expect(fetchGogWishlist('t')).rejects.toBeInstanceOf(GogAuthError);
+  });
+
+  it('una risposta di un’altra forma non è una lista vuota', async () => {
+    // Se GOG cambiasse forma e la si prendesse per vuota, l'import svuoterebbe la
+    // lista dell'utente.
+    respond({ checksum: 'x' });
+    await expect(fetchGogWishlist('t')).rejects.toThrow(/senza wishlist/);
+    respond({ wishlist: ['1', '2'] });
+    await expect(fetchGogWishlist('t')).rejects.toThrow(/senza wishlist/);
+  });
+
+  it('un errore del server è un errore, non un rifiuto', async () => {
+    respond({}, 500);
+    const error = await fetchGogWishlist('t').catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(Error);
+    expect(error).not.toBeInstanceOf(GogAuthError);
   });
 });
