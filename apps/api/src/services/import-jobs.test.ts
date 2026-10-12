@@ -71,6 +71,59 @@ describe('runWishlistImportJob', () => {
     );
   });
 
+  const stateOf = async (id: string) =>
+    (
+      await db
+        .select({
+          at: schema.storeAccounts.wishlistSyncedAt,
+          error: schema.storeAccounts.wishlistError,
+        })
+        .from(schema.storeAccounts)
+        .where(eq(schema.storeAccounts.id, id))
+    )[0]!;
+
+  it('scrive sull’account quando è finita, e azzera un errore di prima', async () => {
+    const account = await linkStoreAccount(await createUser(), 'gog');
+    await db
+      .update(schema.storeAccounts)
+      .set({ wishlistError: 'failed' })
+      .where(eq(schema.storeAccounts.id, account.id));
+    mockedImport.mockResolvedValue(report);
+
+    await runWishlistImportJob(account.id);
+
+    const state = await stateOf(account.id);
+    expect(state.error).toBeNull();
+    expect(state.at).toBeInstanceOf(Date);
+  });
+
+  it.each([
+    ['un login da rifare', new StoreReauthRequiredError('gog'), 'reauth'],
+    [
+      'una wishlist Steam non visibile',
+      new SteamWishlistNotVisibleError('76561198000000000'),
+      'not_visible',
+    ],
+    ['una rete che cade', new Error('ECONNRESET'), 'failed'],
+  ] as const)(
+    '%s: l’account ricorda perché, e l’ultimo riuscito resta',
+    async (_nome, error, code) => {
+      const account = await linkStoreAccount(await createUser(), 'gog');
+      const before = new Date('2026-10-01T10:00:00Z');
+      await db
+        .update(schema.storeAccounts)
+        .set({ wishlistSyncedAt: before })
+        .where(eq(schema.storeAccounts.id, account.id));
+      mockedImport.mockImplementation(async () => {
+        throw error;
+      });
+
+      await runWishlistImportJob(account.id).catch(() => undefined);
+
+      expect(await stateOf(account.id)).toEqual({ at: before, error: code });
+    },
+  );
+
   it('su un account scollegato non importa niente, e non si riprova', async () => {
     const account = await linkStoreAccount(await createUser(), 'gog');
     await db

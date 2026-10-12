@@ -1,4 +1,5 @@
 import { storeAccountName } from '@repo/contracts';
+import type { WishlistError } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { UnrecoverableError } from 'bullmq';
@@ -46,6 +47,11 @@ export async function findLinkedAccount(
  * riprovando: i tre giri con backoff sono per le reti che cadono. Diventano
  * `UnrecoverableError`, che manda il job a fallito subito e libera la chiave di
  * deduplicazione. Ogni altro errore passa com'è, e BullMQ riprova.
+ *
+ * L'esito si scrive sull'account, perché la scheda lo dica: l'ultimo riuscito, o
+ * perché è fallito l'ultimo tentativo. Un tentativo che BullMQ riprova scrive
+ * `failed` e quello dopo, se riesce, lo azzera: nel frattempo la scheda mostra
+ * l'import in corso, che vince.
  */
 export async function runWishlistImportJob(storeAccountId: string) {
   const account = await findLinkedAccount(storeAccountId);
@@ -56,8 +62,23 @@ export async function runWishlistImportJob(storeAccountId: string) {
         `${report.inList} in lista (${report.resolvedByName} per nome, ` +
         `${report.newGames} giochi nuovi), ${report.unresolved} da sistemare`,
     );
+    await db
+      .update(schema.storeAccounts)
+      .set({ wishlistSyncedAt: new Date(), wishlistError: null })
+      .where(eq(schema.storeAccounts.id, account.id));
     return report;
   } catch (error) {
+    const reason: WishlistError =
+      error instanceof SteamWishlistNotVisibleError
+        ? 'not_visible'
+        : error instanceof StoreReauthRequiredError
+          ? 'reauth'
+          : 'failed';
+    await db
+      .update(schema.storeAccounts)
+      .set({ wishlistError: reason })
+      .where(eq(schema.storeAccounts.id, account.id));
+
     if (
       error instanceof StoreReauthRequiredError ||
       error instanceof SteamWishlistNotVisibleError

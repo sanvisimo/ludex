@@ -225,7 +225,9 @@
       "cancel": "Annulla",
       "confirm": "Elimina",
       "deleted": "Lista eliminata",
-      "failed": "Non sono riuscito a eliminare la lista"
+      "failed": "Non sono riuscito a eliminare la lista",
+      "storeDescription": "Sparisce la lista, con le sue voci da sistemare: i giochi e l'account restano. Potrai importarla di nuovo dalla scheda dell'account; l'aggiornamento automatico non la ricrea.",
+      "importing": "L'importazione della wishlist è in corso: riprova quando ha finito."
     },
     "control": {
       "button": "Wishlist",
@@ -242,6 +244,57 @@
       "removed": "Tolto da «{name}»",
       "undo": "Annulla",
       "failed": "Non sono riuscito a cambiare la lista"
+    },
+    "store": {
+      "import": "Importa wishlist",
+      "refresh": "Aggiorna wishlist",
+      "started": "Importazione della wishlist avviata",
+      "failed": "Non sono riuscito ad avviare l'importazione della wishlist",
+      "alreadySyncing": "C'è già un'importazione della wishlist in corso",
+      "needsReauth": "Il collegamento è scaduto: ricollega l'account",
+      "syncing": "wishlist in importazione…",
+      "summary": "Wishlist · {count, plural, one {# gioco} other {# giochi}}",
+      "updated": "aggiornata {when}",
+      "errorBadge": "Wishlist non aggiornata",
+      "errors": {
+        "not_visible": "Steam non ha restituito la wishlist: rendi pubblici i «Dettagli dei giochi» nel tuo profilo, oppure accedi con Steam.",
+        "reauth": "Il collegamento è scaduto: ricollega l'account.",
+        "failed": "Non sono riuscito a leggere la wishlist. Riprova fra poco."
+      },
+      "sections": {
+        "mine": "Le mie liste",
+        "stores": "Dai negozi"
+      },
+      "emptyList": "La wishlist del negozio è vuota.",
+      "unresolvedChip": "{count} da sistemare",
+      "unresolvedBar": "{count, plural, one {# voce non riconosciuta} other {# voci non riconosciute}}",
+      "unresolvedOnlyHidden": "Niente da sistemare · {count, plural, one {# nascosta} other {# nascoste}}",
+      "fix": "Sistema",
+      "seeHidden": "Vedi le nascoste",
+      "unresolved": {
+        "title": "Voci non riconosciute",
+        "description": "Il negozio le ha in wishlist ma non so a quale gioco corrispondono. Collegale a un gioco, o mettile da parte se non sono giochi.",
+        "link": "Collega…",
+        "hide": "Nascondi",
+        "restore": "Ripristina",
+        "none": "Niente da sistemare.",
+        "showHidden": "Mostra le nascoste ({count})",
+        "hideHidden": "Nascondi le nascoste",
+        "addedOn": "in wishlist dal {date}",
+        "hiddenOn": "nascosta il {date}",
+        "openOn": "Apri su {store}",
+        "loadFailed": "Non riesco a caricare le voci.",
+        "resolveTitle": "Collega a un gioco",
+        "externalId": "Id del negozio",
+        "back": "Torna all'elenco",
+        "resolved": "{name} collegato: ora è nella lista",
+        "resolveFailed": "Non sono riuscito a collegare la voce",
+        "hideFailed": "Non sono riuscito a cambiare la voce"
+      },
+      "finished": "Wishlist di {name} aggiornata",
+      "finishedFailed": "Wishlist di {name} non aggiornata: {reason}",
+      "importingNotice": "Importo la wishlist di {name}…",
+      "openLibraries": "Vai alle librerie"
     }
   },
   "hidden": {
@@ -633,7 +686,7 @@
     "autoSync": {
       "title": "Aggiornamento automatico",
       "whatIsIt": "Cos'è l'aggiornamento automatico",
-      "description": "Le librerie collegate si reimportano da sole: PlayStation ogni {psnDays} giorni, gli altri negozi ogni {otherDays}. Puoi sempre aggiornarle a mano.",
+      "description": "Le librerie collegate si reimportano da sole, e con loro le wishlist che hai già importato: PlayStation ogni {psnDays} giorni, gli altri negozi ogni {otherDays}. Puoi sempre aggiornarle a mano.",
       "psnWarning": "Con l'aggiornamento automatico spento, il collegamento a PlayStation scade se non importi la libreria almeno una volta ogni dieci giorni.",
       "failed": "Non sono riuscito a salvare la preferenza"
     },

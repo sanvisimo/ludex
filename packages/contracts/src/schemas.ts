@@ -16,6 +16,7 @@ import {
   sortDirectionValues,
   sourceReasonValues,
   storeAccountStatusValues,
+  wishlistErrorValues,
   storeValues,
   subscriptionValues,
   userTagKindValues,
@@ -28,6 +29,7 @@ export const RelatedKindSchema = z.enum(relatedKindValues);
 export const StoreSchema = z.enum(storeValues);
 export const LinkableStoreSchema = z.enum(linkableStoreValues);
 export const StoreAccountStatusSchema = z.enum(storeAccountStatusValues);
+export const WishlistErrorSchema = z.enum(wishlistErrorValues);
 export const SubscriptionSchema = z.enum(subscriptionValues);
 export const MediumSchema = z.enum(mediumValues);
 export const HiddenKindSchema = z.enum(hiddenKindValues);
@@ -356,6 +358,12 @@ export const StoreAccountSchema = z.object({
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
   // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
   syncing: z.boolean(),
+  // La wishlist del negozio (15e), a parte dalla libreria. Import in corso adesso
+  // (dalla coda, come `syncing`), l'ultimo riuscito (nullo = mai importata) e, se
+  // l'ultimo tentativo è fallito, perché.
+  wishlistSyncing: z.boolean(),
+  wishlistSyncedAt: z.date().nullable(),
+  wishlistError: WishlistErrorSchema.nullable(),
 });
 
 // Il login Steam col QR (9f). A differenza degli altri negozi non si collega con
@@ -812,6 +820,9 @@ export const WishlistSchema = z.object({
   count: z.number().int(),
   store: StoreSchema.optional(),
   storeAccountId: z.uuid().optional(),
+  // Solo per una lista di negozio: le voci che l'import non ha saputo legare a un
+  // gioco e che l'utente non ha nascosto. Il resto sta in `wishlists.unresolved`.
+  unresolved: z.number().int().optional(),
 });
 
 /**
@@ -1217,6 +1228,7 @@ export type PlaylistDetail = z.infer<typeof PlaylistDetailSchema>;
 export type SharedPlaylist = z.infer<typeof SharedPlaylistSchema>;
 export type Wishlist = z.infer<typeof WishlistSchema>;
 export type WishlistGames = z.infer<typeof WishlistGamesSchema>;
+export type WishlistUnresolved = z.infer<typeof WishlistUnresolvedSchema>;
 export type WishlistMembership = z.infer<typeof WishlistMembershipSchema>;
 export type BacklogFilterOptions = z.infer<typeof BacklogFilterOptionsSchema>;
 export type FilterAttribute = z.infer<typeof FilterAttributeSchema>;

@@ -126,11 +126,66 @@ Ogni passo ha il suo «ok, procedi».
    già nel backlog, voce non risolta che si riscrive e che sparisce quando si
    risolve, collegare a mano (con e senza `external_ids`, PSN compreso), nascondere,
    account scollegato. Esportazione e cancellazione dell'account.
-4. **Web:** le liste di negozio in `/wishlist` accanto alle altre (dopo), con l'icona
-   del negozio, con «Rinomina» e «Sposta» ma senza «Elimina»; il pulsante
-   «Importa wishlist» nella scheda dell'account;
-   i non riconosciuti sulla lista e il dialogo per collegarli (riusa
-   `IgdbPicker`). **Prima il wireframe** (Excalidraw), poi il codice.
+4. **Web** (struttura approvata il 13/10/2026 su un wireframe a parole; scritto lo
+   stesso giorno, **non ancora visto in uso**):
+   - **Scheda dell'account** (`store-account-card.tsx`, `store-wishlist-row.tsx`):
+     «Importa wishlist» / «Aggiorna wishlist» nel menu ⋯, solo per Steam, GOG e PSN,
+     spenta se l'account è da ricollegare o l'import gira; sotto lo stato, una riga:
+     «wishlist in importazione…», l'errore con il suo perché (`not_visible` dice di
+     rendere pubblici i «Dettagli dei giochi»), o «Wishlist · N giochi» col link alla
+     lista e «aggiornata X fa».
+   - **`/wishlist`**: due sezioni («Le mie liste», «Dai negozi») solo se ci sono tutte
+     e due; le liste di negozio con l'icona del negozio, l'etichetta «N da sistemare» e
+     un menu senza «Elimina» (`WishlistMenu` guarda `store`).
+   - **`/wishlist/$id` di una lista di negozio**: «Aggiorna wishlist» in alto, una barra
+     «N voci non riconosciute · Sistema», le card senza «Togli» (e senza «Ce l'ho» se
+     il gioco è già nel backlog, dove la card porta il suo stato).
+   - **Dialogo delle voci** (`wishlist-unresolved-dialog.tsx`): copertina, nome, link al
+     negozio, «Collega…» (la stessa ricerca IGDB degli scarti, `IgdbPicker`) e
+     «Nascondi»; «Mostra le nascoste» le rimette con «Ripristina».
+   - **Eventi:** l'evento `wishlist` rilegge anche gli account.
+   - **Server aggiunto per il web** (decisioni A e B di quel giorno): `wishlistSyncing`
+     sull'account (dalla coda), e due colonne su `store_accounts`,
+     `wishlist_synced_at` e `wishlist_error` (`not_visible`, `reauth`, `failed`;
+     migration 0046), scritte dal job: il successo azzera l'errore, il fallimento
+     tiene la data dell'ultimo riuscito. Più `unresolved` (voci non nascoste) su
+     `WishlistSchema` per le liste di negozio. Test e mutazioni come sopra.
+   - **Dopo averla vista (13/10/2026), tre cambi dell'utente:**
+     1. **La scheda Steam**: «Signed in» sta in alto, sotto l'intestazione, e non nel
+        gruppo ancorato in fondo.
+     2. **Il bottone della wishlist** (il cuore) sta accanto al ↻ per Steam, GOG e
+        PSN, con lo spinner mentre gira, e non è più nel menu ⋯. Non c'è sulle schede
+        da ricollegare.
+     3. **Aggiornamento automatico della wishlist**, con lo **stesso interruttore
+        «Auto»** (cambia la decisione «solo a mano» del 12/10). Lo fa la spazzata
+        degli import, ogni 6 ore (`findAccountsDueForWishlist`,
+        `enqueueDueWishlistImports`): collegamento `ok`, i due interruttori accesi,
+        soglia del negozio (PSN 3 giorni, gli altri 7) su `wishlist_synced_at`, e
+        **solo se la lista esiste** — una lista cancellata non si ricrea, e un account
+        che non l'ha mai chiesta non ne riceve una. `not_visible` e `reauth` non si
+        riprovano da soli; `failed` sì. La descrizione dell'aggiornamento automatico
+        lo dice.
+     4. **Si può cancellare**, anche la lista di un negozio (cambia «non si cancella»
+        del 12/10): `wishlists.remove` passa a `deleteStoreWishlist`, che toglie la
+        lista, le sue voci e le voci da sistemare, e azzera data ed errore
+        sull'account, così la scheda torna com'era prima del primo import. Si rifiuta
+        con `CONFLICT` mentre l'import gira (lo riscriverebbe). Si perdono le voci
+        nascoste: un nuovo import le riporta come nuove. Il test del router
+        (`remove` con una lista di negozio) è fra quelli rimandati.
+   - **Lo stato dell'import, ancora a vederla (13/10/2026):** mancavano l'avviso di
+     fine e un posto che dicesse come andava. Ora: (1) `use-live-updates.ts`, sull'evento
+     `wishlist` `finished`, rilegge gli account e dice l'esito — «Wishlist di … aggiornata»
+     o l'errore col perché; **sempre**, anche per gli aggiornamenti automatici, e non dice
+     niente se l'account risulta ancora «in importazione» (un tentativo che BullMQ riprova);
+     (2) `/wishlist` ha in cima `StoreImportNotices`, una riga per account che importa o il
+     cui ultimo import è fallito (con il link alle librerie), e non mostra «Nessuna lista»
+     mentre uno importa: al primo import la lista non esiste ancora; (3) la lista aperta ha
+     `StoreListStatus` sotto il titolo: «in importazione…», l'errore, o «aggiornata X fa».
+     Il perché di un errore è in `useWishlistErrorText`, un punto solo. Solo web, nessun test
+     (la regola del progetto: niente test di componenti).
+   - **Da fare, a vederla:** l'aspetto si rifinisce sulla pagina vera; il test con
+     Playwright non è stato fatto. Il roadmap pubblico passa a «fatto» quando
+     l'utente dice che il lotto è pronto.
 5. **Documentazione:** `docs/negozi.md`, `docs/ordine-sviluppo.md`,
    `apps/web/CLAUDE.md`.
 
@@ -288,6 +343,8 @@ su un database vuoto non lo mostra. L'indice parziale usa quindi
 Decisione del 13/10/2026: non si fanno ora, si fanno in un giro a parte, e **non sono
 un limite tecnico** (il router si prova con `call(...)` come in `rpc/context.test.ts`).
 
+- **Router, `wishlists.remove` su una lista di negozio:** `CONFLICT` mentre l'import
+  gira, `NOT_FOUND` per una lista altrui; il resto lo prova `deleteStoreWishlist`.
 - **Router, `accounts.syncWishlist`:** i quattro esiti di `requestWishlistImport`
   diventano `NOT_FOUND`, `BAD_REQUEST`, `FORBIDDEN` e `CONFLICT`; con la coda
   stubbata come in `store-accounts.test.ts`. Più, quando ci sono, le procedure del 3f.

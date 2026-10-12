@@ -104,6 +104,7 @@ import {
   linkSteamWebToken,
   linkStore,
   listStoreAccounts,
+  deleteStoreWishlist,
   renameStoreAccount,
   requestWishlistImport,
   setStoreAccountAutoSync,
@@ -122,7 +123,11 @@ import { getUserSettings, updateUserSettings } from '../services/user-settings';
 import { eventForUser, liveEvents } from '../lib/events';
 import { SteamLibraryNotVisibleError } from '../external/steam';
 import { SteamWebTokenError } from '../external/steam-auth';
-import { enqueueImport, isImportRunning } from '../queue/imports';
+import {
+  enqueueImport,
+  isImportRunning,
+  isWishlistImportRunning,
+} from '../queue/imports';
 import { admin, authed, maybeAuthed, os } from './context';
 import { asAdminAuthCall } from './admin-auth';
 
@@ -270,7 +275,7 @@ export const router = os.router({
       // fargli premere un secondo bottone per avere i suoi giochi.
       await enqueueImport(account.store, { storeAccountId: account.id });
 
-      return { ...account, syncing: true };
+      return { ...account, syncing: true, wishlistSyncing: false };
     }),
 
     steamLogin: {
@@ -314,7 +319,7 @@ export const router = os.router({
             throw error;
           });
           await enqueueImport('steam', { storeAccountId: account.id });
-          return { ...account, syncing: true };
+          return { ...account, syncing: true, wishlistSyncing: false };
         }),
 
       status: os.accounts.steamLogin.status
@@ -362,7 +367,11 @@ export const router = os.router({
         );
         if (!account)
           throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
-        return { ...account, syncing: await isImportRunning(account.id) };
+        return {
+          ...account,
+          syncing: await isImportRunning(account.id),
+          wishlistSyncing: await isWishlistImportRunning(account.id),
+        };
       }),
 
     unlinkImpact: os.accounts.unlinkImpact
@@ -460,7 +469,11 @@ export const router = os.router({
         );
         if (!account)
           throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
-        return { ...account, syncing: await isImportRunning(account.id) };
+        return {
+          ...account,
+          syncing: await isImportRunning(account.id),
+          wishlistSyncing: await isWishlistImportRunning(account.id),
+        };
       }),
   },
 
@@ -642,7 +655,14 @@ export const router = os.router({
     remove: os.wishlists.remove
       .use(authed)
       .handler(async ({ input, context }) => {
-        if (!(await deleteWishlist(context.user.id, input.id)))
+        if (await deleteWishlist(context.user.id, input.id)) return;
+        // Non è una lista a mano: forse è quella di un negozio (15e).
+        const outcome = await deleteStoreWishlist(context.user.id, input.id);
+        if (outcome === 'running')
+          throw new ORPCError('CONFLICT', {
+            message: 'Importazione in corso: riprova quando ha finito',
+          });
+        if (outcome === 'not_found')
           throw new ORPCError('NOT_FOUND', { message: 'Lista inesistente' });
       }),
 

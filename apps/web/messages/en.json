@@ -225,7 +225,9 @@
       "cancel": "Cancel",
       "confirm": "Delete",
       "deleted": "List deleted",
-      "failed": "I couldn't delete the list"
+      "failed": "I couldn't delete the list",
+      "storeDescription": "The list goes away, with its entries to fix: your games and the account stay. You can import it again from the account card; automatic updates won't bring it back.",
+      "importing": "The wishlist import is running: try again when it's done."
     },
     "control": {
       "button": "Wishlist",
@@ -242,6 +244,57 @@
       "removed": "Removed from “{name}”",
       "undo": "Undo",
       "failed": "I couldn't change the list"
+    },
+    "store": {
+      "import": "Import wishlist",
+      "refresh": "Update wishlist",
+      "started": "Wishlist import started",
+      "failed": "Couldn't start the wishlist import",
+      "alreadySyncing": "A wishlist import is already running",
+      "needsReauth": "The link has expired: reconnect the account",
+      "syncing": "importing wishlist…",
+      "summary": "Wishlist · {count, plural, one {# game} other {# games}}",
+      "updated": "updated {when}",
+      "errorBadge": "Wishlist not updated",
+      "errors": {
+        "not_visible": "Steam didn't return the wishlist: make \"Game details\" public in your profile, or sign in with Steam.",
+        "reauth": "The link has expired: reconnect the account.",
+        "failed": "Couldn't read the wishlist. Try again in a moment."
+      },
+      "sections": {
+        "mine": "My lists",
+        "stores": "From stores"
+      },
+      "emptyList": "The store wishlist is empty.",
+      "unresolvedChip": "{count} to fix",
+      "unresolvedBar": "{count, plural, one {# unrecognised entry} other {# unrecognised entries}}",
+      "unresolvedOnlyHidden": "Nothing to fix · {count} hidden",
+      "fix": "Fix",
+      "seeHidden": "See hidden",
+      "unresolved": {
+        "title": "Unrecognised entries",
+        "description": "The store has these on your wishlist but I can't tell which game they are. Link them to a game, or set them aside if they aren't games.",
+        "link": "Link…",
+        "hide": "Hide",
+        "restore": "Restore",
+        "none": "Nothing to fix.",
+        "showHidden": "Show hidden ({count})",
+        "hideHidden": "Hide the hidden ones",
+        "addedOn": "on the wishlist since {date}",
+        "hiddenOn": "hidden on {date}",
+        "openOn": "Open on {store}",
+        "loadFailed": "Couldn't load the entries.",
+        "resolveTitle": "Link to a game",
+        "externalId": "Store id",
+        "back": "Back to the list",
+        "resolved": "{name} linked: it's now in the list",
+        "resolveFailed": "Couldn't link the entry",
+        "hideFailed": "Couldn't change the entry"
+      },
+      "finished": "{name} wishlist updated",
+      "finishedFailed": "{name} wishlist not updated: {reason}",
+      "importingNotice": "Importing the {name} wishlist…",
+      "openLibraries": "Go to libraries"
     }
   },
   "hidden": {
@@ -633,7 +686,7 @@
     "autoSync": {
       "title": "Automatic updates",
       "whatIsIt": "What automatic updates mean",
-      "description": "Linked libraries re-import on their own: PlayStation every {psnDays} days, other stores every {otherDays}. You can always update them by hand.",
+      "description": "Linked libraries re-import on their own, and so do the wishlists you've already imported: PlayStation every {psnDays} days, the other stores every {otherDays}. You can always update them by hand.",
       "psnWarning": "With automatic updates off, the PlayStation connection expires unless you import the library at least once every ten days.",
       "failed": "Could not save the preference"
     },

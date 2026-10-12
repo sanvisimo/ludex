@@ -434,7 +434,10 @@ export const contract = {
     rename: oc
       .input(z.object({ id: z.uuid(), name: PlaylistNameSchema }))
       .output(WishlistSchema),
-    // Toglie la lista e le sue voci, non i giochi.
+    // Toglie la lista e le sue voci, non i giochi. Vale anche per la wishlist di un
+    // negozio (15e): sparisce con le sue voci da sistemare, si reimporta dalla
+    // scheda dell'account, e l'aggiornamento automatico non la ricrea. `CONFLICT`
+    // se il suo import è in corso.
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
     move: oc
       .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))

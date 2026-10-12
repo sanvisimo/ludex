@@ -145,6 +145,8 @@ const accountColumns = {
   status: schema.storeAccounts.status,
   lastSyncAt: schema.storeAccounts.lastSyncAt,
   autoSync: schema.storeAccounts.autoSync,
+  wishlistSyncedAt: schema.storeAccounts.wishlistSyncedAt,
+  wishlistError: schema.storeAccounts.wishlistError,
   // Se c'è una credenziale, **non** la credenziale: vedi `StoreAccountSchema`.
   hasLogin: sql<boolean>`${schema.storeAccounts.credentials} is not null`,
 };
@@ -200,6 +202,7 @@ export async function listStoreAccounts(userId: string) {
       loginKind: steamLogins.get(row.id)?.kind ?? null,
       loginExpiresAt: steamLogins.get(row.id)?.expiresAt ?? null,
       syncing: await isImportRunning(row.id),
+      wishlistSyncing: await isWishlistImportRunning(row.id),
     })),
   );
 }
@@ -286,6 +289,49 @@ export async function requestWishlistImport(userId: string, accountId: string) {
   if (await isWishlistImportRunning(account.id)) return 'running' as const;
   await enqueueWishlistImport(account.store, { storeAccountId: account.id });
   return 'queued' as const;
+}
+
+/**
+ * Cancella la wishlist di un negozio (15e): la lista, le sue voci e le voci da
+ * sistemare, e dall'account la data e l'errore dell'ultimo import, così la scheda
+ * torna com'era prima del primo. L'account e la libreria non si toccano.
+ *
+ * Non si cancella mentre l'import gira: lo scriverebbe, e a fine corsa la lista
+ * ricomparirebbe. Si reimporta dalla scheda dell'account, e l'aggiornamento
+ * automatico non la ricrea: rinfresca soltanto le liste che esistono.
+ *
+ * Si perdono le scelte fatte sulle voci da sistemare (le nascoste): un nuovo import
+ * le riporta come nuove.
+ *
+ * `not_found` anche per una lista a mano: quelle le cancella `deleteWishlist`.
+ */
+export async function deleteStoreWishlist(userId: string, listId: string) {
+  const [list] = await db
+    .select({ storeAccountId: schema.playlists.storeAccountId })
+    .from(schema.playlists)
+    .where(
+      and(
+        eq(schema.playlists.id, listId),
+        eq(schema.playlists.userId, userId),
+        eq(sql`${schema.playlists.kind}::text`, 'store_wishlist'),
+      ),
+    );
+  if (!list?.storeAccountId) return 'not_found' as const;
+  const accountId = list.storeAccountId;
+
+  if (await isWishlistImportRunning(accountId)) return 'running' as const;
+
+  await db.transaction(async (tx) => {
+    await tx.delete(schema.playlists).where(eq(schema.playlists.id, listId));
+    await tx
+      .delete(schema.wishlistUnresolved)
+      .where(eq(schema.wishlistUnresolved.storeAccountId, accountId));
+    await tx
+      .update(schema.storeAccounts)
+      .set({ wishlistSyncedAt: null, wishlistError: null })
+      .where(eq(schema.storeAccounts.id, accountId));
+  });
+  return 'ok' as const;
 }
 
 /**

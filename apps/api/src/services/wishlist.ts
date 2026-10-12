@@ -82,13 +82,18 @@ const mineAny = (userId: string, id: string) =>
 const storeColumns = {
   storeAccountId: schema.playlists.storeAccountId,
   store: schema.storeAccounts.store,
+  // Le voci da sistemare, nascoste escluse: il numero della lista. Per una lista a
+  // mano è sempre 0 e `withStore` lo toglie.
+  unresolved: sql<number>`(select count(*)::int from ${schema.wishlistUnresolved} where ${schema.wishlistUnresolved.storeAccountId} = ${schema.playlists.storeAccountId} and ${schema.wishlistUnresolved.hiddenAt} is null)`,
 };
 
 const withStore = <T extends { storeAccountId: string | null }>(
-  row: T & { store: Wishlist['store'] | null },
+  row: T & { store: Wishlist['store'] | null; unresolved: number },
 ) => {
-  const { store, storeAccountId, ...rest } = row;
-  return store && storeAccountId ? { ...rest, store, storeAccountId } : rest;
+  const { store, storeAccountId, unresolved, ...rest } = row;
+  return store && storeAccountId
+    ? { ...rest, store, storeAccountId, unresolved }
+    : rest;
 };
 
 /** Una lista, nel formato dell'elenco. `undefined` se non è tua. */

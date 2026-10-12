@@ -660,6 +660,34 @@ describe('le liste di negozio', () => {
     expect(tutte[0]!.id).toBe(a.id);
   });
 
+  it('dicono quante voci non riconosciute hanno, nascoste escluse; una lista a mano non ne ha', async () => {
+    const steam = await dalNegozio(userId, 'Steam · prova', 'steam');
+    const gog = await dalNegozio(userId, 'GOG · prova', 'gog');
+    await lista(userId, 'A mano');
+    const voce = (storeAccountId: string, externalId: string, hidden = false) =>
+      db.insert(schema.wishlistUnresolved).values({
+        userId,
+        storeAccountId,
+        store: 'steam',
+        externalId,
+        name: `Voce ${externalId}`,
+        hiddenAt: hidden ? new Date() : null,
+      });
+    await voce(steam.account.id, '1');
+    await voce(steam.account.id, '2');
+    await voce(steam.account.id, '3', true);
+    await voce(gog.account.id, '4');
+
+    const tutte = await listWishlists(userId);
+
+    expect(tutte.map((l) => [l.name, l.unresolved])).toEqual([
+      ['A mano', undefined],
+      ['GOG · prova', 1],
+      ['Steam · prova', 2],
+    ]);
+    expect(tutte[0]).not.toHaveProperty('unresolved');
+  });
+
   it('un gioco che hai già resta in lista, con lo stato: la lista rispecchia il negozio', async () => {
     const g1 = await gioco({ name: 'Hades' });
     const g2 = await gioco({ name: 'Altro' });

@@ -1,4 +1,4 @@
-import type { Wishlist } from '@repo/contracts';
+import type { Store, Wishlist } from '@repo/contracts';
 import {
   Button,
   Dialog,
@@ -31,7 +31,12 @@ import { useTranslations } from 'use-intl';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
-type ListRef = Pick<Wishlist, 'id' | 'name'>;
+/**
+ * `store` c'è solo per una lista di negozio (15e): la scrive l'import e non se ne
+ * aggiungono né se ne tolgono giochi a mano, ma si rinomina, si sposta e si
+ * elimina. Eliminata si reimporta dalla scheda dell'account.
+ */
+type ListRef = Pick<Wishlist, 'id' | 'name'> & { store?: Store };
 
 /**
  * Il menu di una lista a mano (step 15b): rinomina, sposta, elimina. Lo monta
@@ -265,19 +270,30 @@ function DeleteForm({
     mutationFn: () => client.wishlists.remove({ id: list.id }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: api.wishlists.key() });
+      // Una lista di negozio toglie dall'account la data e l'esito dell'import.
+      if (list.store)
+        await queryClient.invalidateQueries({ queryKey: api.accounts.key() });
       toast.success(t('deleted'));
       onDone();
       onDeleted?.();
     },
     onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('failed') })),
+      toast.error(
+        errorMessage(error, {
+          fallback: t('failed'),
+          // Una lista di negozio non si cancella mentre la sua importazione gira.
+          CONFLICT: t('importing'),
+        }),
+      ),
   });
 
   return (
     <YStack gap={16}>
       <DialogHeader>
         <DialogTitle>{t('title', { name: list.name })}</DialogTitle>
-        <DialogDescription>{t('description')}</DialogDescription>
+        <DialogDescription>
+          {list.store ? t('storeDescription') : t('description')}
+        </DialogDescription>
       </DialogHeader>
 
       <DialogFooter>

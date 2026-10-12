@@ -45,6 +45,7 @@ import {
   StoreReauthRequiredError,
   storeAccessToken,
   storeLoginUrl,
+  deleteStoreWishlist,
   requestWishlistImport,
   syncAllStoreAccounts,
   unlinkImpact,
@@ -456,6 +457,30 @@ describe('account di negozio', () => {
       expect(mockedEnqueue).not.toHaveBeenCalled();
     });
 
+    it('l’elenco degli account dice se la wishlist si sta importando, quando e com’è andata', async () => {
+      const gog = await linkStoreAccount(userId, 'gog');
+      const steam = await linkStoreAccount(userId, 'steam');
+      const synced = new Date('2026-10-01T10:00:00Z');
+      await db
+        .update(schema.storeAccounts)
+        .set({ wishlistSyncedAt: synced, wishlistError: 'not_visible' })
+        .where(eq(schema.storeAccounts.id, steam.id));
+      mockedWishlistRunning.mockImplementation(async (id) => id === gog.id);
+
+      const rows = await listStoreAccounts(userId);
+
+      expect(rows.find((r) => r.id === gog.id)).toMatchObject({
+        wishlistSyncing: true,
+        wishlistSyncedAt: null,
+        wishlistError: null,
+      });
+      expect(rows.find((r) => r.id === steam.id)).toMatchObject({
+        wishlistSyncing: false,
+        wishlistSyncedAt: synced,
+        wishlistError: 'not_visible',
+      });
+    });
+
     it('non accoda se è già in corso, se va ricollegato o se il negozio non ne ha una', async () => {
       const steam = await linkStoreAccount(userId, 'steam');
       const scaduto = await linkStoreAccount(userId, 'psn');
@@ -493,6 +518,117 @@ describe('account di negozio', () => {
         'not_found',
       );
       expect(mockedWishlistEnqueue).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('cancella la wishlist di un negozio', () => {
+    beforeEach(() =>
+      mockedWishlistRunning.mockReset().mockResolvedValue(false),
+    );
+
+    const storeList = async (
+      accountId: string,
+      store: 'gog' | 'steam',
+      name: string,
+    ) => {
+      const [list] = await db
+        .insert(schema.playlists)
+        .values({
+          userId,
+          kind: 'store_wishlist',
+          name,
+          query: null,
+          storeAccountId: accountId,
+        })
+        .returning({ id: schema.playlists.id });
+      const game = await createGame();
+      await db
+        .insert(schema.wishlistItems)
+        .values({ listId: list!.id, gameId: game.id });
+      await db.insert(schema.wishlistUnresolved).values({
+        userId,
+        storeAccountId: accountId,
+        store,
+        externalId: '1',
+        name: 'Voce da sistemare',
+      });
+      return list!.id;
+    };
+
+    it('toglie la lista, le sue voci e quelle da sistemare, e riporta l’account com’era; l’altra lista resta', async () => {
+      const gog = await linkStoreAccount(userId, 'gog');
+      const steam = await linkStoreAccount(userId, 'steam');
+      const listId = await storeList(gog.id, 'gog', 'GOG · prova');
+      await storeList(steam.id, 'steam', 'Steam · prova');
+      await db
+        .update(schema.storeAccounts)
+        .set({ wishlistSyncedAt: new Date(), wishlistError: 'failed' })
+        .where(eq(schema.storeAccounts.id, gog.id));
+
+      await expect(deleteStoreWishlist(userId, listId)).resolves.toBe('ok');
+
+      expect(
+        (await db.select().from(schema.playlists)).map((l) => l.name),
+      ).toEqual(['Steam · prova']);
+      expect(await db.select().from(schema.wishlistItems)).toHaveLength(1);
+      expect(
+        (await db.select().from(schema.wishlistUnresolved)).map(
+          (row) => row.storeAccountId,
+        ),
+      ).toEqual([steam.id]);
+      const [row] = await db
+        .select({
+          at: schema.storeAccounts.wishlistSyncedAt,
+          error: schema.storeAccounts.wishlistError,
+          status: schema.storeAccounts.status,
+        })
+        .from(schema.storeAccounts)
+        .where(eq(schema.storeAccounts.id, gog.id));
+      // L'account resta collegato; di quella wishlist non resta niente.
+      expect(row).toEqual({ at: null, error: null, status: 'ok' });
+    });
+
+    it('non la cancella mentre l’import gira: la riscriverebbe', async () => {
+      const gog = await linkStoreAccount(userId, 'gog');
+      const listId = await storeList(gog.id, 'gog', 'GOG · prova');
+      mockedWishlistRunning.mockResolvedValue(true);
+
+      await expect(deleteStoreWishlist(userId, listId)).resolves.toBe(
+        'running',
+      );
+
+      expect(await db.select().from(schema.playlists)).toHaveLength(1);
+      expect(await db.select().from(schema.wishlistUnresolved)).toHaveLength(1);
+    });
+
+    it('una lista di un altro utente, una a mano o inesistente non esiste', async () => {
+      const other = await createUser();
+      const acct = await linkStoreAccount(other, 'gog');
+      const [theirs] = await db
+        .insert(schema.playlists)
+        .values({
+          userId: other,
+          kind: 'store_wishlist',
+          name: 'GOG · loro',
+          query: null,
+          storeAccountId: acct.id,
+        })
+        .returning({ id: schema.playlists.id });
+      const [manual] = await db
+        .insert(schema.playlists)
+        .values({ userId, kind: 'wishlist', name: 'A mano', query: null })
+        .returning({ id: schema.playlists.id });
+
+      for (const id of [
+        theirs!.id,
+        manual!.id,
+        '00000000-0000-4000-8000-0000000000ff',
+      ])
+        await expect(deleteStoreWishlist(userId, id)).resolves.toBe(
+          'not_found',
+        );
+
+      expect(await db.select().from(schema.playlists)).toHaveLength(2);
     });
   });
 

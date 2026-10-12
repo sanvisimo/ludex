@@ -1,7 +1,8 @@
-import type { HomeGame, WishlistSort } from '@repo/contracts';
+import type { HomeGame, Store, WishlistSort } from '@repo/contracts';
 import { wishlistSortValues } from '@repo/contracts';
 import {
   Button,
+  BrandIcon,
   EmptyState,
   Pagination,
   Skeleton,
@@ -10,10 +11,10 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { ChevronLeft, Heart, SearchX } from '@repo/ui/icons';
+import { ChevronLeft, Heart, RefreshCw, SearchX } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { AddGameDialog } from '@/components/add-game-dialog';
@@ -26,13 +27,18 @@ import {
 import { CARD_WIDTH, HomeCard } from '@/components/home-band';
 import { SearchInput, SortSelect } from '@/components/list-controls';
 import { PageSizeSelect } from '@/components/page-size-select';
+import { StoreListStatus } from '@/components/store-list-status';
+import { useSyncWishlist } from '@/components/use-sync-wishlist';
+import { WishlistUnresolvedDialog } from '@/components/wishlist-unresolved-dialog';
 import { WishlistMenu } from '@/components/wishlist-menu';
 import { hasErrorCode, useApiErrorMessage } from '@/lib/api-error';
 import {
   validateWishlistSearch,
   type WishlistSearch,
 } from '@/lib/backlog-filter';
+import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
+import { STORE_BRAND } from '@/lib/store-brand';
 import {
   defaultPageSize,
   pageSizeOptions,
@@ -181,13 +187,22 @@ function WishlistPage() {
       subtitle={data ? tBacklog('count', { count: total }) : ' '}
       actions={
         data && (
-          <WishlistMenu
-            list={data}
-            onDeleted={() => void navigate({ to: '/wishlist' })}
-          />
+          <XStack items="center" gap={8}>
+            {data.store && data.storeAccountId && (
+              <RefreshStoreList accountId={data.storeAccountId} />
+            )}
+            <WishlistMenu
+              list={data}
+              onDeleted={() => void navigate({ to: '/wishlist' })}
+            />
+          </XStack>
         )
       }
     >
+      {data?.store && data.storeAccountId && (
+        <StoreListStatus accountId={data.storeAccountId} />
+      )}
+      {data?.store && <UnresolvedBar listId={data.id} store={data.store} />}
       {data && (
         // Una riga, che sul telefono va a capo: ricerca e ordine.
         <XStack items="center" flexWrap="wrap" gap={8}>
@@ -239,15 +254,28 @@ function WishlistPage() {
                 <Heart size={24} color="$color11" />
               )
             }
-            title={search.q ? t('emptySearchTitle') : t('emptyList')}
-            description={search.q ? undefined : t('emptyListHint')}
+            title={
+              search.q
+                ? t('emptySearchTitle')
+                : data.store
+                  ? t('store.emptyList')
+                  : t('emptyList')
+            }
+            description={
+              search.q || data.store ? undefined : t('emptyListHint')
+            }
           />
         ) : (
           data && (
             <>
               <Cards>
                 {games.map((game) => (
-                  <WishlistCard key={game.id} game={game} listId={id} />
+                  <WishlistCard
+                    key={game.id}
+                    game={game}
+                    listId={id}
+                    readOnly={data.store !== undefined}
+                  />
                 ))}
               </Cards>
               <XStack
@@ -296,7 +324,16 @@ function WishlistPage() {
  * backlog (che chiede la piattaforma, e toglie il gioco da tutte le liste), e
  * «Togli» lo toglie da questa lista, con «Annulla» nell'avviso.
  */
-function WishlistCard({ game, listId }: { game: HomeGame; listId: string }) {
+function WishlistCard({
+  game,
+  listId,
+  readOnly,
+}: {
+  game: HomeGame;
+  listId: string;
+  /** Una lista di negozio (15e): si allinea al negozio, non si toglie a mano. */
+  readOnly: boolean;
+}) {
   const t = useTranslations('wishlist');
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
@@ -325,25 +362,108 @@ function WishlistCard({ game, listId }: { game: HomeGame; listId: string }) {
   return (
     <YStack render="li" gap={6} style={{ listStyle: 'none' }}>
       <HomeCard game={game} fill showWishlist={false} />
-      <XStack gap={4} flexWrap="wrap">
-        <AddGameDialog
-          game={game}
-          trigger={
-            <Button size="sm" variant="outline">
-              {t('own')}
+      {/* In una lista di negozio un gioco già nel backlog porta la sua
+          etichetta di stato sulla card, e non ha niente da aggiungere. */}
+      {!(readOnly && game.status) && (
+        <XStack gap={4} flexWrap="wrap">
+          <AddGameDialog
+            game={game}
+            trigger={
+              <Button size="sm" variant="outline">
+                {t('own')}
+              </Button>
+            }
+          />
+          {!readOnly && (
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={remove.isPending}
+              onClick={() => remove.mutate()}
+            >
+              {t('remove')}
             </Button>
-          }
-        />
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={remove.isPending}
-          onClick={() => remove.mutate()}
-        >
-          {t('remove')}
+          )}
+        </XStack>
+      )}
+    </YStack>
+  );
+}
+
+/**
+ * «Aggiorna wishlist» sulla lista di un negozio (15e): la stessa azione della
+ * scheda dell'account, accodata dal punto in cui la lista si guarda.
+ */
+function RefreshStoreList({ accountId }: { accountId: string }) {
+  const t = useTranslations('wishlist.store');
+  const sync = useSyncWishlist(accountId);
+  const accounts = useQuery(api.accounts.list.queryOptions());
+  const account = accounts.data?.find((row) => row.id === accountId);
+  const syncing = account?.wishlistSyncing ?? false;
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={syncing || sync.isPending || account?.status === 'needs_reauth'}
+      onClick={() => sync.mutate()}
+    >
+      <RefreshCw size={14} color="$color12" />
+      {syncing ? t('syncing') : t('refresh')}
+    </Button>
+  );
+}
+
+/**
+ * Sopra la lista di un negozio: quante voci l'import non ha saputo legare a un
+ * gioco, e il modo di sistemarle. Non c'è se non c'è niente, nemmeno di nascosto;
+ * se restano solo le nascoste dice così, perché senza questo non si potrebbero
+ * più rimettere fra quelle da sistemare.
+ */
+function UnresolvedBar({ listId, store }: { listId: string; store: Store }) {
+  const t = useTranslations('wishlist.store');
+  const storeLabels = useStoreLabels();
+  const [open, setOpen] = useState(false);
+  const entries = useQuery(
+    api.wishlists.unresolved.list.queryOptions({ input: { listId } }),
+  );
+  const rows = entries.data ?? [];
+  const pending = rows.filter((row) => !row.hiddenAt).length;
+  const hidden = rows.length - pending;
+  const brand = STORE_BRAND[store];
+  if (rows.length === 0) return null;
+
+  return (
+    <>
+      <XStack
+        items="center"
+        justify="space-between"
+        gap={12}
+        flexWrap="wrap"
+        p={12}
+        rounded={8}
+        bg="$color3"
+      >
+        <XStack items="center" gap={8} shrink={1} minW={0}>
+          {brand && (
+            <BrandIcon brand={brand} size={16} label={storeLabels[store]} />
+          )}
+          <Text fontSize={14} lineHeight={20} color="$color12">
+            {pending > 0
+              ? t('unresolvedBar', { count: pending })
+              : t('unresolvedOnlyHidden', { count: hidden })}
+          </Text>
+        </XStack>
+        <Button size="sm" onClick={() => setOpen(true)}>
+          {pending > 0 ? t('fix') : t('seeHidden')}
         </Button>
       </XStack>
-    </YStack>
+      <WishlistUnresolvedDialog
+        listId={listId}
+        open={open}
+        onOpenChange={setOpen}
+      />
+    </>
   );
 }
 

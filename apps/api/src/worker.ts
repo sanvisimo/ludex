@@ -43,7 +43,10 @@ import { resolveOpenCriticIds } from './services/opencritic-resolve';
 import { importAmazonLibrary } from './services/amazon-import';
 import { importEpicLibrary } from './services/epic-import';
 import { importGogLibrary } from './services/gog-import';
-import { enqueueDueImports } from './services/library-sync';
+import {
+  enqueueDueImports,
+  enqueueDueWishlistImports,
+} from './services/library-sync';
 import { importNintendoLibrary } from './services/nintendo-import';
 import { importPsnLibrary } from './services/psn-import';
 import { type ImportReport } from './services/library-import';
@@ -211,8 +214,12 @@ const importsWorker = new Worker<ImportsAnyJob>(
       // Come la spazzata dell'enrichment: accoda, non importa. Gli import veri
       // restano un job per account, in fila dietro a questo.
       const queued = await enqueueDueImports();
-      console.log(`[import] spazzata: ${queued} account accodati`);
-      return { queued };
+      // Le wishlist che esistono già, con la stessa cadenza (15e).
+      const wishlists = await enqueueDueWishlistImports();
+      console.log(
+        `[import] spazzata: ${queued} account accodati, ${wishlists} wishlist`,
+      );
+      return { queued, wishlists };
     }
 
     if (isImportsWishlist(job.data)) {

@@ -1,7 +1,12 @@
 import type { LiveEvent } from '@repo/contracts';
+import { storeAccountName } from '@repo/contracts';
+import { toast } from '@repo/ui';
 import { useQueryClient, type QueryKey } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useTranslations } from 'use-intl';
 
+import { useWishlistErrorText } from '@/components/use-wishlist-error';
+import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 import { useSession } from '@/src/use-session';
 
@@ -34,6 +39,38 @@ export function useLiveUpdates() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const userId = session?.user.id;
+  const t = useTranslations('wishlist.store');
+  const storeLabels = useStoreLabels();
+  const errorText = useWishlistErrorText();
+
+  // Cosa dire quando l'import di una wishlist finisce. Sta in un riferimento: i
+  // testi cambiano con la lingua, e la connessione non deve rifarsi per questo.
+  const wishlistFinished = useRef<(storeAccountId: string) => void>(
+    () => undefined,
+  );
+  wishlistFinished.current = (storeAccountId) => {
+    // L'esito sta sull'account, non nell'evento: si rilegge, saltando la cache.
+    void queryClient
+      .fetchQuery({ ...api.accounts.list.queryOptions(), staleTime: 0 })
+      .then((accounts) => {
+        const account = accounts.find((row) => row.id === storeAccountId);
+        // Scollegato nel frattempo, o un tentativo fallito che BullMQ riprova:
+        // l'account risulta ancora in importazione, e l'esito vero arriva dopo.
+        if (!account || account.wishlistSyncing) return;
+        const name = `${storeLabels[account.store]} · ${storeAccountName(account)}`;
+        if (account.wishlistError) {
+          toast.error(
+            t('finishedFailed', {
+              name,
+              reason: errorText(account.wishlistError),
+            }),
+          );
+        } else {
+          toast.success(t('finished', { name }));
+        }
+      })
+      .catch(() => undefined);
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -74,7 +111,14 @@ export function useLiveUpdates() {
     function handle(event: LiveEvent) {
       if (event.type === 'games') return gamesChanged(event.gameIds);
       if (event.type === 'sources') return sourcesChanged();
-      if (event.type === 'wishlist') return invalidate(api.wishlists.key());
+      if (event.type === 'wishlist') {
+        // L'account porta `wishlistSyncing` e l'esito dell'ultimo import.
+        invalidate(api.accounts.key());
+        invalidate(api.wishlists.key());
+        if (event.phase === 'finished')
+          wishlistFinished.current(event.storeAccountId);
+        return;
+      }
       if (event.phase === 'started') return invalidate(api.accounts.key());
       importFinished();
     }
