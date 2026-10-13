@@ -139,6 +139,7 @@ function UsersSection() {
       key: 'name',
       header: t('name'),
       flex: 1,
+      minWidth: 140,
       render: (user) => (
         <>
           <CellText>{user.name}</CellText>
@@ -152,6 +153,7 @@ function UsersSection() {
       key: 'email',
       header: t('email'),
       flex: 1.5,
+      minWidth: 200,
       render: (user) => <CellText muted>{user.email}</CellText>,
     },
     {
