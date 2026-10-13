@@ -1042,6 +1042,10 @@
         "title": "Import from a CSV file",
         "text": "Bring a library you already keep elsewhere into Ludex, for example a Playnite export."
       },
+      "randomFilter": {
+        "title": "A random game from your filter",
+        "text": "The random game is picked from the filter you have selected, and from its page you can jump to another one, always among the same games."
+      },
       "storeWishlists": {
         "title": "Store wishlists",
         "p1": "From the card of a Steam, GOG or PlayStation account you import its wishlist into a list of its own. It updates along with the library when automatic updates are on, and you can delete it whenever you like.",

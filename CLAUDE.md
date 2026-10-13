@@ -172,7 +172,7 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
 16. Cancellazione ed esportazione dell'account
 
 Poi il mobile. I numeri sono nomi e non si rinumerano: **quello che resta si fa
-in quest'ordine** (09/10/2026, aggiornato il 13/10) — link della pagina del gioco · 10 · 14 · 9e · 13 · mobile (la 15e e la 9c sono fatte dal 13/10/2026), con le
+in quest'ordine** (09/10/2026, aggiornato il 13/10) — link della pagina del gioco · 10 · gioco a caso dal filtro · 14 · 9e · 13 · mobile (la 15e e la 9c sono fatte dal 13/10/2026), con le
 ragioni in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.md). Non anticipare
 step successivi: se una feature appartiene allo step 13, non implementarla
 mentre si lavora sulla 9c.
