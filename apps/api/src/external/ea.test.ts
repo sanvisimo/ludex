@@ -1,3 +1,4 @@
+import { storeGameUrl, storePageUrl } from '@repo/contracts';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -17,12 +18,17 @@ const voce = (
   name: string,
   ownershipMethods: string[],
   initialEntitlementDate: string,
+  franchise: string | null = null,
 ): EaOwnedItem => ({
   originOfferId,
   product: {
     name,
     gameSlug,
-    baseItem: { gameType: 'BASE_GAME', title: name },
+    baseItem: {
+      gameType: 'BASE_GAME',
+      title: name,
+      franchise: franchise ? { slug: franchise } : null,
+    },
     gameProductUser: { ownershipMethods, initialEntitlementDate },
   },
 });
@@ -76,6 +82,7 @@ describe('reduceEaLibrary', () => {
           'Dragon Age™: Origins Digital Deluxe Edition',
           ['ENTITLEMENT_GRANT'],
           '2009-11-19T00:00:00Z',
+          'dragon-age',
         ),
         voce(
           'OFB-EAST:51582',
@@ -98,6 +105,8 @@ describe('reduceEaLibrary', () => {
 
     expect(dao).toMatchObject({
       externalId: 'dragon-age-origins',
+      // La serie viene dall'offerta che la dice, anche se non è la prima.
+      storePage: 'dragon-age/dragon-age-origins',
       name: 'Dragon Age™: Origins',
       releaseYear: null,
       subscription: null,
@@ -267,5 +276,37 @@ describe('reduceEaLibrary', () => {
     expect(gioco?.playtimeMinutes).toBe(null);
     expect(gioco?.lastPlayedAt).toBe(null);
     expect(gioco?.imageUrl).toBe(null);
+  });
+});
+
+describe('il link alla pagina del gioco', () => {
+  // Misurati il 13/10/2026 con richieste anonime: il catalogo per slug su 44
+  // giochi su 44, ea.com con la serie su 41 (non sui giochi di altri editori).
+  it('la copia va sul catalogo di EA, con il solo slug', () => {
+    expect(
+      storePageUrl('ea', 'mass-effect/mass-effect-legendary-edition'),
+    ).toBe(
+      'https://store.ea.com/commerce/app/products/mass-effect-legendary-edition',
+    );
+    expect(storePageUrl('ea', 'nox')).toBe(
+      'https://store.ea.com/commerce/app/products/nox',
+    );
+    expect(storePageUrl('ea', null)).toBe(null);
+  });
+
+  it('la card «Links» va su ea.com, che vuole anche la serie', () => {
+    expect(
+      storeGameUrl(
+        'ea',
+        'mass-effect-legendary-edition',
+        'mass-effect/mass-effect-legendary-edition',
+      ),
+    ).toBe(
+      'https://www.ea.com/games/mass-effect/mass-effect-legendary-edition',
+    );
+    // Senza serie l'indirizzo non si compone: a `/games/{slug}` le serie
+    // grandi danno 404.
+    expect(storeGameUrl('ea', 'battlefield-1', 'battlefield-1')).toBe(null);
+    expect(storeGameUrl('ea', 'battlefield-1', null)).toBe(null);
   });
 });

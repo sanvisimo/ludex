@@ -20,6 +20,11 @@ import type { LinkableStore, Store } from './vocabulary';
  *   i dischi. Nella regione italiana, l'unica provata.
  * - **Epic**: lo slug della pagina non sta nei nostri dati. Niente link.
  * - **Amazon**: non ha una pagina pubblica per gioco. Niente link.
+ * - **EA** (9c): `storePage` è `{serie}/{slug}`, e la copia ne usa lo slug sul
+ *   catalogo di EA, `store.ea.com/commerce/app/products/{slug}`. Giusto su 44
+ *   giochi su 44 e dice «posseduto», che è ciò che serve a una copia. Il
+ *   catalogo dichiara i soli mercati US e CN: se un giorno si chiude, la regola
+ *   cambia qui. La card «Links» usa invece ea.com: vedi `storeGameUrl`.
  *
  * Nullo = l'icona del negozio senza link.
  */
@@ -38,6 +43,11 @@ export function storePageUrl(
       return storePage
         ? `https://store.playstation.com/it-it/${storePage}`
         : null;
+    case 'ea': {
+      // Lo slug è l'ultimo pezzo: la serie davanti serve solo a ea.com.
+      const slug = storePage?.split('/').pop();
+      return slug ? `https://store.ea.com/commerce/app/products/${slug}` : null;
+    }
     default:
       return null;
   }
@@ -52,6 +62,12 @@ export function storePageUrl(
  * forma che si ricava dall'id dove è nota (docs/negozi.md): Steam per appid,
  * PSN per concept (gli id numerici sono concept), Xbox per id prodotto.
  *
+ * **EA fa eccezione**: qui va la pagina di ea.com per le persone,
+ * `/games/{serie}/{slug}`, e non il catalogo della copia. La serie sta solo
+ * nella pagina salvata dall'import: senza, niente link. Misurata il 13/10/2026,
+ * giusta su 41 giochi su 44; i tre di altri editori (_SteamWorld Dig_,
+ * _Syberia II_, _Nox_) su ea.com una pagina non ce l'hanno, e danno 404.
+ *
  * Nullo dove un link ufficiale non c'è: GOG dall'id da solo non dà una pagina
  * (gogdb.org non è GOG, e qui sta scritto «GOG»), Epic, Amazon e Nintendo
  * nemmeno. Chi mostra salta quei negozi.
@@ -61,6 +77,11 @@ export function storeGameUrl(
   externalId: string,
   storePage: string | null,
 ): string | null {
+  if (store === 'ea') {
+    return storePage?.includes('/')
+      ? `https://www.ea.com/games/${storePage}`
+      : null;
+  }
   // `storePageUrl` dà a GOG senza pagina il login dell'utente: qui non vale.
   if (storePage) return storePageUrl(store, storePage);
   switch (store) {

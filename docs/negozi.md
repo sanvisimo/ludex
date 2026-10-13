@@ -1171,6 +1171,21 @@ oggi non chiamiamo, non in un calcolo che possiamo rifare. Finché non si trova
 dove, per Epic resta il link di ricerca
 `https://store.epicgames.com/browse?q={titolo}`, da provare a mano.
 
+**EA (9c): due pagine, una per la copia e una per la card «Links».** Misurato
+il 13/10/2026 su 44 giochi, con richieste anonime. La copia va sul catalogo,
+`https://store.ea.com/commerce/app/products/{slug}`: giusto su 44 su 44, e uno
+slug inesistente dà 404 («Game Not Found»), quindi lì un 200 prova qualcosa.
+Dice «posseduto», ma è il catalogo per agenti e crawler, e dichiara i soli
+mercati US e CN. La card «Links» va invece sulla pagina per le persone,
+`https://www.ea.com/games/{serie}/{slug}`: giusta su 41; i giochi di altri
+editori (_SteamWorld Dig_, _Syberia II_, _Nox_) su ea.com non ce l'hanno. Senza
+la serie non si compone: `ea.com/games/{slug}` funziona sul catalogo storico
+(_Dragon Age: Origins_, _Ultima VII_) e dà 404 sulle serie grandi (15 su 44).
+La serie la dà il GraphQL in `baseItem { franchise { slug } }`, su tutti; l'import
+salva `{serie}/{slug}` in `store_page`, e le due regole stanno in
+`store-links.ts`. IGDB non ha una sorgente EA, quindi questo link esiste solo per
+i giochi importati da EA.
+
 **PSN: due link, per due elenchi che non si incrociano.** Gli acquisti portano
 il `productId` e mai il `conceptId`; i giocati portano il `concept.id` e mai il
 `productId`. Su 49 giocati, **nessuno** ha lo stesso `titleId` di un acquisto

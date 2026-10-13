@@ -40,8 +40,11 @@ const mockedSearch = vi.mocked(searchIgdbGames);
 
 const HOUR = 60 * 60 * 1000;
 
-const entry = (over: Partial<EaLibraryEntry> & { externalId: string }) => ({
+const entry = (
+  over: Partial<EaLibraryEntry> & { externalId: string },
+): EaLibraryEntry => ({
   name: over.externalId,
+  storePage: over.externalId,
   releaseYear: null,
   acquiredAt: null,
   subscription: null,
@@ -108,6 +111,7 @@ describe('importEaLibrary', () => {
       entry({
         externalId: 'dragon-age-origins',
         name: 'Dragon Age™: Origins',
+        storePage: 'dragon-age/dragon-age-origins',
         acquiredAt: new Date('2009-11-19T00:00:00Z'),
         playtimeMinutes: 122,
         lastPlayedAt: new Date('2024-01-03T16:58:16Z'),
@@ -136,6 +140,7 @@ describe('importEaLibrary', () => {
         platform: schema.ownerships.platformSlug,
         subscription: schema.ownerships.subscription,
         minutes: schema.ownerships.playtimeMinutes,
+        storePage: schema.ownerships.storePage,
         storeAccountId: schema.ownerships.storeAccountId,
       })
       .from(schema.ownerships)
@@ -154,6 +159,7 @@ describe('importEaLibrary', () => {
         platform: 'pc_windows',
         subscription: null,
         minutes: 122,
+        storePage: 'dragon-age/dragon-age-origins',
         storeAccountId: account.id,
       },
       {
@@ -162,6 +168,7 @@ describe('importEaLibrary', () => {
         platform: 'pc_windows',
         subscription: 'ea_play',
         minutes: null,
+        storePage: 'star-wars-squadrons',
         storeAccountId: account.id,
       },
     ]);

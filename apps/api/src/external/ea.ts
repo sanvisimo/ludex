@@ -186,7 +186,12 @@ export type EaOwnedItem = {
   product: {
     name: string | null;
     gameSlug: string | null;
-    baseItem: { gameType: string | null; title: string | null } | null;
+    baseItem: {
+      gameType: string | null;
+      title: string | null;
+      /** La serie, che la pagina di ea.com vuole davanti allo slug. */
+      franchise?: { slug: string | null } | null;
+    } | null;
     gameProductUser: {
       ownershipMethods: string[] | null;
       initialEntitlementDate: string | null;
@@ -214,7 +219,7 @@ const OWNED_QUERY = `
           product {
             name
             gameSlug
-            baseItem { gameType title }
+            baseItem { gameType title franchise { slug } }
             gameProductUser { ownershipMethods initialEntitlementDate }
           }
         }
@@ -345,6 +350,14 @@ export type EaLibraryEntry = {
   /** La più vecchia fra le date d'acquisto delle offerte. */
   acquiredAt: Date | null;
   subscription: Subscription | null;
+  /**
+   * `{serie}/{slug}`, o il solo slug se EA non dice la serie. Ne escono due
+   * pagine (`@repo/contracts`, `store-links.ts`): quella della **copia** sul
+   * catalogo di EA, che vuole solo lo slug e dice «posseduto», e quella della
+   * card «Links» su ea.com, `/games/{serie}/{slug}`, che senza la serie non si
+   * compone. Misurate il 13/10/2026: 44 giochi su 44 la prima, 41 la seconda.
+   */
+  storePage: string;
   imageUrl: string | null;
   /** Null dove EA non le dà, cioè su tutto ciò che non si è avviato di recente. */
   playtimeMinutes: number | null;
@@ -449,6 +462,9 @@ export function reduceEaLibrary(
         .find((url) => url !== undefined) ?? null;
 
     const ore = playTimes.get(slug);
+    const serie = gruppo
+      .map((item) => item.product?.baseItem?.franchise?.slug)
+      .find((valore): valore is string => Boolean(valore));
 
     return {
       externalId: slug,
@@ -456,6 +472,7 @@ export function reduceEaLibrary(
       releaseYear: anno ? Number(anno) : null,
       acquiredAt: date[0] ?? null,
       subscription: daAbbonamento ? 'ea_play' : null,
+      storePage: serie ? `${serie}/${slug}` : slug,
       imageUrl,
       playtimeMinutes: ore ? Math.round(ore.seconds / 60) : null,
       lastPlayedAt: ore?.lastPlayedAt ?? null,

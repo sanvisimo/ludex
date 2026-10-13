@@ -265,10 +265,29 @@ candidati; poi legge i valori dei campi che ci sono. Se la serie o l'indirizzo c
 sono, l'import li salva in `store_page` e `storePageUrl` compone il link; se no,
 EA resta senza link come Epic e Amazon.
 
-| Domanda                                           | Risposta |
-| ------------------------------------------------- | -------- |
-| L'introspezione è accesa                          | —        |
-| Un campo dice la serie o l'indirizzo della pagina | —        |
+Fatto il 13/10/2026, **15 richieste a EA**, nessun errore:
+
+| Domanda                                           | Risposta                                                                                                                        |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| L'introspezione è accesa                          | **No** («Graphql validation error»). I tipi si chiamano `GameProduct` e `Game`                                                  |
+| Un campo dice la serie o l'indirizzo della pagina | **`baseItem { franchise { slug } }`, su 44 giochi su 44**. `url` esiste ma è sempre nullo; gli altri sei candidati non esistono |
+
+Poi, con richieste anonime, le pagine composte per tutti i 44:
+
+- **`ea.com/games/{serie}/{slug}`: 41 su 44**, a volte con un redirect di EA
+  (`starwars/squadrons`, C&C Generals sulla pagina della serie). I tre giochi di
+  altri editori — _SteamWorld Dig_, _Syberia II_, _Nox_ — su ea.com una pagina
+  non ce l'hanno. `ea.com/games/{slug}`, senza serie, dava 404 su 15.
+- **`store.ea.com/commerce/app/products/{slug}`: 44 su 44**, col titolo giusto;
+  uno slug inesistente dà 404 («Game Not Found»). È il catalogo per agenti e
+  crawler, e dichiara i soli mercati US e CN; da loggati dice «posseduto».
+
+**Passo 6, fatto (13/10/2026): due link da una pagina sola.** L'import salva
+`{serie}/{slug}` in `store_page`. **La copia** nel backlog va sul catalogo
+(`storePageUrl`, col solo slug: dice «posseduto», ed è giusta su tutti); **la
+card «Links»** va su ea.com (`storeGameUrl`, con la serie; senza, niente link).
+Le copie già importate prendono la pagina al prossimo «Importa di nuovo». Test
+in `external/ea.test.ts` ed `ea-import.test.ts`; banco di `api` 896 su 896.
 
 **Da valutare in un lotto a parte (13/10/2026): un collegamento che si rinnova.**
 Il login dell'app desktop EA (`JUNO_PC_CLIENT`, OAuth con PKCE, redirect a
