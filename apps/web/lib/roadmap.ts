@@ -43,6 +43,7 @@ export const roadmap: RoadmapEntry[] = [
   { id: 'eaRenew', status: 'doing', areas: ['import'] },
   { id: 'linksFix', status: 'next', areas: ['game'] },
   { id: 'csv', status: 'next', areas: ['import'] },
+  { id: 'randomFilter', status: 'next', areas: ['library'] },
   { id: 'subscriptions', status: 'next', areas: ['library'] },
   { id: 'xbox', status: 'next', areas: ['import'] },
   { id: 'ai', status: 'next', areas: ['ai'] },

@@ -1042,6 +1042,10 @@
         "title": "Importa da un file CSV",
         "text": "Porta in Ludex una libreria che hai già altrove, per esempio l'export di Playnite."
       },
+      "randomFilter": {
+        "title": "Il gioco a caso dal filtro",
+        "text": "Il gioco a caso pesca dentro il filtro che hai scelto, e dalla sua scheda puoi passare a un altro, sempre fra gli stessi giochi."
+      },
       "storeWishlists": {
         "title": "Le wishlist dei negozi",
         "p1": "Dalla scheda di un account Steam, GOG o PlayStation importi la sua wishlist in una lista a parte. Si aggiorna insieme alla libreria, se l'aggiornamento automatico è acceso, e la puoi cancellare quando vuoi.",
