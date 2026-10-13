@@ -864,6 +864,32 @@ rinnovo periodico dal server è troppo, è `AUTO_SYNC_EVERY_DAYS.nintendo`. Se i
 risponde 401 su un token fresco, la prima riga da guardare è `SAVANNA_CLIENT_ID` in
 `apps/api/src/external/nintendo.ts`.
 
+## EA (9c)
+
+**Un'importazione una tantum, non un collegamento.** L'utente, col browser entrato
+su ea.com, apre `accounts.ea.com/connect/auth` (`client_id=ORIGIN_JS_SDK`,
+`prompt=none`) e incolla la pagina JSON che ne esce. Il token dura **quattro ore**
+e non si rinnova: rinnovarlo vorrebbe i cookie di ea.com. Si salva cifrato solo
+perché il job lo trovi, e l'import lo cancella appena finisce; reimportare è
+incollarne uno nuovo sulla stessa riga («Importa di nuovo»). EA sta in
+`oneShotStoreValues`: niente spazzata, niente «aggiorna tutti», e un token
+scaduto non è `needs_reauth`.
+
+Tutto il resto è un GraphQL solo, `service-aggregation-layer.juno.ea.com`, con
+la query **scritta per esteso** e i negozi dentro la query (`storefronts: [EA,
+STEAM, EPIC]`): con una variabile risponde «Graphql validation error», e la
+persisted query del sito ha un hash che cambia. Il filtro `type` non toglie i
+DLC, che arrivano col prodotto nullo (272 voci su 327); un gioco è più offerte
+sotto lo stesso `gameSlug`, che fa da id esterno; le ore le dà solo per i giochi
+avviati di recente. Le misure, in quattro giri di `ea:probe`, e le decisioni sono
+in `plans/9c-ea.md`; i link alla pagina del gioco qui sotto, in «Il link alla
+pagina del gioco».
+
+**Da valutare a parte: un login che si rinnova.** Quello dell'app desktop EA
+(`JUNO_PC_CLIENT`, OAuth con PKCE e redirect a `qrc://`) dà anche un refresh
+token: lo usa il plugin EA di GOG Galaxy. Letto, non provato; le incognite sono
+nel piano.
+
 ## Le wishlist dei negozi (15e)
 
 Le wishlist di Ludex a mano sono un'altra cosa ([15b](../plans/15b-wishlist.md)): il

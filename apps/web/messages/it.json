@@ -1048,9 +1048,15 @@
         "p2": "Un gioco che hai già nel backlog resta nella lista, con il suo stato. Ciò che Ludex non riconosce lo colleghi a mano a un gioco, o lo metti da parte se non è un gioco.",
         "p3": "Se un import non riesce, la scheda e la pagina delle liste dicono perché, e a fine importazione ricevi un avviso."
       },
+      "linksFix": {
+        "title": "I link nella pagina del gioco",
+        "text": "Più link nella pagina di ogni gioco, presi da IGDB: il sito ufficiale e i negozi, compreso Epic, che oggi non ne ha."
+      },
       "ea": {
         "title": "La libreria EA",
-        "text": "EA non permette un collegamento che duri: la libreria si importerà una volta sola, quando vuoi tu."
+        "p1": "Dalla sezione Librerie importi la libreria EA incollando il testo di una pagina di ea.com: entrano anche i giochi comprati su Steam o Epic e legati all'account, e quelli di EA Play sono segnati come abbonamento.",
+        "p2": "EA non permette un collegamento che duri: per aggiornare la libreria usi «Importa di nuovo» sulla scheda dell'account.",
+        "p3": "Ogni copia EA porta alla sua pagina sul catalogo di EA, e la pagina del gioco al sito di EA."
       },
       "metaquest": {
         "title": "La libreria Meta Quest",

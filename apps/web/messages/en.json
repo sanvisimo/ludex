@@ -1048,9 +1048,15 @@
         "p2": "A game you already have in your backlog stays in the list, with its status. What Ludex doesn't recognise you link to a game by hand, or set aside if it isn't a game.",
         "p3": "If an import fails, the card and the lists page say why, and you get a notice when it finishes."
       },
+      "linksFix": {
+        "title": "Links on the game page",
+        "text": "More links on every game page, taken from IGDB: the official website and the stores, including Epic, which has none today."
+      },
       "ea": {
         "title": "The EA library",
-        "text": "EA doesn't allow a link that lasts: the library will be imported once, whenever you choose."
+        "p1": "From the Libraries section you import your EA library by pasting the text of an ea.com page: games bought on Steam or Epic and linked to the account come in too, and EA Play ones are marked as subscription.",
+        "p2": "EA doesn't allow a link that lasts: to update the library you use “Import again” on the account card.",
+        "p3": "Every EA copy links to its page in the EA catalog, and the game page to the EA website."
       },
       "metaquest": {
         "title": "The Meta Quest library",

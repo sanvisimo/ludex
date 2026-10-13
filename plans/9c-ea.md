@@ -1,7 +1,8 @@
 # Step 9c — EA
 
-**Stato: analisi e misura finite (13/10/2026, tre giri di `ea:probe`, 23 richieste
-a EA in tutto, nessun errore). Passi 1–5 fatti, sul branch `feat/9c-ea`: si aspetta la prova dell'utente.**
+**Stato: chiuso il 13/10/2026**, dall'utente, dopo la prova. Branch
+`feat/9c-ea`; roadmap a «fatto». Il login che si rinnova (quello dell'app desktop
+EA) è da valutare in un lotto a parte, vedi in fondo.
 
 ## Contesto
 
