@@ -1,7 +1,7 @@
 # Step 9c — EA
 
 **Stato: analisi e misura finite (13/10/2026, tre giri di `ea:probe`, 23 richieste
-a EA in tutto, nessun errore). Passi 1–4 fatti, sul branch `feat/9c-ea`.**
+a EA in tutto, nessun errore). Passi 1–5 fatti, sul branch `feat/9c-ea`: si aspetta la prova dell'utente.**
 
 ## Contesto
 
@@ -232,9 +232,27 @@ Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
      di rete), il collegamento in `store-accounts.test.ts`, spazzata e
      «aggiorna tutti» senza EA, i campioni EA in `paste-check.test.ts`. Tutto il
      banco di `api`: 894 su 894.
-5. **La scheda EA in `/account`.** Incolla il JSON, «Importa di nuovo», niente
-   interruttore dell'aggiornamento automatico; i testi nei due file dei
-   messaggi. Prima il wireframe, se l'utente lo vuole.
+5. **La scheda EA in `/account`. Fatto (13/10/2026)**, senza wireframe: è la
+   scheda degli altri negozi con due cambi nella riga dei gesti
+   (`store-account-card.tsx`, guidati da `isOneShotStore`, mai da `'ea'`):
+   - al posto del ↻ **«Importa di nuovo»**, a parole, che apre il dialogo del
+     ricollegamento con titolo e descrizione suoi (`reimport`, `reimportTitle`,
+     `reimportDescription` nei due file dei messaggi) e lo stesso
+     `StoreLinkForm`, sulla stessa riga; gira mentre l'import va;
+   - **niente interruttore «Auto»**, né l'avviso dell'aggiornamento spento.
+
+   Si verifica a occhio: i componenti non hanno test.
+
+**Da valutare in un lotto a parte (13/10/2026): un collegamento che si rinnova.**
+Il login dell'app desktop EA (`JUNO_PC_CLIENT`, OAuth con PKCE, redirect a
+`qrc:///html/login_successful.html`) dà anche un **refresh token**, che il server
+potrebbe rinnovare da sé (`connect/token`, `grant_type=refresh_token`): lo fa il
+plugin EA di GOG Galaxy (BellezaEmporium/galaxy-integration-ead). Letto, non
+provato. Tre incognite: come l'utente prende il codice da un redirect a `qrc://`
+che il browser non apre; il `pc_sign`, una firma dell'hardware che il login
+chiede; quanto dura il refresh token e se EA accetta rinnovi da un server (la
+lezione di Steam). Se regge, `oneShotStoreValues` si svuota e «Importa di nuovo»
+torna ↻; il client, la riduzione e l'import restano.
 
 Poi `docs/negozi.md` (una sezione «EA (9c)») e la roadmap a «fatto» quando
 l'utente dice che il lotto è pronto.
