@@ -62,6 +62,40 @@ describe('searchCatalog', () => {
     ]);
   });
 
+  it('inBacklog divide il catalogo in due metà, con i totali', async () => {
+    const [mio, altro] = [await createUser(), await createUser()];
+    const miei = await createGame({ name: 'Zelda 1' });
+    const altrui = await createGame({ name: 'Zelda 2' });
+    await createGame({ name: 'Zelda 3' });
+    await db.insert(schema.backlog).values([
+      { userId: mio, gameId: miei.id, status: 'playing' },
+      { userId: altro, gameId: altrui.id, status: 'completed' },
+    ]);
+
+    const nel = await searchCatalog(
+      { q: 'zelda', inBacklog: true, ...pagina },
+      mio,
+    );
+    const fuori = await searchCatalog(
+      { q: 'zelda', inBacklog: false, ...pagina },
+      mio,
+    );
+    const ospite = await searchCatalog(
+      { q: 'zelda', inBacklog: true, ...pagina },
+      null,
+    );
+
+    expect(nel.games.map((game) => game.name)).toEqual(['Zelda 1']);
+    expect(nel.total).toBe(1);
+    // Il backlog di un altro non conta: Zelda 2 è «fuori» per chi cerca.
+    expect(fuori.games.map((game) => game.name)).toEqual([
+      'Zelda 2',
+      'Zelda 3',
+    ]);
+    expect(fuori.total).toBe(2);
+    expect(ospite).toEqual({ games: [], total: 0 });
+  });
+
   it('prima il titolo esatto, poi chi comincia così, poi gli altri', async () => {
     await createGame({ name: 'Hades II' });
     await createGame({ name: 'Children of Hades' });

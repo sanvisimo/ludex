@@ -17,10 +17,14 @@ import { Page } from '@/src/components/page';
 /** Quanti giochi di Ludex per pagina: cinque file da sei sul desktop. */
 const PAGE_SIZE = 30;
 
+/** Il tuo backlog non ha pagine: il massimo che il contratto accetta. */
+const MINE_LIMIT = 60;
+
 type SearchParams = { q?: string; page?: number };
 
-// La ricerca globale (12f): tutti i giochi di Ludex che corrispondono, a
-// pagine, e sotto — da loggati — quelli IGDB che Ludex non ha ancora. Il
+// La ricerca globale (12f): prima — da loggati — i giochi del tuo backlog che
+// corrispondono, poi tutti gli altri di Ludex, a pagine, e sotto quelli IGDB
+// che Ludex non ha ancora. Il
 // testo e la pagina stanno nell'URL, come i filtri del backlog: un link a una
 // ricerca la riapre uguale.
 export const Route = createFileRoute('/_app/search')({
@@ -66,13 +70,15 @@ function SearchPage() {
     return () => clearTimeout(timer);
   }, [text, q, navigate]);
 
-  const { local, igdb } = useGameSearch(q, {
+  const { mine, local, igdb } = useGameSearch(q, {
     limit: PAGE_SIZE,
+    mineLimit: MINE_LIMIT,
     offset: (page - 1) * PAGE_SIZE,
     delay: 0,
   });
   const openIgdb = useOpenIgdbHit();
 
+  const mineTotal = mine.data?.total ?? 0;
   const total = local.data?.total ?? 0;
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const hits = igdb?.data ?? [];
@@ -82,6 +88,8 @@ function SearchPage() {
   const nothing =
     local.isSuccess &&
     total === 0 &&
+    mineTotal === 0 &&
+    !mine.isFetching &&
     (igdb === null || !igdb.isPending) &&
     hits.length === 0;
 
@@ -125,6 +133,19 @@ function SearchPage() {
         </Text>
       ) : (
         <>
+          {mineTotal > 0 && mine.data && (
+            <Section
+              title={t('inBacklog')}
+              subtitle={t('count', { count: mineTotal })}
+            >
+              <Grid>
+                {mine.data.games.map((game) => (
+                  <HomeCard key={game.id} game={game} fill />
+                ))}
+              </Grid>
+            </Section>
+          )}
+
           {(local.isPending || total > 0) && (
             <Section
               title={t('inLudex')}

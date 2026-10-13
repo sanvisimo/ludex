@@ -19,8 +19,9 @@ import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { useSession } from '@/src/use-session';
 
 /**
- * La ricerca globale (12f): prima i giochi di Ludex, poi — solo da loggati —
- * quelli IGDB che Ludex non ha ancora. Qui i pezzi che servono alla tendina
+ * La ricerca globale (12f): prima i giochi che hai nel backlog (solo da
+ * loggati), poi gli altri di Ludex, poi — solo da loggati — quelli IGDB che
+ * Ludex non ha ancora. Qui i pezzi che servono alla tendina
  * nella barra e alla pagina `/search`.
  */
 
@@ -40,25 +41,30 @@ const DROPDOWN_LIMIT = 10;
 const DEBOUNCE_MS = 300;
 
 /**
- * Le due metà della ricerca, per lo stesso testo. IGDB parte solo da loggati,
- * perché consuma il rate limit delle nostre credenziali.
+ * Le tre parti della ricerca, per lo stesso testo: `mine`, i giochi del tuo
+ * backlog (solo da loggati); `local`, gli altri di Ludex; `igdb`. Le prime due
+ * non si sovrappongono. IGDB parte solo da loggati, perché consuma il rate
+ * limit delle nostre credenziali.
  *
  * `delay: 0` per un testo che arriva già ritardato, come quello della pagina,
  * che lo legge dall'URL.
  *
- * Con `igdbFillsUpTo` IGDB serve solo a completare: si chiede dopo i nostri, e
- * solo se sono meno di quel numero. È la tendina, che ha dieci posti; con dieci
- * giochi nostri IGDB non si chiama affatto, e il rate limit ringrazia.
+ * Con `igdbFillsUpTo` IGDB serve solo a completare: si chiede dopo i nostri
+ * (backlog e Ludex insieme), e solo se sono meno di quel numero. È la tendina,
+ * che ha dieci posti; con dieci giochi nostri IGDB non si chiama affatto, e il
+ * rate limit ringrazia.
  */
 export function useGameSearch(
   query: string,
   {
     limit,
+    mineLimit,
     offset = 0,
     delay = DEBOUNCE_MS,
     igdbFillsUpTo,
   }: {
     limit: number;
+    mineLimit: number;
     offset?: number;
     delay?: number;
     igdbFillsUpTo?: number;
@@ -69,14 +75,26 @@ export function useGameSearch(
   const q = delay === 0 ? query.trim() : debounced;
   const enabled = q.length >= MIN_QUERY;
 
+  // Il tuo backlog non ha pagine: ne vale solo la prima, e da ospiti è vuoto.
+  const mine = useQuery({
+    ...api.games.find.queryOptions({
+      input: { q, limit: mineLimit, inBacklog: true },
+    }),
+    enabled: enabled && !!session,
+  });
   const local = useQuery({
-    ...api.games.find.queryOptions({ input: { q, limit, offset } }),
+    ...api.games.find.queryOptions({
+      input: { q, limit, offset, inBacklog: false },
+    }),
     enabled,
   });
   const room =
     igdbFillsUpTo === undefined
       ? true
-      : local.isSuccess && local.data.games.length < igdbFillsUpTo;
+      : local.isSuccess &&
+        (!session || mine.isSuccess) &&
+        (mine.data?.games.length ?? 0) + local.data.games.length <
+          igdbFillsUpTo;
   const igdb = useQuery({
     ...api.games.findOnIgdb.queryOptions({ input: { query: q } }),
     enabled: enabled && !!session && room,
@@ -87,10 +105,12 @@ export function useGameSearch(
     // Il testo scritto e quello cercato non coincidono per i 300 ms del
     // ritardo: in quel tempo i risultati sono quelli di prima.
     settled: q === query.trim(),
+    mine,
     local,
     // Null quando IGDB non va chiesto: da ospiti, o con la tendina già piena.
     // Finché i nostri non sono arrivati non si sa ancora, e conta come chiesto.
-    igdb: session && (room || local.isPending) ? igdb : null,
+    igdb:
+      session && (room || local.isPending || mine.isPending) ? igdb : null,
   };
 }
 
@@ -152,14 +172,25 @@ export function GameSearchBox() {
   const navigate = useNavigate();
   const openIgdb = useOpenIgdbHit();
   const [query, setQuery] = useState('');
-  const { q, settled, local, igdb } = useGameSearch(query, {
+  const { q, settled, mine, local, igdb } = useGameSearch(query, {
     limit: DROPDOWN_LIMIT,
+    mineLimit: DROPDOWN_LIMIT,
     igdbFillsUpTo: DROPDOWN_LIMIT,
   });
 
-  const games = local.data?.games ?? [];
-  const hits = (igdb?.data ?? []).slice(0, DROPDOWN_LIMIT - games.length);
+  // Dieci posti in tutto: prima il tuo backlog, poi il resto di Ludex, e a
+  // IGDB quelli che avanzano.
+  const owned = (mine.data?.games ?? []).slice(0, DROPDOWN_LIMIT);
+  const games = (local.data?.games ?? []).slice(
+    0,
+    DROPDOWN_LIMIT - owned.length,
+  );
+  const hits = (igdb?.data ?? []).slice(
+    0,
+    DROPDOWN_LIMIT - owned.length - games.length,
+  );
   const options = [
+    ...owned.map((game) => `game:${game.slug}`),
     ...games.map((game) => `game:${game.slug}`),
     ...hits.map((hit) => `igdb:${hit.igdbId}`),
     'all',
@@ -181,7 +212,7 @@ export function GameSearchBox() {
 
   const loading =
     !settled || local.isPending || (igdb !== null && igdb.isPending);
-  const empty = games.length === 0 && hits.length === 0;
+  const empty = owned.length === 0 && games.length === 0 && hits.length === 0;
 
   return (
     <SearchField
@@ -195,6 +226,19 @@ export function GameSearchBox() {
       onSubmit={goToResults}
       minLength={MIN_QUERY}
     >
+      {owned.length > 0 && (
+        <SearchFieldGroup label={t('inBacklog')}>
+          {owned.map((game) => (
+            <SearchFieldItem key={game.id} value={`game:${game.slug}`}>
+              <ResultRow
+                cover={game.coverImageId}
+                name={game.name}
+                year={yearOf(game)}
+              />
+            </SearchFieldItem>
+          ))}
+        </SearchFieldGroup>
+      )}
       {games.length > 0 && (
         <SearchFieldGroup label={t('inLudex')}>
           {games.map((game) => (

@@ -95,10 +95,14 @@ export const contract = {
     // La ricerca globale (12f), sul catalogo intero e per titolo. Pubblica come
     // la home; da loggati ogni gioco porta lo stato che ha nel tuo backlog.
     // `total` è il conteggio prima di limit/offset, come nel backlog.
+    // `inBacklog` divide il catalogo in due: `true` solo i giochi che hai nel
+    // backlog, `false` tutti gli altri; senza, tutto. Da sloggati nessun gioco
+    // è nel backlog.
     find: oc
       .input(
         z.object({
           q: z.string().trim().min(2).max(100),
+          inBacklog: z.boolean().optional(),
           limit: z.number().int().min(1).max(60).default(24),
           offset: z.number().int().min(0).default(0),
         }),
