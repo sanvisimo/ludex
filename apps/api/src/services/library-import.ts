@@ -143,6 +143,7 @@ const STORE_PLATFORM: Partial<Record<Store, string>> = {
   gog: 'pc_windows',
   epic: 'pc_windows',
   amazon: 'pc_windows',
+  ea: 'pc_windows',
 };
 
 /**

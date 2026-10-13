@@ -814,6 +814,18 @@
         ],
         "wrong": "Non sembra l'indirizzo del link: hai cliccato il pulsante? Serve l'indirizzo che inizia con «npf» e contiene «session_token_code».",
         "note": "Ludex legge la tua libreria digitale, anche i giochi mai avviati, e i giochi che hai avviato, cartucce comprese. Una cartuccia mai avviata non lascia traccia su Nintendo e va aggiunta a mano. Il collegamento si fa una volta sola e dura circa due anni."
+      },
+      "ea": {
+        "placeholder": "{\"access_token\":\"…\",\"expires_in\":\"…\"}",
+        "openLabel": "Apri la pagina del token",
+        "steps": [
+          "Entra su ea.com con il browser.",
+          "Apri la pagina del token qui sotto: mostra una riga come {\"access_token\":\"…\"}.",
+          "Selezionala tutta e copiala.",
+          "Incolla qui quello che hai copiato."
+        ],
+        "wrong": "Serve tutta la riga, con dentro «access_token». Se vedi «login_required», non sei ancora entrato: entra prima su ea.com.",
+        "note": "EA non permette un collegamento che duri: la libreria si importa ora, una volta sola. Per aggiornarla, rifai questi passi."
       }
     },
     "unresolved": {

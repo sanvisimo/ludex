@@ -9,6 +9,7 @@ import {
   linkSteamAccount as seedAccount,
   linkStoreAccount,
 } from '../../test/factories';
+import { fetchEaIdentity } from '../external/ea';
 import {
   exchangeNintendoCode,
   fetchNintendoProfile,
@@ -35,9 +36,11 @@ import {
   isWishlistImportRunning,
 } from '../queue/imports';
 import {
+  EaTokenError,
   linkNintendoAccount,
   nintendoCredentials,
   linkSteamAccount,
+  linkStore,
   listStoreAccounts,
   NintendoCodeError,
   renameStoreAccount,
@@ -68,6 +71,10 @@ vi.mock('../external/nintendo', async (importOriginal) => ({
   fetchNintendoProfile: vi.fn(),
   refreshNintendoTokens: vi.fn(),
 }));
+vi.mock('../external/ea', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../external/ea')>()),
+  fetchEaIdentity: vi.fn(),
+}));
 vi.mock('../queue/imports', () => ({
   isImportRunning: vi.fn(),
   enqueueImport: vi.fn(),
@@ -83,6 +90,7 @@ const mockedExchangeNintendo = vi.mocked(exchangeNintendoCode);
 const mockedRefreshNintendo = vi.mocked(refreshNintendoTokens);
 const mockedProfileNintendo = vi.mocked(fetchNintendoProfile);
 const mockedRunning = vi.mocked(isImportRunning);
+const mockedEaIdentity = vi.mocked(fetchEaIdentity);
 const mockedEnqueue = vi.mocked(enqueueImport);
 const mockedWishlistRunning = vi.mocked(isWishlistImportRunning);
 const mockedWishlistEnqueue = vi.mocked(enqueueWishlistImport);
@@ -662,6 +670,22 @@ describe('account di negozio', () => {
       });
     });
 
+    it('salta EA, che si reimporta incollando un token nuovo', async () => {
+      await linkStoreAccount(userId, 'ea');
+      const gog = await linkStoreAccount(userId, 'gog');
+      mockedRunning.mockResolvedValue(false);
+
+      await expect(syncAllStoreAccounts(userId)).resolves.toEqual({
+        queued: 1,
+        alreadyRunning: 0,
+        needsReauth: 0,
+      });
+      expect(mockedEnqueue).toHaveBeenCalledTimes(1);
+      expect(mockedEnqueue).toHaveBeenCalledWith('gog', {
+        storeAccountId: gog.id,
+      });
+    });
+
     it('non tocca gli account di altri utenti', async () => {
       await linkStoreAccount(await createUser(), 'gog');
 
@@ -1174,5 +1198,73 @@ describe('Nintendo (9d)', () => {
       expect(riga.status).toBe('ok');
       expect(sameCredentials(riga.credentials, account.credentials)).toBe(true);
     });
+  });
+});
+
+describe('EA (9c)', () => {
+  let userId: string;
+  const json = (token: string) =>
+    `{"access_token":"${token}","token_type":"Bearer","expires_in":"14399"}`;
+
+  beforeEach(async () => {
+    process.env.STORE_TOKEN_KEY = Buffer.alloc(32, 7).toString('base64');
+    resetStoreTokenKey();
+    userId = await createUser();
+    mockedEaIdentity.mockResolvedValue({
+      accountId: '2292938939',
+      displayName: 'sanvisimo',
+    });
+  });
+
+  it('collega dal JSON incollato, con pd come account e il token per il job', async () => {
+    const account = await linkStore(userId, 'ea', json('QVQxOjIuMDoz'));
+
+    expect(account).toMatchObject({
+      store: 'ea',
+      externalAccountId: '2292938939',
+      displayName: 'sanvisimo',
+      status: 'ok',
+      hasLogin: true,
+    });
+    expect(mockedEaIdentity).toHaveBeenCalledWith('QVQxOjIuMDoz');
+
+    const [riga] = await db
+      .select()
+      .from(schema.storeAccounts)
+      .where(eq(schema.storeAccounts.id, account.id));
+    expect(
+      decryptCredentials<{ accessToken: string }>(riga!.credentials!)
+        .accessToken,
+    ).toBe('QVQxOjIuMDoz');
+    // Quattro ore, meno il minuto di margine.
+    expect(riga!.credentialsExpireAt!.getTime()).toBeGreaterThan(
+      Date.now() + 3.9 * 60 * 60 * 1000,
+    );
+  });
+
+  it('reimportare è ricollegare: stessa riga, token nuovo', async () => {
+    const prima = await linkStore(userId, 'ea', json('primo'));
+    const dopo = await linkStore(userId, 'ea', json('secondo'), {
+      relinking: prima,
+    });
+
+    expect(dopo.id).toBe(prima.id);
+    expect(await db.select().from(schema.storeAccounts)).toHaveLength(1);
+  });
+
+  it('distingue il browser non entrato da un testo che non è il JSON', async () => {
+    await expect(
+      linkStore(userId, 'ea', '{"error":"login_required"}'),
+    ).rejects.toMatchObject({ name: 'EaTokenError', notLoggedIn: true });
+    await expect(
+      linkStore(userId, 'ea', 'QVQxOjIuMDoz'),
+    ).rejects.toBeInstanceOf(EaTokenError);
+    expect(mockedEaIdentity).not.toHaveBeenCalled();
+  });
+
+  it('la pagina da aprire è quella del token', () => {
+    expect(storeLoginUrl(userId, 'ea').url).toMatch(
+      /^https:\/\/accounts\.ea\.com\/connect\/auth\?client_id=ORIGIN_JS_SDK/,
+    );
   });
 });

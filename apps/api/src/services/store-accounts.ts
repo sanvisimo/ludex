@@ -1,10 +1,11 @@
 import {
   type LinkableStore,
+  oneShotStoreValues,
   type Store,
   wishlistStoreValues,
 } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, eq, inArray, ne, sql } from '@repo/db/orm';
+import { and, eq, inArray, ne, notInArray, sql } from '@repo/db/orm';
 
 import {
   AmazonAuthError,
@@ -16,6 +17,12 @@ import {
   refreshAmazonTokens,
   registerAmazonDevice,
 } from '../external/amazon';
+import {
+  EA_TOKEN_URL,
+  type EaToken,
+  fetchEaIdentity,
+  parseEaToken,
+} from '../external/ea';
 import {
   EpicAuthError,
   epicLoginUrl,
@@ -254,6 +261,9 @@ export async function syncAllStoreAccounts(userId: string) {
       and(
         eq(schema.storeAccounts.userId, userId),
         ne(schema.storeAccounts.status, 'unlinked'),
+        // EA si importa una volta sola: senza un JSON nuovo non c'è niente con
+        // cui ripartire, e il job fallirebbe e basta.
+        notInArray(schema.storeAccounts.store, [...oneShotStoreValues]),
       ),
     );
 
@@ -993,6 +1003,52 @@ export async function linkNintendoAccount(
   });
 }
 
+// --- EA: un token da quattro ore, per un import solo ---
+
+export class EaTokenError extends Error {
+  constructor(readonly notLoggedIn = false) {
+    super(
+      notLoggedIn
+        ? 'EA dice che non sei entrato: entra su ea.com nel browser, poi riapri la pagina del token e incolla di nuovo'
+        : 'Non trovo il token: incolla il JSON intero che vedi a schermo, quello con access_token',
+    );
+    this.name = 'EaTokenError';
+  }
+}
+
+/**
+ * Collega EA dal JSON di `connect/auth`, e con quello lo importa.
+ *
+ * Non è un collegamento come gli altri: il token dura quattro ore e non si
+ * rinnova (vedi `external/ea.ts`). Si salva cifrato solo perché il job che parte
+ * subito dopo lo trovi, **senza passare da Redis**, e l'import lo cancella appena
+ * ha finito. Reimportare è rifare questo, sulla stessa riga: l'account resta,
+ * `pd` lo riconosce, e il ricollegamento controlla che sia lo stesso.
+ */
+export async function linkEaAccount(
+  userId: string,
+  pasted: string,
+  options: LinkOptions = {},
+) {
+  const token = parseEaToken(pasted);
+  if (token === 'not_logged_in') throw new EaTokenError(true);
+  if (!token) throw new EaTokenError();
+
+  const identity = await fetchEaIdentity(token.accessToken);
+  const credentials: EaToken = token;
+
+  return upsertAccount({
+    userId,
+    store: 'ea',
+    externalAccountId: identity.accountId,
+    displayName: identity.displayName,
+    credentials,
+    expiresAt: new Date(token.expiresAt),
+    label: options.label,
+    expectedExternalAccountId: options.relinking?.externalAccountId,
+  });
+}
+
 /**
  * Un access token Amazon valido, più il serial che serve agli entitlement.
  *
@@ -1083,6 +1139,10 @@ export function storeLoginUrl(
       // Lo `state` è dentro l'indirizzo, e torna dentro quello incollato: il
       // client non deve riportarlo (vedi `linkNintendoAccount`).
       return { url: nintendoLoginUrl(userId, newNintendoState()), state: null };
+    case 'ea':
+      // Non un login: la pagina che, col browser già entrato su ea.com, mostra
+      // il token. Che bisogna entrare prima lo dice il testo del modulo.
+      return { url: EA_TOKEN_URL, state: null };
     default:
       return { url: null, state: null };
   }
@@ -1133,6 +1193,8 @@ export function linkStore(
       return linkPsnAccount(userId, value, options);
     case 'nintendo':
       return linkNintendoAccount(userId, value, options);
+    case 'ea':
+      return linkEaAccount(userId, value, options);
   }
 }
 

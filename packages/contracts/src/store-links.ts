@@ -174,6 +174,10 @@ export function checkPastedLogin(
         ? jsonField('npsso')
         : /^[\w-]{40,}$/.test(unquoted);
       break;
+    case 'ea':
+      // Solo il JSON intero, come `parseEaToken`: la scadenza sta lì dentro.
+      ok = jsonField('access_token');
+      break;
   }
   return ok ? 'ok' : 'wrong';
 }

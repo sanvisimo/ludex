@@ -1,7 +1,7 @@
 # Step 9c — EA
 
 **Stato: analisi e misura finite (13/10/2026, tre giri di `ea:probe`, 23 richieste
-a EA in tutto, nessun errore). Passi 1, 2 e 3 fatti, sul branch `feat/9c-ea`.**
+a EA in tutto, nessun errore). Passi 1–4 fatti, sul branch `feat/9c-ea`.**
 
 ## Contesto
 
@@ -203,12 +203,35 @@ Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
      ea.com;
    - come si presenta un token scaduto: si prende per tale un 401/403 o un
      errore GraphQL che parli di token (`EaAuthError`).
-4. **Collegamento e import.** `'ea'` in `linkableStoreValues`, `linkEaAccount`,
-   `storeLoginUrl('ea')`,
-   `linkStore`, `importEaLibrary` e il suo ramo nel worker, `ea: 'pc_windows'` in
-   `STORE_PLATFORM`; il token scaduto che non diventa `needs_reauth`; EA fuori
-   da spazzata, «aggiorna tutti» e aggiornamento automatico. Test sul Postgres
-   vero, col client stubbato al confine del modulo.
+4. **Collegamento e import. Fatto (13/10/2026).**
+   - **vocabolario**: `'ea'` in `linkableStoreValues` e una lista nuova,
+     `oneShotStoreValues = ['ea']`, con `isOneShotStore`: i negozi che si
+     importano una volta sola. `AUTO_SYNC_EVERY_DAYS` non ha una riga per loro;
+   - **collegamento**: `linkEaAccount` (`EaTokenError`, che distingue il browser
+     non entrato su ea.com), `storeLoginUrl('ea')` = la pagina del token,
+     `linkStore`. L'account è `pd`, il nome l'EA ID; il token si salva cifrato,
+     con la sua scadenza, solo perché il job lo trovi senza passare da Redis;
+   - **import**: `services/ea-import.ts`, `ea: 'pc_windows'` in `STORE_PLATFORM`,
+     il ramo nel worker. Il token **si cancella** a fine import, e anche quando
+     EA lo rifiuta; un errore di rete lo lascia, perché BullMQ riprova. Token
+     scaduto o già usato: `EaTokenExpiredError`, che il worker fa
+     `UnrecoverableError`, e l'account **resta `ok`**;
+   - **fuori dal giro automatico**: la spazzata esclude EA a parte (un import
+     fallito lascia `last_sync_at` nullo, e il «mai importato» lo riprenderebbe a
+     ogni giro), «aggiorna tutti» lo salta, `accounts.sync` su EA è
+     `BAD_REQUEST`. L'interruttore dell'aggiornamento automatico resta
+     scrivibile ma non conta: lo nasconde il passo 5;
+   - **web, solo dove i tipi lo obbligano**: la riga EA in `linkGuide` e i testi
+     `account.stores.ea` (passi, segnaposto, errore, nota) nei due file dei
+     messaggi; `checkPastedLogin` riconosce il JSON (`access_token`).
+     **Da qui EA compare nel menu «Aggiungi» e si collega e importa davvero**,
+     ma la sua scheda è ancora quella degli altri negozi, con «Aggiorna» (che
+     risponde con un errore) e l'interruttore: è il passo 5;
+   - **test** sul Postgres vero: `ea-import.test.ts` (copie EA su PC con
+     abbonamento e ore, token cancellato; scaduto, già usato, rifiutato, errore
+     di rete), il collegamento in `store-accounts.test.ts`, spazzata e
+     «aggiorna tutti» senza EA, i campioni EA in `paste-check.test.ts`. Tutto il
+     banco di `api`: 894 su 894.
 5. **La scheda EA in `/account`.** Incolla il JSON, «Importa di nuovo», niente
    interruttore dell'aggiornamento automatico; i testi nei due file dei
    messaggi. Prima il wireframe, se l'utente lo vuole.

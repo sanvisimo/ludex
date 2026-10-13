@@ -814,6 +814,18 @@
         ],
         "wrong": "That doesn't look like the link address: did you click the button? I need the address that starts with “npf” and contains “session_token_code”.",
         "note": "Ludex reads your digital library, including games you never launched, and the games you launched, cartridges included. A cartridge you never launched leaves no trace on Nintendo and has to be added by hand. You only do this once and the connection lasts about two years."
+      },
+      "ea": {
+        "placeholder": "{\"access_token\":\"…\",\"expires_in\":\"…\"}",
+        "openLabel": "Open the token page",
+        "steps": [
+          "Sign in to ea.com in your browser.",
+          "Open the token page below: it shows a line like {\"access_token\":\"…\"}.",
+          "Select all of it and copy it.",
+          "Paste what you copied here."
+        ],
+        "wrong": "I need the whole line, with “access_token” in it. If you see “login_required”, you are not signed in yet: sign in to ea.com first.",
+        "note": "EA doesn't allow a link that lasts: the library is imported now, once. To update it, go through these steps again."
       }
     },
     "unresolved": {
