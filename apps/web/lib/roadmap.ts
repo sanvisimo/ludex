@@ -40,6 +40,7 @@ export type RoadmapEntry = {
  * facendo adesso, e una voce passa a «fatto» quando l'utente dice che è pronta.
  */
 export const roadmap: RoadmapEntry[] = [
+  { id: 'eaRenew', status: 'doing', areas: ['import'] },
   { id: 'linksFix', status: 'next', areas: ['game'] },
   { id: 'csv', status: 'next', areas: ['import'] },
   { id: 'subscriptions', status: 'next', areas: ['library'] },

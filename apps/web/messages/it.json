@@ -1052,6 +1052,10 @@
         "title": "I link nella pagina del gioco",
         "text": "Più link nella pagina di ogni gioco, presi da IGDB: il sito ufficiale e i negozi, compreso Epic, che oggi non ne ha."
       },
+      "eaRenew": {
+        "title": "Rinnovo del token per la libreria EA",
+        "text": "Rinnovo automatico del token per la libreria EA"
+      },
       "ea": {
         "title": "La libreria EA",
         "p1": "Dalla sezione Librerie importi la libreria EA incollando il testo di una pagina di ea.com: entrano anche i giochi comprati su Steam o Epic e legati all'account, e quelli di EA Play sono segnati come abbonamento.",

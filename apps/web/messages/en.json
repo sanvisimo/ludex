@@ -1052,6 +1052,10 @@
         "title": "Links on the game page",
         "text": "More links on every game page, taken from IGDB: the official website and the stores, including Epic, which has none today."
       },
+      "eaRenew": {
+        "title": "Rinnovo del token per la libreria EA",
+        "text": "Rinnovo automatico del token per la libreria EA"
+      },
       "ea": {
         "title": "The EA library",
         "p1": "From the Libraries section you import your EA library by pasting the text of an ea.com page: games bought on Steam or Epic and linked to the account come in too, and EA Play ones are marked as subscription.",
