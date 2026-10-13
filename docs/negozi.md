@@ -125,16 +125,16 @@ Due pezzi collegati, anche loro da valutare:
 Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 **quanto costa risolvere l'identità**. Misurate su una libreria vera:
 
-| Negozio          | Credenziale                                                                    | Id su IGDB                                                                                     | Ore      |
-| ---------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | -------- |
-| GOG              | refresh token, non scade in pratica                                            | product id, sorgente 5 — **94,5% su 435 giochi**                                               | no       |
-| Epic             | refresh token                                                                  | **nessuno**: vedi sotto                                                                        | no       |
-| Amazon           | refresh token                                                                  | **nessuno**: sorgente 23 ha 678 righe in tutto                                                 | no       |
-| PSN              | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo             | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto                               | parziali |
-| EA               | sessione corta, si sgancia sempre                                              | nessuno                                                                                        | sì       |
-| Nintendo         | session token **730 giorni** (non ruota, non verificato), access token 15 min  | nessuno: **per nome**; le licenze digitali portano un id (16 esadecimali) che IGDB non conosce | parziali |
-| Xbox             | chiave OpenXBL, o XSTS in proprio                                              | `titleId` → ProductId via `displaycatalog`, sorgente 11                                        | sì       |
-| Steam, col login | refresh token **210–212 giorni**, access token 24 ore, rinnovo dentro l'import | appid, la sorgente Steam di IGDB, come col solo profilo                                        | sì       |
+| Negozio          | Credenziale                                                                                                 | Id su IGDB                                                                                     | Ore                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| GOG              | refresh token, non scade in pratica                                                                         | product id, sorgente 5 — **94,5% su 435 giochi**                                               | no                                                          |
+| Epic             | refresh token                                                                                               | **nessuno**: vedi sotto                                                                        | no                                                          |
+| Amazon           | refresh token                                                                                               | **nessuno**: sorgente 23 ha 678 righe in tutto                                                 | no                                                          |
+| PSN              | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo                                          | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto                               | parziali                                                    |
+| EA               | token di **4 ore** (`connect/auth`, dal browser entrato su ea.com), non si rinnova: importazione una tantum | nessuno: **per nome**, chiave `gameSlug` (uno per gioco, le edizioni collassano)               | **solo i giocati di recente** (`recentGames`: 1 riga su 44) |
+| Nintendo         | session token **730 giorni** (non ruota, non verificato), access token 15 min                               | nessuno: **per nome**; le licenze digitali portano un id (16 esadecimali) che IGDB non conosce | parziali                                                    |
+| Xbox             | chiave OpenXBL, o XSTS in proprio                                                                           | `titleId` → ProductId via `displaycatalog`, sorgente 11                                        | sì                                                          |
+| Steam, col login | refresh token **210–212 giorni**, access token 24 ore, rinnovo dentro l'import                              | appid, la sorgente Steam di IGDB, come col solo profilo                                        | sì                                                          |
 
 Le prime due colonne sono state scritte **prima** di provare, e il 9b ha
 smentito quella su PSN in tutte e due i campi — e poi ha smentito la sua stessa
@@ -142,6 +142,11 @@ smentita sull'id, che c'è ma non dove lo si cercava. Restano qui corrette e non
 riscritte in silenzio, perché il modo in cui ci si sbaglia su un negozio è esso
 stesso un'informazione: si sbaglia guardando cosa l'API _espone_, invece di
 guardare cosa _restituisce_.
+
+Anche la riga di EA è stata scritta prima e corretta dalla misura del 13/10/2026
+(`ea:probe`, tre giri, il dettaglio in `plans/9c-ea.md`): diceva «sessione corta»
+e «ore: sì». Il token dura quattro ore, che bastano a un import ma non a un
+collegamento; le ore EA le dà solo per i giochi avviati di recente.
 
 Dove l'id c'è l'import costa nulla: i 435 giochi GOG si risolvono in **tre**
 richieste da 200 id, e il matcher per nome ne recupera altri 16, per un 98,2%
