@@ -253,6 +253,23 @@ Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
   sessione finita senza passare da «Esci». Lo faceva già la cancellazione
   dell'account. Gli aggiornamenti in push seguono già l'id dell'utente.
 
+**La pagina del gioco su ea.com (quarto giro, `ea:probe --pagina`).** Dopo la
+prova l'utente ha chiesto i link al negozio. Non si compongono dallo slug,
+misurato con richieste anonime: i giochi del catalogo storico stanno a
+`ea.com/games/{slug}` (_Dragon Age: Origins_, _Ultima VII_, _Syndicate_), quelli
+delle serie grandi a `ea.com/games/{serie}/{slug}` e a `/games/{slug}` danno 404
+(_Battlefield 1_, _Mass Effect Legendary Edition_, _The Sims 4_). La serie nei
+dati letti non c'è. Il giro chiede al GraphQL lo schema del prodotto e del suo
+`baseItem` (introspezione, due richieste) e, se è spenta, prova pochi campi
+candidati; poi legge i valori dei campi che ci sono. Se la serie o l'indirizzo ci
+sono, l'import li salva in `store_page` e `storePageUrl` compone il link; se no,
+EA resta senza link come Epic e Amazon.
+
+| Domanda                                           | Risposta |
+| ------------------------------------------------- | -------- |
+| L'introspezione è accesa                          | —        |
+| Un campo dice la serie o l'indirizzo della pagina | —        |
+
 **Da valutare in un lotto a parte (13/10/2026): un collegamento che si rinnova.**
 Il login dell'app desktop EA (`JUNO_PC_CLIENT`, OAuth con PKCE, redirect a
 `qrc:///html/login_successful.html`) dà anche un **refresh token**, che il server

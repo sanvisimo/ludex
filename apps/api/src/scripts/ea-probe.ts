@@ -9,11 +9,12 @@ import { resolveByName } from '../services/library-import';
 // Giro a vuoto dell'import EA (9c): legge la libreria, prova a risolverla,
 // **non scrive niente**.
 //
-//   pnpm --filter api ea:probe [--query | --voci]
+//   pnpm --filter api ea:probe [--query | --voci | --pagina]
 //
 // Con `--query` fa solo il secondo giro: la query della libreria per esteso, un
 // pezzo alla volta, e la risoluzione con le regole nuove. Con `--voci` il terzo:
-// tutte le voci della query per esteso, una per una (vedi sotto).
+// tutte le voci della query per esteso, una per una. Con `--pagina` il quarto:
+// dove la risposta dice la pagina del gioco su ea.com (vedi sotto).
 //
 // Chiede di incollare la risposta di `accounts.ea.com/connect/auth` (il JSON
 // intero o il solo token), letta da stdin e non come argomento, così il token
@@ -533,6 +534,216 @@ if (process.argv.includes('--voci')) {
     }
   }
 
+  console.log(`\nrichieste a EA:             ${richieste}\n`);
+  process.exit(0);
+}
+
+// --- il quarto giro: dove sta la pagina del gioco (`--pagina`) ---
+//
+// La pagina su ea.com non si compone dallo slug: i giochi del catalogo storico
+// stanno a `/games/{slug}`, quelli delle serie grandi a `/games/{serie}/{slug}`
+// (misurato il 13/10/2026 con richieste anonime). La domanda è se il GraphQL
+// dica la serie, o l'indirizzo, da qualche parte.
+//
+// Prima l'introspezione dei due tipi che leggiamo (il prodotto e il suo
+// `baseItem`): due richieste, e se EA la tiene accesa risponde a tutto. Se è
+// spenta, pochi nomi di campo candidati, uno per richiesta perché un campo che
+// non esiste fa cadere l'intera query. Poi, se un campo c'è, i suoi valori su
+// tutta la libreria. Al più una quindicina di richieste a EA, nessuna a IGDB.
+
+if (process.argv.includes('--pagina')) {
+  const OWNED = (campi: string, limit: number) => `
+    query owned($next: String) {
+      me {
+        ownedGameProducts(
+          locale: "DEFAULT"
+          entitlementEnabled: true
+          storefronts: [EA, STEAM, EPIC]
+          type: [DIGITAL_FULL_GAME, PACKAGED_FULL_GAME]
+          platforms: [PC]
+          paging: { limit: ${limit}, next: $next }
+        ) {
+          next
+          items { originOfferId product { ${campi} } }
+        }
+      }
+    }`;
+
+  type Pagina = {
+    me: {
+      ownedGameProducts: {
+        next: string | null;
+        items: {
+          originOfferId: string | null;
+          product: Record<string, unknown> | null;
+        }[];
+      } | null;
+    } | null;
+  };
+
+  // 1. i nomi dei tipi, dalla prima voce che ha un prodotto.
+  const tipi = await query<Pagina>(
+    OWNED('__typename gameSlug baseItem { __typename gameType }', 100),
+    { next: null },
+  );
+  const conProdotto = tipi.data?.me?.ownedGameProducts?.items.find(
+    (item) => item.product,
+  )?.product as
+    | { __typename?: string; baseItem?: { __typename?: string } | null }
+    | undefined;
+  const tipoProdotto = conProdotto?.__typename;
+  const tipoBase = conProdotto?.baseItem?.__typename;
+
+  console.log('\ntipi');
+  console.log(`  prodotto:                 ${tipoProdotto ?? '(non trovato)'}`);
+  console.log(`  baseItem:                 ${tipoBase ?? '(non trovato)'}`);
+  if (!tipoProdotto) {
+    console.log(`  HTTP ${tipi.status}: ${inBreve(tipi.errors)}`);
+    process.exit(0);
+  }
+
+  // 2. l'introspezione dei due tipi.
+  type Campo = {
+    name: string;
+    type: {
+      kind: string;
+      name: string | null;
+      ofType: { kind: string; name: string | null } | null;
+    };
+  };
+  const schemaTipo = (alias: string, nome: string) =>
+    `${alias}: __type(name: "${nome}") { fields { name type { kind name ofType { kind name } } } }`;
+  const intro = await query<{
+    p: { fields: Campo[] | null } | null;
+    b: { fields: Campo[] | null } | null;
+  }>(
+    `query { ${schemaTipo('p', tipoProdotto)} ${tipoBase ? schemaTipo('b', tipoBase) : ''} }`,
+  );
+
+  const INTERESSANTI = /url|slug|franchise|hub|pdp|link|path|page|series/i;
+  const descrivi = (campo: Campo) =>
+    `${campo.name}: ${campo.type.name ?? `${campo.type.kind} ${campo.type.ofType?.name ?? ''}`}`;
+
+  const campiProdotto = intro.data?.p?.fields ?? null;
+  const campiBase = intro.data?.b?.fields ?? null;
+
+  console.log('\nintrospezione');
+  if (!campiProdotto) {
+    console.log(
+      `  spenta o rifiutata (HTTP ${intro.status}): ${inBreve(intro.errors)}`,
+    );
+  } else {
+    for (const [nome, campi] of [
+      [tipoProdotto, campiProdotto],
+      [tipoBase ?? '—', campiBase ?? []],
+    ] as const) {
+      console.log(`\n  ${nome}: ${campi.length} campi`);
+      console.log(
+        `    quelli che contano: ${
+          campi
+            .filter((campo) => INTERESSANTI.test(campo.name))
+            .map(descrivi)
+            .join(', ') || '—'
+        }`,
+      );
+      console.log(`    tutti: ${campi.map((campo) => campo.name).join(', ')}`);
+    }
+  }
+
+  // 3. senza introspezione, pochi candidati: scalari sul prodotto e sul
+  //    `baseItem`, e la serie come oggetto con lo slug.
+  const candidati = campiProdotto
+    ? []
+    : [
+        'franchiseSlug',
+        'pdpUrl',
+        'storeUrl',
+        'url',
+        'baseItem { franchiseSlug }',
+        'baseItem { gameHubUrl }',
+        'franchise { slug }',
+        'baseItem { franchise { slug } }',
+      ];
+  const trovati: string[] = [];
+  if (candidati.length > 0) console.log('\ncandidati, uno per richiesta');
+  for (const campo of candidati) {
+    const prova = await query<Pagina>(OWNED(`gameSlug ${campo}`, 20), {
+      next: null,
+    });
+    const ok = Boolean(prova.data?.me?.ownedGameProducts);
+    console.log(`  ${campo.padEnd(34)} ${ok ? 'C’È' : 'no'}`);
+    if (ok) trovati.push(campo);
+  }
+
+  // 4. i valori su tutta la libreria, per i campi interessanti che ci sono.
+  const daLeggere = campiProdotto
+    ? [
+        ...campiProdotto
+          .filter(
+            (campo) =>
+              INTERESSANTI.test(campo.name) &&
+              (campo.type.kind === 'SCALAR' ||
+                campo.type.ofType?.kind === 'SCALAR'),
+          )
+          .map((campo) => campo.name),
+        ...(campiBase ?? [])
+          .filter(
+            (campo) =>
+              INTERESSANTI.test(campo.name) &&
+              (campo.type.kind === 'SCALAR' ||
+                campo.type.ofType?.kind === 'SCALAR'),
+          )
+          .map((campo) => `baseItem { ${campo.name} }`),
+      ]
+    : trovati;
+
+  console.log(`\nrichieste a EA finora:     ${richieste}`);
+  if (daLeggere.length === 0) {
+    console.log(
+      '\nnessun campo da leggere: la pagina del gioco non sta nella risposta.\n',
+    );
+    process.exit(0);
+  }
+
+  // Si chiedono tutti insieme: esistono già, uno per uno.
+  const valori: { slug: string; product: Record<string, unknown> }[] = [];
+  let next: string | null = null;
+  for (let n = 0; n < 20; n++) {
+    const pagina: GraphQlResult<Pagina> = await query<Pagina>(
+      OWNED(`gameSlug baseItem { gameType } ${daLeggere.join(' ')}`, 100),
+      { next },
+    );
+    const risultato = pagina.data?.me?.ownedGameProducts;
+    if (!risultato) {
+      console.log(
+        `\nla lettura dei valori è rifiutata (HTTP ${pagina.status}): ${inBreve(pagina.errors)}`,
+      );
+      break;
+    }
+    for (const item of risultato.items) {
+      const product = item.product;
+      if (!product || typeof product.gameSlug !== 'string') continue;
+      valori.push({ slug: product.gameSlug, product });
+    }
+    next = risultato.next;
+    if (!next || risultato.items.length === 0) break;
+  }
+
+  console.log(`\nvalori (${daLeggere.join(', ')})`);
+  const visti = new Set<string>();
+  for (const { slug, product } of valori) {
+    if (visti.has(slug)) continue;
+    visti.add(slug);
+    // Solo i campi cercati: slug e tipo stanno già sulla riga, o non dicono niente.
+    const baseItem = (product.baseItem ?? {}) as Record<string, unknown>;
+    const senza = (oggetto: Record<string, unknown>, chiave: string) =>
+      Object.fromEntries(Object.entries(oggetto).filter(([k]) => k !== chiave));
+    const resto = senza(senza(product, 'gameSlug'), 'baseItem');
+    const restoBase = senza(baseItem, 'gameType');
+    console.log(
+      `  ${slug.padEnd(40)} ${JSON.stringify({ ...resto, ...restoBase }).slice(0, 200)}`,
+    );
+  }
   console.log(`\nrichieste a EA:             ${richieste}\n`);
   process.exit(0);
 }
