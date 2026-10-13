@@ -336,6 +336,36 @@ export type ImportReport = {
   newEntries: number;
 };
 
+/**
+ * Il titolo del negozio su ogni collegamento della libreria, nuovo o già noto.
+ *
+ * Su **tutte** le voci risolte e non solo su quelle appena collegate: i
+ * collegamenti scritti prima di questa colonna si riempiono così, al primo
+ * reimport, e un negozio che rinomina un prodotto si vede al successivo. Si
+ * scrive solo dove il titolo è cambiato, quindi un reimport normale non tocca
+ * niente.
+ *
+ * È ciò che fa capire all'admin quale dei due id Epic sullo stesso gioco sia
+ * il DLC agganciato male: vedi `external_ids.store_title`.
+ */
+async function recordStoreTitles(store: Store, entries: LibraryEntry[]) {
+  for (const page of chunk(entries, 500)) {
+    const values = sql.join(
+      page.map((entry) => sql`(${entry.externalId}, ${entry.name})`),
+      sql`, `,
+    );
+
+    await db.execute(sql`
+      update ${schema.externalIds}
+         set store_title = v.title, updated_at = now()
+        from (values ${values}) as v(external_id, title)
+       where ${schema.externalIds.source} = ${store}
+         and ${schema.externalIds.externalId} = v.external_id
+         and ${schema.externalIds.storeTitle} is distinct from v.title
+    `);
+  }
+}
+
 /** Le voci che non si sono legate a niente. Restano dell'utente, non sporcano `games`. */
 async function recordUnresolved(
   account: StoreAccountRow,
@@ -757,6 +787,7 @@ export async function importLibrary(
   const unresolved = library.filter(
     (entry) => !gameIdByExternalId.has(entry.externalId),
   );
+  await recordStoreTitles(store, resolved);
 
   // 4. Le scritture.
   //

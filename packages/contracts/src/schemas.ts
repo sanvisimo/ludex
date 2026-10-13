@@ -1074,6 +1074,9 @@ export const GameAdminDetailSchema = z.object({
       id: z.uuid(),
       source: StoreSchema,
       externalId: z.string(),
+      // Come il negozio chiama quell'id, dall'ultimo import. Nullo dove l'id
+      // l'ha portato IGDB e nessuno l'ha ancora importato.
+      storeTitle: z.string().nullable(),
       // Per negozio, non per id: le copie non sanno da quale id sono nate.
       users: z.number().int(),
       copies: z.number().int(),

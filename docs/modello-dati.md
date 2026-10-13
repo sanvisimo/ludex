@@ -16,6 +16,12 @@ utenti, e vincola l'identità dei giochi:
 - `external_ids` (`gameId`, `source`, `externalId`) mappa Steam appid, GOG, PSN,
   Xbox… **tutti sulla stessa riga `games`**. Ogni nuova libreria importabile
   aggiunge righe qui, non colonne a `games`.
+- `external_ids.store_title` è il nome che il negozio dà a quell'id, come l'ha
+  visto l'ultimo import: lo riscrive ogni import, su tutte le voci risolte, e
+  la risoluzione a mano di uno scarto. Serve all'admin per capire quale di due
+  id sullo stesso gioco sia quello agganciato male — su Epic sono due codici
+  senza una pagina da aprire. Nullo dove l'id l'ha portato IGDB e nessuno l'ha
+  ancora importato.
 
 Flusso di risoluzione, all'inserimento (manuale o da import):
 

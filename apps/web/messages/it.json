@@ -1365,6 +1365,7 @@
       "links": "Collegamenti dai negozi",
       "store": "Negozio",
       "externalId": "Id esterno",
+      "storeTitle": "Sul negozio",
       "copies": "Copie",
       "copiesCount": "{users, plural, one {# utente} other {# utenti}}, {copies, plural, one {# copia} other {# copie}}",
       "notThis": "Non è questo gioco",
@@ -1383,6 +1384,7 @@
     "repoint": {
       "title": "Non è questo gioco",
       "current": "{store} · {id} → oggi: {game}",
+      "currentTitled": "{store} · {id} «{title}» → oggi: {game}",
       "suggested": "Suggerito: {list}",
       "pick": "Il gioco giusto",
       "preview": "Cosa succede",

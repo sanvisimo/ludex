@@ -177,6 +177,13 @@ export const externalIds = pgTable(
       .references(() => games.id, { onDelete: 'cascade' }),
     source: store('source').notNull(),
     externalId: text('external_id').notNull(),
+    // Il nome che il negozio dà a questo id, come l'ha visto l'ultimo import.
+    //
+    // Serve all'admin: due id Epic sullo stesso gioco — il gioco e un DLC
+    // agganciato male — sono due codici di 32 caratteri, e su Epic e Amazon
+    // non c'è nemmeno una pagina del negozio da aprire per capire quale sia
+    // quale. Nullo dove l'id l'ha portato IGDB e nessuno l'ha ancora importato.
+    storeTitle: text('store_title'),
     ...timestamps,
   },
   (table) => [

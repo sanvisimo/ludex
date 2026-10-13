@@ -134,6 +134,14 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
         ),
     },
     {
+      key: 'storeTitle',
+      header: t('game.storeTitle'),
+      flex: 2,
+      // Come il negozio chiama quell'id: due id Epic sullo stesso gioco si
+      // distinguono solo così, perché Epic una pagina da aprire non la dà.
+      render: (link) => <CellText muted>{link.storeTitle ?? '—'}</CellText>,
+    },
+    {
       key: 'copies',
       header: t('game.copies'),
       flex: 1,

@@ -1365,6 +1365,7 @@
       "links": "Store links",
       "store": "Store",
       "externalId": "External id",
+      "storeTitle": "On the store",
       "copies": "Copies",
       "copiesCount": "{users, plural, one {# user} other {# users}}, {copies, plural, one {# copy} other {# copies}}",
       "notThis": "Not this game",
@@ -1383,6 +1384,7 @@
     "repoint": {
       "title": "Not this game",
       "current": "{store} · {id} → today: {game}",
+      "currentTitled": "{store} · {id} “{title}” → today: {game}",
       "suggested": "Suggested: {list}",
       "pick": "The right game",
       "preview": "What happens",

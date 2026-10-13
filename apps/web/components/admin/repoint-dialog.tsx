@@ -91,7 +91,14 @@ export function RepointDialog({
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
             {link
-              ? t('current', { store, id: link.externalId, game: gameName })
+              ? link.storeTitle
+                ? t('currentTitled', {
+                    store,
+                    id: link.externalId,
+                    title: link.storeTitle,
+                    game: gameName,
+                  })
+                : t('current', { store, id: link.externalId, game: gameName })
               : ''}
           </DialogDescription>
         </DialogHeader>

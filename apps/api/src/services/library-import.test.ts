@@ -1030,3 +1030,82 @@ describe('importLibrary: la data di aggiunta', () => {
     expect(await acquiredAtByStore()).toEqual({ gog: acquiredAt });
   });
 });
+
+describe('importLibrary: il titolo del negozio sul collegamento (11a)', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  // È ciò che fa capire all'admin quale di due id Epic sullo stesso gioco sia
+  // il DLC agganciato male: senza, sono due codici di 32 caratteri.
+  const titoloDi = async (externalId: string) => {
+    const [riga] = await db
+      .select({ storeTitle: schema.externalIds.storeTitle })
+      .from(schema.externalIds)
+      .where(eq(schema.externalIds.externalId, externalId));
+    return riga?.storeTitle;
+  };
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'epic');
+    mockedById.mockResolvedValue(new Map());
+    mockedSearch.mockResolvedValue([]);
+    mockedSource.mockReturnValue(null);
+  });
+
+  it('lo scrive sul collegamento nuovo', async () => {
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 145099, name: "Death's Door" }),
+    ]);
+
+    await importLibrary(account, [
+      { externalId: 'd3fcb76f', name: "Death's Door" },
+    ]);
+
+    expect(await titoloDi('d3fcb76f')).toBe("Death's Door");
+  });
+
+  it('lo scrive anche sul collegamento che c era già, e il reimport lo aggiorna', async () => {
+    // Un collegamento scritto prima della colonna: il passo 1 lo riconosce e
+    // la ricerca non riparte, ma il titolo arriva lo stesso.
+    const [gioco] = await db
+      .insert(schema.games)
+      .values({
+        name: 'Shadow Tactics: Blades of the Shogun',
+        slug: 'shadow-tactics',
+        igdbId: 19085,
+      })
+      .returning({ id: schema.games.id });
+    await db.insert(schema.externalIds).values({
+      gameId: gioco!.id,
+      source: 'epic',
+      externalId: '24f4bf69',
+    });
+
+    await importLibrary(account, [
+      { externalId: '24f4bf69', name: "Shadow Tactics - Aiko's Choice" },
+    ]);
+    expect(await titoloDi('24f4bf69')).toBe("Shadow Tactics - Aiko's Choice");
+    expect(mockedSearch).not.toHaveBeenCalled();
+
+    // Il negozio rinomina il prodotto: vale l'ultimo import.
+    await importLibrary(account, [
+      { externalId: '24f4bf69', name: "Shadow Tactics: Aiko's Choice" },
+    ]);
+    expect(await titoloDi('24f4bf69')).toBe("Shadow Tactics: Aiko's Choice");
+  });
+
+  it('risolvere a mano uno scarto scrive il suo nome', async () => {
+    await importLibrary(account, [
+      { externalId: '55676b5a', name: 'Predecessor' },
+    ]);
+    const [scarto] = await unresolvedOf(userId);
+
+    mockedFindById.mockResolvedValue(
+      hit({ igdbId: 135243, name: 'Predecessor' }),
+    );
+    await resolveUnresolvedImport(userId, scarto!.id, 135243);
+
+    expect(await titoloDi('55676b5a')).toBe('Predecessor');
+  });
+});

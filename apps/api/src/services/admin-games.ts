@@ -161,6 +161,7 @@ export async function gameAdminDetail(slug: string) {
       id: schema.externalIds.id,
       source: schema.externalIds.source,
       externalId: schema.externalIds.externalId,
+      storeTitle: schema.externalIds.storeTitle,
     })
     .from(schema.externalIds)
     .where(eq(schema.externalIds.gameId, game.id))

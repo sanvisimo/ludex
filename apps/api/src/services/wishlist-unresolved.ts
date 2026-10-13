@@ -98,6 +98,7 @@ export async function resolveWishlistUnresolved(
         gameId: game.id,
         source: pending.store,
         externalId: key,
+        storeTitle: pending.name,
       })
       .onConflictDoNothing({
         target: [schema.externalIds.source, schema.externalIds.externalId],
