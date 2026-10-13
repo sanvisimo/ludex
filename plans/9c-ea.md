@@ -1,8 +1,7 @@
 # Step 9c — EA
 
 **Stato: analisi e misura finite (13/10/2026, tre giri di `ea:probe`, 23 richieste
-a EA in tutto, nessun errore). Si comincia dal passo 1.** Nessun codice di
-produzione scritto.
+a EA in tutto, nessun errore). Passo 1 fatto, sul branch `feat/9c-ea`.**
 
 ## Contesto
 
@@ -174,10 +173,14 @@ Fatto il 13/10/2026, **9 richieste a EA**, nessun errore:
 
 Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
 
-1. **Vocabolario e migration.** `'ea'` in `linkableStoreValues`, `'ea_play'` in
-   `subscriptionValues`; la migration la genera drizzle-kit (`pnpm db:generate`).
-   Il valore nuovo di un enum non si usa nella transazione che lo crea
-   (`55P04`, vedi `docs/modello-dati.md`): qui nessuno lo usa.
+1. **Vocabolario e migration. Fatto (13/10/2026).** `'ea_play'` in
+   `subscriptionValues`, con l'etichetta «EA Play» nei due file dei messaggi, e
+   la migration `0047_ea_play.sql` generata da drizzle-kit (un solo
+   `ALTER TYPE … ADD VALUE`, che nessuno usa nella stessa transazione: niente
+   `55P04`). **`'ea'` in `linkableStoreValues` è passato al passo 4**: quella lista
+   accende la scheda in `/account`, la voce del menu «Aggiungi» e la spazzata
+   automatica, e aggiungerlo prima che esista `linkEaAccount` avrebbe mostrato un
+   negozio che non si collega.
 2. **«Game of the Year» → «GOTY» in `normalizeTitle`**, con il test in
    `title-match.test.ts`. Tocca anche HLTB e Metacritic, che usano la stessa
    funzione.
@@ -190,7 +193,8 @@ Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
    modi di possesso del gruppo è un acquisto (`VAULT`, `XGP_VAULT`,
    `STEAM_VAULT`, `STEAM_SUBSCRIPTION`, `EPIC_VAULT`, `EPIC_SUBSCRIPTION`). Test
    della funzione pura su voci prese dalla misura.
-4. **Collegamento e import.** `linkEaAccount`, `storeLoginUrl('ea')`,
+4. **Collegamento e import.** `'ea'` in `linkableStoreValues`, `linkEaAccount`,
+   `storeLoginUrl('ea')`,
    `linkStore`, `importEaLibrary` e il suo ramo nel worker, `ea: 'pc_windows'` in
    `STORE_PLATFORM`; il token scaduto che non diventa `needs_reauth`; EA fuori
    da spazzata, «aggiorna tutti» e aggiornamento automatico. Test sul Postgres

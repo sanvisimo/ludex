@@ -330,6 +330,13 @@
       "when": 1791816862056,
       "tag": "0046_store_account_wishlist_state",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1791899013265,
+      "tag": "0047_ea_play",
+      "breakpoints": true
     }
   ]
 }

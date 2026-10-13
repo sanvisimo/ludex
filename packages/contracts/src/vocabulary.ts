@@ -111,7 +111,15 @@ export const storeAccountStatusValues = [
 // è la stessa — «questa copia è tua, o ce l'hai finché dura un diritto che non
 // è tuo?» — e perché al reimport si riscrive, come `ps_plus`. Un gioco che esce
 // dalla famiglia se ne va dal reimport; uno comprato poi torna nullo da solo.
-export const subscriptionValues = ['ps_plus', 'steam_family'] as const;
+//
+// `ea_play` arriva col 9c: EA Play, anche quello preso dentro Game Pass, Steam o
+// Epic. EA lo dice nei modi di possesso della voce (`VAULT`, `XGP_VAULT`,
+// `STEAM_VAULT`…), e lo è solo se nessuno di quei modi è un acquisto.
+export const subscriptionValues = [
+  'ps_plus',
+  'steam_family',
+  'ea_play',
+] as const;
 
 // **Su che supporto** sta una copia: un diritto digitale o un disco.
 //

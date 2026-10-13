@@ -955,7 +955,8 @@
   },
   "subscription": {
     "ps_plus": "PS Plus",
-    "steam_family": "Steam Family"
+    "steam_family": "Steam Family",
+    "ea_play": "EA Play"
   },
   "medium": {
     "digital": "Digital",
