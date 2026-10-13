@@ -1036,6 +1036,10 @@
         "title": "La libreria EA",
         "text": "EA non permette un collegamento che duri: la libreria si importerà una volta sola, quando vuoi tu."
       },
+      "metaquest": {
+        "title": "La libreria Meta Quest",
+        "text": "Studio di fattibilità della libreria Meta Quest"
+      },
       "steamNintendo": {
         "title": "Steam con login e Nintendo",
         "p1": "Steam: accedi con il QR dell'app Steam, oppure incolla un token dal browser, e importa anche la libreria della famiglia.",

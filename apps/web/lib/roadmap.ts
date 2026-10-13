@@ -42,6 +42,7 @@ export type RoadmapEntry = {
 export const roadmap: RoadmapEntry[] = [
   { id: 'ea', status: 'doing', areas: ['import'] },
   { id: 'csv', status: 'next', areas: ['import'] },
+  { id: 'metaquest', status: 'next', areas: ['import'] },
   { id: 'subscriptions', status: 'next', areas: ['library'] },
   { id: 'xbox', status: 'next', areas: ['import'] },
   { id: 'ai', status: 'next', areas: ['ai'] },

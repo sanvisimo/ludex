@@ -1036,6 +1036,10 @@
         "title": "The EA library",
         "text": "EA doesn't allow a link that lasts: the library will be imported once, whenever you choose."
       },
+      "metaquest": {
+        "title": "The Meta Quest library",
+        "text": "Feasibility study of the Meta Quest library"
+      },
       "steamNintendo": {
         "title": "Steam with login, and Nintendo",
         "p1": "Steam: sign in with the QR from the Steam app, or paste a token from your browser, and import the family library too.",
