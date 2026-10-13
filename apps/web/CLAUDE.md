@@ -246,15 +246,17 @@ da `$md` (`arrowsFromMd`). Il voto sulle card, qui come nel backlog, è
 `criticScore`, che **non è mai OpenCritic** (vedi
 [apps/api/CLAUDE.md](../api/CLAUDE.md)).
 
-**La ricerca globale** (12f) cerca nel catalogo intero, non nel backlog:
-prima i giochi di Ludex (`games.find`, pubblica, con lo stato di chi guarda),
-poi, **solo da loggati**, quelli IGDB che Ludex non ha ancora
+**La ricerca globale** (12f) cerca nel catalogo intero, non nel backlog, in
+tre blocchi: **«Nel tuo backlog»**, solo da loggati (`games.find` con
+`inBacklog: true`, senza pagine, fino a 60); **«In Ludex»**, gli altri
+(`games.find` con `inBacklog: false`, pubblica, con lo stato di chi guarda: le
+due metà non si sovrappongono); e, **solo da loggati**, quelli IGDB che Ludex non ha ancora
 (`games.findOnIgdb`, che consuma il rate limit delle nostre credenziali). Un
 risultato IGDB diventa una riga di `games` **al clic** (`games.fromIgdb`), mai
 mentre si cerca: le righe di `games` non si cancellano. I pezzi sono in
 `components/game-search.tsx`; il campo con la tendina è `SearchField` di
-`@repo/ui`. La tendina ha dieci posti: prima i giochi di Ludex, e IGDB
-riempie quelli che restano, chiesto dopo e solo se ne restano. In barra il
+`@repo/ui`. La tendina ha dieci posti: prima il tuo backlog, poi il resto di
+Ludex, e IGDB riempie quelli che restano, chiesto dopo e solo se ne restano. In barra il
 campo sta da `$md`; sotto c'è un'icona che porta a `/search`, la pagina con tutti i risultati: griglia con la card della home, a
 pagine da 30, testo e pagina nell'URL come il backlog. Su `/search` la barra non
 ha il campo, perché la pagina ha il suo. La scrittura aspetta 300 ms prima di

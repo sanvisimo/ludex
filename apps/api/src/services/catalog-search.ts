@@ -1,5 +1,16 @@
 import { db, schema } from '@repo/db';
-import { and, asc, count, desc, eq, ilike, inArray, sql } from '@repo/db/orm';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  sql,
+} from '@repo/db/orm';
 
 import { escapeLike } from './backlog-search';
 import { gameReturning, searchGames } from './games';
@@ -14,26 +25,35 @@ import { wishlistedGameIds } from './wishlist-sync';
  * esatto, poi quelli che cominciano con ciò che si è scritto, poi gli altri in
  * ordine alfabetico: chi scrive «Hades» cerca Hades, non *Hades II* in testa
  * perché viene prima.
+ *
+ * `inBacklog` divide il catalogo in due metà che non si sovrappongono: i
+ * giochi che hai nel backlog, e tutti gli altri. Senza, tutto.
  */
 export async function searchCatalog(
-  input: { q: string; limit: number; offset: number },
+  input: { q: string; limit: number; offset: number; inBacklog?: boolean },
   viewerId: string | null,
 ) {
   const term = escapeLike(input.q);
-  const where = ilike(schema.games.name, `%${term}%`);
+  const where = and(
+    ilike(schema.games.name, `%${term}%`),
+    input.inBacklog === undefined
+      ? undefined
+      : input.inBacklog
+        ? isNotNull(schema.backlog.gameId)
+        : isNull(schema.backlog.gameId),
+  );
+  // Il tuo backlog: da sloggati nessuno possiede niente, e la condizione non
+  // trova righe.
+  const mine = and(
+    eq(schema.backlog.gameId, schema.games.id),
+    viewerId ? eq(schema.backlog.userId, viewerId) : sql`false`,
+  );
 
   const [games, [totale]] = await Promise.all([
     db
       .select({ ...gameReturning, status: schema.backlog.status })
       .from(schema.games)
-      .leftJoin(
-        schema.backlog,
-        and(
-          eq(schema.backlog.gameId, schema.games.id),
-          // Da sloggati nessuno possiede niente: la condizione non trova righe.
-          viewerId ? eq(schema.backlog.userId, viewerId) : sql`false`,
-        ),
-      )
+      .leftJoin(schema.backlog, mine)
       .where(where)
       .orderBy(
         desc(sql`lower(${schema.games.name}) = lower(${input.q})`),
@@ -43,7 +63,11 @@ export async function searchCatalog(
       )
       .limit(input.limit)
       .offset(input.offset),
-    db.select({ n: count() }).from(schema.games).where(where),
+    db
+      .select({ n: count() })
+      .from(schema.games)
+      .leftJoin(schema.backlog, mine)
+      .where(where),
   ]);
 
   // Il cuore: quali stanno in una delle liste di chi cerca.
