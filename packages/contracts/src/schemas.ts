@@ -1077,6 +1077,9 @@ export const GameAdminDetailSchema = z.object({
       // Come il negozio chiama quell'id, dall'ultimo import. Nullo dove l'id
       // l'ha portato IGDB e nessuno l'ha ancora importato.
       storeTitle: z.string().nullable(),
+      // La copertina che il negozio dà a quell'id. Su Steam nulla: la compone
+      // `storeCoverUrl` dall'appid.
+      storeImageUrl: z.string().nullable(),
       // Per negozio, non per id: le copie non sanno da quale id sono nate.
       users: z.number().int(),
       copies: z.number().int(),

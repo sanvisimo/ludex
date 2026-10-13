@@ -28,6 +28,7 @@ import {
 } from '@/components/admin/set-source-id-dialog';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { GameCover } from '@/components/game-cover';
+import { UnresolvedCover } from '@/components/unresolved-row';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useGameTypeLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
@@ -137,9 +138,27 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       key: 'storeTitle',
       header: t('game.storeTitle'),
       flex: 2,
-      // Come il negozio chiama quell'id: due id Epic sullo stesso gioco si
-      // distinguono solo così, perché Epic una pagina da aprire non la dà.
-      render: (link) => <CellText muted>{link.storeTitle ?? '—'}</CellText>,
+      // Come il negozio chiama e mostra quell'id: due id Epic sullo stesso
+      // gioco si distinguono solo così, perché Epic una pagina da aprire non
+      // la dà. Il titolo può ingannare (Aiko's Choice ha quello del gioco
+      // base), la copertina no.
+      render: (link) => (
+        <XStack gap={10} items="center" minW={0}>
+          <UnresolvedCover
+            key={link.id}
+            entry={{
+              store: link.source,
+              externalId: link.externalId,
+              imageUrl: link.storeImageUrl,
+            }}
+            width={30}
+            height={42}
+          />
+          <YStack flex={1} minW={0}>
+            <CellText muted>{link.storeTitle ?? '—'}</CellText>
+          </YStack>
+        </XStack>
+      ),
     },
     {
       key: 'copies',

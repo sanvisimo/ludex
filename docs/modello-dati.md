@@ -22,6 +22,11 @@ utenti, e vincola l'identità dei giochi:
   id sullo stesso gioco sia quello agganciato male — su Epic sono due codici
   senza una pagina da aprire. Nullo dove l'id l'ha portato IGDB e nessuno l'ha
   ancora importato.
+- `external_ids.store_image_url` è la copertina che il negozio dà a quell'id,
+  scritta negli stessi punti del titolo; una voce che non la porta non la
+  cancella. Serve perché il titolo può ingannare: Epic chiama _Aiko's Choice_
+  col nome del gioco base, ma la copertina la manda giusta. Su Steam resta
+  nulla, la compone `storeCoverUrl` dall'appid.
 
 Flusso di risoluzione, all'inserimento (manuale o da import):
 

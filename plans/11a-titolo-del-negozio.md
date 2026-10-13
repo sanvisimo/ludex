@@ -46,3 +46,23 @@ negozio», e nella riga in alto del dialog «Non è questo gioco».
 `pnpm --filter api test`, `pnpm check-types`, `pnpm lint`. Sul mini PC: deploy,
 reimport Epic, e la scheda di Shadow Tactics mostra quale dei due id è Aiko's
 Choice.
+
+## Aggiunta: la copertina (14/10/2026)
+
+Il titolo da solo ha ingannato: per `24f4bf69…` Epic manda «Shadow Tactics
+Blades of the Shogun», e quell'id è _Aiko's Choice_. Lo dicono la data d'ingresso
+in libreria e il namespace, che coincidono con l'ordine «Shadow Tactics - Aiko's
+Choice» del 05/01/2023. La copertina che Epic dà a quella voce invece è quella
+giusta.
+
+- [x] `external_ids.store_image_url` + migration
+- [x] l'import la scrive insieme al titolo; una voce senza copertina non la
+      cancella (Steam non ne manda, la compone `storeCoverUrl`)
+- [x] la risoluzione a mano degli scarti, libreria e wishlist, scrive la loro
+- [x] admin: copertina accanto al titolo nella tabella e nel dialog, con
+      `UnresolvedCover`
+- [x] test e `docs/modello-dati.md`
+
+**La data no.** È la data della copia di ciascun utente, non dell'id, e le copie
+non sanno da quale id sono nate: per averla per id andrebbe cambiato il modello
+delle copie. Deciso di non farlo.

@@ -1,0 +1,1 @@
+ALTER TABLE "external_ids" ADD COLUMN "store_image_url" text;

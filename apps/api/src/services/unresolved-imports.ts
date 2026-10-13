@@ -117,6 +117,7 @@ export async function resolveUnresolvedImport(
       source: pending.store,
       externalId: pending.externalId,
       storeTitle: pending.name,
+      storeImageUrl: pending.imageUrl,
     })
     .onConflictDoNothing({
       target: [schema.externalIds.source, schema.externalIds.externalId],

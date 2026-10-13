@@ -1031,7 +1031,7 @@ describe('importLibrary: la data di aggiunta', () => {
   });
 });
 
-describe('importLibrary: il titolo del negozio sul collegamento (11a)', () => {
+describe('importLibrary: titolo e copertina del negozio sul collegamento (11a)', () => {
   let userId: string;
   let account: Awaited<ReturnType<typeof linkStoreAccount>>;
 
@@ -1043,6 +1043,13 @@ describe('importLibrary: il titolo del negozio sul collegamento (11a)', () => {
       .from(schema.externalIds)
       .where(eq(schema.externalIds.externalId, externalId));
     return riga?.storeTitle;
+  };
+  const copertinaDi = async (externalId: string) => {
+    const [riga] = await db
+      .select({ storeImageUrl: schema.externalIds.storeImageUrl })
+      .from(schema.externalIds)
+      .where(eq(schema.externalIds.externalId, externalId));
+    return riga?.storeImageUrl;
   };
 
   beforeEach(async () => {
@@ -1095,9 +1102,13 @@ describe('importLibrary: il titolo del negozio sul collegamento (11a)', () => {
     expect(await titoloDi('24f4bf69')).toBe("Shadow Tactics: Aiko's Choice");
   });
 
-  it('risolvere a mano uno scarto scrive il suo nome', async () => {
+  it('risolvere a mano uno scarto scrive il suo nome e la sua copertina', async () => {
     await importLibrary(account, [
-      { externalId: '55676b5a', name: 'Predecessor' },
+      {
+        externalId: '55676b5a',
+        name: 'Predecessor',
+        imageUrl: 'https://cdn1.epicgames.com/predecessor.jpg',
+      },
     ]);
     const [scarto] = await unresolvedOf(userId);
 
@@ -1107,5 +1118,34 @@ describe('importLibrary: il titolo del negozio sul collegamento (11a)', () => {
     await resolveUnresolvedImport(userId, scarto!.id, 135243);
 
     expect(await titoloDi('55676b5a')).toBe('Predecessor');
+    expect(await copertinaDi('55676b5a')).toBe(
+      'https://cdn1.epicgames.com/predecessor.jpg',
+    );
+  });
+
+  it('scrive la copertina, e una voce che non la porta non la cancella', async () => {
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 145099, name: "Death's Door" }),
+    ]);
+    const entry = { externalId: '24f4bf69', name: "Death's Door" };
+
+    await importLibrary(account, [
+      { ...entry, imageUrl: 'https://cdn1.epicgames.com/aiko.jpg' },
+    ]);
+    expect(await copertinaDi('24f4bf69')).toBe(
+      'https://cdn1.epicgames.com/aiko.jpg',
+    );
+
+    await importLibrary(account, [
+      { ...entry, imageUrl: 'https://cdn1.epicgames.com/aiko-2.jpg' },
+    ]);
+    expect(await copertinaDi('24f4bf69')).toBe(
+      'https://cdn1.epicgames.com/aiko-2.jpg',
+    );
+
+    await importLibrary(account, [entry]);
+    expect(await copertinaDi('24f4bf69')).toBe(
+      'https://cdn1.epicgames.com/aiko-2.jpg',
+    );
   });
 });

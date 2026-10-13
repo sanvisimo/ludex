@@ -184,6 +184,12 @@ export const externalIds = pgTable(
     // non c'è nemmeno una pagina del negozio da aprire per capire quale sia
     // quale. Nullo dove l'id l'ha portato IGDB e nessuno l'ha ancora importato.
     storeTitle: text('store_title'),
+    // La copertina che il negozio dà a questo id, dallo stesso import.
+    //
+    // Il titolo da solo non basta: Epic chiama *Aiko's Choice* col nome del
+    // gioco base, ma la copertina la manda giusta. Nulla su Steam, dove la si
+    // compone dall'appid (`storeCoverUrl`), e dove il negozio non la manda.
+    storeImageUrl: text('store_image_url'),
     ...timestamps,
   },
   (table) => [

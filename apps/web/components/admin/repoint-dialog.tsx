@@ -12,6 +12,7 @@ import {
   Skeleton,
   Text,
   toast,
+  XStack,
   YStack,
 } from '@repo/ui';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -19,6 +20,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { IgdbPicker } from '@/components/admin/igdb-pick-dialog';
+import { UnresolvedCover } from '@/components/unresolved-row';
 import { hasErrorCode, useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
@@ -89,18 +91,40 @@ export function RepointDialog({
       <DialogContent maxW={620}>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
-          <DialogDescription>
-            {link
-              ? link.storeTitle
-                ? t('currentTitled', {
-                    store,
-                    id: link.externalId,
-                    title: link.storeTitle,
-                    game: gameName,
-                  })
-                : t('current', { store, id: link.externalId, game: gameName })
-              : ''}
-          </DialogDescription>
+          <XStack gap={16} items="center">
+            {/* La copertina del negozio: su Epic il titolo può essere quello
+                del gioco base (Aiko's Choice), la copertina no. */}
+            {link ? (
+              <UnresolvedCover
+                key={link.id}
+                entry={{
+                  store: link.source,
+                  externalId: link.externalId,
+                  imageUrl: link.storeImageUrl,
+                }}
+                width={60}
+                height={86}
+              />
+            ) : null}
+            <YStack flex={1} minW={0}>
+              <DialogDescription>
+                {link
+                  ? link.storeTitle
+                    ? t('currentTitled', {
+                        store,
+                        id: link.externalId,
+                        title: link.storeTitle,
+                        game: gameName,
+                      })
+                    : t('current', {
+                        store,
+                        id: link.externalId,
+                        game: gameName,
+                      })
+                  : ''}
+              </DialogDescription>
+            </YStack>
+          </XStack>
         </DialogHeader>
 
         {link && target === null ? (
