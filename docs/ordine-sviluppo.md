@@ -14,13 +14,15 @@ in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
    del catalogo hanno quei link, e di che tipo.
 2. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
    e la deduplica.
-3. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
+3. **Il gioco a caso dal filtro** (aggiunto il 13/10/2026): l'estensione della
+   15c, vedi lì.
+4. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
    decise.
-4. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
+5. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
    da zero.
-5. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+6. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-6. **Mobile**: un'app nuova, con le sue schermate.
+7. **Mobile**: un'app nuova, con le sue schermate.
 
 EA (9c) è **fatto dal 13/10/2026**, come importazione una tantum: vedi
 `plans/9c-ea.md`. Il login che si rinnova da sé (quello dell'app desktop EA) è
@@ -258,6 +260,16 @@ blocco» in [negozi](negozi.md)). Il link alle fonti senza voto nella pagina del
     è il gesto di «cosa gioco adesso», e lì si vede anche sul telefono, dove la
     barra è già piena. Non c'è nella vista dei nascosti. Con la lista vuota un
     avviso dice che non ci sono giochi da pescare.
+
+    **Estensione: il gioco a caso dal filtro** (chiesta il 13/10/2026, da fare
+    dopo il 10). Il gioco a caso pesca dal **filtro selezionato** in `/backlog`,
+    cioè dal `BacklogQuery` attivo, e non più dai soli giochi «da giocare».
+    Dalla scheda del gioco pescato si può **passare a un altro gioco a caso**,
+    sempre dentro lo stesso filtro: la scheda deve quindi sapere da quale filtro
+    arriva. Da decidere quando si comincia:
+    - senza filtri attivi, resta la regola di oggi (stato `backlog` e non
+      nascosti) o si pesca da tutto il backlog;
+    - il salto esclude il gioco appena visto, così non si ripresca lo stesso.
 
     **15d — Condivisione delle playlist** (aggiunta l'08/10/2026, **costruita lo
     stesso giorno**, piano in `plans/15d-condivisione.md`). Un link solo per due

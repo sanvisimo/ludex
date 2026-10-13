@@ -36,6 +36,8 @@ segnalazioni spostate dalla mail alle issue di GitHub.
   merge, non di step. Si correggono in `lib/roadmap.ts`.
 - **EA è passata a «Fatto» il 13/10/2026** (era «In arrivo» dal 09/10, poi «In
   corso»): l'importazione una tantum, piano in [9c-ea.md](9c-ea.md).
+- **«Il gioco a caso dal filtro»** (`randomFilter`) è entrata in «In arrivo» il
+  13/10/2026, dopo il CSV: l'estensione della 15c.
 - **«I link nella pagina del gioco»** (`linksFix`) è entrata in «In arrivo» il
   13/10/2026, prima del CSV: il campo `websites` di IGDB.
 - «Steam con login e Nintendo» è passata a «Fatto» il 12/10/2026: provati sul mini PC
