@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { epicCoverUrl, epicLoginUrl, parseEpicAuthCode } from './epic';
+import {
+  epicCoverUrl,
+  epicLoginUrl,
+  parseEpicAuthCode,
+  pickEpicGames,
+} from './epic';
 
 // Puro: nessuna rete, nessun database. Epic è il negozio dove il gesto è più
 // facile da sbagliare, perché quello che l'utente si trova davanti non è un
@@ -105,5 +110,44 @@ describe('epicCoverUrl', () => {
     expect(
       epicCoverUrl([{ type: 'DieselGameBoxLogo', url: 'https://x/logo.png' }]),
     ).toBeNull();
+  });
+});
+
+describe('pickEpicGames', () => {
+  // Fallout: New Vegas Ultimate Edition: un prodotto, il gioco e i DLC.
+  const fnv = 'prodotto-fnv';
+  const gioco = { productId: fnv, catalogItemId: 'fnv-gioco' };
+  const deadMoney = { productId: fnv, catalogItemId: 'fnv-dead-money' };
+  // Il catalogo rende solo ciò che è gioco: i DLC lì non ci sono.
+  const titoli = new Map([
+    [
+      'fnv-gioco',
+      { title: 'Fallout: New Vegas', imageUrl: 'https://x/fnv.jpg' },
+    ],
+  ]);
+
+  it('trova il gioco anche quando il DLC arriva per primo', () => {
+    const acquisto = new Date('2024-12-19T16:00:00Z');
+
+    expect(
+      pickEpicGames(
+        new Map([[fnv, [deadMoney, gioco]]]),
+        titoli,
+        new Map([[fnv, acquisto]]),
+      ),
+    ).toEqual([
+      {
+        externalId: fnv,
+        name: 'Fallout: New Vegas',
+        acquiredAt: acquisto,
+        imageUrl: 'https://x/fnv.jpg',
+      },
+    ]);
+  });
+
+  it('non importa un prodotto fatto di soli DLC', () => {
+    expect(
+      pickEpicGames(new Map([[fnv, [deadMoney]]]), titoli, new Map()),
+    ).toEqual([]);
   });
 });

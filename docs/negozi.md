@@ -160,10 +160,17 @@ IGDB ha una sorgente Epic con diecimila righe, e i suoi uid hanno la stessa form
 degli id che il launcher restituisce — 32 esadecimali. Sono cose diverse: gli uid
 di IGDB sono gli **offer id del negozio**, il launcher dà `catalogItemId`,
 `namespace` e `productId`. Su una libreria vera nessuno dei tre trova niente,
-**zero su 705**, misurato. In compenso il record di libreria porta già il titolo
-in `sandboxName` — quindi niente chiamate al catalogo — e gioco e DLC
-condividono il `productId`, che è ciò che li fa collassare: 836 voci diventano
-705 giochi senza chiedere niente a nessuno.
+**zero su 705**, misurato. Gioco e DLC condividono il `productId`, che è ciò che
+li fa collassare: 836 voci diventano 705 giochi.
+
+Questo paragrafo diceva anche che il titolo sta già in `sandboxName`, «quindi
+niente chiamate al catalogo», e che il collasso avveniva «senza chiedere niente
+a nessuno». Smentito due volte. `sandboxName` è il nome dell'ambiente: 286 voci
+si chiamano `Live`. Quindi il catalogo si chiama per tutte le voci, e dà titolo
+e categoria. E quale delle voci di un prodotto sia il gioco lo dice solo il
+catalogo, non l'ordine: tenere la prima voce perdeva Fallout: New Vegas quando
+Epic mandava per primo un suo DLC (13/10/2026, sul mini PC sì e in locale no,
+stesso account). Il dettaglio è su `pickEpicGames` in `external/epic.ts`.
 
 **PSN è Epic una seconda volta, e stavolta la trappola era scritta nel campo
 giusto.** IGDB ha una sorgente PS Store con quindicimila righe, e i suoi uid

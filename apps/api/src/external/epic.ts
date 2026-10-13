@@ -224,7 +224,7 @@ export type EpicLibraryEntry = {
   imageUrl: string | null;
 };
 
-type LibraryRecord = {
+export type EpicLibraryRecord = {
   namespace?: string;
   catalogItemId?: string;
   appName?: string;
@@ -236,7 +236,7 @@ type LibraryRecord = {
 };
 
 type LibraryResponse = {
-  records?: LibraryRecord[];
+  records?: EpicLibraryRecord[];
   responseMetadata?: { nextCursor?: string };
 };
 
@@ -250,7 +250,7 @@ type CatalogResponse = Record<
 >;
 
 /** Titolo e copertina di un prodotto, come li dà il catalogo. */
-type CatalogEntry = { title: string; imageUrl: string | null };
+export type CatalogEntry = { title: string; imageUrl: string | null };
 
 /**
  * La copertina fra le `keyImages`: la verticale se c'è, altrimenti la
@@ -278,9 +278,10 @@ export function epicCoverUrl(
  * - **`sandboxType` PRIVATE**: build interne e roba non pubblica.
  * - **senza `appName`**: voci incomplete che non si possono né riconoscere né
  *   lanciare.
- * Poi la deduplica per `productId`, che toglie di mezzo i DLC: «Kinglet» e
+ * Poi il raggruppamento per `productId`, che toglie di mezzo i DLC: «Kinglet» e
  * «KingletAztec» sono due voci, ma sono Civilization VI e un suo pacchetto, e
- * condividono prodotto.
+ * condividono prodotto. Quale delle voci sia il gioco lo dice il catalogo, non
+ * l'ordine: vedi `pickEpicGames`.
  *
  * Infine **il catalogo, per tutte le voci**, che dà due cose:
  *
@@ -298,19 +299,11 @@ export function epicCoverUrl(
  * Costa una richiesta per prodotto — su 705 giochi circa ottanta secondi — ed è
  * quello che fa legendary. È il prezzo per avere i titoli giusti, e senza si
  * perde un terzo della libreria.
- *
- * Poi la deduplica per `productId`, che è ciò che toglie di mezzo i DLC senza
- * dover interrogare il catalogo: nella libreria «Kinglet» e «KingletAztec» sono
- * due voci, ma sono Civilization VI e un suo pacchetto, e condividono prodotto
- * e titolo.
- *
- * Il titolo viene da **`sandboxName`**, che il record porta già. `appName` no:
- * è un nome in codice interno — Civilization VI si chiama «Kinglet».
  */
 export async function fetchEpicLibrary(
   accessToken: string,
 ): Promise<EpicLibraryEntry[]> {
-  const perProdotto = new Map<string, LibraryRecord>();
+  const perProdotto = new Map<string, EpicLibraryRecord[]>();
   const acquisto = new Map<string, Date>();
   let cursor: string | undefined;
 
@@ -347,28 +340,61 @@ export async function fetchEpicLibrary(
         if (!prima || data < prima) acquisto.set(record.productId, data);
       }
 
-      // Vince la prima voce del prodotto: le successive sono i suoi DLC, che
-      // portano lo stesso titolo e non aggiungono niente oltre alla data,
-      // già presa qui sopra.
-      if (perProdotto.has(record.productId)) continue;
-
-      perProdotto.set(record.productId, record);
+      // Tutte le voci del prodotto, non la prima: quale sia il gioco e quali i
+      // DLC lo sa solo il catalogo.
+      perProdotto.set(record.productId, [
+        ...(perProdotto.get(record.productId) ?? []),
+        record,
+      ]);
     }
 
     cursor = body.responseMetadata?.nextCursor;
   } while (cursor);
 
-  const voci = [...perProdotto.values()];
-  const titoli = await fetchCatalogTitles(accessToken, voci);
+  const titoli = await fetchCatalogTitles(
+    accessToken,
+    [...perProdotto.values()].flat(),
+  );
 
-  return voci
-    .filter((record) => titoli.has(record.catalogItemId!))
-    .map((record) => ({
-      externalId: record.productId!,
-      name: titoli.get(record.catalogItemId!)!.title,
-      acquiredAt: acquisto.get(record.productId!) ?? null,
-      imageUrl: titoli.get(record.catalogItemId!)!.imageUrl,
-    }));
+  return pickEpicGames(perProdotto, titoli, acquisto);
+}
+
+/**
+ * Per ogni prodotto, la voce che il catalogo dichiara gioco.
+ *
+ * **Non la prima che arriva**: Epic non garantisce l'ordine dei record, e un
+ * prodotto con i DLC — Fallout: New Vegas Ultimate Edition ne ha sei — può
+ * aprire con uno di loro. Tenere la prima voce voleva dire tenere il DLC,
+ * scartarlo perché il catalogo lo chiama `addons`, e perdere il gioco senza
+ * lasciarne traccia nemmeno negli scarti: su un'installazione c'era, sull'altra
+ * no, con lo stesso account.
+ *
+ * Un prodotto senza nessuna voce in `titoli` non si importa, per le ragioni
+ * scritte su `fetchCatalogTitles`.
+ */
+export function pickEpicGames(
+  perProdotto: Map<string, EpicLibraryRecord[]>,
+  titoli: Map<string, CatalogEntry>,
+  acquisto: Map<string, Date>,
+): EpicLibraryEntry[] {
+  const giochi: EpicLibraryEntry[] = [];
+
+  for (const [productId, voci] of perProdotto) {
+    const gioco = voci
+      .map((record) => record.catalogItemId)
+      .map((id) => (id ? titoli.get(id) : undefined))
+      .find((entry) => entry !== undefined);
+    if (!gioco) continue;
+
+    giochi.push({
+      externalId: productId,
+      name: gioco.title,
+      acquiredAt: acquisto.get(productId) ?? null,
+      imageUrl: gioco.imageUrl,
+    });
+  }
+
+  return giochi;
 }
 
 /**
@@ -385,7 +411,7 @@ export async function fetchEpicLibrary(
  */
 async function fetchCatalogTitles(
   accessToken: string,
-  records: LibraryRecord[],
+  records: EpicLibraryRecord[],
 ): Promise<Map<string, CatalogEntry>> {
   const titoli = new Map<string, CatalogEntry>();
   if (records.length === 0) return titoli;
