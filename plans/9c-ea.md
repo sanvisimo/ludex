@@ -243,6 +243,16 @@ Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
 
    Si verifica a occhio: i componenti non hanno test.
 
+**Dalla prova dell'utente (13/10/2026).**
+
+- **Uscendo e rientrando con un altro account, `/backlog` mostrava i dati del
+  primo**, finché non si ricaricava la pagina. Non era EA: `useSignOut` faceva
+  rileggere i loader ma non svuotava la cache di react-query, e le query restano
+  fresche trenta secondi. Ora `queryClient.clear()` all'uscita
+  (`user-menu.tsx`), e anche ad accesso e registrazione riusciti, per la
+  sessione finita senza passare da «Esci». Lo faceva già la cancellazione
+  dell'account. Gli aggiornamenti in push seguono già l'id dell'utente.
+
 **Da valutare in un lotto a parte (13/10/2026): un collegamento che si rinnova.**
 Il login dell'app desktop EA (`JUNO_PC_CLIENT`, OAuth con PKCE, redirect a
 `qrc:///html/login_successful.html`) dà anche un **refresh token**, che il server
