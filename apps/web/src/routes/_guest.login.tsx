@@ -13,6 +13,7 @@ import {
 } from '@repo/ui';
 import { useTranslations } from 'use-intl';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { useAuthErrorMessage } from '@/lib/auth-error';
@@ -32,6 +33,7 @@ function LoginForm() {
   const t = useTranslations('login');
   const authErrorMessage = useAuthErrorMessage();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { next } = Route.useSearch();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -53,6 +55,9 @@ function LoginForm() {
       return;
     }
 
+    // La cache può avere ancora i dati di chi c'era prima, se la sua sessione è
+    // finita senza passare da «Esci» (scaduta, chiusa da un'altra scheda).
+    queryClient.clear();
     // Il rimbalzo da una pagina privata scrive ?next=/percorso: si torna lì
     // invece che sul backlog.
     await router.navigate({ href: safeNext(next) });

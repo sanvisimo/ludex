@@ -125,16 +125,16 @@ Due pezzi collegati, anche loro da valutare:
 Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 **quanto costa risolvere l'identità**. Misurate su una libreria vera:
 
-| Negozio          | Credenziale                                                                    | Id su IGDB                                                                                     | Ore      |
-| ---------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | -------- |
-| GOG              | refresh token, non scade in pratica                                            | product id, sorgente 5 — **94,5% su 435 giochi**                                               | no       |
-| Epic             | refresh token                                                                  | **nessuno**: vedi sotto                                                                        | no       |
-| Amazon           | refresh token                                                                  | **nessuno**: sorgente 23 ha 678 righe in tutto                                                 | no       |
-| PSN              | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo             | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto                               | parziali |
-| EA               | sessione corta, si sgancia sempre                                              | nessuno                                                                                        | sì       |
-| Nintendo         | session token **730 giorni** (non ruota, non verificato), access token 15 min  | nessuno: **per nome**; le licenze digitali portano un id (16 esadecimali) che IGDB non conosce | parziali |
-| Xbox             | chiave OpenXBL, o XSTS in proprio                                              | `titleId` → ProductId via `displaycatalog`, sorgente 11                                        | sì       |
-| Steam, col login | refresh token **210–212 giorni**, access token 24 ore, rinnovo dentro l'import | appid, la sorgente Steam di IGDB, come col solo profilo                                        | sì       |
+| Negozio          | Credenziale                                                                                                 | Id su IGDB                                                                                     | Ore                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| GOG              | refresh token, non scade in pratica                                                                         | product id, sorgente 5 — **94,5% su 435 giochi**                                               | no                                                          |
+| Epic             | refresh token                                                                                               | **nessuno**: vedi sotto                                                                        | no                                                          |
+| Amazon           | refresh token                                                                                               | **nessuno**: sorgente 23 ha 678 righe in tutto                                                 | no                                                          |
+| PSN              | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo                                          | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto                               | parziali                                                    |
+| EA               | token di **4 ore** (`connect/auth`, dal browser entrato su ea.com), non si rinnova: importazione una tantum | nessuno: **per nome**, chiave `gameSlug` (uno per gioco, le edizioni collassano)               | **solo i giocati di recente** (`recentGames`: 1 riga su 44) |
+| Nintendo         | session token **730 giorni** (non ruota, non verificato), access token 15 min                               | nessuno: **per nome**; le licenze digitali portano un id (16 esadecimali) che IGDB non conosce | parziali                                                    |
+| Xbox             | chiave OpenXBL, o XSTS in proprio                                                                           | `titleId` → ProductId via `displaycatalog`, sorgente 11                                        | sì                                                          |
+| Steam, col login | refresh token **210–212 giorni**, access token 24 ore, rinnovo dentro l'import                              | appid, la sorgente Steam di IGDB, come col solo profilo                                        | sì                                                          |
 
 Le prime due colonne sono state scritte **prima** di provare, e il 9b ha
 smentito quella su PSN in tutte e due i campi — e poi ha smentito la sua stessa
@@ -142,6 +142,11 @@ smentita sull'id, che c'è ma non dove lo si cercava. Restano qui corrette e non
 riscritte in silenzio, perché il modo in cui ci si sbaglia su un negozio è esso
 stesso un'informazione: si sbaglia guardando cosa l'API _espone_, invece di
 guardare cosa _restituisce_.
+
+Anche la riga di EA è stata scritta prima e corretta dalla misura del 13/10/2026
+(`ea:probe`, tre giri, il dettaglio in `plans/9c-ea.md`): diceva «sessione corta»
+e «ore: sì». Il token dura quattro ore, che bastano a un import ma non a un
+collegamento; le ore EA le dà solo per i giochi avviati di recente.
 
 Dove l'id c'è l'import costa nulla: i 435 giochi GOG si risolvono in **tre**
 richieste da 200 id, e il matcher per nome ne recupera altri 16, per un 98,2%
@@ -859,6 +864,32 @@ rinnovo periodico dal server è troppo, è `AUTO_SYNC_EVERY_DAYS.nintendo`. Se i
 risponde 401 su un token fresco, la prima riga da guardare è `SAVANNA_CLIENT_ID` in
 `apps/api/src/external/nintendo.ts`.
 
+## EA (9c)
+
+**Un'importazione una tantum, non un collegamento.** L'utente, col browser entrato
+su ea.com, apre `accounts.ea.com/connect/auth` (`client_id=ORIGIN_JS_SDK`,
+`prompt=none`) e incolla la pagina JSON che ne esce. Il token dura **quattro ore**
+e non si rinnova: rinnovarlo vorrebbe i cookie di ea.com. Si salva cifrato solo
+perché il job lo trovi, e l'import lo cancella appena finisce; reimportare è
+incollarne uno nuovo sulla stessa riga («Importa di nuovo»). EA sta in
+`oneShotStoreValues`: niente spazzata, niente «aggiorna tutti», e un token
+scaduto non è `needs_reauth`.
+
+Tutto il resto è un GraphQL solo, `service-aggregation-layer.juno.ea.com`, con
+la query **scritta per esteso** e i negozi dentro la query (`storefronts: [EA,
+STEAM, EPIC]`): con una variabile risponde «Graphql validation error», e la
+persisted query del sito ha un hash che cambia. Il filtro `type` non toglie i
+DLC, che arrivano col prodotto nullo (272 voci su 327); un gioco è più offerte
+sotto lo stesso `gameSlug`, che fa da id esterno; le ore le dà solo per i giochi
+avviati di recente. Le misure, in quattro giri di `ea:probe`, e le decisioni sono
+in `plans/9c-ea.md`; i link alla pagina del gioco qui sotto, in «Il link alla
+pagina del gioco».
+
+**Da valutare a parte: un login che si rinnova.** Quello dell'app desktop EA
+(`JUNO_PC_CLIENT`, OAuth con PKCE e redirect a `qrc://`) dà anche un refresh
+token: lo usa il plugin EA di GOG Galaxy. Letto, non provato; le incognite sono
+nel piano.
+
 ## Le wishlist dei negozi (15e)
 
 Le wishlist di Ludex a mano sono un'altra cosa ([15b](../plans/15b-wishlist.md)): il
@@ -1165,6 +1196,21 @@ Lo slug sta con ogni probabilità nella pagina del negozio o in un endpoint che
 oggi non chiamiamo, non in un calcolo che possiamo rifare. Finché non si trova
 dove, per Epic resta il link di ricerca
 `https://store.epicgames.com/browse?q={titolo}`, da provare a mano.
+
+**EA (9c): due pagine, una per la copia e una per la card «Links».** Misurato
+il 13/10/2026 su 44 giochi, con richieste anonime. La copia va sul catalogo,
+`https://store.ea.com/commerce/app/products/{slug}`: giusto su 44 su 44, e uno
+slug inesistente dà 404 («Game Not Found»), quindi lì un 200 prova qualcosa.
+Dice «posseduto», ma è il catalogo per agenti e crawler, e dichiara i soli
+mercati US e CN. La card «Links» va invece sulla pagina per le persone,
+`https://www.ea.com/games/{serie}/{slug}`: giusta su 41; i giochi di altri
+editori (_SteamWorld Dig_, _Syberia II_, _Nox_) su ea.com non ce l'hanno. Senza
+la serie non si compone: `ea.com/games/{slug}` funziona sul catalogo storico
+(_Dragon Age: Origins_, _Ultima VII_) e dà 404 sulle serie grandi (15 su 44).
+La serie la dà il GraphQL in `baseItem { franchise { slug } }`, su tutti; l'import
+salva `{serie}/{slug}` in `store_page`, e le due regole stanno in
+`store-links.ts`. IGDB non ha una sorgente EA, quindi questo link esiste solo per
+i giochi importati da EA.
 
 **PSN: due link, per due elenchi che non si incrociano.** Gli acquisti portano
 il `productId` e mai il `conceptId`; i giocati portano il `concept.id` e mai il

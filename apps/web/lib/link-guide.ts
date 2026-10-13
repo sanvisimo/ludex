@@ -28,4 +28,7 @@ export const linkGuide: Record<
   psn: { openAt: 1 },
   // Il passo del clic destro è quello che nessuno indovina da solo.
   nintendo: { openAt: 0, illustrationAt: 1 },
+  // Come PSN: prima si entra su ea.com a mano, poi il pulsante apre la pagina
+  // che mostra il token.
+  ea: { openAt: 1 },
 };

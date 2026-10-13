@@ -59,7 +59,17 @@ export const linkableStoreValues = [
   'amazon',
   'psn',
   'nintendo',
+  'ea',
 ] as const;
+
+// I negozi che **si importano una volta sola**, ogni volta che l'utente
+// rifà il gesto: il credenziale non si rinnova, quindi niente aggiornamento
+// automatico, niente «aggiorna tutti» e niente «aggiorna» sulla scheda.
+//
+// EA (9c): il token di `connect/auth` dura quattro ore e rinnovarlo vorrebbe i
+// cookie di ea.com, che il server non ha. Reimportare è incollare di nuovo il
+// JSON sulla riga che c'è.
+export const oneShotStoreValues = ['ea'] as const;
 
 // Lo stato del collegamento a un negozio (step 9).
 //
@@ -111,7 +121,15 @@ export const storeAccountStatusValues = [
 // è la stessa — «questa copia è tua, o ce l'hai finché dura un diritto che non
 // è tuo?» — e perché al reimport si riscrive, come `ps_plus`. Un gioco che esce
 // dalla famiglia se ne va dal reimport; uno comprato poi torna nullo da solo.
-export const subscriptionValues = ['ps_plus', 'steam_family'] as const;
+//
+// `ea_play` arriva col 9c: EA Play, anche quello preso dentro Game Pass, Steam o
+// Epic. EA lo dice nei modi di possesso della voce (`VAULT`, `XGP_VAULT`,
+// `STEAM_VAULT`…), e lo è solo se nessuno di quei modi è un acquisto.
+export const subscriptionValues = [
+  'ps_plus',
+  'steam_family',
+  'ea_play',
+] as const;
 
 // **Su che supporto** sta una copia: un diritto digitale o un disco.
 //
@@ -306,7 +324,10 @@ export const sortDirectionValues = ['asc', 'desc'] as const;
  * scritto a mano nelle traduzioni sarebbe il secondo posto da tenere allineato.
  */
 export const AUTO_SYNC_EVERY_DAYS: Record<
-  (typeof linkableStoreValues)[number],
+  Exclude<
+    (typeof linkableStoreValues)[number],
+    (typeof oneShotStoreValues)[number]
+  >,
   number
 > = {
   steam: 7,
@@ -326,6 +347,11 @@ export type Store = (typeof storeValues)[number];
 export type WishlistStore = (typeof wishlistStoreValues)[number];
 export type WishlistError = (typeof wishlistErrorValues)[number];
 export type LinkableStore = (typeof linkableStoreValues)[number];
+export type OneShotStore = (typeof oneShotStoreValues)[number];
+
+/** Un negozio che si importa una volta sola: vedi `oneShotStoreValues`. */
+export const isOneShotStore = (store: Store): store is OneShotStore =>
+  (oneShotStoreValues as readonly string[]).includes(store);
 export type StoreAccountStatus = (typeof storeAccountStatusValues)[number];
 export type ScoreSource = (typeof scoreSourceValues)[number];
 export type EnrichmentSource = (typeof enrichmentSourceValues)[number];

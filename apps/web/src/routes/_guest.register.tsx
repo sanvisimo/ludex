@@ -13,6 +13,7 @@ import {
 } from '@repo/ui';
 import { useTranslations } from 'use-intl';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { useAuthErrorMessage } from '@/lib/auth-error';
@@ -25,6 +26,7 @@ function RegisterPage() {
   const t = useTranslations('register');
   const authErrorMessage = useAuthErrorMessage();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -41,8 +43,13 @@ function RegisterPage() {
     });
 
     setPending(false);
-    if (error) setError(authErrorMessage(error, t('failed')));
-    else await router.navigate({ to: '/' });
+    if (error) {
+      setError(authErrorMessage(error, t('failed')));
+      return;
+    }
+    // Come all'accesso: niente dei dati di chi c'era prima.
+    queryClient.clear();
+    await router.navigate({ to: '/' });
   }
 
   return (

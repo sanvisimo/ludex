@@ -5,6 +5,7 @@ import type {
   Wishlist,
 } from '@repo/contracts';
 import {
+  isOneShotStore,
   linkableStoreValues,
   storeAccountName,
   wishlistStoreValues,
@@ -35,6 +36,7 @@ import {
   toast,
 } from '@repo/ui';
 import {
+  Download,
   EllipsisVertical,
   Heart,
   KeyRound,
@@ -75,6 +77,11 @@ import { api, client } from '@/lib/orpc';
  * Il modulo per **aggiungere** un account non è qui, è `add-store-account`.
  * Qui il modulo compare solo per ricollegare, perché è esattamente ciò che
  * rimette a posto un `needs_reauth`.
+ *
+ * **EA si importa una volta sola** (9c, `isOneShotStore`): il token dura
+ * quattro ore e non si rinnova. Al posto di «Aggiorna» c'è «Importa di nuovo»,
+ * che apre lo stesso modulo del ricollegamento sulla stessa riga, e
+ * l'interruttore dell'aggiornamento automatico non c'è, perché non conterebbe.
  */
 const isLinkable = (store: Store): store is LinkableStore =>
   (linkableStoreValues as readonly string[]).includes(store);
@@ -140,6 +147,8 @@ export function StoreAccountCard({
     account.status === 'needs_reauth' && isLinkable(account.store)
       ? account.store
       : null;
+  // Reimportare EA è incollare un token nuovo: lo stesso modulo, un altro nome.
+  const reimportStore = isOneShotStore(account.store) ? account.store : null;
   const brand = STORE_BRAND[account.store];
 
   const autoSync = useMutation({
@@ -405,6 +414,19 @@ export function StoreAccountCard({
                 <Link2 size={16} color="$black1" />
                 {t('reconnect')}
               </Button>
+            ) : reimportStore ? (
+              // A parole e non a icona come ↻: non è il gesto di sempre ma uno
+              // che chiede di rifare i passi, e deve dirlo prima del clic.
+              <Button
+                variant="outline"
+                onClick={() => setRelinking(true)}
+                disabled={busy || syncing}
+              >
+                <Spinner spinning={syncing}>
+                  <Download size={16} color="$color12" />
+                </Spinner>
+                {t('reimport')}
+              </Button>
             ) : (
               <Tooltip content={t('sync')}>
                 <Button
@@ -446,21 +468,23 @@ export function StoreAccountCard({
               </Tooltip>
             )}
 
-            <XStack items="center" gap={8} ml="auto">
-              <Label htmlFor={autoSyncId}>{t('autoSyncShort')}</Label>
-              <Tooltip content={t('autoSync')}>
-                <Switch
-                  id={autoSyncId}
-                  aria-label={t('autoSync')}
-                  checked={autoSyncChecked}
-                  onCheckedChange={(value) => autoSync.mutate(value)}
-                  disabled={!autoSyncLibrary || autoSync.isPending}
-                />
-              </Tooltip>
-            </XStack>
+            {!reimportStore && (
+              <XStack items="center" gap={8} ml="auto">
+                <Label htmlFor={autoSyncId}>{t('autoSyncShort')}</Label>
+                <Tooltip content={t('autoSync')}>
+                  <Switch
+                    id={autoSyncId}
+                    aria-label={t('autoSync')}
+                    checked={autoSyncChecked}
+                    onCheckedChange={(value) => autoSync.mutate(value)}
+                    disabled={!autoSyncLibrary || autoSync.isPending}
+                  />
+                </Tooltip>
+              </XStack>
+            )}
           </XStack>
 
-          {!autoSyncLibrary ? (
+          {reimportStore ? null : !autoSyncLibrary ? (
             <Text fontSize={13} lineHeight={18} color="$color11">
               {t('autoSyncOffGlobally')}
             </Text>
@@ -480,17 +504,30 @@ export function StoreAccountCard({
       {/* Il dialogo si chiude da sé quando il ricollegamento riesce: lo stato
           torna `ok`, `relinkStore` diventa nullo e `open` con lui. */}
       <Dialog
-        open={relinking && relinkStore !== null}
+        open={relinking && (relinkStore !== null || reimportStore !== null)}
         onOpenChange={setRelinking}
       >
         <DialogContent maxW={512}>
           <DialogHeader>
             <DialogTitle>
-              {t('reconnectTitle', { store: storeLabels[account.store] })}
+              {reimportStore
+                ? t('reimportTitle', { store: storeLabels[account.store] })
+                : t('reconnectTitle', { store: storeLabels[account.store] })}
             </DialogTitle>
-            <DialogDescription>{t('needsReauth')}</DialogDescription>
+            <DialogDescription>
+              {reimportStore ? t('reimportDescription') : t('needsReauth')}
+            </DialogDescription>
           </DialogHeader>
-          {relinkStore === 'steam' ? (
+          {reimportStore ? (
+            // Sulla stessa riga: il server controlla che il token sia dello
+            // stesso account EA, e l'import parte da sé.
+            <StoreLinkForm
+              store={reimportStore}
+              accountId={account.id}
+              submitLabel={t('reimport')}
+              onLinked={() => setRelinking(false)}
+            />
+          ) : relinkStore === 'steam' ? (
             // Un account Steam da ricollegare ha un login scaduto: si rifà il
             // QR, non si incolla il profilo, che di credenziale non ne ha.
             <SteamLink

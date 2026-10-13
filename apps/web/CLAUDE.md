@@ -326,6 +326,10 @@ direzione col CSS. Cose che non si indovinano:
   l'account ha il login (`hasLogin`) e il menu ha «Accedi con Steam» e «Togli il
   login». Un import fallito **non arriva alla schermata**, per questo il profilo
   privato si controlla al collegamento e l'avviso sta nel dialogo.
+- **EA si importa una volta sola** (9c, `isOneShotStore`): la sua scheda ha
+  «Importa di nuovo» al posto del ↻, che apre il modulo del ricollegamento sulla
+  stessa riga per incollare un token nuovo, e non ha l'interruttore «Auto».
+  `accounts.sync` su EA risponde `BAD_REQUEST`.
 - **Tailwind resta** in `store-link-form.tsx` e `unlink-account-dialog.tsx`: i
   dialoghi dell'account non sono ancora tutti riscritti.
 

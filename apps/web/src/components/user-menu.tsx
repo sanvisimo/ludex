@@ -26,6 +26,7 @@ import {
   Shield,
   User,
 } from '@repo/ui/icons';
+import { useQueryClient } from '@tanstack/react-query';
 import { useMatchRoute, useRouter } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
 import { useState, type ComponentProps, type ReactNode } from 'react';
@@ -99,10 +100,14 @@ function AvatarButton({
  */
 function useSignOut() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   return async () => {
     await router.navigate({ to: '/' });
     await signOut();
-    // Chi guarda è cambiato: i loader rileggono da capo.
+    // Chi guarda è cambiato: via tutto ciò che la cache sapeva di lui, o chi
+    // entra dopo senza ricaricare la pagina si trova il suo backlog (le query
+    // restano fresche trenta secondi). Poi i loader rileggono da capo.
+    queryClient.clear();
     await router.invalidate();
   };
 }

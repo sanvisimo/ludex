@@ -9,8 +9,9 @@ commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
 in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
 [roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
-1. **9c — EA** (**in corso dal 13/10/2026**): importazione una tantum. Prima va
-   misurato il formato, ma il resto è la pipeline che esiste già.
+1. **I link della pagina del gioco** (aggiunto il 13/10/2026): il campo
+   `websites` di IGDB, che oggi non si chiede. Prima va misurato quanti giochi
+   del catalogo hanno quei link, e di che tipo.
 2. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
    e la deduplica.
 3. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
@@ -20,6 +21,10 @@ in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
 5. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
 6. **Mobile**: un'app nuova, con le sue schermate.
+
+EA (9c) è **fatto dal 13/10/2026**, come importazione una tantum: vedi
+`plans/9c-ea.md`. Il login che si rinnova da sé (quello dell'app desktop EA) è
+da valutare a parte.
 
 Le wishlist dei negozi (15e) erano la prima della lista e sono **fatte dal
 13/10/2026**: vedi «Le wishlist dei negozi» in [negozi](negozi.md).
@@ -109,7 +114,9 @@ blocco» in [negozi](negozi.md)). Il link alle fonti senza voto nella pagina del
      (`service: other`) risolti per concept, e il possesso lo dice
      (`medium`). Il rinnovo entro dieci giorni, perché il collegamento non
      muoia da solo, lo fa l'aggiornamento automatico.
-   - **9c — EA**: non un account collegato ma un'**importazione una tantum**.
+   - **9c — EA**: non un account collegato ma un'**importazione una tantum**:
+     il token di `connect/auth` dura quattro ore e non si rinnova. **Fatto il
+     13/10/2026**: piano e misure in `plans/9c-ea.md`.
    - **9d — Nintendo**: **due fonti** che si completano — le **Virtual Game Cards**
      (la libreria digitale, anche mai avviata) e lo **storico di gioco** (ciò che
      si è avviato, cartucce comprese, che diventano `medium: physical`). Login col

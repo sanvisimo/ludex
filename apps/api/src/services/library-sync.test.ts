@@ -25,7 +25,7 @@ const daysAgo = (days: number) =>
 
 async function account(
   userId: string,
-  store: 'steam' | 'gog' | 'psn' | 'amazon',
+  store: 'steam' | 'gog' | 'psn' | 'amazon' | 'ea',
   over: Partial<typeof schema.storeAccounts.$inferInsert> = {},
 ) {
   const row = await linkStoreAccount(userId, store);
@@ -51,6 +51,14 @@ describe('findAccountsDueForImport', () => {
   it('prende un account mai importato', async () => {
     const id = await account(userId, 'steam');
     expect(await dueIds()).toEqual([id]);
+  });
+
+  it('non prende mai EA, nemmeno mai importato: si reimporta incollando un token', async () => {
+    // Un import EA fallito lascia `last_sync_at` nullo, e il «mai importato»
+    // lo riprenderebbe a ogni giro, con un token che non c'è più.
+    await account(userId, 'ea');
+    await account(userId, 'ea', { lastSyncAt: daysAgo(30) });
+    expect(await dueIds()).toEqual([]);
   });
 
   it('usa la soglia del negozio: PSN a tre giorni, gli altri a sette', async () => {

@@ -718,6 +718,9 @@
       "menu": "Actions for {name}",
       "needsReauthBadge": "Needs reconnecting",
       "reconnectTitle": "Reconnect {store}",
+      "reimport": "Import again",
+      "reimportTitle": "Import again from {store}",
+      "reimportDescription": "EA doesn't allow a link that lasts: to update the library you go through the steps again, and it imports with the new token.",
       "renameTitle": "Name your {store} account",
       "renameKnownAs": "The store calls it: {name}",
       "labelField": "Label (optional)",
@@ -814,6 +817,18 @@
         ],
         "wrong": "That doesn't look like the link address: did you click the button? I need the address that starts with “npf” and contains “session_token_code”.",
         "note": "Ludex reads your digital library, including games you never launched, and the games you launched, cartridges included. A cartridge you never launched leaves no trace on Nintendo and has to be added by hand. You only do this once and the connection lasts about two years."
+      },
+      "ea": {
+        "placeholder": "{\"access_token\":\"…\",\"expires_in\":\"…\"}",
+        "openLabel": "Open the token page",
+        "steps": [
+          "Sign in to ea.com in your browser.",
+          "Open the token page below: it shows a line like {\"access_token\":\"…\"}.",
+          "Select all of it and copy it.",
+          "Paste what you copied here."
+        ],
+        "wrong": "I need the whole line, with “access_token” in it. If you see “login_required”, you are not signed in yet: sign in to ea.com first.",
+        "note": "EA doesn't allow a link that lasts: the library is imported now, once. To update it, go through these steps again."
       }
     },
     "unresolved": {
@@ -955,7 +970,8 @@
   },
   "subscription": {
     "ps_plus": "PS Plus",
-    "steam_family": "Steam Family"
+    "steam_family": "Steam Family",
+    "ea_play": "EA Play"
   },
   "medium": {
     "digital": "Digital",
@@ -1032,9 +1048,19 @@
         "p2": "A game you already have in your backlog stays in the list, with its status. What Ludex doesn't recognise you link to a game by hand, or set aside if it isn't a game.",
         "p3": "If an import fails, the card and the lists page say why, and you get a notice when it finishes."
       },
+      "linksFix": {
+        "title": "Links on the game page",
+        "text": "More links on every game page, taken from IGDB: the official website and the stores, including Epic, which has none today."
+      },
+      "eaRenew": {
+        "title": "Rinnovo del token per la libreria EA",
+        "text": "Rinnovo automatico del token per la libreria EA"
+      },
       "ea": {
         "title": "The EA library",
-        "text": "EA doesn't allow a link that lasts: the library will be imported once, whenever you choose."
+        "p1": "From the Libraries section you import your EA library by pasting the text of an ea.com page: games bought on Steam or Epic and linked to the account come in too, and EA Play ones are marked as subscription.",
+        "p2": "EA doesn't allow a link that lasts: to update the library you use “Import again” on the account card.",
+        "p3": "Every EA copy links to its page in the EA catalog, and the game page to the EA website."
       },
       "metaquest": {
         "title": "The Meta Quest library",

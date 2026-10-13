@@ -2,6 +2,7 @@ import { checkPastedLogin, type GuidedStore } from '@repo/contracts';
 import { describe, expect, it } from 'vitest';
 
 import { parseAmazonAuthCode } from './amazon';
+import { parseEaToken } from './ea';
 import { parseEpicAuthCode } from './epic';
 import { parseGogAuthCode } from './gog';
 import { parseNintendoAuthCode } from './nintendo';
@@ -25,6 +26,10 @@ const accepted = (store: GuidedStore, input: string): boolean => {
       return Boolean(parseNpsso(input));
     case 'nintendo':
       return parseNintendoAuthCode(input) !== null;
+    case 'ea': {
+      const token = parseEaToken(input);
+      return token !== null && token !== 'not_logged_in';
+    }
   }
 };
 
@@ -84,6 +89,20 @@ const SAMPLES: Record<GuidedStore, { good: string[]; bad: string[] }> = {
       'https://accounts.nintendo.com/connect/1.0.0/authorize?client_id=5c38e31cd085304b',
       'npf5c38e31cd085304b://auth#session_token_code=eyJ.abc.def',
       'npf5c38e31cd085304b://auth#state=lo-state',
+    ],
+  },
+  ea: {
+    good: [
+      '{"access_token":"QVQxOjIuMDoz","token_type":"Bearer","expires_in":"14399"}',
+      '  {"access_token":"QVQxOjIuMDoz","expires_in":14399}  ',
+    ],
+    bad: [
+      // Il browser non è entrato su ea.com.
+      '{"error":"login_required"}',
+      // Il solo token: la scadenza sta nel JSON.
+      'QVQxOjIuMDoz',
+      '{ rotto',
+      '{"access_token":""}',
     ],
   },
 };

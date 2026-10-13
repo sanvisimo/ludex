@@ -1,5 +1,6 @@
 import { ORPCError } from '@orpc/server';
 import { auth } from '@repo/auth';
+import { isOneShotStore } from '@repo/contracts/vocabulary';
 
 import {
   addOwnershipToEntry,
@@ -414,6 +415,14 @@ export const router = os.router({
       const account = await findStoreAccount(context.user.id, input.accountId);
       if (!account || account.status === 'unlinked')
         throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+
+      // EA si importa una volta sola per token: reimportare è incollarne uno
+      // nuovo (`accounts.link` sulla stessa riga), non premere «aggiorna».
+      if (isOneShotStore(account.store)) {
+        throw new ORPCError('BAD_REQUEST', {
+          message: `${account.store} si reimporta incollando di nuovo il token`,
+        });
+      }
 
       // Un credenziale morto non si sblocca riprovando: accodare qui vorrebbe
       // dire un job che fallisce e un utente che non capisce perché.

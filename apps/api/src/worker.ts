@@ -41,6 +41,7 @@ import { enrichGameFromMetacritic } from './services/metacritic-enrichment';
 import { enrichGameFromOpenCritic } from './services/opencritic-enrichment';
 import { resolveOpenCriticIds } from './services/opencritic-resolve';
 import { importAmazonLibrary } from './services/amazon-import';
+import { EaTokenExpiredError, importEaLibrary } from './services/ea-import';
 import { importEpicLibrary } from './services/epic-import';
 import { importGogLibrary } from './services/gog-import';
 import {
@@ -203,6 +204,7 @@ const importers: Partial<
   amazon: importAmazonLibrary,
   psn: importPsnLibrary,
   nintendo: importNintendoLibrary,
+  ea: importEaLibrary,
 };
 
 // Coda a parte: un import genera centinaia di job di enrichment, e sulla stessa
@@ -264,6 +266,11 @@ const importsWorker = new Worker<ImportsAnyJob>(
       // giri con backoff sono per le reti che cadono. Il messaggio dice cosa
       // fare — rendere pubblico il profilo, o accedere con Steam.
       if (error instanceof SteamLibraryNotVisibleError) {
+        throw new UnrecoverableError(error.message);
+      }
+      // Il token EA scade in quattro ore e non si rinnova: riprovare non lo fa
+      // tornare. L'account resta `ok`, e si reimporta incollandone uno nuovo.
+      if (error instanceof EaTokenExpiredError) {
         throw new UnrecoverableError(error.message);
       }
       throw error;

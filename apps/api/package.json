@@ -25,6 +25,8 @@
     "igdb:media": "tsx src/scripts/game-media.ts",
     "metacritic:probe": "tsx src/scripts/metacritic-probe.ts",
     "psn:probe": "tsx src/scripts/psn-probe.ts",
+    "ea:probe": "tsx src/scripts/ea-probe.ts",
+    "ea:login-probe": "tsx src/scripts/ea-login-probe.ts",
     "steam:wishlist-probe": "tsx src/scripts/steam-wishlist-probe.ts",
     "steam:appdetails-probe": "tsx src/scripts/steam-appdetails-probe.ts",
     "gog:wishlist-probe": "tsx src/scripts/gog-wishlist-probe.ts",

@@ -34,8 +34,10 @@ segnalazioni spostate dalla mail alle issue di GitHub.
 - «In corso» oggi non ha voci, e il tipo le prevede già.
 - I mesi delle voci fatte sono approssimati: la storia dei commit è fatta di
   merge, non di step. Si correggono in `lib/roadmap.ts`.
-- **EA è «In arrivo»**, non fatto (corretto il 09/10/2026): l'importazione una
-  tantum non c'è ancora.
+- **EA è passata a «Fatto» il 13/10/2026** (era «In arrivo» dal 09/10, poi «In
+  corso»): l'importazione una tantum, piano in [9c-ea.md](9c-ea.md).
+- **«I link nella pagina del gioco»** (`linksFix`) è entrata in «In arrivo» il
+  13/10/2026, prima del CSV: il campo `websites` di IGDB.
 - «Steam con login e Nintendo» è passata a «Fatto» il 12/10/2026: provati sul mini PC
   per quattro giorni senza blocchi (era «In corso» dal 09/10).
 - «Giochi doppi, uniti in uno» (11b) è passata a «Fatto» il 12/10/2026.

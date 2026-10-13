@@ -1,10 +1,10 @@
 import {
   AUTO_SYNC_EVERY_DAYS,
-  linkableStoreValues,
+  oneShotStoreValues,
   wishlistStoreValues,
 } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, eq, isNull, lt, or, sql } from '@repo/db/orm';
+import { and, eq, isNull, lt, notInArray, or, sql } from '@repo/db/orm';
 
 import { enqueueImport, enqueueWishlistImport } from '../queue/imports';
 
@@ -22,6 +22,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  *   acceso: è il default, e la tabella non ha una riga per ogni utente;
  * - **l'ultimo import più vecchio della soglia** del suo negozio, o mai fatto.
  *
+ * E un negozio che si aggiorni: EA si importa una volta sola, ogni volta che
+ * l'utente incolla un token nuovo (`oneShotStoreValues`). Va escluso a parte,
+ * perché un import EA fallito lascia `last_sync_at` nullo, e il «mai fatto» lo
+ * riprenderebbe a ogni giro.
+ *
  * Le soglie diventano un confronto per negozio con una data calcolata qui,
  * invece di un intervallo calcolato in SQL: `last_sync_at` è un `timestamp`
  * senza fuso, e confrontarlo con `now()` del database vorrebbe dire fidarsi
@@ -30,7 +35,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export function findAccountsDueForImport(now = new Date()) {
   const account = schema.storeAccounts;
 
-  const stale = linkableStoreValues.map((store) =>
+  const stores = Object.keys(
+    AUTO_SYNC_EVERY_DAYS,
+  ) as (keyof typeof AUTO_SYNC_EVERY_DAYS)[];
+  const stale = stores.map((store) =>
     and(
       eq(account.store, store),
       lt(
@@ -52,6 +60,7 @@ export function findAccountsDueForImport(now = new Date()) {
         eq(account.status, 'ok'),
         eq(account.autoSync, true),
         sql`coalesce(${schema.userSettings.autoSyncLibrary}, true)`,
+        notInArray(account.store, [...oneShotStoreValues]),
         or(isNull(account.lastSyncAt), ...stale),
       ),
     );
