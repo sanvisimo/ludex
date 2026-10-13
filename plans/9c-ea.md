@@ -1,7 +1,7 @@
 # Step 9c — EA
 
 **Stato: analisi e misura finite (13/10/2026, tre giri di `ea:probe`, 23 richieste
-a EA in tutto, nessun errore). Passi 1 e 2 fatti, sul branch `feat/9c-ea`.**
+a EA in tutto, nessun errore). Passi 1, 2 e 3 fatti, sul branch `feat/9c-ea`.**
 
 ## Contesto
 
@@ -187,15 +187,22 @@ Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
    `comparableTitle`, che usa solo `rankCandidates`: le ricerche restano quelle
    di prima, e PvZ si aggancia lo stesso, perché la ricerca su IGDB lo trovava
    già ed era il giudizio a rifiutarlo. Tre test in `title-match.test.ts`.
-3. **`external/ea.ts`.** Il client — parse del JSON incollato, identità, libreria
-   a pagine con la query per esteso, copertine (`gameProducts`, `packArt`) e ore
-   (`recentGames`), a blocchi di cento — e **una funzione pura** che riduce le
-   voci a `LibraryEntry[]`: solo prodotto e `BASE_GAME`, una per `gameSlug`, il
-   nome più corto del gruppo con l'anno fra parentesi tolto e passato come
-   `releaseYear`, la data d'acquisto più vecchia, `ea_play` se **nessuno** dei
-   modi di possesso del gruppo è un acquisto (`VAULT`, `XGP_VAULT`,
-   `STEAM_VAULT`, `STEAM_SUBSCRIPTION`, `EPIC_VAULT`, `EPIC_SUBSCRIPTION`). Test
-   della funzione pura su voci prese dalla misura.
+3. **`external/ea.ts`. Fatto (13/10/2026).** Il client — `parseEaToken`,
+   `fetchEaIdentity`, `fetchEaLibrary` (libreria a pagine con la query per
+   esteso, copertine da `gameProducts` e ore da `recentGames`, a blocchi di
+   cento) — e la funzione pura `reduceEaLibrary`: solo prodotto e `BASE_GAME`,
+   una voce per `gameSlug`, il nome più corto del gruppo con l'anno fra parentesi
+   tolto e passato come `releaseYear`, la data d'acquisto più vecchia, `ea_play`
+   solo se **tutti** i modi di possesso del gruppo sono di abbonamento, la
+   copertina dell'offerta da cui viene il nome, le ore dove EA le dà (null, non
+   zero, dove no). Sul modello di Epic, la riduzione sta nel client e rende
+   voci già nella forma di `LibraryEntry`. Nove test in `external/ea.test.ts`, con
+   le voci della misura. Due cose **non misurate**, scritte nel codice:
+   - `parseEaToken` accetta solo il JSON intero, perché è lì che sta la
+     scadenza; `{"error":"login_required"}` dice che il browser non è entrato su
+     ea.com;
+   - come si presenta un token scaduto: si prende per tale un 401/403 o un
+     errore GraphQL che parli di token (`EaAuthError`).
 4. **Collegamento e import.** `'ea'` in `linkableStoreValues`, `linkEaAccount`,
    `storeLoginUrl('ea')`,
    `linkStore`, `importEaLibrary` e il suo ramo nel worker, `ea: 'pc_windows'` in
