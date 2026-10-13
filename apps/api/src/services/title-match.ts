@@ -120,6 +120,24 @@ export function normalizeTitle(value: string) {
 }
 
 /**
+ * Il titolo come lo si **confronta**: `normalizeTitle`, più le abbreviazioni
+ * che i cataloghi sciolgono in modo diverso.
+ *
+ * Il caso è del 9c: EA vende «Plants vs. Zombies Game of the Year Edition»,
+ * IGDB lo tiene come «Plants vs. Zombies: GOTY Edition». La ricerca lo trova, ed
+ * è il giudizio a rifiutarlo, perché per i bigrammi le due forme si somigliano
+ * troppo poco.
+ *
+ * Sta qui e **non in `normalizeTitle`**, che fa anche il testo da cercare su
+ * IGDB, HLTB, Metacritic e OpenCritic: lì «goty» al posto delle tre parole
+ * cambierebbe ciò che quei motori trovano. Qui cambia solo come si somigliano
+ * due titoli già trovati.
+ */
+function comparableTitle(value: string) {
+  return normalizeTitle(value).replace(/\bgame of the year\b/g, 'goty');
+}
+
+/**
  * La parte di titolo prima del primo separatore, o null se non si può tagliare.
  *
  * Serve al secondo tentativo di ricerca: HLTB cerca in **AND** su tutti i
@@ -200,9 +218,9 @@ export function rankCandidates<T extends Matchable>(
   // simmetricamente a quello che si fa già sul loro lato fra nome e alias —
   // entrambi i cataloghi scrivono lo stesso gioco in più di un modo, e il
   // massimo può solo alzare i punteggi, mai perdere un match che già funziona.
-  const nostri = [normalizeTitle(query.name)];
+  const nostri = [comparableTitle(query.name)];
   if (query.searchedAs) {
-    const anche = normalizeTitle(query.searchedAs);
+    const anche = comparableTitle(query.searchedAs);
     if (anche && anche !== nostri[0]) nostri.push(anche);
   }
 
@@ -212,8 +230,8 @@ export function rankCandidates<T extends Matchable>(
       // Anche l'alias conta: HLTB tiene il titolo principale in `game_name` e
       // l'edizione o il nome alternativo in `game_alias`, e a volte è il
       // secondo a coincidere col nostro. Vale per ogni fonte che ne tenga uno.
-      const loro = [normalizeTitle(hit.name)];
-      if (hit.alias) loro.push(normalizeTitle(hit.alias));
+      const loro = [comparableTitle(hit.name)];
+      if (hit.alias) loro.push(comparableTitle(hit.alias));
 
       let score = 0;
       let exact = false;

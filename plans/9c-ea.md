@@ -1,7 +1,7 @@
 # Step 9c — EA
 
 **Stato: analisi e misura finite (13/10/2026, tre giri di `ea:probe`, 23 richieste
-a EA in tutto, nessun errore). Passo 1 fatto, sul branch `feat/9c-ea`.**
+a EA in tutto, nessun errore). Passi 1 e 2 fatti, sul branch `feat/9c-ea`.**
 
 ## Contesto
 
@@ -60,10 +60,9 @@ La durata del token e le ore le ha smentite la misura: vedi più sotto.
 5. **Due regole di nome**, misurate sui sette scarti del primo giro (solo IGDB):
    - **l'anno fra parentesi** («Mass Effect™ (2007)», «Syndicate™ (1993)») si
      toglie dal nome e diventa `releaseYear`. Recupera tre giochi, tutti giusti;
-   - **«Game of the Year» → «GOTY» in `normalizeTitle`**, da tutte e due le
-     parti: IGDB ha «Plants vs. Zombies: GOTY Edition» e la ricerca lo trova, ma
-     il giudice lo rifiutava. È la funzione di HLTB e Metacritic: test in
-     `title-match.test.ts`.
+   - **«Game of the Year» → «GOTY» nel confronto**, da tutte e due le parti
+     (vedi il passo 2): IGDB ha «Plants vs. Zombies: GOTY Edition» e la ricerca
+     lo trova, ma il giudice lo rifiutava.
 
    Il nome che si cerca è il più corto del gruppo («Dragon Age™ II» e non
    «Dragon Age II: Ultimate Edition»). Resta fuori _Ultima Underworld 2_ («2»
@@ -181,9 +180,13 @@ Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
    accende la scheda in `/account`, la voce del menu «Aggiungi» e la spazzata
    automatica, e aggiungerlo prima che esista `linkEaAccount` avrebbe mostrato un
    negozio che non si collega.
-2. **«Game of the Year» → «GOTY» in `normalizeTitle`**, con il test in
-   `title-match.test.ts`. Tocca anche HLTB e Metacritic, che usano la stessa
-   funzione.
+2. **«Game of the Year» → «GOTY» nel confronto. Fatto (13/10/2026).** Non in
+   `normalizeTitle`, come era scritto qui: quella funzione fa anche il testo da
+   cercare su IGDB, HLTB, Metacritic e OpenCritic, e «goty» al posto delle tre
+   parole avrebbe cambiato ciò che quei motori trovano. La regola sta in
+   `comparableTitle`, che usa solo `rankCandidates`: le ricerche restano quelle
+   di prima, e PvZ si aggancia lo stesso, perché la ricerca su IGDB lo trovava
+   già ed era il giudizio a rifiutarlo. Tre test in `title-match.test.ts`.
 3. **`external/ea.ts`.** Il client — parse del JSON incollato, identità, libreria
    a pagine con la query per esteso, copertine (`gameProducts`, `packArt`) e ore
    (`recentGames`), a blocchi di cento — e **una funzione pura** che riduce le

@@ -166,6 +166,44 @@ describe("tolleranza sull'anno", () => {
   });
 });
 
+describe('«Game of the Year» e «GOTY»', () => {
+  // Il caso vero del 9c: il nome è quello che manda EA, il candidato quello che
+  // IGDB rende cercandolo (20546), unico risultato. Prima veniva rifiutato.
+  const pvz = [{ name: 'Plants vs. Zombies: GOTY Edition', releaseYear: 2010 }];
+
+  it('sono la stessa edizione', () => {
+    const ranked = rankCandidates(
+      {
+        name: 'Plants vs. Zombies™ Game of the Year Edition',
+        releaseYear: null,
+      },
+      pvz,
+    );
+
+    expect(ranked[0]?.exact).toBe(true);
+    expect(pickByName(ranked)?.hit.name).toBe(
+      'Plants vs. Zombies: GOTY Edition',
+    );
+  });
+
+  it('valgono solo nel confronto: il testo da cercare resta per esteso', () => {
+    // `normalizeTitle` fa anche la ricerca su IGDB, HLTB, Metacritic e
+    // OpenCritic, e quei motori trovano ciò che è scritto, non l'abbreviazione.
+    expect(
+      normalizeTitle('The Witcher 3: Wild Hunt - Game of the Year Edition'),
+    ).toBe('the witcher 3 wild hunt game of the year edition');
+  });
+
+  it("non avvicinano il gioco base alla sua edizione dell'anno", () => {
+    const ranked = rankCandidates(
+      { name: 'The Witcher 3: Wild Hunt', releaseYear: 2015 },
+      witcher3,
+    );
+
+    expect(pickByName(ranked)?.hit.hltbId).toBe(10270);
+  });
+});
+
 describe('pickByName', () => {
   it('preferisce il titolo identico a quello che gli somiglia tantissimo', () => {
     // Caso vero, pescato provando il matcher su una libreria: senza questa
