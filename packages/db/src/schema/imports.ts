@@ -201,6 +201,14 @@ export const unresolvedImports = pgTable(
     // `ownerships.store_page`, e il link lo compone lo stesso `storePageUrl`.
     // Nulla dove il negozio non la dà (Epic, Amazon).
     storePage: text('store_page'),
+    // La voce viene **dallo stesso prodotto** di un'altra che l'import ha già
+    // preso come gioco: qui c'è l'id esterno di quella. Solo Epic, dove un
+    // prodotto può contenere più voci che il catalogo chiama gioco — Delores
+    // dentro Thimbleweed Park, ma anche beta, colonne sonore e DLC, che il
+    // catalogo non distingue. Queste voci non si cercano per nome («AMAZONS»
+    // diventava _Amazon_): le decide l'utente, nella tab «Possibili doppioni».
+    // Nulla per tutte le altre.
+    sameProductAs: text('same_product_as'),
     // Nascosta dall'utente: non compare più fra i «da sistemare».
     //
     // Prima c'era `dismiss`, che **cancellava** la riga — e il prossimo import

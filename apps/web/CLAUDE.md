@@ -308,6 +308,11 @@ direzione col CSS. Cose che non si indovinano:
   — un gioco ritirato da Steam dà 404 — cade sul riquadro con l'icona del negozio
   (`UnresolvedCover`), e l'icona accanto al nome è il link alla pagina dove un
   link c'è. Le righe già in tabella la prendono al prossimo import.
+- **Da sistemare** ha due tab nell'URL (`?tab=duplicates`) **solo se ci sono
+  possibili doppioni** (9a): «Non riconosciute» e «Possibili doppioni», le voci
+  che Epic mette nello stesso prodotto di un gioco già importato
+  (`UnresolvedImport.sameProduct`), una scheda per prodotto in
+  `possible-duplicates.tsx`. Il titolo col totale sta sopra i tab.
 - **Nascosti** è a tab nell'URL (`?kind=dlc`), e senza `?kind` si apre il primo tab
   che ha qualcosa. «Non interessato» è l'unico con due mucchi, e li unisce per data
   di nascondimento; i giochi si portano al massimo 100 (`GAMES_LIMIT`), e il

@@ -846,7 +846,21 @@
       "resolveFailed": "I couldn't link this entry",
       "notAGame": "Not a game",
       "hiddenHint": "Entries you took out of “needs attention”. They stay here after the next imports: if one turns out to be a real game, you can still link it.",
-      "hideFailed": "I couldn't hide this entry"
+      "hideFailed": "I couldn't hide this entry",
+      "tabsLabel": "Kind of entry",
+      "tabs": {
+        "unrecognised": "Unrecognised",
+        "duplicates": "Possible duplicates"
+      }
+    },
+    "duplicates": {
+      "description": "Epic puts several entries in the same product, and ludex imports one of them as the game. The others may be a second game, like Delores inside Thimbleweed Park, or a beta, a DLC or extra content: check the store and tell us what they are.",
+      "alsoInProduct": "{store} ({account}) · the same product also has:",
+      "mainNotLinked": "{store} ({account}) · not linked yet: it’s among the “Unrecognised”. The same product also has:",
+      "searchOn": "Search on {store}",
+      "standalone": "It’s a game of its own",
+      "hideAll": "Hide all",
+      "hideFailed": "I couldn’t hide these entries"
     },
     "toFixEmpty": {
       "title": "Nothing needs attention",
@@ -1017,6 +1031,10 @@
       "button": "Open an issue"
     },
     "items": {
+      "epicDuplicates": {
+        "title": "Games hidden inside Epic products",
+        "text": "On Epic a product can hold more than one game, like Delores inside Thimbleweed Park: the extra entries show up under “Needs attention”, where you decide what they are."
+      },
       "subscriptions": {
         "title": "Subscriptions",
         "text": "PS Plus, Game Pass and the rest: telling apart the games in your library that are yours from the ones that are there while the subscription lasts."

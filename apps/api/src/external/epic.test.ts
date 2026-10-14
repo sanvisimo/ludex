@@ -122,7 +122,11 @@ describe('pickEpicGames', () => {
   const titoli = new Map([
     [
       'fnv-gioco',
-      { title: 'Fallout: New Vegas', imageUrl: 'https://x/fnv.jpg' },
+      {
+        title: 'Fallout: New Vegas',
+        imageUrl: 'https://x/fnv.jpg',
+        presence: true,
+      },
     ],
   ]);
 
@@ -141,6 +145,7 @@ describe('pickEpicGames', () => {
         name: 'Fallout: New Vegas',
         acquiredAt: acquisto,
         imageUrl: 'https://x/fnv.jpg',
+        sameProductAs: null,
       },
     ]);
   });
@@ -149,5 +154,199 @@ describe('pickEpicGames', () => {
     expect(
       pickEpicGames(new Map([[fnv, [deadMoney]]]), titoli, new Map()),
     ).toEqual([]);
+  });
+});
+
+// Prodotti veri con più voci che il catalogo chiama `games`, presi dalla
+// libreria dell'utente il 14/10/2026. Ogni caso arriva con il DLC, la beta o il
+// secondo gioco **per primo**, come sul mini PC.
+describe('pickEpicGames: più voci gioco nello stesso prodotto', () => {
+  type Voce = {
+    id: string;
+    title: string;
+    acquired: string;
+    presence?: boolean;
+  };
+
+  const scelto = (voci: Voce[]) => {
+    const [risultato] = pickEpicGames(
+      new Map([
+        [
+          'prodotto',
+          voci.map((voce) => ({
+            productId: 'prodotto',
+            catalogItemId: voce.id,
+            acquisitionDate: voce.acquired,
+          })),
+        ],
+      ]),
+      new Map(
+        voci.map((voce) => [
+          voce.id,
+          {
+            title: voce.title,
+            imageUrl: null,
+            presence: voce.presence ?? false,
+          },
+        ]),
+      ),
+      new Map(),
+    );
+    return risultato?.name;
+  };
+
+  it('prende la voce acquistata per prima: TROY, non AMAZONS', () => {
+    expect(
+      scelto([
+        { id: 'amazons', title: 'AMAZONS', acquired: '2020-09-26T10:00:00Z' },
+        {
+          id: 'troy',
+          title: 'A Total War Saga: TROY',
+          acquired: '2020-08-13T10:00:00Z',
+        },
+      ]),
+    ).toBe('A Total War Saga: TROY');
+  });
+
+  it('a pari data, il titolo che è l’inizio degli altri', () => {
+    const data = '2024-04-04T10:00:00Z';
+    expect(
+      scelto([
+        { id: 'pt', title: 'Chivalry 2 - Public Testing', acquired: data },
+        { id: 'c2', title: 'Chivalry 2', acquired: data },
+      ]),
+    ).toBe('Chivalry 2');
+    // Senza spazi né punteggiatura: «KillingFloor2Beta».
+    expect(
+      scelto([
+        { id: 'beta', title: 'KillingFloor2Beta', acquired: data },
+        { id: 'kf2', title: 'Killing Floor 2', acquired: data },
+      ]),
+    ).toBe('Killing Floor 2');
+  });
+
+  it('poi la voce che il launcher avvia: Tropico 5, non Map Pack', () => {
+    // «Map Pack» è più corto: senza `PresenceId` vincerebbe lui.
+    const data = '2020-12-23T10:00:00Z';
+    expect(
+      scelto([
+        { id: 'map', title: 'Map Pack', acquired: data },
+        { id: 't5', title: 'Tropico 5', acquired: data, presence: true },
+      ]),
+    ).toBe('Tropico 5');
+  });
+
+  it('a parità di tutto, la scelta non dipende dall’ordine', () => {
+    const data = '2026-05-14T15:44:09Z';
+    const s1 = {
+      id: '6de90e98',
+      title: 'Telltale Batman Season 1',
+      acquired: data,
+      presence: true,
+    };
+    const s2 = {
+      id: 'a1402f3a',
+      title: 'Telltale Batman Season 2',
+      acquired: data,
+      presence: true,
+    };
+    expect(scelto([s2, s1])).toBe('Telltale Batman Season 1');
+    expect(scelto([s1, s2])).toBe('Telltale Batman Season 1');
+  });
+
+  it('un titolo di sola punteggiatura non è l’inizio di tutto', () => {
+    // Ridotto a niente, sarebbe il prefisso di ogni altro titolo.
+    const data = '2024-01-01T10:00:00Z';
+    expect(
+      scelto([
+        { id: 'punti', title: '…', acquired: data },
+        { id: 'gioco', title: 'Gioco', acquired: data, presence: true },
+      ]),
+    ).toBe('Gioco');
+  });
+});
+
+describe('pickEpicGames: le altre voci del prodotto', () => {
+  const tulip = 'prod-tulip';
+  const thimbleweed = {
+    productId: tulip,
+    catalogItemId: '115a33f2',
+    acquisitionDate: '2019-02-21T18:26:07.658Z',
+  };
+  const delores = {
+    productId: tulip,
+    catalogItemId: '6a398fcd',
+    acquisitionDate: '2020-06-19T06:38:46.613Z',
+  };
+  const titoli = new Map([
+    [
+      '115a33f2',
+      {
+        title: 'Thimbleweed Park',
+        imageUrl: 'https://x/tp.jpg',
+        presence: true,
+      },
+    ],
+    [
+      '6a398fcd',
+      {
+        title: 'Delores: A Thimbleweed Park mini-adventure',
+        imageUrl: 'https://x/delores.jpg',
+        presence: true,
+      },
+    ],
+  ]);
+
+  it('escono come voci proprie, col catalogItemId e il prodotto accanto', () => {
+    // Delores arriva per prima, come può capitare: resta la voce in più.
+    expect(
+      pickEpicGames(
+        new Map([[tulip, [delores, thimbleweed]]]),
+        titoli,
+        new Map([[tulip, new Date(thimbleweed.acquisitionDate)]]),
+      ),
+    ).toEqual([
+      {
+        externalId: tulip,
+        name: 'Thimbleweed Park',
+        acquiredAt: new Date(thimbleweed.acquisitionDate),
+        imageUrl: 'https://x/tp.jpg',
+        sameProductAs: null,
+      },
+      {
+        externalId: '6a398fcd',
+        name: 'Delores: A Thimbleweed Park mini-adventure',
+        acquiredAt: new Date(delores.acquisitionDate),
+        imageUrl: 'https://x/delores.jpg',
+        sameProductAs: tulip,
+      },
+    ]);
+  });
+
+  it('la stessa voce acquisita due volte è una voce sola, con la data più vecchia', () => {
+    const ancora = { ...delores, acquisitionDate: '2025-01-31T10:00:00.000Z' };
+    const voci = pickEpicGames(
+      new Map([[tulip, [thimbleweed, ancora, delores]]]),
+      titoli,
+      new Map(),
+    );
+
+    expect(voci).toHaveLength(2);
+    expect(voci[1]!.acquiredAt).toEqual(new Date(delores.acquisitionDate));
+  });
+
+  it('il gioco acquisito due volte non diventa una voce in più', () => {
+    const ancora = {
+      ...thimbleweed,
+      acquisitionDate: '2025-01-31T10:00:00.000Z',
+    };
+
+    expect(
+      pickEpicGames(
+        new Map([[tulip, [ancora, thimbleweed]]]),
+        titoli,
+        new Map(),
+      ),
+    ).toHaveLength(1);
   });
 });

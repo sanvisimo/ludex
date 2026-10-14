@@ -1,0 +1,1 @@
+ALTER TABLE "unresolved_imports" ADD COLUMN "same_product_as" text;

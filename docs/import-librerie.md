@@ -36,6 +36,15 @@ negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
   nascondere. `store_page` ha la stessa forma di quella su `ownerships`, e il
   link lo compone lo stesso `storePageUrl`. Le righe esistenti le prendono al
   prossimo import.
+- **voci in più di un prodotto su `unresolved_imports`**: `same_product_as`,
+  l'id esterno della voce che l'import ha preso come gioco dallo stesso
+  prodotto. Solo Epic, dove un prodotto può contenere più voci che il catalogo
+  chiama gioco: Delores dentro Thimbleweed Park, ma anche beta, DLC ed extra,
+  che il catalogo non distingue. Queste voci hanno come id il `catalogItemId`,
+  **non si cercano per nome** (la ricerca fece di «AMAZONS», DLC di TROY,
+  _Amazon_) e finiscono negli scarti: le decide l'utente. Collegata a mano, la
+  voce è un collegamento come gli altri e al reimport si riconosce per id.
+  Vedi `pickEpicGames` e [il piano](../plans/9a-epic-piu-giochi-per-prodotto.md).
 - **supporto su `ownerships`**: `medium`, `digital` o `physical`, nullo quando
   nessuno l'ha dichiarato. Gemello di `subscription`: quello dice _a che
   titolo_ hai la copia, questo _che cosa_ hai in mano. L'import lo scrive

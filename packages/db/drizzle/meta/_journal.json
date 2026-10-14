@@ -351,6 +351,13 @@
       "when": 1791932116309,
       "tag": "0049_secret_richard_fisk",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1791972235563,
+      "tag": "0050_happy_liz_osborn",
+      "breakpoints": true
     }
   ]
 }

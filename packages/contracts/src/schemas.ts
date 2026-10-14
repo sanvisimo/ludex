@@ -490,6 +490,18 @@ export const UnresolvedImportSchema = z.object({
   // due valorizzati. La lista le rende tutte, e la pagina le separa.
   hiddenAt: z.date().nullable(),
   hiddenKind: HiddenKindSchema.nullable(),
+  // Solo per una voce in più di un prodotto (9a, Epic): la voce che l'import ha
+  // preso come gioco dallo stesso prodotto. Il suo gioco in ludex se è
+  // collegata (`gameSlug`), o nulla se è anche lei fra gli scarti. Nullo per
+  // tutte le altre voci. Vedi `unresolved_imports.same_product_as`.
+  sameProduct: z
+    .object({
+      externalId: z.string(),
+      name: z.string(),
+      imageUrl: z.string().nullable(),
+      gameSlug: z.string().nullable(),
+    })
+    .nullable(),
 });
 
 // --- Filtraggio (step 7) ---

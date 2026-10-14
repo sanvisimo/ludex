@@ -1149,3 +1149,91 @@ describe('importLibrary: titolo e copertina del negozio sul collegamento (11a)',
     );
   });
 });
+
+describe('importLibrary: le voci in più di un prodotto (9a)', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  // Thimbleweed Park e Delores: un prodotto Epic, due voci gioco.
+  const thimbleweed = { externalId: 'prod-tulip', name: 'Thimbleweed Park' };
+  const delores = {
+    externalId: '6a398fcd',
+    name: 'Delores: A Thimbleweed Park mini-adventure',
+    imageUrl: 'https://cdn1.epicgames.com/delores.jpg',
+    acquiredAt: new Date('2020-06-19T06:38:46Z'),
+    sameProductAs: 'prod-tulip',
+  };
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'epic');
+    mockedById.mockResolvedValue(new Map());
+    mockedSource.mockReturnValue(null);
+    mockedSearch.mockImplementation(async (name) =>
+      name.toLowerCase().startsWith('thimbleweed')
+        ? [hit({ igdbId: 11165, name: 'Thimbleweed Park', releaseYear: 2017 })]
+        : // Una ricerca qualunque troverebbe qualcosa: è quello che fece di
+          // «AMAZONS» _Amazon_.
+          [hit({ igdbId: 999, name: 'Delores' })],
+    );
+  });
+
+  it('non la cerca per nome: finisce negli scarti col prodotto accanto', async () => {
+    const report = await importLibrary(account, [thimbleweed, delores]);
+
+    expect(mockedSearch).not.toHaveBeenCalledWith(
+      expect.stringMatching(/delores/i),
+    );
+    expect(report).toMatchObject({ total: 2, resolved: 1, unresolved: 1 });
+    expect(await gamesOf(userId)).toEqual([
+      { name: 'Thimbleweed Park', igdbId: 11165 },
+    ]);
+    const [scarto] = await unresolvedOf(userId);
+    expect(scarto).toMatchObject({
+      externalId: '6a398fcd',
+      name: 'Delores: A Thimbleweed Park mini-adventure',
+      sameProductAs: 'prod-tulip',
+      imageUrl: 'https://cdn1.epicgames.com/delores.jpg',
+      acquiredAt: delores.acquiredAt,
+    });
+  });
+
+  it('collegata a mano, al reimport la riconosce per id', async () => {
+    await importLibrary(account, [thimbleweed, delores]);
+    const [scarto] = await unresolvedOf(userId);
+
+    mockedFindById.mockResolvedValue(
+      hit({
+        igdbId: 125642,
+        name: 'Delores: A Thimbleweed Park Mini-Adventure',
+      }),
+    );
+    await resolveUnresolvedImport(userId, scarto!.id, 125642);
+    mockedSearch.mockClear();
+
+    const report = await importLibrary(account, [thimbleweed, delores]);
+
+    expect(report).toMatchObject({ resolved: 2, unresolved: 0 });
+    expect(mockedSearch).not.toHaveBeenCalled();
+    expect(await unresolvedOf(userId)).toEqual([]);
+    expect((await gamesOf(userId)).map((g) => g.igdbId).sort()).toEqual([
+      11165, 125642,
+    ]);
+  });
+
+  it('nascosta, resta nascosta al reimport', async () => {
+    await importLibrary(account, [thimbleweed, delores]);
+    const [scarto] = await unresolvedOf(userId);
+    await setUnresolvedImportHidden(userId, scarto!.id, 'extra');
+
+    await importLibrary(account, [thimbleweed, delores]);
+
+    const [dopo] = await unresolvedOf(userId);
+    expect(dopo).toMatchObject({
+      externalId: '6a398fcd',
+      hiddenKind: 'extra',
+      sameProductAs: 'prod-tulip',
+    });
+    expect(dopo!.hiddenAt).not.toBeNull();
+  });
+});

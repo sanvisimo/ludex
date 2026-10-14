@@ -207,6 +207,10 @@ export type EpicLibraryEntry = {
    * Nessuno dei due è l'uid di IGDB (vedi in cima), ma questo resta l'identità
    * giusta da scrivere in `external_ids`: al reimport è il nostro database a
    * riconoscerlo, e la ricerca per nome non si rispende.
+   *
+   * Le **voci in più** di un prodotto — Delores accanto a Thimbleweed Park —
+   * hanno invece il loro `catalogItemId`: il `productId` è già della voce
+   * principale. Vedi `sameProductAs`.
    */
   externalId: string;
   name: string;
@@ -222,6 +226,11 @@ export type EpicLibraryEntry = {
    * nella stessa risposta.
    */
   imageUrl: string | null;
+  /**
+   * Per una voce in più, il `productId` della voce principale del suo
+   * prodotto; nullo per la principale. Vedi `LibraryEntry.sameProductAs`.
+   */
+  sameProductAs: string | null;
 };
 
 export type EpicLibraryRecord = {
@@ -246,11 +255,22 @@ type CatalogResponse = Record<
     title?: string;
     categories?: { path?: string }[];
     keyImages?: { type?: string; url?: string }[];
+    customAttributes?: Record<string, unknown>;
   }
 >;
 
 /** Titolo e copertina di un prodotto, come li dà il catalogo. */
-export type CatalogEntry = { title: string; imageUrl: string | null };
+export type CatalogEntry = {
+  title: string;
+  imageUrl: string | null;
+  /**
+   * Se il catalogo le dà un `PresenceId` (o `PresenceID`): la voce che il
+   * launcher avvia e di cui mostra lo stato agli amici. Ce l'ha Tropico 5 e non
+   * il suo Map Pack, che pure il catalogo chiama `games`. Serve solo a scegliere
+   * il gioco del prodotto: vedi `pickEpicGames`.
+   */
+  presence: boolean;
+};
 
 /**
  * La copertina fra le `keyImages`: la verticale se c'è, altrimenti la
@@ -369,6 +389,20 @@ export async function fetchEpicLibrary(
  * lasciarne traccia nemmeno negli scarti: su un'installazione c'era, sull'altra
  * no, con lo stesso account.
  *
+ * E nemmeno la prima che il catalogo chiama gioco: su una libreria vera 23
+ * prodotti su 717 ne hanno più d'una, perché il catalogo chiama `games` anche
+ * beta, colonne sonore, sfondi, editor e DLC. Presa la prima, a un import da
+ * zero TROY è entrato come «AMAZONS», e la ricerca per nome l'ha agganciato a
+ * _Amazon_; Tropico 5 come «Map Pack», finito negli scarti. Quale sia il gioco
+ * lo decide `mainCandidate`.
+ *
+ * **Le altre voci gioco del prodotto non si buttano**: Delores sta nel prodotto
+ * di Thimbleweed Park, Telltale Batman Season 2 in quello della Season 1, e
+ * nella libreria Epic hanno un posto loro. Escono come voci proprie, col loro
+ * `catalogItemId` e `sameProductAs`, e l'import le mette negli scarti senza
+ * cercarle per nome. Su quella libreria sono 37 voci in 23 prodotti, quasi
+ * tutte beta, DLC ed extra: quali siano giochi lo decide l'utente.
+ *
  * Un prodotto senza nessuna voce in `titoli` non si importa, per le ragioni
  * scritte su `fetchCatalogTitles`.
  */
@@ -380,21 +414,100 @@ export function pickEpicGames(
   const giochi: EpicLibraryEntry[] = [];
 
   for (const [productId, voci] of perProdotto) {
-    const gioco = voci
-      .map((record) => record.catalogItemId)
-      .map((id) => (id ? titoli.get(id) : undefined))
-      .find((entry) => entry !== undefined);
-    if (!gioco) continue;
+    const candidati = voci.flatMap((record) => {
+      const entry = record.catalogItemId
+        ? titoli.get(record.catalogItemId)
+        : undefined;
+      return entry ? [{ record, entry }] : [];
+    });
+    if (candidati.length === 0) continue;
+    const principale = mainCandidate(candidati);
 
     giochi.push({
       externalId: productId,
-      name: gioco.title,
+      name: principale.entry.title,
       acquiredAt: acquisto.get(productId) ?? null,
-      imageUrl: gioco.imageUrl,
+      imageUrl: principale.entry.imageUrl,
+      sameProductAs: null,
     });
+
+    // Una voce per `catalogItemId`: la stessa voce acquisita due volte — la
+    // regalano di nuovo, la si riscatta — è due record. Vale il più vecchio.
+    const altre = new Map<string, Candidate>();
+    for (const candidato of candidati) {
+      const id = candidato.record.catalogItemId!;
+      if (id === principale.record.catalogItemId) continue;
+      const prima = altre.get(id);
+      if (!prima || acquiredTime(candidato) < acquiredTime(prima)) {
+        altre.set(id, candidato);
+      }
+    }
+    for (const [id, altra] of altre) {
+      const quando = acquiredTime(altra);
+      giochi.push({
+        externalId: id,
+        name: altra.entry.title,
+        acquiredAt: Number.isFinite(quando) ? new Date(quando) : null,
+        imageUrl: altra.entry.imageUrl,
+        sameProductAs: productId,
+      });
+    }
   }
 
   return giochi;
+}
+
+type Candidate = { record: EpicLibraryRecord; entry: CatalogEntry };
+
+/** Quando la voce è entrata in libreria, in millisecondi; in fondo se manca. */
+function acquiredTime(candidato: Candidate) {
+  const data = Date.parse(candidato.record.acquisitionDate ?? '');
+  return Number.isNaN(data) ? Infinity : data;
+}
+
+/**
+ * Il gioco fra le voci `games` di un prodotto. Il catalogo non lo dice — una
+ * colonna sonora ha le stesse categorie di Delores —, quindi lo si deduce, in
+ * quest'ordine:
+ *
+ * 1. **la voce acquistata per prima**: il DLC si compra dopo il gioco
+ *    (AMAZONS il 26/09/2020, TROY il 13/08/2020);
+ * 2. a pari data, quella il cui **titolo è l'inizio degli altri**: «Chivalry 2»
+ *    in «Chivalry 2 - Public Testing», «Football Manager 2024» in «… Resource
+ *    archiver»;
+ * 3. quella con il **`PresenceId`**: Tropico 5 contro Map Pack;
+ * 4. il titolo più corto, poi il `catalogItemId`, perché la scelta non cambi da
+ *    un import all'altro: l'id scritto in `external_ids` è il prodotto, e se la
+ *    voce principale cambiasse il collegamento passerebbe a un altro gioco.
+ *
+ * Sui 23 prodotti di quella libreria li azzecca tutti. La data va confrontata
+ * con l'ora: HITMAN 3 e il suo «HITMAN 1 GOTY Upgrade» sono dello stesso
+ * giorno, e a guardare il solo giorno vinceva l'Upgrade.
+ */
+function mainCandidate(candidati: Candidate[]): Candidate {
+  const compatto = (title: string) =>
+    title.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+  // Quanti altri titoli del prodotto cominciano con questo.
+  const prefisso = (candidato: Candidate) => {
+    const radice = compatto(candidato.entry.title);
+    if (!radice) return 0;
+    return candidati.filter(
+      (altro) =>
+        altro.record.catalogItemId !== candidato.record.catalogItemId &&
+        compatto(altro.entry.title).startsWith(radice),
+    ).length;
+  };
+
+  return [...candidati].sort(
+    (a, b) =>
+      acquiredTime(a) - acquiredTime(b) ||
+      prefisso(b) - prefisso(a) ||
+      Number(b.entry.presence) - Number(a.entry.presence) ||
+      a.entry.title.length - b.entry.title.length ||
+      (a.record.catalogItemId ?? '').localeCompare(
+        b.record.catalogItemId ?? '',
+      ),
+  )[0]!;
 }
 
 /**
@@ -457,6 +570,9 @@ async function fetchCatalogTitles(
           titoli.set(id, {
             title: item.title.trim(),
             imageUrl: epicCoverUrl(item.keyImages),
+            presence: Object.keys(item.customAttributes ?? {}).some(
+              (key) => key.toLowerCase() === 'presenceid',
+            ),
           });
         }
       }
