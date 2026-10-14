@@ -1,7 +1,7 @@
 import { storeAccountName } from '@repo/contracts';
-import type { HiddenKind } from '@repo/contracts/vocabulary';
+import type { HiddenKind, Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, asc, eq, sql } from '@repo/db/orm';
+import { and, asc, eq, inArray, sql } from '@repo/db/orm';
 
 import {
   advanceAddedAt,
@@ -43,6 +43,7 @@ export async function listUnresolvedImports(userId: string) {
       storePage: schema.unresolvedImports.storePage,
       hiddenAt: schema.unresolvedImports.hiddenAt,
       hiddenKind: schema.unresolvedImports.hiddenKind,
+      sameProductAs: schema.unresolvedImports.sameProductAs,
     })
     .from(schema.unresolvedImports)
     // La FK è NOT NULL, quindi la riga dell'account c'è sempre: la JOIN è
@@ -54,16 +55,107 @@ export async function listUnresolvedImports(userId: string) {
     .where(eq(schema.unresolvedImports.userId, userId))
     .orderBy(asc(schema.unresolvedImports.name));
 
+  const principali = await sameProductMains(userId, rows);
+
   return rows.map(
-    ({ label, displayName, externalAccountId, ...unresolved }) => ({
+    ({
+      label,
+      displayName,
+      externalAccountId,
+      sameProductAs,
+      ...unresolved
+    }) => ({
       ...unresolved,
       storeName: storeAccountName({
         label,
         displayName,
         externalAccountId: externalAccountId ?? '',
       }),
+      sameProduct: sameProductAs
+        ? (principali.get(`${unresolved.store}:${sameProductAs}`) ?? {
+            externalId: sameProductAs,
+            name: sameProductAs,
+            imageUrl: null,
+            gameSlug: null,
+          })
+        : null,
     }),
   );
+}
+
+/**
+ * Le voci principali dei prodotti da cui vengono le voci in più (9a): il loro
+ * gioco in ludex se sono collegate, altrimenti la riga fra gli scarti
+ * dell'utente, dove finisce una voce principale che la ricerca non ha
+ * riconosciuto («Map Pack» per Tropico 5, a un import da zero).
+ *
+ * Il collegamento è di tutti e vince: è la stessa precedenza dell'import, che
+ * guarda prima `external_ids`. Il nome è quello del gioco, la copertina quella
+ * che il negozio dà all'id.
+ */
+async function sameProductMains(
+  userId: string,
+  rows: { store: Store; sameProductAs: string | null }[],
+) {
+  const principali = new Map<
+    string,
+    {
+      externalId: string;
+      name: string;
+      imageUrl: string | null;
+      gameSlug: string | null;
+    }
+  >();
+  const chiavi = rows.filter((row) => row.sameProductAs !== null);
+  if (chiavi.length === 0) return principali;
+  const ids = [...new Set(chiavi.map((row) => row.sameProductAs!))];
+
+  const scarti = await db
+    .select({
+      store: schema.unresolvedImports.store,
+      externalId: schema.unresolvedImports.externalId,
+      name: schema.unresolvedImports.name,
+      imageUrl: schema.unresolvedImports.imageUrl,
+    })
+    .from(schema.unresolvedImports)
+    .where(
+      and(
+        eq(schema.unresolvedImports.userId, userId),
+        inArray(schema.unresolvedImports.externalId, ids),
+      ),
+    );
+  for (const scarto of scarti) {
+    principali.set(`${scarto.store}:${scarto.externalId}`, {
+      externalId: scarto.externalId,
+      name: scarto.name,
+      imageUrl: scarto.imageUrl,
+      gameSlug: null,
+    });
+  }
+
+  const collegati = await db
+    .select({
+      source: schema.externalIds.source,
+      externalId: schema.externalIds.externalId,
+      imageUrl: schema.externalIds.storeImageUrl,
+      name: schema.games.name,
+      gameSlug: schema.games.slug,
+    })
+    .from(schema.externalIds)
+    .innerJoin(schema.games, eq(schema.games.id, schema.externalIds.gameId))
+    .where(
+      and(
+        inArray(schema.externalIds.source, [
+          ...new Set(chiavi.map((row) => row.store)),
+        ]),
+        inArray(schema.externalIds.externalId, ids),
+      ),
+    );
+  for (const { source, ...collegato } of collegati) {
+    principali.set(`${source}:${collegato.externalId}`, collegato);
+  }
+
+  return principali;
 }
 
 function findOwn(userId: string, id: string) {

@@ -124,6 +124,18 @@ export type LibraryEntry = {
    * già scaricano, senza una chiamata in più.
    */
   imageUrl?: string | null;
+  /**
+   * L'id esterno della voce che il negozio mette **nello stesso prodotto**, se
+   * questa è una voce in più: solo Epic, dove un prodotto può contenere più
+   * voci che il catalogo chiama gioco (vedi `pickEpicGames`).
+   *
+   * Una voce così **non si cerca per nome**: le altre voci di un prodotto sono
+   * quasi sempre beta, DLC o extra, e la ricerca ne farebbe giochi sbagliati —
+   * «AMAZONS», il DLC di TROY, diventava _Amazon_. Si riconosce solo se
+   * qualcuno l'ha già collegata; altrimenti finisce negli scarti col prodotto
+   * accanto, e decide l'utente.
+   */
+  sameProductAs?: string | null;
 };
 
 /**
@@ -410,6 +422,7 @@ async function recordUnresolved(
           acquiredAt: entry.acquiredAt ?? null,
           imageUrl: entry.imageUrl ?? null,
           storePage: entry.storePage ?? null,
+          sameProductAs: entry.sameProductAs ?? null,
           // Nasce già nascosta se un admin l'ha nascosta per tutti (11a). Solo
           // qui, all'inserimento: il `set` dell'upsert qui sotto non tocca
           // `hidden_at`, e chi la rimette fra i «da sistemare» resta libero.
@@ -435,6 +448,7 @@ async function recordUnresolved(
           acquiredAt: sql`excluded.acquired_at`,
           imageUrl: sql`excluded.image_url`,
           storePage: sql`excluded.store_page`,
+          sameProductAs: sql`excluded.same_product_as`,
           updatedAt: new Date(),
         },
       });
@@ -781,9 +795,12 @@ export async function importLibrary(
     );
   }
 
-  // 3. E per nome, ciò che l'id non ha preso.
+  // 3. E per nome, ciò che l'id non ha preso. Non le voci in più di un
+  //    prodotto: vedi `sameProductAs`.
   const nameLinks = await resolveByName(
-    missing.filter((entry) => !byId.has(entry.externalId)),
+    missing.filter(
+      (entry) => !byId.has(entry.externalId) && !entry.sameProductAs,
+    ),
   );
 
   const { byExternalId, createdGameIds } = await linkExternalGames(store, [

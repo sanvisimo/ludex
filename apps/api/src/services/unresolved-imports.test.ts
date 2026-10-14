@@ -328,3 +328,78 @@ describe('unresolved imports', () => {
     expect(metacritic).toEqual({ status: 'pending' });
   });
 });
+
+describe('unresolved imports: la voce principale del prodotto (9a)', () => {
+  let userId: string;
+  let accountId: string;
+
+  beforeEach(async () => {
+    userId = await createUser();
+    accountId = (await linkStoreAccount(userId, 'epic')).id;
+  });
+
+  const scarto = (values: {
+    externalId: string;
+    name: string;
+    imageUrl?: string;
+    sameProductAs?: string;
+  }) =>
+    db.insert(schema.unresolvedImports).values({
+      userId,
+      store: 'epic',
+      storeAccountId: accountId,
+      ...values,
+    });
+
+  it('collegata: il suo gioco in ludex, col nome di ludex e la copertina del negozio', async () => {
+    const gioco = await createGame({
+      name: 'Thimbleweed Park',
+      slug: 'thimbleweed-park',
+    });
+    await db.insert(schema.externalIds).values({
+      gameId: gioco.id,
+      source: 'epic',
+      externalId: 'prod-tulip',
+      storeImageUrl: 'https://cdn1.epicgames.com/tp.jpg',
+    });
+    await scarto({
+      externalId: '6a398fcd',
+      name: 'Delores: A Thimbleweed Park mini-adventure',
+      sameProductAs: 'prod-tulip',
+    });
+
+    const [voce] = await listUnresolvedImports(userId);
+
+    expect(voce!.sameProduct).toEqual({
+      externalId: 'prod-tulip',
+      name: 'Thimbleweed Park',
+      imageUrl: 'https://cdn1.epicgames.com/tp.jpg',
+      gameSlug: 'thimbleweed-park',
+    });
+  });
+
+  it('non collegata: la sua riga fra gli scarti, senza gioco', async () => {
+    // Un import da zero che ha preso «Map Pack» per Tropico 5 e non l'ha
+    // riconosciuto: la principale è anche lei fra le «Non riconosciute».
+    await scarto({
+      externalId: '971e600d',
+      name: 'Map Pack',
+      imageUrl: 'https://cdn1.epicgames.com/map.jpg',
+    });
+    await scarto({
+      externalId: 'ca873087',
+      name: 'Tropico 5',
+      sameProductAs: '971e600d',
+    });
+
+    const voci = await listUnresolvedImports(userId);
+
+    expect(voci.find((v) => v.name === 'Map Pack')!.sameProduct).toBeNull();
+    expect(voci.find((v) => v.name === 'Tropico 5')!.sameProduct).toEqual({
+      externalId: '971e600d',
+      name: 'Map Pack',
+      imageUrl: 'https://cdn1.epicgames.com/map.jpg',
+      gameSlug: null,
+    });
+  });
+});

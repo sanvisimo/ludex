@@ -172,6 +172,33 @@ catalogo, non l'ordine: tenere la prima voce perdeva Fallout: New Vegas quando
 Epic mandava per primo un suo DLC (13/10/2026, sul mini PC sì e in locale no,
 stesso account). Il dettaglio è su `pickEpicGames` in `external/epic.ts`.
 
+**Un prodotto può contenere più giochi, e il catalogo non lo dice** (14/10/2026,
+confronto con l'export di Playnite). Su 717 prodotti, 23 hanno più voci che il
+catalogo chiama `games`: 37 voci in più. Tre o quattro sono giochi a sé —
+Delores dentro Thimbleweed Park, Telltale Batman Season 2 dentro la Season 1,
+HITMAN 1 dentro HITMAN 3 —, il resto beta e rami di prova, DLC, colonne
+sonore, sfondi, l'editor di Football Manager. Nessun campo li distingue:
+categorie, `sandboxType`, `sandboxName` (Delores ha quello di Thimbleweed Park),
+`unsearchable`, `customAttributes`, perfino l'id di `releaseInfo` sono uguali.
+Quindi:
+
+- **la voce principale** si sceglie con una regola (acquistata per prima, poi
+  il titolo che è l'inizio degli altri, poi `PresenceId`, poi il più corto), e
+  non è più la prima che arriva: a un import da zero quella aveva fatto entrare
+  TROY come «AMAZONS», agganciato per nome ad _Amazon_, e Tropico 5 come «Map
+  Pack». 23 su 23 giusti su quella libreria;
+- **le altre voci** entrano negli scarti col loro `catalogItemId` e il prodotto
+  accanto (`unresolved_imports.same_product_as`), **senza ricerca per nome**, e
+  l'utente le vede nella tab «Possibili doppioni» di «da sistemare». Vedi
+  [import-librerie](import-librerie.md) e
+  [il piano](../plans/9a-epic-piu-giochi-per-prodotto.md).
+
+**Non tutto ciò che il launcher mostra sta nella libreria.** Dark and Darker è
+nella libreria dell'app Epic ma `library/api/public/items` non lo restituisce, e
+nessuna altra chiamata che facciamo lo porta: non lo importiamo. Al contrario,
+Evoland 2 arriva come prodotto a sé anche se l'app mostra solo la Legendary
+Edition che lo contiene, e lo importiamo.
+
 **PSN è Epic una seconda volta, e stavolta la trappola era scritta nel campo
 giusto.** IGDB ha una sorgente PS Store con quindicimila righe, e i suoi uid
 sono i `conceptId` numerici dello store — _Dying Light 2_ è `232374`. La

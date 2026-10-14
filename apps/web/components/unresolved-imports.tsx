@@ -34,64 +34,111 @@ function KindIcon({ kind }: { kind: HiddenKind }) {
 }
 
 /**
- * Gli scarti d'import **da sistemare**: le voci della libreria che nessun gioco
- * ha riconosciuto, ciascuna con i due gesti possibili.
+ * Il menu «Nascondi ▾»: i quattro tipi che dicono che cosa è la voce, poi
+ * «Non interessato», che è una preferenza. Lo usano la singola voce e, con
+ * un'altra etichetta, «Nascondi tutte» dei possibili doppioni.
+ */
+export function HideMenu({
+  label,
+  disabled,
+  onPick,
+}: {
+  label: string;
+  disabled: boolean;
+  onPick: (kind: HiddenKind) => void;
+}) {
+  const t = useTranslations('account.unresolved');
+  const kindLabels = useHiddenKindLabels();
+
+  return (
+    <DropdownMenu align="end">
+      <DropdownMenuTrigger
+        render={
+          <Button size="sm" variant="ghost" disabled={disabled}>
+            <EyeOff size={16} color="$color12" />
+            {label}
+            <ChevronDown size={16} color="$color12" />
+          </Button>
+        }
+      />
+      <DropdownMenuContent width={208}>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>{t('notAGame')}</DropdownMenuLabel>
+          {notAGame.map((kind) => (
+            <DropdownMenuItem
+              key={kind}
+              icon={<KindIcon kind={kind} />}
+              onClick={() => onPick(kind)}
+            >
+              {kindLabels[kind]}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          icon={<KindIcon kind="unwanted" />}
+          onClick={() => onPick('unwanted')}
+        >
+          {kindLabels.unwanted}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/**
+ * Nasconde una o più voci d'import con lo stesso motivo. Più voci sono più
+ * richieste, in parallelo: «Nascondi tutte» ne manda al più una manciata.
+ */
+export function useHideUnresolved(fallback: string) {
+  const errorMessage = useApiErrorMessage();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ ids, kind }: { ids: string[]; kind: HiddenKind | null }) =>
+      Promise.all(ids.map((id) => client.imports.setHidden({ id, kind }))),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: api.imports.unresolved.key() }),
+    onError: (error) => toast.error(errorMessage(error, { fallback })),
+  });
+}
+
+/**
+ * Gli scarti d'import **non riconosciuti**: le voci della libreria che nessun
+ * gioco ha riconosciuto, ciascuna con i due gesti possibili.
  *
  * Collegarla al gioco giusto, o nasconderla dicendo **perché**: un'app, un DLC,
  * un contenuto extra, una versione di prova, o un gioco vero che non interessa.
  * I primi quattro sono un fatto sulla voce, l'ultimo una preferenza, ed è la
  * differenza che allo step 11 separerà ciò che si può promuovere a regola per
  * tutti da ciò che resta tuo. Le voci nascoste vivono in `hidden-list`, nella
- * sezione Nascosti.
+ * sezione Nascosti; le voci in più di un prodotto Epic in `PossibleDuplicates`.
  *
- * Senza voci da sistemare non disegna niente: a dire «non c'è niente» è la
- * sezione.
+ * Il titolo con il conto sta nella sezione, sopra i tab. Senza voci non disegna
+ * niente: a dire «non c'è niente» è la sezione.
  */
 export function UnresolvedImports({
   entries,
   onResolve,
 }: {
+  /** Già filtrate: da sistemare, e non voci in più di un prodotto. */
   entries: UnresolvedImport[];
   onResolve: (entry: UnresolvedImport) => void;
 }) {
   const t = useTranslations('account.unresolved');
   const tHidden = useTranslations('hidden');
-  const kindLabels = useHiddenKindLabels();
-  const errorMessage = useApiErrorMessage();
-  const queryClient = useQueryClient();
+  const setHidden = useHideUnresolved(t('hideFailed'));
 
-  const setHidden = useMutation({
-    mutationFn: (input: { id: string; kind: HiddenKind | null }) =>
-      client.imports.setHidden(input),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: api.imports.unresolved.key() }),
-    onError: (error) =>
-      toast.error(errorMessage(error, { fallback: t('hideFailed') })),
-  });
-
-  const pending = entries.filter((entry) => entry.hiddenKind === null);
-  if (pending.length === 0) return null;
+  if (entries.length === 0) return null;
 
   return (
     <YStack gap={12}>
-      <YStack gap={4}>
-        <Text
-          render="h2"
-          fontFamily="$heading"
-          fontSize={18}
-          lineHeight={24}
-          fontWeight="600"
-          color="$color12"
-        >
-          {t('title', { count: pending.length })}
-        </Text>
-        <Text fontSize={14} lineHeight={20} color="$color11">
-          {t('description')}
-        </Text>
-      </YStack>
+      <Text fontSize={14} lineHeight={20} color="$color11">
+        {t('description')}
+      </Text>
 
       <ul style={{ display: 'grid', gap: 8, margin: 0, padding: 0 }}>
-        {pending.map((entry) => (
+        {entries.map((entry) => (
           <UnresolvedRow key={entry.id} entry={entry}>
             <Button
               size="sm"
@@ -101,44 +148,11 @@ export function UnresolvedImports({
               <Link2 size={16} color="$color12" />
               {t('resolve')}
             </Button>
-            <DropdownMenu align="end">
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={setHidden.isPending}
-                  >
-                    <EyeOff size={16} color="$color12" />
-                    {tHidden('hide')}
-                    <ChevronDown size={16} color="$color12" />
-                  </Button>
-                }
-              />
-              <DropdownMenuContent width={208}>
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>{t('notAGame')}</DropdownMenuLabel>
-                  {notAGame.map((kind) => (
-                    <DropdownMenuItem
-                      key={kind}
-                      icon={<KindIcon kind={kind} />}
-                      onClick={() => setHidden.mutate({ id: entry.id, kind })}
-                    >
-                      {kindLabels[kind]}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  icon={<KindIcon kind="unwanted" />}
-                  onClick={() =>
-                    setHidden.mutate({ id: entry.id, kind: 'unwanted' })
-                  }
-                >
-                  {kindLabels.unwanted}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <HideMenu
+              label={tHidden('hide')}
+              disabled={setHidden.isPending}
+              onPick={(kind) => setHidden.mutate({ ids: [entry.id], kind })}
+            />
           </UnresolvedRow>
         ))}
       </ul>
