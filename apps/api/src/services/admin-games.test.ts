@@ -16,6 +16,7 @@ import {
   listUnlinkedGames,
   previewRepoint,
   repointLink,
+  unlinkExternalId,
 } from './admin-games';
 import { importLibrary } from './library-import';
 import { createReports, openReportsForGame } from './reports';
@@ -295,6 +296,94 @@ describe('«Non è questo gioco»', () => {
     expect(
       (await openReportsForGame(userId, arcade.id)).map((r) => r.source),
     ).toEqual(['metacritic']);
+  });
+});
+
+describe('«Scollega»', () => {
+  // Il caso del mini PC: il Prologue, che IGDB non ha, fuso per nome con il
+  // gioco completo prima della regola 2, col collegamento scritto.
+  const gioco = {
+    externalId: '1208434383',
+    name: 'Legend of Keepers: Career of a Dungeon Manager',
+  };
+  const prologue = {
+    externalId: '2020648154',
+    name: 'Legend of Keepers: Prologue',
+  };
+
+  const collegamentiGog = () =>
+    db
+      .select({
+        id: schema.externalIds.id,
+        externalId: schema.externalIds.externalId,
+      })
+      .from(schema.externalIds)
+      .where(eq(schema.externalIds.source, 'gog'));
+
+  it('toglie il collegamento, e il reimport mette la voce fra i possibili doppioni', async () => {
+    const lok = await createGame({ igdbId: 111965, name: 'Legend of Keepers' });
+    await db.insert(schema.externalIds).values(
+      [gioco, prologue].map((voce) => ({
+        gameId: lok.id,
+        source: 'gog' as const,
+        externalId: voce.externalId,
+        storeTitle: voce.name,
+      })),
+    );
+    const userId = await createUser();
+    const account = await linkStoreAccount(userId, 'gog');
+    vi.mocked(igdbSourceFor).mockReturnValue(5);
+    vi.mocked(searchIgdbGames).mockImplementation(async (name) =>
+      name === 'legend of keepers'
+        ? [{ ...igdbHit(111965, 'Legend of Keepers'), gameType: null }]
+        : [],
+    );
+    await importLibrary(account, [gioco, prologue]);
+
+    const linkId = (await collegamentiGog()).find(
+      (link) => link.externalId === prologue.externalId,
+    )!.id;
+    expect(await unlinkExternalId(linkId)).toEqual({ status: 'ok' });
+
+    const report = await importLibrary(account, [gioco, prologue]);
+
+    expect(report).toMatchObject({ resolved: 1, unresolved: 1 });
+    // Il collegamento non torna, e la copia del gioco resta dov'era.
+    expect(await collegamentiGog()).toMatchObject([
+      { externalId: gioco.externalId },
+    ]);
+    const [backlog] = await righeDi(userId);
+    expect(backlog).toMatchObject({ gameId: lok.id });
+    expect(await copieDi(backlog!.id)).toEqual([{ store: 'gog' }]);
+    expect(
+      await db
+        .select({
+          externalId: schema.unresolvedImports.externalId,
+          sameProductAs: schema.unresolvedImports.sameProductAs,
+        })
+        .from(schema.unresolvedImports)
+        .where(eq(schema.unresolvedImports.userId, userId)),
+    ).toEqual([
+      { externalId: prologue.externalId, sameProductAs: gioco.externalId },
+    ]);
+  });
+
+  it("rifiuta l'unico id del negozio sul gioco: si ripunta", async () => {
+    const { linkId } = await tokiSbagliato();
+
+    expect(await unlinkExternalId(linkId)).toEqual({ status: 'only_link' });
+    expect(
+      await db
+        .select({ id: schema.externalIds.id })
+        .from(schema.externalIds)
+        .where(eq(schema.externalIds.id, linkId)),
+    ).toHaveLength(1);
+  });
+
+  it('un collegamento che non esiste', async () => {
+    expect(await unlinkExternalId(crypto.randomUUID())).toEqual({
+      status: 'not_found',
+    });
   });
 });
 

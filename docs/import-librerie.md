@@ -461,6 +461,10 @@ Dall'11a i rimedi sono due, e nessuno passa da psql:
   sbagliato in libreria lo **segnala** dalla pagina del gioco, e può suggerire
   quello giusto.
 
+  Una voce che IGDB non ha, fusa per nome col gioco di un'altra voce, un gioco
+  giusto non ce l'ha: si **scollega** (9a GOG, vedi «Una voce della libreria è
+  una scheda» più sotto).
+
 Quindi il ri-collegamento sono **due strade verso lo stesso posto**, e chi lo
 farà deve trovarle scritte tutte e due:
 
@@ -518,3 +522,14 @@ importasse AitD 1, l'id c'è già. Quelli che la regola smentisce si cancellano
 (`forgetLinks`), o lo scarto risolto a mano troverebbe il posto occupato. Un
 collegamento confermato e sbagliato non lo tocca: si corregge con «Non è questo
 gioco».
+
+**Scollegare, quando un gioco giusto non c'è.** La regola 2 guarda solo le voci
+trovate per nome in quell'import: un Prologue fuso prima che ci fosse ha il suo
+collegamento scritto, e «Non è questo gioco» vuole un id IGDB, che per una demo
+non c'è. **«Scollega»**, dalla scheda admin del gioco, toglie la riga di
+`external_ids` e nient'altro (`unlinkExternalId`): al prossimo import la voce
+non è nota, il nome ritrova lo stesso gioco e la regola 2 la mette fra i
+«Possibili doppioni». Per questo regge **solo se un altro id dello stesso
+negozio punta allo stesso gioco**, e il servizio rifiuta l'id unico
+(`only_link`): lì le copie resterebbero sul gioco sbagliato, e il nome, senza
+un'altra voce accanto, ricollegherebbe lo stesso gioco. L'id unico si ripunta.
