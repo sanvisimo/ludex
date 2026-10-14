@@ -93,7 +93,7 @@ export function UnresolvedDetailDialog({
 
   return (
     <Dialog open={row !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={600}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{row?.name ?? ''}</DialogTitle>
         </DialogHeader>

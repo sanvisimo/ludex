@@ -327,7 +327,7 @@ function BanDialog({
 
   return (
     <Dialog open={user !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={480}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('banTitle', { name: user?.name ?? '' })}</DialogTitle>
           <DialogDescription>{t('banHint')}</DialogDescription>

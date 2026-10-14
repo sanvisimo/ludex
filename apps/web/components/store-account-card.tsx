@@ -507,7 +507,7 @@ export function StoreAccountCard({
         open={relinking && (relinkStore !== null || reimportStore !== null)}
         onOpenChange={setRelinking}
       >
-        <DialogContent maxW={512}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>
               {reimportStore
@@ -553,7 +553,7 @@ export function StoreAccountCard({
           account Steam. */}
       {isSteam && (
         <Dialog open={loggingIn} onOpenChange={setLoggingIn}>
-          <DialogContent maxW={512}>
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>{tSteam('title')}</DialogTitle>
               <DialogDescription>{tSteam('description')}</DialogDescription>

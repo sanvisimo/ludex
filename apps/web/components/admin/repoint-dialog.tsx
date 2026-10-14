@@ -88,7 +88,7 @@ export function RepointDialog({
 
   return (
     <Dialog open={link !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={620}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <XStack gap={16} items="center">

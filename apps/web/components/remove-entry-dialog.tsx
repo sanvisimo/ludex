@@ -74,7 +74,7 @@ export function RemoveEntryDialog({
 
   return (
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={512}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{entry?.game.name ?? ''}</DialogDescription>

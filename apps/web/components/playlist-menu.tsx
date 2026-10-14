@@ -155,7 +155,7 @@ export function PlaylistMenu({
       </DropdownMenu>
 
       <Dialog open={renaming} onOpenChange={setRenaming}>
-        <DialogContent maxW={448}>
+        <DialogContent>
           {renaming && (
             <RenameForm playlist={playlist} onDone={() => setRenaming(false)} />
           )}
@@ -163,7 +163,7 @@ export function PlaylistMenu({
       </Dialog>
 
       <Dialog open={sharing} onOpenChange={setSharing}>
-        <DialogContent maxW={512}>
+        <DialogContent>
           {sharing && (
             <ShareForm playlist={playlist} onDone={() => setSharing(false)} />
           )}
@@ -171,7 +171,7 @@ export function PlaylistMenu({
       </Dialog>
 
       <Dialog open={deleting} onOpenChange={setDeleting}>
-        <DialogContent maxW={448}>
+        <DialogContent>
           {deleting && (
             <DeleteForm
               playlist={playlist}

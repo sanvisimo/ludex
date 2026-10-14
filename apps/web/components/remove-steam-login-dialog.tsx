@@ -62,7 +62,7 @@ export function RemoveSteamLoginDialog({
 
   return (
     <Dialog open={account !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={512}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('removeTitle')}</DialogTitle>
           <DialogDescription>{t('removeBody')}</DialogDescription>

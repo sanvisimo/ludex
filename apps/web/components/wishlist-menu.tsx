@@ -122,7 +122,7 @@ export function WishlistMenu({
       </DropdownMenu>
 
       <Dialog open={renaming} onOpenChange={setRenaming}>
-        <DialogContent maxW={448}>
+        <DialogContent>
           {renaming && (
             <ListNameForm
               mode="rename"
@@ -134,7 +134,7 @@ export function WishlistMenu({
       </Dialog>
 
       <Dialog open={deleting} onOpenChange={setDeleting}>
-        <DialogContent maxW={448}>
+        <DialogContent>
           {deleting && (
             <DeleteForm
               list={list}
@@ -163,7 +163,7 @@ export function NewListDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent maxW={448}>
+      <DialogContent>
         {open && (
           <ListNameForm
             mode="create"

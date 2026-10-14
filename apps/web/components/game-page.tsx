@@ -476,7 +476,7 @@ export function DurationAndCritics({
         {t('details')}
       </Button>
       <Dialog modal open={open} onOpenChange={setOpen}>
-        <DialogContent maxW={560} closeLabel={t('close')}>
+        <DialogContent closeLabel={t('close')}>
           <DialogTitle>{t('durationAndCritics')}</DialogTitle>
           <HltbTimes game={game} />
           <CriticScores game={game} />

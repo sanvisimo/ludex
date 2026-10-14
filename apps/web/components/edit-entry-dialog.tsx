@@ -201,7 +201,7 @@ export function EditEntryDialog({
 
   return (
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={576}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{entry?.game.name ?? ''}</DialogDescription>
@@ -348,7 +348,7 @@ export function EditEntryDialog({
                 value={medium}
                 onValueChange={(next) => setMedium(next as string)}
               >
-                <SelectTrigger width={144} shrink={0}>
+                <SelectTrigger width={160} shrink={0}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

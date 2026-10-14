@@ -39,9 +39,10 @@ type DialogContentProps = GetProps<typeof DialogBase.Content> & {
 };
 
 /**
- * Il pannello, con il suo velo e il suo portale. La larghezza massima di
- * serie è 384 (lo `sm:max-w-sm` di prima); le finestre più larghe la
- * cambiano con `maxW`, dove prima scrivevano `sm:max-w-xl`.
+ * Il pannello, con il suo velo e il suo portale. La larghezza massima è 720
+ * per tutte le finestre: una sola misura, abbastanza larga da non mandare a
+ * capo le righe dei moduli. Sotto quella misura il pannello prende lo schermo,
+ * meno i margini. `maxW` resta per l'eccezione (la galleria delle immagini).
  */
 export function DialogContent({
   children,
@@ -62,7 +63,7 @@ export function DialogContent({
       <DialogBase.Content
         key="content"
         width="100%"
-        maxW={384}
+        maxW={720}
         mx={16}
         p={16}
         gap={16}

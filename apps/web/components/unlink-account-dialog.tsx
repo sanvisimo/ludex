@@ -82,7 +82,7 @@ export function UnlinkAccountDialog({
 
   return (
     <Dialog open={account !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={512}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>
             {t('title', {

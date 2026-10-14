@@ -167,7 +167,7 @@ function ReportDialog({
 
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent maxW={560}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{t('description')}</DialogDescription>

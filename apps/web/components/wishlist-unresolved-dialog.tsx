@@ -165,7 +165,7 @@ export function WishlistUnresolvedDialog({
         }
       }}
     >
-      <DialogContent maxW={720}>
+      <DialogContent>
         {resolving ? (
           <>
             <DialogHeader>

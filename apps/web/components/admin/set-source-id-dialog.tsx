@@ -156,7 +156,7 @@ export function SetSourceIdDialog({
 
   return (
     <Dialog open={row !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={720}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('setId.title', { source: sourceName })}</DialogTitle>
         </DialogHeader>

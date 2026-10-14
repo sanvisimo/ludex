@@ -38,7 +38,7 @@ export function RenameAccountDialog({
 }) {
   return (
     <Dialog open={account !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={448}>
+      <DialogContent>
         {/* Il modulo è un figlio che si rimonta per ogni account: il campo
             riparte dall'etichetta di quello aperto, non dell'ultimo. */}
         {account && (

@@ -58,7 +58,7 @@ export function AddStoreAccount({
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent maxW={512}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('title')}</DialogTitle>
             <DialogDescription>{t('description')}</DialogDescription>

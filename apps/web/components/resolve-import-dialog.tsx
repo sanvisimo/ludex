@@ -79,7 +79,7 @@ export function ResolveImportDialog({
 
   return (
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
-      <DialogContent maxW={720}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('resolveTitle')}</DialogTitle>
         </DialogHeader>

@@ -206,7 +206,7 @@ export function AddGameDialog({
         }
       />
 
-      <DialogContent maxW={576}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
@@ -375,7 +375,7 @@ export function AddGameDialog({
                         )
                       }
                     >
-                      <SelectTrigger width={144} shrink={0}>
+                      <SelectTrigger width={160} shrink={0}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

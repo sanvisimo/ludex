@@ -136,7 +136,7 @@ function DeleteAccountDialog({
         onOpenChange(value);
       }}
     >
-      <DialogContent maxW={448}>
+      <DialogContent>
         <form
           onSubmit={(event) => {
             event.preventDefault();

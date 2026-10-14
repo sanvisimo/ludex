@@ -81,7 +81,7 @@ export function SavePlaylistDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent maxW={448}>
+      <DialogContent>
         {/* Si rimonta a ogni apertura: il campo riparte dal nome di partenza,
             vuoto se non si sta modificando una playlist. */}
         {open && (
