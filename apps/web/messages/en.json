@@ -854,9 +854,9 @@
       }
     },
     "duplicates": {
-      "description": "Epic puts several entries in the same product, and ludex imports one of them as the game. The others may be a second game, like Delores inside Thimbleweed Park, or a beta, a DLC or extra content: check the store and tell us what they are.",
-      "alsoInProduct": "{store} ({account}) · the same product also has:",
-      "mainNotLinked": "{store} ({account}) · not linked yet: it’s among the “Unrecognised”. The same product also has:",
+      "description": "Some entries in your library lead to the same game as another one: the store puts them in the same product, or ludex recognises them as the same game. ludex imports one of them as the game. The others may be a second game, like Delores inside Thimbleweed Park, or a demo, a beta, a DLC or extra content: check the store and tell us what they are.",
+      "alsoInProduct": "{store} ({account}) · along with this one there are also:",
+      "mainNotLinked": "{store} ({account}) · not linked yet: it’s among the “Unrecognised”. Along with this one there are also:",
       "searchOn": "Search on {store}",
       "standalone": "It’s a game of its own",
       "hideAll": "Hide all",
@@ -1031,6 +1031,10 @@
       "button": "Open an issue"
     },
     "items": {
+      "gogCollections": {
+        "title": "GOG games sold as a collection",
+        "text": "GOG sells some games as a collection but lists them one by one in your library, like Alone in the Dark 1, 2 and 3: in ludex each one gets its own card. And an entry that lands on the same game as another one, like a demo, shows up under “Possible duplicates” instead of disappearing."
+      },
       "epicDuplicates": {
         "title": "Games hidden inside Epic products",
         "text": "On Epic a product can hold more than one game, like Delores inside Thimbleweed Park: the extra entries show up under “Needs attention”, where you decide what they are."

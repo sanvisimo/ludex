@@ -45,6 +45,8 @@ negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
   _Amazon_) e finiscono negli scarti: le decide l'utente. Collegata a mano, la
   voce è un collegamento come gli altri e al reimport si riconosce per id.
   Vedi `pickEpicGames` e [il piano](../plans/9a-epic-piu-giochi-per-prodotto.md).
+  Dal 9a GOG la colonna la scrive anche la regola delle voci fuse, per ogni
+  negozio: vedi «Una voce della libreria è una scheda» qui sotto.
 - **supporto su `ownerships`**: `medium`, `digital` o `physical`, nullo quando
   nessuno l'ha dichiarato. Gemello di `subscription`: quello dice _a che
   titolo_ hai la copia, questo _che cosa_ hai in mano. L'import lo scrive
@@ -475,3 +477,44 @@ farà deve trovarle scritte tutte e due:
 Ha un parente stretto e non è un caso: è lo stesso gesto che l'admin chiama
 «Inserisci id» per le fonti (11a). Scritto l'id giusto, il match non si rifà —
 si salta.
+
+## Una voce della libreria è una scheda (9a GOG)
+
+Il confronto con Playnite del 14/10/2026 ha trovato tre voci GOG sparite **senza
+dirlo**: due voci finivano sullo stesso gioco, e la copia — una sola per
+gioco, piattaforma, negozio, account e supporto — le fondeva. Le cause erano due,
+e ognuna ha la sua regola in `importLibrary`. Misure e casi nel
+[piano](../plans/9a-gog-raccolte-e-doppioni.md).
+
+**Regola 1, le raccolte di IGDB.** IGDB collega a _Alone in the Dark: The
+Trilogy 1+2+3_ (`game_type` `bundle`) anche gli id GOG di AitD 1 e 2, che GOG
+vende in raccolta ma mostra in libreria uno per uno. Una voce collegata per id
+a una raccolta si cerca quindi anche per nome: se il nome trova la raccolta
+resta lì (è l'edizione completa che il negozio vende davvero), se trova con
+sicurezza un altro gioco va su quello, se non trova niente va negli scarti.
+La ricerca si fa **senza l'anno del negozio**: GOG data il gioco originale,
+IGDB la raccolta, e la penalità dell'anno affondava quella giusta (_Shadow
+Warrior Classic Complete_, 1997 contro 2012).
+`checkBundleLinks`.
+
+**Regola 2, le voci trovate per nome.** Una voce risolta per nome che finisce
+sul gioco di un'altra voce dello stesso import, sulla stessa piattaforma e sullo
+stesso supporto, va negli scarti con `same_product_as` verso l'altra, e l'utente
+la vede fra i «Possibili doppioni» come le voci in più di un prodotto Epic. Il
+caso è _Legend of Keepers: Prologue_, una demo che IGDB non ha: la ricerca col
+titolo accorciato trovava il gioco completo. **Solo per nome**: due id che IGDB
+dà per lo stesso gioco restano una copia con le ore sommate, come su Steam (447
+appid per 445 giochi) e per un appid proprio più uno della famiglia.
+`pickMergedEntries`.
+
+La regola 1 vale sui collegamenti **non confermati**, cioè nuovi o già in
+`external_ids` senza che una libreria li abbia mai visti. Confermato vuol dire col titolo del
+negozio, che ogni import scrive sulle voci che risolve, oppure con una copia di
+quell'account sul gioco: la seconda condizione copre i collegamenti scritti
+prima del titolo, che su Steam, Amazon e PSN sono tutti. Un collegamento non
+confermato l'ha portato l'enrichment IGDB, che scrive gli id dei negozi di ogni
+gioco che arricchisce: se la trilogia è stata arricchita prima che qualcuno
+importasse AitD 1, l'id c'è già. Quelli che la regola smentisce si cancellano
+(`forgetLinks`), o lo scarto risolto a mano troverebbe il posto occupato. Un
+collegamento confermato e sbagliato non lo tocca: si corregge con «Non è questo
+gioco».
