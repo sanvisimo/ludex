@@ -84,6 +84,17 @@ describe('le procedure admin.*', () => {
       router.admin.sources.setExternalId,
       { gameId, source: 'hltb', externalId: '1' },
     ],
+    ['platformMismatches.list', router.admin.platformMismatches.list, {}],
+    [
+      'platformMismatches.dismiss',
+      router.admin.platformMismatches.dismiss,
+      { gameId, platformSlugs: ['pc_windows'] },
+    ],
+    [
+      'platformMismatches.restore',
+      router.admin.platformMismatches.restore,
+      { gameId, platformSlugs: ['pc_windows'] },
+    ],
     ['reports.list', router.admin.reports.list, {}],
     [
       'reports.archive',

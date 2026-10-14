@@ -369,6 +369,10 @@ che non si indovinano:
 - **«Inserisci id» ha due bottoni**: «Aggiungi» salva un id o un indirizzo e
   rifiuta un nome; «Cerca» usa il testo come nome sulla fonte. OpenCritic costa
   una delle 25 ricerche del giorno, e il dialogo lo dice prima.
+- **«Segnalati» ha due blocchi**: le segnalazioni degli utenti e, sotto, le
+  copie su una piattaforma dove il gioco non è uscito (9b,
+  `platform-mismatches.tsx`), con «Va bene così» e i segnati da annullare.
+  «Apri» è un bottone pieno con icona (`ButtonLink`): è l'azione che conta.
 - **Le copertine dei risultati di HLTB e Metacritic** arrivano dalla loro
   ricerca; quelle di OpenCritic no, e costerebbero il budget.
 

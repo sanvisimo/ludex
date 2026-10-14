@@ -136,6 +136,7 @@ export function igdbMetadata(
     slug: null,
     gameType: 'main_game',
     parentIgdbId: null,
+    platformIgdbIds: [],
     aggregatedRating: null,
     aggregatedRatingCount: null,
     attributes: [],

@@ -335,7 +335,15 @@ describe('«Scollega»', () => {
     vi.mocked(igdbSourceFor).mockReturnValue(5);
     vi.mocked(searchIgdbGames).mockImplementation(async (name) =>
       name === 'legend of keepers'
-        ? [{ ...igdbHit(111965, 'Legend of Keepers'), gameType: null }]
+        ? [
+            {
+              ...igdbHit(111965, 'Legend of Keepers'),
+              gameType: null,
+              // Il Prologue lo trova il titolo tagliato, e la regola 3 lo
+              // accetta solo se il gioco è sul PC: Legend of Keepers lo è.
+              platformIds: [6],
+            },
+          ]
         : [],
     );
     await importLibrary(account, [gioco, prologue]);

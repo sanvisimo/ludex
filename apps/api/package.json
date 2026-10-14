@@ -22,6 +22,7 @@
     "hltb:endpoint": "tsx src/scripts/hltb-endpoint.ts",
     "opencritic:resolve": "tsx src/scripts/opencritic-resolve.ts",
     "igdb:types": "tsx src/scripts/game-types.ts",
+    "igdb:platforms": "tsx src/scripts/game-platforms.ts",
     "igdb:media": "tsx src/scripts/game-media.ts",
     "metacritic:probe": "tsx src/scripts/metacritic-probe.ts",
     "psn:probe": "tsx src/scripts/psn-probe.ts",

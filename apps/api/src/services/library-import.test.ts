@@ -724,14 +724,19 @@ describe('importLibrary: a parità di nome conta la piattaforma (11a)', () => {
     expect(await gamesOf(userId)).toEqual([{ name: 'Toki', igdbId: 103329 }]);
   });
 
-  it('senza piattaforma sceglie come prima', async () => {
+  it('su un negozio PC le recensioni scelgono l arcade, e la regola 3 lo scarta', async () => {
     mockedSearch.mockResolvedValue(toki());
-    // Un negozio PC: la piattaforma non la dice la riga.
+    // Un negozio PC: la piattaforma non la dice la riga, il pareggio lo
+    // rompono le recensioni, che premiano l'arcade. Ma l'arcade su PC non è
+    // mai uscito (9b PSN): meglio fra i «Da sistemare» che sul gioco sbagliato.
     const gog = await linkStoreAccount(userId, 'gog');
 
-    await importLibrary(gog, [{ externalId: 'x', name: 'Toki' }]);
+    const report = await importLibrary(gog, [
+      { externalId: 'x', name: 'Toki' },
+    ]);
 
-    expect(await gamesOf(userId)).toEqual([{ name: 'Toki', igdbId: 12228 }]);
+    expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
+    expect(await gamesOf(userId)).toEqual([]);
   });
 
   it('se sulla piattaforma ce ne sono due, decide come prima', async () => {
@@ -752,6 +757,179 @@ describe('importLibrary: a parità di nome conta la piattaforma (11a)', () => {
 
     const report = await importLibrary(account, [
       { externalId: 'x', name: 'Observer', platformSlug: 'sony_playstation4' },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
+  });
+});
+
+describe('importLibrary: il nome vale solo sulla piattaforma della voce (9b PSN)', () => {
+  let userId: string;
+
+  // Il titolo pieno non trova niente, quello tagliato ai due punti sì: è la
+  // strada di `searchWithFallback` che la regola 3 sorveglia.
+  function soloTagliato(tagliato: string, trovato: ReturnType<typeof hit>) {
+    mockedSearch.mockImplementation(async (name) =>
+      name === tagliato ? [trovato] : [],
+    );
+  }
+
+  beforeEach(async () => {
+    userId = await createUser();
+    mockedById.mockResolvedValue(new Map());
+    mockedSource.mockReturnValue(null);
+    mockedBySource.mockResolvedValue(new Map());
+  });
+
+  it('scarta il gioco che IGDB non dà sulla console della voce', async () => {
+    const psn = await linkStoreAccount(userId, 'psn');
+    // L'Harry Potter del 2001: PS1 (7) e PC, mai su PS5.
+    soloTagliato(
+      'harry potter',
+      hit({ igdbId: 248180, name: 'Harry Potter', platformIds: [7, 6] }),
+    );
+
+    const report = await importLibrary(psn, [
+      {
+        externalId: 'PPSA05834_00',
+        name: 'Harry Potter: Campioni di Quidditch',
+        platformSlug: 'sony_playstation5',
+      },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
+    expect(await gamesOf(userId)).toEqual([]);
+    expect(await unresolvedOf(userId)).toMatchObject([
+      { externalId: 'PPSA05834_00' },
+    ]);
+    // E niente collegamento: `external_ids` è di tutti.
+    expect(await db.select().from(schema.externalIds)).toEqual([]);
+  });
+
+  it('accetta il gioco che IGDB dà sulla console della voce', async () => {
+    const psn = await linkStoreAccount(userId, 'psn');
+    soloTagliato(
+      'the elder scrolls online',
+      hit({
+        igdbId: 1081,
+        name: 'The Elder Scrolls Online',
+        platformIds: [48],
+      }),
+    );
+
+    const report = await importLibrary(psn, [
+      {
+        externalId: 'CUSA00086_00',
+        name: 'The Elder Scrolls Online: Tamriel Unlimited',
+        platformSlug: 'sony_playstation4',
+      },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 1, unresolved: 0 });
+    expect(await gamesOf(userId)).toEqual([
+      { name: 'The Elder Scrolls Online', igdbId: 1081 },
+    ]);
+  });
+
+  it('un gioco PS VR vale per una copia PS4', async () => {
+    const psn = await linkStoreAccount(userId, 'psn');
+    // Moss su IGDB è PlayStation VR (165), non PlayStation 4.
+    soloTagliato(
+      'moss',
+      hit({ igdbId: 37095, name: 'Moss', platformIds: [165] }),
+    );
+
+    const report = await importLibrary(psn, [
+      {
+        externalId: 'CUSA09447_00',
+        name: 'Moss: Digital Deluxe',
+        platformSlug: 'sony_playstation4',
+      },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 1 });
+  });
+
+  it('in cross-buy scarta solo la riga della console sbagliata', async () => {
+    const psn = await linkStoreAccount(userId, 'psn');
+    soloTagliato('gioco', hit({ igdbId: 9, name: 'Gioco', platformIds: [48] }));
+
+    const report = await importLibrary(psn, [
+      {
+        externalId: 'CUSA00001_00',
+        name: 'Gioco: Edizione',
+        platformSlug: 'sony_playstation4',
+      },
+      {
+        externalId: 'PPSA00001_00',
+        name: 'Gioco: Edizione',
+        platformSlug: 'sony_playstation5',
+      },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 1, unresolved: 1 });
+    expect(await unresolvedOf(userId)).toMatchObject([
+      { externalId: 'PPSA00001_00' },
+    ]);
+  });
+
+  it('su un negozio PC scarta il gioco uscito solo su Commodore 64', async () => {
+    const epic = await linkStoreAccount(userId, 'epic');
+    soloTagliato(
+      'predator',
+      hit({ igdbId: 15345, name: 'Predator', platformIds: [15, 16] }),
+    );
+
+    const report = await importLibrary(epic, [
+      { externalId: 'a', name: 'Predator: Hunting Grounds Standard Edition' },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
+  });
+
+  it('su un negozio PC accetta il gioco uscito solo su DOS', async () => {
+    const gog = await linkStoreAccount(userId, 'gog');
+    soloTagliato(
+      'pools of darkness',
+      hit({ igdbId: 12761, name: 'Pools of Darkness', platformIds: [13, 16] }),
+    );
+
+    const report = await importLibrary(gog, [
+      { externalId: 'b', name: 'Pools of Darkness: Forgotten Realms' },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 1 });
+  });
+
+  it('un gioco senza piattaforme note su IGDB non è una smentita', async () => {
+    const psn = await linkStoreAccount(userId, 'psn');
+    soloTagliato('gioco', hit({ igdbId: 9, name: 'Gioco', platformIds: [] }));
+
+    const report = await importLibrary(psn, [
+      {
+        externalId: 'PPSA00001_00',
+        name: 'Gioco: Edizione',
+        platformSlug: 'sony_playstation5',
+      },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 1 });
+  });
+
+  it('vale anche per il titolo pieno', async () => {
+    const psn = await linkStoreAccount(userId, 'psn');
+    // Trovato al primo tentativo, ma è l'originale del 2008: su PS5 c'è solo
+    // il remake.
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 37, name: 'Dead Space', platformIds: [9, 6, 12] }),
+    ]);
+
+    const report = await importLibrary(psn, [
+      {
+        externalId: 'PPSA03846_00',
+        name: 'Dead Space',
+        platformSlug: 'sony_playstation5',
+      },
     ]);
 
     expect(report).toMatchObject({ resolved: 0, unresolved: 1 });

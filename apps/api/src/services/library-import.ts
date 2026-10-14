@@ -16,6 +16,7 @@ import {
   ensureBacklogEntries,
   ensureOwnerships,
 } from './backlog';
+import { playsOn } from './copy-platforms';
 import type { StoreAccountRow } from './store-accounts';
 import { type ExternalGameLink, linkExternalGames } from './games';
 import {
@@ -704,6 +705,23 @@ export async function resolveByName(
     // scritto in `external_ids`, o al prossimo import la riga PS4 tornerebbe a
     // costare una ricerca.
     for (const riga of gruppo) {
+      // Regola 3 (9b PSN): ciò che si è trovato per nome vale se IGDB lo dà
+      // sulla piattaforma della riga. «Harry Potter: Campioni di Quidditch»
+      // tagliato è «Harry Potter», e IGDB ne ha uno del 2001 col titolo
+      // identico, che su PS5 non è mai uscito; «Dead Space» su PS5 è il remake,
+      // e il nome pieno trovava l'originale del 2008. La riga senza piattaforma
+      // è di un negozio PC: quelli console la portano sempre, o `platformFor`
+      // alzerebbe.
+      if (
+        !playsOn(
+          scelto.platformIds,
+          riga.platformSlug ?? 'pc_windows',
+          slugByIgdbId,
+        )
+      ) {
+        continue;
+      }
+
       links.push({
         externalId: riga.externalId,
         igdbId: scelto.igdbId,

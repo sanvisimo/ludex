@@ -533,3 +533,41 @@ non è nota, il nome ritrova lo stesso gioco e la regola 2 la mette fra i
 negozio punta allo stesso gioco**, e il servizio rifiuta l'id unico
 (`only_link`): lì le copie resterebbero sul gioco sbagliato, e il nome, senza
 un'altra voce accanto, ricollegherebbe lo stesso gioco. L'id unico si ripunta.
+
+## Il gioco deve essere uscito sulla console della copia (9b PSN)
+
+Il confronto PSN con Playnite del 14/10/2026 ha trovato voci collegate per nome
+a un gioco omonimo mai uscito su quella console: _Harry Potter: Campioni di
+Quidditch_ sull'_Harry Potter_ del 2001, che IGDB dà solo su Mega Drive; _Dead
+Space_ su PS5 sull'originale del 2008, quando su PS5 c'è il remake. Il primo
+viene dal titolo accorciato ai due punti, il secondo dal nome pieno. Misure e
+casi nel [piano](../plans/9b-psn-nomi-tagliati.md).
+
+**Regola 3.** In `resolveByName`, un gioco trovato per nome si collega solo se
+IGDB lo dà sulla piattaforma della voce, una voce alla volta: in cross-buy si
+scarta solo la console sbagliata. Altrimenti la voce va fra i «Da sistemare».
+Le piattaforme valide per una copia le dice `igdbPlatformsOfCopy`
+(`copy-platforms.ts`): la sua, più **PS VR per PS4 e PS VR2 per PS5** (IGDB
+tiene il visore come piattaforma a sé, e _Moss_ è solo «PlayStation VR»), e
+per il PC **Windows, DOS, Linux, Mac, SteamVR e Oculus VR** (i classici della
+GOG IGDB li dà spesso solo su DOS). La voce di un negozio PC non porta la
+piattaforma, e vale come Windows. Un gioco di cui IGDB non dice nessuna
+piattaforma non è una smentita, e passa. Le piattaforme stanno in
+`games.platform_igdb_ids`, scritte dall'enrichment IGDB.
+
+Il prezzo sono i giochi giusti a cui IGDB non dà la piattaforma: _Metal Slug 3_
+di Amazon, che IGDB tiene solo per arcade e Neo Geo. Finiscono nei «Da
+sistemare», e collegati a mano valgono per tutti: dal secondo utente in poi
+passano per id. Nel test da zero su PSN e Amazon è stato l'unico.
+
+**La lista in admin, l'ultima spiaggia.** La regola non vede i collegamenti per
+id (Steam, GOG, i dischi PSN per concept: _Resident Evil 4_ su Steam, che IGDB
+mappa sulla rimasterizzazione per console) né quelli scritti prima di lei. Le
+copie di un negozio su una piattaforma che IGDB non dà al gioco stanno in admin
+→ «Segnalati», sotto le segnalazioni degli utenti, una riga per gioco
+(`listPlatformMismatches`). Si corregge da «Apri» con «Non è questo gioco», e la
+riga sparisce da sola; quando è IGDB a non avere la piattaforma, «Va bene
+così» la toglie per gioco e piattaforma, per tutti i negozi
+(`platform_mismatch_dismissals`), e si annulla. La lista è calcolata a ogni
+apertura, con la stessa funzione della regola. Le copie aggiunte a mano non ci
+entrano: sono una dichiarazione dell'utente, non un collegamento.

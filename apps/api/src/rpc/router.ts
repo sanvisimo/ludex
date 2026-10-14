@@ -88,6 +88,11 @@ import {
   openReportsForGame,
 } from '../services/reports';
 import {
+  dismissPlatformMismatch,
+  listPlatformMismatches,
+  restorePlatformMismatch,
+} from '../services/platform-mismatches';
+import {
   removeSteamLogin,
   startSteamLogin,
   steamLoginStatus,
@@ -957,6 +962,31 @@ export const router = os.router({
   },
 
   admin: {
+    platformMismatches: {
+      list: os.admin.platformMismatches.list
+        .use(authed)
+        .use(admin)
+        .handler(({ input }) => listPlatformMismatches(input)),
+
+      dismiss: os.admin.platformMismatches.dismiss
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => {
+          await dismissPlatformMismatch(
+            input.gameId,
+            input.platformSlugs,
+            context.user.id,
+          );
+        }),
+
+      restore: os.admin.platformMismatches.restore
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          await restorePlatformMismatch(input.gameId, input.platformSlugs);
+        }),
+    },
+
     reports: {
       list: os.admin.reports.list
         .use(authed)

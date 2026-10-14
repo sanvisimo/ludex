@@ -344,6 +344,16 @@ Quattro dettagli che si pagano se si scoprono tardi:
   of Keepers, sul gioco completo. Le due regole che lo impediscono valgono per
   ogni negozio: «Una voce della libreria è una scheda» in
   [import-librerie](import-librerie.md).
+- **PSN contro Playnite** (14/10/2026, dopo un import da zero): ludex 366 voci,
+  Playnite 363. Playnite ne ha in più di tre tipi, e ludex non le importa
+  apposta: i giochi PS3 (_Injustice_), che Sony non restituisce fra gli
+  acquisti anche se li chiediamo e che Playnite prende probabilmente dai
+  trofei; le versioni PC (_God of War Ragnarök_); i giocati non posseduti
+  (_FIFA 19_). Il difetto vero era un altro: il nome agganciava un gioco
+  omonimo mai uscito su quella console, e lo ferma la regola 3, «Il gioco deve
+  essere uscito sulla console della copia» in
+  [import-librerie](import-librerie.md). I nomi in italiano che IGDB non trova
+  (_Sackboy: Una grande avventura_) restano fra i «Da sistemare».
 
 La piattaforma resta **`pc_windows` fissa** su tutti i negozi PC, come per Steam,
 e l'utente la corregge dalla schermata dello step 5. GOG dichiarerebbe anche

@@ -189,6 +189,7 @@ export async function saveIgdbMetadata(
         coverHeight: metadata.coverHeight,
         gameType: metadata.gameType,
         parentIgdbId: metadata.parentIgdbId,
+        platformIgdbIds: metadata.platformIgdbIds,
         artworkImageIds: metadata.artworkImageIds,
         screenshotImageIds: metadata.screenshotImageIds,
         videos: metadata.videos,
