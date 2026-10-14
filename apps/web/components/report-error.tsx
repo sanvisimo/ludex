@@ -170,7 +170,6 @@ function ReportDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
-          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
         <YStack
