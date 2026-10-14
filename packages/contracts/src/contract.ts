@@ -794,6 +794,10 @@ export const contract = {
         .output(
           z.object({ wholeRows: z.number().int(), copies: z.number().int() }),
         ),
+
+      // «Scollega»: toglie la riga e nient'altro. Si rifiuta se è l'unico id di
+      // quel negozio sul gioco: quello è ripuntare.
+      unlink: oc.input(z.object({ linkId: z.uuid() })).output(z.void()),
     },
 
     users: {

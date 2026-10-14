@@ -1391,6 +1391,7 @@
       "copies": "Copies",
       "copiesCount": "{users, plural, one {# user} other {# users}}, {copies, plural, one {# copy} other {# copies}}",
       "notThis": "Not this game",
+      "unlink": "Unlink",
       "noLinks": "No links: the game didn't come from an import.",
       "sources": "Sources",
       "source": "Source",
@@ -1424,6 +1425,19 @@
       "failed": "Couldn't repoint it",
       "sameGame": "The link already points to this game.",
       "previewFailed": "Couldn't prepare the preview"
+    },
+    "unlink": {
+      "title": "Unlink this id",
+      "current": "{store} · {id} → today: {game}",
+      "currentTitled": "{store} · {id} “{title}” → today: {game}",
+      "body": "Only the link is removed: the game, backlog rows and copies stay where they are. It is for an entry IGDB doesn't have that its name attached to another game, like a demo.",
+      "next": "On the next import the entry is searched again: if its name finds this game again, it lands in “Possible duplicates” next to the other {store} entry, where the user hides it or links it on its own.",
+      "onlyLink": "It is the only {store} id on this game: the copies would stay here, and on the next import its name would find the same game again.",
+      "cancel": "Cancel",
+      "close": "Close",
+      "confirm": "Unlink",
+      "done": "Unlinked",
+      "failed": "Couldn't unlink it"
     },
     "merge": {
       "title": "Merge two games",

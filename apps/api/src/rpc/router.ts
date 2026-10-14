@@ -48,6 +48,7 @@ import {
   listUnlinkedGames,
   previewRepoint,
   repointLink,
+  unlinkExternalId,
 } from '../services/admin-games';
 import { exportAccount } from '../services/account-export';
 import { mergeGames, previewMerge } from '../services/admin-merge';
@@ -1084,6 +1085,21 @@ export const router = os.router({
               message: 'IGDB non conosce questo id',
             });
           return { wholeRows: esito.wholeRows, copies: esito.copies };
+        }),
+
+      unlink: os.admin.links.unlink
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input }) => {
+          const esito = await unlinkExternalId(input.linkId);
+          if (esito.status === 'not_found')
+            throw new ORPCError('NOT_FOUND', {
+              message: 'Collegamento inesistente',
+            });
+          if (esito.status === 'only_link')
+            throw new ORPCError('CONFLICT', {
+              message: "È l'unico id di questo negozio sul gioco: va ripuntato",
+            });
         }),
     },
 

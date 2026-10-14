@@ -9,7 +9,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { Archive, Hash, RotateCw, Unlink } from '@repo/ui/icons';
+import { Archive, Hash, Link2Off, RotateCw, Unlink } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -27,6 +27,7 @@ import {
   type SourceToSet,
 } from '@/components/admin/set-source-id-dialog';
 import { StatusBadge } from '@/components/admin/status-badge';
+import { UnlinkLinkDialog } from '@/components/admin/unlink-link-dialog';
 import { GameCover } from '@/components/game-cover';
 import { UnresolvedCover } from '@/components/unresolved-row';
 import { useApiErrorMessage } from '@/lib/api-error';
@@ -46,7 +47,7 @@ type Report = GameAdminDetail['reports'][number];
 /**
  * La scheda admin di un gioco (11a, frame 5 del wireframe): tutto ciò che
  * l'admin può correggere su un gioco solo. I collegamenti dai negozi, con
- * «Non è questo gioco»; le fonti, con «Ritenta» e «Inserisci id», anche su una
+ * «Non è questo gioco» e «Scollega»; le fonti, con «Ritenta» e «Inserisci id», anche su una
  * fonte `ok` agganciata male; le segnalazioni aperte.
  */
 function GameAdminPage() {
@@ -70,6 +71,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [repointing, setRepointing] = useState<Link | null>(null);
+  const [unlinking, setUnlinking] = useState<Link | null>(null);
   const [setting, setSetting] = useState<SourceToSet | null>(null);
   const [merging, setMerging] = useState(false);
   const { game } = detail;
@@ -173,12 +175,26 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
     {
       key: 'actions',
       header: '',
-      width: 170,
+      width: 290,
       render: (link) => (
-        <Button size="sm" variant="outline" onPress={() => setRepointing(link)}>
-          <Unlink size={14} />
-          {t('game.notThis')}
-        </Button>
+        <XStack gap={8}>
+          <Button
+            size="sm"
+            variant="outline"
+            onPress={() => setRepointing(link)}
+          >
+            <Unlink size={14} />
+            {t('game.notThis')}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onPress={() => setUnlinking(link)}
+          >
+            <Link2Off size={14} />
+            {t('game.unlink')}
+          </Button>
+        </XStack>
       ),
     },
   ];
@@ -433,6 +449,21 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
         onOpenChange={(open) => {
           if (!open) setRepointing(null);
         }}
+        onDone={refresh}
+      />
+      <UnlinkLinkDialog
+        link={unlinking}
+        onlyLink={
+          !detail.links.some(
+            (other) =>
+              other.source === unlinking?.source && other.id !== unlinking.id,
+          )
+        }
+        gameName={game.name}
+        onOpenChange={(open) => {
+          if (!open) setUnlinking(null);
+        }}
+        onRepoint={setRepointing}
         onDone={refresh}
       />
       <MergeDialog

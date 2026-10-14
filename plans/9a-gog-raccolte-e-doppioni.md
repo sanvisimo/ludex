@@ -200,7 +200,35 @@ titolo del negozio le regole non li toccano:
 | Dragon Age: Inquisition GOTY (Epic)                                                                             | Dragon Age: Inquisition GOTY                                  |
 
 Il Prologue resta fuso: il suo collegamento è scritto, e la regola 2 guarda
-solo le voci trovate per nome in quell'import.
+solo le voci trovate per nome in quell'import. E «Non è questo gioco» vuole un
+gioco giusto, che per il Prologue su IGDB non c'è: si **scollega** (sotto), poi
+si rilancia l'import GOG.
+
+## Scollegare un collegamento (aggiunto il 14/10/2026)
+
+Trovato preparando il mini PC: il collegamento del Prologue è scritto e
+confermato, e nessuna delle due strade lo toglie. Serve un terzo gesto
+dell'admin, **«Scollega»**, accanto a «Non è questo gioco» nella scheda admin
+del gioco, sulla singola riga di `external_ids`.
+
+**Cancella solo quella riga.** `games`, `backlog` e copie non si toccano. Al
+prossimo import la voce non è più nota: per id non si trova, per nome ritrova
+_Legend of Keepers_, che nello stesso import è risolto per id, e la regola 2
+la mette fra i «Possibili doppioni». Lì l'utente la nasconde o la collega come
+gioco a sé.
+
+**Solo se un altro id dello stesso negozio punta allo stesso gioco**: la
+copia è di quella voce, e resta. Se l'id è l'unico, scollegare non regge — la
+copia resterebbe sul gioco sbagliato, e la ricerca per nome, senza un'altra
+voce accanto, ritroverebbe lo stesso gioco. Il servizio rifiuta
+(`only_link`) e il dialogo lo spiega, con «Non è questo gioco» al posto della
+conferma: un pulsante spento no, perché il tooltip su un bottone disattivato non
+si apre in modo affidabile.
+Restano senza rimedio un Prologue posseduto senza il gioco completo, e Nioh se
+non ci fosse 68461; oggi nessuno dei due.
+
+Nessun wireframe: un pulsante e un dialogo di conferma su una schermata che
+c'è già.
 
 ## Passi
 
@@ -216,7 +244,17 @@ solo le voci trovate per nome in quell'import.
 - [x] `docs/import-librerie.md` e `docs/negozi.md`: le due regole
 - [x] test da zero in locale (sopra)
 - [x] regola 1 senza l'anno del negozio, con il test su Shadow Warrior
-- [ ] mini PC: deploy e correzioni a mano
+- [x] «Scollega», servizio: `unlinkExternalId`, con i test (Prologue
+      scollegato e reimportato fra i doppioni; id unico rifiutato)
+- [x] «Scollega», contratto e router: `admin.links.unlink`, accanto a
+      `repoint`
+- [x] «Scollega», UI: pulsante e conferma nella scheda admin, testi it/en
+- [x] `docs/import-librerie.md`: il terzo rimedio
+- [x] «Apri un gioco» dell'admin, visto provando «Scollega»: la tendina
+      restava aperta anche cliccando fuori. Ora è il `SearchField` della
+      ricerca globale (si chiude uscendo, con Esc e dopo la scelta; Invio
+      apre il primo risultato)
+- [ ] mini PC: deploy e correzioni a mano, col Prologue scollegato
 
 ## Verifica
 

@@ -549,3 +549,36 @@ export async function repointLink(
 
   return { status: 'ok' as const, wholeRows, copies };
 }
+
+/**
+ * «Scollega»: toglie la riga di `external_ids`, e nient'altro. È per la voce
+ * che IGDB non ha e che il nome ha fuso con un altro gioco, il Prologue di
+ * _Legend of Keepers_: «Non è questo gioco» vuole un gioco giusto, e qui non
+ * c'è. Al prossimo import la voce si ricerca per nome, ritrova lo stesso gioco
+ * e la regola 2 la mette fra i «Possibili doppioni».
+ *
+ * Solo se un altro id dello stesso negozio punta allo stesso gioco: le copie
+ * sono di quella voce, e restano. Con l'id unico le copie resterebbero sul
+ * gioco sbagliato senza nessuno a reggerle, e la ricerca per nome, senza
+ * un'altra voce accanto, ricollegherebbe lo stesso gioco: lì si ripunta.
+ */
+export async function unlinkExternalId(linkId: string) {
+  const link = await findLink(linkId);
+  if (!link) return { status: 'not_found' as const };
+
+  const [altro] = await db
+    .select({ id: schema.externalIds.id })
+    .from(schema.externalIds)
+    .where(
+      and(
+        eq(schema.externalIds.gameId, link.gameId),
+        eq(schema.externalIds.source, link.source),
+        ne(schema.externalIds.id, link.id),
+      ),
+    )
+    .limit(1);
+  if (!altro) return { status: 'only_link' as const };
+
+  await db.delete(schema.externalIds).where(eq(schema.externalIds.id, link.id));
+  return { status: 'ok' as const };
+}

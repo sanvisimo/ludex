@@ -1,85 +1,84 @@
-import { Input, Text, XStack, YStack } from '@repo/ui';
+import {
+  SearchField,
+  SearchFieldItem,
+  SearchFieldMessage,
+  Text,
+  YStack,
+} from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { GameCover } from '@/components/game-cover';
 import { api } from '@/lib/orpc';
+import { useDebouncedValue } from '@/lib/use-debounced-value';
 
-/** «Apri un gioco»: la ricerca del catalogo, che porta alla scheda admin. */
+/**
+ * «Apri un gioco»: la ricerca del catalogo, che porta alla scheda admin. È il
+ * `SearchField` della ricerca globale, così la tendina si chiude uscendo dal
+ * campo, con Esc e dopo la scelta; prima era un riquadro che restava aperto
+ * finché c'era del testo.
+ *
+ * Invio senza una voce evidenziata apre la prima: l'admin una pagina dei
+ * risultati non ce l'ha.
+ */
 export function CatalogFinder() {
   const t = useTranslations('admin.games');
+  const tSearch = useTranslations('search');
+  const navigate = useNavigate();
   const [text, setText] = useState('');
-  const [q, setQ] = useState('');
-  useEffect(() => {
-    const timer = setTimeout(() => setQ(text.trim()), 300);
-    return () => clearTimeout(timer);
-  }, [text]);
+  const q = useDebouncedValue(text.trim(), 300);
 
   const found = useQuery({
     ...api.games.find.queryOptions({ input: { q, limit: 8 } }),
     enabled: q.length >= 2,
   });
+  const games = q.length >= 2 ? (found.data?.games ?? []) : [];
+
+  const open = (slug: string) => {
+    setText('');
+    void navigate({ to: '/admin/games/$slug', params: { slug } });
+  };
 
   return (
-    <YStack width={320} position="relative">
-      <Input
-        value={text}
-        onChangeText={setText}
-        placeholder={t('find')}
+    <YStack width={320}>
+      <SearchField
         aria-label={t('find')}
-      />
-      {q.length >= 2 && found.data ? (
-        <YStack
-          position="absolute"
-          t={40}
-          l={0}
-          r={0}
-          z={10}
-          bg="$background"
-          rounded={8}
-          borderWidth={1}
-          borderColor="$borderColor"
-          p={4}
-          gap={2}
-        >
-          {found.data.games.length === 0 ? (
-            <Text p={8} fontSize={13} color="$color11">
-              {t('findEmpty')}
+        placeholder={t('find')}
+        clearLabel={tSearch('clear')}
+        value={text}
+        onValueChange={setText}
+        options={games.map((game) => game.slug)}
+        onSelect={open}
+        onSubmit={() => {
+          if (games[0]) open(games[0].slug);
+        }}
+        minLength={2}
+      >
+        {games.map((game) => (
+          <SearchFieldItem key={game.id} value={game.slug}>
+            <GameCover
+              imageId={game.coverImageId}
+              name={game.name}
+              width={24}
+            />
+            <Text fontSize={13} numberOfLines={1} flex={1} minW={0}>
+              {game.name}
+              {game.firstReleaseDate
+                ? ` (${game.firstReleaseDate.getFullYear()})`
+                : ''}
             </Text>
-          ) : (
-            found.data.games.map((game) => (
-              <Link
-                key={game.id}
-                to="/admin/games/$slug"
-                params={{ slug: game.slug }}
-              >
-                <XStack
-                  items="center"
-                  gap={8}
-                  px={8}
-                  py={4}
-                  rounded={6}
-                  hoverStyle={{ bg: '$color3' }}
-                >
-                  <GameCover
-                    imageId={game.coverImageId}
-                    name={game.name}
-                    width={24}
-                  />
-                  <Text fontSize={13} numberOfLines={1} flex={1} minW={0}>
-                    {game.name}
-                    {game.firstReleaseDate
-                      ? ` (${game.firstReleaseDate.getFullYear()})`
-                      : ''}
-                  </Text>
-                </XStack>
-              </Link>
-            ))
-          )}
-        </YStack>
-      ) : null}
+          </SearchFieldItem>
+        ))}
+        {games.length === 0 && (
+          <SearchFieldMessage>
+            {q !== text.trim() || found.isPending
+              ? tSearch('searching')
+              : t('findEmpty')}
+          </SearchFieldMessage>
+        )}
+      </SearchField>
     </YStack>
   );
 }

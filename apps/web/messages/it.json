@@ -1391,6 +1391,7 @@
       "copies": "Copie",
       "copiesCount": "{users, plural, one {# utente} other {# utenti}}, {copies, plural, one {# copia} other {# copie}}",
       "notThis": "Non è questo gioco",
+      "unlink": "Scollega",
       "noLinks": "Nessun collegamento: il gioco non arriva da un import.",
       "sources": "Fonti",
       "source": "Fonte",
@@ -1424,6 +1425,19 @@
       "failed": "Non sono riuscito a ripuntarlo",
       "sameGame": "Il collegamento punta già a questo gioco.",
       "previewFailed": "Non sono riuscito a preparare l'anteprima"
+    },
+    "unlink": {
+      "title": "Scollega questo id",
+      "current": "{store} · {id} → oggi: {game}",
+      "currentTitled": "{store} · {id} «{title}» → oggi: {game}",
+      "body": "Il collegamento si toglie e basta: il gioco, le righe di backlog e le copie restano dove sono. È per la voce che IGDB non ha e che il nome ha attaccato a un altro gioco, come una demo.",
+      "next": "Al prossimo import la voce si ricerca: se il nome ritrova questo gioco, finisce fra i «Possibili doppioni» accanto all'altra voce {store}, e l'utente la nasconde o la collega a sé.",
+      "onlyLink": "È l'unico id {store} su questo gioco: le copie resterebbero qui, e al prossimo import il nome ritroverebbe lo stesso gioco.",
+      "cancel": "Annulla",
+      "close": "Chiudi",
+      "confirm": "Scollega",
+      "done": "Scollegato",
+      "failed": "Non sono riuscito a scollegarlo"
     },
     "merge": {
       "title": "Fondi due giochi",
