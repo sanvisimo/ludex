@@ -1,0 +1,1 @@
+ALTER TABLE "games" ADD COLUMN "platform_igdb_ids" integer[];

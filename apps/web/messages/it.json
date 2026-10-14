@@ -447,7 +447,6 @@
       "again": "Segnala ancora",
       "sent": "Segnalato il {date}",
       "title": "Segnala un errore",
-      "description": "Lo vede un admin, che lo corregge per tutti.",
       "what": "Cosa è sbagliato",
       "copy": "la copia {store}",
       "hltb": "la durata (HowLongToBeat)",
@@ -1035,6 +1034,10 @@
         "title": "I giochi di GOG venduti in raccolta",
         "text": "GOG vende alcuni giochi in raccolta ma in libreria li mostra uno per uno, come Alone in the Dark 1, 2 e 3: in ludex diventano una scheda ciascuno. E una voce che finisce sullo stesso gioco di un'altra, come una demo, compare fra i «Possibili doppioni» invece di sparire."
       },
+      "wrongPlatform": {
+        "title": "I giochi agganciati su una console sbagliata",
+        "text": "Un nome accorciato poteva agganciare un gioco omonimo mai uscito sulla tua console, come Harry Potter: Campioni di Quidditch finito sull’Harry Potter del 2001. Ora quei giochi finiscono fra i «Da sistemare», e gli admin vedono quelli già collegati male."
+      },
       "epicDuplicates": {
         "title": "I giochi nascosti nei prodotti Epic",
         "text": "Su Epic un prodotto può contenere più giochi, come Delores dentro Thimbleweed Park: le voci in più compaiono fra i «Da sistemare», dove decidi tu cosa sono."
@@ -1463,6 +1466,20 @@
     },
     "reported": {
       "title": "Segnalati"
+    },
+    "mismatches": {
+      "title": "Copie su una piattaforma dove il gioco non è uscito ({count})",
+      "copies": "Copie",
+      "igdb": "IGDB lo dà su",
+      "ok": "Va bene così",
+      "okDone": "Tolto dalla lista",
+      "okFailed": "Non sono riuscito a toglierlo",
+      "restore": "Annulla",
+      "restored": "Rimesso in lista",
+      "restoreFailed": "Non sono riuscito a rimetterlo",
+      "empty": "Nessuna copia fuori posto.",
+      "dismissed": "Segnati «va bene così»",
+      "emptyDismissed": "Nessuno."
     },
     "users": {
       "title": "Utenti",

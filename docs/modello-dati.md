@@ -104,6 +104,11 @@ chiamata di dettaglio e senza richieste in più:
   **Null vuol dire «non ancora chiesto», la lista vuota «IGDB non ne ha»**:
   l'arnese `pnpm --filter api igdb:media` riempie i giochi arricchiti prima
   delle colonne, e lavora proprio su questa distinzione.
+- **su `games`**, le piattaforme su cui IGDB dice che il gioco è uscito
+  (`platform_igdb_ids`, id IGDB e non nostri slug), con la stessa distinzione
+  fra null e lista vuota e il suo arnese, `igdb:platforms`. Non servono a
+  mostrare niente: dicono se una copia può essere quel gioco (9b PSN, vedi
+  [import-librerie](import-librerie.md)).
 - **in `game_related`** remake, remaster e giochi simili (`kind`), con
   `igdb_id`, nome, copertina e posizione. Una tabella e non un array perché il
   gioco legato **può non essere in `games`**, e non ci si aggiunge: una decina

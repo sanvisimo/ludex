@@ -41,6 +41,7 @@ export type RoadmapEntry = {
  */
 export const roadmap: RoadmapEntry[] = [
   { id: 'gogCollections', status: 'doing', areas: ['import'] },
+  { id: 'wrongPlatform', status: 'doing', areas: ['import'] },
   { id: 'epicDuplicates', status: 'doing', areas: ['import'] },
   { id: 'eaRenew', status: 'doing', areas: ['import'] },
   { id: 'linksFix', status: 'next', areas: ['game'] },

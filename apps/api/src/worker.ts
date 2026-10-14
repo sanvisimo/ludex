@@ -35,6 +35,7 @@ import {
   findGamesNeedingSource,
   type EnrichmentSource,
 } from './services/enrichment';
+import { backfillGamePlatforms } from './services/game-platforms';
 import { enrichGameFromHltb } from './services/hltb-enrichment';
 import { enrichGameFromIgdb } from './services/igdb-enrichment';
 import { enrichGameFromMetacritic } from './services/metacritic-enrichment';
@@ -147,6 +148,24 @@ const worker = new Worker<EnrichmentJob>(
           `[enrichment] spazzata ${source}: ${games.length} giochi accodati`,
         );
         enqueued += games.length;
+      }
+
+      // Le piattaforme dei giochi arricchiti prima della colonna (9b): dopo un
+      // deploy il primo giro le riempie, poi è una query che non trova niente
+      // e nessuna richiesta a IGDB. Fallire qui non deve fermare la spazzata,
+      // che ha già accodato: ci riprova fra sei ore.
+      try {
+        const piattaforme = await backfillGamePlatforms();
+        if (piattaforme.candidati > 0)
+          console.log(
+            `[enrichment] piattaforme: ${piattaforme.candidati} giochi senza, ` +
+              `${piattaforme.scritti} scritti`,
+          );
+      } catch (error) {
+        console.error(
+          '[enrichment] piattaforme non riempite:',
+          error instanceof Error ? error.message : error,
+        );
       }
       return { enqueued };
     }

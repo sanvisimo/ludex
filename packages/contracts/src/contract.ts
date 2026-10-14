@@ -34,6 +34,7 @@ import {
   OpenReportSchema,
   OwnershipInputSchema,
   PlatformSchema,
+  PlatformMismatchSchema,
   PlaylistDetailSchema,
   PlaylistNameSchema,
   PlaylistQuerySchema,
@@ -734,6 +735,46 @@ export const contract = {
       archive: oc
         .input(z.object({ gameId: z.uuid(), target: ReportTargetSchema }))
         .output(z.object({ closed: z.number().int() })),
+    },
+
+    // Le copie su una piattaforma dove il gioco non è uscito (9b): l'ultima
+    // spiaggia dopo la regola dell'import. Una riga per gioco.
+    platformMismatches: {
+      // `dismissed`: quelle segnate «va bene così», per annullarle.
+      list: oc
+        .input(
+          z.object({
+            dismissed: z.boolean().default(false),
+            limit: z.number().int().min(1).max(100).default(50),
+            offset: z.number().int().min(0).default(0),
+          }),
+        )
+        .output(
+          z.object({
+            rows: z.array(PlatformMismatchSchema),
+            total: z.number().int(),
+          }),
+        ),
+
+      // «Va bene così»: è IGDB che non ha la piattaforma.
+      dismiss: oc
+        .input(
+          z.object({
+            gameId: z.uuid(),
+            platformSlugs: z.array(z.string().min(1).max(100)).min(1).max(20),
+          }),
+        )
+        .output(z.void()),
+
+      // Annulla il «va bene così».
+      restore: oc
+        .input(
+          z.object({
+            gameId: z.uuid(),
+            platformSlugs: z.array(z.string().min(1).max(100)).min(1).max(20),
+          }),
+        )
+        .output(z.void()),
     },
 
     games: {

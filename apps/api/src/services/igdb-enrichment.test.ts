@@ -110,6 +110,18 @@ describe('enrichGameFromIgdb', () => {
     ).toMatchObject({ gameType: 'expansion', parentIgdbId: 1877 });
   });
 
+  it('scrive su cosa è uscito il gioco', async () => {
+    // La prova che una copia PS5 non può essere l'Harry Potter del 2001 (9b).
+    const game = await createGame();
+    mockedFetch.mockResolvedValue(igdbMetadata({ platformIgdbIds: [6, 167] }));
+
+    await enrichGameFromIgdb(game.id);
+
+    expect(
+      await db.query.games.findFirst({ where: eq(schema.games.id, game.id) }),
+    ).toMatchObject({ platformIgdbIds: [6, 167] });
+  });
+
   it("scrive gli id degli altri negozi, che è la prova d'identità per HLTB", async () => {
     // Fino allo step 9 l'appid Steam ce l'avevano solo i giochi arrivati da un
     // import Steam. Con GOG, Epic e Amazon ne è rimasto senza più di metà del

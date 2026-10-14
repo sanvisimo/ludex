@@ -292,6 +292,9 @@ const DETAIL_FIELDS = [
   // Che cos'è la scheda, e — per DLC ed espansioni — a quale gioco è attaccata.
   // Due campi su una chiamata che si fa comunque.
   'game_type, parent_game,',
+  // Su cosa è uscito (9b PSN): la prova che una copia PS5 non può essere
+  // l'Harry Potter del 2001. Un campo su una chiamata che si fa comunque.
+  'platforms,',
   'cover.image_id, cover.width, cover.height,',
   'genres.id, genres.name, themes.id, themes.name,',
   'game_modes.id, game_modes.name, player_perspectives.id, player_perspectives.name,',
@@ -329,6 +332,7 @@ type IgdbGameDetail = {
   first_release_date?: number;
   game_type?: number;
   parent_game?: number;
+  platforms?: number[];
   aggregated_rating?: number;
   aggregated_rating_count?: number;
   cover?: { image_id?: string; width?: number; height?: number };
@@ -377,6 +381,8 @@ export type IgdbGameMetadata = {
   gameType: GameType | null;
   /** Per DLC ed espansioni, l'id IGDB del gioco a cui sono attaccati. */
   parentIgdbId: number | null;
+  /** Le piattaforme su cui è uscito, come id IGDB. Vuota se IGDB non ne ha. */
+  platformIgdbIds: number[];
   aggregatedRating: number | null;
   aggregatedRatingCount: number | null;
   attributes: IgdbAttribute[];
@@ -506,6 +512,7 @@ function toMetadata(game: IgdbGameDetail): IgdbGameMetadata {
     coverHeight: game.cover?.height ?? null,
     gameType: gameTypeFromIgdb(game.game_type),
     parentIgdbId: game.parent_game ?? null,
+    platformIgdbIds: game.platforms ?? [],
     aggregatedRating: game.aggregated_rating ?? null,
     aggregatedRatingCount: game.aggregated_rating_count ?? null,
     // Solo i negozi che sappiamo tradurre: IGDB rende anche GiantBomb, Twitch e
@@ -752,6 +759,34 @@ export async function fetchIgdbGameTypes(
         parentIgdbId: row.parent_game ?? null,
       });
     }
+  }
+
+  return out;
+}
+
+/**
+ * Le piattaforme di tanti giochi, 500 per richiesta (9b PSN).
+ *
+ * Gemella di `fetchIgdbGameTypes`, per la stessa ragione: riempire i giochi
+ * arricchiti prima della colonna senza una richiesta per gioco. Un gioco che
+ * IGDB conosce ma senza piattaforme torna con la lista vuota; uno che non
+ * conosce più non torna affatto.
+ */
+export async function fetchIgdbGamePlatforms(
+  igdbIds: number[],
+): Promise<Map<number, number[]>> {
+  const out = new Map<number, number[]>();
+  if (igdbIds.length === 0) return out;
+
+  for (const page of chunk(igdbIds, EXTERNAL_PAGE)) {
+    const rows = await query<{ id: number; platforms?: number[] }[]>(
+      'games',
+      `fields id, platforms;` +
+        ` where id = (${page.map((id) => Math.trunc(id)).join(',')});` +
+        ` limit ${EXTERNAL_PAGE};`,
+    );
+
+    for (const row of rows) out.set(row.id, row.platforms ?? []);
   }
 
   return out;

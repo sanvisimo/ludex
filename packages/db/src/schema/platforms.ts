@@ -3,7 +3,9 @@ import { integer, pgTable, text } from 'drizzle-orm/pg-core';
 import { timestamps } from './timestamps';
 
 // Lista di riferimento presa da Playnite (source/Playnite/Emulation/Platforms.yaml),
-// 96 voci, seedata dalla migration che crea la tabella. Lo slug di Playnite fa da
+// 96 voci, seedata dalla migration che crea la tabella.
+// Più i visori (0053, 9b PSN): PS VR, PS VR2, SteamVR, i Quest e il Rift, che
+// Playnite non ha e IGDB tiene separati dalle console. Lo slug di Playnite fa da
 // chiave primaria: è stabile, leggibile, e tiene la nostra tabella confrontabile
 // con la fonte se un domani la si riallinea.
 //

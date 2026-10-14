@@ -17,4 +17,5 @@ export * from './playlists';
 export * from './wishlist';
 export * from './settings';
 export * from './reports';
+export * from './platform-mismatches';
 export * from './relations';

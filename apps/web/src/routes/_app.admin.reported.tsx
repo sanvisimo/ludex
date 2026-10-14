@@ -1,6 +1,6 @@
 import type { ReportGroup } from '@repo/contracts';
 import { Button, EmptyState, Skeleton, Text, toast, YStack } from '@repo/ui';
-import { Archive } from '@repo/ui/icons';
+import { Archive, ArrowUpRight } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
@@ -10,8 +10,10 @@ import {
   CellText,
   type AdminColumn,
 } from '@/components/admin/admin-table';
+import { PlatformMismatches } from '@/components/admin/platform-mismatches';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
+import { ButtonLink } from '@/src/components/button-link';
 
 export const Route = createFileRoute('/_app/admin/reported')({
   component: ReportedSection,
@@ -30,6 +32,7 @@ function ReportedSection() {
         {t('title')}
       </Text>
       <ReportList />
+      <PlatformMismatches />
     </YStack>
   );
 }
@@ -117,11 +120,10 @@ function ReportList() {
       width: 170,
       render: (report) => (
         <>
-          <Link to="/admin/games/$slug" params={{ slug: report.slug }}>
-            <Text fontSize={13} textDecorationLine="underline">
-              {t('games.open')}
-            </Text>
-          </Link>
+          <ButtonLink href={`/admin/games/${report.slug}`} size="sm">
+            <ArrowUpRight size={14} />
+            {t('games.open')}
+          </ButtonLink>
           <Button
             size="sm"
             variant="outline"

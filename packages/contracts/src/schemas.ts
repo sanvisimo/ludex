@@ -1060,6 +1060,24 @@ export const ReportGroupSchema = z.object({
   lastAt: z.date(),
 });
 
+// Un gioco con copie su una piattaforma dove IGDB dice che non è uscito (9b).
+export const PlatformMismatchSchema = z.object({
+  gameId: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  releaseYear: z.number().int().nullable(),
+  users: z.number().int(),
+  copies: z.array(
+    z.object({
+      store: StoreSchema,
+      platformSlug: z.string(),
+      platformName: z.string(),
+    }),
+  ),
+  // Le piattaforme che IGDB gli dà, già col nome.
+  igdbPlatforms: z.array(z.string()),
+});
+
 export const UnlinkedGameSchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -1214,6 +1232,7 @@ export type AdminUser = z.infer<typeof AdminUserSchema>;
 export type ReportTarget = z.infer<typeof ReportTargetSchema>;
 export type OpenReport = z.infer<typeof OpenReportSchema>;
 export type ReportGroup = z.infer<typeof ReportGroupSchema>;
+export type PlatformMismatch = z.infer<typeof PlatformMismatchSchema>;
 export type GameAdminDetail = z.infer<typeof GameAdminDetailSchema>;
 export type RepointPreview = z.infer<typeof RepointPreviewSchema>;
 export type MergeGame = z.infer<typeof MergeGameSchema>;

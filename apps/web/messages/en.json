@@ -1035,6 +1035,10 @@
         "title": "GOG games sold as a collection",
         "text": "GOG sells some games as a collection but lists them one by one in your library, like Alone in the Dark 1, 2 and 3: in ludex each one gets its own card. And an entry that lands on the same game as another one, like a demo, shows up under “Possible duplicates” instead of disappearing."
       },
+      "wrongPlatform": {
+        "title": "Games matched on the wrong console",
+        "text": "A shortened name could match a game with the same title that never came out on your console, like Harry Potter: Quidditch Champions landing on the 2001 Harry Potter. Now those games go to “Needs attention”, and admins see the ones already matched wrong."
+      },
       "epicDuplicates": {
         "title": "Games hidden inside Epic products",
         "text": "On Epic a product can hold more than one game, like Delores inside Thimbleweed Park: the extra entries show up under “Needs attention”, where you decide what they are."
@@ -1463,6 +1467,20 @@
     },
     "reported": {
       "title": "Reported"
+    },
+    "mismatches": {
+      "title": "Copies on a platform the game never came out on ({count})",
+      "copies": "Copies",
+      "igdb": "IGDB has it on",
+      "ok": "It's fine",
+      "okDone": "Removed from the list",
+      "okFailed": "Couldn't remove it",
+      "restore": "Undo",
+      "restored": "Back on the list",
+      "restoreFailed": "Couldn't put it back",
+      "empty": "No misplaced copies.",
+      "dismissed": "Marked “it's fine”",
+      "emptyDismissed": "None."
     },
     "users": {
       "title": "Users",

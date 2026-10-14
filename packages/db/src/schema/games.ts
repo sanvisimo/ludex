@@ -79,6 +79,16 @@ export const games = pgTable(
     // figlio. Arriva con la stessa richiesta dell'enrichment, quindi non costa
     // niente; a usarlo sarà chi vorrà mostrare «DLC di The Witcher 3».
     parentIgdbId: integer('parent_igdb_id'),
+    // Le piattaforme su cui IGDB dice che il gioco è uscito, come id IGDB e non
+    // come nostri slug: la traduzione la fa chi confronta, con la tabella
+    // `platforms` (vedi `copy-platforms.ts` in apps/api). Servono a una
+    // domanda sola (9b PSN): una copia su una console dove il gioco non è mai
+    // uscito è un collegamento sbagliato — l'Harry Potter del 2001 su PS5.
+    //
+    // Null vuol dire «non ancora chiesto a IGDB», la lista vuota «IGDB non ne
+    // ha»: la stessa distinzione dei media qui sotto, e su questi due stati
+    // lavora l'arnese che li riempie sui giochi arricchiti prima della colonna.
+    platformIgdbIds: integer('platform_igdb_ids').array(),
     // IGDB restituisce un `image_id`: l'URL si compone al momento di mostrarlo,
     // scegliendo la dimensione. Salvare l'URL gia fatto vincolerebbe al formato.
     coverImageId: text('cover_image_id'),
