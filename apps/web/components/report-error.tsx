@@ -10,7 +10,7 @@ import {
   Checkbox,
   Dialog,
   DialogContent,
-  DialogDescription,
+  // DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -170,6 +170,7 @@ function ReportDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
+          {/*<DialogDescription>{t('description')}</DialogDescription>*/}
         </DialogHeader>
 
         <YStack
