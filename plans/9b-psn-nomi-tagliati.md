@@ -317,6 +317,9 @@ Richiesta dell'utente: un gioco VR sta sulla piattaforma del visore. Cosa c'è:
       `en.json`)
 - [x] `docs/import-librerie.md` e `docs/negozi.md`: la regola 3, la lista, e
       perché PS3 e PC mancano rispetto a Playnite
+- [x] il riempimento delle piattaforme nella spazzata dell'enrichment (ogni
+      sei ore, `worker.ts`): dopo il deploy non serve lanciare
+      `igdb:platforms`, e a regime è una query che non trova niente
 - [ ] correzioni a mano, in locale e sul mini PC
 - [x] VR, la parte di questo lotto (decisione dell'utente, 14/10/2026): le
       piattaforme nell'elenco, migration
