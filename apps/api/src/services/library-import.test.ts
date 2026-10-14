@@ -3,7 +3,7 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createUser, linkStoreAccount } from '../../test/factories';
+import { createGame, createUser, linkStoreAccount } from '../../test/factories';
 import {
   findIgdbGameById,
   findIgdbGamesByExternalIds,
@@ -1235,5 +1235,343 @@ describe('importLibrary: le voci in più di un prodotto (9a)', () => {
       sameProductAs: 'prod-tulip',
     });
     expect(dopo!.hiddenAt).not.toBeNull();
+  });
+});
+
+describe('importLibrary: una voce non diventa una raccolta di IGDB (9a GOG)', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  // IGDB collega l'id GOG di AitD 2 alla trilogia; GOG in libreria lo mostra a sé.
+  const aitd2 = { externalId: '1207660963', name: 'Alone in the Dark 2' };
+  const trilogia = {
+    igdbId: 148420,
+    name: 'Alone in the Dark: The Trilogy 1+2+3',
+    releaseYear: 1995,
+    gameType: 'bundle' as const,
+  };
+
+  const collegamentoDi = async (externalId: string) => {
+    const [riga] = await db
+      .select({
+        igdbId: schema.games.igdbId,
+        storeTitle: schema.externalIds.storeTitle,
+      })
+      .from(schema.externalIds)
+      .innerJoin(schema.games, eq(schema.games.id, schema.externalIds.gameId))
+      .where(eq(schema.externalIds.externalId, externalId));
+    return riga;
+  };
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'gog');
+    mockedSource.mockReturnValue(5);
+    mockedById.mockResolvedValue(new Map([[aitd2.externalId, trilogia]]));
+    mockedSearch.mockResolvedValue([]);
+  });
+
+  it('se il nome trova un altro gioco, va su quello', async () => {
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 1957, name: 'Alone in the Dark 2', releaseYear: 1993 }),
+    ]);
+
+    const report = await importLibrary(account, [aitd2]);
+
+    expect(report).toMatchObject({ resolved: 1, resolvedByName: 1 });
+    expect(await gamesOf(userId)).toEqual([
+      { name: 'Alone in the Dark 2', igdbId: 1957 },
+    ]);
+    expect(await collegamentoDi(aitd2.externalId)).toMatchObject({
+      igdbId: 1957,
+    });
+  });
+
+  it('se il nome trova la raccolta stessa, resta sulla raccolta', async () => {
+    // L'edizione completa che il negozio vende davvero: GOTY, Definitive.
+    const goty = { externalId: '1724969043', name: 'Tomb Raider GOTY' };
+    mockedById.mockResolvedValue(
+      new Map([
+        [
+          goty.externalId,
+          {
+            igdbId: 53818,
+            name: 'Tomb Raider: Game of the Year Edition',
+            releaseYear: 2014,
+            gameType: 'bundle' as const,
+          },
+        ],
+      ]),
+    );
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 53818, name: 'Tomb Raider GOTY', gameType: 'bundle' }),
+    ]);
+
+    const report = await importLibrary(account, [goty]);
+
+    expect(report).toMatchObject({ resolved: 1, resolvedByName: 0 });
+    expect(await collegamentoDi(goty.externalId)).toMatchObject({
+      igdbId: 53818,
+    });
+  });
+
+  it("verifica senza l'anno del negozio, che data il gioco e non la raccolta", async () => {
+    // GOG dice 1997, IGDB 2012: con l'anno la raccolta giusta affondava.
+    const shadowWarrior = {
+      externalId: '1207659142',
+      name: 'Shadow Warrior Classic Complete',
+      releaseYear: 1997,
+    };
+    const raccolta = {
+      igdbId: 51914,
+      name: 'Shadow Warrior Classic Complete',
+      releaseYear: 2012,
+      gameType: 'bundle' as const,
+    };
+    mockedById.mockResolvedValue(
+      new Map([[shadowWarrior.externalId, raccolta]]),
+    );
+    mockedSearch.mockResolvedValue([hit(raccolta)]);
+
+    await importLibrary(account, [shadowWarrior]);
+
+    expect(await collegamentoDi(shadowWarrior.externalId)).toMatchObject({
+      igdbId: 51914,
+    });
+  });
+
+  it('se il nome non trova niente, va negli scarti senza collegamento', async () => {
+    const report = await importLibrary(account, [aitd2]);
+
+    expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
+    expect(await unresolvedOf(userId)).toMatchObject([
+      { externalId: aitd2.externalId, sameProductAs: null },
+    ]);
+    expect(await collegamentoDi(aitd2.externalId)).toBeUndefined();
+  });
+
+  it('una raccolta che non lo è per id non si verifica', async () => {
+    mockedById.mockResolvedValue(
+      new Map([[aitd2.externalId, { ...trilogia, gameType: 'main_game' }]]),
+    );
+
+    await importLibrary(account, [aitd2]);
+
+    expect(mockedSearch).not.toHaveBeenCalled();
+    expect(await gamesOf(userId)).toHaveLength(1);
+  });
+
+  describe('collegamento già scritto', () => {
+    const scriviCollegamento = async (storeTitle: string | null) => {
+      const { id: gameId } = await createGame({
+        igdbId: trilogia.igdbId,
+        name: trilogia.name,
+        gameType: 'bundle',
+      });
+      await db.insert(schema.externalIds).values({
+        gameId,
+        source: 'gog',
+        externalId: aitd2.externalId,
+        storeTitle,
+      });
+      return gameId;
+    };
+
+    it("portato dall'enrichment, senza titolo: si verifica come uno nuovo", async () => {
+      await scriviCollegamento(null);
+      mockedSearch.mockResolvedValue([
+        hit({ igdbId: 1957, name: 'Alone in the Dark 2', releaseYear: 1993 }),
+      ]);
+
+      await importLibrary(account, [aitd2]);
+
+      expect(await gamesOf(userId)).toEqual([
+        { name: 'Alone in the Dark 2', igdbId: 1957 },
+      ]);
+      expect(await collegamentoDi(aitd2.externalId)).toMatchObject({
+        igdbId: 1957,
+        storeTitle: 'Alone in the Dark 2',
+      });
+    });
+
+    it('senza titolo e senza riscontro: se ne va, e lo scarto collegato a mano regge al reimport', async () => {
+      await scriviCollegamento(null);
+
+      await importLibrary(account, [aitd2]);
+      expect(await collegamentoDi(aitd2.externalId)).toBeUndefined();
+
+      const [scarto] = await unresolvedOf(userId);
+      mockedFindById.mockResolvedValue(
+        hit({ igdbId: 1957, name: 'Alone in the Dark 2' }),
+      );
+      await resolveUnresolvedImport(userId, scarto!.id, 1957);
+      mockedSearch.mockClear();
+
+      const report = await importLibrary(account, [aitd2]);
+
+      expect(report).toMatchObject({ resolved: 1, unresolved: 0 });
+      expect(mockedSearch).not.toHaveBeenCalled();
+      expect(await gamesOf(userId)).toEqual([
+        { name: 'Alone in the Dark 2', igdbId: 1957 },
+      ]);
+    });
+
+    it('col titolo del negozio è confermato: non si tocca', async () => {
+      await scriviCollegamento('Alone in the Dark 2');
+
+      await importLibrary(account, [aitd2]);
+
+      expect(mockedSearch).not.toHaveBeenCalled();
+      expect(await collegamentoDi(aitd2.externalId)).toMatchObject({
+        igdbId: trilogia.igdbId,
+      });
+    });
+
+    it("senza titolo ma con una copia di quest'account: è confermato", async () => {
+      // I collegamenti scritti prima del titolo del negozio: Steam, Amazon e
+      // PSN li hanno tutti così, e vengono da import veri.
+      await scriviCollegamento('Alone in the Dark 2');
+      await importLibrary(account, [aitd2]);
+      await db
+        .update(schema.externalIds)
+        .set({ storeTitle: null })
+        .where(eq(schema.externalIds.externalId, aitd2.externalId));
+
+      await importLibrary(account, [aitd2]);
+
+      expect(mockedSearch).not.toHaveBeenCalled();
+      expect(await gamesOf(userId)).toEqual([
+        { name: trilogia.name, igdbId: trilogia.igdbId },
+      ]);
+    });
+  });
+});
+
+describe('importLibrary: due voci sullo stesso gioco (9a GOG)', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  // Il gioco per id, la demo per nome: IGDB la demo non ce l'ha, e la ricerca
+  // col titolo accorciato trova il gioco completo.
+  const gioco = {
+    externalId: '1208434383',
+    name: 'Legend of Keepers: Career of a Dungeon Manager',
+  };
+  const prologue = {
+    externalId: '2020648154',
+    name: 'Legend of Keepers: Prologue',
+    acquiredAt: new Date('2020-01-10Z'),
+  };
+  const legendOfKeepers = {
+    igdbId: 111965,
+    name: 'Legend of Keepers',
+    releaseYear: 2021,
+  };
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'gog');
+    mockedSource.mockReturnValue(5);
+    mockedById.mockResolvedValue(
+      new Map([[gioco.externalId, legendOfKeepers]]),
+    );
+    mockedSearch.mockImplementation(async (name) =>
+      name === 'legend of keepers' ? [hit(legendOfKeepers)] : [],
+    );
+  });
+
+  it('la voce per nome va fra i possibili doppioni, senza collegamento', async () => {
+    const report = await importLibrary(account, [gioco, prologue]);
+
+    expect(report).toMatchObject({ total: 2, resolved: 1, unresolved: 1 });
+    expect(await gamesOf(userId)).toEqual([
+      { name: 'Legend of Keepers', igdbId: 111965 },
+    ]);
+    expect(await unresolvedOf(userId)).toMatchObject([
+      {
+        externalId: prologue.externalId,
+        name: prologue.name,
+        sameProductAs: gioco.externalId,
+        acquiredAt: prologue.acquiredAt,
+      },
+    ]);
+    const collegamenti = await db
+      .select({ externalId: schema.externalIds.externalId })
+      .from(schema.externalIds);
+    expect(collegamenti).toEqual([{ externalId: gioco.externalId }]);
+  });
+
+  it('nascosta, resta nascosta al reimport', async () => {
+    await importLibrary(account, [gioco, prologue]);
+    const [scarto] = await unresolvedOf(userId);
+    await setUnresolvedImportHidden(userId, scarto!.id, 'prerelease');
+
+    await importLibrary(account, [gioco, prologue]);
+
+    const [dopo] = await unresolvedOf(userId);
+    expect(dopo).toMatchObject({
+      externalId: prologue.externalId,
+      hiddenKind: 'prerelease',
+      sameProductAs: gioco.externalId,
+    });
+    expect(dopo!.hiddenAt).not.toBeNull();
+  });
+
+  it('fra due voci per nome vince la acquistata per prima', async () => {
+    mockedById.mockResolvedValue(new Map());
+
+    await importLibrary(account, [
+      { ...gioco, acquiredAt: new Date('2022-03-01Z') },
+      prologue,
+    ]);
+
+    expect(await unresolvedOf(userId)).toMatchObject([
+      { externalId: gioco.externalId, sameProductAs: prologue.externalId },
+    ]);
+  });
+
+  it('due voci che IGDB dà per id sullo stesso gioco restano una copia', async () => {
+    // Su Steam 447 appid per 445 giochi: lo dice IGDB, non un nome somigliante.
+    mockedById.mockResolvedValue(
+      new Map([
+        [gioco.externalId, legendOfKeepers],
+        [prologue.externalId, legendOfKeepers],
+      ]),
+    );
+
+    const report = await importLibrary(account, [gioco, prologue]);
+
+    expect(report).toMatchObject({ resolved: 2, unresolved: 0 });
+    expect(await unresolvedOf(userId)).toEqual([]);
+    expect(await db.select().from(schema.ownerships)).toHaveLength(1);
+  });
+
+  it('su due piattaforme non sono doppioni: sono due copie', async () => {
+    const psn = await linkStoreAccount(userId, 'psn');
+    mockedById.mockResolvedValue(new Map());
+    mockedBySource.mockResolvedValue(
+      new Map([
+        ['10000333', { igdbId: 9, name: 'Elden Ring', releaseYear: null }],
+      ]),
+    );
+    const igdbLookup = { source: 36, uid: '10000333' };
+
+    await importLibrary(psn, [
+      {
+        externalId: 'CUSA28863_00',
+        name: 'ELDEN RING',
+        platformSlug: 'sony_playstation4',
+        igdbLookup,
+      },
+      {
+        externalId: 'PPSA04609_00',
+        name: 'ELDEN RING',
+        platformSlug: 'sony_playstation5',
+        igdbLookup,
+      },
+    ]);
+
+    expect(await unresolvedOf(userId)).toEqual([]);
+    expect(await db.select().from(schema.ownerships)).toHaveLength(2);
   });
 });

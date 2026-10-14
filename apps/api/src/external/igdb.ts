@@ -672,6 +672,13 @@ export type IgdbExternalMatch = {
   igdbId: number;
   name: string;
   releaseYear: number | null;
+  /**
+   * Il tipo della scheda, perché l'import possa dubitare di una raccolta: IGDB
+   * collega a _Alone in the Dark: The Trilogy 1+2+3_ anche gli id GOG di AitD 1
+   * e 2, che GOG mostra in libreria come giochi a sé. Opzionale: chi costruisce
+   * una corrispondenza a mano non è obbligato a saperlo.
+   */
+  gameType?: GameType | null;
 };
 
 type IgdbExternalGame = {
@@ -679,7 +686,13 @@ type IgdbExternalGame = {
   // Espanso: una richiesta sola dà l'id **e** il nome vero del gioco, invece di
   // quello che gli dà il negozio. L'anno viaggia con lui perché serve allo
   // slug dei giochi omonimi (12f), e chiederlo qui non costa una richiesta.
-  game?: { id: number; name: string; first_release_date?: number };
+  // Il tipo, per la stessa ragione: vedi `IgdbExternalMatch.gameType`.
+  game?: {
+    id: number;
+    name: string;
+    first_release_date?: number;
+    game_type?: number;
+  };
 };
 
 /**
@@ -766,7 +779,7 @@ export async function findIgdbGamesBySource(
 
     const rows = await query<IgdbExternalGame[]>(
       'external_games',
-      `fields uid, game, game.name, game.first_release_date;` +
+      `fields uid, game, game.name, game.first_release_date, game.game_type;` +
         ` where external_game_source = ${source} & uid = (${list});` +
         ` limit ${EXTERNAL_PAGE};`,
     );
@@ -779,6 +792,7 @@ export async function findIgdbGamesBySource(
         releaseYear: row.game.first_release_date
           ? new Date(row.game.first_release_date * 1000).getUTCFullYear()
           : null,
+        gameType: gameTypeFromIgdb(row.game.game_type),
       });
     }
   }

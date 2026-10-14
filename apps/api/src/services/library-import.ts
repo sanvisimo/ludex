@@ -1,6 +1,6 @@
 import type { Medium, Store, Subscription } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, eq, inArray, isNotNull, sql } from '@repo/db/orm';
+import { and, eq, inArray, isNotNull, isNull, sql } from '@repo/db/orm';
 
 import {
   findIgdbGamesByExternalIds,
@@ -17,11 +17,7 @@ import {
   ensureOwnerships,
 } from './backlog';
 import type { StoreAccountRow } from './store-accounts';
-import {
-  type ExternalGameLink,
-  findGameIdsByExternalIds,
-  linkExternalGames,
-} from './games';
+import { type ExternalGameLink, linkExternalGames } from './games';
 import {
   NAME_THRESHOLD,
   normalizeTitle,
@@ -751,6 +747,217 @@ async function resolveByLookup(
   }
 }
 
+/**
+ * Il passo 1, con ciò che serve alla regola 1 qui sotto: per ogni id già in
+ * `external_ids`, il gioco, se è una raccolta e se il collegamento è
+ * **confermato**.
+ *
+ * Confermato vuol dire che una libreria vera l'ha già visto: ha il titolo del
+ * negozio, che ogni import scrive sulle voci che risolve, oppure questo account
+ * ha già una copia su quel gioco. La seconda condizione c'è per i collegamenti
+ * scritti prima del titolo: su Steam, Amazon e PSN nessuno ce l'ha ancora, e
+ * vengono da import veri. Da zero nessuna delle due vale, ed è il caso per cui
+ * la regola esiste: un collegamento senza conferma l'ha portato l'enrichment
+ * IGDB — che scrive gli id dei negozi di ogni gioco che arricchisce — e nessuna
+ * libreria gli ha mai dato ragione.
+ */
+async function knownLinks(
+  store: Store,
+  storeAccountId: string,
+  externalIds: string[],
+) {
+  const known = new Map<
+    string,
+    {
+      gameId: string;
+      igdbId: number | null;
+      bundle: boolean;
+      confirmed: boolean;
+    }
+  >();
+
+  for (const page of chunk(externalIds, 1000)) {
+    const rows = await db
+      .select({
+        externalId: schema.externalIds.externalId,
+        gameId: schema.externalIds.gameId,
+        igdbId: schema.games.igdbId,
+        gameType: schema.games.gameType,
+        confirmed: sql<boolean>`(
+          ${schema.externalIds.storeTitle} is not null
+          or exists (
+            select 1 from ${schema.ownerships}
+              join ${schema.backlog} on ${schema.backlog.id} = ${schema.ownerships.backlogId}
+             where ${schema.backlog.gameId} = ${schema.externalIds.gameId}
+               and ${schema.ownerships.storeAccountId} = ${storeAccountId}
+          )
+        )`,
+      })
+      .from(schema.externalIds)
+      .innerJoin(schema.games, eq(schema.games.id, schema.externalIds.gameId))
+      .where(
+        and(
+          eq(schema.externalIds.source, store),
+          inArray(schema.externalIds.externalId, page),
+        ),
+      );
+
+    for (const row of rows) {
+      known.set(row.externalId, {
+        gameId: row.gameId,
+        igdbId: row.igdbId,
+        bundle: row.gameType === 'bundle',
+        confirmed: row.confirmed,
+      });
+    }
+  }
+
+  return known;
+}
+
+/**
+ * Regola 1: una voce della libreria non diventa una raccolta di IGDB.
+ *
+ * IGDB collega a _Alone in the Dark: The Trilogy 1+2+3_ gli id GOG di AitD 1 e
+ * 2, e a _Forgotten Realms: The Archives - Collection Two_ quelli di Hillsfar e
+ * Pools of Darkness: GOG li vende in raccolta ma li mostra in libreria uno per
+ * uno, e la libreria è la verità. Una voce collegata per id a una raccolta si
+ * cerca quindi anche per nome:
+ *
+ * - il nome trova la raccolta stessa → resta lì: è l'edizione completa che il
+ *   negozio vende davvero (GOTY, Definitive, Complete), 47 voci su 61;
+ * - trova con sicurezza un altro gioco → va su quello;
+ * - non trova niente → negli scarti. Hillsfar per nome non si trova, e se il
+ *   nome non conferma la raccolta non c'è niente che la confermi.
+ *
+ * Misurata sulle 61 voci GOG ed Epic collegate a una raccolta (14/10/2026): 5
+ * cambiano gioco, 9 vanno negli scarti. Di quelle 9, 8 erano accettabili
+ * (Tomb Raider GOTY, Mafia II Classic…): è il costo del primo che le importa,
+ * perché collegate una volta valgono per tutti. Una soglia di somiglianza fra
+ * voce e raccolta le avrebbe salvate, ma tarata su un caso solo.
+ *
+ * **Senza l'anno del negozio.** GOG data il gioco originale, IGDB la raccolta
+ * quando è uscita: _Shadow Warrior Classic Complete_ è 1997 su GOG e 2012 su
+ * IGDB, e la penalità dell'anno affondava la raccolta giusta. Misurato con e
+ * senza sulle 41 voci GOG di una libreria vera (14/10/2026): cambiano 3 esiti,
+ * e senza anno sono giusti tutti e tre — Shadow Warrior resta sulla raccolta,
+ * _DOOM 3_ va sul Doom 3 del 2004 invece che sul rifacimento del 2012, _The
+ * Witcher 3 — Remastered_ va negli scarti invece che su The Witcher 3.
+ */
+async function checkBundleLinks(
+  candidates: { entry: LibraryEntry; bundleIgdbId: number }[],
+) {
+  const kept = new Set<string>();
+  const relinked: ExternalGameLink[] = [];
+  const dropped = new Set<string>();
+  if (candidates.length === 0) return { kept, relinked, dropped };
+
+  const perNome = new Map(
+    (
+      await resolveByName(
+        candidates.map(({ entry }) => ({ ...entry, releaseYear: null })),
+      )
+    ).map((link) => [link.externalId, link]),
+  );
+
+  for (const { entry, bundleIgdbId } of candidates) {
+    const link = perNome.get(entry.externalId);
+    if (link?.igdbId === bundleIgdbId) {
+      kept.add(entry.externalId);
+      continue;
+    }
+    dropped.add(entry.externalId);
+    if (link) relinked.push(link);
+  }
+
+  console.log(
+    `[import] raccolte: ${candidates.length} da verificare, ${kept.size} confermate, ${relinked.length} su un altro gioco, ${dropped.size - relinked.length} negli scarti`,
+  );
+  return { kept, relinked, dropped };
+}
+
+/**
+ * Regola 2: una voce trovata per nome sul gioco di un'altra voce.
+ *
+ * Sulla stessa piattaforma e sullo stesso supporto la copia è una sola — il
+ * vincolo unique di `ownerships` la fonde — e la seconda voce sparirebbe
+ * **senza dirlo**: _Legend of Keepers: Prologue_, una demo che IGDB non ha,
+ * trovava col titolo accorciato il gioco completo e ci si fondeva. Questa va
+ * negli scarti con la principale accanto, come le voci in più di un prodotto
+ * Epic, e l'utente la vede fra i «Possibili doppioni».
+ *
+ * **Solo le voci trovate per nome.** Due id che IGDB stesso dichiara lo stesso
+ * gioco restano una copia, con le ore sommate: su Steam succede davvero (447
+ * appid per 445 giochi), e un appid proprio e uno della famiglia sullo stesso
+ * gioco sono una copia comprata. È il nome, non IGDB, a poter prendere un
+ * prodotto per un altro. Né le copie che non si fondono: il cross-buy PS4/PS5,
+ * o disco e digitale sulla stessa console, sono due copie, ed è la verità.
+ *
+ * La principale è una voce risolta per id, se c'è; fra voci tutte per nome, la
+ * acquistata per prima, poi l'id, perché la scelta sia stabile.
+ *
+ * Rende la mappa doppione → principale.
+ */
+export function pickMergedEntries(
+  entries: {
+    externalId: string;
+    gameId: string;
+    platformSlug: string;
+    medium: Medium;
+    byName: boolean;
+    acquiredAt: Date | null;
+  }[],
+) {
+  const gruppi = new Map<string, typeof entries>();
+  for (const entry of entries) {
+    // La chiave della copia, meno ciò che in un import è costante.
+    const chiave = `${entry.gameId}:${entry.platformSlug}:${entry.medium}`;
+    gruppi.set(chiave, [...(gruppi.get(chiave) ?? []), entry]);
+  }
+
+  const merged = new Map<string, string>();
+  for (const gruppo of gruppi.values()) {
+    if (gruppo.length < 2 || !gruppo.some((entry) => entry.byName)) continue;
+
+    const [principale] = [...gruppo].sort(
+      (a, b) =>
+        Number(a.byName) - Number(b.byName) ||
+        (a.acquiredAt?.getTime() ?? Infinity) -
+          (b.acquiredAt?.getTime() ?? Infinity) ||
+        a.externalId.localeCompare(b.externalId),
+    );
+    for (const entry of gruppo) {
+      if (entry !== principale && entry.byName)
+        merged.set(entry.externalId, principale!.externalId);
+    }
+  }
+
+  return merged;
+}
+
+/**
+ * Toglie i collegamenti che la regola 1 ha smentito.
+ *
+ * Solo quelli senza titolo del negozio, cioè mai confermati da una libreria: li
+ * ha portati IGDB. Restando, darebbero torto alla scelta dell'utente, perché lo
+ * scarto risolto a mano scrive il suo collegamento con `onConflictDoNothing` e
+ * troverebbe il posto occupato. Se l'enrichment li riscrive, il prossimo import
+ * li rivede da capo.
+ */
+async function forgetLinks(store: Store, externalIds: string[]) {
+  for (const page of chunk(externalIds, 1000)) {
+    await db
+      .delete(schema.externalIds)
+      .where(
+        and(
+          eq(schema.externalIds.source, store),
+          inArray(schema.externalIds.externalId, page),
+          isNull(schema.externalIds.storeTitle),
+        ),
+      );
+  }
+}
+
 export async function importLibrary(
   account: StoreAccountRow,
   library: LibraryEntry[],
@@ -758,16 +965,17 @@ export async function importLibrary(
   const { id: storeAccountId, userId, store } = account;
 
   // 1. Quello che Ludex conosce già.
-  const known = await findGameIdsByExternalIds(
+  const noti = await knownLinks(
     store,
+    storeAccountId,
     library.map((entry) => entry.externalId),
   );
 
   // 2. Il resto su IGDB, per id. Con un negozio che IGDB non mappa questa non
   //    esce nemmeno in rete e cade tutto al passo 3.
-  const missing = library.filter((entry) => !known.has(entry.externalId));
+  const missing = library.filter((entry) => !noti.has(entry.externalId));
   console.log(
-    `[import] ${store}: ${library.length} in libreria, ${known.size} già note a Ludex`,
+    `[import] ${store}: ${library.length} in libreria, ${noti.size} già note a Ludex`,
   );
   const byId = new Map<string, IgdbExternalMatch>(
     await findIgdbGamesByExternalIds(
@@ -781,6 +989,26 @@ export async function importLibrary(
     missing.filter((entry) => entry.igdbLookup && !byId.has(entry.externalId)),
     byId,
   );
+
+  // Regola 1: le voci finite su una raccolta, per id nuovo o per un
+  // collegamento che nessuna libreria ha confermato. Non le voci in più di un
+  // prodotto, che per nome non si cercano mai: vedi `sameProductAs`.
+  const raccolte = await checkBundleLinks(
+    library.flatMap((entry) => {
+      if (entry.sameProductAs) return [];
+      const noto = noti.get(entry.externalId);
+      if (noto) {
+        return !noto.confirmed && noto.bundle && noto.igdbId !== null
+          ? [{ entry, bundleIgdbId: noto.igdbId }]
+          : [];
+      }
+      const match = byId.get(entry.externalId);
+      return match?.gameType === 'bundle'
+        ? [{ entry, bundleIgdbId: match.igdbId }]
+        : [];
+    }),
+  );
+  for (const externalId of raccolte.dropped) byId.delete(externalId);
 
   const idLinks: ExternalGameLink[] = missing
     .map((entry) => {
@@ -796,25 +1024,77 @@ export async function importLibrary(
   }
 
   // 3. E per nome, ciò che l'id non ha preso. Non le voci in più di un
-  //    prodotto: vedi `sameProductAs`.
-  const nameLinks = await resolveByName(
-    missing.filter(
-      (entry) => !byId.has(entry.externalId) && !entry.sameProductAs,
-    ),
+  //    prodotto: vedi `sameProductAs`. Né quelle che la regola 1 ha già
+  //    cercato.
+  const nameLinks = [
+    ...raccolte.relinked,
+    ...(await resolveByName(
+      missing.filter(
+        (entry) =>
+          !byId.has(entry.externalId) &&
+          !entry.sameProductAs &&
+          !raccolte.dropped.has(entry.externalId),
+      ),
+    )),
+  ];
+
+  // I giochi prima, i collegamenti dopo: la regola 2 guarda su quale gioco
+  // finisce ogni voce, e un doppione il suo collegamento non lo deve scrivere.
+  const proposti = [...idLinks, ...nameLinks];
+  const { byExternalId, createdGameIds } = await linkExternalGames(
+    store,
+    proposti,
+    { persistIds: false },
   );
 
-  const { byExternalId, createdGameIds } = await linkExternalGames(store, [
-    ...idLinks,
-    ...nameLinks,
+  const gameIdByExternalId = new Map([
+    ...[...noti]
+      .filter(([externalId]) => !raccolte.dropped.has(externalId))
+      .map(([externalId, noto]) => [externalId, noto.gameId] as const),
+    ...byExternalId,
   ]);
 
-  const gameIdByExternalId = new Map([...known, ...byExternalId]);
+  // Regola 2: una voce trovata per nome sul gioco di un'altra. Una voce per
+  // nome non è mai nota, quindi il suo collegamento non c'è ancora: basta non
+  // scriverlo.
+  const perNome = new Set(nameLinks.map((link) => link.externalId));
+  const doppioni = pickMergedEntries(
+    library
+      .filter((entry) => gameIdByExternalId.has(entry.externalId))
+      .map((entry) => ({
+        externalId: entry.externalId,
+        gameId: gameIdByExternalId.get(entry.externalId)!,
+        platformSlug: platformOf(store, entry),
+        medium: entry.medium ?? 'digital',
+        byName: perNome.has(entry.externalId),
+        acquiredAt: entry.acquiredAt ?? null,
+      })),
+  );
+  for (const externalId of doppioni.keys())
+    gameIdByExternalId.delete(externalId);
+  if (doppioni.size > 0) {
+    console.log(
+      `[import] ${store}: ${doppioni.size} voci sullo stesso gioco di un'altra, fra i possibili doppioni`,
+    );
+  }
+
+  await forgetLinks(
+    store,
+    [...raccolte.dropped].filter((externalId) => noti.has(externalId)),
+  );
+  const scritti = proposti.filter((link) => !doppioni.has(link.externalId));
+  await linkExternalGames(store, scritti);
+
   const resolved = library.filter((entry) =>
     gameIdByExternalId.has(entry.externalId),
   );
-  const unresolved = library.filter(
-    (entry) => !gameIdByExternalId.has(entry.externalId),
-  );
+  const unresolved = library
+    .filter((entry) => !gameIdByExternalId.has(entry.externalId))
+    .map((entry) =>
+      doppioni.has(entry.externalId)
+        ? { ...entry, sameProductAs: doppioni.get(entry.externalId)! }
+        : entry,
+    );
   await recordStoreDetails(store, resolved);
 
   // 4. Le scritture.
@@ -893,7 +1173,8 @@ export async function importLibrary(
   return {
     total: library.length,
     resolved: resolved.length,
-    resolvedByName: nameLinks.length,
+    resolvedByName: scritti.filter((link) => perNome.has(link.externalId))
+      .length,
     unresolved: unresolved.length,
     newGames: createdGameIds.length,
     newEntries: created.size,

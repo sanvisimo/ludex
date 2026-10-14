@@ -336,6 +336,14 @@ Quattro dettagli che si pagano se si scoprono tardi:
 - **GOG marca `isGame: true` anche i _goodies_**, gli artbook e il REDkit di The
   Witcher 3. Non c'è un campo per filtrarli e non serve: cadono da soli negli
   irrisolti, che è dove devono stare.
+- **GOG mostra uno per uno i giochi che vende in raccolta**, e IGDB collega i
+  loro id alla raccolta: AitD 1 e 2 a _The Trilogy 1+2+3_, Hillsfar e Pools of
+  Darkness a _Forgotten Realms: The Archives - Collection Two_. Misurato il
+  14/10/2026 contro l'export di Playnite: ludex 436 giochi, Playnite 439, e le
+  tre voci mancanti erano fuse su una raccolta o, per il _Prologue_ di Legend
+  of Keepers, sul gioco completo. Le due regole che lo impediscono valgono per
+  ogni negozio: «Una voce della libreria è una scheda» in
+  [import-librerie](import-librerie.md).
 
 La piattaforma resta **`pc_windows` fissa** su tutti i negozi PC, come per Steam,
 e l'utente la corregge dalla schermata dello step 5. GOG dichiarerebbe anche
