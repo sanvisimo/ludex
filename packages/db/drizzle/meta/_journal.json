@@ -379,6 +379,13 @@
       "when": 1791996924951,
       "tag": "0053_vr_platforms",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1792068687801,
+      "tag": "0054_fresh_bishop",
+      "breakpoints": true
     }
   ]
 }

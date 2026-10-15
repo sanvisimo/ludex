@@ -1,4 +1,9 @@
-import { gameTypeValues, storeValues } from '@repo/contracts/vocabulary';
+import {
+  gameTypeValues,
+  mediumValues,
+  storeValues,
+  subscriptionValues,
+} from '@repo/contracts/vocabulary';
 import {
   boolean,
   index,
@@ -25,6 +30,15 @@ import { timestamps } from './timestamps';
 // I valori arrivano da @repo/contracts perché servono anche a web e mobile, che
 // non possono importare questo package.
 export const store = pgEnum('store', storeValues);
+
+// Da quale abbonamento viene il diritto di giocare a una copia. Valori da
+// @repo/contracts, vedi il commento su `store`. Sta qui e non in backlog.ts,
+// dove lo usa `ownerships`, perché lo usa anche `unresolved_imports`
+// (imports.ts), che backlog.ts importa: definito là sarebbe un import circolare.
+export const subscription = pgEnum('subscription', subscriptionValues);
+
+// Disco o digitale. Valori da @repo/contracts; qui per la stessa ragione.
+export const medium = pgEnum('medium', mediumValues);
 
 // Che cos'è la scheda: un gioco, un DLC, un bundle… Lo dice IGDB, i valori
 // stanno in @repo/contracts come gli altri enum.

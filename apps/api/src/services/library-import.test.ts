@@ -1753,3 +1753,199 @@ describe('importLibrary: due voci sullo stesso gioco (9a GOG)', () => {
     expect(await db.select().from(schema.ownerships)).toHaveLength(2);
   });
 });
+
+describe('importLibrary: demo e beta non si cercano per nome (9f)', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'steam');
+    mockedById.mockResolvedValue(new Map());
+    mockedSource.mockReturnValue(1);
+    // Se la ricerca partisse, troverebbe il gioco del 1986: è il caso vero.
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 1114, name: 'Castlevania', releaseYear: 1986 }),
+    ]);
+  });
+
+  it('una demo che IGDB non conosce per id va fra gli scarti già nascosta', async () => {
+    const report = await importLibrary(account, [
+      { externalId: '5000760', name: "Castlevania: Belmont's Curse Demo" },
+    ]);
+
+    expect(mockedSearch).not.toHaveBeenCalled();
+    expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
+    expect(await gamesOf(userId)).toEqual([]);
+    const [scarto] = await unresolvedOf(userId);
+    expect(scarto).toMatchObject({
+      externalId: '5000760',
+      hiddenKind: 'prerelease',
+    });
+    expect(scarto?.hiddenAt).not.toBeNull();
+  });
+
+  it('beta, playtest e prove pubbliche come la demo', async () => {
+    await importLibrary(account, [
+      { externalId: '931180', name: 'Conan Exiles - Public Beta Client' },
+      { externalId: '397080', name: 'Magicka 2: Spell Balance Beta' },
+      { externalId: '1', name: 'Chivalry 2 - Public Testing' },
+      { externalId: '2', name: 'Some Game Playtest' },
+    ]);
+
+    expect(mockedSearch).not.toHaveBeenCalled();
+    const scarti = await unresolvedOf(userId);
+    expect(scarti).toHaveLength(4);
+    expect(scarti.every((s) => s.hiddenKind === 'prerelease')).toBe(true);
+  });
+
+  it('una parola che contiene «demo» non è una demo', async () => {
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 10, name: "Demon's Souls" }),
+    ]);
+
+    await importLibrary(account, [{ externalId: '3', name: "Demon's Souls" }]);
+
+    expect(mockedSearch).toHaveBeenCalled();
+    expect(await gamesOf(userId)).toEqual([
+      { name: "Demon's Souls", igdbId: 10 },
+    ]);
+  });
+
+  it('una demo che IGDB conosce per id resta dove la mette', async () => {
+    mockedById.mockResolvedValue(
+      new Map([
+        [
+          '5000760',
+          {
+            igdbId: 389434,
+            name: "Castlevania: Belmont's Curse",
+            releaseYear: 2026,
+          },
+        ],
+      ]),
+    );
+
+    await importLibrary(account, [
+      { externalId: '5000760', name: "Castlevania: Belmont's Curse Demo" },
+    ]);
+
+    expect(await gamesOf(userId)).toEqual([
+      { name: "Castlevania: Belmont's Curse", igdbId: 389434 },
+    ]);
+    expect(await unresolvedOf(userId)).toHaveLength(0);
+  });
+
+  it('rimessa fra i «da sistemare» dall’utente, al reimport resta visibile', async () => {
+    const voce = {
+      externalId: '5000760',
+      name: "Castlevania: Belmont's Curse Demo",
+    };
+    await importLibrary(account, [voce]);
+    const [scarto] = await unresolvedOf(userId);
+    await setUnresolvedImportHidden(userId, scarto!.id, null);
+
+    await importLibrary(account, [voce]);
+
+    const [dopo] = await unresolvedOf(userId);
+    expect(dopo?.hiddenAt).toBeNull();
+  });
+});
+
+describe('importLibrary: uno scarto risolto a mano nasce come la copia dell’import (9f)', () => {
+  let userId: string;
+
+  const copieOf = (owner: string) =>
+    db
+      .select({
+        subscription: schema.ownerships.subscription,
+        medium: schema.ownerships.medium,
+        storePage: schema.ownerships.storePage,
+        platformSlug: schema.ownerships.platformSlug,
+      })
+      .from(schema.ownerships)
+      .innerJoin(
+        schema.backlog,
+        eq(schema.backlog.id, schema.ownerships.backlogId),
+      )
+      .where(eq(schema.backlog.userId, owner));
+
+  beforeEach(async () => {
+    userId = await createUser();
+    mockedById.mockResolvedValue(new Map());
+    mockedSearch.mockResolvedValue([]);
+  });
+
+  it('una copia della famiglia Steam resta della famiglia, e il reimport non ne aggiunge una seconda', async () => {
+    const account = await linkStoreAccount(userId, 'steam');
+    mockedSource.mockReturnValue(1);
+    const voce = {
+      externalId: '351040',
+      name: 'Moonrise',
+      subscription: 'steam_family' as const,
+      storePage: 'app/351040',
+    };
+    await importLibrary(account, [voce]);
+    const [scarto] = await unresolvedOf(userId);
+    expect(scarto).toMatchObject({
+      subscription: 'steam_family',
+      medium: 'digital',
+    });
+
+    mockedFindById.mockResolvedValue(hit({ igdbId: 9873, name: 'Moonrise' }));
+    await resolveUnresolvedImport(userId, scarto!.id, 9873);
+
+    expect(await copieOf(userId)).toEqual([
+      {
+        subscription: 'steam_family',
+        medium: 'digital',
+        storePage: 'app/351040',
+        platformSlug: 'pc_windows',
+      },
+    ]);
+
+    // Il reimport la trova per id e scrive la stessa copia: una riga sola.
+    await importLibrary(account, [voce]);
+    expect(await copieOf(userId)).toHaveLength(1);
+  });
+
+  it('una voce del Plus resta del Plus, e un disco resta un disco', async () => {
+    const account = await linkStoreAccount(userId, 'psn');
+    mockedSource.mockReturnValue(null);
+    await importLibrary(account, [
+      {
+        externalId: 'PLUS-1',
+        name: 'Un gioco del Plus',
+        platformSlug: 'sony_playstation5',
+        subscription: 'ps_plus',
+      },
+      {
+        externalId: 'DISCO-1',
+        name: 'Un disco',
+        platformSlug: 'sony_playstation4',
+        medium: 'physical',
+      },
+    ]);
+    const scarti = await unresolvedOf(userId);
+
+    mockedFindById.mockResolvedValueOnce(hit({ igdbId: 1, name: 'Plus' }));
+    mockedFindById.mockResolvedValueOnce(hit({ igdbId: 2, name: 'Disco' }));
+    await resolveUnresolvedImport(
+      userId,
+      scarti.find((s) => s.externalId === 'PLUS-1')!.id,
+      1,
+    );
+    await resolveUnresolvedImport(
+      userId,
+      scarti.find((s) => s.externalId === 'DISCO-1')!.id,
+      2,
+    );
+
+    expect(await copieOf(userId)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ subscription: 'ps_plus', medium: 'digital' }),
+        expect.objectContaining({ subscription: null, medium: 'physical' }),
+      ]),
+    );
+  });
+});

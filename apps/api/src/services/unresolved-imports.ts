@@ -242,6 +242,13 @@ export async function resolveUnresolvedImport(
       playtimeMinutes: pending.playtimeMinutes,
       lastPlayedAt: pending.lastPlayedAt,
       acquiredAt: pending.acquiredAt,
+      // Come l'avrebbe scritta l'import: una copia della famiglia Steam o del
+      // Plus resta tale, e un disco resta un disco. Senza, diventava un acquisto
+      // senza supporto, e il reimport le metteva accanto la copia giusta.
+      // `digital` sugli scarti nati prima delle colonne, come fa l'import.
+      subscription: pending.subscription,
+      medium: pending.medium ?? 'digital',
+      storePage: pending.storePage,
     },
   ]);
   // Come dopo un import: senza, il gioco resterebbe aggiunto oggi, il giorno

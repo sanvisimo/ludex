@@ -20,7 +20,7 @@ import {
 import { sql } from 'drizzle-orm';
 
 import { user } from './auth';
-import { store } from './games';
+import { medium, store, subscription } from './games';
 import { platforms } from './platforms';
 import { timestamps } from './timestamps';
 
@@ -201,6 +201,14 @@ export const unresolvedImports = pgTable(
     // `ownerships.store_page`, e il link lo compone lo stesso `storePageUrl`.
     // Nulla dove il negozio non la dà (Epic, Amazon).
     storePage: text('store_page'),
+    // Da quale abbonamento veniva la voce, e su che supporto: la forma di
+    // `ownerships`. Risolta a mano, la copia nasce come l'avrebbe scritta
+    // l'import. Senza, una copia della famiglia Steam risolta a mano diventava
+    // un acquisto, e il reimport le metteva accanto la copia `steam_family`, che
+    // non adotta righe (9f, 15/10/2026). Nulle sugli scarti nati prima: le
+    // riempie il primo reimport.
+    subscription: subscription('subscription'),
+    medium: medium('medium'),
     // La voce viene **dallo stesso prodotto** di un'altra che l'import ha già
     // preso come gioco: qui c'è l'id esterno di quella. Solo Epic, dove un
     // prodotto può contenere più voci che il catalogo chiama gioco — Delores
