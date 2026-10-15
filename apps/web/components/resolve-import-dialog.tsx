@@ -5,20 +5,17 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  Text,
   toast,
-  XStack,
   YStack,
 } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'use-intl';
 
 import { IgdbPicker } from '@/components/admin/igdb-pick-dialog';
-import { UnresolvedCover } from '@/components/unresolved-row';
+import { StoreEntryCard } from '@/components/store-entry-card';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
-import { ExternalLink } from '@/src/components/external-link';
 
 /**
  * Sistema a mano una voce che l'import non ha saputo risolvere.
@@ -74,7 +71,7 @@ export function ResolveImportDialog({
         entry.hiddenAt
           ? t('hiddenOn', { date: date(entry.hiddenAt) })
           : t('addedOn', { date: date(entry.createdAt) }),
-      ].filter(Boolean)
+      ].filter((fact) => fact !== null)
     : [];
 
   return (
@@ -86,49 +83,18 @@ export function ResolveImportDialog({
 
         {entry ? (
           <YStack gap={16}>
-            <XStack gap={16} items="flex-start">
-              <UnresolvedCover
-                key={entry.id}
-                entry={entry}
-                width={90}
-                height={128}
-              />
-              <YStack flex={1} minW={0} gap={6}>
-                <Text fontSize={14} fontWeight="500" color="$color12">
-                  {entry.name}
-                </Text>
-                <Text fontSize={13} color="$color11">
-                  {[storeLabels[entry.store], entry.storeName]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </Text>
-                <YStack>
-                  <Text fontSize={12} color="$color11">
-                    {t('externalId')}
-                  </Text>
-                  {/* Intero, e selezionabile: è ciò che si copia per cercarlo. */}
-                  <Text
-                    fontSize={13}
-                    color="$color12"
-                    {...({
-                      style: { wordBreak: 'break-all', userSelect: 'text' },
-                    } as object)}
-                  >
-                    {entry.externalId}
-                  </Text>
-                </YStack>
-                <Text fontSize={13} color="$color11">
-                  {facts.join(' · ')}
-                </Text>
-                {pageUrl ? (
-                  <Text fontSize={13}>
-                    <ExternalLink href={pageUrl}>
-                      {t('openOn', { store: storeLabels[entry.store] })} ↗
-                    </ExternalLink>
-                  </Text>
-                ) : null}
-              </YStack>
-            </XStack>
+            <StoreEntryCard
+              key={entry.id}
+              store={entry.store}
+              externalIds={[entry.externalId]}
+              imageUrl={entry.imageUrl}
+              title={entry.name}
+              subtitle={[storeLabels[entry.store], entry.storeName]
+                .filter(Boolean)
+                .join(' · ')}
+              facts={facts}
+              pageUrl={pageUrl}
+            />
 
             {/* Rimontato a ogni voce: riparte dal suo nome, e lo cerca. */}
             <IgdbPicker

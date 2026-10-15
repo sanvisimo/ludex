@@ -1250,6 +1250,31 @@ describe('importLibrary: titolo e copertina del negozio sul collegamento (11a)',
     expect(await titoloDi('d3fcb76f')).toBe("Death's Door");
   });
 
+  it("scrive l'anno del negozio, e una voce senza anno non lo cancella", async () => {
+    // GOG ed EA danno l'anno: distingue _State of Mind_ del 2018 da quello
+    // del 2022, che IGDB chiama allo stesso modo.
+    mockedSearch.mockResolvedValue([
+      hit({ igdbId: 26193, name: 'State of Mind', releaseYear: 2018 }),
+    ]);
+    const anno = async () => {
+      const [riga] = await db
+        .select({ year: schema.externalIds.storeReleaseYear })
+        .from(schema.externalIds)
+        .where(eq(schema.externalIds.externalId, '1663581818'));
+      return riga?.year;
+    };
+
+    await importLibrary(account, [
+      { externalId: '1663581818', name: 'State of Mind', releaseYear: 2018 },
+    ]);
+    expect(await anno()).toBe(2018);
+
+    await importLibrary(account, [
+      { externalId: '1663581818', name: 'State of Mind' },
+    ]);
+    expect(await anno()).toBe(2018);
+  });
+
   it('lo scrive anche sul collegamento che c era già, e il reimport lo aggiorna', async () => {
     // Un collegamento scritto prima della colonna: il passo 1 lo riconosce e
     // la ricerca non riparte, ma il titolo arriva lo stesso.

@@ -85,6 +85,7 @@ import {
   closeReports,
   createReports,
   listOpenReports,
+  myCopies,
   openReportsForGame,
 } from '../services/reports';
 import {
@@ -959,6 +960,10 @@ export const router = os.router({
       .handler(({ input, context }) =>
         openReportsForGame(context.user.id, input.gameId),
       ),
+
+    myCopies: os.reports.myCopies
+      .use(authed)
+      .handler(({ input, context }) => myCopies(context.user.id, input.gameId)),
   },
 
   admin: {

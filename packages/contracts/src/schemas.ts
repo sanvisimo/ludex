@@ -1042,6 +1042,20 @@ export const OpenReportSchema = z.object({
   updatedAt: z.date(),
 });
 
+// Una copia di un negozio vista da «Segnala un errore»: da quale id del
+// negozio viene, e come il negozio chiama il gioco. Il resto della copia —
+// account, ore, date, pagina — la schermata lo ha già nel backlog.
+export const MyCopySchema = z.object({
+  ownershipId: z.uuid(),
+  // Uno, quando si sa quale; tutti quelli del negozio sul gioco, quando no.
+  externalIds: z.array(z.string()),
+  // Solo con un id: su una copia ambigua non si sa di quale sarebbero.
+  storeTitle: z.string().nullable(),
+  storeImageUrl: z.string().nullable(),
+  // L'anno d'uscita secondo il negozio: lo danno solo GOG ed EA.
+  storeReleaseYear: z.number().int().nullable(),
+});
+
 // Le segnalazioni aperte viste dall'admin: una riga per gioco e cosa.
 export const ReportGroupSchema = z.object({
   gameId: z.uuid(),
@@ -1231,6 +1245,7 @@ export const AdminUserSchema = z.object({
 export type AdminUser = z.infer<typeof AdminUserSchema>;
 export type ReportTarget = z.infer<typeof ReportTargetSchema>;
 export type OpenReport = z.infer<typeof OpenReportSchema>;
+export type MyCopy = z.infer<typeof MyCopySchema>;
 export type ReportGroup = z.infer<typeof ReportGroupSchema>;
 export type PlatformMismatch = z.infer<typeof PlatformMismatchSchema>;
 export type GameAdminDetail = z.infer<typeof GameAdminDetailSchema>;

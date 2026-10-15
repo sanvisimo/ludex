@@ -365,7 +365,11 @@ che non si indovinano:
   di uno scarto e «Non è questo gioco» la mettono sotto i dati, così si sceglie
   con la voce sotto gli occhi. `IgdbPickDialog` la avvolge per chi non ha altro
   da mostrare. Il dialogo dell'account (`resolve-import-dialog.tsx`) la usa
-  anch'esso, con in testa i dati della voce.
+  anch'esso, con in testa i dati della voce (`StoreEntryCard`: copertina e
+  nome del negozio, account, id, link). La stessa scheda sta in «Segnala un
+  errore» sotto la copia spuntata, una per copia, con l'id che
+  `reports.myCopies` ricava dalla pagina del negozio; la ricerca parte dal nome
+  del negozio.
 - **«Inserisci id» ha due bottoni**: «Aggiungi» salva un id o un indirizzo e
   rifiuta un nome; «Cerca» usa il testo come nome sulla fonte. OpenCritic costa
   una delle 25 ricerche del giorno, e il dialogo lo dice prima.

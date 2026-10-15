@@ -30,14 +30,20 @@ export function UnresolvedCover({
   height,
 }: {
   // Solo ciò che serve alla copertina: la usa anche l'admin, con la riga
-  // raggruppata degli scarti di tutti.
-  entry: Pick<UnresolvedImport, 'store' | 'externalId' | 'imageUrl'>;
+  // raggruppata degli scarti di tutti. Senza id — una copia di cui non si sa
+  // quale sia — resta il riquadro col negozio.
+  entry: Pick<UnresolvedImport, 'store' | 'imageUrl'> & {
+    externalId: string | null;
+  };
   width: number;
   height: number;
 }) {
   const [failed, setFailed] = useState(false);
   const brand = STORE_BRAND[entry.store];
-  const cover = storeCoverUrl(entry.store, entry.externalId, entry.imageUrl);
+  const cover =
+    entry.externalId === null
+      ? null
+      : storeCoverUrl(entry.store, entry.externalId, entry.imageUrl);
 
   if (cover && !failed) {
     // Un `<img>` e basta, come `GameCover`: l'immagine arriva da un altro

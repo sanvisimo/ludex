@@ -200,6 +200,11 @@ export const externalIds = pgTable(
     // gioco base, ma la copertina la manda giusta. Nulla su Steam, dove la si
     // compone dall'appid (`storeCoverUrl`), e dove il negozio non la manda.
     storeImageUrl: text('store_image_url'),
+    // L'anno d'uscita che il negozio dà a questo id, dallo stesso import. Lo
+    // danno GOG ed EA, gli altri nella libreria no. Distingue l'originale dal
+    // remake che IGDB chiama allo stesso modo: _State of Mind_ del 2018 e del
+    // 2022. Vedi `plans/segnala-dettagli-copia.md`.
+    storeReleaseYear: integer('store_release_year'),
     ...timestamps,
   },
   (table) => [

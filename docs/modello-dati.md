@@ -27,6 +27,11 @@ utenti, e vincola l'identità dei giochi:
   cancella. Serve perché il titolo può ingannare: Epic chiama _Aiko's Choice_
   col nome del gioco base, ma la copertina la manda giusta. Su Steam resta
   nulla, la compone `storeCoverUrl` dall'appid.
+- `external_ids.store_release_year` è l'anno d'uscita che il negozio dà a
+  quell'id, scritto dall'import come la copertina: lo danno solo GOG ed EA, e
+  una voce senza anno non lo cancella. Distingue l'originale dal remake che
+  IGDB chiama allo stesso modo (_State of Mind_ del 2018 e del 2022), nella
+  scheda della copia di «Segnala un errore».
 
 Flusso di risoluzione, all'inserimento (manuale o da import):
 

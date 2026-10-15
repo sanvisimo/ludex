@@ -30,6 +30,7 @@ import {
   MissingBucketSchema,
   MissingListSchema,
   MissingSummarySchema,
+  MyCopySchema,
   NotesSchema,
   OpenReportSchema,
   OwnershipInputSchema,
@@ -629,6 +630,12 @@ export const contract = {
     openForGame: oc
       .input(z.object({ gameId: z.uuid() }))
       .output(z.array(OpenReportSchema)),
+
+    // Le tue copie dei negozi su un gioco, con l'id e il titolo del negozio:
+    // in «Segnala un errore» si vede che cos'è davvero la copia segnalata.
+    myCopies: oc
+      .input(z.object({ gameId: z.uuid() }))
+      .output(z.array(MyCopySchema)),
   },
 
   // Solo admin (11a): li protegge il middleware `admin`, non il client.
