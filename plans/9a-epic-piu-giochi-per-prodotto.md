@@ -3,6 +3,10 @@
 Correzione dell'import Epic nata dal confronto con l'export di Playnite del
 14/10/2026 (`202608_playnite_epic.csv`).
 
+**Lotto chiuso dall'utente il 15/10/2026**, voce della roadmap «fatta». Restano
+le correzioni a mano sul mini PC, raccolte con quelle degli altri lotti in
+[minipc-correzioni](minipc-correzioni.md).
+
 ## Il problema
 
 L'import Epic tiene **un gioco per `productId`** (`pickEpicGames` in
