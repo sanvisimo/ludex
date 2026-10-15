@@ -18,10 +18,21 @@ export function PlatformCombobox({
   platforms,
   value,
   onValueChange,
+  id,
+  'aria-label': ariaLabel,
+  placeholder,
+  clearLabel,
 }: {
   platforms: Platform[];
   value: string | null;
   onValueChange: (value: string | null) => void;
+  id?: string;
+  /** Al posto di una `<Label>`, dove il campo sta in riga con altri. */
+  'aria-label'?: string;
+  placeholder?: string;
+  /** Con un'etichetta compare la x che svuota la scelta: per i filtri, dove
+   *  «nessuna piattaforma» è un valore. */
+  clearLabel?: string;
 }) {
   const t = useTranslations('platform');
   const slugs = useMemo(
@@ -44,7 +55,14 @@ export function PlatformCombobox({
     >
       {/* ComboboxInput È il campo: contiene già input e chevron. Non va dentro
           il popup, altrimenti il posizionamento perde l'ancora. */}
-      <ComboboxInput placeholder={t('placeholder')} width="100%" />
+      <ComboboxInput
+        id={id}
+        aria-label={ariaLabel}
+        placeholder={placeholder ?? t('placeholder')}
+        showClear={clearLabel !== undefined}
+        clearLabel={clearLabel}
+        width="100%"
+      />
       <ComboboxContent>
         <ComboboxEmpty>{t('empty')}</ComboboxEmpty>
         <ComboboxList>
