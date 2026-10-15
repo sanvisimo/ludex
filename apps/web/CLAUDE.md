@@ -341,8 +341,8 @@ direzione col CSS. Cose che non si indovinano:
 **La sezione admin** (`/admin`, 11a) ha la cornice dell'account ma **fluida**
 (`maxW="100%"`: le sezioni sono tabelle), e rimanda via chi non ha `role = 'admin'`: è comodità, la sicurezza vera la fa il
 middleware `admin` sul server. Il link «Admin» sta nel menu dell'avatar, e
-«Apri nell'admin» sulla pagina di ogni gioco, solo per gli admin. Quattro
-sezioni, rotte figlie: `missing`, `unresolved`, `reported`, `users`, più la
+«Apri nell'admin» sulla pagina di ogni gioco, solo per gli admin. Cinque
+sezioni, rotte figlie: `missing`, `unresolved`, `reported`, `platforms`, `users`, più la
 scheda admin di un gioco, `/admin/games/$slug`. «Apri un gioco», la ricerca nel
 catalogo, sta nell'intestazione. I pezzi stanno in `components/admin/`. Cose
 che non si indovinano:
@@ -369,10 +369,15 @@ che non si indovinano:
 - **«Inserisci id» ha due bottoni**: «Aggiungi» salva un id o un indirizzo e
   rifiuta un nome; «Cerca» usa il testo come nome sulla fonte. OpenCritic costa
   una delle 25 ricerche del giorno, e il dialogo lo dice prima.
-- **«Segnalati» ha due blocchi**: le segnalazioni degli utenti e, sotto, le
-  copie su una piattaforma dove il gioco non è uscito (9b,
-  `platform-mismatches.tsx`), con «Va bene così» e i segnati da annullare.
-  «Apri» è un bottone pieno con icona (`ButtonLink`): è l'azione che conta.
+- **«Piattaforme sbagliate»** (`/admin/platforms`, 9b,
+  `platform-mismatches.tsx`) sono le copie su una piattaforma dove il gioco non
+  è uscito, con «Va bene così» e i segnati da annullare; il numero nel menu è
+  come quello di scarti e segnalazioni. Copertina e titolo sono il link alla
+  scheda admin, e «Apri» resta, un bottone pieno con icona (`ButtonLink`): è
+  l'azione che conta. I nomi delle piattaforme li traduce il server, con una
+  funzione sola (`igdbPlatformNamer`): la colonna «IGDB lo dà su», i risultati
+  di `IgdbPicker` e le copie in testa a «Non è questo gioco» dicono le stesse
+  parole.
 - **Le copertine dei risultati di HLTB e Metacritic** arrivano dalla loro
   ricerca; quelle di OpenCritic no, e costerebbero il budget.
 

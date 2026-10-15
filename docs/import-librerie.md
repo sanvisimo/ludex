@@ -564,9 +564,10 @@ passano per id. Nel test da zero su PSN e Amazon è stato l'unico.
 id (Steam, GOG, i dischi PSN per concept: _Resident Evil 4_ su Steam, che IGDB
 mappa sulla rimasterizzazione per console) né quelli scritti prima di lei. Le
 copie di un negozio su una piattaforma che IGDB non dà al gioco stanno in admin
-→ «Segnalati», sotto le segnalazioni degli utenti, una riga per gioco
-(`listPlatformMismatches`). Si corregge da «Apri» con «Non è questo gioco», e la
-riga sparisce da sola; quando è IGDB a non avere la piattaforma, «Va bene
+→ «Piattaforme sbagliate» (`/admin/platforms`), una riga per gioco
+(`listPlatformMismatches`). Si corregge da «Apri» con «Non è questo gioco», che
+mostra in testa le console delle copie e sotto ogni risultato IGDB quelle su cui
+è uscito, e la riga sparisce da sola; quando è IGDB a non avere la piattaforma, «Va bene
 così» la toglie per gioco e piattaforma, per tutti i negozi
 (`platform_mismatch_dismissals`), e si annulla. La lista è calcolata a ogni
 apertura, con la stessa funzione della regola. Le copie aggiunte a mano non ci

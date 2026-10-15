@@ -30,6 +30,7 @@ import { Route as AppAccountNeedsAttentionRouteImport } from './routes/_app.acco
 import { Route as AppAccountProfileRouteImport } from './routes/_app.account.profile'
 import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
 import { Route as AppAdminMissingRouteImport } from './routes/_app.admin.missing'
+import { Route as AppAdminPlatformsRouteImport } from './routes/_app.admin.platforms'
 import { Route as AppAdminReportedRouteImport } from './routes/_app.admin.reported'
 import { Route as AppAdminUnresolvedRouteImport } from './routes/_app.admin.unresolved'
 import { Route as AppAdminUsersRouteImport } from './routes/_app.admin.users'
@@ -144,6 +145,11 @@ const AppAdminMissingRoute = AppAdminMissingRouteImport.update({
   path: '/missing',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminPlatformsRoute = AppAdminPlatformsRouteImport.update({
+  id: '/platforms',
+  path: '/platforms',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminReportedRoute = AppAdminReportedRouteImport.update({
   id: '/reported',
   path: '/reported',
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/account/needs-attention': typeof AppAccountNeedsAttentionRoute
   '/account/profile': typeof AppAccountProfileRoute
   '/admin/missing': typeof AppAdminMissingRoute
+  '/admin/platforms': typeof AppAdminPlatformsRoute
   '/admin/reported': typeof AppAdminReportedRoute
   '/admin/unresolved': typeof AppAdminUnresolvedRoute
   '/admin/users': typeof AppAdminUsersRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByTo {
   '/account/needs-attention': typeof AppAccountNeedsAttentionRoute
   '/account/profile': typeof AppAccountProfileRoute
   '/admin/missing': typeof AppAdminMissingRoute
+  '/admin/platforms': typeof AppAdminPlatformsRoute
   '/admin/reported': typeof AppAdminReportedRoute
   '/admin/unresolved': typeof AppAdminUnresolvedRoute
   '/admin/users': typeof AppAdminUsersRoute
@@ -274,6 +282,7 @@ export interface FileRoutesById {
   '/_app/account/needs-attention': typeof AppAccountNeedsAttentionRoute
   '/_app/account/profile': typeof AppAccountProfileRoute
   '/_app/admin/missing': typeof AppAdminMissingRoute
+  '/_app/admin/platforms': typeof AppAdminPlatformsRoute
   '/_app/admin/reported': typeof AppAdminReportedRoute
   '/_app/admin/unresolved': typeof AppAdminUnresolvedRoute
   '/_app/admin/users': typeof AppAdminUsersRoute
@@ -306,6 +315,7 @@ export interface FileRouteTypes {
     | '/account/needs-attention'
     | '/account/profile'
     | '/admin/missing'
+    | '/admin/platforms'
     | '/admin/reported'
     | '/admin/unresolved'
     | '/admin/users'
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/account/needs-attention'
     | '/account/profile'
     | '/admin/missing'
+    | '/admin/platforms'
     | '/admin/reported'
     | '/admin/unresolved'
     | '/admin/users'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '/_app/account/needs-attention'
     | '/_app/account/profile'
     | '/_app/admin/missing'
+    | '/_app/admin/platforms'
     | '/_app/admin/reported'
     | '/_app/admin/unresolved'
     | '/_app/admin/users'
@@ -535,6 +547,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminMissingRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/platforms': {
+      id: '/_app/admin/platforms'
+      path: '/platforms'
+      fullPath: '/admin/platforms'
+      preLoaderRoute: typeof AppAdminPlatformsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/reported': {
       id: '/_app/admin/reported'
       path: '/reported'
@@ -650,6 +669,7 @@ const AppAccountRouteWithChildren = AppAccountRoute._addFileChildren(
 
 interface AppAdminRouteChildren {
   AppAdminMissingRoute: typeof AppAdminMissingRoute
+  AppAdminPlatformsRoute: typeof AppAdminPlatformsRoute
   AppAdminReportedRoute: typeof AppAdminReportedRoute
   AppAdminUnresolvedRoute: typeof AppAdminUnresolvedRoute
   AppAdminUsersRoute: typeof AppAdminUsersRoute
@@ -659,6 +679,7 @@ interface AppAdminRouteChildren {
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminMissingRoute: AppAdminMissingRoute,
+  AppAdminPlatformsRoute: AppAdminPlatformsRoute,
   AppAdminReportedRoute: AppAdminReportedRoute,
   AppAdminUnresolvedRoute: AppAdminUnresolvedRoute,
   AppAdminUsersRoute: AppAdminUsersRoute,

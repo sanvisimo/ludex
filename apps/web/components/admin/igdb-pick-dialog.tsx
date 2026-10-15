@@ -140,6 +140,13 @@ export function IgdbPicker({
                       .filter(Boolean)
                       .join(' · ')}
                   </Text>
+                  {/* Su cosa è uscito: fra due schede dello stesso anno e
+                      autore, l'originale e il port, decide la console. */}
+                  {hit.platforms.length > 0 ? (
+                    <Text fontSize={12} color="$color11">
+                      {hit.platforms.join(', ')}
+                    </Text>
+                  ) : null}
                 </YStack>
                 <Button
                   size="sm"
