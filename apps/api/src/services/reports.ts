@@ -1,6 +1,17 @@
 import type { ManualSource, Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, asc, count, desc, eq, isNull, sql } from '@repo/db/orm';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  isNotNull,
+  isNull,
+  sql,
+} from '@repo/db/orm';
+
+import { idsOfCopy } from './copy-store-ids';
 
 // Le segnalazioni degli utenti (11a, passo 6): «questo gioco è sbagliato».
 // L'utente segnala dalla pagina del gioco, l'admin le trova nella sezione
@@ -32,6 +43,64 @@ async function ownedStores(userId: string, gameId: string) {
   return new Set(
     rows.map((row) => row.store).filter((store) => store !== null),
   );
+}
+
+/**
+ * Le copie dei negozi che l'utente ha di un gioco, con l'id del negozio da cui
+ * vengono e come il negozio chiama il gioco: in «Segnala un errore», spuntata
+ * la copia, si vede che cos'è davvero. Una copia aggiunta a mano non ha un
+ * negozio, e non c'è.
+ *
+ * L'id lo sceglie `idsOfCopy`. Titolo, copertina e anno solo quando l'id è uno: su
+ * una copia ambigua non si sa di quale dei due sarebbero.
+ */
+export async function myCopies(userId: string, gameId: string) {
+  const copie = await db
+    .select({
+      ownershipId: schema.ownerships.id,
+      store: schema.ownerships.store,
+      storePage: schema.ownerships.storePage,
+    })
+    .from(schema.ownerships)
+    .innerJoin(
+      schema.backlog,
+      eq(schema.backlog.id, schema.ownerships.backlogId),
+    )
+    .where(
+      and(
+        eq(schema.backlog.userId, userId),
+        eq(schema.backlog.gameId, gameId),
+        isNotNull(schema.ownerships.store),
+      ),
+    );
+  if (copie.length === 0) return [];
+
+  const collegamenti = await db
+    .select({
+      source: schema.externalIds.source,
+      externalId: schema.externalIds.externalId,
+      storeTitle: schema.externalIds.storeTitle,
+      storeImageUrl: schema.externalIds.storeImageUrl,
+      storeReleaseYear: schema.externalIds.storeReleaseYear,
+    })
+    .from(schema.externalIds)
+    .where(eq(schema.externalIds.gameId, gameId))
+    .orderBy(asc(schema.externalIds.externalId));
+
+  return copie.map((copia) => {
+    const ids = idsOfCopy(
+      copia.storePage,
+      collegamenti.filter((link) => link.source === copia.store),
+    );
+    const unico = ids.length === 1 ? ids[0]! : null;
+    return {
+      ownershipId: copia.ownershipId,
+      externalIds: ids.map((link) => link.externalId),
+      storeTitle: unico?.storeTitle ?? null,
+      storeImageUrl: unico?.storeImageUrl ?? null,
+      storeReleaseYear: unico?.storeReleaseYear ?? null,
+    };
+  });
 }
 
 /** Le segnalazioni aperte di un utente su un gioco: il «Segnalato il …». */

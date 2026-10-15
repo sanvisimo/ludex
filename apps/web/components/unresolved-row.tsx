@@ -34,8 +34,11 @@ export function UnresolvedCover({
   height,
 }: {
   // Solo ciò che serve alla copertina: la usa anche l'admin, con la riga
-  // raggruppata degli scarti di tutti.
-  entry: Pick<UnresolvedImport, 'store' | 'externalId' | 'imageUrl'>;
+  // raggruppata degli scarti di tutti. Senza id — una copia di cui non si sa
+  // quale sia — resta il riquadro col negozio.
+  entry: Pick<UnresolvedImport, 'store' | 'imageUrl'> & {
+    externalId: string | null;
+  };
   width: number;
   height: number;
 }) {
@@ -43,10 +46,15 @@ export function UnresolvedCover({
   // negozio (su Steam l'orizzontale), poi l'icona.
   const [failed, setFailed] = useState(0);
   const brand = STORE_BRAND[entry.store];
-  const cover = [
-    storeCoverUrl(entry.store, entry.externalId, entry.imageUrl),
-    storeCoverFallbackUrl(entry.store, entry.externalId),
-  ].filter((url): url is string => url !== null)[failed];
+  const { externalId } = entry;
+  const cover = (
+    externalId === null
+      ? []
+      : [
+          storeCoverUrl(entry.store, externalId, entry.imageUrl),
+          storeCoverFallbackUrl(entry.store, externalId),
+        ]
+  ).filter((url): url is string => url !== null)[failed];
 
   if (cover) {
     // Un `<img>` e basta, come `GameCover`: l'immagine arriva da un altro

@@ -346,15 +346,16 @@ export type ImportReport = {
 };
 
 /**
- * Titolo e copertina del negozio su ogni collegamento della libreria, nuovo o
- * già noto.
+ * Titolo, copertina e anno del negozio su ogni collegamento della libreria,
+ * nuovo o già noto.
  *
  * Su **tutte** le voci risolte e non solo su quelle appena collegate: i
  * collegamenti scritti prima di queste colonne si riempiono così, al primo
  * reimport, e un negozio che rinomina un prodotto si vede al successivo. Si
  * scrive solo dove qualcosa è cambiato, quindi un reimport normale non tocca
- * niente. Una copertina che la voce non porta non cancella quella che c'era:
- * Steam non ne manda mai, e la compone `storeCoverUrl`.
+ * niente. Una copertina o un anno che la voce non porta non cancellano quelli
+ * che c'erano: Steam copertine non ne manda mai, e la compone `storeCoverUrl`;
+ * l'anno lo danno solo GOG ed EA.
  *
  * È ciò che fa capire all'admin quale dei due id Epic sullo stesso gioco sia
  * il DLC agganciato male: vedi `external_ids.store_title`.
@@ -364,7 +365,7 @@ async function recordStoreDetails(store: Store, entries: LibraryEntry[]) {
     const values = sql.join(
       page.map(
         (entry) =>
-          sql`(${entry.externalId}::text, ${entry.name}::text, ${entry.imageUrl ?? null}::text)`,
+          sql`(${entry.externalId}::text, ${entry.name}::text, ${entry.imageUrl ?? null}::text, ${entry.releaseYear ?? null}::int)`,
       ),
       sql`, `,
     );
@@ -373,14 +374,17 @@ async function recordStoreDetails(store: Store, entries: LibraryEntry[]) {
       update ${schema.externalIds}
          set store_title = v.title,
              store_image_url = coalesce(v.image_url, ${schema.externalIds.storeImageUrl}),
+             store_release_year = coalesce(v.release_year, ${schema.externalIds.storeReleaseYear}),
              updated_at = now()
-        from (values ${values}) as v(external_id, title, image_url)
+        from (values ${values}) as v(external_id, title, image_url, release_year)
        where ${schema.externalIds.source} = ${store}
          and ${schema.externalIds.externalId} = v.external_id
          and (
            ${schema.externalIds.storeTitle} is distinct from v.title
            or (v.image_url is not null
                and ${schema.externalIds.storeImageUrl} is distinct from v.image_url)
+           or (v.release_year is not null
+               and ${schema.externalIds.storeReleaseYear} is distinct from v.release_year)
          )
     `);
   }

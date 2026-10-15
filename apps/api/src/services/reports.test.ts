@@ -7,6 +7,7 @@ import {
   closeReports,
   createReports,
   listOpenReports,
+  myCopies,
   openReportsForGame,
 } from './reports';
 
@@ -131,5 +132,101 @@ describe('le segnalazioni', () => {
     expect(
       (await openReportsForGame(userId, gioco.id)).map((r) => r.store),
     ).toEqual(['nintendo']);
+  });
+});
+
+describe('le mie copie, in «Segnala un errore»', () => {
+  /** Una copia dell'utente, scritta dritta. */
+  async function copia(
+    userId: string,
+    gameId: string,
+    values: {
+      platformSlug: string;
+      store: 'psn' | 'steam' | null;
+      storePage?: string;
+    },
+  ) {
+    const [riga] = await db
+      .insert(schema.backlog)
+      .values({ userId, gameId })
+      .onConflictDoNothing()
+      .returning({ id: schema.backlog.id });
+    const backlogId =
+      riga?.id ??
+      (await db.query.backlog.findFirst({
+        where: (b, { and, eq }) =>
+          and(eq(b.userId, userId), eq(b.gameId, gameId)),
+      }))!.id;
+    const [ownership] = await db
+      .insert(schema.ownerships)
+      .values({ backlogId, ...values })
+      .returning({ id: schema.ownerships.id });
+    return ownership!.id;
+  }
+
+  it('ogni copia col suo id e il titolo del negozio; solo le tue', async () => {
+    const gioco = await createGame();
+    await db.insert(schema.externalIds).values([
+      {
+        gameId: gioco.id,
+        source: 'psn',
+        externalId: 'CUSA36827_00',
+        storeTitle: 'Viewfinder PS4',
+        storeImageUrl: 'https://psn/ps4.png',
+      },
+      {
+        gameId: gioco.id,
+        source: 'psn',
+        externalId: 'PPSA10248_00',
+        storeTitle: 'Viewfinder PS5',
+        storeImageUrl: 'https://psn/ps5.png',
+        storeReleaseYear: 2023,
+      },
+      { gameId: gioco.id, source: 'psn', externalId: '10006160' },
+    ]);
+    const userId = await createUser();
+    const ps5 = await copia(userId, gioco.id, {
+      platformSlug: 'sony_playstation5',
+      store: 'psn',
+      storePage: 'product/EP5360-PPSA10248_00-VIEWFINDER0005EU',
+    });
+    // Aggiunta a mano: niente negozio, niente da mostrare.
+    await copia(userId, gioco.id, {
+      platformSlug: 'sony_playstation4',
+      store: null,
+    });
+    // La copia di un altro utente non c'entra.
+    await copia(await createUser(), gioco.id, {
+      platformSlug: 'sony_playstation4',
+      store: 'psn',
+      storePage: 'product/EP5360-CUSA36827_00-VIEWFINDER0004EU',
+    });
+
+    expect(await myCopies(userId, gioco.id)).toEqual([
+      {
+        ownershipId: ps5,
+        externalIds: ['PPSA10248_00'],
+        storeTitle: 'Viewfinder PS5',
+        storeImageUrl: 'https://psn/ps5.png',
+        storeReleaseYear: 2023,
+      },
+    ]);
+  });
+
+  it('una copia ambigua ha tutti gli id, senza titolo né copertina', async () => {
+    const gioco = await createGame();
+    await db.insert(schema.externalIds).values([
+      { gameId: gioco.id, source: 'steam', externalId: '20', storeTitle: 'A' },
+      { gameId: gioco.id, source: 'steam', externalId: '10', storeTitle: 'B' },
+    ]);
+    const userId = await createUser();
+    await copia(userId, gioco.id, {
+      platformSlug: 'pc_windows',
+      store: 'steam',
+    });
+
+    expect(await myCopies(userId, gioco.id)).toMatchObject([
+      { externalIds: ['10', '20'], storeTitle: null, storeImageUrl: null },
+    ]);
   });
 });
