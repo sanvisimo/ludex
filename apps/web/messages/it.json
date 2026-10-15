@@ -1240,7 +1240,8 @@
       "missing": "Dati mancanti",
       "unresolved": "Scarti",
       "users": "Utenti",
-      "reported": "Segnalati"
+      "reported": "Segnalati",
+      "platforms": "Piattaforme sbagliate"
     },
     "source": {
       "igdb": "IGDB",

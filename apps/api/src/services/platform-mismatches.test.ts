@@ -54,6 +54,10 @@ describe('listPlatformMismatches', () => {
   it('trova la copia su una console dove il gioco non è uscito', async () => {
     // L'Harry Potter del 2001: Mega Drive (29), mai su PS5.
     const hp = await gioco('Harry Potter', [29]);
+    await db
+      .update(schema.games)
+      .set({ coverImageId: 'co2hp1' })
+      .where(eq(schema.games.id, hp.id));
     await copia(userId, hp.id, 'sony_playstation4');
     await copia(userId, hp.id, 'sony_playstation5');
 
@@ -64,6 +68,7 @@ describe('listPlatformMismatches', () => {
       {
         gameId: hp.id,
         name: 'Harry Potter',
+        coverImageId: 'co2hp1',
         users: 1,
         copies: [
           { store: 'psn', platformSlug: 'sony_playstation4' },

@@ -1,5 +1,5 @@
 import { NavItem, YStack } from '@repo/ui';
-import { Database, Flag, Inbox, Users } from '@repo/ui/icons';
+import { Database, Flag, Inbox, MonitorX, Users } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useMatchRoute, useRouter } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
@@ -12,6 +12,7 @@ type AdminSection =
   | '/admin/missing'
   | '/admin/unresolved'
   | '/admin/reported'
+  | '/admin/platforms'
   | '/admin/users';
 
 /**
@@ -19,8 +20,9 @@ type AdminSection =
  * una colonna da `$md`, una riga che scorre sotto.
  *
  * I numeri dicono dove c'è lavoro: le chiavi degli scarti ancora da
- * sistemare e le segnalazioni aperte. Una riga sola per lista: serve il
- * totale, non l'elenco.
+ * sistemare, le segnalazioni aperte e i giochi con copie su una piattaforma
+ * dove non sono usciti. Una riga sola per lista: serve il totale, non
+ * l'elenco.
  */
 export function AdminNav() {
   const t = useTranslations('admin.nav');
@@ -29,6 +31,11 @@ export function AdminNav() {
   );
   const segnalazioni = useQuery(
     api.admin.reports.list.queryOptions({ input: { limit: 1 } }),
+  );
+  const piattaforme = useQuery(
+    api.admin.platformMismatches.list.queryOptions({
+      input: { dismissed: false, limit: 1 },
+    }),
   );
 
   return (
@@ -63,6 +70,13 @@ export function AdminNav() {
         count={segnalazioni.data?.total}
       >
         {t('reported')}
+      </SectionLink>
+      <SectionLink
+        to="/admin/platforms"
+        icon={<MonitorX size={16} />}
+        count={piattaforme.data?.total}
+      >
+        {t('platforms')}
       </SectionLink>
       <SectionLink to="/admin/users" icon={<Users size={16} />}>
         {t('users')}

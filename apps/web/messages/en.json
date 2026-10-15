@@ -1241,7 +1241,8 @@
       "missing": "Missing data",
       "unresolved": "Unresolved",
       "users": "Users",
-      "reported": "Reported"
+      "reported": "Reported",
+      "platforms": "Wrong platforms"
     },
     "source": {
       "igdb": "IGDB",

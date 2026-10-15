@@ -470,10 +470,13 @@ describe('la scheda admin di un gioco', () => {
           externalId: TOKI_NINTENDO,
           users: 1,
           copies: 1,
+          platforms: ['Nintendo Switch'],
           url: null,
         }),
         expect.objectContaining({
           source: 'steam',
+          // Nessuna copia Steam: nessuna piattaforma.
+          platforms: [],
           url: 'https://store.steampowered.com/app/1058320',
         }),
       ]),

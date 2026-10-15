@@ -10,7 +10,6 @@ import {
   CellText,
   type AdminColumn,
 } from '@/components/admin/admin-table';
-import { PlatformMismatches } from '@/components/admin/platform-mismatches';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 import { ButtonLink } from '@/src/components/button-link';
@@ -32,7 +31,6 @@ function ReportedSection() {
         {t('title')}
       </Text>
       <ReportList />
-      <PlatformMismatches />
     </YStack>
   );
 }

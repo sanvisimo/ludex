@@ -244,6 +244,9 @@ export const IgdbSearchHitSchema = z.object({
   // perché la lista di scelta manuale ha lo stesso problema dell'import: fra
   // tre schede intitolate «Inside» quella vera è quella vissuta.
   totalRatingCount: z.number().int().nullable(),
+  // Su cosa è uscita la scheda, coi nostri nomi: fra _Final Fantasy IX_ del
+  // 2000 e i suoi port l'anno non basta, la console sì.
+  platforms: z.array(z.string()),
 });
 
 // L'account di negozio visto da un possesso: quel tanto che basta a dire *quale*
@@ -1066,6 +1069,7 @@ export const PlatformMismatchSchema = z.object({
   gameId: z.uuid(),
   name: z.string(),
   slug: z.string(),
+  coverImageId: z.string().nullable(),
   releaseYear: z.number().int().nullable(),
   users: z.number().int(),
   copies: z.array(
@@ -1115,6 +1119,8 @@ export const GameAdminDetailSchema = z.object({
       // Per negozio, non per id: le copie non sanno da quale id sono nate.
       users: z.number().int(),
       copies: z.number().int(),
+      // Su che piattaforme stanno le copie di quel negozio, coi nostri nomi.
+      platforms: z.array(z.string()),
       // La pagina sul negozio, per controllare che sia il gioco giusto.
       url: z.string().nullable(),
     }),

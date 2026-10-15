@@ -12,6 +12,7 @@ import { chunk } from '../lib/chunk';
 import { enqueueEnrichment } from '../queue/enrichment';
 import { reopenSourcesForNewExternalIds } from './enrichment';
 import { pickSlugs, retryOnSlugConflict } from './game-slug';
+import { igdbPlatformNamer } from './platform-names';
 
 // Postgres regge 65535 parametri per istruzione: con librerie da qualche
 // migliaio di voci un colpo solo li sfonderebbe.
@@ -311,8 +312,28 @@ export function parseSearchTerm(
 /**
  * Cerca su IGDB per nome, ma riconosce anche l'URL di una scheda o un id: è la
  * via diretta per quando la ricerca per nome non trova il gioco giusto.
+ *
+ * Ogni risultato porta le piattaforme su cui è uscito, coi nostri nomi: fra
+ * _Final Fantasy IX_ del 2000 e i port del 2016 e del 2017 si sceglie da lì.
  */
 export async function searchGames(term: string) {
+  const [hits, piattaforme] = await Promise.all([
+    searchIgdbHits(term),
+    db
+      .select({
+        igdbId: schema.platforms.igdbId,
+        name: schema.platforms.name,
+      })
+      .from(schema.platforms),
+  ]);
+  const nome = igdbPlatformNamer(piattaforme);
+  return hits.map((hit) => ({
+    ...hit,
+    platforms: hit.platformIds.map(nome),
+  }));
+}
+
+async function searchIgdbHits(term: string) {
   const parsed = parseSearchTerm(term);
 
   // Un URL non è un titolo: cercarlo anche per nome non troverebbe niente.

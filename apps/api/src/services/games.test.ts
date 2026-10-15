@@ -109,7 +109,9 @@ describe('searchGames', () => {
       'https://www.igdb.com/games/hollow-knight',
     );
 
-    expect(risultati).toEqual([hit(14593, 'Hollow Knight')]);
+    expect(risultati).toEqual([
+      { ...hit(14593, 'Hollow Knight'), platforms: [] },
+    ]);
     expect(mockedFindBySlug).toHaveBeenCalledWith('hollow-knight');
     expect(mockedSearch).not.toHaveBeenCalled();
   });
@@ -131,7 +133,25 @@ describe('searchGames', () => {
     mockedFindById.mockResolvedValue(null);
     mockedSearch.mockResolvedValue([hit(5, '1942')]);
 
-    expect(await searchGames('1942')).toEqual([hit(5, '1942')]);
+    expect(await searchGames('1942')).toEqual([
+      { ...hit(5, '1942'), platforms: [] },
+    ]);
+  });
+
+  it('dà a ogni risultato le piattaforme, coi nostri nomi', async () => {
+    // 48 e 167 stanno nella tabella `platforms`; 39 (iOS) no, 999 non esiste.
+    mockedSearch.mockResolvedValue([
+      { ...hit(340349, 'Final Fantasy IX'), platformIds: [48, 167, 39, 999] },
+    ]);
+
+    const [risultato] = await searchGames('Final Fantasy IX');
+
+    expect(risultato?.platforms).toEqual([
+      'Sony PlayStation 4',
+      'Sony PlayStation 5',
+      'iOS',
+      'IGDB 999',
+    ]);
   });
 });
 

@@ -3,18 +3,7 @@ import { db, schema } from '@repo/db';
 import { and, eq, inArray, sql } from '@repo/db/orm';
 
 import { igdbPlatformsOfCopy } from './copy-platforms';
-
-/**
- * I nomi delle piattaforme IGDB che la tabella `platforms` non ha: è presa da
- * Playnite, che i telefoni e il browser non li emula. Sono le più frequenti
- * fra le smentite (_Monument Valley 2+_ solo iOS); le altre restano col numero.
- */
-const FUORI_TABELLA: Record<number, string> = {
-  34: 'Android',
-  39: 'iOS',
-  55: 'Mobile',
-  82: 'Web browser',
-};
+import { igdbPlatformNamer } from './platform-names';
 
 /**
  * Le copie su una piattaforma dove IGDB dice che il gioco non è uscito (9b PSN).
@@ -43,9 +32,7 @@ export async function listPlatformMismatches(input: {
     piattaforme.flatMap((p) => (p.igdbId ? [[p.igdbId, p.slug] as const] : [])),
   );
   const nomeBySlug = new Map(piattaforme.map((p) => [p.slug, p.name]));
-  const nomeByIgdbId = new Map(
-    piattaforme.flatMap((p) => (p.igdbId ? [[p.igdbId, p.name] as const] : [])),
-  );
+  const nomeIgdb = igdbPlatformNamer(piattaforme);
 
   const valide = sql.join(
     piattaforme.map((p) => {
@@ -59,6 +46,7 @@ export async function listPlatformMismatches(input: {
     gameId: string;
     name: string;
     slug: string;
+    coverImageId: string | null;
     releaseYear: number | null;
     platformIgdbIds: number[];
     copies: { store: Store; platformSlug: string }[];
@@ -90,6 +78,7 @@ export async function listPlatformMismatches(input: {
       group by game_id
     )
     select g.id as "gameId", g.name, g.slug,
+      g.cover_image_id as "coverImageId",
       extract(year from g.first_release_date)::int as "releaseYear",
       g.platform_igdb_ids as "platformIgdbIds",
       gr.copies, gr.users,
@@ -105,6 +94,7 @@ export async function listPlatformMismatches(input: {
       gameId: row.gameId,
       name: row.name,
       slug: row.slug,
+      coverImageId: row.coverImageId,
       releaseYear: row.releaseYear,
       users: row.users,
       copies: row.copies
@@ -121,9 +111,7 @@ export async function listPlatformMismatches(input: {
         ),
       // Le piattaforme che IGDB gli dà, coi nostri nomi. Un id che la nostra
       // tabella non conosce si mostra com'è: è comunque un «no».
-      igdbPlatforms: row.platformIgdbIds.map(
-        (id) => nomeByIgdbId.get(id) ?? FUORI_TABELLA[id] ?? `IGDB ${id}`,
-      ),
+      igdbPlatforms: row.platformIgdbIds.map(nomeIgdb),
     })),
     total: rows[0]?.total ?? 0,
   };
