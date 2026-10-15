@@ -51,3 +51,26 @@ export const Hover: Story = {
     await waitFor(() => expect(screen.queryByText('Lingua')).toBeNull());
   },
 };
+
+/**
+ * Il testo intero di un titolo troncato: il contenuto va a capo invece di
+ * allungarsi in una striscia sola.
+ */
+export const LongContent: Story = {
+  args: {
+    content: 'Thronebreaker: The Witcher Tales — Edizione completa',
+    children: (
+      <Button variant="ghost" aria-label="Thronebreaker">
+        Thronebreaker: The…
+      </Button>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    await userEvent.hover(
+      within(canvasElement).getByRole('button', { name: 'Thronebreaker' }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(/Edizione completa/)).toBeVisible(),
+    );
+  },
+};

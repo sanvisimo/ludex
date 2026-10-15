@@ -6,6 +6,7 @@ import { useTranslations } from 'use-intl';
 import { CriticValue } from '@/components/entry-score';
 import { GameCover } from '@/components/game-cover';
 import { GameDuration } from '@/components/game-duration';
+import { GameTitleLink } from '@/components/game-title-link';
 import { ScrollRow } from '@/components/scroll-row';
 import { statusIcons } from '@/components/status-icon';
 import { WishlistHeart } from '@/components/wishlist-heart';
@@ -21,8 +22,8 @@ export const CARD_WIDTH = 136;
 
 /**
  * Una card: la copertina con lo stato in alto a sinistra — solo se il gioco
- * è tuo — e il voto in alto a destra; sotto il titolo, e anno e durata. Tutta
- * la card è il link alla pagina del gioco.
+ * è tuo — e il voto in alto a destra; sotto il titolo, e anno e durata.
+ * Copertina e titolo sono il link alla pagina del gioco.
  *
  * Larga `CARD_WIDTH` nelle fasce; con `fill` riempie la cella di una griglia,
  * come nei risultati della ricerca (12f).
@@ -105,26 +106,15 @@ export function HomeCard({
         </Link>
         {showWishlist && <WishlistHeart game={game} />}
       </YStack>
-      <Link to="/games/$slug" params={{ slug: game.slug }} style={linkStyle}>
-        <YStack gap={6}>
-          <Text
-            fontSize={14}
-            lineHeight={20}
-            color="$color12"
-            numberOfLines={2}
-          >
-            {game.name}
+      <GameTitleLink game={game} lines={2} />
+      <XStack flexWrap="wrap" items="center" columnGap={8}>
+        {game.firstReleaseDate && (
+          <Text fontSize={14} lineHeight={20} color="$color11">
+            {game.firstReleaseDate.getFullYear()}
           </Text>
-          <XStack flexWrap="wrap" items="center" columnGap={8}>
-            {game.firstReleaseDate && (
-              <Text fontSize={14} lineHeight={20} color="$color11">
-                {game.firstReleaseDate.getFullYear()}
-              </Text>
-            )}
-            <GameDuration game={game} short />
-          </XStack>
-        </YStack>
-      </Link>
+        )}
+        <GameDuration game={game} short />
+      </XStack>
     </YStack>
   );
 }

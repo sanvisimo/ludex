@@ -23,6 +23,7 @@ import { EntryTags } from '@/components/entry-tags';
 import { GameCover } from '@/components/game-cover';
 import { GRID_TEMPLATE } from '@/components/grid-columns';
 import { GameDuration } from '@/components/game-duration';
+import { GameTitleLink } from '@/components/game-title-link';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { OwnershipBadges } from '@/components/ownership-badges';
 import { PlayedTime } from '@/components/played-time';
@@ -181,46 +182,6 @@ function EntryActions({
   );
 }
 
-function GameLink({
-  entry,
-  lines,
-}: {
-  entry: BacklogEntry;
-  /** Oltre quante righe il titolo si tronca: la griglia ne ha due. */
-  lines?: number;
-}) {
-  return (
-    <Link
-      to="/games/$slug"
-      params={{ slug: entry.game.slug }}
-      // Un blocco e non un link in riga: dentro un `<a>` inline il testo non
-      // si tronca, e nella compatta il titolo passava sopra le colonne.
-      style={{
-        color: 'inherit',
-        textDecoration: 'none',
-        display: 'block',
-        minWidth: 0,
-        overflow: 'hidden',
-        ...(lines === 1 && {
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }),
-      }}
-    >
-      <Text
-        fontSize={14}
-        lineHeight={20}
-        fontWeight="500"
-        color="$color12"
-        hoverStyle={{ textDecorationLine: 'underline' }}
-        numberOfLines={lines}
-      >
-        {entry.game.name}
-      </Text>
-    </Link>
-  );
-}
-
 /**
  * Anno, durata, ore giocate e voto, in fila: le cose che si leggono a colpo
  * d'occhio. Il voto è il tuo, o quello della critica se non hai votato.
@@ -278,7 +239,7 @@ function RowsView({
                   <YStack gap={4} flex={1} minW={200}>
                     <XStack justify="space-between" gap={8}>
                       <XStack flex={1} minW={0} items="center" gap={8}>
-                        <GameLink entry={entry} lines={1} />
+                        <GameTitleLink game={entry.game} lines={1} />
                         <GameTypeBadge
                           type={entry.game.gameType}
                           $max-sm={{ display: 'none' }}
@@ -348,7 +309,7 @@ function GridView({
               <YStack gap={2} grow={1}>
                 <XStack items="flex-start" gap={4}>
                   <YStack flex={1} minW={0}>
-                    <GameLink entry={entry} lines={2} />
+                    <GameTitleLink game={entry.game} lines={2} />
                   </YStack>
                   <EntryActions entry={entry} {...handlers} />
                 </XStack>
@@ -494,7 +455,7 @@ function CompactView({
               </Link>
               <XStack flex={1} minW={0} items="center" gap={8}>
                 <YStack shrink={1} minW={0}>
-                  <GameLink entry={entry} lines={1} />
+                  <GameTitleLink game={entry.game} lines={1} />
                 </YStack>
                 {/* Sotto `$sm` il badge non si restringe e il titolo sì:
                     di «Ratchet & Clank» restava solo «Remake». */}
