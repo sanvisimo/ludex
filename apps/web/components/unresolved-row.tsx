@@ -1,5 +1,9 @@
 import type { UnresolvedImport } from '@repo/contracts';
-import { storeCoverUrl, storePageUrl } from '@repo/contracts';
+import {
+  storeCoverFallbackUrl,
+  storeCoverUrl,
+  storePageUrl,
+} from '@repo/contracts';
 import { BrandIcon, Text, XStack, YStack } from '@repo/ui';
 import { useState, type ReactNode } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
@@ -19,7 +23,7 @@ const COVER_HEIGHT = 128;
  * accanto ai risultati di IGDB e va confrontata con le loro.
  *
  * È quella del negozio, la sola che esiste: la voce non è collegata a IGDB. Dove
- * manca, o non si carica — un gioco ritirato da Steam dà 404 — resta l'icona del
+ * manca, o non si carica nemmeno col ripiego del negozio, resta l'icona del
  * negozio in un riquadro, così chi la mostra non cambia altezza e si riconosce
  * lo stesso da dove viene. Un'immagine rotta si ricorda **per voce**: chi cambia
  * voce la rimonta con una `key`.
@@ -35,16 +39,24 @@ export function UnresolvedCover({
   width: number;
   height: number;
 }) {
-  const [failed, setFailed] = useState(false);
+  // Quante immagini sono già fallite: prima la copertina, poi il ripiego del
+  // negozio (su Steam l'orizzontale), poi l'icona.
+  const [failed, setFailed] = useState(0);
   const brand = STORE_BRAND[entry.store];
-  const cover = storeCoverUrl(entry.store, entry.externalId, entry.imageUrl);
+  const cover = [
+    storeCoverUrl(entry.store, entry.externalId, entry.imageUrl),
+    storeCoverFallbackUrl(entry.store, entry.externalId),
+  ].filter((url): url is string => url !== null)[failed];
 
-  if (cover && !failed) {
+  if (cover) {
     // Un `<img>` e basta, come `GameCover`: l'immagine arriva da un altro
     // dominio e chi la mostra non ne sa niente di più. `alt` vuoto perché il
     // nome sta scritto accanto.
     return (
       <img
+        // La `key` rimonta l'immagine al cambio d'indirizzo, o il browser
+        // terrebbe lo stato d'errore della prima.
+        key={cover}
         src={cover}
         alt=""
         width={width}
@@ -52,7 +64,7 @@ export function UnresolvedCover({
         loading="lazy"
         decoding="async"
         referrerPolicy="no-referrer"
-        onError={() => setFailed(true)}
+        onError={() => setFailed((n) => n + 1)}
         style={{
           width,
           height,
