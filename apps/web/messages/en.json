@@ -1322,6 +1322,9 @@
     "igdbPick": {
       "label": "Search IGDB",
       "hint": "An IGDB id or the page URL work too.",
+      "platform": "Platform",
+      "allPlatforms": "All platforms",
+      "clearPlatform": "Clear the filter",
       "search": "Search",
       "searchFailed": "The search failed.",
       "noResults": "No results.",

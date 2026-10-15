@@ -153,6 +153,26 @@ describe('searchGames', () => {
       'IGDB 999',
     ]);
   });
+
+  it("filtra per piattaforma passando a IGDB l'id della nostra", async () => {
+    mockedSearch.mockResolvedValue([]);
+
+    await searchGames('Modern Warfare 3', 'sony_playstation5');
+
+    expect(mockedSearch).toHaveBeenCalledWith('Modern Warfare 3', {
+      platformIgdbId: 167,
+    });
+  });
+
+  it('con una piattaforma che IGDB non conosce cerca senza filtro', async () => {
+    mockedSearch.mockResolvedValue([]);
+
+    await searchGames('Bubble Bobble', 'tic_80');
+
+    expect(mockedSearch).toHaveBeenCalledWith('Bubble Bobble', {
+      platformIgdbId: undefined,
+    });
+  });
 });
 
 describe('findGameDetailById: ciò che serve alla pagina del gioco (12d)', () => {

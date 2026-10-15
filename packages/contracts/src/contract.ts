@@ -130,8 +130,16 @@ export const contract = {
     // Cerca su IGDB. Sincrona e senza coda: è il passo 2 del flusso di
     // risoluzione, distinto dall'enrichment asincrono dello step 3.
     // Autenticata perché consuma il rate limit delle nostre credenziali.
+    // `platform` (uno slug nostro) restringe la ricerca per nome a ciò che è
+    // uscito lì: fra i 20 risultati di un titolo comune la scheda giusta può
+    // non esserci, e filtrarli dopo non la farebbe comparire.
     search: oc
-      .input(z.object({ query: z.string().trim().min(2).max(100) }))
+      .input(
+        z.object({
+          query: z.string().trim().min(2).max(100),
+          platform: z.string().min(1).optional(),
+        }),
+      )
       .output(z.array(IgdbSearchHitSchema)),
 
     // Scelto un candidato, crea la riga `games` **o riusa quella già presente**

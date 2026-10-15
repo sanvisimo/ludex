@@ -1321,6 +1321,9 @@
     "igdbPick": {
       "label": "Cerca su IGDB",
       "hint": "Anche l'id IGDB o l'URL della scheda.",
+      "platform": "Piattaforma",
+      "allPlatforms": "Tutte le piattaforme",
+      "clearPlatform": "Togli il filtro",
       "search": "Cerca",
       "searchFailed": "La ricerca non è andata.",
       "noResults": "Nessun risultato.",

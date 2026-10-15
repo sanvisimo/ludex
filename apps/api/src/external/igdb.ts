@@ -243,14 +243,26 @@ function toHit(game: IgdbGame): IgdbSearchHit {
   };
 }
 
+/**
+ * `platformIgdbId` restringe la ricerca a ciò che è uscito su quella
+ * piattaforma. Sta nel `where` come i tipi esclusi, per la stessa ragione: i 20
+ * risultati sono già tutti di lì, invece di filtrarne 20 qualunque.
+ */
 export async function searchIgdbGames(
   term: string,
-  limit = 20,
+  {
+    platformIgdbId,
+    limit = 20,
+  }: { platformIgdbId?: number; limit?: number } = {},
 ): Promise<IgdbSearchHit[]> {
+  const where = [`game_type != (${EXCLUDED_TYPES.join(',')})`];
+  if (platformIgdbId !== undefined)
+    where.push(`platforms = (${Math.trunc(platformIgdbId)})`);
+
   const games = await query<IgdbGame[]>(
     'games',
     `search "${escapeSearchTerm(term)}"; ${SEARCH_FIELDS} ` +
-      `where game_type != (${EXCLUDED_TYPES.join(',')}); limit ${limit};`,
+      `where ${where.join(' & ')}; limit ${limit};`,
   );
   return games.map(toHit);
 }

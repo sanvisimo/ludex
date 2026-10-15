@@ -15,10 +15,11 @@ import {
 } from '@repo/ui';
 import { Check, Search } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { GameCover } from '@/components/game-cover';
+import { PlatformCombobox } from '@/components/platform-combobox';
 import { useGameTypeLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 
@@ -35,6 +36,10 @@ import { api } from '@/lib/orpc';
  * Si cerca premendo «Cerca», non mentre si scrive: IGDB regge quattro richieste
  * al secondo per tutto il server. La prima ricerca parte da sola, col nome
  * della voce: è quasi sempre quella giusta.
+ *
+ * La piattaforma filtra su IGDB, non sulla lista: dei 20 risultati di un titolo
+ * comune la scheda giusta può non far parte. Sceglierla rilancia la ricerca col
+ * testo già cercato, una richiesta per scelta come «Cerca».
  */
 export function IgdbPicker({
   initialQuery,
@@ -51,25 +56,47 @@ export function IgdbPicker({
   const [submitted, setSubmitted] = useState<string | null>(
     initialQuery.trim().length >= 2 ? initialQuery : null,
   );
+  const [platform, setPlatform] = useState<string | null>(null);
 
   const search = useQuery({
-    ...api.games.search.queryOptions({ input: { query: submitted ?? '' } }),
+    ...api.games.search.queryOptions({
+      input: { query: submitted ?? '', platform: platform ?? undefined },
+    }),
     enabled: submitted !== null && submitted.trim().length >= 2,
   });
+
+  // Solo quelle che IGDB conosce: le altre non filtrerebbero niente.
+  const platforms = useQuery(api.platforms.list.queryOptions());
+  const filterable = useMemo(
+    () => platforms.data?.filter((p) => p.igdbId !== null) ?? [],
+    [platforms.data],
+  );
 
   return (
     <YStack gap={12}>
       <YStack gap={8}>
         <Label htmlFor="igdb-pick">{t('label')}</Label>
-        <XStack gap={8}>
+        {/* Una riga sola dove c'è posto; su un telefono va a capo. */}
+        <XStack gap={8} flexWrap="wrap">
           <Input
             id="igdb-pick"
             flex={1}
+            minW={200}
             value={query}
             onChangeText={setQuery}
             onSubmitEditing={() => setSubmitted(query)}
             autoFocus
           />
+          <YStack width={220}>
+            <PlatformCombobox
+              aria-label={t('platform')}
+              platforms={filterable}
+              value={platform}
+              onValueChange={setPlatform}
+              placeholder={t('allPlatforms')}
+              clearLabel={t('clearPlatform')}
+            />
+          </YStack>
           <Button
             variant="outline"
             shrink={0}

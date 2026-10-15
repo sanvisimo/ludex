@@ -218,7 +218,7 @@ export const router = os.router({
 
     search: os.games.search
       .use(authed)
-      .handler(({ input }) => searchGames(input.query)),
+      .handler(({ input }) => searchGames(input.query, input.platform)),
 
     fromIgdb: os.games.fromIgdb.use(authed).handler(async ({ input }) => {
       const game = await resolveGameFromIgdb(input.igdbId);

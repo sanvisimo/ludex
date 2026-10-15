@@ -316,16 +316,19 @@ export function parseSearchTerm(
  * Ogni risultato porta le piattaforme su cui è uscito, coi nostri nomi: fra
  * _Final Fantasy IX_ del 2000 e i port del 2016 e del 2017 si sceglie da lì.
  */
-export async function searchGames(term: string) {
-  const [hits, piattaforme] = await Promise.all([
-    searchIgdbHits(term),
-    db
-      .select({
-        igdbId: schema.platforms.igdbId,
-        name: schema.platforms.name,
-      })
-      .from(schema.platforms),
-  ]);
+export async function searchGames(term: string, platform?: string) {
+  const piattaforme = await db
+    .select({
+      slug: schema.platforms.slug,
+      igdbId: schema.platforms.igdbId,
+      name: schema.platforms.name,
+    })
+    .from(schema.platforms);
+  // Una piattaforma che IGDB non conosce non filtra niente: meglio tutti i
+  // risultati che nessuno.
+  const platformIgdbId =
+    piattaforme.find((p) => p.slug === platform)?.igdbId ?? undefined;
+  const hits = await searchIgdbHits(term, platformIgdbId);
   const nome = igdbPlatformNamer(piattaforme);
   return hits.map((hit) => ({
     ...hit,
@@ -333,7 +336,9 @@ export async function searchGames(term: string) {
   }));
 }
 
-async function searchIgdbHits(term: string) {
+// Il filtro per piattaforma vale solo per la ricerca per nome: un id o un URL
+// la scheda la dicono già.
+async function searchIgdbHits(term: string, platformIgdbId?: number) {
   const parsed = parseSearchTerm(term);
 
   // Un URL non è un titolo: cercarlo anche per nome non troverebbe niente.
@@ -342,13 +347,13 @@ async function searchIgdbHits(term: string) {
     return hit ? [hit] : [];
   }
 
-  if (parsed.kind === 'name') return searchIgdbGames(term);
+  if (parsed.kind === 'name') return searchIgdbGames(term, { platformIgdbId });
 
   // Un numero invece può essere un titolo — *1942*, *198X* — quindi la ricerca
   // per nome resta, e il gioco con quell'id le sta davanti.
   const [byId, byName] = await Promise.all([
     findIgdbGameById(parsed.igdbId),
-    searchIgdbGames(term),
+    searchIgdbGames(term, { platformIgdbId }),
   ]);
   if (!byId) return byName;
   return [byId, ...byName.filter((hit) => hit.igdbId !== byId.igdbId)];
