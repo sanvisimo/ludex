@@ -120,7 +120,9 @@ function LibrariesSection() {
           {/* Tante colonne quante ne stanno, da 240 px l'una: tre nel desktop
               largo, due in uno stretto, una sul telefono. Una griglia vera e
               non una fila che va a capo: l'ultima riga non allarga le schede
-              che ha. */}
+              che ha. Ogni scheda prende `CARD_SLOTS` righe e le divide fra i
+              suoi posti (`subgrid`): lo spazio di 16 vale fra le schede, dentro
+              lo decide la scheda. */}
           <div
             style={{
               display: 'grid',

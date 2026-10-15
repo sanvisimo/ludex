@@ -164,8 +164,7 @@ con alcune differenze che non si indovinano:
 - **La scheda dell'account** ha il cuore accanto al ↻ (Steam, GOG, PSN, non sulle schede
   da ricollegare) e `StoreWishlistRow`: «in importazione…», l'errore col suo perché
   (`useWishlistErrorText`, un punto solo), o «Wishlist · N giochi» col link e «aggiornata X
-  fa». Il badge «Signed in» di Steam sta sotto l'intestazione, **fuori** dal gruppo ancorato
-  in fondo.
+  fa». Il badge «Signed in» di Steam sta nel posto sotto l'intestazione.
 - **Gli eventi.** L'evento `wishlist` rilegge le liste e gli account. Sul `finished`
   `useLiveUpdates` rilegge gli account (saltando la cache) e dice l'esito con un avviso, **anche
   per gli aggiornamenti automatici**; se l'account risulta ancora «in importazione» è un tentativo
@@ -296,10 +295,12 @@ direzione col CSS. Cose che non si indovinano:
   **con la password**: il server la pretende, e rifiuta l'ultimo admin
   (`LAST_ADMIN`). Step 16, fatto.
 - **Le librerie** sono una griglia `repeat(auto-fill, minmax(240px, 1fr))`, una
-  scheda per **account** (due account Amazon sono due schede). Stato e riga dei
-  gesti stanno **ancorati in fondo** (`grow` sul contenuto, `mt="auto"` su un
-  gruppo): la griglia allunga le schede di una riga alla più alta, e senza l'ancora
-  le icone ↻ stanno ad altezze diverse. `STORE_BRAND` è in `lib/store-brand.ts`.
+  scheda per **account** (due account Amazon sono due schede). La scheda ha **sei
+  posti fissi** — intestazione, login Steam, stato, wishlist, gesti, nota — su sei
+  righe della griglia con `subgrid`: ogni posto è alto quanto il più alto della sua
+  riga di schede, quindi stato, wishlist e ↻ stanno alla stessa altezza anche dove
+  una scheda ha la wishlist e quella accanto no. Un posto vuoto c'è lo stesso, senza
+  spazio sopra. `STORE_BRAND` è in `lib/store-brand.ts`.
   Il ↻ gira con `Spinner` mentre quell'account importa.
 - **Gli scarti d'import hanno copertina e link al negozio**, e vengono dall'import:
   `unresolved_imports.image_url` e `store_page`, riscritti a ogni reimport (vedi

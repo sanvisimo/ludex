@@ -15,7 +15,6 @@ import {
   BrandIcon,
   Button,
   Card,
-  CardContent,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -48,7 +47,7 @@ import {
   Unlink,
 } from '@repo/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { useFormatter, useNow, useTranslations } from 'use-intl';
 
 import { RemoveSteamLoginDialog } from '@/components/remove-steam-login-dialog';
@@ -60,6 +59,24 @@ import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
 import { STORE_BRAND } from '@/lib/store-brand';
 import { api, client } from '@/lib/orpc';
+
+/**
+ * Quante righe della griglia occupa una scheda: i suoi sei posti. La griglia
+ * della pagina lo usa per `grid-row`, e la scheda per la sua `subgrid`.
+ */
+const CARD_SLOTS = 6;
+
+/**
+ * Uno dei posti sotto l'intestazione. C'è sempre, anche vuoto, perché tiene la
+ * sua riga della griglia; lo spazio sopra solo quando ha qualcosa, o una riga
+ * di schede in cui nessuno lo usa avrebbe un buco.
+ */
+function Slot({ children }: { children?: ReactNode }) {
+  const filled = children != null && children !== false;
+  return (
+    <div style={{ minWidth: 0, paddingTop: filled ? 12 : 0 }}>{children}</div>
+  );
+}
 
 /**
  * Un account collegato, in una scheda della griglia.
@@ -196,117 +213,137 @@ export function StoreAccountCard({
       ),
   });
 
+  // `StoreWishlistRow` non dice niente su una wishlist mai importata: il suo
+  // posto deve restare senza spazio sopra, come quelli vuoti.
+  const showWishlistRow =
+    hasWishlist &&
+    (account.wishlistSyncing || account.wishlistError != null || !!wishlist);
+
   return (
-    <Card width="100%">
-      {/* `grow` e `mt="auto"` sulla riga in fondo: la griglia allunga le
-          schede di una riga alla più alta, e senza questo i bottoni di
-          aggiornamento stavano ad altezze diverse da una scheda all'altra. */}
-      <CardContent gap={12} grow={1}>
-        <XStack items="flex-start" justify="space-between" gap={8}>
-          <XStack items="center" gap={12} shrink={1} minW={0}>
-            {brand ? (
-              <BrandIcon
-                brand={brand}
-                size={40}
-                label={storeLabels[account.store]}
-              />
-            ) : null}
-            <YStack shrink={1} minW={0}>
-              <Text fontWeight="600" color="$color12">
-                {storeLabels[account.store]}
-              </Text>
+    // Sei posti fissi — intestazione, login Steam, stato, wishlist, gesti,
+    // nota — sulle sei righe che la griglia della pagina dà a ogni scheda
+    // (`subgrid`). Ogni posto è alto quanto il più alto della stessa riga della
+    // griglia: lo stato, la wishlist e i bottoni stanno alla stessa altezza in
+    // tutte le schede, anche dove una ha la wishlist e quella accanto no. Un
+    // posto vuoto non ha spazio sopra, così una riga in cui nessuno lo usa non
+    // lascia buchi.
+    <Card
+      width="100%"
+      gap={0}
+      px={16}
+      style={{
+        display: 'grid',
+        gridRow: `span ${CARD_SLOTS}`,
+        gridTemplateRows: 'subgrid',
+        rowGap: 0,
+      }}
+    >
+      <XStack items="flex-start" justify="space-between" gap={8} minW={0}>
+        <XStack items="center" gap={12} shrink={1} minW={0}>
+          {brand ? (
+            <BrandIcon
+              brand={brand}
+              size={40}
+              label={storeLabels[account.store]}
+            />
+          ) : null}
+          <YStack shrink={1} minW={0}>
+            <Text fontWeight="600" color="$color12">
+              {storeLabels[account.store]}
+            </Text>
+            <Text
+              fontSize={13}
+              lineHeight={18}
+              color="$color11"
+              numberOfLines={1}
+            >
+              {storeAccountName(account)}
+            </Text>
+            {/* Il nome del negozio accanto all'etichetta: serve a ritrovare
+                  quale account è, quando l'etichetta gliel'hai data tu. */}
+            {account.label && account.displayName && (
               <Text
-                fontSize={13}
-                lineHeight={18}
+                fontSize={12}
+                lineHeight={16}
                 color="$color11"
                 numberOfLines={1}
               >
-                {storeAccountName(account)}
+                {account.displayName}
               </Text>
-              {/* Il nome del negozio accanto all'etichetta: serve a ritrovare
-                  quale account è, quando l'etichetta gliel'hai data tu. */}
-              {account.label && account.displayName && (
-                <Text
-                  fontSize={12}
-                  lineHeight={16}
-                  color="$color11"
-                  numberOfLines={1}
-                >
-                  {account.displayName}
-                </Text>
-              )}
-            </YStack>
-          </XStack>
-
-          <DropdownMenu align="end">
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t('menu', {
-                    name: storeAccountName(account),
-                  })}
-                >
-                  <EllipsisVertical size={16} color="$color12" />
-                </Button>
-              }
-            />
-            <DropdownMenuContent width={192}>
-              <DropdownMenuItem icon={<Pencil size={16} />} onClick={onRename}>
-                {account.label ? t('renameEdit') : t('renameAdd')}
-              </DropdownMenuItem>
-              {relinkStore && (
-                <DropdownMenuItem
-                  icon={<Link2 size={16} />}
-                  onClick={() => setRelinking(true)}
-                >
-                  {t('reconnect')}
-                </DropdownMenuItem>
-              )}
-              {/* Le due voci nuove del 9f: sono due modi della stessa riga, e
-                  l'una esclude l'altra — si offre quella che manca. */}
-              {isSteam && !account.hasLogin && (
-                <DropdownMenuItem
-                  icon={<LogIn size={16} />}
-                  onClick={() => setLoggingIn(true)}
-                >
-                  {tSteam('signIn')}
-                </DropdownMenuItem>
-              )}
-              {isSteam && account.loginKind === 'token' && (
-                <DropdownMenuItem
-                  icon={<KeyRound size={16} />}
-                  onClick={() => setLoggingIn(true)}
-                >
-                  {tSteam('newToken')}
-                </DropdownMenuItem>
-              )}
-              {isSteam && account.hasLogin && (
-                <DropdownMenuItem
-                  icon={<LogOut size={16} />}
-                  onClick={() => setRemovingLogin(true)}
-                  disabled={busy || syncing}
-                >
-                  {tSteam('removeLogin')}
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                icon={<Unlink size={16} />}
-                onClick={onUnlink}
-                disabled={busy || syncing}
-              >
-                {t('unlink')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            )}
+          </YStack>
         </XStack>
 
-        {/* Su Steam la scheda dice **come** è collegato l'account: col login
+        <DropdownMenu align="end">
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('menu', {
+                  name: storeAccountName(account),
+                })}
+              >
+                <EllipsisVertical size={16} color="$color12" />
+              </Button>
+            }
+          />
+          <DropdownMenuContent width={192}>
+            <DropdownMenuItem icon={<Pencil size={16} />} onClick={onRename}>
+              {account.label ? t('renameEdit') : t('renameAdd')}
+            </DropdownMenuItem>
+            {relinkStore && (
+              <DropdownMenuItem
+                icon={<Link2 size={16} />}
+                onClick={() => setRelinking(true)}
+              >
+                {t('reconnect')}
+              </DropdownMenuItem>
+            )}
+            {/* Le due voci nuove del 9f: sono due modi della stessa riga, e
+                  l'una esclude l'altra — si offre quella che manca. */}
+            {isSteam && !account.hasLogin && (
+              <DropdownMenuItem
+                icon={<LogIn size={16} />}
+                onClick={() => setLoggingIn(true)}
+              >
+                {tSteam('signIn')}
+              </DropdownMenuItem>
+            )}
+            {isSteam && account.loginKind === 'token' && (
+              <DropdownMenuItem
+                icon={<KeyRound size={16} />}
+                onClick={() => setLoggingIn(true)}
+              >
+                {tSteam('newToken')}
+              </DropdownMenuItem>
+            )}
+            {isSteam && account.hasLogin && (
+              <DropdownMenuItem
+                icon={<LogOut size={16} />}
+                onClick={() => setRemovingLogin(true)}
+                disabled={busy || syncing}
+              >
+                {tSteam('removeLogin')}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              icon={<Unlink size={16} />}
+              onClick={onUnlink}
+              disabled={busy || syncing}
+            >
+              {t('unlink')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </XStack>
+
+      {/* Su Steam la scheda dice **come** è collegato l'account: col login
             (e allora c'è la famiglia) o col solo profilo, dove il login si
             offre lì accanto. Con il login scaduto non si dice «attivo»: il
             badge rosso di sotto dice già cosa fare. */}
+      <Slot>
         {isSteam &&
           (account.hasLogin ? (
             <XStack items="center" gap={8} flexWrap="wrap">
@@ -366,140 +403,142 @@ export function StoreAccountCard({
               </Button>
             </XStack>
           ))}
+      </Slot>
 
-        {/* Tutto ciò che sta sotto l'intestazione è ancorato in fondo, stato
-            compreso. La griglia allunga le schede di una riga alla più alta:
-            con lo stato in alto e solo i gesti in fondo, fra i due restava un
-            vuoto di altezza diversa da una scheda all'altra. */}
-        <YStack gap={12} mt="auto">
-          {/* Lo stato in una riga: da ricollegare, in corso, o quando è stata
+      {/* Lo stato in una riga: da ricollegare, in corso, o quando è stata
             l'ultima volta. Da ricollegare vince sul resto: finché non si
             rimette a posto niente si aggiorna. */}
-          {account.status === 'needs_reauth' ? (
-            <YStack gap={4}>
-              <Badge variant="error" self="flex-start">
-                {t('needsReauthBadge')}
-              </Badge>
-              <Text fontSize={13} lineHeight={18} color="$color11">
-                {t('needsReauth')}
-              </Text>
-            </YStack>
-          ) : syncing ? (
-            <Badge variant="warning" self="flex-start">
-              {t('syncing')}
+      <Slot>
+        {account.status === 'needs_reauth' ? (
+          <YStack gap={4}>
+            <Badge variant="error" self="flex-start">
+              {t('needsReauthBadge')}
             </Badge>
-          ) : (
             <Text fontSize={13} lineHeight={18} color="$color11">
-              {account.lastSyncAt
-                ? t('lastSync', {
-                    when: format.relativeTime(account.lastSyncAt, now),
-                  })
-                : t('neverSynced')}
+              {t('needsReauth')}
             </Text>
-          )}
+          </YStack>
+        ) : syncing ? (
+          <Badge variant="warning" self="flex-start">
+            {t('syncing')}
+          </Badge>
+        ) : (
+          <Text fontSize={13} lineHeight={18} color="$color11">
+            {account.lastSyncAt
+              ? t('lastSync', {
+                  when: format.relativeTime(account.lastSyncAt, now),
+                })
+              : t('neverSynced')}
+          </Text>
+        )}
+      </Slot>
 
-          {hasWishlist && (
-            <StoreWishlistRow account={account} list={wishlist} />
-          )}
+      <Slot>
+        {showWishlistRow && (
+          <StoreWishlistRow account={account} list={wishlist} />
+        )}
+      </Slot>
 
-          {/* Una riga sola: a sinistra il gesto, a destra l'interruttore.
+      {/* Una riga sola: a sinistra il gesto, a destra l'interruttore.
             «Aggiorna» è la sola icona, col suo nome nel suggerimento e
             nell'`aria-label`; «Ricollega» resta a parole, perché è il gesto da
             fare e non va nascosto. L'interruttore tiene «Auto» scritto: il
             suggerimento non compare su un telefono, e senza una parola
             accanto lo switch non direbbe cosa fa. */}
-          <XStack items="center" gap={8}>
-            {relinkStore ? (
-              <Button onClick={() => setRelinking(true)}>
-                <Link2 size={16} color="$black1" />
-                {t('reconnect')}
-              </Button>
-            ) : reimportStore ? (
-              // A parole e non a icona come ↻: non è il gesto di sempre ma uno
-              // che chiede di rifare i passi, e deve dirlo prima del clic.
+      <Slot>
+        <XStack items="center" gap={8}>
+          {relinkStore ? (
+            <Button onClick={() => setRelinking(true)}>
+              <Link2 size={16} color="$black1" />
+              {t('reconnect')}
+            </Button>
+          ) : reimportStore ? (
+            // A parole e non a icona come ↻: non è il gesto di sempre ma uno
+            // che chiede di rifare i passi, e deve dirlo prima del clic.
+            <Button
+              variant="outline"
+              onClick={() => setRelinking(true)}
+              disabled={busy || syncing}
+            >
+              <Spinner spinning={syncing}>
+                <Download size={16} color="$color12" />
+              </Spinner>
+              {t('reimport')}
+            </Button>
+          ) : (
+            <Tooltip content={t('sync')}>
               <Button
                 variant="outline"
-                onClick={() => setRelinking(true)}
-                disabled={busy || syncing}
+                size="icon"
+                aria-label={t('sync')}
+                onClick={() => sync.mutate()}
+                disabled={busy || syncing || sync.isPending}
               >
-                <Spinner spinning={syncing}>
-                  <Download size={16} color="$color12" />
-                </Spinner>
-                {t('reimport')}
-              </Button>
-            ) : (
-              <Tooltip content={t('sync')}>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label={t('sync')}
-                  onClick={() => sync.mutate()}
-                  disabled={busy || syncing || sync.isPending}
-                >
-                  {/* Gira mentre quell'account importa: il bottone resta spento
+                {/* Gira mentre quell'account importa: il bottone resta spento
                     e dice «Aggiorna», lo Spinner è solo il movimento. */}
-                  <Spinner spinning={syncing}>
-                    <RefreshCw size={16} color="$color12" />
-                  </Spinner>
-                </Button>
-              </Tooltip>
-            )}
+                <Spinner spinning={syncing}>
+                  <RefreshCw size={16} color="$color12" />
+                </Spinner>
+              </Button>
+            </Tooltip>
+          )}
 
-            {/* Il cuore accanto al ↻: importa la wishlist del negozio, o la
+          {/* Il cuore accanto al ↻: importa la wishlist del negozio, o la
                 aggiorna se c'è. Solo dove se ne legge una, e non da
                 ricollegare. Gira mentre quell'account la importa. */}
-            {hasWishlist && !relinkStore && (
-              <Tooltip
-                content={wishlist ? tWishlist('refresh') : tWishlist('import')}
+          {hasWishlist && !relinkStore && (
+            <Tooltip
+              content={wishlist ? tWishlist('refresh') : tWishlist('import')}
+            >
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={
+                  wishlist ? tWishlist('refresh') : tWishlist('import')
+                }
+                onClick={() => syncWishlist.mutate()}
+                disabled={account.wishlistSyncing || syncWishlist.isPending}
               >
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label={
-                    wishlist ? tWishlist('refresh') : tWishlist('import')
-                  }
-                  onClick={() => syncWishlist.mutate()}
-                  disabled={account.wishlistSyncing || syncWishlist.isPending}
-                >
-                  <Spinner spinning={account.wishlistSyncing}>
-                    <Heart size={16} color="$color12" />
-                  </Spinner>
-                </Button>
-              </Tooltip>
-            )}
-
-            {!reimportStore && (
-              <XStack items="center" gap={8} ml="auto">
-                <Label htmlFor={autoSyncId}>{t('autoSyncShort')}</Label>
-                <Tooltip content={t('autoSync')}>
-                  <Switch
-                    id={autoSyncId}
-                    aria-label={t('autoSync')}
-                    checked={autoSyncChecked}
-                    onCheckedChange={(value) => autoSync.mutate(value)}
-                    disabled={!autoSyncLibrary || autoSync.isPending}
-                  />
-                </Tooltip>
-              </XStack>
-            )}
-          </XStack>
-
-          {reimportStore ? null : !autoSyncLibrary ? (
-            <Text fontSize={13} lineHeight={18} color="$color11">
-              {t('autoSyncOffGlobally')}
-            </Text>
-          ) : (
-            // Solo PSN: sugli altri negozi spegnerlo vuol dire una libreria
-            // meno fresca, qui vuol dire un collegamento che muore.
-            account.store === 'psn' &&
-            !autoSyncChecked && (
-              <Text fontSize={13} lineHeight={18} color="$red11">
-                {t('autoSyncPsnWarning')}
-              </Text>
-            )
+                <Spinner spinning={account.wishlistSyncing}>
+                  <Heart size={16} color="$color12" />
+                </Spinner>
+              </Button>
+            </Tooltip>
           )}
-        </YStack>
-      </CardContent>
+
+          {!reimportStore && (
+            <XStack items="center" gap={8} ml="auto">
+              <Label htmlFor={autoSyncId}>{t('autoSyncShort')}</Label>
+              <Tooltip content={t('autoSync')}>
+                <Switch
+                  id={autoSyncId}
+                  aria-label={t('autoSync')}
+                  checked={autoSyncChecked}
+                  onCheckedChange={(value) => autoSync.mutate(value)}
+                  disabled={!autoSyncLibrary || autoSync.isPending}
+                />
+              </Tooltip>
+            </XStack>
+          )}
+        </XStack>
+      </Slot>
+
+      <Slot>
+        {reimportStore ? null : !autoSyncLibrary ? (
+          <Text fontSize={13} lineHeight={18} color="$color11">
+            {t('autoSyncOffGlobally')}
+          </Text>
+        ) : (
+          // Solo PSN: sugli altri negozi spegnerlo vuol dire una libreria
+          // meno fresca, qui vuol dire un collegamento che muore.
+          account.store === 'psn' &&
+          !autoSyncChecked && (
+            <Text fontSize={13} lineHeight={18} color="$red11">
+              {t('autoSyncPsnWarning')}
+            </Text>
+          )
+        )}
+      </Slot>
 
       {/* Il dialogo si chiude da sé quando il ricollegamento riesce: lo stato
           torna `ok`, `relinkStore` diventa nullo e `open` con lui. */}
