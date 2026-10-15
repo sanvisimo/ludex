@@ -85,6 +85,10 @@ export function useLiveUpdates() {
       invalidate(api.backlog.key());
       invalidate(api.playlists.key());
       invalidate(api.imports.key());
+      // Anche le pagine dei giochi e la home: un import cambia le copie di
+      // giochi che c'erano già (una copia che passa alla famiglia Steam), e
+      // l'evento `games` arriva solo per i giochi nuovi.
+      invalidate(api.games.key());
     };
 
     const gamesChanged = (gameIds?: string[]) => {
