@@ -1032,15 +1032,24 @@
     "items": {
       "gogCollections": {
         "title": "I giochi di GOG venduti in raccolta",
-        "text": "GOG vende alcuni giochi in raccolta ma in libreria li mostra uno per uno, come Alone in the Dark 1, 2 e 3: in ludex diventano una scheda ciascuno. E una voce che finisce sullo stesso gioco di un'altra, come una demo, compare fra i «Possibili doppioni» invece di sparire."
+        "p1": "GOG vende alcuni giochi in raccolta ma in libreria li mostra uno per uno, come Alone in the Dark 1, 2 e 3: in ludex diventano una scheda ciascuno.",
+        "p2": "Una voce che finisce sullo stesso gioco di un’altra, come una demo, compare fra i «Possibili doppioni» invece di sparire."
       },
       "wrongPlatform": {
         "title": "I giochi agganciati su una console sbagliata",
-        "text": "Un nome accorciato poteva agganciare un gioco omonimo mai uscito sulla tua console, come Harry Potter: Campioni di Quidditch finito sull’Harry Potter del 2001. Ora quei giochi finiscono fra i «Da sistemare», e gli admin vedono quelli già collegati male."
+        "p1": "Un gioco trovato per nome si collega solo se è uscito sulla console della copia: Harry Potter: Campioni di Quidditch non finisce più sull’Harry Potter del 2001, ma fra i «Da sistemare».",
+        "p2": "Gli admin vedono le copie già collegate su una console dove il gioco non è uscito, e le correggono."
       },
       "epicDuplicates": {
         "title": "I giochi nascosti nei prodotti Epic",
-        "text": "Su Epic un prodotto può contenere più giochi, come Delores dentro Thimbleweed Park: le voci in più compaiono fra i «Da sistemare», dove decidi tu cosa sono."
+        "p1": "Su Epic un prodotto può contenere più giochi, come Delores dentro Thimbleweed Park: le voci in più compaiono fra i «Possibili doppioni», dove decidi tu cosa sono.",
+        "p2": "Il gioco principale di un prodotto si sceglie con una regola, non più a caso: TROY non entra più come il suo DLC «AMAZONS»."
+      },
+      "steamFree": {
+        "title": "I giochi gratuiti di Steam",
+        "p1": "Con l’accesso a Steam arrivano anche i giochi gratuiti mai avviati: quelli presi in regalo o aggiunti alla libreria e mai aperti, come Warframe o Tell Me Why. Prima Steam dava solo quelli già giocati.",
+        "p2": "Demo e beta non si agganciano più a un gioco omonimo, come la demo di Castlevania: Belmont’s Curse finita sul Castlevania del 1986: finiscono fra le voci nascoste.",
+        "p3": "Una voce dei «Da sistemare» collegata a mano resta com’era nella libreria: una copia della famiglia Steam o del PlayStation Plus non diventa un acquisto, e un disco resta un disco."
       },
       "subscriptions": {
         "title": "Gli abbonamenti",
@@ -1231,7 +1240,8 @@
       "missing": "Dati mancanti",
       "unresolved": "Scarti",
       "users": "Utenti",
-      "reported": "Segnalati"
+      "reported": "Segnalati",
+      "platforms": "Piattaforme sbagliate"
     },
     "source": {
       "igdb": "IGDB",

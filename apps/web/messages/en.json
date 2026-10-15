@@ -1033,15 +1033,24 @@
     "items": {
       "gogCollections": {
         "title": "GOG games sold as a collection",
-        "text": "GOG sells some games as a collection but lists them one by one in your library, like Alone in the Dark 1, 2 and 3: in ludex each one gets its own card. And an entry that lands on the same game as another one, like a demo, shows up under “Possible duplicates” instead of disappearing."
+        "p1": "GOG sells some games as a collection but lists them one by one in your library, like Alone in the Dark 1, 2 and 3: in ludex each one gets its own card.",
+        "p2": "An entry that lands on the same game as another one, like a demo, shows up under “Possible duplicates” instead of disappearing."
       },
       "wrongPlatform": {
         "title": "Games matched on the wrong console",
-        "text": "A shortened name could match a game with the same title that never came out on your console, like Harry Potter: Quidditch Champions landing on the 2001 Harry Potter. Now those games go to “Needs attention”, and admins see the ones already matched wrong."
+        "p1": "A game found by name is linked only if it came out on the copy’s console: Harry Potter: Quidditch Champions no longer lands on the 2001 Harry Potter, it goes to “Needs attention”.",
+        "p2": "Admins see the copies already linked on a console where the game never came out, and fix them."
       },
       "epicDuplicates": {
         "title": "Games hidden inside Epic products",
-        "text": "On Epic a product can hold more than one game, like Delores inside Thimbleweed Park: the extra entries show up under “Needs attention”, where you decide what they are."
+        "p1": "On Epic a product can hold more than one game, like Delores inside Thimbleweed Park: the extra entries show up under “Possible duplicates”, where you decide what they are.",
+        "p2": "A product’s main game is picked by a rule, not at random: TROY no longer comes in as its DLC “AMAZONS”."
+      },
+      "steamFree": {
+        "title": "Free games on Steam",
+        "p1": "When you sign in to Steam, free games you never launched come in too: the ones you got as a gift or added to your library and never opened, like Warframe or Tell Me Why. Before, Steam only returned the ones you had played.",
+        "p2": "Demos and betas no longer match a game with the same name, like the Castlevania: Belmont’s Curse demo landing on the 1986 Castlevania: they go to the hidden entries.",
+        "p3": "An entry from “Needs attention” that you link by hand stays as it was in the library: a Steam Family or PlayStation Plus copy doesn’t become a purchase, and a disc stays a disc."
       },
       "subscriptions": {
         "title": "Subscriptions",
@@ -1232,7 +1241,8 @@
       "missing": "Missing data",
       "unresolved": "Unresolved",
       "users": "Users",
-      "reported": "Reported"
+      "reported": "Reported",
+      "platforms": "Wrong platforms"
     },
     "source": {
       "igdb": "IGDB",

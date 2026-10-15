@@ -82,7 +82,7 @@ Decisa dall'utente il 15/10/2026. **Nessun wireframe**: il blocco esiste già.
 Visto il lotto in uso (15/10/2026), l'utente ha chiesto anche la data: fra
 _State of Mind_ del 2018 e del 2022 su GOG il titolo non basta. GOG ed EA
 l'anno lo danno, e l'import lo usava per il match per nome e poi lo buttava.
-Ora sta in `external_ids.store_release_year` (migration 0054), scritto da
+Ora sta in `external_ids.store_release_year` (migration 0055), scritto da
 `recordStoreDetails` come la copertina, e la scheda lo mostra dopo il titolo,
 «State of Mind (2018)», come i risultati di IGDB. Gli altri negozi non lo danno
 nella libreria: servirebbe una chiamata per gioco, e non si fa. Le copie già

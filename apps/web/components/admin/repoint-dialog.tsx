@@ -123,6 +123,13 @@ export function RepointDialog({
                       })
                   : ''}
               </DialogDescription>
+              {/* Su che console stanno le copie: fra l'originale e i suoi
+                  port si sceglie da qui, confrontando coi risultati. */}
+              {link && link.platforms.length > 0 ? (
+                <Text fontSize={13} lineHeight={18}>
+                  {`${store} · ${link.platforms.join(', ')}`}
+                </Text>
+              ) : null}
             </YStack>
           </XStack>
         </DialogHeader>

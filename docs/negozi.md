@@ -805,6 +805,70 @@ negozi. Non c'è un interruttore che li tenga chiusi agli altri utenti: la decis
 la dicitura, e il rischio di molti utenti da un solo indirizzo resta non misurato. Se
 un blocco arriva, va scritto qui e il login si spegne.
 
+## Steam: i gratuiti che `GetOwnedGames` non dà (9f, 15/10/2026)
+
+Dal confronto con l'export di Playnite del 14/10/2026: **50 giochi propri su
+501 mancavano**, senza che niente lo dicesse. Free-to-play mai avviati
+(Warframe, Path of Exile, Halo Infinite), regali (Tell Me Why, i quattro SEGA
+del 2020), prologhi, beta. `GetOwnedGames` con `include_played_free_games` dà i
+gratuiti **solo giocati**. Il piano, con tutte le misure, è
+[plans/9f-steam-gratuiti-e-demo.md](../plans/9f-steam-gratuiti-e-demo.md).
+
+**Cosa non funziona.** `include_free_sub=1` sulla chiave: 455 giochi contro 453,
+dei 50 ne compare uno. `GetSharedLibraryApps` con `include_own=true` dà i 501,
+ma vuole un `family_groupid`: chi non è in una famiglia non ce l'ha.
+
+**Come fa Playnite.** Non è senza login: prende il `webapi_token` dalla sessione
+dello store nel suo browser interno, poi `GetOwnedGames`, poi
+`IClientCommService/GetClientAppList` (solo col client Steam acceso) o
+`store.steampowered.com/dynamicstore/userdata/`, filtrati sul tipo `game`.
+
+**Come facciamo noi, solo col login** (`licenseEntries` in `steam-import.ts`):
+
+- **`dynamicstore/userdata`** (`fetchSteamOwnedAppIds`) col cookie
+  `steamLoginSecure`, ricostruito dall'access token che l'import ha già
+  (`SteamID64||token`): nessun login in più. `rgOwnedApps` ha **tutte** le
+  licenze, solo come appid: 1168 sulla libreria vera, contro 455 giochi. Senza
+  sessione la risposta è 200 con gli elenchi vuoti: la si riconosce perché manca
+  anche il pacchetto `0`, che ogni account possiede. Provato su `sanvitest`
+  (fuori da ogni famiglia: aggiunto _Path of Exile_, compare in `rgOwnedApps` e
+  non in `GetOwnedGames`) e sull'account principale. Non provato col token web
+  incollato.
+- **Il tipo da `IStoreBrowseService/GetItems`** (`fetchSteamAppTypes`):
+  **anonima**, cento app per richiesta, 8 sulla libreria vera; `appdetails`
+  sarebbe stata una richiesta per app, 714. `type` 0 gioco, 1 demo, 4 DLC, 11
+  musica, 12 beta. Dei 714 appid in più: 442 DLC, **52 giochi**, 210 senza
+  risposta (ritirati dallo store, strumenti). Il tipo è quello del negozio, ed è
+  il punto: gli episodi venduti come DLC (Hitman, Revelations 2) per IGDB sono
+  giochi.
+- **Entra** un appid di tipo gioco, col nome di Steam; uno senza risposta solo
+  se IGDB lo conosce per id come gioco (i regali SEGA). Il resto non entra,
+  nemmeno fra gli scarti: il tipo si richiede a ogni import, e non c'è niente da
+  ricordare. Ore a zero; la data d'acquisto viene dalla famiglia, per chi ne ha
+  una.
+- **Un errore non toglie niente**: senza licenze si importa come prima, e
+  l'import Steam le copie proprie non le pota.
+- **Chi usa solo il profilo** resta senza i gratuiti mai avviati, come Playnite
+  senza login.
+
+Entrano anche 8 giochi che Playnite non ha (_Golden Axe_ e _Sonic 2_ dentro la
+raccolta SEGA, _Fall of the Samurai_, _CoH2 Ardennes Assault_…): Steam li dà
+come giochi propri. L'Assistenza di Steam mostra _Golden Axe_ come DLC della
+raccolta, `GetItems` come gioco; accettato (decisione dell'utente).
+
+**Le copertine degli scarti.** L'indirizzo fisso `steam/apps/{appid}/library_600x900.jpg`
+non c'è per i giochi nuovi (le immagini stanno in
+`shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/{codice}/…`)
+né per i vecchi ritirati, che la verticale non l'hanno mai avuta. Dopo
+l'import, per gli scarti senza copertina, `GetItems` con `include_assets`
+(`fetchSteamAppCovers`) dà l'indirizzo vero; per i ritirati l'interfaccia
+ripiega su `header.jpg`.
+
+**Il confronto dopo** (15/10/2026, account principale): 499 copie proprie
+contro i 501 di Playnite, 490 uguali e il resto spiegato voce per voce nel
+piano; dei 45 mancanti con un appid ne manca **zero**. Famiglia: 272 copie e 1
+scarto contro 275, tutto torna.
+
 ## Nintendo (9d)
 
 Nessuna API per sviluppatori: è il backend dell'app Nintendo (`com.nintendo.znej`) per

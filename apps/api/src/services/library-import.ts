@@ -390,6 +390,21 @@ async function recordStoreDetails(store: Store, entries: LibraryEntry[]) {
   }
 }
 
+/**
+ * Una demo, una beta, una prova pubblica: dal nome, come parola intera.
+ *
+ * Una voce così **non si cerca per nome**: IGDB quasi mai la conosce, e il
+ * titolo accorciato trova il gioco completo o uno omonimo — _Castlevania:
+ * Belmont's Curse Demo_ era finita sul _Castlevania_ del 1986, che IGDB dà
+ * anche su PC e la regola 3 non può fermare. Se IGDB la conosce per id resta
+ * dove la mette; altrimenti va fra gli scarti già nascosta come `prerelease`
+ * (decisione dell'utente, 15/10/2026). Vale per tutti i negozi: le beta ci sono
+ * anche su Epic e GOG.
+ */
+const PRERELEASE_NAME = /\b(demo|beta|playtest|public test(ing)?)\b/i;
+
+export const isPrereleaseName = (name: string) => PRERELEASE_NAME.test(name);
+
 /** Le voci che non si sono legate a niente. Restano dell'utente, non sporcano `games`. */
 async function recordUnresolved(
   account: StoreAccountRow,
@@ -423,13 +438,19 @@ async function recordUnresolved(
           acquiredAt: entry.acquiredAt ?? null,
           imageUrl: entry.imageUrl ?? null,
           storePage: entry.storePage ?? null,
+          // Come la copia che ne nascerebbe all'import: risolta a mano, nasce
+          // uguale (vedi `resolveUnresolvedImport`).
+          subscription: entry.subscription ?? null,
+          medium: entry.medium ?? 'digital',
           sameProductAs: entry.sameProductAs ?? null,
           // Nasce già nascosta se un admin l'ha nascosta per tutti (11a). Solo
           // qui, all'inserimento: il `set` dell'upsert qui sotto non tocca
           // `hidden_at`, e chi la rimette fra i «da sistemare» resta libero.
           ...(perTutti.has(entry.externalId)
             ? { hiddenAt: now, hiddenKind: perTutti.get(entry.externalId)! }
-            : {}),
+            : isPrereleaseName(entry.name)
+              ? { hiddenAt: now, hiddenKind: 'prerelease' as const }
+              : {}),
         })),
       )
       // Un reimport aggiorna nome, ore, copertina e indirizzo invece di
@@ -449,6 +470,8 @@ async function recordUnresolved(
           acquiredAt: sql`excluded.acquired_at`,
           imageUrl: sql`excluded.image_url`,
           storePage: sql`excluded.store_page`,
+          subscription: sql`excluded.subscription`,
+          medium: sql`excluded.medium`,
           sameProductAs: sql`excluded.same_product_as`,
           updatedAt: new Date(),
         },
@@ -1047,7 +1070,7 @@ export async function importLibrary(
 
   // 3. E per nome, ciò che l'id non ha preso. Non le voci in più di un
   //    prodotto: vedi `sameProductAs`. Né quelle che la regola 1 ha già
-  //    cercato.
+  //    cercato, né demo e beta: vedi `isPrereleaseName`.
   const nameLinks = [
     ...raccolte.relinked,
     ...(await resolveByName(
@@ -1055,7 +1078,8 @@ export async function importLibrary(
         (entry) =>
           !byId.has(entry.externalId) &&
           !entry.sameProductAs &&
-          !raccolte.dropped.has(entry.externalId),
+          !raccolte.dropped.has(entry.externalId) &&
+          !isPrereleaseName(entry.name),
       ),
     )),
   ];

@@ -1,5 +1,5 @@
 {
-  "id": "10cdaa22-07fb-4ab6-ab21-79c31f556d15",
+  "id": "2a8b049b-479b-4314-8fe6-0835c13d91f2",
   "prevId": "2f9865e1-c15a-4100-9d4f-305a08ca46ba",
   "version": "7",
   "dialect": "postgresql",
@@ -482,12 +482,6 @@
         "store_image_url": {
           "name": "store_image_url",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "store_release_year": {
-          "name": "store_release_year",
-          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -2051,6 +2045,20 @@
           "primaryKey": false,
           "notNull": false
         },
+        "subscription": {
+          "name": "subscription",
+          "type": "subscription",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "medium": {
+          "name": "medium",
+          "type": "medium",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
         "same_product_as": {
           "name": "same_product_as",
           "type": "text",
@@ -3132,6 +3140,14 @@
         "update"
       ]
     },
+    "public.medium": {
+      "name": "medium",
+      "schema": "public",
+      "values": [
+        "digital",
+        "physical"
+      ]
+    },
     "public.store": {
       "name": "store",
       "schema": "public",
@@ -3147,6 +3163,15 @@
         "nintendo"
       ]
     },
+    "public.subscription": {
+      "name": "subscription",
+      "schema": "public",
+      "values": [
+        "ps_plus",
+        "steam_family",
+        "ea_play"
+      ]
+    },
     "public.backlog_status": {
       "name": "backlog_status",
       "schema": "public",
@@ -3157,23 +3182,6 @@
         "completed",
         "dropped",
         "excluded"
-      ]
-    },
-    "public.medium": {
-      "name": "medium",
-      "schema": "public",
-      "values": [
-        "digital",
-        "physical"
-      ]
-    },
-    "public.subscription": {
-      "name": "subscription",
-      "schema": "public",
-      "values": [
-        "ps_plus",
-        "steam_family",
-        "ea_play"
       ]
     },
     "public.attribute_kind": {

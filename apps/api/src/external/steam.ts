@@ -6,6 +6,9 @@
 // La chiave è dell'applicazione, non dell'utente: identifica noi, e per leggere
 // la libreria altrui basta che il profilo sia pubblico.
 
+import { chunk } from '../lib/chunk';
+import { STEAM_LOGIN_USER_AGENT } from './steam-auth';
+
 const OWNED_GAMES_URL =
   'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/';
 
@@ -459,6 +462,209 @@ function steamDate(seconds: number | undefined, lastPlayed = false) {
   if (!seconds) return null;
   const date = new Date(seconds * 1000);
   return lastPlayed && date.getUTCFullYear() < 2004 ? null : date;
+}
+
+// --- Le licenze: anche i gratuiti mai avviati ---
+//
+// `GetOwnedGames` dà i gratuiti solo se giocati: su una libreria vera 50 giochi
+// su 501 mancavano (free-to-play mai avviati, regali, prologhi), e
+// `include_free_sub` non li porta (misurato il 15/10/2026, 455 contro 453). Li
+// ha l'elenco delle licenze dello store, `rgOwnedApps`, che vuole la sessione
+// dell'utente: è la strada di Playnite quando il client Steam non è acceso.
+
+const USER_DATA_URL = 'https://store.steampowered.com/dynamicstore/userdata/';
+
+/**
+ * Lo store non ha riconosciuto la sessione, o ha risposto altro.
+ *
+ * Non è un credenziale morto: `userdata` anonimo risponde 200 con gli elenchi
+ * vuoti, e una pagina HTML può essere un'interruzione dello store. Chi chiama
+ * importa senza le licenze, e non toglie niente.
+ */
+export class SteamUserDataError extends Error {
+  constructor(reason: string) {
+    super(`Steam userdata: ${reason}`);
+    this.name = 'SteamUserDataError';
+  }
+}
+
+type UserDataResponse = {
+  rgOwnedApps?: number[];
+  rgOwnedPackages?: number[];
+};
+
+/**
+ * Gli appid di tutte le licenze dell'utente: giochi, gratuiti, DLC, colonne
+ * sonore. **Solo appid**, senza nome né tipo: a separare i giochi è
+ * `fetchSteamAppTypes`.
+ *
+ * Il cookie si ricostruisce dall'access token: `steamLoginSecure` vale
+ * `SteamID64||token`, ed è lo stesso cookie da cui il login prende il token
+ * (`accessTokenFromCookies`). Nessuna richiesta di login in più.
+ *
+ * **Una risposta anonima non è una libreria vuota.** `userdata` senza sessione
+ * risponde 200 con gli elenchi vuoti; con la sessione `rgOwnedPackages` ha
+ * almeno il pacchetto `0`, che ogni account possiede (misurato il 15/10/2026 su
+ * un account vuoto e su uno da 1168 app). Senza, è la sessione che non vale.
+ */
+export async function fetchSteamOwnedAppIds(
+  steamId: string,
+  accessToken: string,
+): Promise<string[]> {
+  const cookie = `steamLoginSecure=${encodeURIComponent(`${steamId}||${accessToken}`)}`;
+  const response = await fetch(USER_DATA_URL, {
+    headers: { cookie, 'User-Agent': STEAM_LOGIN_USER_AGENT },
+  });
+  // Lo stato e mai il corpo né il cookie, che contiene il token.
+  if (!response.ok) throw new SteamUserDataError(`${response.status}`);
+
+  let body: UserDataResponse;
+  try {
+    body = (await response.json()) as UserDataResponse;
+  } catch {
+    throw new SteamUserDataError('la risposta non è JSON');
+  }
+  if (!body.rgOwnedPackages?.length || !Array.isArray(body.rgOwnedApps)) {
+    throw new SteamUserDataError('sessione non riconosciuta');
+  }
+  return body.rgOwnedApps.map(String);
+}
+
+const GET_ITEMS_URL =
+  'https://api.steampowered.com/IStoreBrowseService/GetItems/v1/';
+
+/** Fino a quante app per richiesta: misurato a 100, 8 richieste per 714 app. */
+const GET_ITEMS_PAGE = 100;
+
+/** Il `type` di `GetItems` per un gioco. Gli altri: 1 demo, 4 DLC, 11 musica, 12 beta. */
+export const STEAM_APP_TYPE_GAME = 0;
+
+export type SteamAppType = { type: number; name: string };
+
+type GetItemsResponse = {
+  response?: {
+    store_items?: {
+      appid?: number;
+      success?: number;
+      type?: number;
+      name?: string;
+    }[];
+  };
+};
+
+/**
+ * Tipo e nome di molte app, cento per richiesta, dalla Web API dello store:
+ * **anonima**, senza chiave né token. È ciò che lo store usa per le sue
+ * schede; `appdetails` vorrebbe una richiesta per app, e sulla libreria vera
+ * sarebbero state 714.
+ *
+ * Nella mappa solo le app che Steam descrive (`success: 1`). Le altre — ritirate
+ * dallo store, strumenti, server: 210 su 714 — non ci sono, e chi chiama decide
+ * cosa farne. Fra queste anche giochi veri: i regali SEGA del 2020.
+ *
+ * Il tipo è quello del negozio, non di IGDB: gli episodi che Steam vende come
+ * DLC (Hitman, Resident Evil Revelations 2) qui sono `4`, per IGDB giochi.
+ */
+export async function fetchSteamAppTypes(
+  appIds: string[],
+): Promise<Map<string, SteamAppType>> {
+  const types = new Map<string, SteamAppType>();
+
+  for (const page of chunk(appIds, GET_ITEMS_PAGE)) {
+    const input = {
+      ids: page.map((appId) => ({ appid: Number(appId) })),
+      // La lingua per il nome, come `GetOwnedGames`; il paese quello misurato.
+      context: { language: 'english', country_code: 'IT' },
+      data_request: {},
+    };
+    const url = new URL(GET_ITEMS_URL);
+    url.searchParams.set('input_json', JSON.stringify(input));
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Steam GetItems: ${response.status} ${(await response.text()).slice(0, 200)}`,
+      );
+    }
+    const body = (await response.json()) as GetItemsResponse;
+    for (const item of body.response?.store_items ?? []) {
+      if (item.success !== 1 || !item.appid || item.type === undefined)
+        continue;
+      types.set(String(item.appid), {
+        type: item.type,
+        name: item.name?.trim() || `App ${item.appid}`,
+      });
+    }
+  }
+
+  return types;
+}
+
+/** Dove lo store tiene le immagini col codice nel percorso. Misurato il 15/10/2026. */
+const STORE_ASSETS_URL =
+  'https://shared.akamai.steamstatic.com/store_item_assets/';
+
+type GetItemsAssetsResponse = {
+  response?: {
+    store_items?: {
+      appid?: number;
+      success?: number;
+      assets?: {
+        asset_url_format?: string;
+        library_capsule?: string;
+        header?: string;
+      };
+    }[];
+  };
+};
+
+/**
+ * La copertina di molte app, cento per richiesta, da `GetItems` anonima: la
+ * verticale (`library_capsule`), o l'orizzontale (`header`) se manca.
+ *
+ * Serve agli scarti, che non hanno IGDB. L'indirizzo fisso
+ * `steam/apps/{appid}/library_600x900.jpg` non regge per i giochi nuovi: dal
+ * 2024 circa Steam mette le immagini in cartelle con un codice
+ * (`steam/apps/5257350/0c22de2a…/library_capsule.jpg`, _Hex Reverse_), e
+ * l'indirizzo vecchio dà 404. `asset_url_format` porta già appid e versione.
+ *
+ * Nella mappa solo le app che lo store descrive con un'immagine. Le ritirate non
+ * ci sono (_Moonrise_, _System Shock: Classic_): per quelle c'è il ripiego
+ * dell'interfaccia sull'indirizzo vecchio.
+ */
+export async function fetchSteamAppCovers(
+  appIds: string[],
+): Promise<Map<string, string>> {
+  const covers = new Map<string, string>();
+
+  for (const page of chunk(appIds, GET_ITEMS_PAGE)) {
+    const input = {
+      ids: page.map((appId) => ({ appid: Number(appId) })),
+      context: { language: 'english', country_code: 'IT' },
+      data_request: { include_assets: true },
+    };
+    const url = new URL(GET_ITEMS_URL);
+    url.searchParams.set('input_json', JSON.stringify(input));
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Steam GetItems: ${response.status} ${(await response.text()).slice(0, 200)}`,
+      );
+    }
+    const body = (await response.json()) as GetItemsAssetsResponse;
+    for (const item of body.response?.store_items ?? []) {
+      const format = item.assets?.asset_url_format;
+      const file = item.assets?.library_capsule ?? item.assets?.header;
+      if (item.success !== 1 || !item.appid || !format || !file) continue;
+      covers.set(
+        String(item.appid),
+        STORE_ASSETS_URL + format.replace('${FILENAME}', file),
+      );
+    }
+  }
+
+  return covers;
 }
 
 const RESOLVE_VANITY_URL =

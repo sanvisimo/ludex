@@ -146,11 +146,20 @@ export async function gameAdminDetail(slug: string) {
       // La pagina che l'import ha salvato su una delle copie: è il link più
       // sicuro, quello che il negozio stesso ha dato.
       storePage: sql<string | null>`max(${schema.ownerships.storePage})`,
+      // Su che console stanno le copie: per scegliere il gioco giusto in «Non
+      // è questo gioco», fra l'originale e i suoi port.
+      platforms: sql<
+        string[]
+      >`array_agg(distinct ${schema.platforms.name} order by ${schema.platforms.name})`,
     })
     .from(schema.ownerships)
     .innerJoin(
       schema.backlog,
       eq(schema.backlog.id, schema.ownerships.backlogId),
+    )
+    .innerJoin(
+      schema.platforms,
+      eq(schema.platforms.slug, schema.ownerships.platformSlug),
     )
     .where(eq(schema.backlog.gameId, game.id))
     .groupBy(schema.ownerships.store);
@@ -213,6 +222,7 @@ export async function gameAdminDetail(slug: string) {
       ...link,
       users: copiePer.get(link.source)?.users ?? 0,
       copies: copiePer.get(link.source)?.copies ?? 0,
+      platforms: copiePer.get(link.source)?.platforms ?? [],
       url: storeLinkUrl(
         link.source,
         link.externalId,

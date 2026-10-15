@@ -4,6 +4,10 @@ Correzione dell'import nata dal confronto con l'export di Playnite del
 14/10/2026 (`202608_playnite_gog.csv`), sulla scia di
 [9a-epic-piu-giochi-per-prodotto](9a-epic-piu-giochi-per-prodotto.md).
 
+**Lotto chiuso dall'utente il 15/10/2026**, voce della roadmap «fatta». Restano
+le correzioni a mano sul mini PC, raccolte con quelle degli altri lotti in
+[minipc-correzioni](minipc-correzioni.md).
+
 ## Il problema
 
 ludex mostrava **436** giochi GOG, Playnite **439**. Locale e mini PC uguali.

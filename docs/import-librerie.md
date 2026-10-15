@@ -31,11 +31,23 @@ negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
   scarica: GOG `image` (con `_glx_vertical_cover.webp`), Epic `keyImages` del
   catalogo (`DieselGameBoxTall`, con gli spazi codificati), PSN `image.url`
   (acquisti) e `imageUrl` (giocati), Amazon `productDetail.iconUrl`, un
-  quadrato. **Steam non la salva**: `storeCoverUrl` la compone dall'appid.
-  Al reimport vanno riscritte insieme al nome (`excluded`), e non toccano il
-  nascondere. `store_page` ha la stessa forma di quella su `ownerships`, e il
+  quadrato. **Steam non la manda**: `storeCoverUrl` la compone dall'appid
+  (`library_600x900`), e dove quell'indirizzo non c'è — i giochi nuovi, con le
+  immagini in cartelle con un codice — l'import Steam scrive dopo quello vero,
+  da `GetItems` (`fillUnresolvedCovers`, 9f). L'interfaccia, se la copertina
+  non si carica, prova l'orizzontale (`storeCoverFallbackUrl`) prima
+  dell'icona. Al reimport vanno riscritte insieme al nome (`excluded`), e non
+  toccano il nascondere. `store_page` ha la stessa forma di quella su `ownerships`, e il
   link lo compone lo stesso `storePageUrl`. Le righe esistenti le prendono al
   prossimo import.
+- **abbonamento e supporto su `unresolved_imports`**: `subscription` e
+  `medium`, nella forma di `ownerships` (9f, 15/10/2026). Uno scarto risolto a
+  mano nasce come la copia che l'import avrebbe scritto: senza, una copia della
+  famiglia Steam diventava un acquisto, e il reimport le metteva accanto la
+  copia `steam_family`, che non adotta righe — due copie, e quella «comprata»
+  non la toglie nessuna potatura. Lo stesso per uno scarto del Plus o un disco
+  PSN. `resolveUnresolvedImport` passa alla copia anche `store_page`. Gli scarti
+  nati prima delle colonne le prendono al primo reimport.
 - **voci in più di un prodotto su `unresolved_imports`**: `same_product_as`,
   l'id esterno della voce che l'import ha preso come gioco dallo stesso
   prodotto. Solo Epic, dove un prodotto può contenere più voci che il catalogo
@@ -564,10 +576,32 @@ passano per id. Nel test da zero su PSN e Amazon è stato l'unico.
 id (Steam, GOG, i dischi PSN per concept: _Resident Evil 4_ su Steam, che IGDB
 mappa sulla rimasterizzazione per console) né quelli scritti prima di lei. Le
 copie di un negozio su una piattaforma che IGDB non dà al gioco stanno in admin
-→ «Segnalati», sotto le segnalazioni degli utenti, una riga per gioco
-(`listPlatformMismatches`). Si corregge da «Apri» con «Non è questo gioco», e la
-riga sparisce da sola; quando è IGDB a non avere la piattaforma, «Va bene
+→ «Piattaforme sbagliate» (`/admin/platforms`), una riga per gioco
+(`listPlatformMismatches`). Si corregge da «Apri» con «Non è questo gioco», che
+mostra in testa le console delle copie e sotto ogni risultato IGDB quelle su cui
+è uscito, e la riga sparisce da sola; quando è IGDB a non avere la piattaforma, «Va bene
 così» la toglie per gioco e piattaforma, per tutti i negozi
 (`platform_mismatch_dismissals`), e si annulla. La lista è calcolata a ogni
 apertura, con la stessa funzione della regola. Le copie aggiunte a mano non ci
 entrano: sono una dichiarazione dell'utente, non un collegamento.
+
+## Demo e beta non si cercano per nome (9f Steam)
+
+Il confronto Steam con Playnite del 15/10/2026 ha trovato _Castlevania:
+Belmont's Curse Demo_ sul _Castlevania_ del 1986: il titolo intero su IGDB non
+trova niente, quello accorciato ai due punti trova il gioco del 1986, e la
+regola 3 non lo ferma perché IGDB lo dà anche su PC (la conversione DOS). Il
+[piano](../plans/9f-steam-gratuiti-e-demo.md) ha i numeri.
+
+Una voce **non risolta per id** il cui nome contiene `demo`, `beta`,
+`playtest` o `public test`/`testing` come parola intera (`isPrereleaseName`)
+non va al passo 3: IGDB una demo quasi mai la conosce, e per nome troverebbe il
+gioco completo o uno omonimo. Va fra gli scarti **già nascosta** come
+`prerelease`. Una voce che IGDB conosce per id resta dove la mette.
+
+Nasce nascosta **solo all'inserimento**, come quella nascosta per tutti da un
+admin: se l'utente la rimette fra i «da sistemare» il reimport non la
+rinasconde, e gli scarti che c'erano già non cambiano. Vale per tutti i negozi:
+anche le voci in più di un prodotto Epic con quei nomi (_Barony (Beta)_,
+_Chivalry 2 - Public Testing_) nascono nascoste invece che fra i «Possibili
+doppioni».

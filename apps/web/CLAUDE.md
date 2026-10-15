@@ -303,11 +303,13 @@ direzione col CSS. Cose che non si indovinano:
   Il ↻ gira con `Spinner` mentre quell'account importa.
 - **Gli scarti d'import hanno copertina e link al negozio**, e vengono dall'import:
   `unresolved_imports.image_url` e `store_page`, riscritti a ogni reimport (vedi
-  [import-librerie](../../docs/import-librerie.md)). Steam non salva niente: la
-  copertina la compone `storeCoverUrl` dall'appid. Un'immagine che non si carica
-  — un gioco ritirato da Steam dà 404 — cade sul riquadro con l'icona del negozio
-  (`UnresolvedCover`), e l'icona accanto al nome è il link alla pagina dove un
-  link c'è. Le righe già in tabella la prendono al prossimo import.
+  [import-librerie](../../docs/import-librerie.md)). Su Steam la copertina la
+  compone `storeCoverUrl` dall'appid, e vince quella che l'import scrive dove
+  quell'indirizzo non c'è (i giochi nuovi). Un'immagine che non si carica prova
+  `storeCoverFallbackUrl` (su Steam l'orizzontale, che hanno anche i giochi
+  ritirati), poi cade sul riquadro con l'icona del negozio (`UnresolvedCover`), e
+  l'icona accanto al nome è il link alla pagina dove un link c'è. Le righe già in
+  tabella la prendono al prossimo import.
 - **Da sistemare** ha due tab nell'URL (`?tab=duplicates`) **solo se ci sono
   possibili doppioni** (9a): «Non riconosciute» e «Possibili doppioni», le voci
   che Epic mette nello stesso prodotto di un gioco già importato
@@ -341,8 +343,8 @@ direzione col CSS. Cose che non si indovinano:
 **La sezione admin** (`/admin`, 11a) ha la cornice dell'account ma **fluida**
 (`maxW="100%"`: le sezioni sono tabelle), e rimanda via chi non ha `role = 'admin'`: è comodità, la sicurezza vera la fa il
 middleware `admin` sul server. Il link «Admin» sta nel menu dell'avatar, e
-«Apri nell'admin» sulla pagina di ogni gioco, solo per gli admin. Quattro
-sezioni, rotte figlie: `missing`, `unresolved`, `reported`, `users`, più la
+«Apri nell'admin» sulla pagina di ogni gioco, solo per gli admin. Cinque
+sezioni, rotte figlie: `missing`, `unresolved`, `reported`, `platforms`, `users`, più la
 scheda admin di un gioco, `/admin/games/$slug`. «Apri un gioco», la ricerca nel
 catalogo, sta nell'intestazione. I pezzi stanno in `components/admin/`. Cose
 che non si indovinano:
@@ -373,10 +375,15 @@ che non si indovinano:
 - **«Inserisci id» ha due bottoni**: «Aggiungi» salva un id o un indirizzo e
   rifiuta un nome; «Cerca» usa il testo come nome sulla fonte. OpenCritic costa
   una delle 25 ricerche del giorno, e il dialogo lo dice prima.
-- **«Segnalati» ha due blocchi**: le segnalazioni degli utenti e, sotto, le
-  copie su una piattaforma dove il gioco non è uscito (9b,
-  `platform-mismatches.tsx`), con «Va bene così» e i segnati da annullare.
-  «Apri» è un bottone pieno con icona (`ButtonLink`): è l'azione che conta.
+- **«Piattaforme sbagliate»** (`/admin/platforms`, 9b,
+  `platform-mismatches.tsx`) sono le copie su una piattaforma dove il gioco non
+  è uscito, con «Va bene così» e i segnati da annullare; il numero nel menu è
+  come quello di scarti e segnalazioni. Copertina e titolo sono il link alla
+  scheda admin, e «Apri» resta, un bottone pieno con icona (`ButtonLink`): è
+  l'azione che conta. I nomi delle piattaforme li traduce il server, con una
+  funzione sola (`igdbPlatformNamer`): la colonna «IGDB lo dà su», i risultati
+  di `IgdbPicker` e le copie in testa a «Non è questo gioco» dicono le stesse
+  parole.
 - **Le copertine dei risultati di HLTB e Metacritic** arrivano dalla loro
   ricerca; quelle di OpenCritic no, e costerebbero il budget.
 
