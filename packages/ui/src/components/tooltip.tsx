@@ -35,6 +35,9 @@ export type TooltipProps = {
  * **Non è l'etichetta accessibile.** Un bottone di sola icona porta comunque il
  * suo `aria-label`: il suggerimento è per chi vede, e su un telefono, dove il
  * passaggio del mouse non esiste, non compare affatto.
+ *
+ * Serve anche al titolo di un gioco, col nome intero come contenuto: per
+ * questo il contenuto ha una larghezza massima e va a capo.
  */
 export function Tooltip({
   content,
@@ -72,6 +75,7 @@ export function Tooltip({
         px={8}
         py={4}
         rounded={6}
+        maxW={280}
         bg="$color12"
         transition="quick"
         opacity={1}
