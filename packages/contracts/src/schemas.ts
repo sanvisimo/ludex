@@ -480,8 +480,9 @@ export const UnresolvedImportSchema = z.object({
   // Quando la voce è comparsa fra gli scarti: la prima volta che un import l'ha
   // vista. Il reimport non la tocca, quindi è la data di «aggiunta».
   createdAt: z.date(),
-  // La copertina che il negozio manda, già pronta da mostrare, o nulla. Steam
-  // non la porta nemmeno qui: la compone `storeCoverUrl` dall'appid.
+  // La copertina che il negozio manda, già pronta da mostrare, o nulla. Su
+  // Steam la scrive l'import dopo, dallo store, solo dove l'indirizzo che
+  // `storeCoverUrl` compone dall'appid non basta: vedi `fetchSteamAppCovers`.
   imageUrl: z.string().nullable(),
   // Dove sta la voce sul negozio, nella forma di `ownerships.store_page`: il
   // link lo compone `storePageUrl`.
@@ -1107,8 +1108,9 @@ export const GameAdminDetailSchema = z.object({
       // Come il negozio chiama quell'id, dall'ultimo import. Nullo dove l'id
       // l'ha portato IGDB e nessuno l'ha ancora importato.
       storeTitle: z.string().nullable(),
-      // La copertina che il negozio dà a quell'id. Su Steam nulla: la compone
-      // `storeCoverUrl` dall'appid.
+      // La copertina che il negozio dà a quell'id. Su Steam di solito nulla: la
+      // compone `storeCoverUrl` dall'appid, e c'è solo se il collegamento viene
+      // da uno scarto risolto a mano a cui l'import l'aveva trovata.
       storeImageUrl: z.string().nullable(),
       // Per negozio, non per id: le copie non sanno da quale id sono nate.
       users: z.number().int(),

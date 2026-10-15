@@ -1,8 +1,4 @@
-import {
-  backlogStatusValues,
-  mediumValues,
-  subscriptionValues,
-} from '@repo/contracts/vocabulary';
+import { backlogStatusValues } from '@repo/contracts/vocabulary';
 import {
   check,
   index,
@@ -18,7 +14,7 @@ import {
 import { sql } from 'drizzle-orm';
 
 import { user } from './auth';
-import { games, store } from './games';
+import { games, medium, store, subscription } from './games';
 import { storeAccounts } from './imports';
 import { platforms } from './platforms';
 import { timestamps } from './timestamps';
@@ -28,13 +24,6 @@ import { timestamps } from './timestamps';
 // positive.
 // Valori da @repo/contracts, vedi il commento su `store` in games.ts.
 export const backlogStatus = pgEnum('backlog_status', backlogStatusValues);
-
-// Da quale abbonamento viene il diritto di giocare a una copia. Valori da
-// @repo/contracts, vedi il commento su `store` in games.ts.
-export const subscription = pgEnum('subscription', subscriptionValues);
-
-// Disco o digitale. Valori da @repo/contracts, vedi il commento lì.
-export const medium = pgEnum('medium', mediumValues);
 
 // L'esistenza della riga È il possesso: nessun flag "posseduto". La wishlist è
 // una tabella separata, così ogni query qui resta semplice.

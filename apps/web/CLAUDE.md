@@ -303,11 +303,13 @@ direzione col CSS. Cose che non si indovinano:
   Il ↻ gira con `Spinner` mentre quell'account importa.
 - **Gli scarti d'import hanno copertina e link al negozio**, e vengono dall'import:
   `unresolved_imports.image_url` e `store_page`, riscritti a ogni reimport (vedi
-  [import-librerie](../../docs/import-librerie.md)). Steam non salva niente: la
-  copertina la compone `storeCoverUrl` dall'appid. Un'immagine che non si carica
-  — un gioco ritirato da Steam dà 404 — cade sul riquadro con l'icona del negozio
-  (`UnresolvedCover`), e l'icona accanto al nome è il link alla pagina dove un
-  link c'è. Le righe già in tabella la prendono al prossimo import.
+  [import-librerie](../../docs/import-librerie.md)). Su Steam la copertina la
+  compone `storeCoverUrl` dall'appid, e vince quella che l'import scrive dove
+  quell'indirizzo non c'è (i giochi nuovi). Un'immagine che non si carica prova
+  `storeCoverFallbackUrl` (su Steam l'orizzontale, che hanno anche i giochi
+  ritirati), poi cade sul riquadro con l'icona del negozio (`UnresolvedCover`), e
+  l'icona accanto al nome è il link alla pagina dove un link c'è. Le righe già in
+  tabella la prendono al prossimo import.
 - **Da sistemare** ha due tab nell'URL (`?tab=duplicates`) **solo se ci sono
   possibili doppioni** (9a): «Non riconosciute» e «Possibili doppioni», le voci
   che Epic mette nello stesso prodotto di un gioco già importato

@@ -1,9 +1,15 @@
+import type { GameType } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, eq, inArray } from '@repo/db/orm';
+import { and, eq, inArray, isNull } from '@repo/db/orm';
 
+import { findIgdbGamesByExternalIds } from '../external/igdb';
 import {
+  fetchSteamAppCovers,
+  fetchSteamAppTypes,
   fetchSteamFamilyLibrary,
   fetchSteamLibrary,
+  fetchSteamOwnedAppIds,
+  STEAM_APP_TYPE_GAME,
   type SteamFamilyLibrary,
   type SteamLibraryEntry,
   SteamUnauthorizedError,
@@ -272,6 +278,10 @@ export async function importSteamLibrary(
     try {
       library = await fetchSteamLibrary(steamId, accessToken);
       family = await fetchSteamFamilyLibrary(accessToken, steamId);
+      library = [
+        ...library,
+        ...(await licenseEntries(steamId, accessToken, library)),
+      ];
     } catch (error) {
       if (!(error instanceof SteamUnauthorizedError)) throw error;
       // Il token era valido un istante fa e Steam lo rifiuta lo stesso: revocato
@@ -295,6 +305,7 @@ export async function importSteamLibrary(
 
   const { entries, familyCount } = buildSteamEntries(library, family, steamId);
   const report = await importLibrary(account, entries);
+  await fillUnresolvedCovers(account);
 
   // I giochi che la famiglia ha ancora: si risolvono dall'appid **dopo**
   // l'import, che è ciò che ha scritto le mappature dei giochi appena nati.
@@ -317,16 +328,145 @@ export async function importSteamLibrary(
   return { ...report, family: { copies: familyCount, removed, kept } };
 }
 
+/**
+ * I tipi IGDB che fanno di un'app senza scheda nello store un gioco. Non i
+ * contenuti aggiuntivi (`dlc`, `pack`, `expansion`, `episode`, `season`), le
+ * raccolte, le mod e gli aggiornamenti.
+ */
+const IGDB_GAME_TYPES = new Set<GameType>([
+  'main_game',
+  'standalone_expansion',
+  'remake',
+  'remaster',
+  'expanded_game',
+  'port',
+]);
+
+/**
+ * Le licenze che `GetOwnedGames` non dà: i gratuiti mai avviati, i regali, i
+ * prologhi. Solo col login, perché vogliono la sessione dell'utente.
+ *
+ * `rgOwnedApps` ha tutte le licenze, DLC e colonne sonore comprese (1168 contro
+ * i 455 giochi di `GetOwnedGames` sulla libreria vera): passano solo i giochi,
+ * per il tipo **del negozio**, come fanno gli altri negozi con i loro.
+ * - tipo gioco → una voce, col nome di Steam;
+ * - nessuna scheda nello store (210 su 714, ritirate) → una voce solo se IGDB
+ *   conosce l'appid come gioco: i regali SEGA del 2020;
+ * - DLC, demo, musica, beta, il resto → niente. Non diventano scarti: il tipo si
+ *   richiede a ogni import, otto richieste anonime, e non c'è niente da
+ *   ricordare.
+ *
+ * Ore e ultima partita a zero, perché `GetOwnedGames` le darebbe se ci fossero;
+ * la data d'acquisto la mette `buildSteamEntries` dalla famiglia, se c'è.
+ *
+ * **Un errore qui non ferma l'import**: le licenze sono un di più, e senza si
+ * importa come prima. Non si toglie niente, perché l'import Steam le copie
+ * proprie non le pota.
+ */
+export async function licenseEntries(
+  steamId: string,
+  accessToken: string,
+  library: SteamLibraryEntry[],
+): Promise<SteamLibraryEntry[]> {
+  try {
+    const known = new Set(library.map((entry) => entry.externalId));
+    const extra = [
+      ...new Set(await fetchSteamOwnedAppIds(steamId, accessToken)),
+    ].filter((appId) => !known.has(appId));
+    if (extra.length === 0) return [];
+
+    const types = await fetchSteamAppTypes(extra);
+    const entry = (externalId: string, name: string): SteamLibraryEntry => ({
+      externalId,
+      name,
+      playtimeMinutes: 0,
+      lastPlayedAt: null,
+    });
+
+    const games = extra.flatMap((appId) => {
+      const app = types.get(appId);
+      return app?.type === STEAM_APP_TYPE_GAME ? [entry(appId, app.name)] : [];
+    });
+
+    const senzaScheda = extra.filter((appId) => !types.has(appId));
+    const igdb = await findIgdbGamesByExternalIds('steam', senzaScheda);
+    const perIgdb = senzaScheda.flatMap((appId) => {
+      const match = igdb.get(appId);
+      return match?.gameType && IGDB_GAME_TYPES.has(match.gameType)
+        ? [entry(appId, match.name)]
+        : [];
+    });
+
+    console.log(
+      `[import] steam licenze: ${extra.length} oltre GetOwnedGames, ` +
+        `${games.length} giochi per lo store, ${perIgdb.length} per IGDB`,
+    );
+    return [...games, ...perIgdb];
+  } catch (error) {
+    // Il messaggio dei client non porta mai il token.
+    console.log(
+      `[import] steam licenze non lette, solo GetOwnedGames: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return [];
+  }
+}
+
 /** La libreria propria dal profilo pubblico, con la chiave dell'applicazione. */
 async function importFromProfile(
   account: StoreAccountRow,
 ): Promise<SteamImportReport> {
   const library = await fetchSteamLibrary(account.externalAccountId);
-  return importLibrary(
+  const report = await importLibrary(
     account,
     library.map((entry) => ({
       ...entry,
       storePage: storePage(entry.externalId),
     })),
   );
+  await fillUnresolvedCovers(account);
+  return report;
+}
+
+/**
+ * La copertina degli scarti di questo account che non ce l'hanno, dallo store.
+ *
+ * Steam non la manda con la libreria, e l'indirizzo fisso che compone
+ * `storeCoverUrl` non c'è per i giochi nuovi (vedi `fetchSteamAppCovers`). Si
+ * chiede **dopo** l'import, perché solo allora si sa cosa è rimasto fra gli
+ * scarti: pochi, quindi di solito una richiesta anonima. Il reimport riscrive
+ * `image_url` con quello della voce, che su Steam è nullo, e qui si riempie di
+ * nuovo.
+ *
+ * Un errore non ferma niente: resta il ripiego dell'interfaccia.
+ */
+async function fillUnresolvedCovers(account: StoreAccountRow) {
+  try {
+    const rows = await db
+      .select({
+        id: schema.unresolvedImports.id,
+        externalId: schema.unresolvedImports.externalId,
+      })
+      .from(schema.unresolvedImports)
+      .where(
+        and(
+          eq(schema.unresolvedImports.storeAccountId, account.id),
+          isNull(schema.unresolvedImports.imageUrl),
+        ),
+      );
+    if (rows.length === 0) return;
+
+    const covers = await fetchSteamAppCovers(rows.map((row) => row.externalId));
+    for (const row of rows) {
+      const imageUrl = covers.get(row.externalId);
+      if (!imageUrl) continue;
+      await db
+        .update(schema.unresolvedImports)
+        .set({ imageUrl })
+        .where(eq(schema.unresolvedImports.id, row.id));
+    }
+  } catch (error) {
+    console.log(
+      `[import] steam: copertine degli scarti non lette: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }

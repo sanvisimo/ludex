@@ -1,3 +1,4 @@
+import type { GameType } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -12,8 +13,11 @@ import {
 } from '../../test/factories';
 import { findIgdbGamesByExternalIds, searchIgdbGames } from '../external/igdb';
 import {
+  fetchSteamAppCovers,
+  fetchSteamAppTypes,
   fetchSteamFamilyLibrary,
   fetchSteamLibrary,
+  fetchSteamOwnedAppIds,
   type SteamFamilyLibrary,
   type SteamSharedApp,
   SteamUnauthorizedError,
@@ -28,6 +32,9 @@ vi.mock('../external/steam', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../external/steam')>()),
   fetchSteamLibrary: vi.fn(),
   fetchSteamFamilyLibrary: vi.fn(),
+  fetchSteamOwnedAppIds: vi.fn(),
+  fetchSteamAppTypes: vi.fn(),
+  fetchSteamAppCovers: vi.fn(),
 }));
 // Il rinnovo del token è un altro test (`store-accounts.test.ts`): qui interessa
 // cosa l'import fa col token, non come lo si ottiene.
@@ -50,6 +57,9 @@ vi.mock('../queue/enrichment', () => ({
 
 const mockedLibrary = vi.mocked(fetchSteamLibrary);
 const mockedFamily = vi.mocked(fetchSteamFamilyLibrary);
+const mockedOwnedApps = vi.mocked(fetchSteamOwnedAppIds);
+const mockedAppTypes = vi.mocked(fetchSteamAppTypes);
+const mockedCovers = vi.mocked(fetchSteamAppCovers);
 const mockedToken = vi.mocked(steamAccessToken);
 const mockedResolve = vi.mocked(findIgdbGamesByExternalIds);
 const mockedSearch = vi.mocked(searchIgdbGames);
@@ -111,6 +121,7 @@ describe('importSteamLibrary', () => {
     // Di default IGDB non trova niente per nome: su Steam la risoluzione passa
     // dagli appid, e i test che parlano di irrisolti vogliono restare irrisolti.
     mockedSearch.mockResolvedValue([]);
+    mockedCovers.mockResolvedValue(new Map());
   });
 
   it('crea giochi, backlog e possessi con le ore di Steam', async () => {
@@ -290,6 +301,39 @@ describe('importSteamLibrary', () => {
     ]);
   });
 
+  it('dà agli scarti la copertina dello store, e chiede solo quelli che non ce l’hanno', async () => {
+    mockedLibrary.mockResolvedValue([
+      steamEntry({ externalId: '5257350', name: 'Hex Reverse' }),
+      steamEntry({ externalId: '351040', name: 'Moonrise' }),
+    ]);
+    mockedResolve.mockResolvedValue(new Map());
+    const copertina =
+      'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5257350/0c22de2a/library_capsule.jpg';
+    mockedCovers.mockResolvedValue(new Map([['5257350', copertina]]));
+
+    await importSteamLibrary(account);
+
+    expect(mockedCovers).toHaveBeenCalledWith(
+      expect.arrayContaining(['5257350', '351040']),
+    );
+    const scarti = new Map(
+      (await unresolvedOf(userId)).map((s) => [s.externalId, s.imageUrl]),
+    );
+    expect(scarti.get('5257350')).toBe(copertina);
+    // Ritirata dallo store: resta nulla, e ci pensa il ripiego dell'interfaccia.
+    expect(scarti.get('351040')).toBeNull();
+  });
+
+  it('una copertina che lo store non dà non ferma l’import', async () => {
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '5257350' })]);
+    mockedResolve.mockResolvedValue(new Map());
+    mockedCovers.mockRejectedValue(new Error('Steam GetItems: 503'));
+
+    await expect(importSteamLibrary(account)).resolves.toMatchObject({
+      unresolved: 1,
+    });
+  });
+
   it('toglie dagli irrisolti ciò che IGDB nel frattempo conosce', async () => {
     mockedLibrary.mockResolvedValue([
       steamEntry({ externalId: '1588530', name: 'Dungeon Alchemist' }),
@@ -380,6 +424,7 @@ describe('importSteamLibrary', () => {
     // Il profilo pubblico resta com'è: la chiave dell'applicazione, e basta.
     expect(mockedToken).not.toHaveBeenCalled();
     expect(mockedFamily).not.toHaveBeenCalled();
+    expect(mockedOwnedApps).not.toHaveBeenCalled();
     expect(mockedLibrary).toHaveBeenCalledWith(account.externalAccountId);
     expect(report.family).toBeUndefined();
   });
@@ -477,6 +522,11 @@ describe('importSteamLibrary col login (9f)', () => {
     mockedToken.mockResolvedValue({ accessToken: 'token', renewable: true });
     mockedSearch.mockResolvedValue([]);
     mockedLibrary.mockResolvedValue([]);
+    // Di default nessuna licenza oltre `GetOwnedGames`: i test della famiglia
+    // non parlano di licenze.
+    mockedOwnedApps.mockResolvedValue([]);
+    mockedAppTypes.mockResolvedValue(new Map());
+    mockedCovers.mockResolvedValue(new Map());
   });
 
   it('scrive le copie della famiglia come steam_family, e non le proprie', async () => {
@@ -911,5 +961,160 @@ describe('importSteamLibrary col login (9f)', () => {
 
     expect(await ownershipsOf(userId)).toHaveLength(0);
     expect((await byApp(altro)).get('400')?.subscription).toBe('steam_family');
+  });
+
+  // --- le licenze: i gratuiti che `GetOwnedGames` non dà ---
+
+  describe('le licenze oltre GetOwnedGames', () => {
+    /** IGDB conosce questi appid, ciascuno col suo tipo. */
+    const igdbTypes = (apps: [string, GameType][]) =>
+      mockedResolve.mockResolvedValue(
+        new Map(
+          apps.map(([externalId, gameType]) => [
+            externalId,
+            {
+              igdbId: Number(externalId),
+              name: `IGDB ${externalId}`,
+              releaseYear: null,
+              gameType,
+            },
+          ]),
+        ),
+      );
+
+    const types = (apps: [string, number, string?][]) =>
+      mockedAppTypes.mockResolvedValue(
+        new Map(
+          apps.map(([appId, type, name]) => [
+            appId,
+            { type, name: name ?? `App ${appId}` },
+          ]),
+        ),
+      );
+
+    beforeEach(() => {
+      mockedLibrary.mockResolvedValue([
+        steamEntry({ externalId: '220', playtimeMinutes: 630 }),
+      ]);
+      mockedFamily.mockResolvedValue(family([]));
+    });
+
+    it('un gratuito mai avviato entra come copia propria, a zero ore', async () => {
+      mockedOwnedApps.mockResolvedValue(['220', '238960']);
+      types([['238960', 0, 'Path of Exile']]);
+      igdbTypes([
+        ['220', 'main_game'],
+        ['238960', 'main_game'],
+      ]);
+
+      await importSteamLibrary(account);
+
+      expect(mockedOwnedApps).toHaveBeenCalledWith(ME, 'token');
+      // Il tipo si chiede solo per ciò che `GetOwnedGames` non ha già dato.
+      expect(mockedAppTypes).toHaveBeenCalledWith(['238960']);
+      const copie = await byApp(userId);
+      expect(copie.get('238960')).toMatchObject({
+        subscription: null,
+        playtimeMinutes: 0,
+        store: 'steam',
+      });
+      expect(copie.get('220')?.playtimeMinutes).toBe(630);
+    });
+
+    it('DLC, demo e colonne sonore non entrano, nemmeno fra gli scarti', async () => {
+      mockedOwnedApps.mockResolvedValue(['220', '367480', '5000760', '9001']);
+      types([
+        ['367480', 4],
+        ['5000760', 1],
+        ['9001', 11],
+      ]);
+      igdbTypes([
+        ['220', 'main_game'],
+        ['367480', 'dlc'],
+      ]);
+
+      await importSteamLibrary(account);
+
+      expect([...(await byApp(userId)).keys()]).toEqual(['220']);
+      expect(await unresolvedOf(userId)).toHaveLength(0);
+    });
+
+    it('senza scheda nello store entra solo ciò che IGDB conosce come gioco', async () => {
+      // I regali SEGA: lo store non li descrive più, IGDB sì.
+      mockedOwnedApps.mockResolvedValue(['220', '1368430', '422310', '777']);
+      types([]);
+      igdbTypes([
+        ['220', 'main_game'],
+        ['1368430', 'main_game'],
+        ['422310', 'pack'],
+      ]);
+
+      await importSteamLibrary(account);
+
+      expect([...(await byApp(userId)).keys()].sort()).toEqual([
+        '1368430',
+        '220',
+      ]);
+      expect(await unresolvedOf(userId)).toHaveLength(0);
+    });
+
+    it('se le licenze non si leggono si importa come prima, senza togliere niente', async () => {
+      mockedOwnedApps.mockResolvedValue(['220', '238960']);
+      types([['238960', 0]]);
+      igdbTypes([
+        ['220', 'main_game'],
+        ['238960', 'main_game'],
+      ]);
+      await importSteamLibrary(account);
+
+      mockedOwnedApps.mockRejectedValue(new Error('sessione non riconosciuta'));
+      await importSteamLibrary(account);
+      expect([...(await byApp(userId)).keys()].sort()).toEqual([
+        '220',
+        '238960',
+      ]);
+
+      mockedOwnedApps.mockResolvedValue(['220', '238960']);
+      mockedAppTypes.mockRejectedValue(new Error('Steam GetItems: 503'));
+      await importSteamLibrary(account);
+      expect([...(await byApp(userId)).keys()].sort()).toEqual([
+        '220',
+        '238960',
+      ]);
+    });
+
+    it('un gioco della famiglia che è anche fra le tue licenze diventa tuo', async () => {
+      mockedFamily.mockResolvedValue(
+        family([
+          { externalId: '400' },
+          // La risposta della famiglia dà la data delle app dell'utente.
+          {
+            externalId: '238960',
+            ownerSteamIds: [ME],
+            acquiredAt: new Date('2020-05-01T00:00:00Z'),
+          },
+        ]),
+      );
+      mockedOwnedApps.mockResolvedValue(['220', '400', '238960']);
+      types([
+        ['400', 0],
+        ['238960', 0],
+      ]);
+      igdbTypes([
+        ['220', 'main_game'],
+        ['400', 'main_game'],
+        ['238960', 'main_game'],
+      ]);
+
+      const report = await importSteamLibrary(account);
+
+      const copie = await byApp(userId);
+      expect(copie.get('400')?.subscription).toBeNull();
+      expect(copie.get('238960')).toMatchObject({
+        subscription: null,
+        acquiredAt: new Date('2020-05-01T00:00:00Z'),
+      });
+      expect(report.family?.copies).toBe(0);
+    });
   });
 });

@@ -105,12 +105,13 @@ export function storeGameUrl(
  * l'unica immagine è quella che il negozio manda, salvata dall'import in
  * `unresolved_imports.image_url`. **Steam fa eccezione**: la sua CDN è
  * pubblica e si compone dall'appid (`library_600x900`, la verticale), senza
- * che l'import salvi niente e senza una chiamata in più. Provata aperta su due
- * appid il 02/10/2026.
+ * una chiamata in più. Provata aperta su due appid il 02/10/2026. Ma per i
+ * giochi nuovi quell'indirizzo non c'è (le immagini stanno in cartelle con un
+ * codice, 15/10/2026): lì l'import Steam salva l'indirizzo vero, e vince.
  *
  * Nullo = niente copertina, e la riga mostra l'icona del negozio. Un'immagine
- * che non si carica (un gioco ritirato da Steam dà 404) la gestisce chi la
- * mostra, con lo stesso ripiego.
+ * che non si carica la gestisce chi la mostra: prima `storeCoverFallbackUrl`,
+ * poi lo stesso ripiego.
  */
 export function storeCoverUrl(
   store: Store,
@@ -118,9 +119,27 @@ export function storeCoverUrl(
   imageUrl: string | null,
 ): string | null {
   if (store === 'steam') {
-    return `https://cdn.cloudflare.steamstatic.com/steam/apps/${externalId}/library_600x900.jpg`;
+    return (
+      imageUrl ??
+      `https://cdn.cloudflare.steamstatic.com/steam/apps/${externalId}/library_600x900.jpg`
+    );
   }
   return imageUrl;
+}
+
+/**
+ * La seconda prova, se la copertina non si carica: su Steam l'immagine
+ * orizzontale all'indirizzo vecchio. I giochi vecchi e ritirati dallo store la
+ * verticale non l'hanno mai avuta, l'orizzontale sì (_Moonrise_, _System Shock:
+ * Classic_, misurato il 15/10/2026). Nullo sugli altri negozi.
+ */
+export function storeCoverFallbackUrl(
+  store: Store,
+  externalId: string,
+): string | null {
+  return store === 'steam'
+    ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${externalId}/header.jpg`
+    : null;
 }
 
 /**

@@ -1,13 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  fetchSteamAppCovers,
+  fetchSteamAppTypes,
   fetchSteamFamilyLibrary,
   fetchSteamLibrary,
+  fetchSteamOwnedAppIds,
   fetchSteamWishlist,
   resolveSteamId,
   SteamLibraryNotVisibleError,
   SteamProfileNotFoundError,
   SteamUnauthorizedError,
+  SteamUserDataError,
 } from './steam';
 
 // Nessun test esce in rete: si stubba `fetch`, che qui è il confine vero — il
@@ -375,5 +379,168 @@ describe('fetchSteamWishlist', () => {
     expect(error.message).toContain('500');
     expect(error.message).not.toContain('token-segreto');
     expect(error.message).not.toContain('chiave-di-prova');
+  });
+});
+
+describe('fetchSteamOwnedAppIds', () => {
+  const ME = '76561198626785118';
+
+  it('manda il cookie dello store ricostruito dal token, e rende gli appid', async () => {
+    jsonOnce({ rgOwnedApps: [238960, 230410], rgOwnedPackages: [0, 21357] });
+
+    await expect(fetchSteamOwnedAppIds(ME, 'token.di.prova')).resolves.toEqual([
+      '238960',
+      '230410',
+    ]);
+    const [url, init] = fetchMock.mock.calls[0]! as [string, RequestInit];
+    expect(url).toBe('https://store.steampowered.com/dynamicstore/userdata/');
+    expect((init.headers as Record<string, string>).cookie).toBe(
+      `steamLoginSecure=${ME}%7C%7Ctoken.di.prova`,
+    );
+  });
+
+  it('un account senza licenze oltre il pacchetto base è vuoto, non un errore', async () => {
+    jsonOnce({ rgOwnedApps: [], rgOwnedPackages: [0] });
+    await expect(fetchSteamOwnedAppIds(ME, 'token')).resolves.toEqual([]);
+  });
+
+  it('la risposta anonima, senza nemmeno il pacchetto base, è la sessione che non vale', async () => {
+    jsonOnce({ rgOwnedApps: [], rgOwnedPackages: [] });
+    await expect(fetchSteamOwnedAppIds(ME, 'token')).rejects.toBeInstanceOf(
+      SteamUserDataError,
+    );
+  });
+
+  it('una pagina HTML non è una libreria', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw new SyntaxError('Unexpected token <');
+      },
+    });
+    await expect(fetchSteamOwnedAppIds(ME, 'token')).rejects.toBeInstanceOf(
+      SteamUserDataError,
+    );
+  });
+
+  it('un errore porta lo stato e mai il token', async () => {
+    jsonOnce({}, false, 429);
+    const error = (await fetchSteamOwnedAppIds(ME, 'token-segreto').catch(
+      (e: unknown) => e,
+    )) as Error;
+    expect(error).toBeInstanceOf(SteamUserDataError);
+    expect(error.message).toContain('429');
+    expect(error.message).not.toContain('token-segreto');
+  });
+});
+
+describe('fetchSteamAppTypes', () => {
+  const inputOf = (call: number) =>
+    JSON.parse(
+      new URL(String(fetchMock.mock.calls[call]![0])).searchParams.get(
+        'input_json',
+      )!,
+    ) as { ids: { appid: number }[] };
+
+  it('chiede cento app per richiesta, senza chiave né token', async () => {
+    const ids = Array.from({ length: 150 }, (_, i) => String(1000 + i));
+    jsonOnce({ response: { store_items: [] } });
+    jsonOnce({ response: { store_items: [] } });
+
+    await fetchSteamAppTypes(ids);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(inputOf(0).ids).toHaveLength(100);
+    expect(inputOf(1).ids[0]).toEqual({ appid: 1100 });
+    const url = String(fetchMock.mock.calls[0]![0]);
+    expect(url).not.toContain('key=');
+    expect(url).not.toContain('access_token');
+  });
+
+  it('tiene tipo e nome delle app che Steam descrive, e lascia fuori le altre', async () => {
+    jsonOnce({
+      response: {
+        store_items: [
+          { appid: 238960, success: 1, type: 0, name: 'Path of Exile' },
+          { appid: 439890, success: 1, type: 4, name: 'HITMAN™: Episode 2 ' },
+          { appid: 5000760, success: 1, type: 1, name: '' },
+          // Le app che lo store non descrive tornano senza appid.
+          { success: 15 },
+        ],
+      },
+    });
+
+    const types = await fetchSteamAppTypes([
+      '238960',
+      '439890',
+      '5000760',
+      '1368430',
+    ]);
+
+    expect([...types.entries()]).toEqual([
+      ['238960', { type: 0, name: 'Path of Exile' }],
+      ['439890', { type: 4, name: 'HITMAN™: Episode 2' }],
+      ['5000760', { type: 1, name: 'App 5000760' }],
+    ]);
+  });
+
+  it('nessuna app, nessuna richiesta', async () => {
+    await expect(fetchSteamAppTypes([])).resolves.toEqual(new Map());
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('un errore dello store si alza', async () => {
+    jsonOnce({}, false, 503);
+    await expect(fetchSteamAppTypes(['238960'])).rejects.toThrow('503');
+  });
+});
+
+describe('fetchSteamAppCovers', () => {
+  it('compone l’indirizzo della verticale dal formato dello store, o ripiega sull’orizzontale', async () => {
+    jsonOnce({
+      response: {
+        store_items: [
+          {
+            appid: 5257350,
+            success: 1,
+            assets: {
+              asset_url_format: 'steam/apps/5257350/${FILENAME}?t=1791363746',
+              library_capsule: '0c22de2a/library_capsule.jpg',
+              header: '0378ca94/header.jpg',
+            },
+          },
+          {
+            appid: 10,
+            success: 1,
+            assets: {
+              asset_url_format: 'steam/apps/10/${FILENAME}',
+              header: 'abc/header.jpg',
+            },
+          },
+          // Ritirata dallo store: niente.
+          { success: 15 },
+        ],
+      },
+    });
+
+    const covers = await fetchSteamAppCovers(['5257350', '10', '351040']);
+
+    expect([...covers.entries()]).toEqual([
+      [
+        '5257350',
+        'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5257350/0c22de2a/library_capsule.jpg?t=1791363746',
+      ],
+      [
+        '10',
+        'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/10/abc/header.jpg',
+      ],
+    ]);
+    const input = JSON.parse(
+      new URL(String(fetchMock.mock.calls[0]![0])).searchParams.get(
+        'input_json',
+      )!,
+    ) as { data_request: unknown };
+    expect(input.data_request).toEqual({ include_assets: true });
   });
 });
