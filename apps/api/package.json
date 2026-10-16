@@ -24,6 +24,7 @@
     "igdb:types": "tsx src/scripts/game-types.ts",
     "igdb:platforms": "tsx src/scripts/game-platforms.ts",
     "igdb:media": "tsx src/scripts/game-media.ts",
+    "igdb:websites": "tsx src/scripts/igdb-websites.ts",
     "metacritic:probe": "tsx src/scripts/metacritic-probe.ts",
     "psn:probe": "tsx src/scripts/psn-probe.ts",
     "ea:probe": "tsx src/scripts/ea-probe.ts",

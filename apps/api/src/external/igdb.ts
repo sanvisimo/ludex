@@ -1,4 +1,9 @@
-import type { GameType, RelatedKind, Store } from '@repo/contracts/vocabulary';
+import type {
+  GameType,
+  GameWebsiteType,
+  RelatedKind,
+  Store,
+} from '@repo/contracts/vocabulary';
 
 import { chunk } from '../lib/chunk';
 
@@ -318,6 +323,9 @@ const DETAIL_FIELDS = [
   // si potrebbero mostrare.
   'artworks.image_id, screenshots.image_id, videos.video_id, videos.name,',
   'involved_companies.developer, involved_companies.publisher, involved_companies.company.name,',
+  // I link della pagina del gioco: il tipo per nome, perché `category`, l'enum
+  // di prima, IGDB lo dà per deprecato.
+  'websites.url, websites.type.type,',
   'remakes.name, remakes.cover.image_id, remasters.name, remasters.cover.image_id,',
   'similar_games.name, similar_games.cover.image_id;',
 ].join(' ');
@@ -356,6 +364,7 @@ type IgdbGameDetail = {
   artworks?: { image_id?: string }[];
   screenshots?: { image_id?: string }[];
   videos?: { video_id?: string; name?: string }[];
+  websites?: { url?: string; type?: { type?: string } }[];
   involved_companies?: {
     developer?: boolean;
     publisher?: boolean;
@@ -418,6 +427,8 @@ export type IgdbGameMetadata = {
   videos: { videoId: string; name: string | null }[];
   developers: string[];
   publishers: string[];
+  /** I link che la pagina mostra, uno per tipo: vedi `gameWebsiteTypeValues`. */
+  websites: { type: GameWebsiteType; url: string }[];
   /** Remake, remaster e simili, nell'ordine in cui IGDB li elenca. */
   related: IgdbRelated[];
 };
@@ -437,6 +448,45 @@ function companies(
     entry[role] && entry.company?.name ? [entry.company.name] : [],
   );
   return [...new Set(names)];
+}
+
+/**
+ * Il nome IGDB del tipo di link (`website_types.type`) → il nostro. Sono i nomi
+ * misurati il 16/10/2026 sul catalogo (`igdb:websites`); un tipo che non sta
+ * qui non si mostra, ed è la scelta: social, Twitch, Discord, Reddit e le wiki
+ * della community restano fuori.
+ */
+const WEBSITE_TYPES: Record<string, GameWebsiteType> = {
+  'Official Website': 'official',
+  Wikipedia: 'wikipedia',
+  Steam: 'steam',
+  GOG: 'gog',
+  Epic: 'epic',
+  Playstation: 'psn',
+  Xbox: 'xbox',
+  Nintendo: 'nintendo',
+  Itch: 'itch',
+  'App Store (iPhone)': 'app_store',
+  'App Store (iPad)': 'app_store',
+  'Google Play': 'google_play',
+};
+
+/**
+ * Un link per tipo, il primo che IGDB elenca: iPhone e iPad sono un App Store.
+ * Solo `http(s)`: i link di IGDB li scrive la sua comunità, e finiscono in un
+ * `href`.
+ */
+function websites(
+  entries: IgdbGameDetail['websites'],
+): { type: GameWebsiteType; url: string }[] {
+  const out: { type: GameWebsiteType; url: string }[] = [];
+  for (const entry of entries ?? []) {
+    const type = entry.type?.type ? WEBSITE_TYPES[entry.type.type] : undefined;
+    if (!type || !entry.url || !/^https?:\/\//i.test(entry.url)) continue;
+    if (out.some((site) => site.type === type)) continue;
+    out.push({ type, url: entry.url });
+  }
+  return out;
 }
 
 function related(
@@ -551,6 +601,7 @@ function toMetadata(game: IgdbGameDetail): IgdbGameMetadata {
     ),
     developers: companies(game.involved_companies, 'developer'),
     publishers: companies(game.involved_companies, 'publisher'),
+    websites: websites(game.websites),
     related: [
       ...related('remake', game.remakes),
       ...related('remaster', game.remasters),

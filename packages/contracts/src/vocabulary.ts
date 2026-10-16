@@ -192,6 +192,27 @@ export const gameTypeValues = [
   'update',
 ] as const;
 
+// I link di un gioco che IGDB conosce (`websites`) e che la pagina del gioco
+// mostra: il sito ufficiale, Wikipedia e i negozi. I nomi sono nostri e non
+// quelli di IGDB, che traduce `external/igdb.ts`; i negozi che sono anche
+// nostri hanno lo stesso nome di `storeValues`, così un link IGDB riempie il
+// negozio a cui manca. Social, Twitch, Discord, Reddit e le wiki della
+// community non ci sono: non aiutano a decidere cosa giocare
+// (plans/link-pagina-gioco.md).
+export const gameWebsiteTypeValues = [
+  'official',
+  'wikipedia',
+  'steam',
+  'gog',
+  'epic',
+  'psn',
+  'xbox',
+  'nintendo',
+  'itch',
+  'app_store',
+  'google_play',
+] as const;
+
 export const hiddenKindValues = [
   'app',
   'dlc',
@@ -362,3 +383,4 @@ export type Subscription = (typeof subscriptionValues)[number];
 export type Medium = (typeof mediumValues)[number];
 export type HiddenKind = (typeof hiddenKindValues)[number];
 export type GameType = (typeof gameTypeValues)[number];
+export type GameWebsiteType = (typeof gameWebsiteTypeValues)[number];

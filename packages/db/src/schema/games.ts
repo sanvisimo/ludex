@@ -1,4 +1,5 @@
 import {
+  type GameWebsiteType,
   gameTypeValues,
   mediumValues,
   storeValues,
@@ -128,6 +129,12 @@ export const games = pgTable(
     videos: jsonb('videos').$type<{ videoId: string; name: string | null }[]>(),
     developers: text('developers').array(),
     publishers: text('publishers').array(),
+    // I link del gioco secondo IGDB (`websites`), solo i tipi che la pagina
+    // mostra e coi nomi nostri (`gameWebsiteTypeValues`), uno per tipo. Per un
+    // negozio vince il link che abbiamo noi (`storeGameUrl`): questo riempie
+    // dove manca. Null e lista vuota come sopra; l'arnese è `igdb:websites`.
+    websites:
+      jsonb('websites').$type<{ type: GameWebsiteType; url: string }[]>(),
 
     // --- voto della critica: il numero su cui si filtra e si ordina ---
     //

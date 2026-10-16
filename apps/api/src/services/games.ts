@@ -1,5 +1,9 @@
 import { storeGameUrl } from '@repo/contracts';
-import type { Store } from '@repo/contracts/vocabulary';
+import {
+  type GameWebsiteType,
+  type Store,
+  storeValues,
+} from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, asc, eq, inArray, sql } from '@repo/db/orm';
 
@@ -97,6 +101,7 @@ export async function findGameDetailById(
       videos: true,
       developers: true,
       publishers: true,
+      websites: true,
       hltbMainMinutes: true,
       hltbPlusMinutes: true,
       hltbCompletionistMinutes: true,
@@ -126,7 +131,15 @@ export async function findGameDetailById(
 
   if (!game) return null;
 
-  const { attributes, sources, scores, igdbSlug, parentIgdbId, ...rest } = game;
+  const {
+    attributes,
+    sources,
+    scores,
+    igdbSlug,
+    parentIgdbId,
+    websites,
+    ...rest
+  } = game;
   const externalId = (source: string) =>
     sources.find((row) => row.source === source)?.externalId ?? null;
 
@@ -154,19 +167,33 @@ export async function findGameDetailById(
       openCriticId: externalId('opencritic'),
       metacriticSlug: externalId('metacritic'),
     }),
-    storeLinks: await findStoreLinks(id),
+    storeLinks: await findStoreLinks(id, websites ?? []),
+    // I negozi stanno in `storeLinks`: qui il resto, sito ufficiale, Wikipedia
+    // e i negozi che non sono nostri (itch, App Store, Google Play).
+    websites: (websites ?? []).filter((site) => !isStore(site.type)),
   };
+}
+
+function isStore(type: GameWebsiteType): type is GameWebsiteType & Store {
+  return (storeValues as readonly string[]).includes(type);
 }
 
 /**
  * Dove si compra il gioco, per la card «Links» della scheda: un link per
  * negozio, dagli id di `external_ids` e dalla pagina che l'import ha salvato su
  * una copia di chiunque (`max(store_page)`, come la scheda admin: è un percorso
- * del negozio, non un dato di chi l'ha importato). I negozi senza un link
- * ufficiale (`storeGameUrl`) non compaiono: una riga ferma non serve a nessuno.
- * Dentro un negozio vince l'id che viene prima, per avere sempre lo stesso.
+ * del negozio, non un dato di chi l'ha importato). Dentro un negozio vince l'id
+ * che viene prima, per avere sempre lo stesso.
+ *
+ * Dove un link nostro non c'è (`storeGameUrl` nullo: Epic, Nintendo, GOG senza
+ * pagina, o un negozio di cui non abbiamo l'id) ripiega sul link di IGDB
+ * (`games.websites`). Un negozio senza nessuno dei due non compare: una riga
+ * ferma non serve a nessuno. L'ordine è quello dell'enum dei negozi.
  */
-async function findStoreLinks(gameId: string) {
+async function findStoreLinks(
+  gameId: string,
+  websites: { type: GameWebsiteType; url: string }[],
+) {
   const [ids, pages] = await Promise.all([
     db
       .select({
@@ -200,7 +227,14 @@ async function findStoreLinks(gameId: string) {
     const url = storeGameUrl(store, externalId, pageOf.get(store) ?? null);
     if (url) links.push({ store, url });
   }
-  return links;
+  for (const site of websites) {
+    if (!isStore(site.type)) continue;
+    if (links.some((link) => link.store === site.type)) continue;
+    links.push({ store: site.type, url: site.url });
+  }
+  return links.sort(
+    (a, b) => storeValues.indexOf(a.store) - storeValues.indexOf(b.store),
+  );
 }
 
 /**

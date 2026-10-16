@@ -7,6 +7,7 @@ import {
   enrichmentSourceValues,
   linkableStoreValues,
   gameTypeValues,
+  gameWebsiteTypeValues,
   hiddenKindValues,
   manualSourceValues,
   mediumValues,
@@ -223,8 +224,14 @@ export const GameDetailSchema = GameSchema.extend({
     metacritic: z.string().nullable(),
   }),
   // Dove si compra, un link per negozio: dagli id di `external_ids` e dalla
-  // pagina che un import ha dato. Solo i negozi con un link ufficiale.
+  // pagina che un import ha dato, e dove mancano dal link di IGDB. Solo i
+  // negozi con un link.
   storeLinks: z.array(z.object({ store: StoreSchema, url: z.string() })),
+  // Gli altri link di IGDB: sito ufficiale, Wikipedia, itch, App Store, Google
+  // Play. I negozi nostri non ci sono, stanno in `storeLinks`.
+  websites: z.array(
+    z.object({ type: z.enum(gameWebsiteTypeValues), url: z.string() }),
+  ),
 });
 
 // Risultato di ricerca su IGDB: NON è una riga `games`, è un candidato da cui

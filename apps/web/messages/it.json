@@ -431,6 +431,7 @@
     "details": "Dettagli",
     "links": "Link",
     "openOn": "Apri su {name}",
+    "officialSite": "Sito ufficiale",
     "copies": "Copie",
     "played": "{duration} giocate",
     "lastPlayed": "ultima partita {date}",

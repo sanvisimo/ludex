@@ -431,6 +431,7 @@
     "details": "Details",
     "links": "Links",
     "openOn": "Open on {name}",
+    "officialSite": "Official website",
     "copies": "Copies",
     "played": "{duration} played",
     "lastPlayed": "last played {date}",
