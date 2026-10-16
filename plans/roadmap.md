@@ -31,7 +31,8 @@ segnalazioni spostate dalla mail alle issue di GitHub.
 
 ## Da sapere
 
-- «In corso» oggi non ha voci, e il tipo le prevede già.
+- **Il 16/10/2026** «Importa da un file CSV» (`csv`) è passata a «In corso»:
+  il lotto 10, piano in [10-import-csv.md](10-import-csv.md).
 - I mesi delle voci fatte sono approssimati: la storia dei commit è fatta di
   merge, non di step. Si correggono in `lib/roadmap.ts`.
 - **EA è passata a «Fatto» il 13/10/2026** (era «In arrivo» dal 09/10, poi «In
