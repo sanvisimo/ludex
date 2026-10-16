@@ -2,7 +2,8 @@
 
 **Stato: chiuso il 13/10/2026**, dall'utente, dopo la prova. Branch
 `feat/9c-ea`; roadmap a «fatto». Il login che si rinnova (quello dell'app desktop
-EA) è da valutare in un lotto a parte, vedi in fondo.
+EA), valutato in un lotto a parte, è scartato il 16/10/2026: vuole `pc_sign`
+([9c-ea-rinnovo.md](9c-ea-rinnovo.md)).
 
 ## Contesto
 
