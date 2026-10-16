@@ -1082,7 +1082,9 @@
       },
       "randomFilter": {
         "title": "Il gioco a caso dal filtro",
-        "text": "Un dado sempre a portata, in basso a destra: pesca dentro il filtro che hai scelto, e dalla scheda del gioco pescato passa al prossimo, sempre fra gli stessi giochi e senza ripetersi finché non li hai visti tutti. Senza account pesca dal catalogo."
+        "p1": "Un dado sempre a portata, in basso a destra: apre la scheda di un gioco a caso. Su «Backlog» pesca dentro il filtro che hai scelto; senza filtri, da tutto quello che la lista mostra.",
+        "p2": "Dalla scheda del gioco pescato, il dado passa al prossimo dello stesso filtro, senza ripetersi finché non li hai visti tutti. L'indirizzo tiene il giro: indietro torna al gioco di prima.",
+        "p3": "Senza account il dado pesca dal catalogo, solo fra i giochi veri e propri: niente DLC o bundle."
       },
       "storeWishlists": {
         "title": "Le wishlist dei negozi",

@@ -1083,7 +1083,9 @@
       },
       "randomFilter": {
         "title": "A random game from your filter",
-        "text": "A die always at hand, at the bottom right: it picks from the filter you have selected, and from the page of the game it picked it moves on to the next one, always among the same games and without repeating until you have seen them all. Without an account it picks from the catalogue."
+        "p1": "A die always at hand, at the bottom right: it opens the page of a random game. On “Backlog” it picks from the filter you have selected; without filters, from everything the list shows.",
+        "p2": "From the page of the game it picked, the die moves on to the next one in the same filter, without repeating until you have seen them all. The address keeps the round: back returns to the previous game.",
+        "p3": "Without an account the die picks from the catalogue, only among actual games: no DLC or bundles."
       },
       "storeWishlists": {
         "title": "Store wishlists",

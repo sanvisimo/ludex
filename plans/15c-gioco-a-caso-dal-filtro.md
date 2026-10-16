@@ -1,7 +1,7 @@
 # Il gioco a caso dal filtro
 
-**Stato: in corso dal 16/10/2026.** Branch `feat/gioco-a-caso-dal-filtro`, da
-`main`. Roadmap: `randomFilter` a «in corso». Primo in
+**Stato: chiuso il 16/10/2026.** Branch `feat/gioco-a-caso-dal-filtro`, da
+`main`. Roadmap: `randomFilter` a «fatto». Primo in
 [ordine di lavoro](../docs/ordine-sviluppo.md); è l'estensione della 15c.
 
 ## Perché
@@ -91,8 +91,8 @@ dentro lo stesso filtro.
 
 ## Avanzamento
 
-**16/10/2026: passi 1–4 fatti**, manca solo la roadmap a «fatto», che aspetta
-il via. Test del dado (`random-game.test.ts`, 9 casi) e del web (`il dado` in
+**16/10/2026: passi 1–4 fatti**, e il lotto chiuso lo stesso giorno: roadmap
+a «fatto». Test del dado (`random-game.test.ts`, 9 casi) e del web (`il dado` in
 `backlog-filter.test.ts`) verdi, typecheck e lint puliti.
 
 Provato in Chromium da anonimo, a 1280 e a 390 di larghezza: quattro tiri di

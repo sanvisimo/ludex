@@ -9,17 +9,19 @@ commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
 in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10), e l'ordine è
 anche quello della [roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
-1. **Il gioco a caso dal filtro** (aggiunto il 13/10/2026, portato in cima il
-   16/10): l'estensione della 15c, vedi lì.
-2. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
+1. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
    e la deduplica.
-3. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
+2. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
    decise.
-4. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
+3. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
    da zero.
-5. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+4. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-6. **Mobile**: un'app nuova, con le sue schermate.
+5. **Mobile**: un'app nuova, con le sue schermate.
+
+Il gioco a caso dal filtro era il primo della lista ed è **fatto dal
+16/10/2026**: il dado fisso in basso a destra, vedi l'estensione della 15c più
+sotto e `plans/15c-gioco-a-caso-dal-filtro.md`.
 
 I link della pagina del gioco erano i primi della lista e sono **fatti dal
 16/10/2026**: il campo `websites` di IGDB su `games`, vedi
@@ -274,7 +276,7 @@ Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
     avviso dice che non ci sono giochi da pescare.
 
     **Estensione: il gioco a caso dal filtro** (chiesta il 13/10/2026, prima
-    nell'ordine di lavoro dal 16/10, **in corso dal 16/10**, piano in
+    nell'ordine di lavoro dal 16/10, **fatta il 16/10/2026**, piano in
     `plans/15c-gioco-a-caso-dal-filtro.md`). Il gioco a caso pesca dal **filtro
     selezionato** in `/backlog`, e dalla scheda del gioco pescato si **passa a un
     altro**, sempre dentro lo stesso filtro. Decisioni del 16/10:

@@ -36,6 +36,9 @@ segnalazioni spostate dalla mail alle issue di GitHub.
   merge, non di step. Si correggono in `lib/roadmap.ts`.
 - **EA è passata a «Fatto» il 13/10/2026** (era «In arrivo» dal 09/10, poi «In
   corso»): l'importazione una tantum, piano in [9c-ea.md](9c-ea.md).
+- **Ancora il 16/10/2026**, a lotto chiuso: «Il gioco a caso dal filtro»
+  (`randomFilter`) è passata a «Fatto» (era «In corso» dallo stesso giorno),
+  con tre punti al posto del testo. In cima a «In arrivo» torna il CSV.
 - **Sempre il 16/10/2026**, a lotto chiuso: «I link nella pagina del gioco»
   (`linksFix`) è passata a «Fatto», e «Il gioco a caso dal filtro»
   (`randomFilter`) è salita in cima a «In arrivo», prima del CSV.
