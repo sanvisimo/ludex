@@ -361,6 +361,103 @@ describe('filtro per abbonamento', () => {
   });
 });
 
+describe('filtro per supporto', () => {
+  let userId: string;
+
+  beforeEach(async () => {
+    userId = await createUser();
+    await conSupporto(userId, 'Digitale', [
+      { platformSlug: 'pc_windows', store: 'steam', medium: 'digital' },
+    ]);
+    await conSupporto(userId, 'Cartuccia', [
+      {
+        platformSlug: 'nintendo_switch',
+        store: 'nintendo',
+        medium: 'physical',
+      },
+    ]);
+    // Il disco su PS4 e il digitale su PS5: tutti e due.
+    await conSupporto(userId, 'Disco e digitale', [
+      { platformSlug: 'sony_playstation4', store: 'psn', medium: 'physical' },
+      { platformSlug: 'sony_playstation5', store: 'psn', medium: 'digital' },
+    ]);
+    // Inserito a mano senza dire il supporto.
+    await aggiungi(userId, { name: 'A mano' });
+  });
+
+  it('trova chi ha almeno una copia con quel supporto', async () => {
+    expect((await nomi(userId, { media: ['physical'] })).sort()).toEqual([
+      'Cartuccia',
+      'Disco e digitale',
+    ]);
+    expect((await nomi(userId, { media: ['digital'] })).sort()).toEqual([
+      'Digitale',
+      'Disco e digitale',
+    ]);
+  });
+
+  it('tutti e due sono in AND: ce l’hai in tutti e due i modi', async () => {
+    expect(await nomi(userId, { media: ['digital', 'physical'] })).toEqual([
+      'Disco e digitale',
+    ]);
+  });
+
+  it('una copia senza supporto non è né digitale né fisica', async () => {
+    expect(await nomi(userId, { media: ['digital'] })).not.toContain('A mano');
+    expect(await nomi(userId, { media: ['physical'] })).not.toContain('A mano');
+    expect(await nomi(userId)).toHaveLength(4);
+  });
+
+  it('un gioco con due copie dello stesso supporto esce una volta sola', async () => {
+    await conSupporto(userId, 'Due dischi', [
+      { platformSlug: 'sony_playstation4', store: 'psn', medium: 'physical' },
+      { platformSlug: 'sony_playstation5', store: 'psn', medium: 'physical' },
+    ]);
+
+    const risultato = await search(userId, { media: ['physical'] });
+    expect(risultato.total).toBe(3);
+    expect(risultato.entries).toHaveLength(3);
+  });
+
+  it('con lo store è un criterio in più, ognuno sulla sua copia, come piattaforma e store', async () => {
+    await conSupporto(userId, 'Steam e cartuccia', [
+      { platformSlug: 'pc_windows', store: 'steam', medium: 'digital' },
+      {
+        platformSlug: 'nintendo_switch',
+        store: 'nintendo',
+        medium: 'physical',
+      },
+    ]);
+
+    // Una copia Steam e una cartuccia: «Steam» + «Fisico» lo trova, anche se
+    // nessuna copia è le due cose insieme. Solo gli abbonamenti esclusi stanno
+    // dentro la stessa copia (`nonEsclusa`).
+    expect(
+      await nomi(userId, { stores: ['steam'], media: ['physical'] }),
+    ).toEqual(['Steam e cartuccia']);
+  });
+
+  it('il digitale che hai solo dal Plus non conta se il Plus è escluso', async () => {
+    const id = await conSupporto(userId, 'Solo nel Plus', [
+      { platformSlug: 'sony_playstation5', store: 'psn', medium: 'digital' },
+    ]);
+    await db
+      .update(schema.ownerships)
+      .set({ subscription: 'ps_plus' })
+      .where(eq(schema.ownerships.backlogId, id));
+
+    expect(await nomi(userId, { media: ['digital'] })).toContain(
+      'Solo nel Plus',
+    );
+    expect(
+      await nomi(userId, {
+        media: ['digital'],
+        excludeSubscriptions: ['ps_plus'],
+      }),
+    ).not.toContain('Solo nel Plus');
+  });
+});
+
 describe('i NULL non sono zeri', () => {
   let userId: string;
 
@@ -722,6 +819,21 @@ describe('opzioni del pannello', () => {
     expect((await listBacklogFilterOptions(userId)).subscriptions).toEqual([]);
   });
 
+  it('offre i supporti che ci sono, e il non dichiarato non è una voce', async () => {
+    const userId = await createUser();
+    await conSupporto(userId, 'Digitale', [
+      { platformSlug: 'pc_windows', store: 'steam', medium: 'digital' },
+    ]);
+    await aggiungi(userId, { name: 'A mano' });
+    const nascosto = await conSupporto(userId, 'Disco nascosto', [
+      { platformSlug: 'sony_playstation4', store: 'psn', medium: 'physical' },
+    ]);
+    await setBacklogHidden(userId, nascosto, true);
+
+    // Il disco c'è solo su un gioco nascosto: «Fisico» non si offre.
+    expect((await listBacklogFilterOptions(userId)).media).toEqual(['digital']);
+  });
+
   it('lo store nullo degli inserimenti manuali non diventa una voce', async () => {
     const userId = await createUser();
     await aggiungi(userId, { name: 'A mano' });
@@ -772,6 +884,27 @@ async function conAbbonamento(
       );
   }
   return id;
+}
+
+type CopiaConSupporto = {
+  platformSlug: string;
+  store: 'steam' | 'psn' | 'nintendo';
+  medium: 'digital' | 'physical';
+};
+
+/** Un gioco con copie di cui si dice il supporto, come fa l'import. */
+async function conSupporto(
+  userId: string,
+  name: string,
+  copie: CopiaConSupporto[],
+) {
+  const game = await createGame({ name });
+  return addToBacklog({
+    userId,
+    gameId: game.id,
+    status: 'backlog',
+    ownerships: copie,
+  });
 }
 
 async function aggiungi(

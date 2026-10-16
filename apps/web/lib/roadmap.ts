@@ -41,6 +41,7 @@ export type RoadmapEntry = {
  */
 export const roadmap: RoadmapEntry[] = [
   { id: 'eaRenew', status: 'doing', areas: ['import'] },
+  { id: 'mediaFilter', status: 'doing', areas: ['library'] },
   { id: 'linksFix', status: 'next', areas: ['game'] },
   { id: 'csv', status: 'next', areas: ['import'] },
   { id: 'randomFilter', status: 'next', areas: ['library'] },

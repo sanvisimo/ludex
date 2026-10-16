@@ -546,6 +546,11 @@ export const BacklogFilterSchema = z.object({
   // giochi che stasera puoi avviare e domani no. Con tutti i valori è «solo
   // copie tue». Un gioco senza possessi non c'è, quindi non è un caso.
   excludeSubscriptions: z.array(SubscriptionSchema).max(5).optional(),
+  // Digitale o fisico, cioè che cosa hai in mano: `ownerships.medium`. In AND
+  // come `stores`, quindi tutti e due vuol dire «ce l'ho in tutti e due i
+  // modi». Una copia senza supporto (inserita a mano senza dirlo) non è né
+  // l'uno né l'altro, e un criterio attivo la lascia fuori.
+  media: z.array(MediumSchema).max(2).optional(),
   // Gli id di `igdb_attributes`, non le coppie (kind, igdbId): sono la chiave
   // che `game_attributes` referenzia davvero, e il client li riceve da
   // `backlog.filterOptions` senza doverli comporre.
@@ -792,6 +797,7 @@ export const BacklogFilterOptionsSchema = z.object({
   platforms: z.array(PlatformSchema),
   stores: z.array(StoreSchema),
   subscriptions: z.array(SubscriptionSchema),
+  media: z.array(MediumSchema),
   gameTypes: z.array(GameTypeSchema),
   attributes: z.array(FilterAttributeSchema),
 });
