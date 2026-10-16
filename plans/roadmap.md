@@ -36,6 +36,9 @@ segnalazioni spostate dalla mail alle issue di GitHub.
   merge, non di step. Si correggono in `lib/roadmap.ts`.
 - **EA è passata a «Fatto» il 13/10/2026** (era «In arrivo» dal 09/10, poi «In
   corso»): l'importazione una tantum, piano in [9c-ea.md](9c-ea.md).
+- **Sempre il 16/10/2026**, a lotto chiuso: «I link nella pagina del gioco»
+  (`linksFix`) è passata a «Fatto», e «Il gioco a caso dal filtro»
+  (`randomFilter`) è salita in cima a «In arrivo», prima del CSV.
 - **Il 16/10/2026** «Il filtro digitale o fisico» (`mediaFilter`) è passata a
   «Fatto», e «I link nella pagina del gioco» (`linksFix`) a «In corso».
   «Rinnovo del token per la libreria EA» (`eaRenew`) è **tolta**, non fatta: il

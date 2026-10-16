@@ -1091,7 +1091,8 @@
       },
       "linksFix": {
         "title": "I link nella pagina del gioco",
-        "text": "Più link nella pagina di ogni gioco, presi da IGDB: il sito ufficiale e i negozi, compreso Epic, che oggi non ne ha."
+        "p1": "La card «Link» di ogni gioco ha il sito ufficiale e Wikipedia, e i negozi che prima mancavano, presi da IGDB: Epic, Nintendo, GOG, itch.io, App Store e Google Play.",
+        "p2": "L'icona del negozio di una tua copia porta alla pagina del gioco anche quando l'import non l'ha data, come per Epic."
       },
       "mediaFilter": {
         "title": "Il filtro digitale o fisico",

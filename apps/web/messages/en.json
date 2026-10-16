@@ -1092,7 +1092,8 @@
       },
       "linksFix": {
         "title": "Links on the game page",
-        "text": "More links on every game page, taken from IGDB: the official website and the stores, including Epic, which has none today."
+        "p1": "Every game's “Links” card has the official website and Wikipedia, and the stores that were missing, taken from IGDB: Epic, Nintendo, GOG, itch.io, App Store and Google Play.",
+        "p2": "The store icon on one of your copies links to the game page even when the import didn't provide it, as with Epic."
       },
       "mediaFilter": {
         "title": "The digital or physical filter",

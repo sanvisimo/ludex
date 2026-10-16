@@ -1,7 +1,7 @@
 # I link della pagina del gioco
 
-**Stato: costruito il 16/10/2026, si chiude quando l'utente dice che è pronto.** Branch `feat/link-pagina-gioco`, da `main`.
-Roadmap: `linksFix` a «in corso». Primo in [ordine di lavoro](../docs/ordine-sviluppo.md).
+**Stato: chiuso il 16/10/2026.** Branch `feat/link-pagina-gioco`, da `main`.
+Roadmap: `linksFix` a «fatto». Primo in [ordine di lavoro](../docs/ordine-sviluppo.md).
 
 ## Perché
 
