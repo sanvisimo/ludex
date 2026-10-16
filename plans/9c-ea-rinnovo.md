@@ -1,7 +1,9 @@
 # EA, un collegamento che si rinnova
 
-**Stato: analisi (13/10/2026). Primo giro di `ea:login-probe` fatto; si aspetta il secondo.**
-Nessun codice di produzione. Segue il 9c ([9c-ea.md](9c-ea.md)), chiuso come
+**Stato: chiuso il 16/10/2026, senza codice.** Il secondo giro di
+`ea:login-probe` ha risposto «pc_sign is missing»: EA resta un'importazione una
+tantum. Decisione dell'utente, presa prima del giro: se non regge la strada
+buona, non si insegue né sul web né sul mobile. Segue il 9c ([9c-ea.md](9c-ea.md)), chiuso come
 importazione una tantum.
 
 ## Perché
@@ -89,12 +91,24 @@ Se il codice si vede solo dagli strumenti per sviluppatori, **sul web non si fa*
 resta per il mobile, dove una `WebView` intercetta il redirect da sola, com'è in
 Playnite.
 
-| Domanda                                                    | Risposta |
-| ---------------------------------------------------------- | -------- |
-| Dove si vede il codice: barra di Firefox, o solo F12       | —        |
-| Lo scambio passa senza `pc_sign`, e rende un refresh token | —        |
-| Quanto dura il refresh token, e se ruota                   | —        |
-| Un rinnovo da qui, a distanza di giorni (`--rinnova`)      | —        |
+| Domanda                                                    | Risposta                                    |
+| ---------------------------------------------------------- | ------------------------------------------- |
+| Dove si vede il codice: barra di Firefox, o solo F12       | non si arriva al codice                     |
+| Lo scambio passa senza `pc_sign`, e rende un refresh token | **no**: EA si ferma prima, a `connect/auth` |
+| Quanto dura il refresh token, e se ruota                   | non misurabile                              |
+| Un rinnovo da qui, a distanza di giorni (`--rinnova`)      | non misurabile                              |
+
+**Il secondo giro (16/10/2026).** Firefox, entrato su ea.com, sull'indirizzo
+stampato dallo script: EA non rimanda a `qrc://`, risponde con una pagina JSON,
+`{"error":"invalid_request","error_description":"pc_sign is missing","code":102105}`.
+La firma dell'hardware non è facoltativa già al login, prima dello scambio del
+codice: il ripiego su una firma vuota di cui parlava il documento di unifideck
+non c'è, o non c'è più.
+
+Avere un codice vorrebbe dire calcolare un `pc_sign` dal server: un'impronta
+hardware inventata, firmata con una chiave estratta da EA Desktop. È la cosa più
+fragile che si possa tenere (EA la cambia aggiornando l'app) e quella che
+più somiglia a farsi passare per il client di EA. Non si fa.
 
 ## Poi
 
@@ -104,4 +118,5 @@ Playnite.
   che torna al ↻ e all'interruttore, la voce in roadmap «in corso». Il client
   della libreria, la riduzione e l'import del 9c restano.
 - **Se nessuna regge**: EA resta una tantum, e qui si scrive perché, con le
-  misure.
+  misure. **È andata così** (16/10/2026): vedi il secondo giro sopra.
+  `oneShotStoreValues` resta `['ea']`.

@@ -1001,10 +1001,13 @@ avviati di recente. Le misure, in quattro giri di `ea:probe`, e le decisioni son
 in `plans/9c-ea.md`; i link alla pagina del gioco qui sotto, in «Il link alla
 pagina del gioco».
 
-**Da valutare a parte: un login che si rinnova.** Quello dell'app desktop EA
-(`JUNO_PC_CLIENT`, OAuth con PKCE e redirect a `qrc://`) dà anche un refresh
-token: lo usa il plugin EA di GOG Galaxy. Letto, non provato; le incognite sono
-nel piano.
+**Un login che si rinnova: provato e scartato (16/10/2026).** Quello dell'app
+desktop EA (`JUNO_PC_CLIENT`, OAuth con PKCE e redirect a `qrc://`) darebbe un
+refresh token, ed è quello del plugin EA di GOG Galaxy. Ma `connect/auth` lo
+rifiuta senza `pc_sign`, un'impronta dell'hardware firmata con una chiave di EA
+Desktop («pc_sign is missing», 102105), già prima di dare il codice.
+Inventarla dal server non si fa. Le misure sono in
+[`plans/9c-ea-rinnovo.md`](../plans/9c-ea-rinnovo.md).
 
 ## Le wishlist dei negozi (15e)
 
