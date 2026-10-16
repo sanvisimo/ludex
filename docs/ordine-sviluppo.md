@@ -37,6 +37,17 @@ blocco» in [negozi](negozi.md)). Il link alle fonti senza voto nella pagina del
 è fatto (09/10/2026). La fusione di due giochi (11b) è fatta (12/10/2026): vedi
 «11b» più sotto e `plans/11b-fusione.md`.
 
+Il controllo degli import, cioè la libreria importata confrontata con quella
+del negozio, è **chiuso il 16/10/2026** per tutte le librerie collegate:
+
+- GOG ed Epic: confronto con Playnite, lotto 9a;
+- PSN: confronto con Playnite, lotto 9b;
+- Steam: confronto con Playnite, lotto 9f;
+- EA e Nintendo: controllati a mano;
+- Amazon: verificata.
+
+Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
+
 1. **Registrazione e auth**
 2. **Inserimento manuale + prima UI web** — `backlog` con possesso, piattaforme e
    stato di completamento. Include la **ricerca IGDB** per scegliere il gioco da

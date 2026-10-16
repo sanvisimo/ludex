@@ -9,6 +9,10 @@ Le misure sono state fatte dall'utente, col suo account, in tre giri (`nintendo:
 richieste a Nintendo, nessun errore. **Nessuna richiesta a Nintendo è stata fatta da
 codice di produzione**: i test stubbano `fetch`.
 
+**Controllo dell'import: fatto a mano dall'utente il 16/10/2026, nessuna
+differenza.** Playnite non ha una libreria Nintendo, quindi non c'era un
+confronto da fare.
+
 ## Contesto
 
 `docs/ordine-sviluppo.md` dà Nintendo come «barattolo di cookie, nessun id che IGDB
