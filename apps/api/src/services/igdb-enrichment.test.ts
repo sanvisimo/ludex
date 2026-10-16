@@ -361,7 +361,7 @@ describe('enrichGameFromIgdb', () => {
     expect(await attributeNames(primo.id)).toEqual([{ name: 'Strategia' }]);
   });
 
-  it('scrive media e autori per la pagina del gioco', async () => {
+  it('scrive media, autori e link per la pagina del gioco', async () => {
     const game = await createGame();
     mockedFetch.mockResolvedValue(
       igdbMetadata({
@@ -370,6 +370,7 @@ describe('enrichGameFromIgdb', () => {
         videos: [{ videoId: 'yt1', name: 'Trailer' }],
         developers: ['CD Projekt RED'],
         publishers: ['Bandai Namco'],
+        websites: [{ type: 'official', url: 'https://example.com' }],
       }),
     );
 
@@ -383,6 +384,7 @@ describe('enrichGameFromIgdb', () => {
       videos: [{ videoId: 'yt1', name: 'Trailer' }],
       developers: ['CD Projekt RED'],
       publishers: ['Bandai Namco'],
+      websites: [{ type: 'official', url: 'https://example.com' }],
     });
   });
 

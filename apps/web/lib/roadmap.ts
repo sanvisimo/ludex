@@ -40,17 +40,28 @@ export type RoadmapEntry = {
  * facendo adesso, e una voce passa a «fatto» quando l'utente dice che è pronta.
  */
 export const roadmap: RoadmapEntry[] = [
-  { id: 'eaRenew', status: 'doing', areas: ['import'] },
-  { id: 'mediaFilter', status: 'doing', areas: ['library'] },
-  { id: 'linksFix', status: 'next', areas: ['game'] },
-  { id: 'csv', status: 'next', areas: ['import'] },
   { id: 'randomFilter', status: 'next', areas: ['library'] },
+  { id: 'csv', status: 'next', areas: ['import'] },
   { id: 'subscriptions', status: 'next', areas: ['library'] },
   { id: 'xbox', status: 'next', areas: ['import'] },
   { id: 'ai', status: 'next', areas: ['ai'] },
   { id: 'mobile', status: 'next', areas: ['mobile'] },
   { id: 'openPlaylists', status: 'idea', areas: ['playlists'] },
   { id: 'metaquest', status: 'next', areas: ['import'] },
+  {
+    id: 'linksFix',
+    status: 'done',
+    areas: ['game'],
+    month: '2026-10',
+    points: 2,
+  },
+  {
+    id: 'mediaFilter',
+    status: 'done',
+    areas: ['library'],
+    month: '2026-10',
+    points: 2,
+  },
   {
     id: 'steamFree',
     status: 'done',

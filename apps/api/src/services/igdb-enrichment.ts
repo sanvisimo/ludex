@@ -195,6 +195,7 @@ export async function saveIgdbMetadata(
         videos: metadata.videos,
         developers: metadata.developers,
         publishers: metadata.publishers,
+        websites: metadata.websites,
       })
       .where(eq(schema.games.id, gameId));
 

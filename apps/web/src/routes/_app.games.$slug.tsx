@@ -179,6 +179,7 @@ function GamePage() {
           {entry ? (
             <BacklogPanel
               entry={entry}
+              storeLinks={game.storeLinks}
               onStatus={(row, status) =>
                 setStatus.mutate({ id: row.id, status })
               }

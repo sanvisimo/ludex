@@ -145,6 +145,7 @@ export function igdbMetadata(
     videos: [],
     developers: [],
     publishers: [],
+    websites: [],
     related: [],
     ...over,
   };

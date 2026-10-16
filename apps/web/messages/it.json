@@ -431,6 +431,7 @@
     "details": "Dettagli",
     "links": "Link",
     "openOn": "Apri su {name}",
+    "officialSite": "Sito ufficiale",
     "copies": "Copie",
     "played": "{duration} giocate",
     "lastPlayed": "ultima partita {date}",
@@ -1090,15 +1091,13 @@
       },
       "linksFix": {
         "title": "I link nella pagina del gioco",
-        "text": "Più link nella pagina di ogni gioco, presi da IGDB: il sito ufficiale e i negozi, compreso Epic, che oggi non ne ha."
+        "p1": "La card «Link» di ogni gioco ha il sito ufficiale e Wikipedia, e i negozi che prima mancavano, presi da IGDB: Epic, Nintendo, GOG, itch.io, App Store e Google Play.",
+        "p2": "L'icona del negozio di una tua copia porta alla pagina del gioco anche quando l'import non l'ha data, come per Epic."
       },
       "mediaFilter": {
         "title": "Il filtro digitale o fisico",
-        "text": "Tenere solo i giochi che hai su disco o cartuccia, o solo quelli digitali."
-      },
-      "eaRenew": {
-        "title": "Rinnovo del token per la libreria EA",
-        "text": "Rinnovo automatico del token per la libreria EA"
+        "p1": "Nei filtri del backlog c'è «Supporto»: tieni solo i giochi che hai su disco o cartuccia, solo quelli digitali, o quelli che hai in tutti e due i modi.",
+        "p2": "Funziona anche nelle playlist, come gli altri filtri."
       },
       "ea": {
         "title": "La libreria EA",

@@ -431,6 +431,7 @@
     "details": "Details",
     "links": "Links",
     "openOn": "Open on {name}",
+    "officialSite": "Official website",
     "copies": "Copies",
     "played": "{duration} played",
     "lastPlayed": "last played {date}",
@@ -1091,15 +1092,13 @@
       },
       "linksFix": {
         "title": "Links on the game page",
-        "text": "More links on every game page, taken from IGDB: the official website and the stores, including Epic, which has none today."
+        "p1": "Every game's “Links” card has the official website and Wikipedia, and the stores that were missing, taken from IGDB: Epic, Nintendo, GOG, itch.io, App Store and Google Play.",
+        "p2": "The store icon on one of your copies links to the game page even when the import didn't provide it, as with Epic."
       },
       "mediaFilter": {
         "title": "The digital or physical filter",
-        "text": "Keep only the games you own on disc or cartridge, or only the digital ones."
-      },
-      "eaRenew": {
-        "title": "Rinnovo del token per la libreria EA",
-        "text": "Rinnovo automatico del token per la libreria EA"
+        "p1": "The backlog filters have “Format”: keep only the games you own on disc or cartridge, only the digital ones, or the ones you own both ways.",
+        "p2": "It works in playlists too, like the other filters."
       },
       "ea": {
         "title": "The EA library",

@@ -114,6 +114,14 @@ chiamata di dettaglio e senza richieste in più:
   fra null e lista vuota e il suo arnese, `igdb:platforms`. Non servono a
   mostrare niente: dicono se una copia può essere quel gioco (9b PSN, vedi
   [import-librerie](import-librerie.md)).
+- **su `games`**, i link del gioco secondo IGDB (`websites`, `{ type, url }[]`,
+  16/10/2026): sito ufficiale, Wikipedia e negozi, solo i tipi che la pagina
+  mostra e coi nomi nostri (`gameWebsiteTypeValues`), uno per tipo e solo
+  `http(s)`. Stessa distinzione fra null e lista vuota, col suo arnese,
+  `igdb:websites`. Per un negozio **vince il link nostro** (`storeGameUrl`:
+  l'id di `external_ids` o la pagina salvata dall'import), e quello di IGDB
+  riempie dove manca: è così che Epic, Nintendo e GOG senza pagina hanno un
+  link. Piano in `plans/link-pagina-gioco.md`.
 - **in `game_related`** remake, remaster e giochi simili (`kind`), con
   `igdb_id`, nome, copertina e posizione. Una tabella e non un array perché il
   gioco legato **può non essere in `games`**, e non ci si aggiunge: una decina

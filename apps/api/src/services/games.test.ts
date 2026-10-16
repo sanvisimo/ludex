@@ -328,6 +328,43 @@ describe('findGameDetailById: ciò che serve alla pagina del gioco (12d)', () =>
     ]);
   });
 
+  it('dove un link nostro manca ripiega su IGDB, e il nostro vince', async () => {
+    const game = await createGame();
+    await db.insert(schema.externalIds).values([
+      { gameId: game.id, source: 'steam', externalId: '1091500' },
+      // Senza pagina salvata GOG non ha un link nostro: arriva quello di IGDB.
+      { gameId: game.id, source: 'gog', externalId: '1207658924' },
+    ]);
+    await db
+      .update(schema.games)
+      .set({
+        websites: [
+          { type: 'official', url: 'https://www.cyberpunk.net' },
+          // Steam ce l'abbiamo già dall'id: questo non deve uscire.
+          { type: 'steam', url: 'https://store.steampowered.com/app/999' },
+          { type: 'gog', url: 'https://www.gog.com/game/cyberpunk_2077' },
+          // Epic e Nintendo senza id nostri: escono lo stesso.
+          { type: 'nintendo', url: 'https://www.nintendo.com/x' },
+          { type: 'epic', url: 'https://store.epicgames.com/p/cyberpunk-2077' },
+          { type: 'wikipedia', url: 'https://en.wikipedia.org/wiki/C2077' },
+        ],
+      })
+      .where(eq(schema.games.id, game.id));
+
+    const detail = await findGameDetailById(game.id);
+    expect(detail?.storeLinks).toEqual([
+      { store: 'steam', url: 'https://store.steampowered.com/app/1091500' },
+      { store: 'gog', url: 'https://www.gog.com/game/cyberpunk_2077' },
+      { store: 'epic', url: 'https://store.epicgames.com/p/cyberpunk-2077' },
+      { store: 'nintendo', url: 'https://www.nintendo.com/x' },
+    ]);
+    // I negozi non tornano due volte: qui solo ciò che negozio nostro non è.
+    expect(detail?.websites).toEqual([
+      { type: 'official', url: 'https://www.cyberpunk.net' },
+      { type: 'wikipedia', url: 'https://en.wikipedia.org/wiki/C2077' },
+    ]);
+  });
+
   it('senza id di negozio non dà nessun link', async () => {
     const game = await createGame();
 

@@ -1,7 +1,6 @@
 # Filtro «Supporto»: digitale o fisico (ritocco allo step 7)
 
-**Stato: in corso dal 16/10/2026.** Branch `feat/filtro-supporto`, da `main`.
-Roadmap: `mediaFilter` a «in corso».
+**Stato: chiuso il 16/10/2026** (PR #80). Roadmap: `mediaFilter` a «fatto».
 
 ## Perché
 

@@ -6,23 +6,24 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 
 I numeri degli step sono nomi, non una sequenza: compaiono nei piani, nei
 commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
-in quest'ordine (deciso il 09/10/2026), e l'ordine è anche quello della
-[roadmap](../apps/web/lib/roadmap.ts) pubblica:
+in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10), e l'ordine è
+anche quello della [roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
-1. **I link della pagina del gioco** (aggiunto il 13/10/2026): il campo
-   `websites` di IGDB, che oggi non si chiede. Prima va misurato quanti giochi
-   del catalogo hanno quei link, e di che tipo.
+1. **Il gioco a caso dal filtro** (aggiunto il 13/10/2026, portato in cima il
+   16/10): l'estensione della 15c, vedi lì.
 2. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
    e la deduplica.
-3. **Il gioco a caso dal filtro** (aggiunto il 13/10/2026): l'estensione della
-   15c, vedi lì.
-4. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
+3. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
    decise.
-5. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
+4. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
    da zero.
-6. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+5. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-7. **Mobile**: un'app nuova, con le sue schermate.
+6. **Mobile**: un'app nuova, con le sue schermate.
+
+I link della pagina del gioco erano i primi della lista e sono **fatti dal
+16/10/2026**: il campo `websites` di IGDB su `games`, vedi
+[modello-dati](modello-dati.md) e `plans/link-pagina-gioco.md`.
 
 EA (9c) è **fatto dal 13/10/2026**, come importazione una tantum: vedi
 `plans/9c-ea.md`. Il login che si rinnova da sé (quello dell'app desktop EA) è
@@ -272,8 +273,8 @@ Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
     barra è già piena. Non c'è nella vista dei nascosti. Con la lista vuota un
     avviso dice che non ci sono giochi da pescare.
 
-    **Estensione: il gioco a caso dal filtro** (chiesta il 13/10/2026, da fare
-    dopo il 10). Il gioco a caso pesca dal **filtro selezionato** in `/backlog`,
+    **Estensione: il gioco a caso dal filtro** (chiesta il 13/10/2026, prima
+    nell'ordine di lavoro dal 16/10). Il gioco a caso pesca dal **filtro selezionato** in `/backlog`,
     cioè dal `BacklogQuery` attivo, e non più dai soli giochi «da giocare».
     Dalla scheda del gioco pescato si può **passare a un altro gioco a caso**,
     sempre dentro lo stesso filtro: la scheda deve quindi sapere da quale filtro

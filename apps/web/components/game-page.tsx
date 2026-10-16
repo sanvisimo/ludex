@@ -8,7 +8,9 @@ import type {
 import { storePageUrl } from '@repo/contracts';
 import {
   Badge,
+  type Brand,
   BrandIcon,
+  brandTitle,
   Button,
   CornerLabel,
   Dialog,
@@ -22,7 +24,7 @@ import {
   YStack,
   type GalleryItem,
 } from '@repo/ui';
-import { Info } from '@repo/ui/icons';
+import { Globe, Info } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
@@ -490,17 +492,21 @@ export function DurationAndCritics({
 
 /**
  * Stato, voto, copie, note e tag. Ogni copia ha l'icona del negozio, che
- * porta alla pagina del gioco su quel negozio quando sappiamo dov'è
- * (`storePageUrl`), e ciò che solo quella copia sa: ore giocate, ultima
- * partita, quando l'hai presa.
+ * porta alla pagina del gioco su quel negozio quando sappiamo dov'è: quella
+ * della copia (`storePageUrl`), e senza quella la riga dello stesso negozio
+ * nella card «Links» (`storeLinks`, dove arriva anche il link di IGDB: è il
+ * caso di Epic, che la pagina non la manda mai). Poi ciò che solo quella copia
+ * sa: ore giocate, ultima partita, quando l'hai presa.
  */
 export function BacklogPanel({
   entry,
+  storeLinks,
   onStatus,
   actions,
   hiddenNotice,
 }: {
   entry: BacklogEntry;
+  storeLinks: GameDetail['storeLinks'];
   onStatus: (entry: BacklogEntry, status: BacklogStatus) => void;
   actions: ReactNode;
   hiddenNotice: ReactNode;
@@ -537,7 +543,10 @@ export function BacklogPanel({
           const storeName = ownership.store
             ? storeLabels[ownership.store]
             : null;
-          const url = storePageUrl(ownership.store, ownership.storePage);
+          const url =
+            storePageUrl(ownership.store, ownership.storePage) ??
+            storeLinks.find((link) => link.store === ownership.store)?.url ??
+            null;
           const icon = brand ? <BrandIcon brand={brand} size={24} /> : null;
           const platformName =
             nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug;
@@ -628,21 +637,38 @@ export function BacklogPanel({
 // --- la colonna laterale: dove si compra ---
 
 /**
- * I negozi dove il gioco c'è, ognuno con la sua icona e il nome, tutta la riga
- * è il link. Sta sotto il tuo backlog, come durata e critica sopra: sono gli
- * stessi link che escono dall'app, e dicono dove andare. Senza link ufficiali
- * (`storeLinks` vuoto) non c'è la card.
+ * Dove andare per saperne di più o per comprarlo, ognuno con la sua icona e il
+ * nome, tutta la riga è il link. Sta sotto il tuo backlog, come durata e
+ * critica sopra: sono gli stessi link che escono dall'app, e dicono dove
+ * andare.
+ *
+ * In cima il sito ufficiale, poi i negozi (`storeLinks`, nostri o di IGDB dove
+ * mancano), poi i negozi che non sono nostri, e Wikipedia in fondo. Senza
+ * nessun link non c'è la card.
  */
 export function StoreLinks({ game }: { game: GameDetail }) {
   const t = useTranslations('game');
   const storeLabels = useStoreLabels();
 
-  if (game.storeLinks.length === 0) return null;
+  const official = game.websites.find((site) => site.type === 'official');
+  const others = WEBSITE_ORDER.flatMap((type) => {
+    const site = game.websites.find((row) => row.type === type);
+    return site ? [{ type, url: site.url }] : [];
+  });
+  if (!official && game.storeLinks.length === 0 && others.length === 0) {
+    return null;
+  }
 
   return (
     <Panel>
       <PanelTitle>{t('links')}</PanelTitle>
       <YStack gap={6}>
+        {official && (
+          <LinkRow href={official.url} title={t('officialSite')}>
+            <Globe size={20} color="$color11" />
+            <Muted flex={1}>{t('officialSite')}</Muted>
+          </LinkRow>
+        )}
         {game.storeLinks.map(({ store, url }) => {
           const brand = STORE_BRAND[store];
           return (
@@ -656,10 +682,28 @@ export function StoreLinks({ game }: { game: GameDetail }) {
             </LinkRow>
           );
         })}
+        {others.map(({ type, url }) => (
+          <LinkRow
+            key={type}
+            href={url}
+            title={t('openOn', { name: brandTitle(type) })}
+          >
+            <BrandIcon brand={type} size={20} />
+            <Muted flex={1}>{brandTitle(type)}</Muted>
+          </LinkRow>
+        ))}
       </YStack>
     </Panel>
   );
 }
+
+/** I link di IGDB che non sono negozi nostri né il sito ufficiale, in ordine. */
+const WEBSITE_ORDER = [
+  'itch',
+  'app_store',
+  'google_play',
+  'wikipedia',
+] as const satisfies readonly Brand[];
 
 // --- remake e simili ---
 
