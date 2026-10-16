@@ -1,4 +1,4 @@
-import type { BacklogQuery } from '@repo/contracts';
+import type { BacklogFilter, BacklogQuery } from '@repo/contracts';
 import type {
   GameType,
   Medium,
@@ -77,7 +77,12 @@ function tuttiPresenti<T>(valori: T[], predicato: (valore: T) => SQL): SQL[] {
   return valori.map(predicato);
 }
 
-function buildConditions(userId: string, input: BacklogQuery): SQL[] {
+/**
+ * I filtri di `/backlog` in SQL, sulle righe di `backlog` unite a `games`. Solo
+ * i criteri: ordine e pagina sono di chi chiama. La usa anche il dado (15c),
+ * che pesca dentro lo stesso filtro.
+ */
+export function buildConditions(userId: string, input: BacklogFilter): SQL[] {
   const conditions: SQL[] = [
     eq(schema.backlog.userId, userId),
     // I nascosti sono una vista a sé, non un di più: o solo loro, o senza.

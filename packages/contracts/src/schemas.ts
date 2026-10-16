@@ -635,6 +635,19 @@ export const PlaylistQuerySchema = BacklogFilterSchema.omit({
   direction: SortDirectionSchema.default('desc'),
 });
 
+/**
+ * Il gioco a caso (15c): il filtro da cui pesca il dado. I criteri di
+ * `/backlog` e nient'altro: l'ordine e la pagina non c'entrano con un tiro, e
+ * `hidden` è una vista, dove il dado non c'è.
+ */
+export const RandomFilterSchema = BacklogFilterSchema.omit({ hidden: true });
+
+/**
+ * Il seme del mescolamento: lo inventa il client al primo tiro e lo porta
+ * nell'URL della scheda. Corto e senza caratteri da codificare.
+ */
+export const RandomSeedSchema = z.string().regex(/^[a-z0-9]{1,16}$/);
+
 export const PlaylistNameSchema = z.string().trim().min(1).max(80);
 
 export const PlaylistSchema = z.object({
@@ -1287,6 +1300,7 @@ export type SyncAllResult = z.infer<typeof SyncAllResultSchema>;
 export type UserSettings = z.infer<typeof UserSettingsSchema>;
 export type UnresolvedImport = z.infer<typeof UnresolvedImportSchema>;
 export type BacklogFilter = z.infer<typeof BacklogFilterSchema>;
+export type RandomFilter = z.infer<typeof RandomFilterSchema>;
 export type BacklogSort = z.infer<typeof BacklogSortSchema>;
 export type SortDirection = z.infer<typeof SortDirectionSchema>;
 // L'input **dopo** il parse: `sort`, `direction`, `limit` e `offset` hanno un

@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { GameSearchBox } from '@/components/game-search';
+import { RandomGameDice } from '@/components/random-game-dice';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { BackToTop } from '@/src/components/back-to-top';
 import { ButtonLink } from '@/src/components/button-link';
@@ -54,7 +55,21 @@ export function AppShell({ children }: { children: ReactNode }) {
           e il footer gli finirebbe sopra. */}
       <YStack grow={1}>{children}</YStack>
       <Footer />
-      <BackToTop bottomOffset={BAR_HEIGHT} />
+      {/* In basso a destra, e sul telefono sopra la barra: il dado sempre, la
+          freccia sopra di lui quando si è scesi, così il dado non si sposta.
+          La media query sta sullo `YStack`, non sui bottoni di `@repo/ui`. */}
+      <YStack
+        position="fixed"
+        r={16}
+        b={16}
+        z={9}
+        gap={8}
+        items="flex-end"
+        $max-md={{ b: BAR_HEIGHT + 16 }}
+      >
+        <BackToTop />
+        <RandomGameDice />
+      </YStack>
     </YStack>
   );
 }

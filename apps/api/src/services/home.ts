@@ -49,7 +49,7 @@ export const MIN_GAMES_PER_GENRE = BAND_SIZE;
  * che IGDB aggiungesse domani arriva come nullo (vedi `gameTypeValues`), e
  * nullo vuol dire «non lo sappiamo».
  */
-const PLAYABLE_TYPES: GameType[] = [
+export const PLAYABLE_TYPES: GameType[] = [
   'main_game',
   'standalone_expansion',
   'remake',

@@ -33,7 +33,6 @@ import {
   useReanchorPage,
 } from '@/components/grid-columns';
 import { PageSizeSelect } from '@/components/page-size-select';
-import { RandomGameButton } from '@/components/random-game-button';
 import { ButtonLink } from '@/src/components/button-link';
 import { SavePlaylistDialog } from '@/components/save-playlist-dialog';
 import {
@@ -145,9 +144,6 @@ function BacklogPage() {
               </Button>
             )
           )}
-          {/* Fra i giochi «da giocare», non fra quelli che si vedono: nella vista
-              dei nascosti non ha senso, e non c'è. */}
-          {!inHidden && <RandomGameButton />}
           <AddGameDialog />
         </>
       }

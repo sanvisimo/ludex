@@ -99,7 +99,8 @@
     "playedLabel": "Played: {duration}",
     "columnPlayed": "Played",
     "random": "Random game",
-    "randomEmpty": "You have no “to play” games to pick from.",
+    "randomEmpty": "There are no games to pick from in this filter.",
+    "randomOnlyOne": "It's the only game in this filter: there's no other one to pick.",
     "randomFailed": "I couldn't pick a game"
   },
   "playlists": {
@@ -1082,7 +1083,9 @@
       },
       "randomFilter": {
         "title": "A random game from your filter",
-        "text": "The random game is picked from the filter you have selected, and from its page you can jump to another one, always among the same games."
+        "p1": "A die always at hand, at the bottom right: it opens the page of a random game. On “Backlog” it picks from the filter you have selected; without filters, from everything the list shows.",
+        "p2": "From the page of the game it picked, the die moves on to the next one in the same filter, without repeating until you have seen them all. The address keeps the round: back returns to the previous game.",
+        "p3": "Without an account the die picks from the catalogue, only among actual games: no DLC or bundles."
       },
       "storeWishlists": {
         "title": "Store wishlists",

@@ -6,11 +6,14 @@ import {
   defaultStatus,
   fromPlaylistQuery,
   playlistSearch,
+  randomSearch,
   toPlaylistQuery,
   toQueryInput,
+  toRandomFilter,
   validateBacklogSearch,
   validatePagingSearch,
   validatePlaylistSearch,
+  validateRandomSearch,
   validateWishlistSearch,
 } from './backlog-filter';
 
@@ -239,5 +242,51 @@ describe("l'URL di una lista a mano", () => {
 
   it('non porta la vista dei filtri del backlog', () => {
     expect(validateWishlistSearch({ view: 'rows' })).toEqual({ view: 'rows' });
+  });
+});
+
+describe('il dado', () => {
+  it('senza seme la scheda non tiene niente', () => {
+    expect(validateRandomSearch({ status: 'backlog' })).toEqual({});
+    expect(validateRandomSearch({ seed: 'NON VALIDO!' })).toEqual({});
+  });
+
+  it('col seme tiene solo i criteri, non ordine, pagina e vista', () => {
+    expect(
+      validateRandomSearch({
+        seed: 'k3f9',
+        status: 'backlog,playing',
+        platforms: 'pc_windows',
+        sort: 'name',
+        view: 'rows',
+        page: '3',
+        hidden: 'true',
+        playlist: PLAYLIST,
+      }),
+    ).toEqual({
+      seed: 'k3f9',
+      status: ['backlog', 'playing'],
+      platforms: ['pc_windows'],
+    });
+  });
+
+  it('un seme di sole cifre arriva come numero, e vale', () => {
+    expect(validateRandomSearch({ seed: 123 })).toEqual({ seed: '123' });
+  });
+
+  it('da /backlog alla scheda passano i criteri e il seme', () => {
+    expect(
+      randomSearch(
+        { platforms: ['pc_windows'], sort: 'name', page: 2, view: 'rows' },
+        'abc',
+      ),
+    ).toEqual({ platforms: ['pc_windows'], seed: 'abc' });
+  });
+
+  it('senza filtri al server va ciò che la lista mostra, senza ordine né pagina', () => {
+    expect(toRandomFilter({})).toEqual({ status: defaultStatus });
+    expect(
+      toRandomFilter({ status: ['backlog'], hidden: true, sort: 'name' }),
+    ).toEqual({ status: ['backlog'] });
   });
 });

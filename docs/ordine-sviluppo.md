@@ -9,17 +9,19 @@ commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
 in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10), e l'ordine è
 anche quello della [roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
-1. **Il gioco a caso dal filtro** (aggiunto il 13/10/2026, portato in cima il
-   16/10): l'estensione della 15c, vedi lì.
-2. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
+1. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
    e la deduplica.
-3. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
+2. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
    decise.
-4. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
+3. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
    da zero.
-5. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+4. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-6. **Mobile**: un'app nuova, con le sue schermate.
+5. **Mobile**: un'app nuova, con le sue schermate.
+
+Il gioco a caso dal filtro era il primo della lista ed è **fatto dal
+16/10/2026**: il dado fisso in basso a destra, vedi l'estensione della 15c più
+sotto e `plans/15c-gioco-a-caso-dal-filtro.md`.
 
 I link della pagina del gioco erano i primi della lista e sono **fatti dal
 16/10/2026**: il campo `websites` di IGDB su `games`, vedi
@@ -274,14 +276,24 @@ Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
     avviso dice che non ci sono giochi da pescare.
 
     **Estensione: il gioco a caso dal filtro** (chiesta il 13/10/2026, prima
-    nell'ordine di lavoro dal 16/10). Il gioco a caso pesca dal **filtro selezionato** in `/backlog`,
-    cioè dal `BacklogQuery` attivo, e non più dai soli giochi «da giocare».
-    Dalla scheda del gioco pescato si può **passare a un altro gioco a caso**,
-    sempre dentro lo stesso filtro: la scheda deve quindi sapere da quale filtro
-    arriva. Da decidere quando si comincia:
-    - senza filtri attivi, resta la regola di oggi (stato `backlog` e non
-      nascosti) o si pesca da tutto il backlog;
-    - il salto esclude il gioco appena visto, così non si ripresca lo stesso.
+    nell'ordine di lavoro dal 16/10, **fatta il 16/10/2026**, piano in
+    `plans/15c-gioco-a-caso-dal-filtro.md`). Il gioco a caso pesca dal **filtro
+    selezionato** in `/backlog`, e dalla scheda del gioco pescato si **passa a un
+    altro**, sempre dentro lo stesso filtro. Decisioni del 16/10:
+    - **un dado fisso in basso a destra**, nel guscio, al posto del bottone nella
+      toolbar; la freccia «torna su» gli sta sopra. Su `/backlog` pesca dal
+      filtro, sulla scheda di un gioco pescato dà il successivo, altrove pesca da
+      tutto il backlog; da anonimi dal catalogo, coi tipi giocabili della home.
+      Nella vista dei nascosti non c'è.
+    - **senza filtri pesca da ciò che la lista mostra**: tutti gli stati tranne
+      `excluded`, mai i nascosti. Non è una regola del dado, è il default di
+      `/backlog`.
+    - **il salto non ripete**: i candidati sono mescolati da un seme
+      (`md5(seme || id)`, come la rotazione della home) e il dado chiede il
+      successivo del gioco su cui si è, ricominciando in fondo. Seme e criteri
+      stanno nell'URL della scheda (`?seed=…&status=…`), niente sul server.
+      `games.random` sostituisce `backlog.random`; il servizio è
+      `services/random-game.ts`.
 
     **15d — Condivisione delle playlist** (aggiunta l'08/10/2026, **costruita lo
     stesso giorno**, piano in `plans/15d-condivisione.md`). Un link solo per due

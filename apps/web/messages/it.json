@@ -99,7 +99,8 @@
     "playedLabel": "Giocate: {duration}",
     "columnPlayed": "Giocate",
     "random": "Gioco a caso",
-    "randomEmpty": "Non hai giochi «da giocare» da pescare.",
+    "randomEmpty": "Non ci sono giochi da pescare in questo filtro.",
+    "randomOnlyOne": "È l'unico gioco del filtro: non ce n'è un altro da pescare.",
     "randomFailed": "Non sono riuscito a pescare un gioco"
   },
   "playlists": {
@@ -1081,7 +1082,9 @@
       },
       "randomFilter": {
         "title": "Il gioco a caso dal filtro",
-        "text": "Il gioco a caso pesca dentro il filtro che hai scelto, e dalla sua scheda puoi passare a un altro, sempre fra gli stessi giochi."
+        "p1": "Un dado sempre a portata, in basso a destra: apre la scheda di un gioco a caso. Su «Backlog» pesca dentro il filtro che hai scelto; senza filtri, da tutto quello che la lista mostra.",
+        "p2": "Dalla scheda del gioco pescato, il dado passa al prossimo dello stesso filtro, senza ripetersi finché non li hai visti tutti. L'indirizzo tiene il giro: indietro torna al gioco di prima.",
+        "p3": "Senza account il dado pesca dal catalogo, solo fra i giochi veri e propri: niente DLC o bundle."
       },
       "storeWishlists": {
         "title": "Le wishlist dei negozi",
