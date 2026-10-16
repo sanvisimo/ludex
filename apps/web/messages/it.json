@@ -1094,11 +1094,8 @@
       },
       "mediaFilter": {
         "title": "Il filtro digitale o fisico",
-        "text": "Tenere solo i giochi che hai su disco o cartuccia, o solo quelli digitali."
-      },
-      "eaRenew": {
-        "title": "Rinnovo del token per la libreria EA",
-        "text": "Rinnovo automatico del token per la libreria EA"
+        "p1": "Nei filtri del backlog c'è «Supporto»: tieni solo i giochi che hai su disco o cartuccia, solo quelli digitali, o quelli che hai in tutti e due i modi.",
+        "p2": "Funziona anche nelle playlist, come gli altri filtri."
       },
       "ea": {
         "title": "La libreria EA",

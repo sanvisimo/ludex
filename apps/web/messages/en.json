@@ -1095,11 +1095,8 @@
       },
       "mediaFilter": {
         "title": "The digital or physical filter",
-        "text": "Keep only the games you own on disc or cartridge, or only the digital ones."
-      },
-      "eaRenew": {
-        "title": "Rinnovo del token per la libreria EA",
-        "text": "Rinnovo automatico del token per la libreria EA"
+        "p1": "The backlog filters have “Format”: keep only the games you own on disc or cartridge, only the digital ones, or the ones you own both ways.",
+        "p2": "It works in playlists too, like the other filters."
       },
       "ea": {
         "title": "The EA library",
