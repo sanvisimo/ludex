@@ -116,6 +116,13 @@ export const storeAccounts = pgTable(
     // dell'account li legge.
     wishlistSyncedAt: timestamp('wishlist_synced_at'),
     wishlistError: wishlistError('wishlist_error'),
+    // La scheda **da file** (10): la libreria di un negozio letta dall'export di
+    // Playnite, non da un collegamento. Una per negozio e utente, con
+    // `external_account_id = 'playnite'`. Non ha credenziali e non si aggiorna
+    // da sola: si reimporta ricaricando il file. Le sue copie cedono il posto a
+    // quelle di un collegamento vero dello stesso negozio: vedi
+    // `ensureOwnerships`.
+    fromFile: boolean('from_file').notNull().default(false),
     ...timestamps,
   },
   (table) => [

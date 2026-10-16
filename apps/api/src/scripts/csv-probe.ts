@@ -3,7 +3,7 @@ import '../env';
 import { readFileSync } from 'node:fs';
 
 import { findIgdbGamesBySource } from '../external/igdb';
-import { resolveByName } from '../services/library-import';
+import { resolveByNameWithFallbacks } from '../services/library-import';
 import { parsePlayniteCsv } from '../services/playnite-csv';
 
 // Giro a vuoto dell'import da file (10): legge l'export di Playnite, prova a
@@ -17,9 +17,9 @@ import { parsePlayniteCsv } from '../services/playnite-csv';
 //
 //  1. quante righe per negozio, e quante senza un negozio nostro;
 //  2. le piattaforme: quante righe ne portano più d'una;
-//  3. quante si risolvono per appid Steam (dai `Collegamenti`), quante per
-//     nome, quante restano negli scarti;
-//  4. dove appid e nome danno due giochi diversi.
+//  3. quante si risolvono con la strada del job (nome con l'anno, nome senza,
+//     appid Steam dai `Collegamenti`) e quante restano negli scarti;
+//  4. dove l'appid da solo avrebbe dato un altro gioco.
 
 const file =
   process.argv[2] ??
@@ -52,60 +52,44 @@ const pc = rows.filter(
   (r) => r.store && r.platforms.every((p) => p === 'PC (Windows)'),
 );
 
-const perAppid = await findIgdbGamesBySource(
-  1,
-  pc.flatMap((r) => (r.steamAppId ? [r.steamAppId] : [])),
-);
-const perNome = new Map(
+// La strada del job: nome con l'anno, nome senza, appid. Vedi
+// `resolveByNameWithFallbacks`.
+const risolti = new Map(
   (
-    await resolveByName(
+    await resolveByNameWithFallbacks(
       pc.map((r) => ({
         externalId: r.gameId,
         name: r.name,
         releaseYear: r.releaseYear,
+        retryWithoutYear: true,
+        igdbHint: r.steamAppId ? { source: 1, uid: r.steamAppId } : null,
       })),
     )
   ).map((link) => [link.externalId, link]),
 );
 
-let daAppid = 0;
-let soloNome = 0;
-const scarti: string[] = [];
-const diversi: string[] = [];
+// Solo per confronto: dove l'appid da solo avrebbe dato un altro gioco.
+const perAppid = await findIgdbGamesBySource(
+  1,
+  pc.flatMap((r) => (r.steamAppId ? [r.steamAppId] : [])),
+);
 
-for (const r of pc) {
+const scarti = pc.filter((r) => !risolti.has(r.gameId));
+const diversi = pc.flatMap((r) => {
   const a = r.steamAppId ? perAppid.get(r.steamAppId) : undefined;
-  const n = perNome.get(r.gameId);
-  if (a) daAppid++;
-  else if (n) soloNome++;
-  else
-    scarti.push(
-      `    ${r.name}${r.steamAppId ? ` (appid ${r.steamAppId} sconosciuto)` : ''}`,
-    );
-  if (a && n && a.igdbId !== n.igdbId) {
-    diversi.push(
-      `    ${r.name}\n      appid → ${a.name} (${a.releaseYear}, ${a.gameType ?? '?'})\n      nome  → ${n.name} (${n.releaseYear})`,
-    );
-  }
-}
+  const n = risolti.get(r.gameId);
+  return a && n && a.igdbId !== n.igdbId
+    ? [
+        `    ${r.name}\n      appid → ${a.name} (${a.releaseYear}, ${a.gameType ?? '?'})\n      scelto → ${n.name} (${n.releaseYear})`,
+      ]
+    : [];
+});
 
 console.log(`\nrisoluzione delle ${pc.length} righe PC`);
-console.log(`  per appid Steam:  ${daAppid}`);
-console.log(`  solo per nome:    ${soloNome}`);
-console.log(`  scarti:           ${scarti.length}`);
-console.log(
-  `  (per nome in tutto: ${perNome.size}; l'appid salva dal nome: ${
-    pc
-      .filter(
-        (r) =>
-          r.steamAppId && perAppid.has(r.steamAppId) && !perNome.has(r.gameId),
-      )
-      .map((r) => r.name)
-      .join(', ') || 'nessuno'
-  })`,
-);
-if (scarti.length) console.log(scarti.join('\n'));
-console.log(`\n  appid e nome in disaccordo: ${diversi.length}`);
+console.log(`  risolte: ${risolti.size}`);
+console.log(`  scarti:  ${scarti.length}`);
+for (const r of scarti) console.log(`    ${r.name}`);
+console.log(`\n  dove l'appid avrebbe dato un altro gioco: ${diversi.length}`);
 if (diversi.length) console.log(diversi.join('\n'));
 
 process.exit(0);

@@ -38,8 +38,9 @@ collegabile **non vuole** collegarlo (EA, per esempio).
    per creare il file: obbligatori `Nome`, `Id del gioco`, `Sorgenti`, gli
    altri facoltativi. Il parser vuole i tre obbligatori e ignora tutto il resto.
 2. **Si importa tutto e si saltano i doppioni.** Ogni riga entra col negozio
-   di `Sorgenti`; una riga il cui gioco l'utente ha già, con una copia di quel
-   negozio sulla stessa piattaforma, si salta e si conta nel resoconto.
+   di `Sorgenti`; una copia che l'utente ha già **da un altro account** (stesso
+   gioco, piattaforma, negozio e supporto) non si scrive (`togliGiaPossedute`
+   in `backlog.ts`). Le righe senza un negozio nostro si saltano e si contano.
 3. **Stato e categorie di Playnite si importano solo alla nascita** della riga
    di backlog, senza mai sovrascrivere ciò che c'è in Ludex:
    New / Plan to Play / On Hold → `backlog`, Playing → `playing`,
@@ -53,28 +54,38 @@ collegabile **non vuole** collegarlo (EA, per esempio).
 
 Mappatura dei campi:
 
-| Campo Playnite           | Diventa                               |
-| ------------------------ | ------------------------------------- |
-| `Nome`                   | nome della voce                       |
-| `Id del gioco`           | id esterno                            |
-| `Sorgenti`               | negozio                               |
-| `Piattaforme`            | piattaforma della copia (da misurare) |
-| `Data di uscita`         | `releaseYear`, per il match per nome  |
-| `Collegamenti`           | appid Steam → `igdbLookup`            |
-| `Tempo di gioco`         | ore della copia (da secondi)          |
-| `Giocato l'ultima volta` | ultima partita                        |
-| `Stato di completamento` | stato, solo alla nascita              |
-| `Categorie`              | tag dell'utente, solo alla nascita    |
-| `Aggiunto`               | **no**: è l'ingresso in Playnite      |
-| `Etichette`              | **no**: sono le fasce HLTB del plugin |
+| Campo Playnite           | Diventa                                |
+| ------------------------ | -------------------------------------- |
+| `Nome`                   | nome della voce                        |
+| `Id del gioco`           | id esterno                             |
+| `Sorgenti`               | negozio                                |
+| `Piattaforme`            | sui negozi console, se è una sola      |
+| `Data di uscita`         | `releaseYear`, per il match per nome   |
+| `Collegamenti`           | appid Steam → `igdbHint`, dopo il nome |
+| `Tempo di gioco`         | ore della copia (da secondi)           |
+| `Giocato l'ultima volta` | ultima partita                         |
+| `Stato di completamento` | stato, solo alla nascita               |
+| `Categorie`              | tag dell'utente, solo alla nascita     |
+| `Aggiunto`               | **no**: è l'ingresso in Playnite       |
+| `Etichette`              | **no**: sono le fasce HLTB del plugin  |
 
-5. **Una scheda «Playnite» per utente** in `/account` (una riga di
-   `store_accounts`), approvata il 16/10/2026. Ogni import di Ludex è legato a
-   una scheda, ed è ciò che dà gli scarti, lo scollegamento e il reimport. Le
-   copie portano il negozio vero (`ea`, `ubisoft`…) ma appartengono a quella
-   scheda. Ricaricare il file aggiorna la scheda. Se un giorno colleghi EA
-   davvero, l'import EA **adotta** le copie EA del file invece di sdoppiarle
-   (estende l'adozione di `ensureOwnerships`).
+5. **Una scheda «da file» per negozio** in `/account`, decisa il 16/10/2026
+   (prima era una scheda «Playnite» sola per utente). Ogni import di Ludex è
+   legato a una scheda (`store_accounts`), ed è ciò che dà gli scarti, lo
+   scollegamento e il reimport. Una sola per tutto il file non regge:
+   `importLibrary` lavora su un negozio per volta, e a fine corsa pota gli
+   scarti che non ha visto — con più negozi sulla stessa scheda ognuno
+   cancellerebbe quelli degli altri. Quindi «Ubisoft · da Playnite», «EA · da
+   Playnite»…: `store_accounts.from_file`, `external_account_id = 'playnite'`,
+   niente aggiornamento automatico, niente «aggiorna», niente wishlist.
+   Ricaricare il file riaccoda le schede dei negozi che contiene, e non tocca
+   le altre. Se un giorno colleghi EA davvero, l'import EA **adotta** le copie
+   EA del file invece di sdoppiarle (`adottaPossessiMenoSpecifici`).
+6. **L'ordine della ricerca** (approvato il 16/10/2026, vedi la misura qui
+   sotto): nome con l'anno, nome senza l'anno, appid Steam
+   (`resolveByNameWithFallbacks`). Un appid che porta a una raccolta non vale.
+7. **Le righe di un negozio console con più piattaforme** (le Xbox di
+   Playnite) si saltano e si contano (`noPlatform`), finché non si decide.
 
 ## Da decidere
 
@@ -82,7 +93,7 @@ Mappatura dei campi:
   vanno presi dalla localizzazione di Playnite, con un test.
 - **`Piattaforme` con più valori** (`Microsoft Xbox One, Microsoft Xbox
 Series, PC (Windows)` nel vecchio file): è dove il gioco esiste, non dove
-  lo hai. Da misurare col probe.
+  lo hai. Per ora quelle righe si saltano.
 
 ## La misura: `csv:probe` (16/10/2026)
 
@@ -136,7 +147,12 @@ d'accordo; le 5 Xbox portano **più piattaforme per riga** (One + Series + PC,
 
 1. ✅ Il CSV in `apps/api/test/fixtures/`, questo piano, roadmap «in corso».
 2. ✅ Parser (con test) e `csv:probe`.
-3. Vocabolario (`ubisoft`, migration), servizio, job, test contro Postgres.
+3. ✅ Vocabolario e migration (`ubisoft`, `store_accounts.from_file`),
+   `importPlayniteFile` ([playnite-import.ts](../apps/api/src/services/playnite-import.ts)),
+   il job `file` e `runFileImportJob`, i ripieghi della ricerca, stato e
+   categorie alla nascita, il salto dei doppioni e l'adozione. Test in
+   `playnite-import.test.ts`. `csv:probe` percorre ora la strada del job:
+   **83 su 87**, confermato.
 4. Wireframe Excalidraw del caricamento in `/account`, con le istruzioni per
    creare il file.
 5. La UI.

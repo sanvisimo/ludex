@@ -1,4 +1,9 @@
-import type { Medium, Store, Subscription } from '@repo/contracts/vocabulary';
+import type {
+  BacklogStatus,
+  Medium,
+  Store,
+  Subscription,
+} from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, eq, inArray, isNotNull, isNull, sql } from '@repo/db/orm';
 
@@ -18,6 +23,7 @@ import {
 } from './backlog';
 import { playsOn } from './copy-platforms';
 import type { StoreAccountRow } from './store-accounts';
+import { ensureUserTags } from './tags';
 import { type ExternalGameLink, linkExternalGames } from './games';
 import {
   NAME_THRESHOLD,
@@ -133,6 +139,30 @@ export type LibraryEntry = {
    * accanto, e decide l'utente.
    */
   sameProductAs?: string | null;
+  /**
+   * Un id IGDB **di cui non fidarsi**, che si prova solo se il nome non ha
+   * trovato niente: l'appid Steam che Playnite scrive nei `Collegamenti` (10).
+   * Non è `igdbLookup`, che viene dal negozio e vale prima del nome: questo è
+   * metadata di Playnite, e sul file Ubisoft 2 volte su 67 porta a un altro
+   * gioco (_Liberation HD_ sul Liberation del 2012). Una raccolta trovata così
+   * non vale: il nome, che l'avrebbe confermata, ha già detto di no (regola 1).
+   */
+  igdbHint?: { source: number; uid: string } | null;
+  /**
+   * L'anno della voce è un indizio e non un dato: se con l'anno il nome non
+   * trova niente, si riprova senza. Le date di Playnite (10) sono spesso quelle
+   * della riedizione — _Assassin's Creed II_ 2016 — e con la penalità
+   * dell'anno il gioco giusto affonda; senza l'anno per tutti, però, si
+   * perdono _Trackmania_ (2020) e i giochi che l'anno lo vogliono.
+   */
+  retryWithoutYear?: boolean;
+  /**
+   * Lo stato e le categorie dell'utente **alla nascita** della riga di
+   * backlog, mai dopo: dal file di Playnite (10), dove sono dati dell'utente e
+   * non del negozio. Una riga che c'era già resta com'è.
+   */
+  status?: BacklogStatus | null;
+  categories?: string[];
 };
 
 /**
@@ -153,6 +183,9 @@ const STORE_PLATFORM: Partial<Record<Store, string>> = {
   epic: 'pc_windows',
   amazon: 'pc_windows',
   ea: 'pc_windows',
+  // Dal file di Playnite (10): negozi solo PC.
+  ubisoft: 'pc_windows',
+  battlenet: 'pc_windows',
 };
 
 /**
@@ -171,6 +204,9 @@ export function platformFor(store: Store): string {
   }
   return platform;
 }
+
+/** Un negozio dalla piattaforma fissa, cioè PC: vedi `STORE_PLATFORM`. */
+export const isPcStore = (store: Store) => STORE_PLATFORM[store] !== undefined;
 
 /** La piattaforma di una voce: quella che dice lei, o quella del negozio. */
 export function platformOf(store: Store, entry: LibraryEntry): string {
@@ -365,7 +401,8 @@ async function recordStoreDetails(store: Store, entries: LibraryEntry[]) {
     const values = sql.join(
       page.map(
         (entry) =>
-          sql`(${entry.externalId}::text, ${entry.name}::text, ${entry.imageUrl ?? null}::text, ${entry.releaseYear ?? null}::int)`,
+          // L'anno che è solo un indizio non si scrive: vedi `retryWithoutYear`.
+          sql`(${entry.externalId}::text, ${entry.name}::text, ${entry.imageUrl ?? null}::text, ${entry.retryWithoutYear ? null : (entry.releaseYear ?? null)}::int)`,
       ),
       sql`, `,
     );
@@ -404,6 +441,38 @@ async function recordStoreDetails(store: Store, entries: LibraryEntry[]) {
 const PRERELEASE_NAME = /\b(demo|beta|playtest|public test(ing)?)\b/i;
 
 export const isPrereleaseName = (name: string) => PRERELEASE_NAME.test(name);
+
+/**
+ * Le categorie dell'utente sulle righe di backlog **appena nate** (10): quelle
+ * di Playnite, come `category`. Il vocabolario lo crea `ensureUserTags`, che
+ * ritrova le parole che l'utente ha già, maiuscole o no.
+ */
+async function tagNewEntries(
+  userId: string,
+  entries: { backlogId: string; names: string[] }[],
+) {
+  if (entries.length === 0) return;
+
+  const tags = await ensureUserTags(
+    userId,
+    entries.flatMap((entry) =>
+      entry.names.map((name) => ({ kind: 'category' as const, name })),
+    ),
+  );
+  const tagIdByName = new Map(
+    tags.map((tag) => [tag.name.toLowerCase(), tag.id]),
+  );
+
+  const rows = entries.flatMap((entry) =>
+    entry.names.flatMap((name) => {
+      const tagId = tagIdByName.get(name.toLowerCase());
+      return tagId ? [{ backlogId: entry.backlogId, tagId }] : [];
+    }),
+  );
+  for (const page of chunk(rows, 1000)) {
+    await db.insert(schema.backlogTags).values(page).onConflictDoNothing();
+  }
+}
 
 /** Le voci che non si sono legate a niente. Restano dell'utente, non sporcano `games`. */
 async function recordUnresolved(
@@ -765,6 +834,53 @@ export async function resolveByName(
 }
 
 /**
+ * Il passo 3 con i ripieghi delle voci che ne portano: il nome con l'anno,
+ * poi il nome senza l'anno (`retryWithoutYear`), poi l'id di cui non fidarsi
+ * (`igdbHint`), ciascuno solo per ciò che resta. L'ordine viene dalla misura
+ * sul file Ubisoft (`plans/10-import-csv.md`): 83 su 87, contro 79 con l'appid
+ * prima del nome, che sbagliava due giochi.
+ *
+ * Senza ripieghi è `resolveByName` e basta. Esportata per `csv:probe`, che
+ * deve percorrere questa strada e non una sua copia.
+ */
+export async function resolveByNameWithFallbacks(
+  entries: LibraryEntry[],
+): Promise<ExternalGameLink[]> {
+  const links = await resolveByName(entries);
+  const presi = new Set(links.map((link) => link.externalId));
+
+  const senzaAnno = entries.filter(
+    (entry) =>
+      entry.retryWithoutYear &&
+      entry.releaseYear != null &&
+      !presi.has(entry.externalId),
+  );
+  for (const link of await resolveByName(
+    senzaAnno.map((entry) => ({ ...entry, releaseYear: null })),
+  )) {
+    links.push(link);
+    presi.add(link.externalId);
+  }
+
+  const perIndizio = entries.filter(
+    (entry) => entry.igdbHint && !presi.has(entry.externalId),
+  );
+  const byHint = new Map<string, IgdbExternalMatch>();
+  await resolveByLookup(
+    perIndizio.map((entry) => ({ ...entry, igdbLookup: entry.igdbHint })),
+    byHint,
+  );
+  for (const entry of perIndizio) {
+    const match = byHint.get(entry.externalId);
+    if (match && match.gameType !== 'bundle') {
+      links.push({ externalId: entry.externalId, ...match });
+    }
+  }
+
+  return links;
+}
+
+/**
  * Il passo 2 per le voci che portano un id IGDB proprio: una richiesta per
  * sorgente, e i risultati scritti in `byId` sotto l'id esterno della voce.
  *
@@ -1073,7 +1189,7 @@ export async function importLibrary(
   //    cercato, né demo e beta: vedi `isPrereleaseName`.
   const nameLinks = [
     ...raccolte.relinked,
-    ...(await resolveByName(
+    ...(await resolveByNameWithFallbacks(
       missing.filter(
         (entry) =>
           !byId.has(entry.externalId) &&
@@ -1166,6 +1282,22 @@ export async function importLibrary(
   const { byGameId, created } = await ensureBacklogEntries(
     userId,
     resolved.map((entry) => gameIdByExternalId.get(entry.externalId)!),
+    new Map(
+      resolved.flatMap((entry) =>
+        entry.status
+          ? [[gameIdByExternalId.get(entry.externalId)!, entry.status] as const]
+          : [],
+      ),
+    ),
+  );
+  await tagNewEntries(
+    userId,
+    resolved.flatMap((entry) => {
+      const gameId = gameIdByExternalId.get(entry.externalId)!;
+      return created.has(gameId) && entry.categories?.length
+        ? [{ backlogId: byGameId.get(gameId)!, names: entry.categories }]
+        : [];
+    }),
   );
 
   // Un possesso per voce di libreria. Due id che puntano allo stesso gioco
@@ -1191,6 +1323,7 @@ export async function importLibrary(
       subscription: entry.subscription ?? null,
       medium: entry.medium ?? 'digital',
       storePage: entry.storePage ?? null,
+      fromFile: account.fromFile,
     })),
   );
 

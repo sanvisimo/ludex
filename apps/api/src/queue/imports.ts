@@ -1,6 +1,7 @@
 import type { Store } from '@repo/contracts/vocabulary';
 import { Queue } from 'bullmq';
 
+import type { LibraryEntry } from '../services/library-import';
 import { redisConnection } from './connection';
 
 export const IMPORTS_QUEUE = 'imports';
@@ -52,7 +53,27 @@ export type ImportsSweepJob = { type: 'sweep' };
  */
 export type ImportsWishlistJob = { type: 'wishlist'; storeAccountId: string };
 
-export type ImportsAnyJob = ImportJob | ImportsSweepJob | ImportsWishlistJob;
+/**
+ * L'import di una scheda **da file** (10): le voci lette dall'export di
+ * Playnite, già ridotte. Qui le voci viaggiano nel job, al contrario di
+ * `ImportJob`: non c'è un negozio da cui rileggerle, e non sono un
+ * credenziale. Le date arrivano come stringhe, perché passano da JSON.
+ */
+export type ImportsFileJob = {
+  type: 'file';
+  storeAccountId: string;
+  entries: FileJobEntry[];
+};
+
+export type FileJobEntry = Omit<LibraryEntry, 'lastPlayedAt' | 'acquiredAt'> & {
+  lastPlayedAt?: string | null;
+};
+
+export type ImportsAnyJob =
+  | ImportJob
+  | ImportsSweepJob
+  | ImportsWishlistJob
+  | ImportsFileJob;
 
 export const importsQueue = new Queue<ImportsAnyJob>(IMPORTS_QUEUE, {
   connection: redisConnection,
@@ -68,6 +89,9 @@ export const importsQueue = new Queue<ImportsAnyJob>(IMPORTS_QUEUE, {
 
 export const isImportsSweep = (job: ImportsAnyJob): job is ImportsSweepJob =>
   'type' in job && job.type === 'sweep';
+
+export const isImportsFile = (job: ImportsAnyJob): job is ImportsFileJob =>
+  'type' in job && job.type === 'file';
 
 export const isImportsWishlist = (
   job: ImportsAnyJob,
@@ -98,6 +122,21 @@ export async function enqueueImport(store: Store, job: ImportJob) {
   return importsQueue.add(store, job, {
     deduplication: { id: dedupKey(job.storeAccountId) },
   });
+}
+
+/**
+ * Accoda l'import di una scheda da file. Stessa chiave di `enqueueImport`: per
+ * la scheda è un import come gli altri, e `syncing` lo legge da lì.
+ */
+export async function enqueueFileImport(
+  store: Store,
+  job: Omit<ImportsFileJob, 'type'>,
+) {
+  return importsQueue.add(
+    `${store}:file`,
+    { type: 'file', ...job },
+    { deduplication: { id: dedupKey(job.storeAccountId) } },
+  );
 }
 
 /**
