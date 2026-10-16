@@ -1,6 +1,7 @@
 import type {
   BacklogStatus,
   GameType,
+  Medium,
   PlaylistQuery,
   Store,
   Subscription,
@@ -41,6 +42,7 @@ import {
 } from '@/lib/backlog-filter';
 import {
   useGameTypeLabels,
+  useMediumLabels,
   useStatusLabels,
   useStoreLabels,
   useSubscriptionLabels,
@@ -227,6 +229,7 @@ function useFilterChips(filter: BacklogFilterState): Chip[] {
   const t = useTranslations('filters');
   const storeLabels = useStoreLabels();
   const subscriptionLabels = useSubscriptionLabels();
+  const mediumLabels = useMediumLabels();
   const gameTypeLabels = useGameTypeLabels();
   const range = useRangeText();
   const { options, tags } = useFilterOptions();
@@ -258,6 +261,11 @@ function useFilterChips(filter: BacklogFilterState): Chip[] {
       clear: {
         excludeSubscriptions: toggle(filter.excludeSubscriptions, subscription),
       },
+    })),
+    ...filter.media.map((medium) => ({
+      key: `medium-${medium}`,
+      label: mediumLabels[medium],
+      clear: { media: toggle(filter.media, medium) },
     })),
     ...filter.gameTypes.map((type) => ({
       key: `type-${type}`,
@@ -403,6 +411,7 @@ export function FilterPanel({ onSave }: { onSave: () => void }) {
   const t = useTranslations('filters');
   const storeLabels = useStoreLabels();
   const subscriptionLabels = useSubscriptionLabels();
+  const mediumLabels = useMediumLabels();
   const gameTypeLabels = useGameTypeLabels();
   const attributeKindLabels = useTranslations('attributeKind');
   const range = useRangeText();
@@ -493,6 +502,28 @@ export function FilterPanel({ onSave }: { onSave: () => void }) {
             setFilter({ stores: toggle<Store>(filter.stores, value as Store) })
           }
           empty={t('noStores')}
+        />
+      ),
+    },
+    {
+      // Che cosa hai in mano: digitale o fisico. Solo i supporti che l'utente
+      // ha davvero, come gli store.
+      value: 'media',
+      label: t('mediaLabel'),
+      active: filter.media.length,
+      body: (
+        <CheckList
+          prefix={`${prefix}-media`}
+          hint={t('allOfThem')}
+          items={(options?.media ?? []).map((medium) => ({
+            value: medium,
+            label: mediumLabels[medium],
+          }))}
+          selected={filter.media}
+          onToggle={(value) =>
+            setFilter({ media: toggle<Medium>(filter.media, value as Medium) })
+          }
+          empty={t('noMedia')}
         />
       ),
     },

@@ -1,5 +1,10 @@
 import type { BacklogQuery } from '@repo/contracts';
-import type { GameType, Store, Subscription } from '@repo/contracts/vocabulary';
+import type {
+  GameType,
+  Medium,
+  Store,
+  Subscription,
+} from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import {
   and,
@@ -155,6 +160,29 @@ function buildConditions(userId: string, input: BacklogQuery): SQL[] {
               and(
                 eq(schema.ownerships.backlogId, schema.backlog.id),
                 eq(schema.ownerships.subscription, subscription),
+                nonEsclusa,
+              ),
+            ),
+        ),
+      ),
+    );
+  }
+
+  // Come `stores`, su `ownerships.medium`: «Fisico» vuol dire almeno una copia
+  // su disco o cartuccia. Una copia senza supporto non corrisponde a nessuna
+  // spunta, e con `nonEsclusa` dentro un digitale che hai solo dal Plus non
+  // conta, se il Plus è escluso.
+  if (input.media?.length) {
+    conditions.push(
+      ...tuttiPresenti(input.media, (medium) =>
+        exists(
+          db
+            .select({ uno: sql`1` })
+            .from(schema.ownerships)
+            .where(
+              and(
+                eq(schema.ownerships.backlogId, schema.backlog.id),
+                eq(schema.ownerships.medium, medium),
                 nonEsclusa,
               ),
             ),
@@ -477,6 +505,18 @@ export async function listBacklogFilterOptions(userId: string) {
     )
     .orderBy(schema.ownerships.subscription);
 
+  // I supporti delle copie visibili, come gli abbonamenti: «Fisico» non si
+  // offre a chi non ha un disco, e il nullo (non dichiarato) non è una voce.
+  const mediumRows = await db
+    .selectDistinct({ medium: schema.ownerships.medium })
+    .from(schema.ownerships)
+    .innerJoin(
+      schema.backlog,
+      eq(schema.backlog.id, schema.ownerships.backlogId),
+    )
+    .where(and(visibleOf(userId), isNotNull(schema.ownerships.medium)))
+    .orderBy(schema.ownerships.medium);
+
   // I tipi presenti nel backlog visibile. I nulli restano fuori: un gioco non
   // ancora arricchito non è una voce da offrire, e chi lo spuntasse non saprebbe
   // che cosa ha spuntato. L'ordine lo dà Postgres, che ordina un enum come è
@@ -516,6 +556,9 @@ export async function listBacklogFilterOptions(userId: string) {
       .filter(
         (subscription): subscription is Subscription => subscription !== null,
       ),
+    media: mediumRows
+      .map((row) => row.medium)
+      .filter((medium): medium is Medium => medium !== null),
     gameTypes: gameTypeRows
       .map((row) => row.gameType)
       .filter((type): type is GameType => type !== null),

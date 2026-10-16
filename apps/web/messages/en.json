@@ -333,6 +333,8 @@
     "platformsLabel": "Platforms",
     "noPlatforms": "No platform yet.",
     "noStores": "No store: games added by hand don't have one.",
+    "mediaLabel": "Format",
+    "noMedia": "No copies with a known format, digital or physical.",
     "subscriptionsLabel": "Family and subscriptions",
     "noSubscriptions": "No copies from a family or subscription.",
     "includeSubscriptions": "Show only",
@@ -1090,6 +1092,10 @@
       "linksFix": {
         "title": "Links on the game page",
         "text": "More links on every game page, taken from IGDB: the official website and the stores, including Epic, which has none today."
+      },
+      "mediaFilter": {
+        "title": "The digital or physical filter",
+        "text": "Keep only the games you own on disc or cartridge, or only the digital ones."
       },
       "eaRenew": {
         "title": "Rinnovo del token per la libreria EA",

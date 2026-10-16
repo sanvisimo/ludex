@@ -334,6 +334,8 @@
     "noPlatforms": "Nessuna piattaforma ancora.",
     "storesLabel": "Store",
     "noStores": "Nessuno store: i giochi aggiunti a mano non ne hanno uno.",
+    "mediaLabel": "Supporto",
+    "noMedia": "Nessuna copia di cui si sappia se è digitale o fisica.",
     "subscriptionsLabel": "Famiglia e abbonamenti",
     "noSubscriptions": "Nessuna copia da famiglia o abbonamento.",
     "includeSubscriptions": "Mostra solo",
@@ -1089,6 +1091,10 @@
       "linksFix": {
         "title": "I link nella pagina del gioco",
         "text": "Più link nella pagina di ogni gioco, presi da IGDB: il sito ufficiale e i negozi, compreso Epic, che oggi non ne ha."
+      },
+      "mediaFilter": {
+        "title": "Il filtro digitale o fisico",
+        "text": "Tenere solo i giochi che hai su disco o cartuccia, o solo quelli digitali."
       },
       "eaRenew": {
         "title": "Rinnovo del token per la libreria EA",

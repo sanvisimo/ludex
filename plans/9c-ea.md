@@ -5,6 +5,8 @@
 EA), valutato in un lotto a parte, è scartato il 16/10/2026: vuole `pc_sign`
 ([9c-ea-rinnovo.md](9c-ea-rinnovo.md)).
 
+**Controllo dell'import: fatto a mano dall'utente il 15/10/2026.**
+
 ## Contesto
 
 `docs/negozi.md` dà EA come «sessione corta, si sgancia sempre · nessun id su IGDB ·
