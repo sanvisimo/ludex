@@ -117,10 +117,17 @@ al pannello: il dialogo vive nella pagina (`SavePlaylistDialog`), perché il
 pannello smonta ciò che ha dentro quando si chiude, e il clic chiude il pannello
 prima di aprirlo.
 
-**«Gioco a caso»** (`RandomGameButton`, step 15c) sta fra le azioni in cima a
-`/backlog`, e non nella vista dei nascosti. Chiede a `backlog.random` un gioco con
-stato `backlog` e non nascosto, **senza guardare i filtri della pagina**, e apre la
-scheda; con nessun candidato il server rende `null` e basta un avviso.
+**Il dado** (`RandomGameDice`, 15c e la sua estensione) sta nel guscio, fisso in
+basso a destra, e apre la scheda di un gioco a caso (`games.random`, pubblica). Su
+`/backlog` pesca dal filtro della pagina, sulla scheda di un gioco pescato dà il
+successivo dello stesso giro, altrove pesca da tutto il backlog; da anonimi dal
+catalogo. Nella vista dei nascosti non c'è. Il giro sta nell'URL della scheda,
+piatto come quello di `/backlog`: un seme e i soli criteri (`validateRandomSearch`,
+`randomSearch` e `toRandomFilter` in `lib/backlog-filter.ts`). Dove si è il dado lo
+legge **al clic** da `router.state.location`, non dalle rotte montate: un secondo
+tiro mentre la scheda di prima carica ancora le troverebbe ferme alla pagina di
+partenza, e ripartirebbe con un seme nuovo. Con nessun candidato il server rende
+`null` e basta un avviso.
 
 **Le ore giocate nel backlog** sono un tempo solo con l'orologio, quello della
 copia giocata più di recente (`latestPlaytime` in `lib/playtime.ts`, mostrato da
@@ -223,8 +230,9 @@ sotto**, dove arriva il pollice e i menu le si aprono sopra. La posizione la
 sceglie il CSS, non JavaScript, come ogni forma del guscio: leggere la
 larghezza darebbe un primo render sbagliato da correggere all'idratazione. Sul
 telefono la pagina le lascia sotto la sua altezza (`BAR_HEIGHT`). `BackToTop` è la freccia che riporta in
-cima: fissa in basso a destra, compare dopo un'altezza di finestra di
-scorrimento e sul telefono sta sopra la barra. Due pezzi che una pagina nuova
+cima: compare dopo un'altezza di finestra di scorrimento, sopra il dado. Tutti e
+due stanno in un contenitore fisso del guscio, in basso a destra, che sul
+telefono sta sopra la barra. Due pezzi che una pagina nuova
 usa:
 
 - **`Page`** (`apps/web/src/components`): `<main>`, larghezza massima,

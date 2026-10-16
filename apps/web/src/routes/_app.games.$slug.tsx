@@ -29,6 +29,7 @@ import {
 import { RemoveEntryDialog } from '@/components/remove-entry-dialog';
 import { WishlistControl } from '@/components/wishlist-control';
 import { useApiErrorMessage } from '@/lib/api-error';
+import { validateRandomSearch } from '@/lib/backlog-filter';
 import { useSetEntryHidden } from '@/lib/hide-entry';
 import { api, client } from '@/lib/orpc';
 import { ButtonLink } from '@/src/components/button-link';
@@ -61,8 +62,10 @@ function isEnriching(game: GameDetail) {
 }
 
 // Pagina auth/no-auth: il gioco si vede sempre, `entry` arriva popolata solo se
-// chi guarda è autenticato e ce l'ha nel backlog.
+// chi guarda è autenticato e ce l'ha nel backlog. L'URL tiene il giro del dado
+// (15c), se si arriva da lì: la pagina non lo legge, lo legge il dado.
 export const Route = createFileRoute('/_app/games/$slug')({
+  validateSearch: validateRandomSearch,
   component: GamePage,
 });
 

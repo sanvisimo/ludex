@@ -1,18 +1,16 @@
-import { Button, XStack } from '@repo/ui';
+import { Button } from '@repo/ui';
 import { ArrowUp } from '@repo/ui/icons';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 /**
- * La freccia che riporta in cima: fissa in basso a destra, compare dopo
- * un'altezza di finestra di scorrimento.
+ * La freccia che riporta in cima: compare dopo un'altezza di finestra di
+ * scorrimento. La posizione fissa è del guscio, che la mette sopra il dado.
  *
  * Parte nascosta, quindi il server e il primo render del browser coincidono e
- * l'idratazione non si rompe. `bottomOffset` è l'altezza della barra del guscio,
- * che sul telefono sta in basso e la freccia deve starle sopra: la media query
- * sta sullo `XStack`, non sul bottone, come per ogni componente di `@repo/ui`.
+ * l'idratazione non si rompe.
  */
-export function BackToTop({ bottomOffset }: { bottomOffset: number }) {
+export function BackToTop() {
   const t = useTranslations('nav');
   const [visible, setVisible] = useState(false);
 
@@ -26,26 +24,18 @@ export function BackToTop({ bottomOffset }: { bottomOffset: number }) {
   if (!visible) return null;
 
   return (
-    <XStack
-      position="fixed"
-      r={16}
-      b={16}
-      z={9}
-      $max-md={{ b: bottomOffset + 16 }}
+    <Button
+      variant="outline"
+      size="icon"
+      aria-label={t('backToTop')}
+      onPress={() => {
+        const reduced = window.matchMedia(
+          '(prefers-reduced-motion: reduce)',
+        ).matches;
+        window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+      }}
     >
-      <Button
-        variant="outline"
-        size="icon"
-        aria-label={t('backToTop')}
-        onPress={() => {
-          const reduced = window.matchMedia(
-            '(prefers-reduced-motion: reduce)',
-          ).matches;
-          window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
-        }}
-      >
-        <ArrowUp size={16} />
-      </Button>
-    </XStack>
+      <ArrowUp size={16} />
+    </Button>
   );
 }

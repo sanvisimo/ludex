@@ -5,6 +5,7 @@ import type {
   GameType,
   Medium,
   PlaylistQuery,
+  RandomFilter,
   SortDirection,
   WishlistSort,
   Store,
@@ -16,6 +17,8 @@ import {
   gameTypeValues,
   mediumValues,
   PlaylistQuerySchema,
+  RandomFilterSchema,
+  RandomSeedSchema,
   sortDirectionValues,
   storeValues,
   subscriptionValues,
@@ -478,6 +481,59 @@ export function validateWishlistSearch(
   const { sort, ...rest } = validatePlaylistSearch(raw);
   const known = (wishlistSortValues as readonly string[]).includes(sort ?? '');
   return { ...rest, ...(known && sort && { sort: sort as WishlistSort }) };
+}
+
+/**
+ * Il dado (15c): l'URL della scheda di un gioco pescato. Il seme del mazzo e i
+ * criteri del filtro da cui si pesca, piatti come in `/backlog`
+ * (`/games/hades?seed=k3f9&status=backlog`), così dalla scheda il dado passa
+ * al successivo dello stesso giro e il refresh lo tiene. Solo i criteri: ordine,
+ * pagina e vista a un tiro non servono.
+ */
+export type RandomSearch = Pick<BacklogSearch, (typeof criteri)[number]> & {
+  seed?: string;
+};
+
+function soloCriteri(search: BacklogSearch) {
+  return Object.fromEntries(
+    criteri
+      .filter((key) => search[key] !== undefined)
+      .map((key) => [key, search[key]]),
+  ) as RandomSearch;
+}
+
+/**
+ * Il `validateSearch` della scheda. Senza un seme valido non si arriva dal
+ * dado, e l'URL non tiene niente: i criteri da soli non vogliono dire nulla.
+ */
+export function validateRandomSearch(
+  raw: Record<string, unknown>,
+): RandomSearch {
+  const seed = RandomSeedSchema.safeParse(text(raw.seed));
+  if (!seed.success) return {};
+  return { ...soloCriteri(validateBacklogSearch(raw)), seed: seed.data };
+}
+
+/** L'URL della scheda pescata: i criteri da cui si pescava, e il seme. */
+export function randomSearch(
+  search: BacklogSearch,
+  seed: string,
+): RandomSearch {
+  return { ...soloCriteri(search), seed };
+}
+
+/**
+ * Da URL a ciò che il server riceve. Passa da `toQueryInput`, quindi «senza
+ * filtri» è ciò che la lista mostra: tutti gli stati tranne `excluded`. Lo
+ * schema toglie ordine, pagina e `hidden`.
+ */
+export function toRandomFilter(search: BacklogSearch): RandomFilter {
+  return RandomFilterSchema.parse(toQueryInput(fromSearch(search)));
+}
+
+/** Un seme nuovo: un mazzo mescolato in un altro modo. */
+export function newSeed() {
+  return Math.random().toString(36).slice(2, 10) || 'a';
 }
 
 export function useBacklogFilter() {

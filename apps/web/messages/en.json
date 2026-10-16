@@ -99,7 +99,8 @@
     "playedLabel": "Played: {duration}",
     "columnPlayed": "Played",
     "random": "Random game",
-    "randomEmpty": "You have no “to play” games to pick from.",
+    "randomEmpty": "There are no games to pick from in this filter.",
+    "randomOnlyOne": "It's the only game in this filter: there's no other one to pick.",
     "randomFailed": "I couldn't pick a game"
   },
   "playlists": {
@@ -1082,7 +1083,7 @@
       },
       "randomFilter": {
         "title": "A random game from your filter",
-        "text": "The random game is picked from the filter you have selected, and from its page you can jump to another one, always among the same games."
+        "text": "A die always at hand, at the bottom right: it picks from the filter you have selected, and from the page of the game it picked it moves on to the next one, always among the same games and without repeating until you have seen them all. Without an account it picks from the catalogue."
       },
       "storeWishlists": {
         "title": "Store wishlists",

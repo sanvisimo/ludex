@@ -7,7 +7,6 @@ import {
   addToBacklog,
   findEntryByGame,
   findEntryById,
-  pickRandomBacklogGame,
   removeFromBacklog,
   removeOwnershipFromEntry,
   setBacklogHidden,
@@ -106,6 +105,7 @@ import {
   findExistingPlatformSlugs,
   listPlatforms,
 } from '../services/platforms';
+import { pickRandomGame } from '../services/random-game';
 import { deleteUserTag, listUserTags } from '../services/tags';
 import {
   findStoreAccount,
@@ -198,6 +198,18 @@ export const router = os.router({
           : null;
 
         return { game, entry };
+      }),
+
+    random: os.games.random
+      .use(maybeAuthed)
+      .handler(async ({ input, context }) => {
+        const slug = await pickRandomGame({
+          viewerId: context.user?.id ?? null,
+          filter: input.filter ?? {},
+          seed: input.seed,
+          after: input.after,
+        });
+        return slug ? { slug } : null;
       }),
 
     find: os.games.find
@@ -789,11 +801,6 @@ export const router = os.router({
     list: os.backlog.list
       .use(authed)
       .handler(({ input, context }) => searchBacklog(context.user.id, input)),
-
-    random: os.backlog.random.use(authed).handler(async ({ context }) => {
-      const slug = await pickRandomBacklogGame(context.user.id);
-      return slug ? { slug } : null;
-    }),
 
     filterOptions: os.backlog.filterOptions
       .use(authed)

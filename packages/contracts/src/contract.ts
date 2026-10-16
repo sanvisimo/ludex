@@ -40,6 +40,8 @@ import {
   PlaylistNameSchema,
   PlaylistQuerySchema,
   PlaylistSchema,
+  RandomFilterSchema,
+  RandomSeedSchema,
   RatingSchema,
   RepointPreviewSchema,
   ReportGroupSchema,
@@ -93,6 +95,22 @@ export const contract = {
         entry: BacklogEntrySchema.nullable(),
       }),
     ),
+
+    // Il dado (15c): un gioco a caso. Pubblica: da loggati pesca dal backlog
+    // dentro `filter`, da anonimi dal catalogo (i tipi giocabili della home) e
+    // `filter` non conta. I candidati sono mescolati da `seed`, e `after` è lo
+    // slug della scheda su cui si è: si riceve il successivo nel mazzo, e in
+    // fondo si ricomincia. Senza `after`, il primo. `null` se non c'è niente
+    // da pescare, o c'è solo `after`: non è un errore.
+    random: oc
+      .input(
+        z.object({
+          filter: RandomFilterSchema.optional(),
+          seed: RandomSeedSchema,
+          after: z.string().min(1).max(200).optional(),
+        }),
+      )
+      .output(z.object({ slug: z.string() }).nullable()),
 
     // La ricerca globale (12f), sul catalogo intero e per titolo. Pubblica come
     // la home; da loggati ogni gioco porta lo stato che ha nel tuo backlog.
@@ -537,11 +555,6 @@ export const contract = {
     // procedure che rendono la stessa cosa divergerebbero al primo campo nuovo.
     // Senza criteri è la lista di prima.
     list: oc.input(BacklogQuerySchema).output(BacklogListSchema),
-
-    // Un gioco a caso fra quelli «da giocare» (stato `backlog`, non nascosti),
-    // senza guardare i filtri di `/backlog`. Rende lo slug della scheda, o `null`
-    // se non ce n'è nessuno: un backlog senza giochi da giocare non è un errore.
-    random: oc.output(z.object({ slug: z.string() }).nullable()),
 
     // Di che cosa si compone il pannello dei filtri: solo i valori che compaiono
     // davvero nel backlog di chi guarda.

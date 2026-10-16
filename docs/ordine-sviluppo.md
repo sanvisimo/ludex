@@ -274,14 +274,24 @@ Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
     avviso dice che non ci sono giochi da pescare.
 
     **Estensione: il gioco a caso dal filtro** (chiesta il 13/10/2026, prima
-    nell'ordine di lavoro dal 16/10). Il gioco a caso pesca dal **filtro selezionato** in `/backlog`,
-    cioè dal `BacklogQuery` attivo, e non più dai soli giochi «da giocare».
-    Dalla scheda del gioco pescato si può **passare a un altro gioco a caso**,
-    sempre dentro lo stesso filtro: la scheda deve quindi sapere da quale filtro
-    arriva. Da decidere quando si comincia:
-    - senza filtri attivi, resta la regola di oggi (stato `backlog` e non
-      nascosti) o si pesca da tutto il backlog;
-    - il salto esclude il gioco appena visto, così non si ripresca lo stesso.
+    nell'ordine di lavoro dal 16/10, **in corso dal 16/10**, piano in
+    `plans/15c-gioco-a-caso-dal-filtro.md`). Il gioco a caso pesca dal **filtro
+    selezionato** in `/backlog`, e dalla scheda del gioco pescato si **passa a un
+    altro**, sempre dentro lo stesso filtro. Decisioni del 16/10:
+    - **un dado fisso in basso a destra**, nel guscio, al posto del bottone nella
+      toolbar; la freccia «torna su» gli sta sopra. Su `/backlog` pesca dal
+      filtro, sulla scheda di un gioco pescato dà il successivo, altrove pesca da
+      tutto il backlog; da anonimi dal catalogo, coi tipi giocabili della home.
+      Nella vista dei nascosti non c'è.
+    - **senza filtri pesca da ciò che la lista mostra**: tutti gli stati tranne
+      `excluded`, mai i nascosti. Non è una regola del dado, è il default di
+      `/backlog`.
+    - **il salto non ripete**: i candidati sono mescolati da un seme
+      (`md5(seme || id)`, come la rotazione della home) e il dado chiede il
+      successivo del gioco su cui si è, ricominciando in fondo. Seme e criteri
+      stanno nell'URL della scheda (`?seed=…&status=…`), niente sul server.
+      `games.random` sostituisce `backlog.random`; il servizio è
+      `services/random-game.ts`.
 
     **15d — Condivisione delle playlist** (aggiunta l'08/10/2026, **costruita lo
     stesso giorno**, piano in `plans/15d-condivisione.md`). Un link solo per due
