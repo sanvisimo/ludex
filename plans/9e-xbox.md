@@ -1,7 +1,8 @@
 # Step 9e — Xbox
 
-**Stato: studio fatto e decisioni prese (17/10/2026). Nessun codice, nessuna
-richiesta a Microsoft.** Il prossimo passo è il probe, che vuole un «ok, procedi».
+**Stato: passo 1 scritto (17/10/2026), da lanciare.** Il probe è
+`apps/api/src/scripts/xbox-probe.ts`; nessuna richiesta a Microsoft è stata fatta.
+L'utente non ha un PC per lanciarlo: vedi «Dove si lancia» più sotto.
 
 ## Contesto
 
@@ -156,12 +157,31 @@ conferma su `microsoft.com/link`, e poi:
 | ordini + `productActions`                      | poche pagine + al più 30 | quanti 360 retrocompatibili                                                                                          |
 | IGDB, sorgente 11                              | 1 ogni 200 id            | la forma degli uid e quanti `productId` trova                                                                        |
 
+### Dove si lancia
+
+Il codice si conferma da qualunque dispositivo, anche dal telefono: il PC serve
+solo a far girare lo script. Due posti possibili:
+
+- **il mini PC**, dove gira già l'app: l'indirizzo è quello di casa, come per i
+  rinnovi Nintendo, ed è la prova più fedele;
+- **questa sessione cloud di Claude**: lo script gira in un container remoto,
+  l'utente conferma il codice dal telefono. L'indirizzo è di un datacenter, cioè
+  il caso «server remoto» non misurato del 9d e del 9f, e qui mancano le
+  credenziali IGDB (la sorgente 11 si salta, il probe stampa gli id da provare
+  dopo). I token passano solo dalla memoria del processo.
+
 ## I passi
 
 Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
 
-1. **Probe in sola lettura**: `apps/api/src/scripts/xbox-probe.ts` e la voce
-   `xbox:probe`, con le regole sopra. I risultati in questo piano.
+1. **Probe in sola lettura** — **scritto, da lanciare**:
+   `apps/api/src/scripts/xbox-probe.ts` e la voce `xbox:probe`, con le regole
+   sopra. Per il Game Pass usa gli elenchi pubblici (`catalog.gamepass.com/sigls`)
+   e non la decorazione `gamepass` di titlehub, che nessuno dei progetti letti
+   usa: una richiesta non provata in meno sull'account. Lo storico chiede solo
+   `decoration/detail`, come Playnite, e il `productId` lo prende da
+   `detail.availabilities`, come Unifideck. I risultati in questo piano. La
+   roadmap è passata a «in corso», col testo nuovo.
 2. **Decisioni dai dati**: le tre aperte qui sopra, e la riga Xbox della tabella in
    [negozi](../docs/negozi.md) corretta (senza riscrivere in silenzio la vecchia,
    come per PSN ed EA).
