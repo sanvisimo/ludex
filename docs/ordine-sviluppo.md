@@ -6,18 +6,27 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 
 I numeri degli step sono nomi, non una sequenza: compaiono nei piani, nei
 commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
-in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10), e l'ordine è
+in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10 e il 18/10), e l'ordine è
 anche quello della [roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
-1. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
-   e la deduplica.
-2. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
+1. **In corso insieme, dal 18/10/2026:**
+   - **10 — Import CSV**: serve un parser, la risoluzione dell'identità per
+     nome e la deduplica.
+   - **9e — Xbox**: la decisione sul significato, poi un login e un nuovo
+     negozio da zero.
+2. **Rilascio**: un server stabile al posto del mini PC e l'app aperta a
+   tutti, senza Cloudflare Access; con la verifica dell'email, il recupero
+   della password e login e registrazione da stabilizzare. Non ha un numero:
+   non è una feature ma il passaggio da ambiente di prova a servizio. Piano in
+   `plans/rilascio.md`.
+3. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
    decise.
-3. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
-   da zero.
 4. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
 5. **Mobile**: un'app nuova, con le sue schermate.
+
+Il 18/10/2026 Xbox è salita prima degli abbonamenti, in corso insieme al CSV,
+ed è entrato il rilascio subito dopo i due.
 
 Il gioco a caso dal filtro era il primo della lista ed è **fatto dal
 16/10/2026**: il dado fisso in basso a destra, vedi l'estensione della 15c più
