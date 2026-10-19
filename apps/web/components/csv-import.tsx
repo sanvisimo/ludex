@@ -347,7 +347,9 @@ function CsvImportDialog({
                     <input
                       ref={inputRef}
                       type="file"
-                      accept=".csv,text/csv"
+                      // Anche `.txt`: la vista di LaunchBox incollata in un
+                      // file di testo, a tabulazioni.
+                      accept=".csv,.txt,text/csv,text/plain"
                       aria-label={t('fileLabel')}
                       hidden
                       onChange={(event) => {

@@ -3,24 +3,33 @@ import { parse } from 'csv-parse/sync';
 
 /**
  * Il file dell'import da CSV (10): una riga per gioco, colonne riconosciute
- * **per nome** e tutte le altre ignorate. I nomi sono quelli dell'export di
- * Playnite (l'estensione Library Exporter Advanced), in inglese e in italiano,
- * così il suo file si carica com'è; chi il file lo scrive a mano parte dal CSV
- * d'esempio, che usa i nomi inglesi. Vedi `plans/10-import-csv.md`.
+ * **per nome** e tutte le altre ignorate, separate da virgole o da
+ * tabulazioni. I nomi sono quelli di due programmi, in inglese e in italiano,
+ * così i loro file si caricano come sono; chi il file lo scrive a mano parte
+ * dal CSV d'esempio, che usa i nomi inglesi di Playnite. Vedi
+ * `plans/10-import-csv.md`.
  *
- * I nomi vengono dalla localizzazione di Playnite (`LocSource.xaml` e
- * `it_IT.xaml`): `Time Played` e non `Playtime`. Al singolare (`Source`,
- * `Platform`) per chi scrive il file a mano.
+ * - **Playnite**, l'export di Library Exporter Advanced: i nomi vengono dalla
+ *   sua localizzazione (`LocSource.xaml` e `it_IT.xaml`), `Time Played` e non
+ *   `Playtime`.
+ * - **LaunchBox**, che un export non ce l'ha: la vista a elenco copiata e
+ *   incollata in un file di testo, quindi a **tabulazioni**. Misurato su due
+ *   file veri, in inglese e in italiano (`Title`/`Titolo`, `Source`/`Fonte`,
+ *   `Play Time`/`Tempo Giocato`…). L'id del gioco non ha una colonna: sta in
+ *   `Application Path`, vedi `gameIdFromLaunch`.
+ *
+ * Al singolare (`Source`, `Platform`) anche per chi scrive il file a mano.
  */
 const COLONNE = {
-  name: ['Name', 'Nome'],
-  sources: ['Sources', 'Source', 'Sorgenti', 'Sorgente'],
+  name: ['Name', 'Nome', 'Title', 'Titolo'],
+  sources: ['Sources', 'Source', 'Sorgenti', 'Sorgente', 'Fonte'],
   gameId: ['Game Id', 'Id del gioco'],
+  launch: ['Application Path', 'Percorso Applicazione'],
   platforms: ['Platforms', 'Platform', 'Piattaforme', 'Piattaforma'],
   releaseDate: ['Release Date', 'Data di uscita'],
   links: ['Links', 'Collegamenti'],
-  playtime: ['Time Played', 'Tempo di gioco'],
-  lastPlayed: ['Last Played', "Giocato l'ultima volta"],
+  playtime: ['Time Played', 'Tempo di gioco', 'Play Time', 'Tempo Giocato'],
+  lastPlayed: ['Last Played', "Giocato l'ultima volta", 'Ultima Partita'],
   completion: ['Completion Status', 'Stato di completamento'],
   categories: ['Categories', 'Categorie'],
 } as const satisfies Record<string, readonly string[]>;
@@ -147,6 +156,43 @@ function data(valore: string | undefined): Date | null {
   return new Date(Date.UTC(+aaaa!, +mm! - 1, +gg!, +hh, +mi, +ss));
 }
 
+/**
+ * L'id del negozio dal modo in cui LaunchBox avvia il gioco, dove la riga non
+ * ha una colonna dell'id. Solo le forme misurate: `uplay://launch/16232` è lo
+ * stesso id che Playnite scrive in `Game Id` (Anno 1404 in tutti e due i
+ * file). Le altre (Steam, GOG, Epic) restano senza: la riga si riconosce dal
+ * nome, come chi scrive il file a mano.
+ */
+function gameIdFromLaunch(valore: string | undefined): string | null {
+  return /^uplay:\/\/launch\/(\d+)/.exec(valore?.trim() ?? '')?.[1] ?? null;
+}
+
+/**
+ * Il tempo giocato in minuti: in secondi come lo scrive Playnite, o
+ * `12h 34m 56s` come LaunchBox.
+ */
+function minuti(valore: string | undefined): number | null {
+  const testo = valore?.trim() ?? '';
+  const hms = /^(\d+)h\s*(\d+)m\s*(\d+)s$/.exec(testo);
+  const secondi = hms
+    ? +hms[1]! * 3600 + +hms[2]! * 60 + +hms[3]!
+    : Number(testo);
+  return Number.isFinite(secondi) && secondi > 0
+    ? Math.round(secondi / 60)
+    : null;
+}
+
+/**
+ * Virgole o tabulazioni, da come è scritta l'intestazione: la vista di
+ * LaunchBox copiata e incollata è a tabulazioni, Playnite e i fogli di calcolo
+ * a virgole.
+ */
+function separatore(testo: string) {
+  const intestazione = testo.slice(0, testo.search(/\r?\n|$/));
+  const tab = intestazione.split('\t').length;
+  return tab > intestazione.split(',').length ? '\t' : ',';
+}
+
 /** L'appid Steam dai collegamenti, se ce n'è uno solo. */
 function steamAppId(valore: string | undefined): string | null {
   const ids = new Set(
@@ -162,6 +208,7 @@ export function parseCsvFile(testo: string): CsvRow[] {
   try {
     records = parse(testo, {
       bom: true,
+      delimiter: separatore(testo),
       relax_column_count: true,
       skip_empty_lines: true,
     }) as string[][];
@@ -199,22 +246,20 @@ export function parseCsvFile(testo: string): CsvRow[] {
     if (!name) return [];
 
     const source = campo(riga, 'sources')?.trim() ?? '';
-    const secondi = Number(campo(riga, 'playtime'));
     const completion = campo(riga, 'completion')?.trim().toLowerCase() ?? '';
 
     return [
       {
         name,
-        gameId: campo(riga, 'gameId')?.trim() || null,
+        gameId:
+          campo(riga, 'gameId')?.trim() ||
+          gameIdFromLaunch(campo(riga, 'launch')),
         source,
         store: STORE_BY_SOURCE[source.toLowerCase()] ?? null,
         platforms: lista(campo(riga, 'platforms')),
         releaseYear: data(campo(riga, 'releaseDate'))?.getUTCFullYear() ?? null,
         steamAppId: steamAppId(campo(riga, 'links')),
-        playtimeMinutes:
-          Number.isFinite(secondi) && secondi > 0
-            ? Math.round(secondi / 60)
-            : null,
+        playtimeMinutes: minuti(campo(riga, 'playtime')),
         lastPlayedAt: data(campo(riga, 'lastPlayed')),
         status: STATUS_BY_COMPLETION[completion] ?? 'backlog',
         categories: lista(campo(riga, 'categories')),

@@ -3,7 +3,10 @@ import '../env';
 import { readFileSync } from 'node:fs';
 
 import { findIgdbGamesBySource } from '../external/igdb';
-import { resolveByNameWithFallbacks } from '../services/library-import';
+import {
+  isPcStore,
+  resolveByNameWithFallbacks,
+} from '../services/library-import';
 import { parseCsvFile } from '../services/csv-file';
 
 // Giro a vuoto dell'import da file (10): legge l'export di Playnite, prova a
@@ -46,11 +49,11 @@ console.log(
   `\n  con categorie: ${rows.filter((r) => r.categories.length).length}, con ore: ${rows.filter((r) => r.playtimeMinutes).length}, con appid Steam: ${rows.filter((r) => r.steamAppId).length}`,
 );
 
-// Solo le righe PC: la piattaforma delle altre è la domanda 2, e qui la
-// regola 3 vorrebbe lo slug, che il probe non sceglie.
-const pc = rows.filter(
-  (r) => r.store && r.platforms.every((p) => p === 'PC (Windows)'),
-);
+// Solo le righe dei negozi PC: la piattaforma delle altre è la domanda 2, e
+// qui la regola 3 vorrebbe lo slug, che il probe non sceglie. Come l'import,
+// guarda il negozio e non la colonna, che dice dove il gioco esiste (LaunchBox
+// scrive «Windows», Playnite «PC (Windows)»).
+const pc = rows.filter((r) => r.store && isPcStore(r.store));
 
 // La strada del job: nome con l'anno, nome senza, appid. Vedi
 // `resolveByNameWithFallbacks`.

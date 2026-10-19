@@ -103,8 +103,9 @@ Le colonne:
 - **`Platforms` con più valori** (`Microsoft Xbox One, Microsoft Xbox
 Series, PC (Windows)` nel vecchio file): è dove il gioco esiste, non dove
   lo hai. Per ora quelle righe si saltano.
-- **LaunchBox**: passi e colonne da misurare su un export vero (vedi il
-  passo 4).
+- **LaunchBox, le altre forme dell'id**: da `Application Path` si prende solo
+  `uplay://launch/<id>`, l'unica misurata. Steam, GOG ed Epic restano senza
+  id (la riga si riconosce dal nome) finché un file non le mostra.
 
 ## La misura: `csv:probe` (16/10/2026)
 
@@ -251,5 +252,24 @@ riga.
     importati sono «Già nel backlog» mentre la riga esclusa torna «Nuovo».
     Lo stato del file si mostra solo sulle righe che lo useranno (nuove e da
     riconoscere).
+
+5c. ✅ **LaunchBox** (19/10/2026), misurato su due file veri dell'utente,
+[`launchbox.txt`](../apps/api/test/fixtures/launchbox.txt) in inglese e
+[`launchbox.csv`](../apps/api/test/fixtures/launchbox.csv) in italiano.
+LaunchBox un export non ce l'ha: la vista a elenco copiata (Ctrl+A,
+Ctrl+C) e incollata in un file di testo, salvato anche come `.txt`. Cosa
+è servito: - **le tabulazioni**: il separatore si sceglie dall'intestazione; - **i nomi**: `Title`/`Titolo`, `Source`/`Fonte`, `Play Time`/`Tempo
+      Giocato`, `Last Played`/`Ultima Partita`, `Application Path`/`Percorso
+      Applicazione`; `Platform`/`Piattaforma` e `Release Date`/`Data di
+      Uscita` c'erano già. `Status` è testo libero («Imported from Ubisoft
+Connect») e non uno stato: non si usa; - **l'id** da `Application Path`: `uplay://launch/16232` è lo stesso id
+di Playnite, quindi i collegamenti scritti da un import di Playnite
+valgono anche per LaunchBox; - **il tempo** come `12h 34m 56s`.
+
+    Le date di LaunchBox sono quelle dell'uscita, non della riedizione. Col
+    probe (solo IGDB) 9 su 10: _Assassin's Creed_ per nome è ambiguo e non c'è
+    il link Steam; sul DB di sviluppo l'anteprima ne riconosce 8 per id, lui
+    compreso, grazie all'import di Playnite fatto prima. Il dialogo accetta
+    `.txt` e i passi del riquadro LaunchBox sono riscritti così.
 
 6. Documentazione: `negozi.md`, `ordine-sviluppo.md`, `import-librerie.md`.

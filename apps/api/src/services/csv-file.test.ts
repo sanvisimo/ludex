@@ -98,6 +98,45 @@ describe('parseCsvFile', () => {
     ]);
   });
 
+  it('legge la vista di LaunchBox incollata in un file di testo, in inglese e in italiano', () => {
+    const inglese = parseCsvFile(fixture('launchbox.txt'));
+    const italiano = parseCsvFile(fixture('launchbox.csv'));
+
+    // A tabulazioni, con 35 colonne: si prendono le stesse cose.
+    expect(inglese).toHaveLength(10);
+    expect(italiano).toHaveLength(6);
+    for (const rows of [inglese, italiano]) {
+      expect(rows[0]).toEqual({
+        name: 'Anno 1404 - History Edition',
+        // Da `uplay://launch/16232`: lo stesso id di Playnite.
+        gameId: '16232',
+        source: 'Ubisoft Connect',
+        store: 'ubisoft',
+        platforms: ['Windows'],
+        releaseYear: 2020,
+        steamAppId: null,
+        // `0h 00m 00s`: mai giocato, come lo zero di Playnite.
+        playtimeMinutes: null,
+        lastPlayedAt: null,
+        status: 'backlog',
+        categories: [],
+      });
+    }
+    // Le date di LaunchBox sono quelle dell'uscita, non della riedizione.
+    expect(
+      inglese.find((row) => row.name === "Assassin's Creed Brotherhood")
+        ?.releaseYear,
+    ).toBe(2011);
+  });
+
+  it('il tempo di LaunchBox in ore, minuti e secondi', () => {
+    const [row] = parseCsvFile(
+      'Title\tSource\tPlay Time\nUNO\tUbisoft Connect\t12h 34m 30s\n',
+    );
+
+    expect(row!.playtimeMinutes).toBe(12 * 60 + 35);
+  });
+
   it('vuole solo nome e sorgente, in inglese o in italiano', () => {
     expect(parseCsvFile('name,source\nUNO,Ubisoft\nGioco a mano,\n')).toEqual([
       expect.objectContaining({ name: 'UNO', gameId: null, store: 'ubisoft' }),

@@ -997,7 +997,7 @@
         "completionStatus": "Plan to Play, Playing, Beaten, Completed, Abandoned, Won't Play…",
         "categories": "le tue categorie, separate da virgola"
       },
-      "columnsNote": "Date come 2026-10-19 o 19/10/2026. Le altre colonne si ignorano, e valgono anche i nomi italiani di Playnite (Nome, Sorgenti…).",
+      "columnsNote": "Colonne separate da virgole o da tabulazioni; date come 2026-10-19 o 19/10/2026. Le altre colonne si ignorano, e valgono anche i nomi di Playnite e LaunchBox, in italiano compresi (Nome, Titolo, Sorgenti, Fonte…).",
       "sourcesTitle": "Da dove prendere il file",
       "playnite": {
         "title": "Playnite",
@@ -1010,12 +1010,12 @@
       "launchbox": {
         "title": "LaunchBox",
         "steps": [
-          "LaunchBox non ha un export in CSV: passa alla vista a elenco, seleziona tutti i giochi (Ctrl+A) e copiali (Ctrl+C).",
-          "Incollali in un foglio di calcolo e dai alle colonne i nomi della tabella qui sopra: servono almeno Name e Sources.",
-          "Salva il foglio in CSV e caricalo qui."
+          "Passa alla vista a elenco: servono almeno le colonne Title e Source, e con Application Path Ludex prende anche l'id del gioco.",
+          "Seleziona i giochi (Ctrl+A per tutti), copiali (Ctrl+C) e incollali in un file di testo.",
+          "Salvalo, anche come .txt, e caricalo qui così com'è."
         ]
       },
-      "drop": "Trascina qui il file .csv oppure",
+      "drop": "Trascina qui il file .csv o .txt oppure",
       "choose": "Scegli il file",
       "change": "Cambia file",
       "fileLabel": "Il file CSV",
