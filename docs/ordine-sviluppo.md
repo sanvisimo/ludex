@@ -6,18 +6,19 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 
 I numeri degli step sono nomi, non una sequenza: compaiono nei piani, nei
 commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
-in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10), e l'ordine è
+in quest'ordine (deciso il 09/10/2026, aggiornato il 19/10), e l'ordine è
 anche quello della [roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
-1. **10 — Import CSV**: serve un parser, la risoluzione dell'identità per nome
-   e la deduplica.
-2. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
+1. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
    decise.
-3. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
+2. **9e — Xbox**: la decisione sul significato, poi un login e un nuovo negozio
    da zero.
-4. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+3. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-5. **Mobile**: un'app nuova, con le sue schermate.
+4. **Mobile**: un'app nuova, con le sue schermate.
+
+L'import CSV (10) era il primo della lista ed è **fatto dal 19/10/2026**: vedi
+lo step 10 più sotto e `plans/10-import-csv.md`.
 
 Il gioco a caso dal filtro era il primo della lista ed è **fatto dal
 16/10/2026**: il dado fisso in basso a destra, vedi l'estensione della 15c più
@@ -157,9 +158,18 @@ Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
      due account; segnato «fatto» nella roadmap il 12/10/2026. Vedi «Il blocco
      dell'account» in
      [negozi](negozi.md) e il piano in `plans/9f-steam-login.md`.
-10. **Import da file** — importazione di giochi da file CSV. **In analisi.**
-    Il file di prova è un export di Playnite, in
-    `apps/api/test/fixtures/playnite-export-2026-08.csv`.
+10. **Import da CSV** — **fatto il 19/10/2026**, piano in
+    `plans/10-import-csv.md`. In Librerie, «Importa da CSV»: un file con una
+    riga per gioco, colonne riconosciute per nome (quelle di Playnite e di
+    LaunchBox, in inglese e in italiano; obbligatorie solo nome e sorgente),
+    a virgole o a tabulazioni. Prima di importare un'anteprima riga per riga,
+    con le spunte per escludere. **Non è una libreria**: gli account interni
+    (uno per negozio, `store_accounts.from_file`) non compaiono fra gli
+    account. Stato, categorie e il tag «Importato il {data}» solo alla
+    nascita, anche per gli scarti collegati a mano. Regole in
+    [import-librerie](import-librerie.md#limport-da-csv-10). Restano aperte le
+    righe console con più piattaforme (le Xbox di Playnite, saltate) e le
+    forme dell'id di LaunchBox diverse da Ubisoft.
 11. **Admin** — dove finisce ciò che nessun automatismo ha saputo chiudere.
     Diviso in due lotti:
     - **11a, fatto** (piano in `plans/11a-admin.md`). Il ruolo admin col

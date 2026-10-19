@@ -1189,7 +1189,9 @@
       },
       "csv": {
         "title": "Import from a CSV file",
-        "text": "Bring a library you already keep elsewhere into Ludex, for example a Playnite export."
+        "p1": "In Libraries, “Import from CSV” brings in games from stores that can't be linked, like Ubisoft Connect and Battle.net, or from stores you'd rather not link. A Playnite export works, so does LaunchBox's list view pasted into a text file, or a CSV written by hand from the example one.",
+        "p2": "Before importing you see, row by row, what will happen — new game, already in your backlog, to be recognised or skipped, and why — and untick what you don't want.",
+        "p3": "New games come in with the file's status and categories and an “Imported on…” tag, including the ones you link by hand later. Games you already have from a linked store aren't duplicated."
       },
       "randomFilter": {
         "title": "A random game from your filter",

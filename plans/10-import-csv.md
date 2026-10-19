@@ -1,6 +1,7 @@
 # Step 10 — Import da file CSV
 
-**Stato: in corso dal 16/10/2026.** Roadmap `csv` a «in corso».
+**Stato: chiuso il 19/10/2026**, dall'utente. Roadmap `csv` a «fatto»
+(era «in corso» dal 16/10).
 
 ## Contesto
 
@@ -281,4 +282,6 @@ li applica alla nascita con la stessa funzione dell'import
 (`tagNewEntries`); su un gioco che c'era già non cambia niente. Vale anche
 per «Collega per tutti». Sul DB di sviluppo: il tag aggiunto a mano a
 _Prince of Persia_, già collegato, e `at_birth` riempita sui tre scarti
-del CSV ancora aperti. 6. Documentazione: `negozi.md`, `ordine-sviluppo.md`, `import-librerie.md`.
+del CSV ancora aperti. 6. ✅ Documentazione (19/10/2026): `ordine-sviluppo.md`, `negozi.md`,
+«L'import da CSV» in `import-librerie.md`, `CLAUDE.md` della radice, di
+`apps/api` (`csv:probe`) e di `apps/web`.
