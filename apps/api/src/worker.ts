@@ -26,6 +26,7 @@ import {
 import {
   IMPORTS_QUEUE,
   type ImportsAnyJob,
+  isImportsFile,
   isImportsSweep,
   isImportsWishlist,
   scheduleImportsSweep,
@@ -60,6 +61,7 @@ import {
 } from './services/store-accounts';
 import {
   findLinkedAccount,
+  runFileImportJob,
   runWishlistImportJob,
 } from './services/import-jobs';
 
@@ -247,7 +249,30 @@ const importsWorker = new Worker<ImportsAnyJob>(
       return runWishlistImportJob(job.data.storeAccountId);
     }
 
+    if (isImportsFile(job.data)) {
+      const report = await runFileImportJob(
+        job.data.storeAccountId,
+        job.data.entries,
+        job.data.tag,
+      );
+      console.log(
+        `[import] csv ${job.data.storeAccountId}: ${report.total} nel file, ` +
+          `${report.resolved} risolti (${report.resolvedByName} per nome, ` +
+          `${report.newGames} giochi nuovi, ${report.newEntries} aggiunti al ` +
+          `backlog), ${report.unresolved} da sistemare`,
+      );
+      return report;
+    }
+
     const account = await findLinkedAccount(job.data.storeAccountId);
+
+    // Un account da file (10) non ha un negozio da cui rileggere la libreria:
+    // un job senza le voci, accodato a mano, non ha niente da importare.
+    if (account.fromFile) {
+      throw new UnrecoverableError(
+        `${account.store} da CSV si reimporta caricando di nuovo il file`,
+      );
+    }
 
     try {
       const importer = importers[account.store];

@@ -159,7 +159,7 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
 8. OpenCritic e Metacritic
 9. Altre librerie: 9a GOG, Epic, Amazon · 9b PSN · 9c EA · 9d Nintendo ·
    9e Xbox · 9f Steam con login e Family
-10. Import da file CSV — **in analisi**
+10. Import da file CSV — **fatto il 19/10/2026**
 11. Admin: 11a ruolo, dati mancanti, scarti, segnalati, utenti · 11b fusione
     di due giochi
 12. UI
@@ -172,7 +172,7 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
 16. Cancellazione ed esportazione dell'account
 
 Poi il mobile. I numeri sono nomi e non si rinumerano: **quello che resta si fa
-in quest'ordine** (09/10/2026, aggiornato il 18/10) — 10 e 9e insieme · rilascio · 14 · 13 · mobile (la 15e e la 9c sono fatte dal 13/10/2026, i link della pagina del gioco e il gioco a caso dal filtro dal 16/10), con le
+in quest'ordine** (09/10/2026, aggiornato il 19/10) — 9e · rilascio · 14 · 13 · mobile (la 15e e la 9c sono fatte dal 13/10/2026, i link della pagina del gioco e il gioco a caso dal filtro dal 16/10, l'import CSV dal 19/10), con le
 ragioni in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.md). Non anticipare
 step successivi: se una feature appartiene allo step 13, non implementarla
 mentre si lavora sulla 9c.

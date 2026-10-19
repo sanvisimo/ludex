@@ -107,6 +107,13 @@ import {
 } from '../services/platforms';
 import { pickRandomGame } from '../services/random-game';
 import { deleteUserTag, listUserTags } from '../services/tags';
+import { CsvFileError } from '../services/csv-file';
+import {
+  csvImportStatus,
+  importCsvFile,
+  previewCsvFile,
+} from '../services/csv-import';
+
 import {
   findStoreAccount,
   linkSteamWebToken,
@@ -138,6 +145,19 @@ import {
 } from '../queue/imports';
 import { admin, authed, maybeAuthed, os } from './context';
 import { asAdminAuthCall } from './admin-auth';
+
+/**
+ * Un file sbagliato è `BAD_REQUEST` col perché: la schermata dice cosa non va
+ * dalla `reason`, non dal testo. Il resto passa com'è.
+ */
+function csvFileError(error: unknown) {
+  return error instanceof CsvFileError
+    ? new ORPCError('BAD_REQUEST', {
+        message: error.message,
+        data: { reason: error.reason, missing: error.missing },
+      })
+    : error;
+}
 
 /**
  * L'account che si sta ricollegando, se la richiesta ne nomina uno.
@@ -437,6 +457,12 @@ export const router = os.router({
 
       // EA si importa una volta sola per token: reimportare è incollarne uno
       // nuovo (`accounts.link` sulla stessa riga), non premere «aggiorna».
+      // L'import da CSV (10) non è una libreria: si carica di nuovo il file.
+      if (account.fromFile) {
+        throw new ORPCError('BAD_REQUEST', {
+          message: `${account.store} da CSV si reimporta caricando il file`,
+        });
+      }
       if (isOneShotStore(account.store)) {
         throw new ORPCError('BAD_REQUEST', {
           message: `${account.store} si reimporta incollando di nuovo il token`,
@@ -645,6 +671,42 @@ export const router = os.router({
         if (!removed)
           throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
       }),
+  },
+
+  csvImport: {
+    upload: os.csvImport.upload
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        try {
+          return await importCsvFile(
+            context.user.id,
+            await input.file.text(),
+            input.tag,
+            input.exclude,
+          );
+        } catch (error) {
+          throw csvFileError(error);
+        }
+      }),
+
+    preview: os.csvImport.preview
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        try {
+          return {
+            rows: await previewCsvFile(
+              context.user.id,
+              await input.file.text(),
+            ),
+          };
+        } catch (error) {
+          throw csvFileError(error);
+        }
+      }),
+
+    status: os.csvImport.status
+      .use(authed)
+      .handler(({ context }) => csvImportStatus(context.user.id)),
   },
 
   wishlists: {

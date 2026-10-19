@@ -179,6 +179,8 @@ export async function listStoreAccounts(userId: string) {
       and(
         eq(schema.storeAccounts.userId, userId),
         ne(schema.storeAccounts.status, 'unlinked'),
+        // Gli account interni dell'import da CSV (10) non sono librerie.
+        eq(schema.storeAccounts.fromFile, false),
       ),
     )
     .orderBy(schema.storeAccounts.store, schema.storeAccounts.createdAt);
@@ -264,6 +266,8 @@ export async function syncAllStoreAccounts(userId: string) {
         // EA si importa una volta sola: senza un JSON nuovo non c'è niente con
         // cui ripartire, e il job fallirebbe e basta.
         notInArray(schema.storeAccounts.store, [...oneShotStoreValues]),
+        // Gli account dell'import da CSV (10): non sono librerie.
+        eq(schema.storeAccounts.fromFile, false),
       ),
     );
 
@@ -293,7 +297,11 @@ export async function syncAllStoreAccounts(userId: string) {
 export async function requestWishlistImport(userId: string, accountId: string) {
   const account = await findStoreAccount(userId, accountId);
   if (!account || account.status === 'unlinked') return 'not_found' as const;
-  if (!(wishlistStoreValues as readonly string[]).includes(account.store))
+  // L'import da CSV (10) non ha un account del negozio da cui leggerla.
+  if (
+    account.fromFile ||
+    !(wishlistStoreValues as readonly string[]).includes(account.store)
+  )
     return 'unsupported' as const;
   if (account.status === 'needs_reauth') return 'needs_reauth' as const;
   if (await isWishlistImportRunning(account.id)) return 'running' as const;

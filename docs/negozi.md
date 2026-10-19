@@ -383,7 +383,9 @@ client installato e il registro di Windows, non una API. Non c'è nessun
 credenziale di rete da acquisire, da rinnovare o da cifrare — c'è un disco a cui
 un server non è attaccato. Con Battle.net non c'è nemmeno il ripiego di un
 endpoint pubblico: l'OAuth ufficiale di Blizzard esiste ma non espone la libreria
-a nessuno.
+a nessuno. **Dal 19/10/2026 entrano dall'import da CSV** (step 10): l'export di
+Playnite o di LaunchBox li porta, col negozio `ubisoft` o `battlenet`. Vedi
+«L'import da CSV» in [import-librerie](import-librerie.md).
 
 Steam Family (9f) era descritta qui come lo stesso `GetOwnedGames` chiamato su N
 SteamID64, senza credenziali nuove. **Smentito il 05/10/2026**: la famiglia non

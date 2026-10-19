@@ -35,6 +35,7 @@
     "psn:wishlist-probe": "tsx src/scripts/psn-wishlist-probe.ts",
     "nintendo:probe": "tsx src/scripts/nintendo-probe.ts",
     "nintendo:vgc-probe": "tsx src/scripts/nintendo-vgc-probe.ts",
+    "csv:probe": "tsx src/scripts/csv-probe.ts",
     "queues": "tsx src/queues-dashboard.ts"
   },
   "dependencies": {
@@ -47,6 +48,7 @@
     "@repo/contracts": "workspace:*",
     "@repo/db": "workspace:*",
     "bullmq": "^6.1.2",
+    "csv-parse": "^7.0.3",
     "dotenv": "^17.4.2",
     "hono": "^4.13.1",
     "ioredis": "^6.0.0",
