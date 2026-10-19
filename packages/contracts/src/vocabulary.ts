@@ -24,8 +24,8 @@ export const storeValues = [
   'epic',
   'ea',
   'battlenet',
-  // Ubisoft Connect (10): non si collega, la sua libreria arriva solo dal file
-  // di Playnite. Vedi `plans/10-import-csv.md`.
+  // Ubisoft Connect (10): non si collega, i suoi giochi arrivano solo
+  // dall'import da CSV. Vedi `plans/10-import-csv.md`.
   'ubisoft',
   'amazon',
   'psn',
@@ -50,7 +50,7 @@ export const wishlistErrorValues = ['not_visible', 'reauth', 'failed'] as const;
 // Sottoinsieme di `storeValues`, che è invece l'elenco dei posti da cui un gioco
 // può provenire — compresi quelli che l'utente scrive a mano su un possesso e
 // quelli che non si collegheranno mai (Ubisoft e Battle.net leggono un file del
-// client installato, non una API: arrivano solo dal file di Playnite, step 10).
+// client installato, non una API: arrivano solo dall'import da CSV, step 10).
 //
 // Sta nel vocabolario e non solo nel router perché è la UI ad averne bisogno:
 // `/account` disegna una scheda per ciascuno, e senza questa lista dovrebbe

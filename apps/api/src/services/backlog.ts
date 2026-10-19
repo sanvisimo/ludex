@@ -475,7 +475,7 @@ export async function removeFromBacklog(userId: string, id: string) {
  * l'insieme di quelle appena create — che al chiamante serve per il resoconto.
  *
  * `statusAtBirth` è lo stato con cui nasce una riga, e vale **solo alla
- * nascita**, per la stessa regola: lo porta il file di Playnite (10), dove lo
+ * nascita**, per la stessa regola: lo porta l'import da CSV (10), dove lo
  * stato è un dato dell'utente. Senza, la riga nasce `backlog`.
  */
 export async function ensureBacklogEntries(
@@ -657,7 +657,7 @@ export type OwnershipUpsert = {
   /** Nullo = il negozio non lo dà. Vedi la colonna omonima su `ownerships`. */
   storePage?: string | null;
   /**
-   * La copia viene da una scheda **da file** (10, `store_accounts.from_file`):
+   * La copia viene dall'import da CSV (10, `store_accounts.from_file`):
    * non si scrive se la stessa copia c'è già da un altro account, e cede il
    * posto a quella di un collegamento vero. Vedi `togliGiaPossedute`.
    */
@@ -725,7 +725,7 @@ async function adottaPossessiMenoSpecifici(rows: OwnershipUpsert[]) {
 
   if (esistenti.length === 0) return;
 
-  // Le copie delle schede da file (10) si adottano come quelle senza account,
+  // Le copie dell'import da CSV (10) si adottano come quelle senza account,
   // ma solo da un collegamento vero: il file dice «ce l'ho su Ubisoft», e il
   // collegamento dice lo stesso sapendo anche da quale account.
   const daFile = await fileAccountIds(
@@ -810,7 +810,7 @@ async function adottaPossessiMenoSpecifici(rows: OwnershipUpsert[]) {
   }
 }
 
-/** Fra questi account, quelli delle schede da file (10). */
+/** Fra questi account, quelli interni dell'import da CSV (10). */
 async function fileAccountIds(storeAccountIds: string[]) {
   const ids = [...new Set(storeAccountIds)];
   if (ids.length === 0) return new Set<string>();

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { findIgdbGamesBySource } from '../external/igdb';
 import { resolveByNameWithFallbacks } from '../services/library-import';
-import { parsePlayniteCsv } from '../services/playnite-csv';
+import { parseCsvFile } from '../services/csv-file';
 
 // Giro a vuoto dell'import da file (10): legge l'export di Playnite, prova a
 // risolverlo su IGDB, **non scrive niente**.
@@ -26,7 +26,7 @@ const file =
   new URL('../../test/fixtures/playnite-ubisoft-2026-08.csv', import.meta.url)
     .pathname;
 
-const rows = parsePlayniteCsv(readFileSync(file, 'utf8'));
+const rows = parseCsvFile(readFileSync(file, 'utf8'));
 
 const conta = (valori: string[]) =>
   [...valori.reduce((m, v) => m.set(v, (m.get(v) ?? 0) + 1), new Map())]
@@ -58,7 +58,7 @@ const risolti = new Map(
   (
     await resolveByNameWithFallbacks(
       pc.map((r) => ({
-        externalId: r.gameId,
+        externalId: r.gameId ?? r.name,
         name: r.name,
         releaseYear: r.releaseYear,
         retryWithoutYear: true,
@@ -74,10 +74,10 @@ const perAppid = await findIgdbGamesBySource(
   pc.flatMap((r) => (r.steamAppId ? [r.steamAppId] : [])),
 );
 
-const scarti = pc.filter((r) => !risolti.has(r.gameId));
+const scarti = pc.filter((r) => !risolti.has(r.gameId ?? r.name));
 const diversi = pc.flatMap((r) => {
   const a = r.steamAppId ? perAppid.get(r.steamAppId) : undefined;
-  const n = risolti.get(r.gameId);
+  const n = risolti.get(r.gameId ?? r.name);
   return a && n && a.igdbId !== n.igdbId
     ? [
         `    ${r.name}\n      appid → ${a.name} (${a.releaseYear}, ${a.gameType ?? '?'})\n      scelto → ${n.name} (${n.releaseYear})`,

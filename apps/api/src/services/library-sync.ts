@@ -61,7 +61,7 @@ export function findAccountsDueForImport(now = new Date()) {
         eq(account.autoSync, true),
         sql`coalesce(${schema.userSettings.autoSyncLibrary}, true)`,
         notInArray(account.store, [...oneShotStoreValues]),
-        // Le schede da file (10) non hanno niente da cui riaggiornarsi.
+        // L'import da CSV (10) non ha niente da cui riaggiornarsi.
         eq(account.fromFile, false),
         or(isNull(account.lastSyncAt), ...stale),
       ),

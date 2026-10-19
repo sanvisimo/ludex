@@ -16,7 +16,8 @@ import { enqueueFileImport, type FileJobEntry } from '../queue/imports';
 import { runFileImportJob } from './import-jobs';
 import { importLibrary } from './library-import';
 import { findAccountsDueForImport } from './library-sync';
-import { importPlayniteFile } from './playnite-import';
+import { csvImportStatus, importCsvFile } from './csv-import';
+import { listStoreAccounts } from './store-accounts';
 
 // Contro un Postgres vero; IGDB e le code stubbati al confine del modulo, come
 // per i negozi.
@@ -69,7 +70,7 @@ async function fileAccount(userId: string, store: Store) {
     .values({
       userId,
       store,
-      externalAccountId: 'playnite',
+      externalAccountId: 'csv',
       fromFile: true,
       autoSync: false,
     })
@@ -95,18 +96,22 @@ async function copie(userId: string) {
     .orderBy(schema.games.name, schema.ownerships.store);
 }
 
+const TAG = 'Importato il 19/10/2026';
+const runJob = (storeAccountId: string, entries: FileJobEntry[]) =>
+  runFileImportJob(storeAccountId, entries, TAG);
+
 async function link(gameId: string, source: Store, externalId: string) {
   await db.insert(schema.externalIds).values({ gameId, source, externalId });
 }
 
-describe('importPlayniteFile', () => {
+describe('importCsvFile', () => {
   let userId: string;
 
   beforeEach(async () => {
     userId = await createUser();
   });
 
-  it('accoda una scheda da file per negozio e salta ciò che non sa dove mettere', async () => {
+  it('accoda un import per negozio e salta ciò che non sa dove mettere', async () => {
     const testo = readFileSync(
       new URL(
         '../../test/fixtures/playnite-export-2026-08.csv',
@@ -115,13 +120,11 @@ describe('importPlayniteFile', () => {
       'utf8',
     );
 
-    const report = await importPlayniteFile(userId, testo);
+    const report = await importCsvFile(userId, testo, TAG);
 
     // Le cinque Xbox portano più piattaforme per riga: fuori, per ora.
     expect(report.noPlatform).toBe(5);
-    expect(
-      report.queued.map(({ store, entries }) => ({ store, entries })),
-    ).toEqual(
+    expect(report.queued).toEqual(
       expect.arrayContaining([
         { store: 'amazon', entries: 12 },
         { store: 'ubisoft', entries: 3 },
@@ -129,14 +132,14 @@ describe('importPlayniteFile', () => {
     );
     expect(report.queued).toHaveLength(2);
 
-    const schede = await db
+    const interni = await db
       .select()
       .from(schema.storeAccounts)
       .where(eq(schema.storeAccounts.userId, userId));
-    expect(schede).toHaveLength(2);
-    for (const scheda of schede) {
-      expect(scheda).toMatchObject({
-        externalAccountId: 'playnite',
+    expect(interni).toHaveLength(2);
+    for (const account of interni) {
+      expect(account).toMatchObject({
+        externalAccountId: 'csv',
         fromFile: true,
         autoSync: false,
         status: 'ok',
@@ -146,38 +149,54 @@ describe('importPlayniteFile', () => {
     const [, job] = vi
       .mocked(enqueueFileImport)
       .mock.calls.find(([store]) => store === 'ubisoft')!;
+    expect(job.tag).toBe(TAG);
     expect(job.entries[0]).toMatchObject({
       retryWithoutYear: true,
       platformSlug: null,
     });
   });
 
-  it('ricaricando il file ritrova la stessa scheda, anche scollegata', async () => {
-    const testo = 'Nome,Id del gioco,Sorgenti\nUNO,1,Ubisoft Connect\n';
-    const prima = await importPlayniteFile(userId, testo);
-    await db
-      .update(schema.storeAccounts)
-      .set({ status: 'unlinked' })
-      .where(eq(schema.storeAccounts.id, prima.queued[0]!.storeAccountId));
-
-    const dopo = await importPlayniteFile(userId, testo);
-
-    expect(dopo.queued[0]!.storeAccountId).toBe(
-      prima.queued[0]!.storeAccountId,
+  it('senza id la voce è il nome; la piattaforma console si legge dal nome', async () => {
+    await importCsvFile(
+      userId,
+      'Name,Sources,Platforms\nAstro  Bot,PlayStation,Sony PlayStation 5\nAstro Bot,PlayStation,Sony PlayStation 5\n',
+      TAG,
     );
-    const [scheda] = await db
-      .select({ status: schema.storeAccounts.status })
-      .from(schema.storeAccounts)
-      .where(eq(schema.storeAccounts.id, prima.queued[0]!.storeAccountId));
-    expect(scheda!.status).toBe('ok');
+
+    const [, job] = vi.mocked(enqueueFileImport).mock.calls[0]!;
+    // Due righe con lo stesso nome sono la stessa voce.
+    expect(job.entries).toEqual([
+      expect.objectContaining({
+        externalId: 'name:astro bot',
+        platformSlug: 'sony_playstation5',
+      }),
+    ]);
   });
 
-  it('le schede da file non si aggiornano da sole', async () => {
-    await fileAccount(userId, 'ubisoft');
+  it('non è una libreria: non compare fra gli account e non si aggiorna da sola', async () => {
+    await importCsvFile(userId, 'Name,Sources\nUNO,Ubisoft Connect\n', TAG);
 
-    const dovuti = await findAccountsDueForImport();
+    expect(await listStoreAccounts(userId)).toEqual([]);
+    expect(await findAccountsDueForImport()).toHaveLength(0);
+  });
 
-    expect(dovuti).toHaveLength(0);
+  it('lo stato dice l’ultimo import finito', async () => {
+    expect(await csvImportStatus(userId)).toEqual({
+      lastImportAt: null,
+      syncing: false,
+    });
+
+    const account = await fileAccount(userId, 'ubisoft');
+    const quando = new Date('2026-10-19T10:00:00Z');
+    await db
+      .update(schema.storeAccounts)
+      .set({ lastSyncAt: quando })
+      .where(eq(schema.storeAccounts.id, account.id));
+
+    expect(await csvImportStatus(userId)).toEqual({
+      lastImportAt: quando,
+      syncing: false,
+    });
   });
 });
 
@@ -192,7 +211,7 @@ describe('runFileImportJob', () => {
     mockedBySource.mockResolvedValue(new Map());
   });
 
-  it('stato e categorie di Playnite solo per le righe che nascono', async () => {
+  it('stato, categorie e tag del file solo per le righe che nascono', async () => {
     const scheda = await fileAccount(userId, 'ubisoft');
     const { id: gia } = await createGame({ igdbId: 2, name: 'Far Cry 5' });
     await db
@@ -204,7 +223,7 @@ describe('runFileImportJob', () => {
         : [hit(2, 'Far Cry 5')],
     );
 
-    await runFileImportJob(scheda.id, [
+    await runJob(scheda.id, [
       voce({
         externalId: '10',
         name: 'Valiant Hearts',
@@ -238,8 +257,13 @@ describe('runFileImportJob', () => {
         schema.userTags,
         eq(schema.userTags.id, schema.backlogTags.tagId),
       )
-      .where(eq(schema.userTags.userId, userId));
-    expect(tag).toEqual([{ name: 'worth to play', kind: 'category' }]);
+      .where(eq(schema.userTags.userId, userId))
+      .orderBy(schema.userTags.kind);
+    // Solo sul gioco nato col file: Far Cry 5 c'era già, e non li prende.
+    expect(tag).toEqual([
+      { name: 'Importato il 19/10/2026', kind: 'tag' },
+      { name: 'worth to play', kind: 'category' },
+    ]);
   });
 
   it('il nome prima, poi il nome senza l’anno, poi l’appid', async () => {
@@ -266,7 +290,7 @@ describe('runFileImportJob', () => {
       ]),
     );
 
-    await runFileImportJob(scheda.id, [
+    await runJob(scheda.id, [
       voce({
         externalId: 'a',
         name: 'Liberation HD',
@@ -307,9 +331,7 @@ describe('runFileImportJob', () => {
     await link(game, 'steam', '400');
     await importLibrary(steam, [{ externalId: '400', name: 'Portal' }]);
 
-    await runFileImportJob(scheda.id, [
-      voce({ externalId: '400', name: 'Portal' }),
-    ]);
+    await runJob(scheda.id, [voce({ externalId: '400', name: 'Portal' })]);
 
     expect(await copie(userId)).toEqual([
       expect.objectContaining({ store: 'steam', storeAccountId: steam.id }),
@@ -320,7 +342,7 @@ describe('runFileImportJob', () => {
     const scheda = await fileAccount(userId, 'ea');
     const { id: game } = await createGame({ igdbId: 6, name: 'Mass Effect' });
     await link(game, 'ea', 'mass-effect');
-    await runFileImportJob(scheda.id, [
+    await runJob(scheda.id, [
       voce({
         externalId: 'mass-effect',
         name: 'Mass Effect',
@@ -346,16 +368,10 @@ describe('runFileImportJob', () => {
   it('reimportare un negozio non tocca gli scarti dell’altro', async () => {
     const ubisoft = await fileAccount(userId, 'ubisoft');
     const ea = await fileAccount(userId, 'ea');
-    await runFileImportJob(ubisoft.id, [
-      voce({ externalId: 'u', name: 'Ignoto U' }),
-    ]);
-    await runFileImportJob(ea.id, [
-      voce({ externalId: 'e', name: 'Ignoto E' }),
-    ]);
+    await runJob(ubisoft.id, [voce({ externalId: 'u', name: 'Ignoto U' })]);
+    await runJob(ea.id, [voce({ externalId: 'e', name: 'Ignoto E' })]);
 
-    await runFileImportJob(ubisoft.id, [
-      voce({ externalId: 'u', name: 'Ignoto U' }),
-    ]);
+    await runJob(ubisoft.id, [voce({ externalId: 'u', name: 'Ignoto U' })]);
 
     const scarti = await db
       .select({ store: schema.unresolvedImports.store })
@@ -372,8 +388,8 @@ describe('runFileImportJob', () => {
   it('rifiuta un account che non è da file', async () => {
     const steam = await linkStoreAccount(userId, 'steam');
 
-    await expect(
-      runFileImportJob(steam.id, [voce({ externalId: '1' })]),
-    ).rejects.toThrow('non è una scheda da file');
+    await expect(runJob(steam.id, [voce({ externalId: '1' })])).rejects.toThrow(
+      'non è un account da file',
+    );
   });
 });

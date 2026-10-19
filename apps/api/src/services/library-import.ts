@@ -1,3 +1,4 @@
+import type { UserTagInput } from '@repo/contracts';
 import type {
   BacklogStatus,
   Medium,
@@ -158,11 +159,13 @@ export type LibraryEntry = {
   retryWithoutYear?: boolean;
   /**
    * Lo stato e le categorie dell'utente **alla nascita** della riga di
-   * backlog, mai dopo: dal file di Playnite (10), dove sono dati dell'utente e
+   * backlog, mai dopo: dall'import da CSV (10), dove sono dati dell'utente e
    * non del negozio. Una riga che c'era già resta com'è.
    */
   status?: BacklogStatus | null;
   categories?: string[];
+  /** I tag dell'utente alla nascita: quello dell'import da CSV (10). */
+  tags?: string[];
 };
 
 /**
@@ -183,7 +186,7 @@ const STORE_PLATFORM: Partial<Record<Store, string>> = {
   epic: 'pc_windows',
   amazon: 'pc_windows',
   ea: 'pc_windows',
-  // Dal file di Playnite (10): negozi solo PC.
+  // Dall'import da CSV (10): negozi solo PC.
   ubisoft: 'pc_windows',
   battlenet: 'pc_windows',
 };
@@ -443,29 +446,26 @@ const PRERELEASE_NAME = /\b(demo|beta|playtest|public test(ing)?)\b/i;
 export const isPrereleaseName = (name: string) => PRERELEASE_NAME.test(name);
 
 /**
- * Le categorie dell'utente sulle righe di backlog **appena nate** (10): quelle
- * di Playnite, come `category`. Il vocabolario lo crea `ensureUserTags`, che
- * ritrova le parole che l'utente ha già, maiuscole o no.
+ * Tag e categorie dell'utente sulle righe di backlog **appena nate** (10): le
+ * categorie del file e il tag dell'import da CSV. Il vocabolario lo crea
+ * `ensureUserTags`, che ritrova le parole che l'utente ha già, maiuscole o no.
  */
 async function tagNewEntries(
   userId: string,
-  entries: { backlogId: string; names: string[] }[],
+  entries: { backlogId: string; tags: UserTagInput[] }[],
 ) {
   if (entries.length === 0) return;
 
-  const tags = await ensureUserTags(
+  const saved = await ensureUserTags(
     userId,
-    entries.flatMap((entry) =>
-      entry.names.map((name) => ({ kind: 'category' as const, name })),
-    ),
+    entries.flatMap((entry) => entry.tags),
   );
-  const tagIdByName = new Map(
-    tags.map((tag) => [tag.name.toLowerCase(), tag.id]),
-  );
+  const chiave = (tag: UserTagInput) => `${tag.kind}|${tag.name.toLowerCase()}`;
+  const tagIdByKey = new Map(saved.map((tag) => [chiave(tag), tag.id]));
 
   const rows = entries.flatMap((entry) =>
-    entry.names.flatMap((name) => {
-      const tagId = tagIdByName.get(name.toLowerCase());
+    entry.tags.flatMap((tag) => {
+      const tagId = tagIdByKey.get(chiave(tag));
       return tagId ? [{ backlogId: entry.backlogId, tagId }] : [];
     }),
   );
@@ -1294,8 +1294,15 @@ export async function importLibrary(
     userId,
     resolved.flatMap((entry) => {
       const gameId = gameIdByExternalId.get(entry.externalId)!;
-      return created.has(gameId) && entry.categories?.length
-        ? [{ backlogId: byGameId.get(gameId)!, names: entry.categories }]
+      const tags = [
+        ...(entry.categories ?? []).map((name) => ({
+          kind: 'category' as const,
+          name,
+        })),
+        ...(entry.tags ?? []).map((name) => ({ kind: 'tag' as const, name })),
+      ];
+      return created.has(gameId) && tags.length > 0
+        ? [{ backlogId: byGameId.get(gameId)!, tags }]
         : [];
     }),
   );

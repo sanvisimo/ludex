@@ -452,6 +452,42 @@ export const contract = {
       .output(z.void()),
   },
 
+  // L'import da CSV (10): giochi da un file, per esempio l'export di Playnite.
+  // **Non è una libreria**: non ha schede fra gli account, e i giochi che
+  // entrano nel backlog col file prendono il tag `tag`.
+  csvImport: {
+    // Il file si legge subito: un formato sbagliato torna come BAD_REQUEST con
+    // `data: { reason, missing }` (le colonne obbligatorie che mancano). Il
+    // riconoscimento dei giochi lo fa il worker, un import per negozio.
+    //
+    // `tag` lo compone il client nella lingua di chi carica: «Importato il
+    // 19/10/2026». 10 MB bastano largamente: l'export di Playnite con tutti i
+    // campi, descrizioni comprese, fa 50 KB ogni cento giochi.
+    upload: oc
+      .input(
+        z.object({
+          file: z.file().max(10 * 1024 * 1024),
+          tag: z.string().trim().min(1).max(60),
+        }),
+      )
+      .output(
+        z.object({
+          queued: z.array(
+            z.object({ store: StoreSchema, entries: z.number().int() }),
+          ),
+          alreadyRunning: z.array(StoreSchema),
+          noStore: z.record(z.string(), z.number().int()),
+          noPlatform: z.number().int(),
+        }),
+      ),
+
+    // Per il riquadro in Librerie: l'ultimo import finito e se ce n'è uno in
+    // corso. Il tag non serve: è la data, scritta nella lingua di chi guarda.
+    status: oc.output(
+      z.object({ lastImportAt: z.date().nullable(), syncing: z.boolean() }),
+    ),
+  },
+
   // Le liste a mano (step 15b): giochi che non hai ancora e vuoi tenere d'occhio.
   // Stanno in `playlists` col tipo `wishlist`, e **non si confondono** con le
   // playlist a filtro: ognuno dei due vede e tocca solo il proprio.

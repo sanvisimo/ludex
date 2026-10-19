@@ -54,15 +54,17 @@ export type ImportsSweepJob = { type: 'sweep' };
 export type ImportsWishlistJob = { type: 'wishlist'; storeAccountId: string };
 
 /**
- * L'import di una scheda **da file** (10): le voci lette dall'export di
- * Playnite, già ridotte. Qui le voci viaggiano nel job, al contrario di
- * `ImportJob`: non c'è un negozio da cui rileggerle, e non sono un
- * credenziale. Le date arrivano come stringhe, perché passano da JSON.
+ * L'import da CSV (10), per l'account interno di un negozio: le voci del file,
+ * già ridotte, e il tag dei giochi che entrano nel backlog. Qui le voci
+ * viaggiano nel job, al contrario di `ImportJob`: non c'è un negozio da cui
+ * rileggerle, e non sono un credenziale. Le date arrivano come stringhe,
+ * perché passano da JSON.
  */
 export type ImportsFileJob = {
   type: 'file';
   storeAccountId: string;
   entries: FileJobEntry[];
+  tag: string;
 };
 
 export type FileJobEntry = Omit<LibraryEntry, 'lastPlayedAt' | 'acquiredAt'> & {
@@ -125,8 +127,8 @@ export async function enqueueImport(store: Store, job: ImportJob) {
 }
 
 /**
- * Accoda l'import di una scheda da file. Stessa chiave di `enqueueImport`: per
- * la scheda è un import come gli altri, e `syncing` lo legge da lì.
+ * Accoda l'import da CSV di un account interno. Stessa chiave di
+ * `enqueueImport`: è un import come gli altri, e lo stato si legge da lì.
  */
 export async function enqueueFileImport(
   store: Store,

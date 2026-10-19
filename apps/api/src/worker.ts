@@ -253,9 +253,10 @@ const importsWorker = new Worker<ImportsAnyJob>(
       const report = await runFileImportJob(
         job.data.storeAccountId,
         job.data.entries,
+        job.data.tag,
       );
       console.log(
-        `[import] file ${job.data.storeAccountId}: ${report.total} nel file, ` +
+        `[import] csv ${job.data.storeAccountId}: ${report.total} nel file, ` +
           `${report.resolved} risolti (${report.resolvedByName} per nome, ` +
           `${report.newGames} giochi nuovi, ${report.newEntries} aggiunti al ` +
           `backlog), ${report.unresolved} da sistemare`,
@@ -265,11 +266,11 @@ const importsWorker = new Worker<ImportsAnyJob>(
 
     const account = await findLinkedAccount(job.data.storeAccountId);
 
-    // Una scheda da file (10) non ha un negozio da cui rileggere la libreria:
+    // Un account da file (10) non ha un negozio da cui rileggere la libreria:
     // un job senza le voci, accodato a mano, non ha niente da importare.
     if (account.fromFile) {
       throw new UnrecoverableError(
-        `${account.store} da file si reimporta ricaricando il file`,
+        `${account.store} da CSV si reimporta caricando di nuovo il file`,
       );
     }
 

@@ -107,6 +107,8 @@ import {
 } from '../services/platforms';
 import { pickRandomGame } from '../services/random-game';
 import { deleteUserTag, listUserTags } from '../services/tags';
+import { CsvFileError } from '../services/csv-file';
+import { csvImportStatus, importCsvFile } from '../services/csv-import';
 import {
   findStoreAccount,
   linkSteamWebToken,
@@ -437,10 +439,10 @@ export const router = os.router({
 
       // EA si importa una volta sola per token: reimportare è incollarne uno
       // nuovo (`accounts.link` sulla stessa riga), non premere «aggiorna».
-      // Lo stesso per le schede da file (10): si ricarica il file.
+      // L'import da CSV (10) non è una libreria: si carica di nuovo il file.
       if (account.fromFile) {
         throw new ORPCError('BAD_REQUEST', {
-          message: `${account.store} da file si reimporta ricaricando il file`,
+          message: `${account.store} da CSV si reimporta caricando il file`,
         });
       }
       if (isOneShotStore(account.store)) {
@@ -651,6 +653,33 @@ export const router = os.router({
         if (!removed)
           throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
       }),
+  },
+
+  csvImport: {
+    upload: os.csvImport.upload
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        try {
+          return await importCsvFile(
+            context.user.id,
+            await input.file.text(),
+            input.tag,
+          );
+        } catch (error) {
+          if (error instanceof CsvFileError) {
+            throw new ORPCError('BAD_REQUEST', {
+              message: error.message,
+              // La schermata dice cosa non va dalla `reason`, non dal testo.
+              data: { reason: error.reason, missing: error.missing },
+            });
+          }
+          throw error;
+        }
+      }),
+
+    status: os.csvImport.status
+      .use(authed)
+      .handler(({ context }) => csvImportStatus(context.user.id)),
   },
 
   wishlists: {

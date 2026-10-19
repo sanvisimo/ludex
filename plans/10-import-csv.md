@@ -31,69 +31,80 @@ Ubisoft e Battle.net non si collegheranno mai ([negozi](../docs/negozi.md)):
 il file è la loro unica strada. Ma il file serve anche a chi un negozio
 collegabile **non vuole** collegarlo (EA, per esempio).
 
-## Decisioni (16/10/2026)
+## Decisioni (16 e 19/10/2026)
 
-1. **Formato: l'export di Library Exporter Advanced**, non un CSV generico. Si
-   chiede all'utente un insieme **piccolo** di campi, che diventa le istruzioni
-   per creare il file: obbligatori `Nome`, `Id del gioco`, `Sorgenti`, gli
-   altri facoltativi. Il parser vuole i tre obbligatori e ignora tutto il resto.
+1. **«Importa da CSV», non «da Playnite»** (19/10): un file con una riga per
+   gioco e le colonne riconosciute per nome
+   ([`csv-file.ts`](../apps/api/src/services/csv-file.ts)). I nomi sono
+   quelli dell'export di Playnite (Library Exporter Advanced), **in inglese e
+   in italiano**, presi dalla sua localizzazione (`LocSource.xaml`,
+   `it_IT.xaml`): così il suo file si carica com'è. Obbligatorie solo `Name`
+   e `Sources`; `Game Id` no, perché chi scrive il file a mano non sa l'id
+   Ubisoft di un gioco: senza, l'id esterno è `name:` più il nome minuscolo.
+   Date `2026-10-19` o `19/10/2026`; l'ordine giorno/mese dell'export
+   inglese di Playnite non è misurato. Il CSV d'esempio da scaricare è
+   [`ludex-import-example.csv`](../apps/web/public/ludex-import-example.csv),
+   e un test controlla che si legga.
 2. **Si importa tutto e si saltano i doppioni.** Ogni riga entra col negozio
-   di `Sorgenti`; una copia che l'utente ha già **da un altro account** (stesso
+   di `Sources`; una copia che l'utente ha già **da un altro account** (stesso
    gioco, piattaforma, negozio e supporto) non si scrive (`togliGiaPossedute`
    in `backlog.ts`). Le righe senza un negozio nostro si saltano e si contano.
-3. **Stato e categorie di Playnite si importano solo alla nascita** della riga
-   di backlog, senza mai sovrascrivere ciò che c'è in Ludex:
-   New / Plan to Play / On Hold → `backlog`, Playing → `playing`,
-   Played / Beaten → `played`, Completed → `completed`, Abandoned → `dropped`,
-   Won't Play → `excluded`; uno stato personalizzato → `backlog`. Le
-   `Categorie` diventano tag dell'utente. Il limite, accettato: un gioco che
-   c'è già (da Steam, per esempio) non prende lo stato di Playnite.
-4. **Il file arriva con oRPC come `File`**, il server lo legge con `csv-parse`,
-   lo riduce a `LibraryEntry[]` e accoda un job con le voci: non sono un
-   credenziale, e ridotte (senza descrizioni) pesano poco.
-
-Mappatura dei campi:
-
-| Campo Playnite           | Diventa                                |
-| ------------------------ | -------------------------------------- |
-| `Nome`                   | nome della voce                        |
-| `Id del gioco`           | id esterno                             |
-| `Sorgenti`               | negozio                                |
-| `Piattaforme`            | sui negozi console, se è una sola      |
-| `Data di uscita`         | `releaseYear`, per il match per nome   |
-| `Collegamenti`           | appid Steam → `igdbHint`, dopo il nome |
-| `Tempo di gioco`         | ore della copia (da secondi)           |
-| `Giocato l'ultima volta` | ultima partita                         |
-| `Stato di completamento` | stato, solo alla nascita               |
-| `Categorie`              | tag dell'utente, solo alla nascita     |
-| `Aggiunto`               | **no**: è l'ingresso in Playnite       |
-| `Etichette`              | **no**: sono le fasce HLTB del plugin  |
-
-5. **Una scheda «da file» per negozio** in `/account`, decisa il 16/10/2026
-   (prima era una scheda «Playnite» sola per utente). Ogni import di Ludex è
-   legato a una scheda (`store_accounts`), ed è ciò che dà gli scarti, lo
-   scollegamento e il reimport. Una sola per tutto il file non regge:
-   `importLibrary` lavora su un negozio per volta, e a fine corsa pota gli
-   scarti che non ha visto — con più negozi sulla stessa scheda ognuno
-   cancellerebbe quelli degli altri. Quindi «Ubisoft · da Playnite», «EA · da
-   Playnite»…: `store_accounts.from_file`, `external_account_id = 'playnite'`,
-   niente aggiornamento automatico, niente «aggiorna», niente wishlist.
-   Ricaricare il file riaccoda le schede dei negozi che contiene, e non tocca
-   le altre. Se un giorno colleghi EA davvero, l'import EA **adotta** le copie
-   EA del file invece di sdoppiarle (`adottaPossessiMenoSpecifici`).
-6. **L'ordine della ricerca** (approvato il 16/10/2026, vedi la misura qui
-   sotto): nome con l'anno, nome senza l'anno, appid Steam
-   (`resolveByNameWithFallbacks`). Un appid che porta a una raccolta non vale.
+   Ricaricare un file con un gioco già importato dalla stessa sorgente non lo
+   reimporta: aggiorna le ore della copia che c'è.
+3. **Stato, categorie e tag solo alla nascita** della riga di backlog, senza
+   mai sovrascrivere ciò che c'è in Ludex: New / Plan to Play / On Hold →
+   `backlog`, Playing → `playing`, Played / Beaten → `played`, Completed →
+   `completed`, Abandoned → `dropped`, Won't Play → `excluded`; uno stato
+   personalizzato → `backlog`. Le `Categories` diventano categorie
+   dell'utente. Il **tag «Importato il {data}»** (19/10) lo compone il client
+   nella lingua di chi carica e va solo sui giochi che entrano nel backlog
+   con quel file: i tag non si accumulano a ogni caricamento.
+4. **Il file arriva con oRPC come `File`** (`csvImport.upload`, al più 10 MB),
+   il server lo legge subito — un formato sbagliato torna `BAD_REQUEST` con
+   `data: { reason, missing }` — lo riduce a voci e accoda un job per negozio
+   con le voci e il tag. `csvImport.status` dà l'ultimo import finito e se ce
+   n'è uno in corso, per il riquadro in Librerie.
+5. **Non è una libreria** (19/10, prima erano schede «da Playnite»): un
+   account **interno** per negozio (`store_accounts.from_file`,
+   `external_account_id = 'csv'`, nome «CSV»), che **non compare fra gli
+   account**, non si aggiorna da solo e non si scollega. C'è perché ogni
+   import di Ludex ne vuole uno: tiene gli scarti (che in «Da sistemare» si
+   leggono «Ubisoft Connect · CSV»), il salto dei doppioni e l'adozione. Uno
+   per negozio e non uno solo, perché `importLibrary` lavora su un negozio
+   per volta e a fine corsa pota gli scarti che non ha visto. Se un giorno
+   colleghi EA davvero, l'import EA **adotta** le copie EA del CSV invece di
+   sdoppiarle (`adottaPossessiMenoSpecifici`).
+6. **L'ordine della ricerca** (16/10, vedi la misura qui sotto): nome con
+   l'anno, nome senza l'anno, appid Steam (`resolveByNameWithFallbacks`). Un
+   appid che porta a una raccolta non vale.
 7. **Le righe di un negozio console con più piattaforme** (le Xbox di
    Playnite) si saltano e si contano (`noPlatform`), finché non si decide.
 
+Le colonne:
+
+| Colonna (inglese / italiano)                   | Diventa                                |
+| ---------------------------------------------- | -------------------------------------- |
+| `Name` / `Nome`                                | nome della voce — **obbligatoria**     |
+| `Sources` / `Sorgenti`                         | negozio — **obbligatoria**             |
+| `Game Id` / `Id del gioco`                     | id esterno; senza, il nome             |
+| `Platforms` / `Piattaforme`                    | sui negozi console, se è una sola      |
+| `Release Date` / `Data di uscita`              | `releaseYear`, per il match per nome   |
+| `Links` / `Collegamenti`                       | appid Steam → `igdbHint`, dopo il nome |
+| `Time Played` / `Tempo di gioco`               | ore della copia (da secondi)           |
+| `Last Played` / `Giocato l'ultima volta`       | ultima partita                         |
+| `Completion Status` / `Stato di completamento` | stato, solo alla nascita               |
+| `Categories` / `Categorie`                     | categorie, solo alla nascita           |
+
+`Added` / `Aggiunto` no (è l'ingresso in Playnite), `Tags` / `Etichette` no
+(sul file di prova sono solo le fasce HLTB del plugin).
+
 ## Da decidere
 
-- **Le intestazioni in inglese**: il file vero è italiano; i nomi inglesi
-  vanno presi dalla localizzazione di Playnite, con un test.
-- **`Piattaforme` con più valori** (`Microsoft Xbox One, Microsoft Xbox
+- **`Platforms` con più valori** (`Microsoft Xbox One, Microsoft Xbox
 Series, PC (Windows)` nel vecchio file): è dove il gioco esiste, non dove
   lo hai. Per ora quelle righe si saltano.
+- **LaunchBox**: passi e colonne da misurare su un export vero (vedi il
+  passo 4).
 
 ## La misura: `csv:probe` (16/10/2026)
 
@@ -153,7 +164,55 @@ d'accordo; le 5 Xbox portano **più piattaforme per riga** (One + Series + PC,
    categorie alla nascita, il salto dei doppioni e l'adozione. Test in
    `playnite-import.test.ts`. `csv:probe` percorre ora la strada del job:
    **83 su 87**, confermato.
-4. Wireframe Excalidraw del caricamento in `/account`, con le istruzioni per
-   creare il file.
-5. La UI.
-6. Documentazione: `negozi.md`, `ordine-sviluppo.md`, `import-librerie.md`.
+4. Wireframe Excalidraw: [10-import-csv.excalidraw](10-import-csv.excalidraw)
+   (si apre trascinandolo su excalidraw.com), **in revisione** dal 19/10/2026.
+
+   **Prima versione scartata** dall'utente il 19/10: «Importa da Playnite» e
+   una scheda «da Playnite» per negozio in Librerie. Le correzioni:
+   - è **«Importa da CSV»**: Playnite è un esempio, non il formato;
+   - **un CSV non è una libreria**: niente schede in Librerie. Gli account
+     interni (uno per negozio del file) restano, perché tengono scarti,
+     doppioni e adozione, ma si chiamano «csv» e non compaiono nella lista;
+   - i giochi del file prendono il **tag «Importato il {data}»** (in inglese
+     «Imported on {date}»), nella lingua di chi carica;
+   - un **link per scaricare un CSV d'esempio**;
+   - le istruzioni dicono **quali colonne sono obbligatorie e quali
+     facoltative**. Colonne in inglese, come l'export di Playnite in inglese,
+     con i nomi italiani accettati; obbligatorie solo `Name` e `Sources`
+     (senza `Game Id` la riga si riconosce dal nome); date `2026-10-19` o
+     `19/10/2026`.
+
+   Seconda versione, frame per frame:
+   - **1, Librerie**: solo le schede dei negozi collegati; sotto, un
+     riquadro «Da un file CSV» col bottone «⇪ Importa da CSV» e, dopo il
+     primo, la riga «Ultimo import» col tag (o «importazione in corso…»).
+   - **2, il dialogo**: il tag che i giochi riceveranno, il link al CSV
+     d'esempio, la tabella delle colonne (obbligatorie e facoltative, con
+     cosa contengono e i valori ammessi), «Hai Playnite?» con i tre passi di
+     Library Exporter Advanced, il riquadro del file, tre righe su doppioni,
+     stato e «Da sistemare». L'errore di formato sotto il riquadro.
+   - **3, il resoconto**: righe per negozio, righe saltate e perché, «Vedi i
+     giochi nel backlog →» filtrato per il tag.
+   - **4, il tag nel gioco**: solo sui giochi che **entrano nel backlog con
+     quel file**, come stato e categorie (decisione A, 19/10/2026). Un gioco
+     che c'era già non lo prende: ricaricare un file con _Assassin's Creed_
+     della stessa sorgente non lo reimporta, aggiorna solo le ore della
+     copia. Così i tag non si accumulano a ogni caricamento. Le categorie di
+     Playnite restano categorie, solo sui giochi nuovi.
+   - **5, telefono**: il riquadro col bottone largo, il dialogo a tutta
+     larghezza, solo «Scegli il file».
+
+   «Hai Playnite?» diventa **«Da dove prendere il file»**: un riquadro
+   richiudibile per programma, chiusi di default (19/10/2026). Oggi Playnite
+   e **LaunchBox**, GOG Galaxy e altri dopo. LaunchBox **non ha un export
+   CSV** (letto sul forum, non provato): la strada documentata è Vista
+   elenco → Ctrl+A, Ctrl+C → un foglio di calcolo → salva in CSV. Le sue
+   colonne (`Title`? una sorgente?) vanno misurate su un export vero prima
+   di scrivere i passi e gli alias.
+
+4b. ✅ Il server rifatto sul wireframe approvato (19/10/2026): parser
+generico (`csv-file.ts`), `importCsvFile` e `csvImportStatus`
+([csv-import.ts](../apps/api/src/services/csv-import.ts)), account interni
+«csv» fuori dalla lista degli account, il tag alla nascita, le procedure
+`csvImport.upload` e `csvImport.status`, il CSV d'esempio. Test in
+`csv-file.test.ts`, `csv-import.test.ts` e `rpc/csv-import.test.ts`. 5. La UI. 6. Documentazione: `negozi.md`, `ordine-sviluppo.md`, `import-librerie.md`.
