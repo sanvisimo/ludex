@@ -472,6 +472,8 @@ export const contract = {
       )
       .output(
         z.object({
+          // Il tag del file, già creato: il resoconto ci filtra il backlog.
+          tagId: z.uuid().nullable(),
           queued: z.array(
             z.object({ store: StoreSchema, entries: z.number().int() }),
           ),

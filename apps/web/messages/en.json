@@ -972,6 +972,81 @@
       "search": "Search by name…",
       "allStores": "Store: all",
       "noMatch": "Nothing matches these filters."
+    },
+    "csvImport": {
+      "title": "From a CSV file",
+      "description": "Games from stores Ludex can't link, like Ubisoft Connect and Battle.net, or from stores you'd rather not link: a Playnite export, for example.",
+      "open": "Import from CSV",
+      "lastImport": "Last import: {date} · tag “{tag}”",
+      "syncing": "importing…",
+      "tag": "Imported on {date}",
+      "dialogTitle": "Import from a CSV file",
+      "dialogDescription": "One row per game. New games join your backlog with the tag “{tag}”.",
+      "example": "Download the example CSV",
+      "columnsTitle": "Columns",
+      "required": "Required",
+      "optional": "Optional",
+      "columns": {
+        "name": "the game's name",
+        "sources": "the store: Steam, GOG, Epic, Amazon, EA app, Ubisoft Connect, Battle.net, PlayStation, Nintendo, Xbox",
+        "gameId": "the store's id; without it, the row is matched by name",
+        "platforms": "just one, for console stores: Sony PlayStation 5, Nintendo Switch…",
+        "releaseDate": "helps tell apart two games with the same name",
+        "links": "the Steam page link helps find the game",
+        "timePlayed": "time played, in seconds as Playnite writes it",
+        "lastPlayed": "the date you last played",
+        "completionStatus": "Plan to Play, Playing, Beaten, Completed, Abandoned, Won't Play…",
+        "categories": "your categories, separated by commas"
+      },
+      "columnsNote": "Dates like 2026-10-19 or 19/10/2026. Other columns are ignored, and Playnite's Italian names work too.",
+      "sourcesTitle": "Where to get the file",
+      "playnite": {
+        "title": "Playnite",
+        "steps": [
+          "In Playnite open Add-ons → Browse, search for “Library Exporter Advanced” and install it.",
+          "Open it from the extensions menu and tick the columns above.",
+          "Press “Export all games” and upload the file here as it is."
+        ]
+      },
+      "launchbox": {
+        "title": "LaunchBox",
+        "steps": [
+          "LaunchBox has no CSV export: switch to the list view, select all games (Ctrl+A) and copy them (Ctrl+C).",
+          "Paste them into a spreadsheet and name the columns as in the table above: at least Name and Sources.",
+          "Save the spreadsheet as CSV and upload it here."
+        ]
+      },
+      "drop": "Drop the .csv file here or",
+      "choose": "Choose the file",
+      "change": "Change file",
+      "fileLabel": "The CSV file",
+      "notes": [
+        "Games you already have from a linked store aren't duplicated.",
+        "Status and categories from the file only apply to games you don't have in Ludex yet.",
+        "Games Ludex doesn't recognise go to “Needs attention”."
+      ],
+      "cancel": "Cancel",
+      "submit": "Import",
+      "errors": {
+        "missing_columns": "The file is missing {count, plural, one {the column} other {the columns}} {columns}: see the table above.",
+        "not_csv": "The file isn't a CSV that can be read.",
+        "empty": "The file has no game rows.",
+        "tooBig": "The file is larger than 10 MB.",
+        "failed": "I couldn't import the file."
+      },
+      "report": {
+        "title": "Import started",
+        "description": "New games reach your backlog in a few minutes, with the tag “{tag}”.",
+        "nothing": "The file has no rows Ludex knows how to import.",
+        "rows": "{count, plural, one {# row} other {# rows}}",
+        "alreadyRunning": "an import is already running: upload the file again when it's done",
+        "skippedTitle": "Skipped rows",
+        "noPlatform": "{count, plural, one {# console store row} other {# console store rows}} without a single platform Ludex knows: we can't tell which one you own it on",
+        "noStore": "{count, plural, one {# row} other {# rows}} without a store Ludex knows: {sources}",
+        "emptySource": "no source",
+        "seeGames": "See the games in your backlog",
+        "close": "Close"
+      }
     }
   },
   "critic": {

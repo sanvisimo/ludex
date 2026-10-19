@@ -45,6 +45,7 @@ describe('csvImport.upload', () => {
     );
 
     expect(report).toEqual({
+      tagId: expect.any(String),
       queued: [{ store: 'ubisoft', entries: 1 }],
       alreadyRunning: [],
       noStore: { 'itch.io': 1 },

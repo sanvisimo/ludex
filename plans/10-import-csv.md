@@ -215,4 +215,13 @@ generico (`csv-file.ts`), `importCsvFile` e `csvImportStatus`
 ([csv-import.ts](../apps/api/src/services/csv-import.ts)), account interni
 «csv» fuori dalla lista degli account, il tag alla nascita, le procedure
 `csvImport.upload` e `csvImport.status`, il CSV d'esempio. Test in
-`csv-file.test.ts`, `csv-import.test.ts` e `rpc/csv-import.test.ts`. 5. La UI. 6. Documentazione: `negozi.md`, `ordine-sviluppo.md`, `import-librerie.md`.
+`csv-file.test.ts`, `csv-import.test.ts` e `rpc/csv-import.test.ts`. 5. ✅ La UI (19/10/2026): `CsvImportPanel` e il dialogo in
+[csv-import.tsx](../apps/web/components/csv-import.tsx), sotto le schede in
+Librerie e anche senza librerie; la data del tag in `lib/import-tag.ts`
+(con test). L'upload crea subito il tag e ne rende l'id (`tagId`), così
+«Vedi i giochi nel backlog» filtra già dal resoconto. Provata con
+Playwright su un utente di prova, col vecchio file a più negozi: Amazon 12
+righe e Ubisoft 3 accodate, le 5 Xbox saltate; a import finito 14 giochi
+col tag, 1 scarto («Amazon (CSV)» in Da sistemare), il riquadro con
+«Ultimo import». Due cose rimaste: Ubisoft non ha un'icona in `BrandIcon`
+(un riquadro grigio), e sul telefono il bottone non è a tutta larghezza. 6. Documentazione: `negozi.md`, `ordine-sviluppo.md`, `import-librerie.md`.

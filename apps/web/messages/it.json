@@ -971,6 +971,81 @@
       "search": "Cerca per nome…",
       "allStores": "Negozio: tutti",
       "noMatch": "Nessuna voce con questi filtri."
+    },
+    "csvImport": {
+      "title": "Da un file CSV",
+      "description": "Giochi di negozi che Ludex non collega, come Ubisoft Connect e Battle.net, o di quelli che non vuoi collegare: per esempio l'export di Playnite.",
+      "open": "Importa da CSV",
+      "lastImport": "Ultimo import: {date} · tag «{tag}»",
+      "syncing": "importazione in corso…",
+      "tag": "Importato il {date}",
+      "dialogTitle": "Importa da un file CSV",
+      "dialogDescription": "Una riga per gioco. I giochi nuovi entrano nel backlog col tag «{tag}».",
+      "example": "Scarica il CSV d'esempio",
+      "columnsTitle": "Le colonne",
+      "required": "Obbligatorie",
+      "optional": "Facoltative",
+      "columns": {
+        "name": "il nome del gioco",
+        "sources": "il negozio: Steam, GOG, Epic, Amazon, EA app, Ubisoft Connect, Battle.net, PlayStation, Nintendo, Xbox",
+        "gameId": "l'id del negozio; senza, la riga si riconosce dal nome",
+        "platforms": "una sola, per i negozi console: Sony PlayStation 5, Nintendo Switch…",
+        "releaseDate": "aiuta a scegliere fra due giochi con lo stesso nome",
+        "links": "il link alla pagina Steam aiuta a trovare il gioco",
+        "timePlayed": "il tempo giocato, in secondi come lo scrive Playnite",
+        "lastPlayed": "la data dell'ultima partita",
+        "completionStatus": "Plan to Play, Playing, Beaten, Completed, Abandoned, Won't Play…",
+        "categories": "le tue categorie, separate da virgola"
+      },
+      "columnsNote": "Date come 2026-10-19 o 19/10/2026. Le altre colonne si ignorano, e valgono anche i nomi italiani di Playnite (Nome, Sorgenti…).",
+      "sourcesTitle": "Da dove prendere il file",
+      "playnite": {
+        "title": "Playnite",
+        "steps": [
+          "In Playnite apri Componenti aggiuntivi → Sfoglia, cerca «Library Exporter Advanced» e installalo.",
+          "Aprila dal menu delle estensioni e spunta le colonne qui sopra: in Playnite in italiano si chiamano Nome, Sorgenti, Id del gioco e così via.",
+          "Premi «Esporta tutti i giochi» e carica qui il file così com'è."
+        ]
+      },
+      "launchbox": {
+        "title": "LaunchBox",
+        "steps": [
+          "LaunchBox non ha un export in CSV: passa alla vista a elenco, seleziona tutti i giochi (Ctrl+A) e copiali (Ctrl+C).",
+          "Incollali in un foglio di calcolo e dai alle colonne i nomi della tabella qui sopra: servono almeno Name e Sources.",
+          "Salva il foglio in CSV e caricalo qui."
+        ]
+      },
+      "drop": "Trascina qui il file .csv oppure",
+      "choose": "Scegli il file",
+      "change": "Cambia file",
+      "fileLabel": "Il file CSV",
+      "notes": [
+        "I giochi che hai già da un negozio collegato non si doppiano.",
+        "Stato e categorie del file valgono solo per i giochi che non hai ancora in Ludex.",
+        "Quelli che Ludex non riconosce vanno in «Da sistemare»."
+      ],
+      "cancel": "Annulla",
+      "submit": "Importa",
+      "errors": {
+        "missing_columns": "Al file {count, plural, one {manca la colonna} other {mancano le colonne}} {columns}: guarda la tabella qui sopra.",
+        "not_csv": "Il file non è un CSV che si riesce a leggere.",
+        "empty": "Il file non ha righe di giochi.",
+        "tooBig": "Il file supera i 10 MB.",
+        "failed": "Non sono riuscito a importare il file."
+      },
+      "report": {
+        "title": "Importazione avviata",
+        "description": "I giochi nuovi arrivano nel backlog in qualche minuto, col tag «{tag}».",
+        "nothing": "Nel file non c'è nessuna riga che Ludex sappia importare.",
+        "rows": "{count, plural, one {# riga} other {# righe}}",
+        "alreadyRunning": "c'è già un import in corso: carica di nuovo il file quando finisce",
+        "skippedTitle": "Righe saltate",
+        "noPlatform": "{count, plural, one {# riga di un negozio console} other {# righe di negozi console}} senza una piattaforma sola che Ludex conosce: non sappiamo su quale ce l'hai",
+        "noStore": "{count, plural, one {# riga} other {# righe}} senza un negozio che Ludex conosce: {sources}",
+        "emptySource": "senza sorgente",
+        "seeGames": "Vedi i giochi nel backlog",
+        "close": "Chiudi"
+      }
     }
   },
   "critic": {

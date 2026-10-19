@@ -9,6 +9,7 @@ import {
 } from '../queue/imports';
 import { type CsvRow, parseCsvFile } from './csv-file';
 import { isPcStore } from './library-import';
+import { ensureUserTags } from './tags';
 
 /** La sorgente IGDB degli appid Steam, per l'indizio dei `Collegamenti`. */
 const IGDB_STEAM_SOURCE = 1;
@@ -17,6 +18,12 @@ const IGDB_STEAM_SOURCE = 1;
 export const CSV_ACCOUNT_ID = 'csv';
 
 export type CsvImportReport = {
+  /**
+   * Il tag del file, già nel vocabolario: «Vedi i giochi nel backlog» filtra
+   * per id, e i giochi lo prendono man mano che il worker li riconosce. Null
+   * se non si è accodato niente.
+   */
+  tagId: string | null;
   /** I negozi accodati, con quante righe. */
   queued: { store: Store; entries: number }[];
   /** Negozi con un import da CSV già in corso: le loro righe non sono accodate. */
@@ -60,6 +67,7 @@ export async function importCsvFile(
   const slugByName = await platformSlugsByName();
 
   const report: CsvImportReport = {
+    tagId: null,
     queued: [],
     alreadyRunning: [],
     noStore: {},
@@ -95,6 +103,13 @@ export async function importCsvFile(
     // Lo stesso id due volte nello stesso negozio è la stessa voce.
     if (!voci.has(entry.externalId)) voci.set(entry.externalId, entry);
     perStore.set(store, voci);
+  }
+
+  // Il tag si crea qui e non nel job, per poterlo già filtrare. Resta vuoto se
+  // nessun gioco entra nel backlog: si cancella dal vocabolario come gli altri.
+  if (perStore.size > 0) {
+    const [saved] = await ensureUserTags(userId, [{ kind: 'tag', name: tag }]);
+    report.tagId = saved?.id ?? null;
   }
 
   for (const [store, voci] of perStore) {

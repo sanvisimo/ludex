@@ -85,6 +85,10 @@ export function useLiveUpdates() {
       invalidate(api.backlog.key());
       invalidate(api.playlists.key());
       invalidate(api.imports.key());
+      // L'import da CSV (10): il riquadro in Librerie, e le categorie e il tag
+      // che il file ha appena aggiunto al vocabolario.
+      invalidate(api.csvImport.key());
+      invalidate(api.tags.key());
       // Anche le pagine dei giochi e la home: un import cambia le copie di
       // giochi che c'erano già (una copia che passa alla famiglia Steam), e
       // l'evento `games` arriva solo per i giochi nuovi.
@@ -123,7 +127,10 @@ export function useLiveUpdates() {
           wishlistFinished.current(event.storeAccountId);
         return;
       }
-      if (event.phase === 'started') return invalidate(api.accounts.key());
+      if (event.phase === 'started') {
+        invalidate(api.accounts.key());
+        return invalidate(api.csvImport.key());
+      }
       importFinished();
     }
 
