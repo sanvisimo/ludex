@@ -101,9 +101,10 @@ TrueAchievements, che importa i posseduti ma è un partner ufficiale.
    dispositivo **solo `Win32`** non entrano mai: sono giochi di altri negozi
    (Steam, GOG…) che l'app Xbox per PC registra, con zero minuti. Gli altri sono
    giochi del Game Pass (EA Play compreso), anche quelli usciti dal catalogo, ed
-   **entrano tutti** con una copia `game_pass`. Il confronto con gli elenchi del
-   Game Pass si fa sul **gioco IGDB**, non sul `productId`: lo storico porta
-   l'id di un'edizione (It Takes Two) e gli elenchi un'altra.
+   **entrano tutti** con una copia `game_pass`: posseduto è ciò che sta in
+   Collections, tutto il resto giocato è Game Pass. **Gli elenchi pubblici del
+   Game Pass all'import non si usano** (19/10/2026): il catalogo non entra mai,
+   entra solo ciò che si è giocato. Servivano al probe per misurare.
 
    Al collegamento una spunta, **«Ho il Game Pass attivo»**, decide lo stato
    **alla nascita** di quelle righe, con lo stesso meccanismo dell'import da CSV
@@ -115,13 +116,29 @@ TrueAchievements, che importa i posseduti ma è un partner ufficiale.
    tab «abbonamenti» (lì sta ciò che l'import non ha risolto, questi sono
    risolti, e anticiperebbe il 14).
 
-6. **Xbox One o Series: lo sceglie l'utente** al collegamento, una console di
-   default per l'account. Il catalogo non aiuta: 60 giochi Xbox su 61 sono
-   `ConsoleGen8+ConsoleGen9`. È un pezzo dell'[idea delle piattaforme
+6. **Le piattaforme le spunta l'utente** al collegamento (19/10/2026, al posto
+   della «console di default»): PC, Xbox, Xbox 360, Xbox One, Xbox Series. Il
+   catalogo da solo non decide (60 giochi Xbox su 61 sono
+   `ConsoleGen8+ConsoleGen9`). È un pezzo dell'[idea delle piattaforme
    dell'utente](piattaforme-dell-utente.md), limitato all'account Xbox.
-7. **I 360 retrocompatibili** vanno su `xbox360`, che è la loro scheda IGDB.
-8. **Le ore di un Play Anywhere** (`MinutesPlayed` è per titolo, non per
-   dispositivo) vanno sulla copia Xbox.
+
+   **Da confermare con l'utente** prima del passo 5: ogni gioco prende una
+   copia **per ogni piattaforma spuntata su cui gira** — PC se il catalogo lo dà
+   per Windows, One e Series da `ConsoleGen8`/`ConsoleGen9`, i 360
+   retrocompatibili su 360, One e Series; per lo storico, i dispositivi su cui
+   si è giocato. Due copie con lo stesso `productId` ci sono quindi solo con più
+   spunte, e `importLibrary` le deve reggere (oggi due voci con lo stesso id
+   irrisolte rompono l'upsert degli scarti). L'Xbox originale non è nelle
+   misure: come lo chiama lo storico non si sa.
+
+7. **I 360 retrocompatibili** vanno su `xbox360`, che è la loro scheda IGDB
+   (se spuntato; vedi il punto 6).
+8. **Le ore** (`MinutesPlayed` è per titolo, non per dispositivo) vanno su una
+   copia sola, la console più recente fra quelle spuntate.
+9. **La regola 3 per le console Xbox**: una copia `xbox_series` vale anche per
+   i giochi che IGDB dà su One, 360 e Xbox; una `xbox_one` anche per 360 e Xbox
+   (`copy-platforms.ts`, come i visori VR). Senza, un gioco One giocato su
+   Series e trovato per nome finirebbe fra i «da sistemare».
 
 ## Come si innesta (da confermare leggendo il codice al passo giusto)
 
@@ -250,12 +267,14 @@ Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
 2. **Decisioni dai dati** — **fatto**: i punti 5–8 delle decisioni, e la riga Xbox
    della tabella in [negozi](../docs/negozi.md) corretta (senza riscrivere in
    silenzio la vecchia, come per PSN ed EA).
-3. **Vocabolario e migration**: `game_pass` e `games_with_gold` in
+3. **Vocabolario e migration** — **fatto (19/10/2026, migration 0059)**: `game_pass` e `games_with_gold` in
    `subscriptionValues`, con le etichette nei due file dei messaggi, migration da
    drizzle-kit. `'xbox'` in `linkableStoreValues` aspetta il passo 5, come per EA.
-4. **`external/xbox.ts`**: device code, rinnovo, XBL/XSTS con le due relying party,
-   Collections, titlehub, userstats, catalogo, ordini e `productActions`. Test con
-   risposte simulate.
+4. **`external/xbox.ts`** — **fatto (19/10/2026)**: device code, rinnovo,
+   XBL/XSTS con le due relying party, Collections, titlehub, userstats,
+   catalogo, ordini e `productActions`. Test con risposte simulate
+   (`xbox.test.ts`). I 360 sono «al meglio»: ordini illeggibili o un
+   `productActions` che non risponde non fanno fallire l'import.
 5. **Login e import**: le mutazioni «avvia» e «controlla» del device code, con la
    console di default e la spunta «Ho il Game Pass attivo»; la riduzione a
    `LibraryEntry[]` con le regole delle decisioni (fuori i `Win32`, Game Pass
