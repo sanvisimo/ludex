@@ -133,7 +133,7 @@ Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 | PSN              | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo                                          | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto                               | parziali                                                    |
 | EA               | token di **4 ore** (`connect/auth`, dal browser entrato su ea.com), non si rinnova: importazione una tantum | nessuno: **per nome**, chiave `gameSlug` (uno per gioco, le edizioni collassano)               | **solo i giocati di recente** (`recentGames`: 1 riga su 44) |
 | Nintendo         | session token **730 giorni** (non ruota, non verificato), access token 15 min                               | nessuno: **per nome**; le licenze digitali portano un id (16 esadecimali) che IGDB non conosce | parziali                                                    |
-| Xbox             | chiave OpenXBL, o XSTS in proprio                                                                           | `titleId` → ProductId via `displaycatalog`, sorgente 11                                        | sì                                                          |
+| Xbox             | refresh token del device code di xbox.com, **cambia a ogni rinnovo**; XBL e XSTS rifatti a ogni import      | `productId` (Collections), sorgente 11 in maiuscolo — **75% su 88 giochi**                     | sì, per titolo (83 su 164)                                  |
 | Steam, col login | refresh token **210–212 giorni**, access token 24 ore, rinnovo dentro l'import                              | appid, la sorgente Steam di IGDB, come col solo profilo                                        | sì                                                          |
 
 Le prime due colonne sono state scritte **prima** di provare, e il 9b ha
@@ -147,6 +147,12 @@ Anche la riga di EA è stata scritta prima e corretta dalla misura del 13/10/202
 (`ea:probe`, tre giri, il dettaglio in `plans/9c-ea.md`): diceva «sessione corta»
 e «ore: sì». Il token dura quattro ore, che bastano a un import ma non a un
 collegamento; le ore EA le dà solo per i giochi avviati di recente.
+
+E così quella di Xbox, misurata il 19/10/2026 (`xbox:probe`, il dettaglio in
+`plans/9e-xbox.md`): diceva «chiave OpenXBL, o XSTS in proprio» e «`titleId` →
+ProductId via `displaycatalog`». OpenXBL è scartato (un terzo che terrebbe i
+token dei nostri utenti); il login è il device code col client di xbox.com, e
+l'id viene già come `productId` da Collections, senza passare dal catalogo.
 
 Dove l'id c'è l'import costa nulla: i 435 giochi GOG si risolvono in **tre**
 richieste da 200 id, e il matcher per nome ne recupera altri 16, per un 98,2%

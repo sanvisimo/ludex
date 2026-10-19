@@ -1,8 +1,9 @@
 # Step 9e — Xbox
 
-**Stato: passo 1 scritto (17/10/2026), da lanciare.** Il probe è
-`apps/api/src/scripts/xbox-probe.ts`; nessuna richiesta a Microsoft è stata fatta.
-L'utente non ha un PC per lanciarlo: vedi «Dove si lancia» più sotto.
+**Stato: passi 1 e 2 fatti (19/10/2026).** Il probe
+(`apps/api/src/scripts/xbox-probe.ts`) è stato lanciato dall'utente, e le
+decisioni aperte sono state prese sui suoi dati: vedi «Le misure» e «Decisioni».
+Prossimo: il passo 3.
 
 ## Contesto
 
@@ -86,37 +87,54 @@ TrueAchievements, che importa i posseduti ma è un partner ufficiale.
    - Collections, `licensingRequired` → abbonamento nuovo **`games_with_gold`**;
    - giocato (titlehub), non in Collections, e oggi nel Game Pass → abbonamento
      nuovo **`game_pass`**, accanto a `ps_plus`;
-   - giocato, non in Collections, non nel Game Pass → **`medium: physical`**, come
-     lo storico Nintendo senza licenza digitale. Si accettano i falsi, come per
-     Nintendo: un free-to-play che Collections non elencasse, un gioco uscito dal
-     Game Pass dopo averlo giocato, uno in prestito risultano «fisici».
+   - ~~giocato, non in Collections, non nel Game Pass → `medium: physical`, come
+     lo storico Nintendo senza licenza digitale~~. **Smentita dalla misura del
+     19/10/2026**, e sostituita dal punto 5: vedi «Le misure».
 3. **Play Anywhere sono due copie**, PC e Xbox, come il cross-buy PSN: due possessi
    e una sola riga di `backlog`.
 4. **Gli Xbox 360 retrocompatibili si recuperano**: ordini e storico come candidati,
    e la conferma di `productActions` per ciascuno, con un tetto di richieste.
 
-### Ancora aperte, si decidono dopo il probe
+### Decise dopo il probe (19/10/2026)
 
-- **Xbox One o Series.** Collections non dice su che console si gioca, e un gioco
-  comprato una volta gira su tutte e due. Proposta: `xbox_series` se il catalogo lo
-  dice compatibile con la Series, `xbox_one` altrimenti; da confermare coi dati del
-  catalogo. L'[idea delle piattaforme dell'utente](piattaforme-dell-utente.md)
-  la renderebbe una scelta dell'utente.
-- **La piattaforma dei 360** (`xbox360`, che è la scheda IGDB, o la console su cui
-  girano oggi).
-- **Le ore di un gioco Play Anywhere**: `MinutesPlayed` è per titolo, non per
-  dispositivo. Su una copia sola (quale?) o su nessuna.
+5. **Giocato, non in Collections.** I titoli dello storico che hanno come
+   dispositivo **solo `Win32`** non entrano mai: sono giochi di altri negozi
+   (Steam, GOG…) che l'app Xbox per PC registra, con zero minuti. Gli altri sono
+   giochi del Game Pass (EA Play compreso), anche quelli usciti dal catalogo, ed
+   **entrano tutti** con una copia `game_pass`. Il confronto con gli elenchi del
+   Game Pass si fa sul **gioco IGDB**, non sul `productId`: lo storico porta
+   l'id di un'edizione (It Takes Two) e gli elenchi un'altra.
+
+   Al collegamento una spunta, **«Ho il Game Pass attivo»**, decide lo stato
+   **alla nascita** di quelle righe, con lo stesso meccanismo dell'import da CSV
+   (`LibraryEntry.status`): sì → lo stato normale di un import; no → `played`.
+   Mai `completed`, che nessun import imposta. Una riga che c'era già resta com'è,
+   e riattivare l'abbonamento dopo non cambia gli stati: cosa succede quando un
+   abbonamento finisce o riparte è lo step 14, e la spunta è il dato che gli
+   servirà (per PSN lo dà l'API con `isPlus`). Scartate: «da sistemare» con una
+   tab «abbonamenti» (lì sta ciò che l'import non ha risolto, questi sono
+   risolti, e anticiperebbe il 14).
+
+6. **Xbox One o Series: lo sceglie l'utente** al collegamento, una console di
+   default per l'account. Il catalogo non aiuta: 60 giochi Xbox su 61 sono
+   `ConsoleGen8+ConsoleGen9`. È un pezzo dell'[idea delle piattaforme
+   dell'utente](piattaforme-dell-utente.md), limitato all'account Xbox.
+7. **I 360 retrocompatibili** vanno su `xbox360`, che è la loro scheda IGDB.
+8. **Le ore di un Play Anywhere** (`MinutesPlayed` è per titolo, non per
+   dispositivo) vanno sulla copia Xbox.
 
 ## Come si innesta (da confermare leggendo il codice al passo giusto)
 
 - **Identità.** L'id esterno è il `productId` (12 caratteri, in maiuscolo).
-  `IGDB_SOURCES` ha già `xbox: 11`: se gli uid della sorgente 11 sono proprio i
-  `productId`, la risoluzione costa poche richieste da 200 id come GOG. Lo storico
-  porta il `titleId`: si traduce in `productId` con la decorazione `productId` di
-  titlehub o con `detail.availabilities`. **Da misurare.**
+  `IGDB_SOURCES` ha già `xbox: 11`, e **gli uid della sorgente 11 sono i
+  `productId` in maiuscolo** (misurato: 66 su 88, il 75%, nessuno in minuscolo);
+  il resto passa dal nome. Lo storico porta il `titleId`, e il `productId` sta in
+  `detail.availabilities` per 123 titoli su 164 (i 41 senza sono i `Win32`
+  e uno solo in più).
 - **Credenziale**: il refresh token di `login.microsoftonline.com`, cifrato in
   `store_accounts` come GOG, Epic e PSN (`OAUTH_STORES`); XBL e XSTS si rifanno a
-  ogni import e non si salvano. Rinnovo rifiutato → `needs_reauth`.
+  ogni import e non si salvano. Rinnovo rifiutato → `needs_reauth`. **Il refresh
+  token cambia a ogni rinnovo** (misurato): va salvato quello nuovo ogni volta.
 - **Account**: lo `xuid` (`xid` dell'XSTS) come `externalAccountId`, il gamertag
   (`gtg`) come nome leggibile.
 - **Gli errori XSTS che vogliono dire «questo account non può usare Xbox»**
@@ -152,50 +170,101 @@ conferma su `microsoft.com/link`, e poi:
 | `user.auth` + due XSTS (`xboxlive`, `mp`)      | 3                        | xuid, gamertag, il token del negozio                                                                                 |
 | Collections                                    | 1 per pagina da 100      | quante voci, di che tipo (posseduti, Gold, trial, non giochi); se c'è una data d'acquisto; se i free-to-play ci sono |
 | titlehub, storico con `productId` e `gamepass` | 1                        | quanti giocati, quanti non in Collections, quanti nel Game Pass                                                      |
-| `userstats` (`MinutesPlayed`)                  | 1                        | se le ore arrivano                                                                                                   |
 | `displaycatalog`                               | 1 ogni 20 prodotti circa | piattaforme, Play Anywhere, One contro Series, DLC travestiti                                                        |
 | ordini + `productActions`                      | poche pagine + al più 30 | quanti 360 retrocompatibili                                                                                          |
 | IGDB, sorgente 11                              | 1 ogni 200 id            | la forma degli uid e quanti `productId` trova                                                                        |
+| `userstats` (`MinutesPlayed`)                  | 1, per ultima            | se le ore arrivano                                                                                                   |
 
-### Dove si lancia
+### Dove si è lanciato
 
-Il codice si conferma da qualunque dispositivo, anche dal telefono: il PC serve
-solo a far girare lo script. Due posti possibili:
+L'ha lanciato l'utente, da una macchina col `.env` del progetto (le credenziali
+IGDB c'erano: la sorgente 11 è misurata), e ha confermato lui il codice.
 
-- **il mini PC**, dove gira già l'app: l'indirizzo è quello di casa, come per i
-  rinnovi Nintendo, ed è la prova più fedele;
-- **questa sessione cloud di Claude**: lo script gira in un container remoto,
-  l'utente conferma il codice dal telefono. L'indirizzo è di un datacenter, cioè
-  il caso «server remoto» non misurato del 9d e del 9f, e qui mancano le
-  credenziali IGDB (la sorgente 11 si salta, il probe stampa gli id da provare
-  dopo). I token passano solo dalla memoria del processo.
+**I giri sono stati due, non uno.** Il primo si è fermato alla prima
+`productActions`: 400 `{"MissingHeader":["Header MS-CV is missing"]}`. Unifideck
+non manda quell'header su quell'endpoint (`ownership/backcompat.py`, branch
+`staging`): probabilmente l'endpoint lo chiede da dopo le loro misure. Era un rifiuto
+di una richiesta incompleta, non un avviso sull'account; il probe si è fermato
+come previsto, senza ritentare. Aggiunto `MS-CV`, il secondo giro, concordato, è
+arrivato in fondo: **37 richieste con l'account** più 3 interrogazioni del
+device code, 10 pubbliche. Un terzo avvio, lanciato da Claude mentre l'utente
+lanciava il secondo, è stato fermato prima della conferma: ha solo interrogato
+il device code in attesa.
+
+Prima del primo giro il probe era stato allineato a Unifideck: niente rinnovo
+senza refresh token, `userstats` per ultima (è la richiesta meno provata, e se
+fallisce si perdono solo le ore), e gli header che loro mandano
+(`User-Agent: XboxReplay; XboxLiveAuth/3.0` e `Accept-Language` su `user.auth`
+e XSTS, `MS-CV` su Collections, `Accept: application/json` dappertutto).
+
+## Le misure (19/10/2026)
+
+Su un account vero, con abbonamenti Game Pass passati e nessuno attivo oggi.
+
+- **Login**: il device code col client di xbox.com funziona da casa, confermato
+  dopo 3 interrogazioni; scope `XboxLive.signin`, access token di 3599 s. Il
+  **rinnovo funziona e il refresh token cambia a ogni rinnovo**; la sua durata
+  Microsoft non la dichiara. `user.auth` va con `d=` al primo colpo; fascia d'età
+  `Adult`.
+- **Collections**: 223 voci in 3 pagine, di cui 92 `Game`: **49 posseduti, 41
+  Games with Gold, 2 inattivi**. Il resto sono 81 app, 25 `Durable` (DLC), 20
+  abbonamenti, 3 estensioni del browser, 2 consumabili. `acquisitionType` è
+  sempre nullo, ma **`acquiredDate` c'è su tutte le voci** (dal 2013), cioè la
+  data d'acquisto. **I free-to-play ci sono** (Candy Crush, Rocket League).
+- **Catalogo**: 90 prodotti su 90. Il filtro su demo e DLC ne toglie 2, tutti e
+  due demo. Piattaforme dei restanti 88: 56 Xbox, 15 PC + Xbox, 8 PC, **5 Play
+  Anywhere**, 4 senza (bundle o senza catalogo). One contro Series: **60 su 61**
+  dei giochi Xbox sono `ConsoleGen8+ConsoleGen9`, quindi il catalogo non decide.
+  14 dei posseduti sono oggi anche nel Game Pass.
+- **Storico**: 164 titoli, tutti `Game`. Dispositivi: 44 `PC+XboxOne+XboxSeries`,
+  44 `XboxOne+XboxSeries`, **40 solo `Win32`**, 15 `PC+XboxSeries`, 10 con
+  `Xbox360`, 6 `PC`, 3 `XboxSeries`, 2 `XboxOne`. **Solo 11 sono in
+  Collections**: 45 sono oggi nel Game Pass e 108 sarebbero diventati «fisici».
+- **I «fisici» non lo sono.** I 40 `Win32` sono giochi di altri negozi (Portal,
+  Hollow Knight, Death Stranding, Stray…) che l'app Xbox per PC registra, tutti a
+  zero minuti. Gli altri sono Game Pass: Clair Obscur (5765 minuti), Sea of
+  Stars (4018), NORCO e Cocoon, che sugli elenchi pubblici di oggi (mercato IT)
+  **non ci sono più**; e It Takes Two, che c'è (EA Play) ma con il `productId`
+  di un'altra edizione rispetto a quello dello storico.
+- **Xbox 360**: 194 ordini in 8 pagine, 19 candidati fuori da Collections, **14
+  posseduti** secondo `productActions` (Orcs Must Die!, Catherine, Injustice,
+  Ikaruga…).
+- **IGDB, sorgente 11**: **66 su 88 (75%)**, uid in maiuscolo. I non agganciati
+  sono soprattutto giochini dello store Windows (Simple Minesweeper, Zombie
+  Tsunami), un bundle con la console (FIFA 17 + Xbox One 500GB), l'app EA Access
+  Hub, un episodio Telltale.
+- **Ore**: `MinutesPlayed` arriva per 83 titoli su 164.
 
 ## I passi
 
 Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
 
-1. **Probe in sola lettura** — **scritto, da lanciare**:
+1. **Probe in sola lettura** — **fatto, lanciato il 19/10/2026**:
    `apps/api/src/scripts/xbox-probe.ts` e la voce `xbox:probe`, con le regole
    sopra. Per il Game Pass usa gli elenchi pubblici (`catalog.gamepass.com/sigls`)
    e non la decorazione `gamepass` di titlehub, che nessuno dei progetti letti
    usa: una richiesta non provata in meno sull'account. Lo storico chiede solo
    `decoration/detail`, come Playnite, e il `productId` lo prende da
-   `detail.availabilities`, come Unifideck. I risultati in questo piano. La
+   `detail.availabilities`, come Unifideck. I risultati in «Le misure». La
    roadmap è passata a «in corso», col testo nuovo.
-2. **Decisioni dai dati**: le tre aperte qui sopra, e la riga Xbox della tabella in
-   [negozi](../docs/negozi.md) corretta (senza riscrivere in silenzio la vecchia,
-   come per PSN ed EA).
+2. **Decisioni dai dati** — **fatto**: i punti 5–8 delle decisioni, e la riga Xbox
+   della tabella in [negozi](../docs/negozi.md) corretta (senza riscrivere in
+   silenzio la vecchia, come per PSN ed EA).
 3. **Vocabolario e migration**: `game_pass` e `games_with_gold` in
    `subscriptionValues`, con le etichette nei due file dei messaggi, migration da
    drizzle-kit. `'xbox'` in `linkableStoreValues` aspetta il passo 5, come per EA.
 4. **`external/xbox.ts`**: device code, rinnovo, XBL/XSTS con le due relying party,
    Collections, titlehub, userstats, catalogo, ordini e `productActions`. Test con
    risposte simulate.
-5. **Login e import**: le mutazioni «avvia» e «controlla» del device code; la
-   riduzione a `LibraryEntry[]` con le regole delle decisioni e `importLibrary`.
+5. **Login e import**: le mutazioni «avvia» e «controlla» del device code, con la
+   console di default e la spunta «Ho il Game Pass attivo»; la riduzione a
+   `LibraryEntry[]` con le regole delle decisioni (fuori i `Win32`, Game Pass
+   confrontato sul gioco IGDB, lo stato alla nascita dalla spunta) e
+   `importLibrary`.
    Test contro Postgres, Microsoft stubbato al confine del modulo di servizio.
-6. **La scheda in `/account`**: il codice da mostrare e il link sono un modulo
-   nuovo, quindi **si vede prima del codice** (proposta scritta e wireframe).
+6. **La scheda in `/account`**: il codice da mostrare e il link, la console di
+   default e la spunta del Game Pass sono un modulo nuovo, quindi **si vede prima
+   del codice** (proposta scritta e wireframe).
 7. **Documentazione**: `docs/negozi.md` (sezione Xbox, la tabella, il rischio),
    `docs/ordine-sviluppo.md` (9e), `apps/api/CLAUDE.md` (il probe); la roadmap
    passa a «in corso» col passo 1 e a «fatto» quando dici che il lotto è pronto.

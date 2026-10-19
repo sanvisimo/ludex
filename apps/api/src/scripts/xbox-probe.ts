@@ -1,5 +1,7 @@
 import '../env';
 
+import { randomUUID } from 'node:crypto';
+
 // Misure per il 9e (Xbox). **Non scrive niente**: né sul DB né su disco.
 //
 // **ATTENZIONE: parla con Microsoft usando l'account di chi lo lancia**, con
@@ -29,10 +31,10 @@ import '../env';
 //  7. POST collections.mp.microsoft.com/v7.0/collections/query, una per pagina
 //     da 100 (al più 30 pagine)
 //  8. GET titlehub.xboxlive.com/users/xuid(…)/titles/titlehistory/decoration/detail
-//  9. POST userstats.xboxlive.com/batch (`MinutesPlayed`), una
-// 10. GET purchase.mp.microsoft.com/v7.0/users/me/orders, una per pagina
-// 11. GET emerald.xboxservices.com/xboxcomfd/productActions/{id}, al più 30
-//     (solo per i candidati Xbox 360; `--no-backcompat` salta la 10 e la 11)
+//  9. GET purchase.mp.microsoft.com/v7.0/users/me/orders, una per pagina
+// 10. GET emerald.xboxservices.com/xboxcomfd/productActions/{id}, al più 30
+//     (solo per i candidati Xbox 360; `--no-backcompat` salta la 9 e la 10)
+// 11. POST userstats.xboxlive.com/batch (`MinutesPlayed`), una, per ultima
 //
 // Senza credenziali dell'utente, e quindi senza rischio per l'account:
 // displaycatalog.mp.microsoft.com (titoli e piattaforme, 20 prodotti a
@@ -67,6 +69,13 @@ const COLLECTIONS_URL =
 const ORDERS_URL = 'https://purchase.mp.microsoft.com/v7.0/users/me/orders';
 const CATALOG_URL = 'https://displaycatalog.mp.microsoft.com/v7.0/products';
 const SIGLS_URL = 'https://catalog.gamepass.com/sigls/v2';
+// Gli header che Unifideck manda su user.auth e XSTS (microsoft_auth.py,
+// microsoft_config.py): un giro solo, quindi le stesse richieste che loro hanno
+// misurato su account veri, non le nostre.
+const XBL_HEADERS = {
+  'User-Agent': 'XboxReplay; XboxLiveAuth/3.0',
+  'Accept-Language': 'en-US',
+};
 // Gli elenchi pubblici del Game Pass: console, PC, tutti, EA Play console e PC.
 // Da Unifideck (game_pass.py).
 const GAME_PASS_LISTS = [
@@ -260,18 +269,21 @@ console.log(`  confermato dopo ${interrogazioni} interrogazioni`);
 
 // --- 2. il rinnovo ---
 
-const rinnovo = (await (
-  await chiama(
-    'token (refresh)',
-    `${LOGIN_URL}/token`,
-    form({
-      grant_type: 'refresh_token',
-      client_id: CLIENT_ID,
-      refresh_token: token.refresh_token ?? '',
-      scope: SCOPE,
-    }),
-  )
-).json()) as TokenResponse;
+// Senza refresh token il rinnovo sarebbe un 400 sicuro: non si manda.
+const rinnovo: TokenResponse = token.refresh_token
+  ? ((await (
+      await chiama(
+        'token (refresh)',
+        `${LOGIN_URL}/token`,
+        form({
+          grant_type: 'refresh_token',
+          client_id: CLIENT_ID,
+          refresh_token: token.refresh_token,
+          scope: SCOPE,
+        }),
+      )
+    ).json()) as TokenResponse)
+  : {};
 
 const accessToken = rinnovo.access_token ?? token.access_token;
 
@@ -282,7 +294,9 @@ console.log(
   `  refresh token:            ${token.refresh_token ? 'presente' : 'ASSENTE'}`,
 );
 console.log(
-  `  rinnovo riuscito:         ${rinnovo.access_token ? 'sì' : 'no'}`,
+  `  rinnovo riuscito:         ${
+    !token.refresh_token ? '(non provato)' : rinnovo.access_token ? 'sì' : 'no'
+  }`,
 );
 console.log(
   `  il refresh token cambia:  ${
@@ -318,6 +332,7 @@ const userToken = async (prefisso: 'd' | 't', contratto: string) =>
         'Content-Type': 'application/json',
         Accept: 'application/json',
         'x-xbl-contract-version': contratto,
+        ...XBL_HEADERS,
       },
       body: JSON.stringify({
         Properties: {
@@ -355,6 +370,7 @@ const xsts = async (relyingParty: string) => {
         'Content-Type': 'application/json',
         Accept: 'application/json',
         'x-xbl-contract-version': '1',
+        ...XBL_HEADERS,
       },
       body: JSON.stringify({
         Properties: { SandboxId: 'RETAIL', UserTokens: [xbl.Token] },
@@ -406,7 +422,10 @@ for (let pagina = 1; pagina <= MAX_COLLECTION_PAGES; pagina += 1) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Accept: 'application/json',
         Authorization: authNegozio,
+        // Un id di correlazione nuovo a ogni richiesta, come Unifideck.
+        'MS-CV': `${randomUUID().replaceAll('-', '').toUpperCase()}.0`,
       },
       body: JSON.stringify({
         maxPageSize: 100,
@@ -487,7 +506,7 @@ for (const item of items) {
   if (pid && (kind === 'posseduto' || kind === 'gold')) giochi.set(pid, kind);
 }
 
-// --- 5. lo storico (titlehub) e le ore (userstats) ---
+// --- 5. lo storico (titlehub) ---
 
 type Titolo = {
   titleId?: string;
@@ -506,6 +525,7 @@ const storico = (await (
     `https://titlehub.xboxlive.com/users/xuid(${xuid})/titles/titlehistory/decoration/detail?maxItems=5000`,
     {
       headers: {
+        Accept: 'application/json',
         Authorization: authLive,
         'x-xbl-contract-version': '2',
         'Accept-Language': 'en-US',
@@ -544,41 +564,6 @@ stampaConteggio(
     const n = new Set(productIdsDi(t)).size;
     return n === 0 ? 'nessuno' : n === 1 ? 'uno' : 'più di uno';
   }),
-);
-
-let minuti = new Map<string, number>();
-if (titoliGioco.length > 0) {
-  const stats = (await (
-    await chiama(
-      'userstats (MinutesPlayed)',
-      'https://userstats.xboxlive.com/batch',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: authLive,
-          'x-xbl-contract-version': '2',
-        },
-        body: JSON.stringify({
-          arrangebyfield: 'xuid',
-          stats: titoliGioco
-            .filter((t) => t.titleId)
-            .map((t) => ({ name: 'MinutesPlayed', titleid: t.titleId })),
-          xuids: [xuid],
-        }),
-      },
-    )
-  ).json()) as {
-    statlistscollection?: { stats?: { titleid?: string; value?: string }[] }[];
-  };
-  minuti = new Map(
-    (stats.statlistscollection?.[0]?.stats ?? [])
-      .filter((s) => s.titleid && Number(s.value) > 0)
-      .map((s) => [s.titleid as string, Number(s.value)]),
-  );
-}
-console.log(
-  `  con minuti > 0:           ${minuti.size} su ${titoliGioco.length} Game`,
 );
 
 // --- 6. il Game Pass (elenchi pubblici) ---
@@ -733,7 +718,7 @@ console.log(
 console.log('  gli altri, i primi 25 (sono i candidati ai falsi «fisici»):');
 for (const t of fisici.slice(0, 25)) {
   console.log(
-    `    ${(t.name ?? '?').slice(0, 44).padEnd(44)} ${(t.devices ?? []).join('+').padEnd(22)} ${String(minuti.get(t.titleId ?? '') ?? 0).padStart(6)} min`,
+    `    ${(t.name ?? '?').slice(0, 44).padEnd(44)} ${(t.devices ?? []).join('+')}`,
   );
 }
 
@@ -753,7 +738,7 @@ if (backcompat) {
   for (let pagina = 1; url && pagina <= MAX_ORDER_PAGES; pagina += 1) {
     const body = (await (
       await chiama(`orders, pagina ${pagina}`, url, {
-        headers: { Authorization: authNegozio },
+        headers: { Accept: 'application/json', Authorization: authNegozio },
       })
     ).json()) as { items?: Json[]; '@nextLink'?: string };
     for (const order of body.items ?? []) {
@@ -785,7 +770,16 @@ if (backcompat) {
     const response = await chiama(
       `productActions ${pid}`,
       `https://emerald.xboxservices.com/xboxcomfd/productActions/${pid}?locale=en-US`,
-      { headers: { Authorization: authNegozio, 'x-ms-api-version': '1.0' } },
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: authNegozio,
+          'x-ms-api-version': '1.0',
+          // Senza, 400 «Header MS-CV is missing» (misurato il 19/10/2026;
+          // Unifideck non lo manda).
+          'MS-CV': `${randomUUID().replaceAll('-', '').toUpperCase()}.0`,
+        },
+      },
       [404],
     );
     if (response.ok) {
@@ -843,6 +837,52 @@ if (igdb && veri.length > 0) {
     for (const g of veri.filter((v) => !agganciati.includes(v)).slice(0, 20)) {
       console.log(`    ${(g.titolo || '?').slice(0, 44).padEnd(44)} ${g.pid}`);
     }
+  }
+}
+
+// --- 11. le ore (userstats) ---
+//
+// Per ultima: è la richiesta meno provata (Unifideck non la usa, e Playnite
+// dice che per alcuni torna vuota), e se fallisce si perdono solo le ore.
+
+if (titoliGioco.length > 0) {
+  const stats = (await (
+    await chiama(
+      'userstats (MinutesPlayed)',
+      'https://userstats.xboxlive.com/batch',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authLive,
+          'x-xbl-contract-version': '2',
+        },
+        body: JSON.stringify({
+          arrangebyfield: 'xuid',
+          stats: titoliGioco
+            .filter((t) => t.titleId)
+            .map((t) => ({ name: 'MinutesPlayed', titleid: t.titleId })),
+          xuids: [xuid],
+        }),
+      },
+    )
+  ).json()) as {
+    statlistscollection?: { stats?: { titleid?: string; value?: string }[] }[];
+  };
+  const minuti = new Map(
+    (stats.statlistscollection?.[0]?.stats ?? [])
+      .filter((s) => s.titleid && Number(s.value) > 0)
+      .map((s) => [s.titleid as string, Number(s.value)]),
+  );
+  console.log('\nore (userstats)');
+  console.log(
+    `  con minuti > 0:           ${minuti.size} su ${titoliGioco.length} Game`,
+  );
+  console.log('  i candidati ai falsi «fisici», i primi 25:');
+  for (const t of fisici.slice(0, 25)) {
+    console.log(
+      `    ${(t.name ?? '?').slice(0, 44).padEnd(44)} ${String(minuti.get(t.titleId ?? '') ?? 0).padStart(6)} min`,
+    );
   }
 }
 
