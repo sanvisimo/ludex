@@ -468,6 +468,8 @@ export const contract = {
         z.object({
           file: z.file().max(10 * 1024 * 1024),
           tag: z.string().trim().min(1).max(60),
+          // Le righe tolte nell'anteprima, coi numeri che lei ha dato.
+          exclude: z.array(z.number().int().min(0)).max(100_000).default([]),
         }),
       )
       .output(
@@ -480,6 +482,33 @@ export const contract = {
           alreadyRunning: z.array(StoreSchema),
           noStore: z.record(z.string(), z.number().int()),
           noPlatform: z.number().int(),
+          duplicates: z.number().int(),
+        }),
+      ),
+
+    // L'anteprima: cosa farebbe `upload`, riga per riga, senza scrivere niente
+    // e senza IGDB. Il gioco si dice solo dove l'id è già noto a Ludex; gli
+    // altri sono `unknown` e li riconoscerà il worker. Stessi errori di formato
+    // di `upload`.
+    preview: oc
+      .input(z.object({ file: z.file().max(10 * 1024 * 1024) }))
+      .output(
+        z.object({
+          rows: z.array(
+            z.object({
+              index: z.number().int(),
+              name: z.string(),
+              source: z.string(),
+              store: StoreSchema.nullable(),
+              platform: z.string().nullable(),
+              status: BacklogStatusSchema,
+              outcome: z.enum(['new', 'in_backlog', 'unknown', 'skipped']),
+              skipReason: z
+                .enum(['no_store', 'platform', 'duplicate'])
+                .nullable(),
+              game: z.object({ name: z.string(), slug: z.string() }).nullable(),
+            }),
+          ),
         }),
       ),
 

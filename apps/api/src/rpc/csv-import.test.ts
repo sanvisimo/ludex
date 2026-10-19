@@ -50,6 +50,7 @@ describe('csvImport.upload', () => {
       alreadyRunning: [],
       noStore: { 'itch.io': 1 },
       noPlatform: 0,
+      duplicates: 0,
     });
     expect(vi.mocked(enqueueFileImport)).toHaveBeenCalledWith(
       'ubisoft',

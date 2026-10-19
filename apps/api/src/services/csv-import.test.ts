@@ -16,7 +16,7 @@ import { enqueueFileImport, type FileJobEntry } from '../queue/imports';
 import { runFileImportJob } from './import-jobs';
 import { importLibrary } from './library-import';
 import { findAccountsDueForImport } from './library-sync';
-import { csvImportStatus, importCsvFile } from './csv-import';
+import { csvImportStatus, importCsvFile, previewCsvFile } from './csv-import';
 import { listStoreAccounts } from './store-accounts';
 
 // Contro un Postgres vero; IGDB e le code stubbati al confine del modulo, come
@@ -173,6 +173,37 @@ describe('importCsvFile', () => {
     ]);
   });
 
+  it('salta le righe escluse nell’anteprima e i doppioni nel file', async () => {
+    const report = await importCsvFile(
+      userId,
+      'Name,Sources,Game Id\nUNO,Ubisoft,1\nUNO bis,Ubisoft,1\nFor Honor,Ubisoft,2\nAnno 1800,Ubisoft,3\n',
+      TAG,
+      [2],
+    );
+
+    expect(report).toMatchObject({
+      queued: [{ store: 'ubisoft', entries: 2 }],
+      duplicates: 1,
+    });
+    const [, job] = vi.mocked(enqueueFileImport).mock.calls[0]!;
+    expect(job.entries.map((entry) => entry.name)).toEqual([
+      'UNO',
+      'Anno 1800',
+    ]);
+  });
+
+  it('niente da accodare: nessun tag, nessun account', async () => {
+    const report = await importCsvFile(
+      userId,
+      'Name,Sources\nUNO,Ubisoft\n',
+      TAG,
+      [0],
+    );
+
+    expect(report).toMatchObject({ tagId: null, queued: [] });
+    expect(vi.mocked(enqueueFileImport)).not.toHaveBeenCalled();
+  });
+
   it('non è una libreria: non compare fra gli account e non si aggiorna da sola', async () => {
     await importCsvFile(userId, 'Name,Sources\nUNO,Ubisoft Connect\n', TAG);
 
@@ -197,6 +228,110 @@ describe('importCsvFile', () => {
       lastImportAt: quando,
       syncing: false,
     });
+  });
+});
+
+describe('previewCsvFile', () => {
+  let userId: string;
+
+  beforeEach(async () => {
+    userId = await createUser();
+  });
+
+  it('dice per ogni riga cosa farebbe l’import, senza scrivere niente', async () => {
+    const { id: nuovo } = await createGame({ igdbId: 10, name: 'Anno 1800' });
+    const { id: gia } = await createGame({ igdbId: 11, name: 'Far Cry 5' });
+    await link(nuovo, 'ubisoft', '3');
+    await link(gia, 'ubisoft', '4');
+    await db.insert(schema.backlog).values({ userId, gameId: gia });
+
+    const rows = await previewCsvFile(
+      userId,
+      [
+        'Name,Sources,Game Id,Platforms,Completion Status',
+        'Anno 1800,Ubisoft Connect,3,,Completed',
+        'Far Cry 5,Ubisoft Connect,4,,',
+        'Hungry Shark World,Ubisoft Connect,5,,',
+        'Anno 1800 di nuovo,Ubisoft Connect,3,,',
+        'Halo,Xbox,6,"Microsoft Xbox One, PC (Windows)",',
+        'Balatro,itch.io,7,,',
+        'Astro Bot,PlayStation,,Sony PlayStation 5,',
+      ].join('\n'),
+    );
+
+    expect(
+      rows.map(({ index, outcome, skipReason, game, platform, status }) => ({
+        index,
+        outcome,
+        skipReason,
+        game: game?.name ?? null,
+        platform,
+        status,
+      })),
+    ).toEqual([
+      {
+        index: 0,
+        outcome: 'new',
+        skipReason: null,
+        game: 'Anno 1800',
+        platform: 'PC (Windows)',
+        status: 'completed',
+      },
+      {
+        index: 1,
+        outcome: 'in_backlog',
+        skipReason: null,
+        game: 'Far Cry 5',
+        platform: 'PC (Windows)',
+        status: 'backlog',
+      },
+      {
+        index: 2,
+        outcome: 'unknown',
+        skipReason: null,
+        game: null,
+        platform: 'PC (Windows)',
+        status: 'backlog',
+      },
+      {
+        index: 3,
+        outcome: 'skipped',
+        skipReason: 'duplicate',
+        game: null,
+        platform: 'PC (Windows)',
+        status: 'backlog',
+      },
+      {
+        index: 4,
+        outcome: 'skipped',
+        skipReason: 'platform',
+        game: null,
+        platform: null,
+        status: 'backlog',
+      },
+      {
+        index: 5,
+        outcome: 'skipped',
+        skipReason: 'no_store',
+        game: null,
+        platform: null,
+        status: 'backlog',
+      },
+      {
+        index: 6,
+        outcome: 'unknown',
+        skipReason: null,
+        game: null,
+        platform: 'Sony PlayStation 5',
+        status: 'backlog',
+      },
+    ]);
+
+    const scritti = await db
+      .select()
+      .from(schema.storeAccounts)
+      .where(eq(schema.storeAccounts.userId, userId));
+    expect(scritti).toEqual([]);
   });
 });
 

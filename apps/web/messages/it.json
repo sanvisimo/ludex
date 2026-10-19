@@ -1044,7 +1044,41 @@
         "noStore": "{count, plural, one {# riga} other {# righe}} senza un negozio che Ludex conosce: {sources}",
         "emptySource": "senza sorgente",
         "seeGames": "Vedi i giochi nel backlog",
-        "close": "Chiudi"
+        "close": "Chiudi",
+        "duplicates": "{count, plural, one {# riga doppia} other {# righe doppie}} nel file: vale la prima",
+        "excluded": "{count, plural, one {# riga esclusa da te} other {# righe escluse da te}}"
+      },
+      "preview": {
+        "title": "Controlla cosa importare",
+        "description": "{file} · {count, plural, one {# riga} other {# righe}}. Togli la spunta a quelle che non vuoi importare.",
+        "filterLabel": "Mostra",
+        "all": "Tutte",
+        "new": "Nuove",
+        "in_backlog": "Già nel backlog",
+        "unknown": "Da riconoscere",
+        "skipped": "Saltate",
+        "search": "Cerca per nome…",
+        "selectAll": "Seleziona le righe visibili",
+        "colFile": "Nel file",
+        "colLudex": "In Ludex",
+        "colStore": "Negozio · piattaforma",
+        "colStatus": "Stato",
+        "colOutcome": "Esito",
+        "outcome": {
+          "new": "Nuovo",
+          "in_backlog": "Già nel backlog",
+          "unknown": "Da riconoscere",
+          "skipped": "Saltata"
+        },
+        "skip": {
+          "no_store": "negozio sconosciuto",
+          "platform": "più console",
+          "duplicate": "doppione nel file"
+        },
+        "empty": "Nessuna riga con questo filtro.",
+        "next": "Avanti",
+        "back": "Indietro",
+        "submit": "{count, plural, =0 {Nessuna riga da importare} one {Importa # riga} other {Importa # righe}}"
       }
     }
   },

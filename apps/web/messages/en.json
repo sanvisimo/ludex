@@ -1045,7 +1045,41 @@
         "noStore": "{count, plural, one {# row} other {# rows}} without a store Ludex knows: {sources}",
         "emptySource": "no source",
         "seeGames": "See the games in your backlog",
-        "close": "Close"
+        "close": "Close",
+        "duplicates": "{count, plural, one {# duplicate row} other {# duplicate rows}} in the file: the first one counts",
+        "excluded": "{count, plural, one {# row excluded by you} other {# rows excluded by you}}"
+      },
+      "preview": {
+        "title": "Check what to import",
+        "description": "{file} · {count, plural, one {# row} other {# rows}}. Untick the ones you don't want to import.",
+        "filterLabel": "Show",
+        "all": "All",
+        "new": "New",
+        "in_backlog": "Already in backlog",
+        "unknown": "To recognise",
+        "skipped": "Skipped",
+        "search": "Search by name…",
+        "selectAll": "Select the visible rows",
+        "colFile": "In the file",
+        "colLudex": "In Ludex",
+        "colStore": "Store · platform",
+        "colStatus": "Status",
+        "colOutcome": "Outcome",
+        "outcome": {
+          "new": "New",
+          "in_backlog": "Already in backlog",
+          "unknown": "To recognise",
+          "skipped": "Skipped"
+        },
+        "skip": {
+          "no_store": "unknown store",
+          "platform": "several consoles",
+          "duplicate": "duplicate in the file"
+        },
+        "empty": "No rows with this filter.",
+        "next": "Next",
+        "back": "Back",
+        "submit": "{count, plural, =0 {No rows to import} one {Import # row} other {Import # rows}}"
       }
     }
   },

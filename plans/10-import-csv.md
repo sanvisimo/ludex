@@ -224,4 +224,32 @@ Playwright su un utente di prova, col vecchio file a più negozi: Amazon 12
 righe e Ubisoft 3 accodate, le 5 Xbox saltate; a import finito 14 giochi
 col tag, 1 scarto («Amazon (CSV)» in Da sistemare), il riquadro con
 «Ultimo import». Due cose rimaste: Ubisoft non ha un'icona in `BrandIcon`
-(un riquadro grigio), e sul telefono il bottone non è a tutta larghezza. 6. Documentazione: `negozi.md`, `ordine-sviluppo.md`, `import-librerie.md`.
+(un riquadro grigio), e sul telefono il bottone non è a tutta larghezza. 5b. **L'anteprima** (chiesta il 19/10/2026, nello stesso lotto): fra il file e
+il resoconto, una tabella delle righe con le spunte per escludere.
+**Livello 2**, deciso: ciò che il parser legge più ciò che il database sa
+già, senza IGDB — per ogni riga «Nuovo» (il gioco collegato a quell'id in
+`external_ids`, non nel backlog), «Già nel backlog», «Da riconoscere» (lo
+cercherà il worker) o «Saltata» col perché (negozio, più console, doppione
+nel file), che non si spunta. Wireframe nei frame 6 e 7 di
+[10-import-csv.excalidraw](10-import-csv.excalidraw), **in revisione**: - nel dialogo «Importa» diventa «Avanti →», che legge il file e apre
+l'anteprima; - le chip in alto sono riepilogo e filtro insieme (Tutte, Nuove, Già nel
+backlog, Da riconoscere, Saltate), con la ricerca per nome; la spunta in
+testa vale per le righe che si vedono; - colonne: nel file, in Ludex, negozio · piattaforma, stato del file,
+esito; «Indietro» e «Importa N righe»; - il dialogo qui si allarga oltre i 720 px; sul telefono una scheda per
+riga.
+
+    Lato server: `csvImport.preview(file)` rende le righe numerate con
+    l'esito, e `csvImport.upload` riceve anche le righe escluse.
+
+    ✅ **Fatta il 19/10/2026**, wireframe approvato. Anteprima e import passano
+    dalla stessa funzione (`planCsvFile`), così l'anteprima mostra esattamente
+    ciò che l'import farà e i numeri delle righe coincidono. Il doppione nel
+    file ora si dice (`duplicates` nel resoconto, «doppione nel file»
+    nell'anteprima) invece di sparire. Provata con Playwright sul vecchio file:
+    20 righe, 14 nuove, 1 da riconoscere, 5 saltate; una riga tolta compare nel
+    resoconto come «1 riga esclusa da te», e riaprendo i giochi appena
+    importati sono «Già nel backlog» mentre la riga esclusa torna «Nuovo».
+    Lo stato del file si mostra solo sulle righe che lo useranno (nuove e da
+    riconoscere).
+
+6. Documentazione: `negozi.md`, `ordine-sviluppo.md`, `import-librerie.md`.

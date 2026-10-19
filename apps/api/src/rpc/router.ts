@@ -108,7 +108,12 @@ import {
 import { pickRandomGame } from '../services/random-game';
 import { deleteUserTag, listUserTags } from '../services/tags';
 import { CsvFileError } from '../services/csv-file';
-import { csvImportStatus, importCsvFile } from '../services/csv-import';
+import {
+  csvImportStatus,
+  importCsvFile,
+  previewCsvFile,
+} from '../services/csv-import';
+
 import {
   findStoreAccount,
   linkSteamWebToken,
@@ -140,6 +145,19 @@ import {
 } from '../queue/imports';
 import { admin, authed, maybeAuthed, os } from './context';
 import { asAdminAuthCall } from './admin-auth';
+
+/**
+ * Un file sbagliato è `BAD_REQUEST` col perché: la schermata dice cosa non va
+ * dalla `reason`, non dal testo. Il resto passa com'è.
+ */
+function csvFileError(error: unknown) {
+  return error instanceof CsvFileError
+    ? new ORPCError('BAD_REQUEST', {
+        message: error.message,
+        data: { reason: error.reason, missing: error.missing },
+      })
+    : error;
+}
 
 /**
  * L'account che si sta ricollegando, se la richiesta ne nomina uno.
@@ -664,16 +682,25 @@ export const router = os.router({
             context.user.id,
             await input.file.text(),
             input.tag,
+            input.exclude,
           );
         } catch (error) {
-          if (error instanceof CsvFileError) {
-            throw new ORPCError('BAD_REQUEST', {
-              message: error.message,
-              // La schermata dice cosa non va dalla `reason`, non dal testo.
-              data: { reason: error.reason, missing: error.missing },
-            });
-          }
-          throw error;
+          throw csvFileError(error);
+        }
+      }),
+
+    preview: os.csvImport.preview
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        try {
+          return {
+            rows: await previewCsvFile(
+              context.user.id,
+              await input.file.text(),
+            ),
+          };
+        } catch (error) {
+          throw csvFileError(error);
         }
       }),
 

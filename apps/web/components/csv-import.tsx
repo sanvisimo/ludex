@@ -8,25 +8,29 @@ import {
   Badge,
   BrandIcon,
   Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Input,
   ScrollView,
   Text,
+  ToggleGroup,
+  ToggleGroupItem,
   XStack,
   YStack,
 } from '@repo/ui';
 import { Download, FileSpreadsheet, Upload } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRef, useState, type ReactNode } from 'react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useFormatter, useLocale, useTranslations } from 'use-intl';
 
 import { useApiErrorMessage } from '@/lib/api-error';
 import { importTagDate } from '@/lib/import-tag';
-import { useStoreLabels } from '@/lib/labels';
+import { useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 import { STORE_BRAND } from '@/lib/store-brand';
 import { ButtonLink } from '@/src/components/button-link';
@@ -53,6 +57,10 @@ const OPTIONAL = [
 ] as const;
 
 type Report = Awaited<ReturnType<typeof client.csvImport.upload>>;
+type PreviewRow = Awaited<
+  ReturnType<typeof client.csvImport.preview>
+>['rows'][number];
+type Outcome = PreviewRow['outcome'];
 
 /** «Importato il 19/10/2026», nella lingua di chi guarda. */
 function useImportTag() {
@@ -139,13 +147,24 @@ function CsvImportDialog({
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
+  // L'anteprima del file (5b) e le righe che l'utente ha tolto, per numero.
+  const [preview, setPreview] = useState<PreviewRow[] | null>(null);
+  const [excluded, setExcluded] = useState<Set<number>>(() => new Set());
   // Il tag si fissa all'apertura: il resoconto deve dire lo stesso nome che
   // il dialogo ha promesso, anche a cavallo della mezzanotte.
   const [tag, setTag] = useState(() => tagFor(new Date()));
 
+  const read = useMutation({
+    mutationFn: (chosen: File) => client.csvImport.preview({ file: chosen }),
+    onSuccess: ({ rows }) => {
+      setPreview(rows);
+      setExcluded(new Set());
+    },
+  });
+
   const upload = useMutation({
     mutationFn: (chosen: File) =>
-      client.csvImport.upload({ file: chosen, tag }),
+      client.csvImport.upload({ file: chosen, tag, exclude: [...excluded] }),
     onSuccess: async (result) => {
       setReport(result);
       await Promise.all([
@@ -163,20 +182,23 @@ function CsvImportDialog({
     }
     setFile(null);
     setReport(null);
+    setPreview(null);
+    read.reset();
     upload.reset();
   };
 
   const pick = (chosen: File | undefined) => {
     if (!chosen) return;
     setFile(chosen);
+    read.reset();
     upload.reset();
   };
 
   const tooBig = file !== null && file.size > MAX_BYTES;
   const error = tooBig
     ? t('errors.tooBig')
-    : upload.error
-      ? uploadError(upload.error)
+    : read.error
+      ? uploadError(read.error)
       : null;
 
   function uploadError(failure: Error) {
@@ -199,12 +221,37 @@ function CsvImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={close}>
-      <DialogContent closeLabel={t('report.close')} maxH="90vh">
+      <DialogContent
+        closeLabel={t('report.close')}
+        maxH="90vh"
+        // L'anteprima è una tabella: oltre i 720 di tutti i dialoghi, come
+        // la galleria delle immagini.
+        maxW={preview && !report ? 1040 : 720}
+      >
         {report ? (
           <CsvImportReport
             report={report}
             tag={tag}
+            excluded={excluded.size}
             onClose={() => close(false)}
+          />
+        ) : preview && file ? (
+          <CsvPreview
+            fileName={file.name}
+            rows={preview}
+            excluded={excluded}
+            onExcludedChange={setExcluded}
+            onBack={() => {
+              setPreview(null);
+              upload.reset();
+            }}
+            onImport={() => upload.mutate(file)}
+            importing={upload.isPending}
+            error={
+              upload.error
+                ? errorMessage(upload.error, { fallback: t('errors.failed') })
+                : null
+            }
           />
         ) : (
           <>
@@ -342,10 +389,10 @@ function CsvImportDialog({
                 {t('cancel')}
               </Button>
               <Button
-                onClick={() => file && upload.mutate(file)}
-                disabled={!file || tooBig || upload.isPending}
+                onClick={() => file && read.mutate(file)}
+                disabled={!file || tooBig || read.isPending}
               >
-                {t('submit')}
+                {t('preview.next')} →
               </Button>
             </DialogFooter>
           </>
@@ -443,10 +490,13 @@ function SourceSteps({ source }: { source: 'playnite' | 'launchbox' }) {
 function CsvImportReport({
   report,
   tag,
+  excluded,
   onClose,
 }: {
   report: Report;
   tag: string;
+  /** Le righe tolte nell'anteprima. */
+  excluded: number;
   onClose: () => void;
 }) {
   const t = useTranslations('account.csvImport');
@@ -494,9 +544,22 @@ function CsvImportReport({
         )}
       </YStack>
 
-      {(report.noPlatform > 0 || noStoreCount > 0) && (
+      {(report.noPlatform > 0 ||
+        noStoreCount > 0 ||
+        report.duplicates > 0 ||
+        excluded > 0) && (
         <YStack gap={4}>
           <Heading>{t('report.skippedTitle')}</Heading>
+          {excluded > 0 && (
+            <Text fontSize={13} lineHeight={18} color="$color11">
+              · {t('report.excluded', { count: excluded })}
+            </Text>
+          )}
+          {report.duplicates > 0 && (
+            <Text fontSize={13} lineHeight={18} color="$color11">
+              · {t('report.duplicates', { count: report.duplicates })}
+            </Text>
+          )}
           {report.noPlatform > 0 && (
             <Text fontSize={13} lineHeight={18} color="$color11">
               · {t('report.noPlatform', { count: report.noPlatform })}
@@ -532,5 +595,279 @@ function CsvImportReport({
         <Button onClick={onClose}>{t('report.close')}</Button>
       </DialogFooter>
     </>
+  );
+}
+
+const OUTCOME_BADGE = {
+  new: 'success',
+  in_backlog: 'secondary',
+  unknown: 'outline',
+  skipped: 'warning',
+} as const;
+
+/** Le colonne della tabella, da `$md`: sotto, una scheda per riga. */
+const COL = { ludex: 200, store: 170, status: 120, outcome: 150 };
+
+/**
+ * L'anteprima (5b): le righe del file con quello che l'import ne farà, e le
+ * spunte per escluderle. Le saltate non si spuntano: dicono perché. Le
+ * etichette in alto sono il riepilogo e il filtro insieme, e la spunta in
+ * testa vale per le righe che si vedono. Wireframe: frame 6 e 7 di
+ * `plans/10-import-csv.excalidraw`.
+ */
+function CsvPreview({
+  fileName,
+  rows,
+  excluded,
+  onExcludedChange,
+  onBack,
+  onImport,
+  importing,
+  error,
+}: {
+  fileName: string;
+  rows: PreviewRow[];
+  excluded: Set<number>;
+  onExcludedChange: (excluded: Set<number>) => void;
+  onBack: () => void;
+  onImport: () => void;
+  importing: boolean;
+  error: string | null;
+}) {
+  const t = useTranslations('account.csvImport');
+  const storeLabels = useStoreLabels();
+  const statusLabels = useStatusLabels();
+  const [filter, setFilter] = useState<'all' | Outcome>('all');
+  const [query, setQuery] = useState('');
+
+  const counts = useMemo(() => {
+    const result: Record<'all' | Outcome, number> = {
+      all: rows.length,
+      new: 0,
+      in_backlog: 0,
+      unknown: 0,
+      skipped: 0,
+    };
+    for (const row of rows) result[row.outcome]++;
+    return result;
+  }, [rows]);
+
+  const visible = useMemo(() => {
+    const cerca = query.trim().toLowerCase();
+    return rows.filter(
+      (row) =>
+        (filter === 'all' || row.outcome === filter) &&
+        (!cerca ||
+          row.name.toLowerCase().includes(cerca) ||
+          row.game?.name.toLowerCase().includes(cerca)),
+    );
+  }, [rows, filter, query]);
+
+  const selectable = visible.filter((row) => row.outcome !== 'skipped');
+  const selected = selectable.filter((row) => !excluded.has(row.index));
+  const allChecked =
+    selectable.length > 0 && selected.length === selectable.length
+      ? true
+      : selected.length > 0
+        ? 'indeterminate'
+        : false;
+  const toImport = rows.filter(
+    (row) => row.outcome !== 'skipped' && !excluded.has(row.index),
+  ).length;
+
+  const toggle = (indexes: number[], include: boolean) => {
+    const next = new Set(excluded);
+    for (const index of indexes) {
+      if (include) next.delete(index);
+      else next.add(index);
+    }
+    onExcludedChange(next);
+  };
+
+  const where = (row: PreviewRow) =>
+    [row.store ? storeLabels[row.store] : row.source || '—', row.platform]
+      .filter(Boolean)
+      .join(' · ');
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>{t('preview.title')}</DialogTitle>
+        <DialogDescription>
+          {t('preview.description', { file: fileName, count: rows.length })}
+        </DialogDescription>
+      </DialogHeader>
+
+      <XStack gap={12} items="center" flexWrap="wrap">
+        {/* Le etichette scorrono di lato sul telefono, invece di andare a
+            capo e spingere giù la tabella. */}
+        <XStack
+          maxW="100%"
+          style={{ overflowX: 'auto', scrollbarWidth: 'none' }}
+        >
+          <ToggleGroup
+            value={filter}
+            onValueChange={(value) => setFilter(value as 'all' | Outcome)}
+            label={t('preview.filterLabel')}
+          >
+            {(['all', 'new', 'in_backlog', 'unknown', 'skipped'] as const).map(
+              (value) => (
+                <ToggleGroupItem key={value} value={value}>
+                  <Text fontSize={13} color="$color12" whiteSpace="nowrap">
+                    {t(`preview.${value}`)} {counts[value]}
+                  </Text>
+                </ToggleGroupItem>
+              ),
+            )}
+          </ToggleGroup>
+        </XStack>
+        <YStack grow={1} flexBasis={200}>
+          <Input
+            value={query}
+            onChangeText={setQuery}
+            placeholder={t('preview.search')}
+            aria-label={t('preview.search')}
+          />
+        </YStack>
+      </XStack>
+
+      {/* L'intestazione: la spunta di tutte le righe visibili, e i nomi delle
+          colonne che da $md ci sono. */}
+      <XStack items="center" gap={12} px={8} py={8} rounded={8} bg="$color3">
+        <Checkbox
+          checked={allChecked}
+          disabled={selectable.length === 0}
+          onCheckedChange={() =>
+            toggle(
+              selectable.map((row) => row.index),
+              allChecked !== true,
+            )
+          }
+          aria-label={t('preview.selectAll')}
+        />
+        <YStack grow={1} shrink={1} minW={0}>
+          <HeaderText>{t('preview.colFile')}</HeaderText>
+        </YStack>
+        <YStack width={COL.ludex} $max-md={{ display: 'none' }}>
+          <HeaderText>{t('preview.colLudex')}</HeaderText>
+        </YStack>
+        <YStack width={COL.store} $max-md={{ display: 'none' }}>
+          <HeaderText>{t('preview.colStore')}</HeaderText>
+        </YStack>
+        <YStack width={COL.status} $max-md={{ display: 'none' }}>
+          <HeaderText>{t('preview.colStatus')}</HeaderText>
+        </YStack>
+        <YStack width={COL.outcome} $max-md={{ display: 'none' }}>
+          <HeaderText>{t('preview.colOutcome')}</HeaderText>
+        </YStack>
+      </XStack>
+
+      <ScrollView mx={-16} px={16} shrink={1} minH={0}>
+        <YStack>
+          {visible.length === 0 && (
+            <Text fontSize={13} color="$color11" py={16}>
+              {t('preview.empty')}
+            </Text>
+          )}
+          {visible.map((row) => {
+            const skipped = row.outcome === 'skipped';
+            return (
+              <XStack
+                key={row.index}
+                items="center"
+                gap={12}
+                px={8}
+                py={8}
+                borderBottomWidth={1}
+                borderColor="$borderColor"
+                opacity={skipped ? 0.6 : 1}
+              >
+                <Checkbox
+                  checked={!skipped && !excluded.has(row.index)}
+                  disabled={skipped}
+                  onCheckedChange={(checked) =>
+                    toggle([row.index], checked === true)
+                  }
+                  aria-label={row.name}
+                />
+                <YStack grow={1} shrink={1} minW={0} gap={2}>
+                  <Text color="$color12" numberOfLines={1}>
+                    {row.name}
+                  </Text>
+                  {/* Sul telefono le colonne vanno qui sotto, in una riga. */}
+                  <YStack $md={{ display: 'none' }}>
+                    <Text fontSize={12} lineHeight={16} color="$color11">
+                      {[
+                        where(row),
+                        row.outcome === 'new' ? statusLabels[row.status] : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </Text>
+                  </YStack>
+                </YStack>
+                <YStack width={COL.ludex} $max-md={{ display: 'none' }}>
+                  <CellText>{row.game?.name ?? '—'}</CellText>
+                </YStack>
+                <YStack width={COL.store} $max-md={{ display: 'none' }}>
+                  <CellText>{where(row)}</CellText>
+                </YStack>
+                <YStack width={COL.status} $max-md={{ display: 'none' }}>
+                  {/* Lo stato del file vale solo per i giochi nuovi: altrove
+                      non lo si scrive, per non promettere quello che non fa. */}
+                  <CellText>
+                    {row.outcome === 'skipped' || row.outcome === 'in_backlog'
+                      ? '—'
+                      : statusLabels[row.status]}
+                  </CellText>
+                </YStack>
+                <YStack
+                  width={COL.outcome}
+                  items="flex-start"
+                  $max-md={{ width: 'auto' }}
+                >
+                  <Badge variant={OUTCOME_BADGE[row.outcome]}>
+                    {skipped && row.skipReason
+                      ? `${t('preview.outcome.skipped')}: ${t(`preview.skip.${row.skipReason}`)}`
+                      : t(`preview.outcome.${row.outcome}`)}
+                  </Badge>
+                </YStack>
+              </XStack>
+            );
+          })}
+        </YStack>
+      </ScrollView>
+
+      {error && (
+        <Text fontSize={13} lineHeight={18} color="$red11" role="alert">
+          {error}
+        </Text>
+      )}
+
+      <DialogFooter>
+        <Button variant="outline" onClick={onBack} mr="auto">
+          ← {t('preview.back')}
+        </Button>
+        <Button onClick={onImport} disabled={toImport === 0 || importing}>
+          {t('preview.submit', { count: toImport })}
+        </Button>
+      </DialogFooter>
+    </>
+  );
+}
+
+function HeaderText({ children }: { children: ReactNode }) {
+  return (
+    <Text fontSize={12} lineHeight={16} color="$color11">
+      {children}
+    </Text>
+  );
+}
+
+function CellText({ children }: { children: ReactNode }) {
+  return (
+    <Text fontSize={13} lineHeight={18} color="$color11" numberOfLines={1}>
+      {children}
+    </Text>
   );
 }
