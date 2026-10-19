@@ -1165,6 +1165,10 @@
         "p2": "Demo e beta non si agganciano più a un gioco omonimo, come la demo di Castlevania: Belmont’s Curse finita sul Castlevania del 1986: finiscono fra le voci nascoste.",
         "p3": "Una voce dei «Da sistemare» collegata a mano resta com’era nella libreria: una copia della famiglia Steam o del PlayStation Plus non diventa un acquisto, e un disco resta un disco."
       },
+      "release": {
+        "title": "Ludex aperto a tutti",
+        "text": "Un server stabile al posto di quello di prova, senza codice d'accesso all'ingresso: con la conferma dell'email e il recupero della password."
+      },
       "subscriptions": {
         "title": "Gli abbonamenti",
         "text": "PS Plus, Game Pass e gli altri: capire quali giochi della tua libreria sono tuoi e quali ci sono finché l'abbonamento resta attivo."

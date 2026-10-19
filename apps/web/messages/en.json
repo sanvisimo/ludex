@@ -1166,6 +1166,10 @@
         "p2": "Demos and betas no longer match a game with the same name, like the Castlevania: Belmont’s Curse demo landing on the 1986 Castlevania: they go to the hidden entries.",
         "p3": "An entry from “Needs attention” that you link by hand stays as it was in the library: a Steam Family or PlayStation Plus copy doesn’t become a purchase, and a disc stays a disc."
       },
+      "release": {
+        "title": "Ludex open to everyone",
+        "text": "A stable server instead of the test one, with no access code at the door: with email confirmation and password recovery."
+      },
       "subscriptions": {
         "title": "Subscriptions",
         "text": "PS Plus, Game Pass and the rest: telling apart the games in your library that are yours from the ones that are there while the subscription lasts."
