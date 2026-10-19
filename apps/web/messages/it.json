@@ -590,6 +590,7 @@
     "epic": "Epic",
     "ea": "EA",
     "battlenet": "Battle.net",
+    "ubisoft": "Ubisoft Connect",
     "amazon": "Amazon",
     "psn": "PlayStation Store",
     "xbox": "Xbox",
@@ -970,6 +971,115 @@
       "search": "Cerca per nome…",
       "allStores": "Negozio: tutti",
       "noMatch": "Nessuna voce con questi filtri."
+    },
+    "csvImport": {
+      "title": "Da un file CSV",
+      "description": "Giochi di negozi che Ludex non collega, come Ubisoft Connect e Battle.net, o di quelli che non vuoi collegare: per esempio l'export di Playnite.",
+      "open": "Importa da CSV",
+      "lastImport": "Ultimo import: {date} · tag «{tag}»",
+      "syncing": "importazione in corso…",
+      "tag": "Importato il {date}",
+      "dialogTitle": "Importa da un file CSV",
+      "dialogDescription": "Una riga per gioco. I giochi nuovi entrano nel backlog col tag «{tag}».",
+      "example": "Scarica il CSV d'esempio",
+      "columnsTitle": "Le colonne",
+      "required": "Obbligatorie",
+      "optional": "Facoltative",
+      "columns": {
+        "name": "il nome del gioco",
+        "sources": "il negozio: Steam, GOG, Epic, Amazon, EA app, Ubisoft Connect, Battle.net, PlayStation, Nintendo, Xbox",
+        "gameId": "l'id del negozio; senza, la riga si riconosce dal nome",
+        "platforms": "una sola, per i negozi console: Sony PlayStation 5, Nintendo Switch…",
+        "releaseDate": "aiuta a scegliere fra due giochi con lo stesso nome",
+        "links": "il link alla pagina Steam aiuta a trovare il gioco",
+        "timePlayed": "il tempo giocato, in secondi come lo scrive Playnite",
+        "lastPlayed": "la data dell'ultima partita",
+        "completionStatus": "Plan to Play, Playing, Beaten, Completed, Abandoned, Won't Play…",
+        "categories": "le tue categorie, separate da virgola"
+      },
+      "columnsNote": "Colonne separate da virgole o da tabulazioni; date come 2026-10-19 o 19/10/2026. Le altre colonne si ignorano, e valgono anche i nomi di Playnite e LaunchBox, in italiano compresi (Nome, Titolo, Sorgenti, Fonte…).",
+      "sourcesTitle": "Da dove prendere il file",
+      "playnite": {
+        "title": "Playnite",
+        "steps": [
+          "In Playnite apri Componenti aggiuntivi → Sfoglia, cerca «Library Exporter Advanced» e installalo.",
+          "Aprila dal menu delle estensioni e spunta le colonne qui sopra: in Playnite in italiano si chiamano Nome, Sorgenti, Id del gioco e così via.",
+          "Premi «Esporta tutti i giochi» e carica qui il file così com'è."
+        ]
+      },
+      "launchbox": {
+        "title": "LaunchBox",
+        "steps": [
+          "Passa alla vista a elenco: servono almeno le colonne Title e Source, e con Application Path Ludex prende anche l'id del gioco.",
+          "Seleziona i giochi (Ctrl+A per tutti), copiali (Ctrl+C) e incollali in un file di testo.",
+          "Salvalo, anche come .txt, e caricalo qui così com'è."
+        ]
+      },
+      "drop": "Trascina qui il file .csv o .txt oppure",
+      "choose": "Scegli il file",
+      "change": "Cambia file",
+      "fileLabel": "Il file CSV",
+      "notes": [
+        "I giochi che hai già da un negozio collegato non si doppiano.",
+        "Stato e categorie del file valgono solo per i giochi che non hai ancora in Ludex.",
+        "Quelli che Ludex non riconosce vanno in «Da sistemare»."
+      ],
+      "cancel": "Annulla",
+      "submit": "Importa",
+      "errors": {
+        "missing_columns": "Al file {count, plural, one {manca la colonna} other {mancano le colonne}} {columns}: guarda la tabella qui sopra.",
+        "not_csv": "Il file non è un CSV che si riesce a leggere.",
+        "empty": "Il file non ha righe di giochi.",
+        "tooBig": "Il file supera i 10 MB.",
+        "failed": "Non sono riuscito a importare il file."
+      },
+      "report": {
+        "title": "Importazione avviata",
+        "description": "I giochi nuovi arrivano nel backlog in qualche minuto, col tag «{tag}».",
+        "nothing": "Nel file non c'è nessuna riga che Ludex sappia importare.",
+        "rows": "{count, plural, one {# riga} other {# righe}}",
+        "alreadyRunning": "c'è già un import in corso: carica di nuovo il file quando finisce",
+        "skippedTitle": "Righe saltate",
+        "noPlatform": "{count, plural, one {# riga di un negozio console} other {# righe di negozi console}} senza una piattaforma sola che Ludex conosce: non sappiamo su quale ce l'hai",
+        "noStore": "{count, plural, one {# riga} other {# righe}} senza un negozio che Ludex conosce: {sources}",
+        "emptySource": "senza sorgente",
+        "seeGames": "Vedi i giochi nel backlog",
+        "close": "Chiudi",
+        "duplicates": "{count, plural, one {# riga doppia} other {# righe doppie}} nel file: vale la prima",
+        "excluded": "{count, plural, one {# riga esclusa da te} other {# righe escluse da te}}"
+      },
+      "preview": {
+        "title": "Controlla cosa importare",
+        "description": "{file} · {count, plural, one {# riga} other {# righe}}. Togli la spunta a quelle che non vuoi importare.",
+        "filterLabel": "Mostra",
+        "all": "Tutte",
+        "new": "Nuove",
+        "in_backlog": "Già nel backlog",
+        "unknown": "Da riconoscere",
+        "skipped": "Saltate",
+        "search": "Cerca per nome…",
+        "selectAll": "Seleziona le righe visibili",
+        "colFile": "Nel file",
+        "colLudex": "In Ludex",
+        "colStore": "Negozio · piattaforma",
+        "colStatus": "Stato",
+        "colOutcome": "Esito",
+        "outcome": {
+          "new": "Nuovo",
+          "in_backlog": "Già nel backlog",
+          "unknown": "Da riconoscere",
+          "skipped": "Saltata"
+        },
+        "skip": {
+          "no_store": "negozio sconosciuto",
+          "platform": "più console",
+          "duplicate": "doppione nel file"
+        },
+        "empty": "Nessuna riga con questo filtro.",
+        "next": "Avanti",
+        "back": "Indietro",
+        "submit": "{count, plural, =0 {Nessuna riga da importare} one {Importa # riga} other {Importa # righe}}"
+      }
     }
   },
   "critic": {
@@ -1055,6 +1165,10 @@
         "p2": "Demo e beta non si agganciano più a un gioco omonimo, come la demo di Castlevania: Belmont’s Curse finita sul Castlevania del 1986: finiscono fra le voci nascoste.",
         "p3": "Una voce dei «Da sistemare» collegata a mano resta com’era nella libreria: una copia della famiglia Steam o del PlayStation Plus non diventa un acquisto, e un disco resta un disco."
       },
+      "release": {
+        "title": "Ludex aperto a tutti",
+        "text": "Un server stabile al posto di quello di prova, senza codice d'accesso all'ingresso: con la conferma dell'email e il recupero della password."
+      },
       "subscriptions": {
         "title": "Gli abbonamenti",
         "text": "PS Plus, Game Pass e gli altri: capire quali giochi della tua libreria sono tuoi e quali ci sono finché l'abbonamento resta attivo."
@@ -1078,7 +1192,9 @@
       },
       "csv": {
         "title": "Importa da un file CSV",
-        "text": "Porta in Ludex una libreria che hai già altrove, per esempio l'export di Playnite."
+        "p1": "In Librerie, «Importa da CSV» porta in Ludex i giochi di negozi che non si collegano, come Ubisoft Connect e Battle.net, o di quelli che non vuoi collegare. Va bene l'export di Playnite, la vista a elenco di LaunchBox incollata in un file di testo, o un CSV scritto a mano partendo da quello d'esempio.",
+        "p2": "Prima di importare vedi riga per riga cosa succederà — gioco nuovo, già nel backlog, da riconoscere o saltato, e perché — e togli la spunta a quello che non vuoi.",
+        "p3": "I giochi nuovi entrano con lo stato e le categorie del file e col tag «Importato il…», anche quelli che colleghi a mano dopo. Quelli che hai già da un negozio collegato non si doppiano."
       },
       "randomFilter": {
         "title": "Il gioco a caso dal filtro",

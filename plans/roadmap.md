@@ -31,9 +31,16 @@ segnalazioni spostate dalla mail alle issue di GitHub.
 
 ## Da sapere
 
-- «In corso» oggi non ha voci, e il tipo le prevede già.
+- **Il 19/10/2026** «Importa da un file CSV» (`csv`) è passata a «Fatto», con
+  tre punti al posto del testo (era «In corso» dal 16/10): il lotto 10, piano
+  in [10-import-csv.md](10-import-csv.md). In «In corso» resta Xbox.
 - I mesi delle voci fatte sono approssimati: la storia dei commit è fatta di
   merge, non di step. Si correggono in `lib/roadmap.ts`.
+- **Il 18/10/2026** «Importa da un file CSV» (`csv`) e «La libreria Xbox»
+  (`xbox`) sono passate a «In corso», insieme. Subito dopo, in cima a «In
+  arrivo», è entrata «Ludex aperto a tutti» (`release`), area Account: il
+  rilascio su un server stabile, piano in [rilascio.md](rilascio.md). Gli
+  abbonamenti scendono dopo il rilascio.
 - **EA è passata a «Fatto» il 13/10/2026** (era «In arrivo» dal 09/10, poi «In
   corso»): l'importazione una tantum, piano in [9c-ea.md](9c-ea.md).
 - **Ancora il 16/10/2026**, a lotto chiuso: «Il gioco a caso dal filtro»

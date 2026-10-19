@@ -473,10 +473,15 @@ export async function removeFromBacklog(userId: string, id: string) {
  *
  * Restituisce la mappa gameId → backlogId per *tutte* le righe chieste, e
  * l'insieme di quelle appena create — che al chiamante serve per il resoconto.
+ *
+ * `statusAtBirth` è lo stato con cui nasce una riga, e vale **solo alla
+ * nascita**, per la stessa regola: lo porta l'import da CSV (10), dove lo
+ * stato è un dato dell'utente. Senza, la riga nasce `backlog`.
  */
 export async function ensureBacklogEntries(
   userId: string,
   gameIds: string[],
+  statusAtBirth?: Map<string, BacklogStatus>,
 ): Promise<{ byGameId: Map<string, string>; created: Set<string> }> {
   const byGameId = new Map<string, string>();
   const created = new Set<string>();
@@ -490,7 +495,13 @@ export async function ensureBacklogEntries(
   for (const page of chunk(unique, WRITE_CHUNK)) {
     const inserted = await db
       .insert(schema.backlog)
-      .values(page.map((gameId) => ({ userId, gameId })))
+      .values(
+        page.map((gameId) => ({
+          userId,
+          gameId,
+          status: statusAtBirth?.get(gameId),
+        })),
+      )
       .onConflictDoNothing({
         target: [schema.backlog.userId, schema.backlog.gameId],
       })
@@ -645,6 +656,12 @@ export type OwnershipUpsert = {
   medium?: Medium | null;
   /** Nullo = il negozio non lo dà. Vedi la colonna omonima su `ownerships`. */
   storePage?: string | null;
+  /**
+   * La copia viene dall'import da CSV (10, `store_accounts.from_file`):
+   * non si scrive se la stessa copia c'è già da un altro account, e cede il
+   * posto a quella di un collegamento vero. Vedi `togliGiaPossedute`.
+   */
+  fromFile?: boolean;
 };
 
 /**
@@ -708,6 +725,15 @@ async function adottaPossessiMenoSpecifici(rows: OwnershipUpsert[]) {
 
   if (esistenti.length === 0) return;
 
+  // Le copie dell'import da CSV (10) si adottano come quelle senza account,
+  // ma solo da un collegamento vero: il file dice «ce l'ho su Ubisoft», e il
+  // collegamento dice lo stesso sapendo anche da quale account.
+  const daFile = await fileAccountIds(
+    esistenti.flatMap((riga) =>
+      riga.storeAccountId ? [riga.storeAccountId] : [],
+    ),
+  );
+
   const occupate = new Set(esistenti.map(chiavePossesso));
   // Una riga meno specifica si adotta una volta sola, e una destinazione la
   // sistema una riga sola: senza questi due insiemi la seconda passata
@@ -737,7 +763,8 @@ async function adottaPossessiMenoSpecifici(rows: OwnershipUpsert[]) {
           riga.backlogId === row.backlogId &&
           riga.platformSlug === row.platformSlug &&
           (riga.storeAccountId === null ||
-            riga.storeAccountId === (row.storeAccountId ?? null)) &&
+            riga.storeAccountId === (row.storeAccountId ?? null) ||
+            (!row.fromFile && daFile.has(riga.storeAccountId))) &&
           (riga.store === null || riga.store === (row.store ?? null)) &&
           (esatto
             ? riga.medium !== null && riga.medium === (row.medium ?? null)
@@ -781,6 +808,72 @@ async function adottaPossessiMenoSpecifici(rows: OwnershipUpsert[]) {
       .delete(schema.ownerships)
       .where(inArray(schema.ownerships.id, daCancellare));
   }
+}
+
+/** Fra questi account, quelli interni dell'import da CSV (10). */
+async function fileAccountIds(storeAccountIds: string[]) {
+  const ids = [...new Set(storeAccountIds)];
+  if (ids.length === 0) return new Set<string>();
+  const rows = await db
+    .select({ id: schema.storeAccounts.id })
+    .from(schema.storeAccounts)
+    .where(
+      and(
+        inArray(schema.storeAccounts.id, ids),
+        eq(schema.storeAccounts.fromFile, true),
+      ),
+    );
+  return new Set(rows.map((row) => row.id));
+}
+
+/**
+ * Toglie dalle copie in arrivo da un file (10) quelle che l'utente ha già
+ * **da un altro account**: stesso gioco, piattaforma, negozio e supporto. È il
+ * «salta i doppioni» del file: chi ha Steam collegato e carica l'export di
+ * Playnite con dentro anche Steam non si ritrova due copie Steam per gioco.
+ *
+ * Una copia senza account (scritta a mano) non conta: quella l'adozione la fa
+ * propria, come per ogni import.
+ */
+async function togliGiaPossedute(rows: OwnershipUpsert[]) {
+  const daFile = rows.filter((row) => row.fromFile);
+  if (daFile.length === 0) return rows;
+
+  const esistenti = await db
+    .select({
+      backlogId: schema.ownerships.backlogId,
+      platformSlug: schema.ownerships.platformSlug,
+      store: schema.ownerships.store,
+      storeAccountId: schema.ownerships.storeAccountId,
+      medium: schema.ownerships.medium,
+    })
+    .from(schema.ownerships)
+    .where(
+      inArray(schema.ownerships.backlogId, [
+        ...new Set(daFile.map((row) => row.backlogId)),
+      ]),
+    );
+
+  const copia = (row: {
+    backlogId: string;
+    platformSlug: string;
+    store?: Store | null;
+    medium?: Medium | null;
+  }) =>
+    [row.backlogId, row.platformSlug, row.store ?? '', row.medium ?? ''].join(
+      '|',
+    );
+
+  return rows.filter(
+    (row) =>
+      !row.fromFile ||
+      !esistenti.some(
+        (riga) =>
+          riga.storeAccountId !== null &&
+          riga.storeAccountId !== (row.storeAccountId ?? null) &&
+          copia(riga) === copia(row),
+      ),
+  );
 }
 
 /**
@@ -835,7 +928,7 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
   let created = 0;
 
   for (const page of chunk(fondiDoppioni(rows), WRITE_CHUNK)) {
-    const scritte = await togliRifiutati(page);
+    const scritte = await togliGiaPossedute(await togliRifiutati(page));
     if (scritte.length === 0) continue;
 
     await adottaPossessiMenoSpecifici(scritte);

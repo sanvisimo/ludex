@@ -605,3 +605,33 @@ rinasconde, e gli scarti che c'erano già non cambiano. Vale per tutti i negozi:
 anche le voci in più di un prodotto Epic con quei nomi (_Barony (Beta)_,
 _Chivalry 2 - Public Testing_) nascono nascoste invece che fra i «Possibili
 doppioni».
+
+## L'import da CSV (10)
+
+Fatto il 19/10/2026; misure, decisioni e wireframe in
+[il piano](../plans/10-import-csv.md). Un file non è una libreria, ma passa
+dalla stessa strada di ogni import (`importLibrary`), e da lì le sue regole:
+
+- **un account interno per negozio** del file (`store_accounts.from_file`,
+  `external_account_id = 'csv'`, nome «CSV»), che non compare fra gli account,
+  non si aggiorna da solo, non ha «aggiorna» né wishlist. Uno per negozio e non
+  uno solo, perché `importLibrary` lavora su un negozio per volta e pota gli
+  scarti che non ha visto: con più negozi sullo stesso account ognuno
+  cancellerebbe quelli degli altri. Gli scarti si leggono «Ubisoft Connect ·
+  CSV».
+- **i doppioni non si scrivono**: una copia del CSV che l'utente ha già da un
+  altro account (stesso gioco, piattaforma, negozio e supporto) si salta
+  (`togliGiaPossedute`), e un collegamento vero dello stesso negozio **adotta**
+  le copie del CSV come quelle scritte a mano (`adottaPossessiMenoSpecifici`).
+- **stato, categorie e tag solo alla nascita** della riga di backlog: lo stato
+  e le categorie del file, e il tag «Importato il {data}» del caricamento. Chi
+  c'era già non li prende, e i tag non si accumulano a ogni caricamento. Gli
+  scarti li conservano (`unresolved_imports.at_birth`), e collegati a mano li
+  applicano con la stessa regola.
+- **la ricerca**: nome con l'anno, poi senza (le date di Playnite sono spesso
+  della riedizione), poi l'appid Steam dei `Collegamenti`, che è metadata di
+  Playnite e può mentire (`resolveByNameWithFallbacks`).
+- **senza id** la riga si riconosce dal nome: l'id esterno è `name:` più il
+  nome minuscolo, e non può coincidere con un id vero del negozio.
+- **le righe console** vogliono una piattaforma sola: quelle con più console
+  (le Xbox di Playnite) si saltano, finché non si decide cosa significano.
