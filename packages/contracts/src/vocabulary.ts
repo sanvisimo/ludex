@@ -128,10 +128,18 @@ export const storeAccountStatusValues = [
 // `ea_play` arriva col 9c: EA Play, anche quello preso dentro Game Pass, Steam o
 // Epic. EA lo dice nei modi di possesso della voce (`VAULT`, `XGP_VAULT`,
 // `STEAM_VAULT`…), e lo è solo se nessuno di quei modi è un acquisto.
+//
+// `game_pass` e `games_with_gold` arrivano col 9e (`plans/9e-xbox.md`).
+// `games_with_gold`: le voci di Collections con `licensingRequired`, giocabili
+// solo con l'abbonamento. `game_pass`: i giochi dello storico Xbox che
+// Collections non ha (tolti i `Win32`, che sono di altri negozi), anche quelli
+// usciti dal catalogo del Game Pass.
 export const subscriptionValues = [
   'ps_plus',
   'steam_family',
   'ea_play',
+  'game_pass',
+  'games_with_gold',
 ] as const;
 
 // **Su che supporto** sta una copia: un diritto digitale o un disco.

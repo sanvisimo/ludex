@@ -1098,7 +1098,9 @@
   "subscription": {
     "ps_plus": "PS Plus",
     "steam_family": "Famiglia Steam",
-    "ea_play": "EA Play"
+    "ea_play": "EA Play",
+    "game_pass": "Game Pass",
+    "games_with_gold": "Games with Gold"
   },
   "medium": {
     "digital": "Digitale",
