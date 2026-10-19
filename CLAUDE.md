@@ -21,7 +21,9 @@ Nasce dall'assenza di un equivalente mobile di Playnite.
 - **Mobile**: Expo + React Native
 - **Monorepo**: pnpm + Turborepo
 - **LLM**: nessun provider vincolato (Anthropic, OpenAI, llama locale o altro). Il
-  provider sta dietro un'interfaccia interna stretta, la scelta si fa allo step 13.
+  provider sta dietro un'interfaccia interna stretta, la scelta si fa allo step 13
+  **misurando**: qualità e costo di due o tre modelli sulle stesse richieste vere,
+  non per preferenza a priori.
 
 I due usi dell'LLM **non sono sostituibili allo stesso modo**:
 
@@ -31,7 +33,10 @@ I due usi dell'LLM **non sono sostituibili allo stesso modo**:
   accanto al vettore _quale modello l'ha prodotto_, così la migrazione resta
   gestibile. Nota: Anthropic non espone un endpoint di embeddings.
 
-Tutto TypeScript/Node. Non introdurre altri linguaggi nello stack.
+Tutto TypeScript/Node, per preferenza e non per divieto: un altro linguaggio
+(per esempio un servizio Python) entra se porta qualcosa che in TypeScript non
+c'è o costerebbe molto di più, e allora si aggiorna questo file. Vale per ogni
+scelta scritta qui: se le cose cambiano, cambia anche il file.
 
 **Scelte già scartate, da non riproporre**: NestJS, Express, tRPC (sostituito da
 oRPC), Prisma, backend Python, fine-tuning, Base UI + shadcn, react-strict-dom,
