@@ -272,4 +272,13 @@ valgono anche per LaunchBox; - **il tempo** come `12h 34m 56s`.
     compreso, grazie all'import di Playnite fatto prima. Il dialogo accetta
     `.txt` e i passi del riquadro LaunchBox sono riscritti così.
 
-6. Documentazione: `negozi.md`, `ordine-sviluppo.md`, `import-librerie.md`.
+5d. ✅ **Gli scarti collegati a mano** (19/10/2026, trovato dall'utente con
+_Prince of Persia_ e _MONOPOLY_ di `launhc_2.txt`). Stato, categorie e tag
+del file valevano solo nel job: uno scarto collegato a mano nasceva nudo.
+Ora `unresolved_imports.at_birth` (jsonb, migration `0058`) li conserva,
+l'import la scrive e il reimport la riscrive, e `resolveUnresolvedImport`
+li applica alla nascita con la stessa funzione dell'import
+(`tagNewEntries`); su un gioco che c'era già non cambia niente. Vale anche
+per «Collega per tutti». Sul DB di sviluppo: il tag aggiunto a mano a
+_Prince of Persia_, già collegato, e `at_birth` riempita sui tre scarti
+del CSV ancora aperti. 6. Documentazione: `negozi.md`, `ordine-sviluppo.md`, `import-librerie.md`.

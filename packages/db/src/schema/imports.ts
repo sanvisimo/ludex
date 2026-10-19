@@ -1,4 +1,5 @@
 import {
+  type BacklogStatus,
   hiddenKindValues,
   storeAccountStatusValues,
   wishlistErrorValues,
@@ -9,6 +10,7 @@ import {
   customType,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -224,6 +226,16 @@ export const unresolvedImports = pgTable(
     // diventava _Amazon_): le decide l'utente, nella tab «Possibili doppioni».
     // Nulla per tutte le altre.
     sameProductAs: text('same_product_as'),
+    // Ciò che la riga di backlog prende **alla nascita**, se la voce porta dati
+    // dell'utente: stato, categorie e tag dell'import da CSV (10). Senza, uno
+    // scarto collegato a mano nasceva nudo, mentre lo stesso gioco riconosciuto
+    // dall'import li avrebbe presi. Nulla per i negozi, e sugli scarti del CSV
+    // nati prima della colonna: la riempie il prossimo caricamento del file.
+    atBirth: jsonb('at_birth').$type<{
+      status?: BacklogStatus;
+      categories?: string[];
+      tags?: string[];
+    }>(),
     // Nascosta dall'utente: non compare più fra i «da sistemare».
     //
     // Prima c'era `dismiss`, che **cancellava** la riga — e il prossimo import

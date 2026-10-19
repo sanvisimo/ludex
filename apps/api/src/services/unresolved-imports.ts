@@ -11,7 +11,12 @@ import {
 } from './backlog';
 import { reopenSourcesForNewExternalIds } from './enrichment';
 import { resolveGameFromIgdb } from './games';
-import { hideEntriesFromHiddenUnresolved, platformFor } from './library-import';
+import {
+  birthTags,
+  hideEntriesFromHiddenUnresolved,
+  platformFor,
+  tagNewEntries,
+} from './library-import';
 
 /**
  * Le voci di libreria che l'import non ha saputo legare a un gioco, nascoste
@@ -221,8 +226,18 @@ export async function resolveUnresolvedImport(
   // Collegare a mano un appid Steam è lo stesso evento di quando lo porta IGDB.
   await reopenSourcesForNewExternalIds(inserted);
 
-  const { byGameId, created } = await ensureBacklogEntries(userId, [game.id]);
+  // Stato, categorie e tag del CSV (10) alla nascita, come all'import: se il
+  // gioco c'era già, la riga resta com'è.
+  const birth = pending.atBirth;
+  const { byGameId, created } = await ensureBacklogEntries(
+    userId,
+    [game.id],
+    birth?.status ? new Map([[game.id, birth.status]]) : undefined,
+  );
   const backlogId = byGameId.get(game.id)!;
+  if (birth && created.has(game.id)) {
+    await tagNewEntries(userId, [{ backlogId, tags: birthTags(birth) }]);
+  }
   if (keepHidden && pending.hiddenAt)
     await hideEntriesFromHiddenUnresolved(
       [{ gameId: game.id, hidden: true }],

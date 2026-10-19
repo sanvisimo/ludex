@@ -18,6 +18,7 @@ import { importLibrary } from './library-import';
 import { findAccountsDueForImport } from './library-sync';
 import { csvImportStatus, importCsvFile, previewCsvFile } from './csv-import';
 import { listStoreAccounts } from './store-accounts';
+import { resolveUnresolvedImport } from './unresolved-imports';
 
 // Contro un Postgres vero; IGDB e le code stubbati al confine del modulo, come
 // per i negozi.
@@ -518,6 +519,70 @@ describe('runFileImportJob', () => {
         ),
       );
     expect(scarti).toHaveLength(1);
+  });
+
+  it('uno scarto del CSV collegato a mano nasce con stato, categorie e tag del file', async () => {
+    const scheda = await fileAccount(userId, 'ubisoft');
+    await createGame({ igdbId: 30, name: 'Prince of Persia' });
+    const { id: gia } = await createGame({ igdbId: 31, name: 'MONOPOLY' });
+    await db.insert(schema.backlog).values({ userId, gameId: gia });
+
+    // Nessun risultato su IGDB: tutte e due negli scarti.
+    await runJob(scheda.id, [
+      voce({
+        externalId: '277',
+        name: 'Prince of Persia',
+        status: 'completed',
+        categories: ['worth to play'],
+      }),
+      voce({ externalId: '926', name: 'MONOPOLY', status: 'played' }),
+    ]);
+    const scarti = await db
+      .select({
+        id: schema.unresolvedImports.id,
+        externalId: schema.unresolvedImports.externalId,
+        atBirth: schema.unresolvedImports.atBirth,
+      })
+      .from(schema.unresolvedImports)
+      .where(eq(schema.unresolvedImports.storeAccountId, scheda.id))
+      .orderBy(schema.unresolvedImports.externalId);
+    expect(scarti.map((scarto) => scarto.atBirth)).toEqual([
+      {
+        status: 'completed',
+        categories: ['worth to play'],
+        tags: [TAG],
+      },
+      { status: 'played', tags: [TAG] },
+    ]);
+
+    await resolveUnresolvedImport(userId, scarti[0]!.id, 30);
+    // Su un gioco che c'era già, la riga resta com'è.
+    await resolveUnresolvedImport(userId, scarti[1]!.id, 31);
+
+    expect(
+      (await copie(userId)).map(({ name, status }) => ({ name, status })),
+    ).toEqual([
+      { name: 'MONOPOLY', status: 'backlog' },
+      { name: 'Prince of Persia', status: 'completed' },
+    ]);
+    const tag = await db
+      .select({ game: schema.games.name, name: schema.userTags.name })
+      .from(schema.backlogTags)
+      .innerJoin(
+        schema.userTags,
+        eq(schema.userTags.id, schema.backlogTags.tagId),
+      )
+      .innerJoin(
+        schema.backlog,
+        eq(schema.backlog.id, schema.backlogTags.backlogId),
+      )
+      .innerJoin(schema.games, eq(schema.games.id, schema.backlog.gameId))
+      .where(eq(schema.userTags.userId, userId))
+      .orderBy(schema.userTags.name);
+    expect(tag).toEqual([
+      { game: 'Prince of Persia', name: TAG },
+      { game: 'Prince of Persia', name: 'worth to play' },
+    ]);
   });
 
   it('rifiuta un account che non è da file', async () => {

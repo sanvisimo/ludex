@@ -446,11 +446,48 @@ const PRERELEASE_NAME = /\b(demo|beta|playtest|public test(ing)?)\b/i;
 export const isPrereleaseName = (name: string) => PRERELEASE_NAME.test(name);
 
 /**
+ * Ciò che una voce dà alla riga di backlog **alla nascita**, nella forma di
+ * `unresolved_imports.at_birth`: null se non dà niente, come le voci dei
+ * negozi. Lo scarto lo conserva, e chi lo collega a mano lo applica come
+ * l'avrebbe applicato l'import (`resolveUnresolvedImport`).
+ */
+export function atBirthOf(entry: {
+  status?: BacklogStatus | null;
+  categories?: string[];
+  tags?: string[];
+}) {
+  const categories = entry.categories ?? [];
+  const tags = entry.tags ?? [];
+  if (!entry.status && categories.length === 0 && tags.length === 0) {
+    return null;
+  }
+  return {
+    ...(entry.status ? { status: entry.status } : {}),
+    ...(categories.length > 0 ? { categories } : {}),
+    ...(tags.length > 0 ? { tags } : {}),
+  };
+}
+
+/** Le categorie e i tag di una voce, come li vuole `tagNewEntries`. */
+export function birthTags(entry: {
+  categories?: string[];
+  tags?: string[];
+}): UserTagInput[] {
+  return [
+    ...(entry.categories ?? []).map((name) => ({
+      kind: 'category' as const,
+      name,
+    })),
+    ...(entry.tags ?? []).map((name) => ({ kind: 'tag' as const, name })),
+  ];
+}
+
+/**
  * Tag e categorie dell'utente sulle righe di backlog **appena nate** (10): le
  * categorie del file e il tag dell'import da CSV. Il vocabolario lo crea
  * `ensureUserTags`, che ritrova le parole che l'utente ha già, maiuscole o no.
  */
-async function tagNewEntries(
+export async function tagNewEntries(
   userId: string,
   entries: { backlogId: string; tags: UserTagInput[] }[],
 ) {
@@ -512,6 +549,7 @@ async function recordUnresolved(
           subscription: entry.subscription ?? null,
           medium: entry.medium ?? 'digital',
           sameProductAs: entry.sameProductAs ?? null,
+          atBirth: atBirthOf(entry),
           // Nasce già nascosta se un admin l'ha nascosta per tutti (11a). Solo
           // qui, all'inserimento: il `set` dell'upsert qui sotto non tocca
           // `hidden_at`, e chi la rimette fra i «da sistemare» resta libero.
@@ -542,6 +580,8 @@ async function recordUnresolved(
           subscription: sql`excluded.subscription`,
           medium: sql`excluded.medium`,
           sameProductAs: sql`excluded.same_product_as`,
+          // Quelli dell'ultimo file: è con quello che lo scarto si collega.
+          atBirth: sql`excluded.at_birth`,
           updatedAt: new Date(),
         },
       });
@@ -1294,13 +1334,7 @@ export async function importLibrary(
     userId,
     resolved.flatMap((entry) => {
       const gameId = gameIdByExternalId.get(entry.externalId)!;
-      const tags = [
-        ...(entry.categories ?? []).map((name) => ({
-          kind: 'category' as const,
-          name,
-        })),
-        ...(entry.tags ?? []).map((name) => ({ kind: 'tag' as const, name })),
-      ];
+      const tags = birthTags(entry);
       return created.has(gameId) && tags.length > 0
         ? [{ backlogId: byGameId.get(gameId)!, tags }]
         : [];
