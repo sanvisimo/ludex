@@ -150,9 +150,10 @@ export function storeCoverFallbackUrl(
 
 /**
  * Un negozio che si collega con un login nel browser e un copia-incolla: tutti
- * i collegabili tranne Steam, che ha il suo modo (il QR o il profilo).
+ * i collegabili tranne Steam, che ha il suo modo (il QR o il profilo), e Xbox,
+ * che ha un codice da confermare (9e).
  */
-export type GuidedStore = Exclude<LinkableStore, 'steam'>;
+export type GuidedStore = Exclude<LinkableStore, 'steam' | 'xbox'>;
 
 /** `ok`: sembra quello giusto. `wrong`: non sembra. Nullo: il campo è vuoto. */
 export type PastedLoginCheck = 'ok' | 'wrong' | null;

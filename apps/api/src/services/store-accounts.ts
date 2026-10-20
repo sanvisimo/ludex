@@ -212,11 +212,32 @@ export async function listStoreAccounts(userId: string) {
     ).map((row) => [row.id, steamLoginInfo(row.credentials)]),
   );
 
+  // Le scelte degli account Xbox (9e) stanno nel credenziale, come il tipo di
+  // login Steam: si leggono qui, e del credenziale non esce altro.
+  const xboxChoices = new Map(
+    (
+      await db
+        .select({
+          id: schema.storeAccounts.id,
+          credentials: schema.storeAccounts.credentials,
+        })
+        .from(schema.storeAccounts)
+        .where(
+          and(
+            eq(schema.storeAccounts.userId, userId),
+            eq(schema.storeAccounts.store, 'xbox'),
+            sql`${schema.storeAccounts.credentials} is not null`,
+          ),
+        )
+    ).map((row) => [row.id, xboxSettingsOf(row.credentials)]),
+  );
+
   return Promise.all(
     rows.map(async (row) => ({
       ...row,
       loginKind: steamLogins.get(row.id)?.kind ?? null,
       loginExpiresAt: steamLogins.get(row.id)?.expiresAt ?? null,
+      xbox: xboxChoices.get(row.id) ?? null,
       syncing: await isImportRunning(row.id),
       wishlistSyncing: await isWishlistImportRunning(row.id),
     })),
@@ -1210,6 +1231,10 @@ export function linkStore(
       return linkNintendoAccount(userId, value, options);
     case 'ea':
       return linkEaAccount(userId, value, options);
+    case 'xbox':
+      // Col codice da confermare, non con un valore: `xbox-login.ts`. Il
+      // router lo dice prima di arrivare qui.
+      throw new Error('Xbox si collega col device code');
   }
 }
 
@@ -1491,4 +1516,62 @@ export async function xboxCredentials(
   } catch {
     return requireReauth(account);
   }
+}
+
+/** Le sole scelte di un credenziale Xbox, o null se non si legge. */
+function xboxSettingsOf(credentials: Buffer | null): XboxSettings | null {
+  if (!credentials) return null;
+  try {
+    const { platforms, gamePassActive } =
+      decryptCredentials<XboxStoredCredentials>(credentials);
+    return { platforms, gamePassActive };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Riscrive le scelte di un account Xbox nel credenziale, senza toccare il
+ * token: cambiare una spunta non è un login (decisione del 20/10/2026).
+ *
+ * Rende l'esito invece di alzare, come `requestWishlistImport`: è il router a
+ * sapere come dirlo. Con un import in corso non si scrive niente — l'import
+ * sta usando le scelte di prima, e a fine corsa la libreria non direbbe quali.
+ */
+export async function updateXboxSettings(
+  userId: string,
+  accountId: string,
+  settings: XboxSettings,
+) {
+  const account = await findStoreAccount(userId, accountId);
+  if (
+    !account ||
+    account.store !== 'xbox' ||
+    account.status === 'unlinked' ||
+    !account.credentials
+  ) {
+    return 'not_found' as const;
+  }
+  if (account.status === 'needs_reauth') return 'needs_reauth' as const;
+  if (await isImportRunning(account.id)) return 'running' as const;
+
+  let credentials: XboxStoredCredentials;
+  try {
+    credentials = decryptCredentials<XboxStoredCredentials>(
+      account.credentials,
+    );
+  } catch {
+    return 'needs_reauth' as const;
+  }
+
+  await db
+    .update(schema.storeAccounts)
+    .set({
+      credentials: encryptCredentials({ ...credentials, ...settings }),
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.storeAccounts.id, account.id));
+
+  await enqueueImport('xbox', { storeAccountId: account.id });
+  return 'queued' as const;
 }

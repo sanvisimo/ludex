@@ -367,6 +367,14 @@ export const StoreAccountSchema = z.object({
   loginKind: z.enum(['qr', 'token']).nullish(),
   // Quando scade il token web. Nullo per il QR, che non ha una scadenza da dire.
   loginExpiresAt: z.date().nullish(),
+  // Solo Xbox (9e): le piattaforme spuntate e se il Game Pass è attivo, lette
+  // dal credenziale (mai il token). Nullo altrove.
+  xbox: z
+    .object({
+      platforms: z.array(XboxPlatformSchema),
+      gamePassActive: z.boolean(),
+    })
+    .nullish(),
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
   // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
   syncing: z.boolean(),

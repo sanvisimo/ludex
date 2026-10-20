@@ -63,6 +63,8 @@ export const linkableStoreValues = [
   'psn',
   'nintendo',
   'ea',
+  // Col device code (9e), non con un valore incollato: `accounts.xboxLogin`.
+  'xbox',
 ] as const;
 
 // Le piattaforme che l'utente spunta collegando Xbox (9e): ogni gioco prende una
@@ -380,6 +382,7 @@ export const AUTO_SYNC_EVERY_DAYS: Record<
   amazon: 7,
   psn: 3,
   nintendo: 7,
+  xbox: 7,
 };
 
 export type BacklogStatus = (typeof backlogStatusValues)[number];

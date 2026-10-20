@@ -1,10 +1,10 @@
 # Step 9e — Xbox
 
-**Stato: passi 1–5 fatti (20/10/2026).** Il probe
+**Stato: passi 1–6 fatti (20/10/2026).** Il probe
 (`apps/api/src/scripts/xbox-probe.ts`) è stato lanciato dall'utente, le
-decisioni prese sui suoi dati («Le misure» e «Decisioni»), e il lato server è
-scritto e testato. Prossimo: il passo 6, la scheda in `/account`, che passa da
-proposta e wireframe.
+decisioni prese sui suoi dati («Le misure» e «Decisioni»), il lato server e la
+scheda in `/account` sono scritti e testati. Manca la prova con un account vero
+dall'app, e il passo 7 (documentazione).
 
 ## Contesto
 
@@ -373,6 +373,34 @@ modulo da incollare); le scelte su `StoreAccountSchema`; con la (a) del primo
 punto la mutazione `accounts.xboxSettings`; i componenti nuovi (le scelte, il
 pannello del codice, il dialogo «Cambia piattaforme») e il ramo Xbox in
 «Aggiungi libreria» e nella scheda; i testi in `it.json` e `en.json`.
+
+**Fatto il 20/10/2026**, con la struttura del wireframe e le due (a): «Cambia
+piattaforme» senza codice, e le copie di una piattaforma tolta che restano.
+
+- **Backend**: `'xbox'` in `linkableStoreValues` e in `AUTO_SYNC_EVERY_DAYS`
+  (sette giorni), fuori da `GuidedStore`; `accounts.link` su Xbox è un
+  `BAD_REQUEST`. Le scelte su `StoreAccountSchema` (`xbox`), lette dal
+  credenziale in `listStoreAccounts` come il login Steam.
+  `accounts.xboxSettings` (`updateXboxSettings`): riscrive le scelte nel
+  credenziale senza toccare il token e accoda l'import; `CONFLICT` con un
+  import in corso, `FORBIDDEN` da ricollegare. Quattro test in
+  `xbox-login.test.ts`.
+- **Web**: [xbox-choices.tsx](../apps/web/components/xbox-choices.tsx) (le
+  spunte, usate in due posti), [xbox-code-panel.tsx](../apps/web/components/xbox-code-panel.tsx)
+  (il codice, «Copia», «Apri microsoft.com/link», il conto alla rovescia, gli
+  stati), [xbox-link.tsx](../apps/web/components/xbox-link.tsx) (scelte, poi
+  codice) e [xbox-settings-dialog.tsx](../apps/web/components/xbox-settings-dialog.tsx).
+  Nella scheda: la riga delle scelte, «Cambia piattaforme» nel menu, e
+  «Ricollega» che riparte dalle scelte di adesso. L'interruttore «Auto» ora
+  scrive la riga che torna **sopra** quella di prima: senza, perdeva ciò che la
+  lista ricava dal credenziale (le scelte Xbox, e il tipo di login Steam).
+- **Provata in un browser vero** (Playwright, utente di prova poi cancellato):
+  le due schede finte iniettate nella lista, il dialogo con le scelte, il
+  codice, «senza profilo Xbox», «Indietro», «Cambia piattaforme» fino al
+  salvataggio (la richiesta porta le piattaforme nell'ordine dell'elenco) e
+  «Ricollega» con le scelte già spuntate. `xboxLogin` e `xboxSettings` erano
+  intercettati: **nessuna richiesta è partita verso Microsoft**. Nessun errore
+  di pagina. **Non provato**: un collegamento vero dall'app.
 
 ## Fuori da questo lotto
 

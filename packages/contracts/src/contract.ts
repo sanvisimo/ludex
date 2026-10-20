@@ -315,6 +315,21 @@ export const contract = {
         .output(XboxLoginStatusSchema),
     },
 
+    // Cambia le piattaforme spuntate e il Game Pass di un account Xbox (9e),
+    // **senza un login**: è una scelta nostra, non di Microsoft. Le riscrive nel
+    // credenziale e accoda l'import. Le copie già importate su una piattaforma
+    // tolta restano. `FORBIDDEN` se l'account va ricollegato, `CONFLICT` con un
+    // import in corso.
+    xboxSettings: oc
+      .input(
+        z.object({
+          accountId: z.uuid(),
+          platforms: z.array(XboxPlatformSchema).min(1),
+          gamePassActive: z.boolean(),
+        }),
+      )
+      .output(z.void()),
+
     // Rinomina un account già collegato. Esiste separata da `link` perché
     // altrimenti etichettare quelli che hai già vorrebbe dire scollegarli e
     // rifare il giro dal browser per scrivere un campo di testo. Vuota = togli.

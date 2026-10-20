@@ -15,8 +15,13 @@ import {
   encryptCredentials,
   resetStoreTokenKey,
 } from '../lib/crypto';
-import { enqueueImport } from '../queue/imports';
-import { type XboxStoredCredentials, xboxCredentials } from './store-accounts';
+import { enqueueImport, isImportRunning } from '../queue/imports';
+import {
+  listStoreAccounts,
+  updateXboxSettings,
+  type XboxStoredCredentials,
+  xboxCredentials,
+} from './store-accounts';
 import { startXboxLogin, xboxLoginStatus } from './xbox-login';
 
 // Il confine è `external/xbox`: qui si finge Microsoft — il codice, le
@@ -247,5 +252,100 @@ describe('xboxCredentials', () => {
       gamePassActive: true,
     });
     expect(vi.mocked(refreshXboxTokens)).toHaveBeenCalledWith('r1');
+  });
+});
+
+describe('le scelte di un account Xbox', () => {
+  let userId: string;
+  let accountId: string;
+
+  beforeEach(async () => {
+    process.env.STORE_TOKEN_KEY = Buffer.alloc(32, 7).toString('base64');
+    resetStoreTokenKey();
+    userId = await createUser();
+    const stored: XboxStoredCredentials = {
+      accessToken: 'a',
+      refreshToken: 'r',
+      expiresAt: Date.now() + 3_600_000,
+      platforms: ['xbox_series'],
+      gamePassActive: false,
+    };
+    const [row] = await db
+      .insert(schema.storeAccounts)
+      .values({
+        userId,
+        store: 'xbox',
+        externalAccountId: '42',
+        credentials: encryptCredentials(stored),
+      })
+      .returning();
+    accountId = row!.id;
+    vi.mocked(isImportRunning).mockResolvedValue(false);
+    mockedEnqueue.mockResolvedValue(undefined as never);
+  });
+
+  it('la lista degli account le dice, e non dice il token', async () => {
+    const [account] = await listStoreAccounts(userId);
+    expect(account!.xbox).toEqual({
+      platforms: ['xbox_series'],
+      gamePassActive: false,
+    });
+    expect(JSON.stringify(account)).not.toContain('"r"');
+  });
+
+  it('cambiarle riscrive il credenziale, tiene il token e accoda l’import', async () => {
+    expect(
+      await updateXboxSettings(userId, accountId, {
+        platforms: ['pc_windows', 'xbox_one'],
+        gamePassActive: true,
+      }),
+    ).toBe('queued');
+
+    const [row] = await accountsOf(userId);
+    expect(
+      decryptCredentials<XboxStoredCredentials>(row!.credentials!),
+    ).toMatchObject({
+      refreshToken: 'r',
+      platforms: ['pc_windows', 'xbox_one'],
+      gamePassActive: true,
+    });
+    expect(mockedEnqueue).toHaveBeenCalledWith('xbox', {
+      storeAccountId: accountId,
+    });
+  });
+
+  it('con un import in corso o da ricollegare non scrive niente', async () => {
+    vi.mocked(isImportRunning).mockResolvedValue(true);
+    expect(
+      await updateXboxSettings(userId, accountId, {
+        platforms: ['pc_windows'],
+        gamePassActive: true,
+      }),
+    ).toBe('running');
+
+    await db
+      .update(schema.storeAccounts)
+      .set({ status: 'needs_reauth' })
+      .where(eq(schema.storeAccounts.id, accountId));
+    expect(
+      await updateXboxSettings(userId, accountId, {
+        platforms: ['pc_windows'],
+        gamePassActive: true,
+      }),
+    ).toBe('needs_reauth');
+
+    const [row] = await accountsOf(userId);
+    expect(
+      decryptCredentials<XboxStoredCredentials>(row!.credentials!).platforms,
+    ).toEqual(['xbox_series']);
+  });
+
+  it('l’account di un altro non si tocca', async () => {
+    expect(
+      await updateXboxSettings('altro', accountId, {
+        platforms: ['pc_windows'],
+        gamePassActive: true,
+      }),
+    ).toBe('not_found');
   });
 });

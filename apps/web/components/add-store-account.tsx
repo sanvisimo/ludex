@@ -21,6 +21,7 @@ import { useState } from 'react';
 
 import { SteamLink } from '@/components/steam-link';
 import { StoreLinkForm } from '@/components/store-link-form';
+import { XboxLink } from '@/components/xbox-link';
 import { useStoreLabels } from '@/lib/labels';
 
 /**
@@ -90,6 +91,9 @@ export function AddStoreAccount({
           {store === 'steam' ? (
             // Steam ha due modi, il login col QR e il solo profilo: un corpo suo.
             <SteamLink key={store} onLinked={() => setOpen(false)} />
+          ) : store === 'xbox' ? (
+            // Xbox: le piattaforme, poi un codice da confermare (9e).
+            <XboxLink key={store} onLinked={() => setOpen(false)} />
           ) : (
             <StoreLinkForm
               key={store}
