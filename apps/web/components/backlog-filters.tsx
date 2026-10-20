@@ -94,10 +94,19 @@ export function BacklogToolbar({
 
   return (
     <YStack gap={12}>
-      {/* Una riga sola anche su un telefono: la ricerca prende lo spazio che
-          resta, fino a 320. */}
-      <XStack items="center" gap={8}>
-        <YStack flex={1} minW={0} maxW={320}>
+      {/* Da `$sm` una riga sola: la ricerca prende lo spazio che resta, fino
+          a 320. Sotto, su un telefono, la ricerca ha una riga sua e i bottoni
+          vanno sotto: sulla stessa riga le restava la larghezza di «Search». */}
+      <XStack items="center" flexWrap="wrap" gap={8}>
+        {/* La base, non la larghezza: con `flex={1}` la base è 0 e vince su
+            `width`, e la ricerca resterebbe sulla riga dei bottoni. */}
+        <YStack
+          grow={1}
+          shrink={1}
+          minW={0}
+          flexBasis="100%"
+          $sm={{ flexBasis: 0, maxW: 320 }}
+        >
           <SearchInput
             value={filter.q}
             onChange={(q) => void setFilter({ q: q || null })}
