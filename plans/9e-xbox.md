@@ -307,6 +307,73 @@ Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
    `docs/ordine-sviluppo.md` (9e), `apps/api/CLAUDE.md` (il probe); la roadmap
    passa a «in corso» col passo 1 e a «fatto» quando dici che il lotto è pronto.
 
+## Passo 6 — la scheda in `/account` (proposta, 20/10/2026)
+
+È una schermata nuova, quindi **prima si vede**: questa proposta e il wireframe
+([9e-xbox.excalidraw](9e-xbox.excalidraw): si apre trascinandolo su
+excalidraw.com). Il codice dopo l'approvazione, una volta sola.
+
+**Come è oggi**, letto dal codice e non da uno screenshot
+([add-store-account.tsx](../apps/web/components/add-store-account.tsx),
+[steam-qr-panel.tsx](../apps/web/components/steam-qr-panel.tsx),
+[store-account-card.tsx](../apps/web/components/store-account-card.tsx)):
+«Aggiungi libreria» apre un dialogo con la tendina del negozio e sotto un
+modulo, quello da incollare per tutti tranne Steam, che ha un corpo suo (il QR
+o il profilo). La scheda dell'account ha nome, menu ⋮ («Dai un nome»,
+«Ricollega» se serve, «Scollega»), lo stato, «Aggiorna» e l'aggiornamento
+automatico; su Steam anche un badge che dice come è collegato.
+
+**La proposta, punto per punto** (i numeri sono quelli del wireframe):
+
+1. **Le scelte prima del codice** (pannello 1). Scelto Xbox, il dialogo
+   chiede «Su cosa giochi?» con le cinque piattaforme da spuntare, **nessuna
+   spuntata all'inizio** (①), poi «Ho il Game Pass attivo» con una riga che
+   dice cosa cambia (②), il nome facoltativo, e **Continua**, spento finché
+   non c'è almeno una piattaforma (③). Le scelte vanno prima perché il server
+   le salva al momento della conferma, insieme al token.
+2. **Il codice nello stesso dialogo** (pannello 2), come il QR di Steam: il
+   codice grande con **Copia** (④), il bottone che apre microsoft.com/link in
+   una scheda nuova, i tre passi, e quanto vale ancora il codice. «← Indietro»
+   torna alle scelte. Si chiede lo stato al server ogni due secondi, e chiudere
+   il dialogo smette di chiedere (⑤).
+3. **Gli stati** (pannello 3, al posto dell'attesa ⑤): fatto (il dialogo si
+   chiude, toast, la scheda compare con «Importazione…»), scaduto («Nuovo
+   codice»), «Nega» premuto («Riprova»), Xbox che non fa entrare l'account
+   (senza profilo, paese, minore: «← Indietro»), e l'account sbagliato su un
+   ricollegamento (⑥).
+4. **La scheda dice le scelte** (⑦): una riga «PC · Xbox Series · Game Pass
+   attivo» sotto il nome, come il badge del login sulla scheda Steam. Per
+   questo `StoreAccountSchema` prende le scelte, lette dal credenziale come oggi
+   `loginKind` (mai il token).
+5. **«Cambia piattaforme» nel menu ⋮** (⑧) apre il pannello 5: le scelte di
+   adesso già spuntate (⑨) e **Salva e aggiorna**, che le riscrive e accoda
+   l'import. **Senza codice**: è una scelta nostra, non un login.
+   «Ricollega», solo da scaduto, apre invece il pannello 1 con le scelte di
+   adesso, poi il codice.
+6. **Togliere una piattaforma non toglie le copie già importate** (⑩), e il
+   pannello lo dice: l'import non pota le copie, come per ogni negozio. Si
+   tolgono dalla scheda del gioco («Togli una copia»). E «Game Pass attivo»
+   vale solo per i giochi che arrivano dopo: gli stati delle righe che ci sono
+   non cambiano (è lo step 14).
+
+**Due scelte da fare** (la mia per prima):
+
+- **Cambiare piattaforme**: (a) **una mutazione che riscrive le scelte nel
+  credenziale e accoda l'import**, senza passare da Microsoft; (b) ricollegare
+  con un codice nuovo, che c'è già e non costa codice nuovo ma chiede di
+  confermare su Microsoft per spuntare una casella. Propongo (a).
+- **Le copie di una piattaforma tolta**: (a) **restano, e il pannello lo dice**
+  (⑩); (b) l'import di quell'account le pota, con la regola della famiglia
+  Steam (resta l'ultima copia di una riga con dati dell'utente). Propongo (a):
+  la (b) è un pezzo di logica nuovo su dati dell'utente, per un gesto raro.
+
+**Cosa tocca, se approvi** (oltre alla UI): `'xbox'` in `linkableStoreValues`
+e in `AUTO_SYNC_EVERY_DAYS` (sette giorni) e fuori da `GuidedStore` (non ha un
+modulo da incollare); le scelte su `StoreAccountSchema`; con la (a) del primo
+punto la mutazione `accounts.xboxSettings`; i componenti nuovi (le scelte, il
+pannello del codice, il dialogo «Cambia piattaforme») e il ramo Xbox in
+«Aggiungi libreria» e nella scheda; i testi in `it.json` e `en.json`.
+
 ## Fuori da questo lotto
 
 - la **wishlist Xbox** (15e): nessuno dei progetti la legge, e non è stato trovato
