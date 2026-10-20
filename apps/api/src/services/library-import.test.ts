@@ -680,6 +680,66 @@ describe('importLibrary: la piattaforma la dice la riga (9b)', () => {
   });
 });
 
+describe('importLibrary: lo stesso id su due piattaforme (9e)', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  const piattaforme = (userId: string) =>
+    db
+      .select({ platformSlug: schema.ownerships.platformSlug })
+      .from(schema.ownerships)
+      .innerJoin(
+        schema.backlog,
+        eq(schema.backlog.id, schema.ownerships.backlogId),
+      )
+      .where(eq(schema.backlog.userId, userId));
+
+  // Un gioco Play Anywhere con PC e Series spuntate: un prodotto, due copie.
+  const playAnywhere = (externalId: string, name: string) => [
+    { externalId, name, platformSlug: 'pc_windows' },
+    { externalId, name, platformSlug: 'xbox_series' },
+  ];
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'xbox');
+    mockedById.mockResolvedValue(new Map());
+    mockedSearch.mockResolvedValue([]);
+    mockedSource.mockReturnValue(11);
+  });
+
+  it('risolto, fa due copie e chiede a IGDB una volta', async () => {
+    mockedById.mockResolvedValue(
+      new Map([
+        ['9NBLGGH4R315', { igdbId: 1020, name: 'Forza', releaseYear: null }],
+      ]),
+    );
+
+    const report = await importLibrary(
+      account,
+      playAnywhere('9NBLGGH4R315', 'Forza Horizon'),
+    );
+
+    expect(mockedById).toHaveBeenCalledWith('xbox', ['9NBLGGH4R315']);
+    expect(report).toMatchObject({ resolved: 2, newEntries: 1 });
+    expect(
+      (await piattaforme(userId)).map((row) => row.platformSlug).sort(),
+    ).toEqual(['pc_windows', 'xbox_series']);
+  });
+
+  it('irrisolto, è uno scarto solo e una ricerca sola', async () => {
+    await importLibrary(
+      account,
+      playAnywhere('9WZDNCRFJ255', 'Zombie Tsunami'),
+    );
+
+    expect(mockedSearch).toHaveBeenCalledTimes(1);
+    expect(await unresolvedOf(userId)).toMatchObject([
+      { externalId: '9WZDNCRFJ255', platformSlug: 'pc_windows' },
+    ]);
+  });
+});
+
 describe('importLibrary: a parità di nome conta la piattaforma (11a)', () => {
   let userId: string;
   let account: Awaited<ReturnType<typeof linkStoreAccount>>;
@@ -848,6 +908,26 @@ describe('importLibrary: il nome vale solo sulla piattaforma della voce (9b PSN)
     ]);
 
     expect(report).toMatchObject({ resolved: 1 });
+  });
+
+  it('un gioco Xbox One vale per una copia Series, non il contrario (9e)', async () => {
+    const xbox = await linkStoreAccount(userId, 'xbox');
+    // Su IGDB solo Xbox One (49): gira sulla Series, non su una One un gioco
+    // solo Series (169).
+    mockedSearch.mockImplementation(async (name) =>
+      name === 'olija'
+        ? [hit({ igdbId: 1, name: 'Olija', platformIds: [49] })]
+        : name === 'senua'
+          ? [hit({ igdbId: 2, name: 'Senua', platformIds: [169] })]
+          : [],
+    );
+
+    const report = await importLibrary(xbox, [
+      { externalId: 'A', name: 'Olija', platformSlug: 'xbox_series' },
+      { externalId: 'B', name: 'Senua', platformSlug: 'xbox_one' },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 1, unresolved: 1 });
   });
 
   it('in cross-buy scarta solo la riga della console sbagliata', async () => {

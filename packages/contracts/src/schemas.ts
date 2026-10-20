@@ -22,6 +22,7 @@ import {
   subscriptionValues,
   userTagKindValues,
   wishlistSortValues,
+  xboxPlatformValues,
 } from './vocabulary';
 
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
@@ -33,6 +34,7 @@ export const StoreAccountStatusSchema = z.enum(storeAccountStatusValues);
 export const WishlistErrorSchema = z.enum(wishlistErrorValues);
 export const SubscriptionSchema = z.enum(subscriptionValues);
 export const MediumSchema = z.enum(mediumValues);
+export const XboxPlatformSchema = z.enum(xboxPlatformValues);
 export const HiddenKindSchema = z.enum(hiddenKindValues);
 export const GameTypeSchema = z.enum(gameTypeValues);
 export const ScoreSourceSchema = z.enum(scoreSourceValues);
@@ -399,6 +401,30 @@ export const SteamLoginStatusSchema = z.object({
   // Solo quando la schermata deve dire una cosa specifica: il login è stato fatto
   // con un altro account Steam da quello che si stava ricollegando.
   reason: z.enum(['wrong_account']).nullable(),
+});
+
+// Il login Xbox col device code (9e). Come il QR di Steam è una sessione che il
+// server tiene aperta: rende un codice da confermare su `verificationUri`, anche
+// dal telefono, e la schermata chiede a che punto è.
+export const XboxLoginStartSchema = z.object({
+  loginId: z.uuid(),
+  // Il codice da scrivere sulla pagina di Microsoft.
+  userCode: z.string(),
+  verificationUri: z.string(),
+  // Dopo, il codice non vale più: la schermata ne chiede uno nuovo.
+  expiresAt: z.date(),
+});
+
+export const XboxLoginStatusSchema = z.object({
+  // `expired` vale anche per una sessione che non c'è o che non è tua.
+  status: z.enum(['waiting', 'done', 'expired', 'failed']),
+  accountId: z.uuid().nullable(),
+  // Perché è fallito, quando la schermata deve dirlo: un altro account su un
+  // ricollegamento, «Nega» premuto, o un account che Xbox non fa entrare (senza
+  // profilo, paese, minore).
+  reason: z
+    .enum(['wrong_account', 'declined', 'no_profile', 'country', 'child'])
+    .nullable(),
 });
 
 // Cosa ha portato via la rimozione del solo login: le copie della famiglia.
@@ -1296,6 +1322,8 @@ export type UnlinkImpact = z.infer<typeof UnlinkImpactSchema>;
 export type SteamLoginStart = z.infer<typeof SteamLoginStartSchema>;
 export type SteamLoginStatus = z.infer<typeof SteamLoginStatusSchema>;
 export type SteamLoginRemoved = z.infer<typeof SteamLoginRemovedSchema>;
+export type XboxLoginStart = z.infer<typeof XboxLoginStartSchema>;
+export type XboxLoginStatus = z.infer<typeof XboxLoginStatusSchema>;
 export type SyncAllResult = z.infer<typeof SyncAllResultSchema>;
 export type UserSettings = z.infer<typeof UserSettingsSchema>;
 export type UnresolvedImport = z.infer<typeof UnresolvedImportSchema>;

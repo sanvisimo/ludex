@@ -53,6 +53,9 @@ import {
   SteamLoginStartSchema,
   SourceReasonSchema,
   SteamLoginStatusSchema,
+  XboxLoginStartSchema,
+  XboxLoginStatusSchema,
+  XboxPlatformSchema,
   StoreAccountSchema,
   StoreSchema,
   SyncAllResultSchema,
@@ -286,6 +289,30 @@ export const contract = {
       remove: oc
         .input(z.object({ accountId: z.uuid() }))
         .output(SteamLoginRemovedSchema),
+    },
+
+    // Il login Xbox col device code (9e). Non passa da `link`, come il QR di
+    // Steam: `start` apre la sessione e rende il codice da confermare su
+    // microsoft.com/link, `status` si interroga a intervalli, e a `done`
+    // l'account è scritto e l'import accodato. Le piattaforme spuntate e il Game
+    // Pass attivo si scelgono qui e stanno nel credenziale: cambiarle è
+    // ricollegare. `accountId` su un ricollegamento, con `wrong_account` se il
+    // login è di un altro account. Una sola sessione attiva per utente.
+    xboxLogin: {
+      start: oc
+        .input(
+          z.object({
+            platforms: z.array(XboxPlatformSchema).min(1),
+            gamePassActive: z.boolean(),
+            label: z.string().trim().max(60).nullish(),
+            accountId: z.uuid().nullish(),
+          }),
+        )
+        .output(XboxLoginStartSchema),
+
+      status: oc
+        .input(z.object({ loginId: z.uuid() }))
+        .output(XboxLoginStatusSchema),
     },
 
     // Rinomina un account già collegato. Esiste separata da `link` perché

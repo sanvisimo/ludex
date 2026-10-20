@@ -97,6 +97,7 @@ import {
   startSteamLogin,
   steamLoginStatus,
 } from '../services/steam-login';
+import { startXboxLogin, xboxLoginStatus } from '../services/xbox-login';
 import {
   searchCatalog,
   searchIgdbNotInCatalog,
@@ -395,6 +396,32 @@ export const router = os.router({
             });
           return removed;
         }),
+    },
+
+    xboxLogin: {
+      start: os.accounts.xboxLogin.start
+        .use(authed)
+        .handler(async ({ input, context }) => {
+          const relinking = await relinkTarget(
+            context.user.id,
+            'xbox',
+            input.accountId,
+          );
+          return startXboxLogin(
+            context.user.id,
+            {
+              platforms: [...new Set(input.platforms)],
+              gamePassActive: input.gamePassActive,
+            },
+            { label: input.label, relinking },
+          );
+        }),
+
+      status: os.accounts.xboxLogin.status
+        .use(authed)
+        .handler(({ input, context }) =>
+          xboxLoginStatus(context.user.id, input.loginId),
+        ),
     },
 
     rename: os.accounts.rename

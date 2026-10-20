@@ -1,9 +1,10 @@
 # Step 9e — Xbox
 
-**Stato: passi 1 e 2 fatti (19/10/2026).** Il probe
-(`apps/api/src/scripts/xbox-probe.ts`) è stato lanciato dall'utente, e le
-decisioni aperte sono state prese sui suoi dati: vedi «Le misure» e «Decisioni».
-Prossimo: il passo 3.
+**Stato: passi 1–5 fatti (20/10/2026).** Il probe
+(`apps/api/src/scripts/xbox-probe.ts`) è stato lanciato dall'utente, le
+decisioni prese sui suoi dati («Le misure» e «Decisioni»), e il lato server è
+scritto e testato. Prossimo: il passo 6, la scheda in `/account`, che passa da
+proposta e wireframe.
 
 ## Contesto
 
@@ -122,7 +123,7 @@ TrueAchievements, che importa i posseduti ma è un partner ufficiale.
    `ConsoleGen8+ConsoleGen9`). È un pezzo dell'[idea delle piattaforme
    dell'utente](piattaforme-dell-utente.md), limitato all'account Xbox.
 
-   **Da confermare con l'utente** prima del passo 5: ogni gioco prende una
+   **Confermato dall'utente il 20/10/2026**: ogni gioco prende una
    copia **per ogni piattaforma spuntata su cui gira** — PC se il catalogo lo dà
    per Windows, One e Series da `ConsoleGen8`/`ConsoleGen9`, i 360
    retrocompatibili su 360, One e Series; per lo storico, i dispositivi su cui
@@ -275,15 +276,33 @@ Uno alla volta, ognuno col suo ok, e dopo ciascuno ci si ferma.
    catalogo, ordini e `productActions`. Test con risposte simulate
    (`xbox.test.ts`). I 360 sono «al meglio»: ordini illeggibili o un
    `productActions` che non risponde non fanno fallire l'import.
-5. **Login e import**: le mutazioni «avvia» e «controlla» del device code, con la
-   console di default e la spunta «Ho il Game Pass attivo»; la riduzione a
-   `LibraryEntry[]` con le regole delle decisioni (fuori i `Win32`, Game Pass
-   confrontato sul gioco IGDB, lo stato alla nascita dalla spunta) e
-   `importLibrary`.
-   Test contro Postgres, Microsoft stubbato al confine del modulo di servizio.
-6. **La scheda in `/account`**: il codice da mostrare e il link, la console di
-   default e la spunta del Game Pass sono un modulo nuovo, quindi **si vede prima
-   del codice** (proposta scritta e wireframe).
+5. **Login e import** — **fatto (20/10/2026)**:
+   - `accounts.xboxLogin.{start,status}` (`services/xbox-login.ts`): la sessione
+     del device code in memoria nel processo dell'API, come il QR di Steam; il
+     server interroga Microsoft al ritmo che chiede, e a conferma scrive
+     l'account (lo xuid, col gamertag come nome) e accoda l'import. Le
+     piattaforme spuntate e «Game Pass attivo» stanno **nel credenziale**, come
+     il paese di Nintendo: cambiarle è ricollegare;
+   - `services/xbox-import.ts`: `buildXboxEntries`, pura, con le regole dei
+     punti 5–8, e `importXboxLibrary`. Le ore e i 360 sono al meglio; i 360 si
+     cercano solo con una console spuntata;
+   - `importLibrary` cerca, collega e ricorda fra gli scarti **una voce per
+     id**, e scrive una copia per voce: due voci con lo stesso `productId` su
+     due piattaforme non rompono più l'upsert degli scarti;
+   - la regola 3 per le console Xbox (`copy-platforms.ts`) e il link della
+     copia su xbox.com (`storePageUrl`);
+   - test contro Postgres, Microsoft stubbato al confine (`xbox-import.test.ts`,
+     `xbox-login.test.ts`, più tre casi in `library-import.test.ts`).
+
+   **Non ancora**: `'xbox'` in `linkableStoreValues` e in
+   `AUTO_SYNC_EVERY_DAYS` (quindi niente aggiornamento automatico), che
+   entrano col passo 6: aggiunto prima, `/account` mostrerebbe Xbox fra i
+   negozi con il modulo da incollare degli altri. Nessuno dei sorgenti mappa
+   ancora la prima Xbox (`xbox`): la spunta c'è, ma non produce copie.
+
+6. **La scheda in `/account`**: il codice da mostrare e il link, l'elenco
+   delle piattaforme da spuntare e la spunta del Game Pass sono un modulo
+   nuovo, quindi **si vede prima del codice** (proposta scritta e wireframe).
 7. **Documentazione**: `docs/negozi.md` (sezione Xbox, la tabella, il rischio),
    `docs/ordine-sviluppo.md` (9e), `apps/api/CLAUDE.md` (il probe); la roadmap
    passa a «in corso» col passo 1 e a «fatto» quando dici che il lotto è pronto.

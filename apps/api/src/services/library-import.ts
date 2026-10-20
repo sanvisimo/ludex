@@ -1165,16 +1165,28 @@ export async function importLibrary(
 ): Promise<ImportReport> {
   const { id: storeAccountId, userId, store } = account;
 
+  // Una voce per id per tutto ciò che riguarda l'**identità**: cercarla,
+  // collegarla, ricordarla fra gli scarti. Due voci con lo stesso id sono lo
+  // stesso prodotto su due piattaforme — un gioco Xbox Play Anywhere con PC e
+  // Series spuntate (9e) — e restano due solo dove diventano copie. Senza, due
+  // voci uguali irrisolte romperebbero l'upsert degli scarti, che ha la chiave
+  // (account, id).
+  // Vince la prima: è l'ordine in cui il negozio le ha messe.
+  const visti = new Set<string>();
+  const unici = library.filter(
+    (entry) => !visti.has(entry.externalId) && visti.add(entry.externalId),
+  );
+
   // 1. Quello che Ludex conosce già.
   const noti = await knownLinks(
     store,
     storeAccountId,
-    library.map((entry) => entry.externalId),
+    unici.map((entry) => entry.externalId),
   );
 
   // 2. Il resto su IGDB, per id. Con un negozio che IGDB non mappa questa non
   //    esce nemmeno in rete e cade tutto al passo 3.
-  const missing = library.filter((entry) => !noti.has(entry.externalId));
+  const missing = unici.filter((entry) => !noti.has(entry.externalId));
   console.log(
     `[import] ${store}: ${library.length} in libreria, ${noti.size} già note a Ludex`,
   );
@@ -1195,7 +1207,7 @@ export async function importLibrary(
   // collegamento che nessuna libreria ha confermato. Non le voci in più di un
   // prodotto, che per nome non si cercano mai: vedi `sameProductAs`.
   const raccolte = await checkBundleLinks(
-    library.flatMap((entry) => {
+    unici.flatMap((entry) => {
       if (entry.sameProductAs) return [];
       const noto = noti.get(entry.externalId);
       if (noto) {
@@ -1290,14 +1302,17 @@ export async function importLibrary(
   const resolved = library.filter((entry) =>
     gameIdByExternalId.has(entry.externalId),
   );
-  const unresolved = library
+  const unresolved = unici
     .filter((entry) => !gameIdByExternalId.has(entry.externalId))
     .map((entry) =>
       doppioni.has(entry.externalId)
         ? { ...entry, sameProductAs: doppioni.get(entry.externalId)! }
         : entry,
     );
-  await recordStoreDetails(store, resolved);
+  await recordStoreDetails(
+    store,
+    unici.filter((entry) => gameIdByExternalId.has(entry.externalId)),
+  );
 
   // 4. Le scritture.
   //

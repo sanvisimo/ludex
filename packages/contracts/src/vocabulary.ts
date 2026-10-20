@@ -65,6 +65,18 @@ export const linkableStoreValues = [
   'ea',
 ] as const;
 
+// Le piattaforme che l'utente spunta collegando Xbox (9e): ogni gioco prende una
+// copia per ciascuna di quelle spuntate su cui gira. Collections e lo storico non
+// dicono su che console si gioca, e il catalogo dice «One e Series» per quasi
+// tutto. Sono slug di `platforms`.
+export const xboxPlatformValues = [
+  'pc_windows',
+  'xbox',
+  'xbox360',
+  'xbox_one',
+  'xbox_series',
+] as const;
+
 // I negozi che **si importano una volta sola**, ogni volta che l'utente
 // rifà il gesto: il credenziale non si rinnova, quindi niente aggiornamento
 // automatico, niente «aggiorna tutti» e niente «aggiorna» sulla scheda.
@@ -380,6 +392,7 @@ export type WishlistStore = (typeof wishlistStoreValues)[number];
 export type WishlistError = (typeof wishlistErrorValues)[number];
 export type LinkableStore = (typeof linkableStoreValues)[number];
 export type OneShotStore = (typeof oneShotStoreValues)[number];
+export type XboxPlatform = (typeof xboxPlatformValues)[number];
 
 /** Un negozio che si importa una volta sola: vedi `oneShotStoreValues`. */
 export const isOneShotStore = (store: Store): store is OneShotStore =>

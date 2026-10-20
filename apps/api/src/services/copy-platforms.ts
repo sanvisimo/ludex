@@ -15,6 +15,10 @@
  *   piattaforma della voce, e la copia è sempre Windows; ma IGDB mette molti
  *   classici della GOG solo su DOS (_Pools of Darkness_ gira con DOSBox), e
  *   qualche gioco solo su Mac o Linux.
+ * - **Le console Xbox fanno girare le precedenti** (9e). Un gioco Xbox One
+ *   giocato su Series ha la copia `xbox_series`, e IGDB lo dà solo su «Xbox
+ *   One»: senza, finirebbe fra i «da sistemare». La Series vale anche per One,
+ *   360 e la prima Xbox; la One per 360 e prima Xbox.
  */
 
 const PC = [
@@ -31,6 +35,8 @@ const ANCHE: Record<string, number[]> = {
   sony_playstation4: [165], // PlayStation VR
   sony_playstation5: [390], // PlayStation VR2
   pc_windows: PC,
+  xbox_series: [49, 12, 11], // Xbox One, Xbox 360, Xbox
+  xbox_one: [12, 11], // Xbox 360, Xbox
 };
 
 /**

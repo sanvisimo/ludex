@@ -3,6 +3,7 @@ import {
   oneShotStoreValues,
   type Store,
   wishlistStoreValues,
+  type XboxPlatform,
 } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, eq, inArray, ne, notInArray, sql } from '@repo/db/orm';
@@ -70,6 +71,12 @@ import {
   type SteamLogin,
   type SteamStoredCredentials,
 } from '../external/steam-auth';
+import {
+  refreshXboxTokens,
+  XboxAuthError,
+  type XboxCredentials,
+  type XboxSession,
+} from '../external/xbox';
 import { encryptCredentials, decryptCredentials } from '../lib/crypto';
 import {
   enqueueImport,
@@ -1301,6 +1308,8 @@ const OAUTH_STORES = {
   // access token nuovo e lo stesso session token.
   nintendo: { refresh: refreshNintendoTokens, AuthError: NintendoAuthError },
   steam: { refresh: refreshSteamTokens, AuthError: SteamAuthError },
+  // Il refresh token **ruota** (misurato il 19/10/2026), come GOG ed Epic.
+  xbox: { refresh: refreshXboxTokens, AuthError: XboxAuthError },
 } as const;
 
 // Amazon **non è qui** e non è una dimenticanza: il suo rinnovo non ruota il
@@ -1414,6 +1423,71 @@ export async function nintendoCredentials(
 
   try {
     return decryptCredentials<NintendoCredentials>(row.credentials);
+  } catch {
+    return requireReauth(account);
+  }
+}
+
+// --- Xbox: il device code, e le scelte dell'utente nel credenziale ---
+
+/**
+ * Le scelte fatte collegando Xbox (9e): su quali piattaforme gioca, e se il Game
+ * Pass è attivo. Stanno **nel credenziale**, come il paese di Nintendo: le legge
+ * solo l'import, e il rinnovo si sovrappone senza toccarle (vedi
+ * `storeAccessToken`). Cambiarle è ricollegare.
+ */
+export type XboxSettings = {
+  platforms: XboxPlatform[];
+  /** No → i giochi del Game Pass nascono `played` (punto 5 del piano). */
+  gamePassActive: boolean;
+};
+
+export type XboxStoredCredentials = XboxCredentials & XboxSettings;
+
+/**
+ * Collega Xbox dopo il device code. L'account è lo xuid, stabile; il gamertag,
+ * che si può cambiare, è solo il nome leggibile. Su un ricollegamento il login
+ * dev'essere dello stesso account, come per il QR di Steam.
+ */
+export function linkXboxLogin(
+  userId: string,
+  login: { credentials: XboxCredentials; session: XboxSession },
+  settings: XboxSettings,
+  options: LinkOptions = {},
+) {
+  const credentials: XboxStoredCredentials = {
+    ...login.credentials,
+    ...settings,
+  };
+  return upsertAccount({
+    userId,
+    store: 'xbox',
+    externalAccountId: login.session.xuid,
+    displayName: login.session.gamertag,
+    label: options.label,
+    credentials,
+    expiresAt: new Date(credentials.expiresAt),
+    expectedExternalAccountId: options.relinking?.externalAccountId,
+  });
+}
+
+/**
+ * Il credenziale Xbox **già rinnovato**, con le scelte dell'utente: come
+ * `nintendoCredentials`, si rilegge la riga dopo il rinnovo.
+ */
+export async function xboxCredentials(
+  account: StoreAccountRow,
+): Promise<XboxStoredCredentials> {
+  await storeAccessToken(account);
+
+  const row = await db.query.storeAccounts.findFirst({
+    where: eq(schema.storeAccounts.id, account.id),
+    columns: { credentials: true },
+  });
+  if (!row?.credentials) throw new Error('Nessun account xbox collegato');
+
+  try {
+    return decryptCredentials<XboxStoredCredentials>(row.credentials);
   } catch {
     return requireReauth(account);
   }
