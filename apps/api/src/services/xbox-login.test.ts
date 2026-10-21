@@ -48,6 +48,7 @@ const mockedEnqueue = vi.mocked(enqueueImport);
 const SETTINGS = {
   platforms: ['xbox_series' as const],
   gamePassActive: false,
+  minMinutes: 30,
 };
 
 const credenziali = {
@@ -133,6 +134,7 @@ describe('login Xbox col device code', () => {
       refreshToken: 'refresh',
       platforms: ['xbox_series'],
       gamePassActive: false,
+      minMinutes: 30,
     });
     expect(mockedEnqueue).toHaveBeenCalledWith('xbox', {
       storeAccountId: account!.id,
@@ -286,9 +288,11 @@ describe('le scelte di un account Xbox', () => {
 
   it('la lista degli account le dice, e non dice il token', async () => {
     const [account] = await listStoreAccounts(userId);
+    // Il credenziale è di prima della soglia: vale 60.
     expect(account!.xbox).toEqual({
       platforms: ['xbox_series'],
       gamePassActive: false,
+      minMinutes: 60,
     });
     expect(JSON.stringify(account)).not.toContain('"r"');
   });
@@ -298,6 +302,7 @@ describe('le scelte di un account Xbox', () => {
       await updateXboxSettings(userId, accountId, {
         platforms: ['pc_windows', 'xbox_one'],
         gamePassActive: true,
+        minMinutes: 15,
       }),
     ).toBe('queued');
 
@@ -308,6 +313,7 @@ describe('le scelte di un account Xbox', () => {
       refreshToken: 'r',
       platforms: ['pc_windows', 'xbox_one'],
       gamePassActive: true,
+      minMinutes: 15,
     });
     expect(mockedEnqueue).toHaveBeenCalledWith('xbox', {
       storeAccountId: accountId,
@@ -320,6 +326,7 @@ describe('le scelte di un account Xbox', () => {
       await updateXboxSettings(userId, accountId, {
         platforms: ['pc_windows'],
         gamePassActive: true,
+        minMinutes: 60,
       }),
     ).toBe('running');
 
@@ -331,6 +338,7 @@ describe('le scelte di un account Xbox', () => {
       await updateXboxSettings(userId, accountId, {
         platforms: ['pc_windows'],
         gamePassActive: true,
+        minMinutes: 60,
       }),
     ).toBe('needs_reauth');
 
@@ -345,6 +353,7 @@ describe('le scelte di un account Xbox', () => {
       await updateXboxSettings('altro', accountId, {
         platforms: ['pc_windows'],
         gamePassActive: true,
+        minMinutes: 60,
       }),
     ).toBe('not_found');
   });

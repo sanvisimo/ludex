@@ -79,6 +79,14 @@ export const xboxPlatformValues = [
   'xbox_series',
 ] as const;
 
+// La soglia dei giochi Game Pass e Gold quando il Game Pass non è attivo (9e):
+// entrano, come giocati, solo quelli con almeno tanti minuti. 0 = tutti quelli
+// avviati, anche senza minuti. La sceglie l'utente con le piattaforme; 60 è il
+// valore tarato sulla libreria vera (plans/9e-xbox.md), e vale per gli account
+// collegati prima della soglia.
+export const XBOX_DEFAULT_MIN_MINUTES = 60;
+export const XBOX_MAX_MIN_MINUTES = 120;
+
 // I negozi che **si importano una volta sola**, ogni volta che l'utente
 // rifà il gesto: il credenziale non si rinnova, quindi niente aggiornamento
 // automatico, niente «aggiorna tutti» e niente «aggiorna» sulla scheda.

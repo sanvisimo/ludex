@@ -420,6 +420,7 @@ export const router = os.router({
             {
               platforms: [...new Set(input.platforms)],
               gamePassActive: input.gamePassActive,
+              minMinutes: input.minMinutes,
             },
             { label: input.label, relinking },
           );
@@ -441,6 +442,7 @@ export const router = os.router({
           {
             platforms: [...new Set(input.platforms)],
             gamePassActive: input.gamePassActive,
+            minMinutes: input.minMinutes,
           },
         );
         if (outcome === 'not_found')

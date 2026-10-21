@@ -51,6 +51,7 @@ function prodotto(over: Partial<XboxProduct> = {}): XboxProduct {
     pc: false,
     gen8: true,
     gen9: true,
+    x360: false,
     playAnywhere: false,
     demo: false,
     ...over,
@@ -83,10 +84,12 @@ const build = (
   sources: Partial<XboxSources>,
   platforms: readonly string[] = ['xbox_series'],
   gamePassActive = true,
+  minMinutes = 60,
 ) =>
   buildXboxEntries(fonti(sources), {
     platforms: [...platforms] as never,
     gamePassActive,
+    minMinutes,
   });
 
 describe('buildXboxEntries', () => {
@@ -182,8 +185,123 @@ describe('buildXboxEntries', () => {
     ]);
     expect(attivo[0]!.status).toBeUndefined();
 
-    const scaduto = build({ history: [titolo()] }, ['xbox_series'], false);
+    const scaduto = build(
+      { history: [titolo()], minutes: new Map([['1', 90]]) },
+      ['xbox_series'],
+      false,
+    );
     expect(scaduto.entries[0]).toMatchObject({ status: 'played' });
+  });
+
+  describe('la soglia dei minuti, col Game Pass non attivo', () => {
+    const conMinuti = (minuti: number | null) =>
+      minuti === null ? new Map() : new Map([['1', minuti]]);
+
+    it('sotto la soglia un Game Pass non entra, alla soglia sì', () => {
+      const sotto = build(
+        { history: [titolo()], minutes: conMinuti(59) },
+        ['xbox_series'],
+        false,
+        60,
+      );
+      expect(sotto.entries).toEqual([]);
+      expect(sotto.conteggi.sottoSoglia).toBe(1);
+
+      const alla = build(
+        { history: [titolo()], minutes: conMinuti(60) },
+        ['xbox_series'],
+        false,
+        60,
+      );
+      expect(alla.entries).toMatchObject([
+        { subscription: 'game_pass', status: 'played', playtimeMinutes: 60 },
+      ]);
+    });
+
+    it('senza minuti non entra, se la soglia non è 0', () => {
+      const { entries } = build(
+        { history: [titolo()], minutes: conMinuti(null) },
+        ['xbox_series'],
+        false,
+        15,
+      );
+      expect(entries).toEqual([]);
+    });
+
+    it('con 0 entra ogni giocato, anche senza minuti', () => {
+      const { entries } = build(
+        { history: [titolo()], minutes: conMinuti(null) },
+        ['xbox_series'],
+        false,
+        0,
+      );
+      expect(entries).toMatchObject([{ status: 'played' }]);
+    });
+
+    it('col Game Pass attivo la soglia non conta', () => {
+      const { entries } = build(
+        { history: [titolo()], minutes: conMinuti(null) },
+        ['xbox_series'],
+        true,
+        60,
+      );
+      expect(entries).toHaveLength(1);
+      expect(entries[0]!.status).toBeUndefined();
+    });
+
+    it('un Gold sopra la soglia nasce «played»', () => {
+      const { entries } = build(
+        {
+          owned: [{ productId: 'A', kind: 'gold', acquiredAt: null }],
+          catalog: new Map([['A', prodotto()]]),
+          history: [titolo({ productIds: ['A'] })],
+          minutes: conMinuti(272),
+        },
+        ['xbox_series'],
+        false,
+      );
+      expect(entries).toMatchObject([
+        { subscription: 'games_with_gold', status: 'played' },
+      ]);
+    });
+
+    it('un Gold mai avviato, o sotto la soglia, non entra, e lo storico non lo riporta come Game Pass', () => {
+      const mai = build(
+        {
+          owned: [{ productId: 'A', kind: 'gold', acquiredAt: null }],
+          catalog: new Map([['A', prodotto()]]),
+        },
+        ['xbox_series'],
+        false,
+      );
+      expect(mai.entries).toEqual([]);
+      expect(mai.conteggi.sottoSoglia).toBe(1);
+
+      const sotto = build(
+        {
+          owned: [{ productId: 'A', kind: 'gold', acquiredAt: null }],
+          catalog: new Map([['A', prodotto()]]),
+          history: [titolo({ productIds: ['A'] })],
+          minutes: conMinuti(10),
+        },
+        ['xbox_series'],
+        false,
+      );
+      expect(sotto.entries).toEqual([]);
+    });
+
+    it('un comprato entra comunque, anche mai avviato', () => {
+      const { entries } = build(
+        {
+          owned: [{ productId: 'A', kind: 'owned', acquiredAt: null }],
+          catalog: new Map([['A', prodotto()]]),
+        },
+        ['xbox_series'],
+        false,
+      );
+      expect(entries).toHaveLength(1);
+      expect(entries[0]!.status).toBeUndefined();
+    });
   });
 
   it('i giochi solo Win32 sono di altri negozi e non entrano', () => {
@@ -203,6 +321,25 @@ describe('buildXboxEntries', () => {
     });
     expect(entries).toHaveLength(1);
     expect(entries[0]!.subscription).toBeUndefined();
+  });
+
+  it('un 360 in Collections prende la copia 360 solo se il 360 è spuntato', () => {
+    const fontiCatherine = {
+      owned: [
+        { productId: 'BXFFGCLPDDZ6', kind: 'owned' as const, acquiredAt: null },
+      ],
+      catalog: new Map([
+        ['BXFFGCLPDDZ6', prodotto({ title: 'Catherine', x360: true })],
+      ]),
+    };
+    expect(
+      build(fontiCatherine, ['xbox360', 'xbox_series']).entries.map(
+        (e) => e.platformSlug,
+      ),
+    ).toEqual(['xbox_series', 'xbox360']);
+    expect(
+      build(fontiCatherine, ['xbox_series']).entries.map((e) => e.platformSlug),
+    ).toEqual(['xbox_series']);
   });
 
   it('un 360 comprato va su 360 e sulle console spuntate, e lo storico non lo ripete', () => {
@@ -262,6 +399,28 @@ describe('importXboxLibrary', () => {
         status: 'played',
         playtimeMinutes: 90,
       }),
+    ]);
+  });
+
+  it('un account collegato prima della soglia vale 60 minuti', async () => {
+    vi.mocked(fetchXboxMinutes).mockResolvedValue(new Map([['1', 59]]));
+    await importXboxLibrary(account);
+    expect(vi.mocked(importLibrary)).toHaveBeenCalledWith(account, []);
+  });
+
+  it('la soglia salvata decide', async () => {
+    vi.mocked(xboxCredentials).mockResolvedValue({
+      accessToken: 'a',
+      refreshToken: 'r',
+      expiresAt: 0,
+      platforms: ['xbox_series'],
+      gamePassActive: false,
+      minMinutes: 15,
+    });
+    vi.mocked(fetchXboxMinutes).mockResolvedValue(new Map([['1', 20]]));
+    await importXboxLibrary(account);
+    expect(vi.mocked(importLibrary)).toHaveBeenCalledWith(account, [
+      expect.objectContaining({ playtimeMinutes: 20, status: 'played' }),
     ]);
   });
 

@@ -152,9 +152,12 @@ export function StoreAccountCard({
   const [removingLogin, setRemovingLogin] = useState(false);
   const tSteam = useTranslations('account.steamLogin');
   const tXbox = useTranslations('account.xbox');
-  // Xbox (9e): «Cambia piattaforme», senza un login.
+  // Xbox (9e): «Impostazioni dell'import», senza un login.
   const [changingXbox, setChangingXbox] = useState(false);
   const isXbox = account.store === 'xbox';
+  const xboxPlatformNames = (account.xbox?.platforms ?? [])
+    .map((platform) => tXbox(`platforms.${platform}`))
+    .join(', ');
   const tWishlist = useTranslations('wishlist.store');
   const isSteam = account.store === 'steam';
   // Il token del browser, scaduto: vedi il badge più sotto.
@@ -424,14 +427,31 @@ export function StoreAccountCard({
             </XStack>
           ))}
         {/* Xbox dice le scelte fatte al collegamento: su cosa importa, e se
-            il Game Pass è attivo. Si cambiano dal menu. */}
+            il Game Pass è attivo. Si cambiano dal menu, e lì si vede anche la
+            soglia dei minuti. Fino a due piattaforme un badge ciascuna; oltre,
+            in tutte e cinque l'elenco non stava nella scheda: un badge col
+            numero, e i nomi nel suggerimento. */}
         {isXbox && account.xbox && (
           <XStack items="center" gap={8} flexWrap="wrap">
-            <Badge variant="secondary">
-              {account.xbox.platforms
-                .map((platform) => tXbox(`platforms.${platform}`))
-                .join(' · ')}
-            </Badge>
+            {account.xbox.platforms.length <= 2 ? (
+              account.xbox.platforms.map((platform) => (
+                <Badge key={platform} variant="secondary">
+                  {tXbox(`platforms.${platform}`)}
+                </Badge>
+              ))
+            ) : (
+              <Tooltip content={xboxPlatformNames}>
+                <Badge
+                  variant="secondary"
+                  tabIndex={0}
+                  aria-label={xboxPlatformNames}
+                >
+                  {tXbox('platformsCount', {
+                    count: account.xbox.platforms.length,
+                  })}
+                </Badge>
+              </Tooltip>
+            )}
             <Text fontSize={13} color="$color11">
               {account.xbox.gamePassActive
                 ? tXbox('gamePassOn')

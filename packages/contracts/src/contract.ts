@@ -55,6 +55,7 @@ import {
   SteamLoginStatusSchema,
   XboxLoginStartSchema,
   XboxLoginStatusSchema,
+  XboxMinMinutesSchema,
   XboxPlatformSchema,
   StoreAccountSchema,
   StoreSchema,
@@ -294,9 +295,9 @@ export const contract = {
     // Il login Xbox col device code (9e). Non passa da `link`, come il QR di
     // Steam: `start` apre la sessione e rende il codice da confermare su
     // microsoft.com/link, `status` si interroga a intervalli, e a `done`
-    // l'account è scritto e l'import accodato. Le piattaforme spuntate e il Game
-    // Pass attivo si scelgono qui e stanno nel credenziale: cambiarle è
-    // ricollegare. `accountId` su un ricollegamento, con `wrong_account` se il
+    // l'account è scritto e l'import accodato. Le piattaforme spuntate, il Game
+    // Pass attivo e la soglia dei minuti si scelgono qui e stanno nel
+    // credenziale; si cambiano con `xboxSettings`. `accountId` su un ricollegamento, con `wrong_account` se il
     // login è di un altro account. Una sola sessione attiva per utente.
     xboxLogin: {
       start: oc
@@ -304,6 +305,7 @@ export const contract = {
           z.object({
             platforms: z.array(XboxPlatformSchema).min(1),
             gamePassActive: z.boolean(),
+            minMinutes: XboxMinMinutesSchema,
             label: z.string().trim().max(60).nullish(),
             accountId: z.uuid().nullish(),
           }),
@@ -315,10 +317,11 @@ export const contract = {
         .output(XboxLoginStatusSchema),
     },
 
-    // Cambia le piattaforme spuntate e il Game Pass di un account Xbox (9e),
-    // **senza un login**: è una scelta nostra, non di Microsoft. Le riscrive nel
-    // credenziale e accoda l'import. Le copie già importate su una piattaforma
-    // tolta restano. `FORBIDDEN` se l'account va ricollegato, `CONFLICT` con un
+    // Cambia le piattaforme spuntate, il Game Pass e la soglia dei minuti di un
+    // account Xbox (9e), **senza un login**: è una scelta nostra, non di
+    // Microsoft. Le riscrive nel credenziale e accoda l'import. Le copie già
+    // importate restano, anche su una piattaforma tolta o sotto una soglia
+    // alzata. `FORBIDDEN` se l'account va ricollegato, `CONFLICT` con un
     // import in corso.
     xboxSettings: oc
       .input(
@@ -326,6 +329,7 @@ export const contract = {
           accountId: z.uuid(),
           platforms: z.array(XboxPlatformSchema).min(1),
           gamePassActive: z.boolean(),
+          minMinutes: XboxMinMinutesSchema,
         }),
       )
       .output(z.void()),

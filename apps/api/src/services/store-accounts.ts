@@ -3,6 +3,7 @@ import {
   oneShotStoreValues,
   type Store,
   wishlistStoreValues,
+  XBOX_DEFAULT_MIN_MINUTES,
   type XboxPlatform,
 } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
@@ -1456,18 +1457,38 @@ export async function nintendoCredentials(
 // --- Xbox: il device code, e le scelte dell'utente nel credenziale ---
 
 /**
- * Le scelte fatte collegando Xbox (9e): su quali piattaforme gioca, e se il Game
- * Pass è attivo. Stanno **nel credenziale**, come il paese di Nintendo: le legge
- * solo l'import, e il rinnovo si sovrappone senza toccarle (vedi
- * `storeAccessToken`). Cambiarle è ricollegare.
+ * Le scelte fatte collegando Xbox (9e): su quali piattaforme gioca, se il Game
+ * Pass è attivo, e da quanti minuti un gioco del Game Pass conta. Stanno **nel
+ * credenziale**, come il paese di Nintendo: le legge solo l'import, e il rinnovo
+ * si sovrappone senza toccarle (vedi `storeAccessToken`). Si cambiano con
+ * `updateXboxSettings`.
  */
 export type XboxSettings = {
   platforms: XboxPlatform[];
-  /** No → i giochi del Game Pass nascono `played` (punto 5 del piano). */
+  /** No → i giochi del Game Pass e i Gold nascono `played` (punto 5 del piano). */
   gamePassActive: boolean;
+  /**
+   * Col Game Pass non attivo, un gioco del Game Pass o un Gold entra solo con
+   * almeno tanti minuti. 0 = tutti quelli avviati, anche senza minuti.
+   */
+  minMinutes: number;
 };
 
-export type XboxStoredCredentials = XboxCredentials & XboxSettings;
+/**
+ * `minMinutes` manca sui credenziali scritti prima della soglia
+ * (21/10/2026): lì vale `XBOX_DEFAULT_MIN_MINUTES`, vedi `readXboxSettings`.
+ */
+export type XboxStoredCredentials = XboxCredentials &
+  Omit<XboxSettings, 'minMinutes'> & { minMinutes?: number };
+
+/** Le scelte di un credenziale Xbox, con la soglia di chi non ce l'ha. */
+export function readXboxSettings(stored: XboxStoredCredentials): XboxSettings {
+  return {
+    platforms: stored.platforms,
+    gamePassActive: stored.gamePassActive,
+    minMinutes: stored.minMinutes ?? XBOX_DEFAULT_MIN_MINUTES,
+  };
+}
 
 /**
  * Collega Xbox dopo il device code. L'account è lo xuid, stabile; il gamertag,
@@ -1522,9 +1543,9 @@ export async function xboxCredentials(
 function xboxSettingsOf(credentials: Buffer | null): XboxSettings | null {
   if (!credentials) return null;
   try {
-    const { platforms, gamePassActive } =
-      decryptCredentials<XboxStoredCredentials>(credentials);
-    return { platforms, gamePassActive };
+    return readXboxSettings(
+      decryptCredentials<XboxStoredCredentials>(credentials),
+    );
   } catch {
     return null;
   }

@@ -584,6 +584,11 @@ export type XboxProduct = {
   gen8: boolean;
   /** Xbox Series (`ConsoleGen9`). */
   gen9: boolean;
+  /**
+   * Un Xbox 360 retrocompatibile: gira anche sul 360. `XboxConsoleGenCompatible`
+   * non lo dice, perché il catalogo li ripubblica come prodotti One.
+   */
+  x360: boolean;
   playAnywhere: boolean;
   demo: boolean;
 };
@@ -593,6 +598,7 @@ type CatalogProduct = {
   LocalizedProperties?: { ProductTitle?: string }[];
   Properties?: {
     XboxConsoleGenCompatible?: string[] | string | null;
+    PackageFamilyName?: string | null;
     IsDemo?: boolean;
     Attributes?: { Name?: string }[];
   };
@@ -607,11 +613,20 @@ type CatalogProduct = {
 };
 
 /**
+ * Il pacchetto dei 360 retrocompatibili: `Xbox360BackwardCompatibil.41066DACB7CF4`
+ * su Catherine, `….PrimarySplosionManSplosi` su Splosion Man. Misurato il
+ * 21/10/2026 sul catalogo pubblico: c'è anche sui 360 mai avviati, e non sui
+ * giochi nativi One (Super Bomberman R).
+ */
+const X360_PACKAGE = 'Xbox360BackwardCompatibil.';
+
+/**
  * Titolo e piattaforme di un prodotto, dal catalogo (le regole di Unifideck,
  * `catalog_platforms.py`). `Windows.Desktop` o `Windows.Universal` è PC. La
  * generazione della console la dice `XboxConsoleGenCompatible`; se manca e c'è
  * un pacchetto `Windows.Xbox`, è una console di cui non si sa la generazione,
- * e vale come Xbox One (che gira anche sulla Series).
+ * e vale come Xbox One (che gira anche sulla Series). Il 360 lo dice il nome del
+ * pacchetto.
  */
 export function productPlatforms(product: CatalogProduct): XboxProduct {
   const nomi = new Set<string>();
@@ -634,6 +649,7 @@ export function productPlatforms(product: CatalogProduct): XboxProduct {
     pc: nomi.has('Windows.Desktop') || nomi.has('Windows.Universal'),
     gen8: gen.includes('ConsoleGen8') || (console && gen.length === 0),
     gen9: gen.includes('ConsoleGen9'),
+    x360: (props.PackageFamilyName ?? '').startsWith(X360_PACKAGE),
     playAnywhere: xpa || (props.Attributes ?? []).some((a) => a.Name === 'XPA'),
     demo: props.IsDemo === true,
   };

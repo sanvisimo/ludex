@@ -57,6 +57,7 @@ export function XboxCodePanel({
       client.accounts.xboxLogin.start({
         platforms: choices.platforms,
         gamePassActive: choices.gamePassActive,
+        minMinutes: choices.minMinutes,
         label: label?.trim() || null,
         accountId: accountId ?? null,
       }),

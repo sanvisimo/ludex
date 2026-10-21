@@ -330,9 +330,35 @@ describe('catalogo', () => {
       pc: true,
       gen8: true,
       gen9: true,
+      x360: false,
       playAnywhere: false,
       demo: false,
     });
+  });
+
+  it('un 360 retrocompatibile dal nome del pacchetto', () => {
+    // Catherine, dal catalogo pubblico il 21/10/2026: il catalogo la dice One
+    // e Series, e solo il pacchetto dice 360.
+    const catherine = prodotto({
+      Properties: {
+        XboxConsoleGenCompatible: ['ConsoleGen8', 'ConsoleGen9'],
+        PackageFamilyName:
+          'Xbox360BackwardCompatibil.41066DACB7CF4_ksqcvrsvwz2jp',
+      },
+    });
+    expect(productPlatforms(catherine)).toMatchObject({
+      gen8: true,
+      gen9: true,
+      x360: true,
+    });
+    const bomberman = prodotto({
+      Properties: {
+        XboxConsoleGenCompatible: ['ConsoleGen8', 'ConsoleGen9'],
+        PackageFamilyName:
+          'KonamiDigitalEntertainmen.SUPERBOMBERMANR_168atcksx2mfc',
+      },
+    });
+    expect(productPlatforms(bomberman).x360).toBe(false);
   });
 
   it('una console senza generazione vale come Xbox One', () => {

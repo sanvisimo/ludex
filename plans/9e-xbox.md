@@ -1,10 +1,11 @@
 # Step 9e — Xbox
 
-**Stato: passi 1–6 fatti (20/10/2026).** Il probe
+**Stato: passi 1–6 fatti (20/10/2026); la revisione del primo import vero ha
+portato la soglia dei minuti e i 360 in Collections (21/10/2026).** Il probe
 (`apps/api/src/scripts/xbox-probe.ts`) è stato lanciato dall'utente, le
 decisioni prese sui suoi dati («Le misure» e «Decisioni»), il lato server e la
-scheda in `/account` sono scritti e testati. Manca la prova con un account vero
-dall'app, e il passo 7 (documentazione).
+scheda in `/account` sono scritti e testati. Manca il reimport con le regole
+nuove, e il passo 7 (documentazione).
 
 ## Contesto
 
@@ -140,6 +141,64 @@ TrueAchievements, che importa i posseduti ma è un partner ufficiale.
    i giochi che IGDB dà su One, 360 e Xbox; una `xbox_one` anche per 360 e Xbox
    (`copy-platforms.ts`, come i visori VR). Senza, un gioco One giocato su
    Series e trovato per nome finirebbe fra i «da sistemare».
+
+### Decise dopo il primo import vero (20–21/10/2026)
+
+Il primo import dall'app ha dato 250 copie, e molte di giochi mai aperti.
+L'utente ha compilato un foglio di revisione (`9e-xbox-revisione.csv`, una riga
+per gioco e categoria, con «è mio?» e una nota: completato, giocato, provato,
+installato, non ricordo). Cosa ha detto:
+
+- **comprato**: 35 «sì» su 35. Il gruppo regge, compresi i Gold del 360, che
+  Collections dà già come posseduti (Splosion Man, Ikaruga, Hydrophobia…):
+  coerente con Microsoft, per cui i Gold di 360 e Xbox originale restano tuoi;
+- **games_with_gold**: 41 «no» su 41. Sono tutti giochi One, giocabili solo con
+  un Game Pass (anche Essential);
+- **game_pass**: 104 «no», più Adera «sì» (vedi sotto). Molti solo installati.
+
+10. **La soglia dei minuti** (21/10/2026). Col Game Pass non attivo, un gioco
+    del Game Pass o un Gold entra, come `played`, **solo se è nello storico con
+    almeno `minMinutes` minuti**; sotto non entra, e si conta in `sottoSoglia`.
+    0 = tutti quelli avviati, anche senza minuti. Col Game Pass attivo la soglia
+    non conta. Un comprato entra sempre.
+
+    **La sceglie l'utente**, con uno slider da 0 a 120 a passi di 5 accanto alla
+    spunta del Game Pass, visibile solo con la spunta tolta; sta nel credenziale
+    con le altre scelte. 60 è il valore iniziale, ed è quello di chi ha
+    collegato prima della soglia. Il 60 viene dal foglio: a 60 entrano tutti i
+    giocati e i completati con minuti (29) più tre, e nessuno dei «non
+    ricordo»; a 15 entravano anche 11 «provato» su 16 (fra 10 e 15 minuti non
+    c'è nessun provato, solo installati). Abzu e Valiant Hearts, completati,
+    non hanno minuti da Xbox: nessuna soglia li salva, si aggiungono a mano.
+
+    Alzarla non toglie le copie già importate (il reimport non pota i
+    possessi), come togliere una piattaforma: lo dice l'avviso del dialogo, che
+    si chiama ora «Impostazioni dell'import». Senza wireframe, su decisione
+    dell'utente: è un controllo in più in un dialogo che c'era.
+
+11. **I 360 in Collections** (21/10/2026). Il catalogo li ripubblica come
+    prodotti One (`ConsoleGen8, ConsoleGen9`), quindi Catherine, comprata per
+    360, non prendeva mai la copia 360. Li riconosce il pacchetto:
+    `PackageFamilyName` comincia con `Xbox360BackwardCompatibil.` (misurato sul
+    catalogo pubblico, senza account, su Catherine, Splosion Man, Ikaruga; non
+    su Super Bomberman R, nativo One; c'è anche sui 360 mai avviati). Un 360
+    gira su 360, One e Series, e prende una copia per ciascuna spuntata: la
+    piattaforma della copia è «dove ci puoi giocare», non «per cosa l'hai
+    comprato» (decisione dell'utente).
+
+**Ancora aperti**, dalle note del foglio:
+
+- **Adera** (2013, Store di Windows 8, id `9WZDNCRF…`) è dell'utente ma non sta
+  in Collections né nell'app Xbox: è nello storico solo perché aveva gli
+  obiettivi, e finisce fra i Game Pass. Proposta: un titolo dello storico
+  giocato l'ultima volta prima del 01/06/2017, quando il Game Pass non c'era,
+  è comprato. Oggi è un caso solo, e con la soglia non entra comunque (non ha
+  minuti);
+- **i bundle**: FIFA 17 è stato comprato col bundle della console, Collections
+  dà il bundle (`BW1MS0N7VHVP`, fra i non risolti) e FIFA 17 finisce fra i Game
+  Pass. Da aprire col catalogo;
+- **le app**: EA Access Hub arriva come gioco, fra i non risolti;
+- **le copie PC vuote** dei giochi Game Pass con PC e Series spuntate.
 
 ## Come si innesta (da confermare leggendo il codice al passo giusto)
 

@@ -23,6 +23,7 @@ import {
   userTagKindValues,
   wishlistSortValues,
   xboxPlatformValues,
+  XBOX_MAX_MIN_MINUTES,
 } from './vocabulary';
 
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
@@ -35,6 +36,11 @@ export const WishlistErrorSchema = z.enum(wishlistErrorValues);
 export const SubscriptionSchema = z.enum(subscriptionValues);
 export const MediumSchema = z.enum(mediumValues);
 export const XboxPlatformSchema = z.enum(xboxPlatformValues);
+export const XboxMinMinutesSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(XBOX_MAX_MIN_MINUTES);
 export const HiddenKindSchema = z.enum(hiddenKindValues);
 export const GameTypeSchema = z.enum(gameTypeValues);
 export const ScoreSourceSchema = z.enum(scoreSourceValues);
@@ -367,12 +373,13 @@ export const StoreAccountSchema = z.object({
   loginKind: z.enum(['qr', 'token']).nullish(),
   // Quando scade il token web. Nullo per il QR, che non ha una scadenza da dire.
   loginExpiresAt: z.date().nullish(),
-  // Solo Xbox (9e): le piattaforme spuntate e se il Game Pass è attivo, lette
-  // dal credenziale (mai il token). Nullo altrove.
+  // Solo Xbox (9e): le piattaforme spuntate, se il Game Pass è attivo e la
+  // soglia dei minuti, lette dal credenziale (mai il token). Nullo altrove.
   xbox: z
     .object({
       platforms: z.array(XboxPlatformSchema),
       gamePassActive: z.boolean(),
+      minMinutes: XboxMinMinutesSchema,
     })
     .nullish(),
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo

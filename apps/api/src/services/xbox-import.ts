@@ -19,6 +19,7 @@ import {
   type LibraryEntry,
 } from './library-import';
 import {
+  readXboxSettings,
   requireReauth,
   type StoreAccountRow,
   type XboxSettings,
@@ -43,7 +44,12 @@ import {
  * - le **ore** sono per titolo e non per dispositivo: vanno su una copia sola,
  *   la console più recente fra quelle del gioco;
  * - **«Ho il Game Pass attivo»** decide lo stato alla nascita dei giochi del
- *   Game Pass: senza, nascono `played`.
+ *   Game Pass e dei Gold, che senza abbonamento non si avviano: senza, nascono
+ *   `played`, e solo se hanno almeno `minMinutes` minuti — sotto, li hai solo
+ *   installati o aperti un attimo (la soglia la sceglie l'utente; 60 è tarata
+ *   sulla libreria vera, plans/9e-xbox.md);
+ * - un **Xbox 360 retrocompatibile** gira su 360, One e Series, anche quando
+ *   sta in Collections: lo dice il pacchetto nel catalogo.
  *
  * L'id esterno è il `productId` in maiuscolo, l'uid della sorgente IGDB 11 (75%
  * agganciati per id nel probe; il resto per nome).
@@ -69,6 +75,7 @@ function platformsOfProduct(product: XboxProduct): Set<XboxPlatform> {
   if (product.pc) out.add('pc_windows');
   if (product.gen8) for (const p of GEN8) out.add(p);
   if (product.gen9) out.add('xbox_series');
+  if (product.x360) for (const p of X360) out.add(p);
   return out;
 }
 
@@ -118,6 +125,7 @@ export function buildXboxEntries(
     senzaCatalogo: number;
     demo: number;
     fuoriDallePiattaforme: number;
+    sottoSoglia: number;
   };
 } {
   const spuntate = new Set(settings.platforms);
@@ -131,7 +139,24 @@ export function buildXboxEntries(
     senzaCatalogo: 0,
     demo: 0,
     fuoriDallePiattaforme: 0,
+    sottoSoglia: 0,
   };
+
+  /**
+   * Un gioco che senza abbonamento non si avvia (Game Pass, Gold) entra, col
+   * Game Pass non attivo, solo se ci si è giocato abbastanza: avviato (nello
+   * storico) e con almeno `minMinutes` minuti. Con 0 basta averlo avviato.
+   */
+  const giocatoAbbastanza = (title: XboxPlayedTitle | undefined) => {
+    if (settings.gamePassActive) return true;
+    if (!title) return false;
+    if (settings.minMinutes === 0) return true;
+    return (sources.minutes.get(title.titleId) ?? 0) >= settings.minMinutes;
+  };
+  /** Lo stato alla nascita di un gioco del Game Pass o di un Gold. */
+  const inAbbonamento = settings.gamePassActive
+    ? {}
+    : { status: 'played' as const };
 
   // Le ore e l'ultima partita stanno sul titolo dello storico: da productId a
   // titolo, per darle anche ai posseduti.
@@ -196,6 +221,12 @@ export function buildXboxEntries(
       continue;
     }
     const gold = product.kind === 'gold';
+    // Resta coperto anche sotto la soglia: lo storico non deve riportarlo come
+    // Game Pass.
+    if (gold && !giocatoAbbastanza(title)) {
+      conteggi.sottoSoglia += 1;
+      continue;
+    }
     if (
       copie(
         product.productId,
@@ -204,7 +235,9 @@ export function buildXboxEntries(
         title,
         {
           acquiredAt: product.acquiredAt,
-          ...(gold ? { subscription: 'games_with_gold' as const } : {}),
+          ...(gold
+            ? { subscription: 'games_with_gold' as const, ...inAbbonamento }
+            : {}),
         },
       )
     ) {
@@ -235,10 +268,14 @@ export function buildXboxEntries(
       continue;
     }
     for (const pid of title.productIds) coperti.add(pid);
+    if (!giocatoAbbastanza(title)) {
+      conteggi.sottoSoglia += 1;
+      continue;
+    }
     if (
       copie(productId, title.name, runs, title, {
         subscription: 'game_pass',
-        ...(settings.gamePassActive ? {} : { status: 'played' as const }),
+        ...inAbbonamento,
       })
     ) {
       conteggi.gamePass += 1;
@@ -254,10 +291,7 @@ export async function importXboxLibrary(
   account: StoreAccountRow,
 ): Promise<ImportReport> {
   const credentials = await xboxCredentials(account);
-  const settings: XboxSettings = {
-    platforms: credentials.platforms,
-    gamePassActive: credentials.gamePassActive,
-  };
+  const settings = readXboxSettings(credentials);
 
   let sources: XboxSources;
   try {
@@ -304,7 +338,8 @@ export async function importXboxLibrary(
   console.log(
     `[import] xbox: ${conteggi.posseduti} posseduti, ${conteggi.gold} Games with Gold, ` +
       `${conteggi.x360} Xbox 360, ${conteggi.gamePass} Game Pass; ` +
-      `saltati ${conteggi.altriNegozi} di altri negozi, ${conteggi.demo} demo, ` +
+      `saltati ${conteggi.sottoSoglia} sotto i ${settings.minMinutes} minuti, ` +
+      `${conteggi.altriNegozi} di altri negozi, ${conteggi.demo} demo, ` +
       `${conteggi.senzaCatalogo} senza piattaforma, ${conteggi.senzaProdotto} senza prodotto, ` +
       `${conteggi.fuoriDallePiattaforme} fuori dalle piattaforme spuntate`,
   );
