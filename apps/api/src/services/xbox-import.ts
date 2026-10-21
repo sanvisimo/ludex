@@ -25,6 +25,7 @@ import {
   type XboxSettings,
   xboxCredentials,
 } from './store-accounts';
+import { pruneUnlistedSubscriptionCopies } from './subscription-copies';
 
 /**
  * Import della libreria Xbox (9e). Le regole e le misure sono in
@@ -344,5 +345,9 @@ export async function importXboxLibrary(
       `${conteggi.fuoriDallePiattaforme} fuori dalle piattaforme spuntate`,
   );
 
-  return importLibrary(account, entries);
+  const report = await importLibrary(account, entries);
+  // Lo storico i Game Pass li rende sempre: a farli uscire è la spunta «Game
+  // Pass attivo» tolta, che lascia fuori ciò che sta sotto la soglia.
+  await pruneUnlistedSubscriptionCopies(account, entries);
+  return report;
 }

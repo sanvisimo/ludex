@@ -421,6 +421,13 @@
       "when": 1792422426672,
       "tag": "0059_clammy_scarecrow",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1792575467258,
+      "tag": "0060_nervous_punisher",
+      "breakpoints": true
     }
   ]
 }

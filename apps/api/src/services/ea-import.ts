@@ -5,6 +5,7 @@ import { EaAuthError, type EaToken, fetchEaLibrary } from '../external/ea';
 import { decryptCredentials } from '../lib/crypto';
 import { type ImportReport, importLibrary } from './library-import';
 import type { StoreAccountRow } from './store-accounts';
+import { pruneUnlistedSubscriptionCopies } from './subscription-copies';
 
 /**
  * Il token EA non c'è più, o EA non lo accetta: serve un JSON nuovo.
@@ -74,6 +75,8 @@ export async function importEaLibrary(
   }
 
   const report = await importLibrary(account, library);
+  // EA Play finito: senza abbonamento attivo EA quei giochi non li elenca.
+  await pruneUnlistedSubscriptionCopies(account, library);
   await forgetToken(account);
   return report;
 }

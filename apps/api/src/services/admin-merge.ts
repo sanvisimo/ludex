@@ -238,6 +238,12 @@ async function mergeOwnerships(tx: Tx, survivorRowId: string, rowId: string) {
         ),
         lastPlayedAt: piuGrande(uguale.lastPlayedAt, copia.lastPlayedAt),
         acquiredAt: piuPiccolo(uguale.acquiredAt, copia.acquiredAt),
+        // «Non più tua» solo se lo erano tutte e due: una copia viva tiene
+        // viva l'altra, che è la stessa.
+        subscriptionEndedAt:
+          uguale.subscriptionEndedAt && copia.subscriptionEndedAt
+            ? piuPiccolo(uguale.subscriptionEndedAt, copia.subscriptionEndedAt)
+            : null,
         storePage: uguale.storePage ?? copia.storePage,
       })
       .where(eq(schema.ownerships.id, uguale.id));

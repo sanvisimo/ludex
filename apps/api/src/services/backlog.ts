@@ -38,6 +38,7 @@ export const entryQuery = {
         playtimeMinutes: true,
         lastPlayedAt: true,
         subscription: true,
+        subscriptionEndedAt: true,
         medium: true,
         acquiredAt: true,
         storePage: true,
@@ -917,8 +918,8 @@ async function togliRifiutati(rows: OwnershipUpsert[]) {
  * nessuno store" si potrebbe inserire due volte perché in Postgres i NULL sono
  * tutti diversi fra loro.
  *
- * Sul conflitto aggiorna **solo** le ore, l'abbonamento, la data d'acquisto e
- * la pagina del negozio: il supporto sta nella chiave, quindi una riga non lo
+ * Sul conflitto aggiorna **solo** le ore, l'abbonamento (e ne azzera la fine),
+ * la data d'acquisto e la pagina del negozio: il supporto sta nella chiave, quindi una riga non lo
  * cambia mai — cambiarlo vorrebbe dire che è un'altra copia, e un'altra copia
  * è un'altra riga.
  */
@@ -973,6 +974,9 @@ export async function ensureOwnerships(rows: OwnershipUpsert[]) {
           // sempre. Le ore sono il caso opposto: un import che non le porta non
           // deve cancellare quelle che un altro aveva scritto.
           subscription: sql`excluded.subscription`,
+          // Una copia che torna è di nuovo tua: l'abbonamento è ripartito, o
+          // l'hai comprata. Vedi `pruneSubscriptionCopies`.
+          subscriptionEndedAt: null,
           // In COALESCE come le ore: il reimport lo riscrive, ed è così che le
           // copie importate prima della colonna prendono il link; una
           // scrittura che non lo porta non cancella quello che c'era.

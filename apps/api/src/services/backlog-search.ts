@@ -124,6 +124,9 @@ export function buildConditions(userId: string, input: BacklogFilter): SQL[] {
               and(
                 eq(schema.ownerships.backlogId, schema.backlog.id),
                 eq(schema.ownerships.platformSlug, slug),
+                // Una copia «non più tua» (step 14) stasera non la avvii: la
+                // piattaforma è il filtro hard di «cosa gioco adesso».
+                isNull(schema.ownerships.subscriptionEndedAt),
                 nonEsclusa,
               ),
             ),
@@ -472,7 +475,11 @@ export async function listBacklogFilterOptions(userId: string) {
       schema.platforms,
       eq(schema.platforms.slug, schema.ownerships.platformSlug),
     )
-    .where(visibleOf(userId))
+    // Una piattaforma che hai solo su copie «non più tue» darebbe zero
+    // risultati: il filtro quelle copie non le conta.
+    .where(
+      and(visibleOf(userId), isNull(schema.ownerships.subscriptionEndedAt)),
+    )
     .orderBy(schema.platforms.name);
 
   const storeRows = await db
