@@ -13,6 +13,7 @@ import {
 } from '../external/xbox';
 import { importLibrary } from './library-import';
 import { requireReauth, xboxCredentials } from './store-accounts';
+import { pruneUnlistedSubscriptionCopies } from './subscription-copies';
 import {
   buildXboxEntries,
   importXboxLibrary,
@@ -36,6 +37,11 @@ vi.mock('./store-accounts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./store-accounts')>()),
   xboxCredentials: vi.fn(),
   requireReauth: vi.fn(),
+}));
+// La potatura si prova su Postgres in `subscription-copies.test.ts`: qui conta
+// con quali voci la si chiama.
+vi.mock('./subscription-copies', () => ({
+  pruneUnlistedSubscriptionCopies: vi.fn(),
 }));
 
 // La parte pura prova cosa diventa una copia, e non c'è Microsoft da stubbare.
@@ -408,6 +414,25 @@ describe('importXboxLibrary', () => {
     expect(vi.mocked(importLibrary)).toHaveBeenCalledWith(account, []);
   });
 
+  it('dopo l’import pota le copie da abbonamento che le voci non portano più', async () => {
+    await importXboxLibrary(account);
+    expect(vi.mocked(pruneUnlistedSubscriptionCopies)).toHaveBeenCalledWith(
+      account,
+      [expect.objectContaining({ subscription: 'game_pass' })],
+    );
+  });
+
+  it('tolto il Game Pass, il Game Pass sotto la soglia esce', async () => {
+    // Lo stesso giocato di sopra, a 30 minuti: col Game Pass non attivo non
+    // entra, e la potatura riceve un elenco che non lo porta.
+    vi.mocked(fetchXboxMinutes).mockResolvedValue(new Map([['1', 30]]));
+    await importXboxLibrary(account);
+    expect(vi.mocked(pruneUnlistedSubscriptionCopies)).toHaveBeenCalledWith(
+      account,
+      [],
+    );
+  });
+
   it('la soglia salvata decide', async () => {
     vi.mocked(xboxCredentials).mockResolvedValue({
       accessToken: 'a',
@@ -449,5 +474,7 @@ describe('importXboxLibrary', () => {
     await importXboxLibrary(account);
     expect(vi.mocked(requireReauth)).toHaveBeenCalledWith(account);
     expect(vi.mocked(importLibrary)).not.toHaveBeenCalled();
+    // Una lettura a metà non è un'uscita.
+    expect(vi.mocked(pruneUnlistedSubscriptionCopies)).not.toHaveBeenCalled();
   });
 });

@@ -293,6 +293,10 @@ export const OwnershipSchema = z.object({
   // poter vedere sul possesso: «ce l'hai finché paghi» non è un dettaglio da
   // tenere solo nel database.
   subscription: SubscriptionSchema.nullable(),
+  // Quando l'abbonamento ha smesso di coprire la copia (step 14): nulla finché
+  // dura. Una copia con la data è «non più tua», e resta solo perché la riga
+  // ha dati dell'utente sopra.
+  subscriptionEndedAt: z.date().nullable(),
   // Disco o digitale; nullo sugli inserimenti manuali. Va al client per la
   // stessa ragione dell'abbonamento: un disco si avvia inserendolo, e il badge
   // del possesso deve poterlo dire.
@@ -754,6 +758,7 @@ export const AccountExportSchema = z.object({
           account: z.string().nullable(),
           medium: MediumSchema.nullable(),
           subscription: SubscriptionSchema.nullable(),
+          subscriptionEndedAt: z.date().nullable(),
           playtimeMinutes: z.number().nullable(),
           lastPlayedAt: z.date().nullable(),
           acquiredAt: z.date().nullable(),

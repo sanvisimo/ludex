@@ -437,6 +437,7 @@
     "played": "{duration} played",
     "lastPlayed": "last played {date}",
     "acquired": "added {date}",
+    "subscriptionEnded": "no longer yours",
     "screenshotAlt": "Screenshot {index} of {name}",
     "notes": "Notes",
     "galleryPrevious": "Previous",
@@ -1228,7 +1229,9 @@
       },
       "subscriptions": {
         "title": "Subscriptions",
-        "text": "PS Plus, Game Pass and the rest: telling apart the games in your library that are yours from the ones that are there while the subscription lasts."
+        "p1": "When a subscription ends — PS Plus, Game Pass, EA Play, Games with Gold or your Steam family — the next import notices: the games the store no longer lists leave your backlog.",
+        "p2": "A game you've rated, noted, tagged or given a status stays, and its copy says “no longer yours”. If you also own it elsewhere, only the subscription copy goes.",
+        "p3": "A copy that's no longer yours doesn't count in the platform filter, since you can't launch it tonight. If the subscription comes back, the first import makes it yours again."
       },
       "sourceLinks": {
         "title": "Links to the sources",

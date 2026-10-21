@@ -437,6 +437,7 @@
     "played": "{duration} giocate",
     "lastPlayed": "ultima partita {date}",
     "acquired": "preso il {date}",
+    "subscriptionEnded": "non più tua",
     "screenshotAlt": "Screenshot {index} di {name}",
     "notes": "Note",
     "galleryPrevious": "Precedente",
@@ -1227,7 +1228,9 @@
       },
       "subscriptions": {
         "title": "Gli abbonamenti",
-        "text": "PS Plus, Game Pass e gli altri: capire quali giochi della tua libreria sono tuoi e quali ci sono finché l'abbonamento resta attivo."
+        "p1": "Quando un abbonamento finisce — PS Plus, Game Pass, EA Play, Games with Gold o la famiglia Steam — se ne accorge l'import successivo: i giochi che il negozio non elenca più escono dal backlog.",
+        "p2": "Un gioco su cui hai messo un voto, una nota, un tag o uno stato resta, e la sua copia dice «non più tua». Se ce l'hai anche altrove, esce solo la copia dell'abbonamento.",
+        "p3": "Una copia «non più tua» non conta nel filtro delle piattaforme, perché stasera non la avvii. Se l'abbonamento riparte, il primo import la rimette tua."
       },
       "sourceLinks": {
         "title": "I link alle fonti",

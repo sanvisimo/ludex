@@ -1,6 +1,6 @@
 import type { GameType } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, eq, inArray, isNull } from '@repo/db/orm';
+import { and, eq, isNull } from '@repo/db/orm';
 
 import { findIgdbGamesByExternalIds } from '../external/igdb';
 import {
@@ -14,18 +14,17 @@ import {
   type SteamLibraryEntry,
   SteamUnauthorizedError,
 } from '../external/steam';
-import { findGameIdsByExternalIds } from './games';
 import {
   type ImportReport,
   importLibrary,
   type LibraryEntry,
 } from './library-import';
-import { hasPersonalData } from './personal-data';
 import {
   requireReauth,
   type StoreAccountRow,
   steamAccessToken,
 } from './store-accounts';
+import { listedCopies, pruneSubscriptionCopies } from './subscription-copies';
 
 /**
  * Import della libreria Steam.
@@ -61,7 +60,10 @@ export type FamilyReport = {
   copies: number;
   /** Copie uscite dalla famiglia, e tolte. */
   removed: number;
-  /** Uscite dalla famiglia ma rimaste, perché la riga ha dati dell'utente. */
+  /**
+   * Uscite dalla famiglia ma rimaste, «non più tue», perché la riga ha dati
+   * dell'utente. Vedi `pruneSubscriptionCopies`.
+   */
   kept: number;
 };
 
@@ -167,102 +169,6 @@ export function buildSteamEntries(
   return { entries: [...own, ...shared], familyCount: shared.length };
 }
 
-/**
- * Toglie le copie della famiglia che la famiglia non ha più.
- *
- * `keepGameIds` sono i giochi che la famiglia **ha ancora**. Delle copie
- * `steam_family` di questo account, quelle su altri giochi sono uscite, e il
- * destino lo decide ciò che c'è sopra:
- *
- * - **c'è un'altra copia** dello stesso gioco (comprato su GOG, inserito a
- *   mano): esce solo questa;
- * - **non ce ne sono e la riga non ha niente dell'utente**: esce la copia e
- *   anche la riga di backlog, che era solo il riflesso della famiglia;
- * - **non ce ne sono e la riga ha dati dell'utente** (voto, note, tag, stato):
- *   **la copia resta**. Una riga di backlog senza nessun possesso non è uno stato
- *   legittimo — la piattaforma è il filtro hard di «cosa gioco adesso» — e
- *   cancellarla porterebbe via un voto perché un parente ha tolto la licenza.
- *
- * Scritta in modo che un fallimento non possa potare per errore: la chiama solo
- * chi ha letto la famiglia **per intero**. Una rete che cade non è un'uscita.
- */
-export async function pruneFamilyCopies(
-  account: StoreAccountRow,
-  keepGameIds: Set<string>,
-): Promise<Pick<FamilyReport, 'removed' | 'kept'>> {
-  return db.transaction(async (tx) => {
-    const copie = await tx
-      .select({
-        id: schema.ownerships.id,
-        backlogId: schema.ownerships.backlogId,
-        gameId: schema.backlog.gameId,
-        personale: hasPersonalData,
-      })
-      .from(schema.ownerships)
-      .innerJoin(
-        schema.backlog,
-        eq(schema.backlog.id, schema.ownerships.backlogId),
-      )
-      .where(
-        and(
-          eq(schema.ownerships.storeAccountId, account.id),
-          eq(schema.ownerships.subscription, 'steam_family'),
-        ),
-      );
-
-    const uscite = copie.filter((copia) => !keepGameIds.has(copia.gameId));
-    if (uscite.length === 0) return { removed: 0, kept: 0 };
-
-    const backlogIds = [...new Set(uscite.map((copia) => copia.backlogId))];
-    const tutte = await tx
-      .select({
-        id: schema.ownerships.id,
-        backlogId: schema.ownerships.backlogId,
-      })
-      .from(schema.ownerships)
-      .where(inArray(schema.ownerships.backlogId, backlogIds));
-
-    const idUscite = new Set(uscite.map((copia) => copia.id));
-    const daTogliere: string[] = [];
-    const righeOrfane: string[] = [];
-    let kept = 0;
-
-    for (const backlogId of backlogIds) {
-      const dellaRiga = uscite.filter((copia) => copia.backlogId === backlogId);
-      const restano = tutte.filter(
-        (copia) => copia.backlogId === backlogId && !idUscite.has(copia.id),
-      ).length;
-
-      if (restano > 0) {
-        daTogliere.push(...dellaRiga.map((copia) => copia.id));
-      } else if (!dellaRiga[0]!.personale) {
-        daTogliere.push(...dellaRiga.map((copia) => copia.id));
-        righeOrfane.push(backlogId);
-      } else {
-        kept += dellaRiga.length;
-      }
-    }
-
-    if (daTogliere.length > 0) {
-      await tx
-        .delete(schema.ownerships)
-        .where(inArray(schema.ownerships.id, daTogliere));
-    }
-    if (righeOrfane.length > 0) {
-      await tx
-        .delete(schema.backlog)
-        .where(
-          and(
-            eq(schema.backlog.userId, account.userId),
-            inArray(schema.backlog.id, righeOrfane),
-          ),
-        );
-    }
-
-    return { removed: daTogliere.length, kept };
-  });
-}
-
 export async function importSteamLibrary(
   account: StoreAccountRow,
 ): Promise<SteamImportReport> {
@@ -307,17 +213,11 @@ export async function importSteamLibrary(
   const report = await importLibrary(account, entries);
   await fillUnresolvedCovers(account);
 
-  // I giochi che la famiglia ha ancora: si risolvono dall'appid **dopo**
-  // l'import, che è ciò che ha scritto le mappature dei giochi appena nati.
-  const gameIds = await findGameIdsByExternalIds(
-    'steam',
-    entries
-      .filter((entry) => entry.subscription === 'steam_family')
-      .map((entry) => entry.externalId),
-  );
-  const { removed, kept } = await pruneFamilyCopies(
+  // Le copie della famiglia che la famiglia non ha più: vedi
+  // `pruneSubscriptionCopies`, che vale per ogni abbonamento.
+  const { removed, kept } = await pruneSubscriptionCopies(
     account,
-    new Set(gameIds.values()),
+    await listedCopies(account, entries),
   );
 
   console.log(

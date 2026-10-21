@@ -584,6 +584,9 @@ export function BacklogPanel({
             ownership.storeAccount?.label,
             ownership.storeAccount?.displayName,
             ownership.subscription && tSubscription(ownership.subscription),
+            // L'abbonamento è finito e la copia resta per i tuoi dati sopra
+            // (step 14): stasera non la avvii, e la scheda lo dice.
+            ownership.subscriptionEndedAt && t('subscriptionEnded'),
             ownership.medium === 'physical' && tMedium('physical'),
           ]
             .filter(Boolean)

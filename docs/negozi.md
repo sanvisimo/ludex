@@ -436,6 +436,49 @@ abbastanza (vedi «Xbox (9e)»).
 di chi è la copia, non se è tua — e ora nemmeno `subscription` va scambiata per
 la stessa cosa, perché dice a che titolo ce l'hai, non di chi è l'abbonamento.
 
+## Quando l'abbonamento finisce (14)
+
+Deciso il 21/10/2026 (piano in `plans/14-abbonamenti.md`). **Se ne accorge
+l'import successivo**: una copia con `subscription` che il negozio non elenca
+più è uscita. Nessun controllo esplicito dello stato dell'abbonamento: né
+`isPlus` di PSN, né altro. Il destino lo decide ciò che c'è sopra
+(`pruneSubscriptionCopies`, in `services/subscription-copies.ts`):
+
+- **un'altra copia ancora tua** dello stesso gioco → esce solo questa;
+- **l'ultima, e la riga non ha dati dell'utente** (voto, note, tag, stato) →
+  escono la copia e la riga di backlog. Una riga di `games` non si tocca;
+- **l'ultima, e la riga ha dati dell'utente** → la copia resta, con
+  `subscription_ended_at`: **«non più tua»** sulla pagina del gioco, e fuori dal
+  filtro della piattaforma, perché stasera non la avvii.
+
+Si tiene per **gioco e piattaforma**, non per gioco: su Xbox la console tolta
+dalle spunte è una copia che il negozio non elenca più. Due copie uscite non si
+tengono in vita a vicenda, e una già marcata nemmeno; le marcate tornano a ogni
+giro, così una riga a cui l'utente toglie i dati se ne va al primo import dopo.
+La data della marca è quella del primo import che non l'ha vista. Il reimport
+che ritrova la copia la azzera, nell'upsert dei possessi.
+
+Si pota **solo dopo una lettura completa**: la chiamano Steam (col login, e
+allo scollegamento della famiglia), PSN, EA e Xbox dopo `importLibrary`. Un
+token rifiutato o scaduto esce prima dell'import, e Steam senza token non tocca
+la famiglia.
+
+Per negozio, cosa fa uscire una copia:
+
+- **Steam Family**: la famiglia che toglie il gioco, o il login tolto;
+- **EA Play**: EA senza abbonamento attivo quei giochi non li elenca
+  (verificato dall'utente, 21/10/2026);
+- **Game Pass**: lo storico i giochi li rende sempre; a farli uscire è la
+  spunta «Game Pass attivo» tolta, che lascia fuori ciò che sta sotto la soglia
+  dei minuti;
+- **PS Plus**: **non misurato** che Sony tolga i `PS_PLUS` dagli acquisti a Plus
+  scaduto. Se non lo fa non esce niente, e le righe continuano a dire «PS Plus»
+  finché non lo si misura su un Plus scaduto vero.
+
+**Il disco coperto dal Plus** (_God of War_ 2018) non è un rischio vero: un
+disco che si gioca ricompare fra i giocati come fisico, lo si è visto su PSN e
+su Nintendo. Per questo non si chiede conferma prima di cancellare.
+
 ## Steam Family e il login Steam (9f)
 
 **Misurato il 05/10/2026**, in sola lettura, con `pnpm --filter api
@@ -594,9 +637,11 @@ Sul branch `feat/9f-steam-login`. Il piano e le ragioni sono in
   comprare smette di dire «da abbonamento».
 - **Cosa esce, e cosa resta.** Una copia della famiglia che la famiglia non ha
   più si toglie al reimport; se non resta altro e la riga ha dati dell'utente
-  (voto, note, tag, stato) **la copia resta**, perché una riga senza possessi non
-  è uno stato legittimo e il voto non sparisce per una licenza tolta. Non
-  adotta i possessi scritti a mano: restano due righe.
+  (voto, note, tag, stato) **la copia resta**, marcata «non più tua», perché una
+  riga senza possessi non è uno stato legittimo e il voto non sparisce per una
+  licenza tolta. Dallo step 14 è la regola di ogni abbonamento: vedi «Quando
+  l'abbonamento finisce (14)». Non adotta i possessi scritti a mano: restano due
+  righe.
 - **Le date d'acquisto** si scrivono sulle copie proprie, dove l'utente è fra i
   proprietari. Un'app nella libreria propria che la famiglia elenca con un altro
   proprietario soltanto resta senza data.

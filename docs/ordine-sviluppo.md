@@ -10,17 +10,19 @@ in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10, il 18/10, il 19/10 e
 il 21/10), e l'ordine è anche quello della [roadmap](../apps/web/lib/roadmap.ts)
 pubblica:
 
-1. **14 — Abbonamenti**, in corso dal 21/10/2026: il codice è poco, ma le tre
-   domande aperte vanno prima decise. Il 9e gli ha appena portato `game_pass` e
-   `games_with_gold`.
-2. **Rilascio**: un server stabile al posto del mini PC e l'app aperta a
+1. **Rilascio**: un server stabile al posto del mini PC e l'app aperta a
    tutti, senza Cloudflare Access; con la verifica dell'email, il recupero
    della password e login e registrazione da stabilizzare. Non ha un numero:
    non è una feature ma il passaggio da ambiente di prova a servizio. Piano in
    `plans/rilascio.md`.
-3. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+2. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-4. **Mobile**: un'app nuova, con le sue schermate.
+3. **Mobile**: un'app nuova, con le sue schermate.
+
+Gli abbonamenti (14) erano i primi della lista e sono **fatti dal
+21/10/2026**, decisi e chiusi lo stesso giorno: vedi lo step 14 più sotto,
+«Quando l'abbonamento finisce (14)» in [negozi](negozi.md) e
+`plans/14-abbonamenti.md`.
 
 Xbox (9e) era il primo della lista ed è **fatto dal 21/10/2026**: vedi lo step
 9e più sotto, «Xbox (9e)» in [negozi](negozi.md) e `plans/9e-xbox.md`. Lo stesso
@@ -226,30 +228,26 @@ ancora una libreria collegata.
     decide cosa succede quando l'abbonamento **finisce**, che è l'unico momento
     in cui quelle righe cominciano a mentire.
 
-    Le domande sono tre e nessuna ha una risposta ovvia: si cancellano, si
-    nascondono o si lasciano lì marcate come «non più tuo»? Chi se ne accorge —
-    l'import successivo, che non li vedrà più tornare, o un controllo esplicito
-    dello stato dell'abbonamento (PSN lo dichiara: il profilo porta `isPlus`)?
-    E il voto o i tag che l'utente ci ha messo sopra, che restano roba sua anche
-    quando il gioco non c'è più?
+    Le tre domande — si cancellano, si nascondono o restano «non più tuo»?
+    chi se ne accorge? e il voto e i tag sopra? — hanno **risposta dal
+    21/10/2026** (piano in `plans/14-abbonamenti.md`, regola e misure in
+    «Quando l'abbonamento finisce (14)» di [negozi](negozi.md)):
+    - **se ne accorge l'import successivo**: una copia da abbonamento che il
+      negozio non elenca più è uscita. Niente controllo di `isPlus`;
+    - una copia uscita **si cancella** se il gioco ha un'altra copia ancora
+      tua, o se è l'ultima e la riga non ha dati dell'utente (con la riga di
+      backlog); **resta «non più tua»** (`ownerships.subscription_ended_at`)
+      se è l'ultima e la riga ha voto, note, tag o stato;
+    - **voto e tag** sono quindi la condizione stessa: dove ci sono, la riga
+      resta.
 
-    Una cosa che l'API **non** può aiutare a decidere, ed è misurata: Sony marca
-    `PS_PLUS` tanto il gioco mensile riscattato — che resta tuo finché sei
-    abbonato — quanto il catalogo Extra/Premium, che tuo non è mai stato. Quella
-    distinzione lì dentro non c'è, e nessuna colonna nostra può inventarla.
-
-    E ce n'è una terza, peggiore delle due: `PS_PLUS` può coprire un **disco**.
-    _God of War_ (2018) comprato su disco e poi arrivato nel Plus è marcato
-    abbonamento su entrambi gli elenchi. Cancellarlo alla fine del Plus
-    toglierebbe dal backlog un gioco che sta sullo scaffale.
-
-    Metà risposta c'è già, ed è il supporto dentro la chiave del vincolo: chi
-    dichiara il disco si ritrova **due righe**, e cancellando quella
-    dell'abbonamento il gioco resta. Metà, perché nessuno può dichiarare un
-    disco che non sa di dover dichiarare: finché il Plus dura le due copie si
-    somigliano, e la differenza si scopre il giorno in cui è troppo tardi. Se
-    questo step decidesse di cancellare, dovrebbe **chiedere prima** — è
-    l'unico momento in cui l'utente ha l'informazione e noi no.
+    Restano due limiti, scritti e accettati. Sony marca `PS_PLUS` tanto il
+    gioco mensile riscattato quanto il catalogo Extra/Premium, e la differenza
+    nessuna colonna può inventarla. E `PS_PLUS` può coprire un **disco**
+    (_God of War_ 2018): non si chiede conferma prima di cancellare, perché un
+    disco che si gioca ricompare fra i giocati come fisico — visto su PSN e su
+    Nintendo. Non è misurato invece che Sony tolga i `PS_PLUS` dagli acquisti a
+    Plus scaduto: se non lo fa, non esce niente.
 
 15. **Playlist, wishlist e gioco a caso** — tre pezzi, nell'ordine 15a, 15b,
     15c. La 15b riusa la tabella della 15a; la 15c non dipende dalle altre due.

@@ -1,0 +1,1 @@
+ALTER TABLE "ownerships" ADD COLUMN "subscription_ended_at" timestamp;
