@@ -1,6 +1,7 @@
 # Offrimi un caffè
 
-**Stato: piano, da approvare.** Branch `ccr-32888f38-imrpc3`.
+**Stato: piano, da approvare.** Branch `ccr-32888f38-imrpc3`. Fa parte del
+[rilascio](rilascio.md), aggiunto il 21/10/2026.
 Roadmap: nessuna voce (vedi sotto).
 
 ## Perché

@@ -27,6 +27,9 @@ Segnato dall'utente il 18/10/2026; niente è ancora analizzato né deciso.
 - [ ] **Stabilizzare login e registrazione**.
 - [ ] **Recupero della password** («password dimenticata»): manca, e anche
       questo aspetta chi spedisce le email.
+- [ ] **«Offrimi un caffè»**: un link a Ko-fi nel footer, solo donazioni
+      singole. Piano a parte in [offrimi-un-caffe.md](offrimi-un-caffe.md),
+      aggiunto dall'utente il 21/10/2026.
 - [x] **Cambio password**: c'è già, dal lotto 12g (la scheda «Password» del
       profilo, `apps/web/components/change-password.tsx`).
 
