@@ -3,6 +3,8 @@ import {
   oneShotStoreValues,
   type Store,
   wishlistStoreValues,
+  XBOX_DEFAULT_MIN_MINUTES,
+  type XboxPlatform,
 } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, eq, inArray, ne, notInArray, sql } from '@repo/db/orm';
@@ -70,6 +72,12 @@ import {
   type SteamLogin,
   type SteamStoredCredentials,
 } from '../external/steam-auth';
+import {
+  refreshXboxTokens,
+  XboxAuthError,
+  type XboxCredentials,
+  type XboxSession,
+} from '../external/xbox';
 import { encryptCredentials, decryptCredentials } from '../lib/crypto';
 import {
   enqueueImport,
@@ -205,11 +213,32 @@ export async function listStoreAccounts(userId: string) {
     ).map((row) => [row.id, steamLoginInfo(row.credentials)]),
   );
 
+  // Le scelte degli account Xbox (9e) stanno nel credenziale, come il tipo di
+  // login Steam: si leggono qui, e del credenziale non esce altro.
+  const xboxChoices = new Map(
+    (
+      await db
+        .select({
+          id: schema.storeAccounts.id,
+          credentials: schema.storeAccounts.credentials,
+        })
+        .from(schema.storeAccounts)
+        .where(
+          and(
+            eq(schema.storeAccounts.userId, userId),
+            eq(schema.storeAccounts.store, 'xbox'),
+            sql`${schema.storeAccounts.credentials} is not null`,
+          ),
+        )
+    ).map((row) => [row.id, xboxSettingsOf(row.credentials)]),
+  );
+
   return Promise.all(
     rows.map(async (row) => ({
       ...row,
       loginKind: steamLogins.get(row.id)?.kind ?? null,
       loginExpiresAt: steamLogins.get(row.id)?.expiresAt ?? null,
+      xbox: xboxChoices.get(row.id) ?? null,
       syncing: await isImportRunning(row.id),
       wishlistSyncing: await isWishlistImportRunning(row.id),
     })),
@@ -1203,6 +1232,10 @@ export function linkStore(
       return linkNintendoAccount(userId, value, options);
     case 'ea':
       return linkEaAccount(userId, value, options);
+    case 'xbox':
+      // Col codice da confermare, non con un valore: `xbox-login.ts`. Il
+      // router lo dice prima di arrivare qui.
+      throw new Error('Xbox si collega col device code');
   }
 }
 
@@ -1301,6 +1334,8 @@ const OAUTH_STORES = {
   // access token nuovo e lo stesso session token.
   nintendo: { refresh: refreshNintendoTokens, AuthError: NintendoAuthError },
   steam: { refresh: refreshSteamTokens, AuthError: SteamAuthError },
+  // Il refresh token **ruota** (misurato il 19/10/2026), come GOG ed Epic.
+  xbox: { refresh: refreshXboxTokens, AuthError: XboxAuthError },
 } as const;
 
 // Amazon **non è qui** e non è una dimenticanza: il suo rinnovo non ruota il
@@ -1417,4 +1452,147 @@ export async function nintendoCredentials(
   } catch {
     return requireReauth(account);
   }
+}
+
+// --- Xbox: il device code, e le scelte dell'utente nel credenziale ---
+
+/**
+ * Le scelte fatte collegando Xbox (9e): su quali piattaforme gioca, se il Game
+ * Pass è attivo, e da quanti minuti un gioco del Game Pass conta. Stanno **nel
+ * credenziale**, come il paese di Nintendo: le legge solo l'import, e il rinnovo
+ * si sovrappone senza toccarle (vedi `storeAccessToken`). Si cambiano con
+ * `updateXboxSettings`.
+ */
+export type XboxSettings = {
+  platforms: XboxPlatform[];
+  /** No → i giochi del Game Pass e i Gold nascono `played` (punto 5 del piano). */
+  gamePassActive: boolean;
+  /**
+   * Col Game Pass non attivo, un gioco del Game Pass o un Gold entra solo con
+   * almeno tanti minuti. 0 = tutti quelli avviati, anche senza minuti.
+   */
+  minMinutes: number;
+};
+
+/**
+ * `minMinutes` manca sui credenziali scritti prima della soglia
+ * (21/10/2026): lì vale `XBOX_DEFAULT_MIN_MINUTES`, vedi `readXboxSettings`.
+ */
+export type XboxStoredCredentials = XboxCredentials &
+  Omit<XboxSettings, 'minMinutes'> & { minMinutes?: number };
+
+/** Le scelte di un credenziale Xbox, con la soglia di chi non ce l'ha. */
+export function readXboxSettings(stored: XboxStoredCredentials): XboxSettings {
+  return {
+    platforms: stored.platforms,
+    gamePassActive: stored.gamePassActive,
+    minMinutes: stored.minMinutes ?? XBOX_DEFAULT_MIN_MINUTES,
+  };
+}
+
+/**
+ * Collega Xbox dopo il device code. L'account è lo xuid, stabile; il gamertag,
+ * che si può cambiare, è solo il nome leggibile. Su un ricollegamento il login
+ * dev'essere dello stesso account, come per il QR di Steam.
+ */
+export function linkXboxLogin(
+  userId: string,
+  login: { credentials: XboxCredentials; session: XboxSession },
+  settings: XboxSettings,
+  options: LinkOptions = {},
+) {
+  const credentials: XboxStoredCredentials = {
+    ...login.credentials,
+    ...settings,
+  };
+  return upsertAccount({
+    userId,
+    store: 'xbox',
+    externalAccountId: login.session.xuid,
+    displayName: login.session.gamertag,
+    label: options.label,
+    credentials,
+    expiresAt: new Date(credentials.expiresAt),
+    expectedExternalAccountId: options.relinking?.externalAccountId,
+  });
+}
+
+/**
+ * Il credenziale Xbox **già rinnovato**, con le scelte dell'utente: come
+ * `nintendoCredentials`, si rilegge la riga dopo il rinnovo.
+ */
+export async function xboxCredentials(
+  account: StoreAccountRow,
+): Promise<XboxStoredCredentials> {
+  await storeAccessToken(account);
+
+  const row = await db.query.storeAccounts.findFirst({
+    where: eq(schema.storeAccounts.id, account.id),
+    columns: { credentials: true },
+  });
+  if (!row?.credentials) throw new Error('Nessun account xbox collegato');
+
+  try {
+    return decryptCredentials<XboxStoredCredentials>(row.credentials);
+  } catch {
+    return requireReauth(account);
+  }
+}
+
+/** Le sole scelte di un credenziale Xbox, o null se non si legge. */
+function xboxSettingsOf(credentials: Buffer | null): XboxSettings | null {
+  if (!credentials) return null;
+  try {
+    return readXboxSettings(
+      decryptCredentials<XboxStoredCredentials>(credentials),
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Riscrive le scelte di un account Xbox nel credenziale, senza toccare il
+ * token: cambiare una spunta non è un login (decisione del 20/10/2026).
+ *
+ * Rende l'esito invece di alzare, come `requestWishlistImport`: è il router a
+ * sapere come dirlo. Con un import in corso non si scrive niente — l'import
+ * sta usando le scelte di prima, e a fine corsa la libreria non direbbe quali.
+ */
+export async function updateXboxSettings(
+  userId: string,
+  accountId: string,
+  settings: XboxSettings,
+) {
+  const account = await findStoreAccount(userId, accountId);
+  if (
+    !account ||
+    account.store !== 'xbox' ||
+    account.status === 'unlinked' ||
+    !account.credentials
+  ) {
+    return 'not_found' as const;
+  }
+  if (account.status === 'needs_reauth') return 'needs_reauth' as const;
+  if (await isImportRunning(account.id)) return 'running' as const;
+
+  let credentials: XboxStoredCredentials;
+  try {
+    credentials = decryptCredentials<XboxStoredCredentials>(
+      account.credentials,
+    );
+  } catch {
+    return 'needs_reauth' as const;
+  }
+
+  await db
+    .update(schema.storeAccounts)
+    .set({
+      credentials: encryptCredentials({ ...credentials, ...settings }),
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.storeAccounts.id, account.id));
+
+  await enqueueImport('xbox', { storeAccountId: account.id });
+  return 'queued' as const;
 }

@@ -961,6 +961,60 @@
       "removeFailed": "Couldn't remove the login",
       "removeWhileSyncing": "An import is running: remove the login when it's done"
     },
+    "xbox": {
+      "title": "Connect Xbox",
+      "description": "Choose what you play on, then confirm a code on Microsoft: your phone works too.",
+      "platformsTitle": "What do you play on?",
+      "platformsHint": "Xbox doesn't say which console you play on: tick the ones you own. Each game goes on the ones it runs on.",
+      "platforms": {
+        "pc_windows": "PC (Windows)",
+        "xbox": "Xbox (original)",
+        "xbox360": "Xbox 360",
+        "xbox_one": "Xbox One",
+        "xbox_series": "Xbox Series"
+      },
+      "gamePass": "I have an active Game Pass",
+      "gamePassHint": "Any tier, Essential included. Without it, the Game Pass and Gold games you played come in as «played».",
+      "minMinutes": "Import Game Pass and Gold games played at least {minutes} min",
+      "minMinutesAll": "Import every Game Pass and Gold game you started",
+      "minMinutesLabel": "Minimum minutes played",
+      "minMinutesHint": "Below that, you usually only installed them or opened them briefly. At 0, everything you started comes in, even without minutes.",
+      "continue": "Continue",
+      "pickOne": "Tick at least one platform.",
+      "back": "Back",
+      "codeTitle": "Confirm on Microsoft",
+      "copy": "Copy",
+      "copied": "Code copied",
+      "open": "Open microsoft.com/link",
+      "step1": "1. Open microsoft.com/link, from your phone too",
+      "step2": "2. Sign in with your Xbox Microsoft account",
+      "step3": "3. Enter the code and press «Allow»",
+      "waiting": "Waiting for confirmation…",
+      "validFor": "The code is valid for {time}",
+      "closeHint": "Closing the dialog stops checking. A new code cancels the previous one.",
+      "preparing": "Asking Microsoft for a code…",
+      "startFailed": "Couldn't get a code from Microsoft. Try again shortly.",
+      "done": "Xbox connected: import in progress",
+      "expired": "The code has expired.",
+      "newCode": "New code",
+      "retry": "Try again",
+      "declined": "You pressed «Deny» on Microsoft.",
+      "noProfile": "This Microsoft account has no Xbox profile: create one on xbox.com and try again.",
+      "country": "Xbox isn't available in this Microsoft account's country.",
+      "child": "This is a child account: an adult has to allow it in the Microsoft family settings.",
+      "wrongAccount": "You confirmed with a different Xbox account: sign in with the one to reconnect and try again.",
+      "failed": "The connection didn't work. Try again.",
+      "platformsCount": "{count} platforms",
+      "gamePassOn": "Game Pass active",
+      "gamePassOff": "Game Pass not active",
+      "changeSettings": "Import settings",
+      "settingsTitle": "Import settings",
+      "settingsDescription": "Your current choices, already ticked.",
+      "settingsWarning": "Removing a platform or raising the minutes threshold doesn't remove copies already imported: remove them from the game page. Game Pass only affects games that come in later.",
+      "save": "Save and update",
+      "saved": "Saved: import in progress",
+      "saveFailed": "Couldn't save your choices."
+    },
     "nintendoGuide": {
       "caption": "Schematic drawing: the real page may look different.",
       "name": "your name",
@@ -1099,7 +1153,9 @@
   "subscription": {
     "ps_plus": "PS Plus",
     "steam_family": "Steam Family",
-    "ea_play": "EA Play"
+    "ea_play": "EA Play",
+    "game_pass": "Game Pass",
+    "games_with_gold": "Games with Gold"
   },
   "medium": {
     "digital": "Digital",
@@ -1249,7 +1305,9 @@
       },
       "xbox": {
         "title": "The Xbox library",
-        "text": "Xbox gives back what you played, not what you own: before building it we have to decide what to show."
+        "p1": "In Libraries you connect Xbox by confirming a code on microsoft.com/link, from your phone too. First you pick what you play on — PC, Xbox, 360, One, Series — and every game goes on the platforms it runs on.",
+        "p2": "The games you bought come in, including the ones you never launched and backward compatible 360 games. Game Pass and Games with Gold ones only if you played them: without an active subscription they come in as «played», and only above a number of minutes you choose.",
+        "p3": "With Xbox playtime. Platforms, Game Pass and the threshold can be changed from the card, in «Import settings», without signing in again."
       },
       "playlists": {
         "title": "Playlists, wishlists and random game",

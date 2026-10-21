@@ -35,6 +35,7 @@
     "psn:wishlist-probe": "tsx src/scripts/psn-wishlist-probe.ts",
     "nintendo:probe": "tsx src/scripts/nintendo-probe.ts",
     "nintendo:vgc-probe": "tsx src/scripts/nintendo-vgc-probe.ts",
+    "xbox:probe": "tsx src/scripts/xbox-probe.ts",
     "csv:probe": "tsx src/scripts/csv-probe.ts",
     "queues": "tsx src/queues-dashboard.ts"
   },

@@ -53,6 +53,10 @@ import {
   SteamLoginStartSchema,
   SourceReasonSchema,
   SteamLoginStatusSchema,
+  XboxLoginStartSchema,
+  XboxLoginStatusSchema,
+  XboxMinMinutesSchema,
+  XboxPlatformSchema,
   StoreAccountSchema,
   StoreSchema,
   SyncAllResultSchema,
@@ -287,6 +291,48 @@ export const contract = {
         .input(z.object({ accountId: z.uuid() }))
         .output(SteamLoginRemovedSchema),
     },
+
+    // Il login Xbox col device code (9e). Non passa da `link`, come il QR di
+    // Steam: `start` apre la sessione e rende il codice da confermare su
+    // microsoft.com/link, `status` si interroga a intervalli, e a `done`
+    // l'account è scritto e l'import accodato. Le piattaforme spuntate, il Game
+    // Pass attivo e la soglia dei minuti si scelgono qui e stanno nel
+    // credenziale; si cambiano con `xboxSettings`. `accountId` su un ricollegamento, con `wrong_account` se il
+    // login è di un altro account. Una sola sessione attiva per utente.
+    xboxLogin: {
+      start: oc
+        .input(
+          z.object({
+            platforms: z.array(XboxPlatformSchema).min(1),
+            gamePassActive: z.boolean(),
+            minMinutes: XboxMinMinutesSchema,
+            label: z.string().trim().max(60).nullish(),
+            accountId: z.uuid().nullish(),
+          }),
+        )
+        .output(XboxLoginStartSchema),
+
+      status: oc
+        .input(z.object({ loginId: z.uuid() }))
+        .output(XboxLoginStatusSchema),
+    },
+
+    // Cambia le piattaforme spuntate, il Game Pass e la soglia dei minuti di un
+    // account Xbox (9e), **senza un login**: è una scelta nostra, non di
+    // Microsoft. Le riscrive nel credenziale e accoda l'import. Le copie già
+    // importate restano, anche su una piattaforma tolta o sotto una soglia
+    // alzata. `FORBIDDEN` se l'account va ricollegato, `CONFLICT` con un
+    // import in corso.
+    xboxSettings: oc
+      .input(
+        z.object({
+          accountId: z.uuid(),
+          platforms: z.array(XboxPlatformSchema).min(1),
+          gamePassActive: z.boolean(),
+          minMinutes: XboxMinMinutesSchema,
+        }),
+      )
+      .output(z.void()),
 
     // Rinomina un account già collegato. Esiste separata da `link` perché
     // altrimenti etichettare quelli che hai già vorrebbe dire scollegarli e

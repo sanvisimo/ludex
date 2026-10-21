@@ -97,6 +97,7 @@ import {
   startSteamLogin,
   steamLoginStatus,
 } from '../services/steam-login';
+import { startXboxLogin, xboxLoginStatus } from '../services/xbox-login';
 import {
   searchCatalog,
   searchIgdbNotInCatalog,
@@ -128,6 +129,7 @@ import {
   syncAllStoreAccounts,
   unlinkImpact,
   unlinkStoreAccount,
+  updateXboxSettings,
 } from '../services/store-accounts';
 import {
   listUnresolvedImports,
@@ -281,6 +283,13 @@ export const router = os.router({
       }),
 
     link: os.accounts.link.use(authed).handler(async ({ input, context }) => {
+      // Xbox non ha un valore da incollare: si collega col codice
+      // (`xboxLogin`).
+      if (input.store === 'xbox') {
+        throw new ORPCError('BAD_REQUEST', {
+          message: 'Xbox si collega confermando un codice, non incollando',
+        });
+      }
       const relinking = await relinkTarget(
         context.user.id,
         input.store,
@@ -396,6 +405,55 @@ export const router = os.router({
           return removed;
         }),
     },
+
+    xboxLogin: {
+      start: os.accounts.xboxLogin.start
+        .use(authed)
+        .handler(async ({ input, context }) => {
+          const relinking = await relinkTarget(
+            context.user.id,
+            'xbox',
+            input.accountId,
+          );
+          return startXboxLogin(
+            context.user.id,
+            {
+              platforms: [...new Set(input.platforms)],
+              gamePassActive: input.gamePassActive,
+              minMinutes: input.minMinutes,
+            },
+            { label: input.label, relinking },
+          );
+        }),
+
+      status: os.accounts.xboxLogin.status
+        .use(authed)
+        .handler(({ input, context }) =>
+          xboxLoginStatus(context.user.id, input.loginId),
+        ),
+    },
+
+    xboxSettings: os.accounts.xboxSettings
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const outcome = await updateXboxSettings(
+          context.user.id,
+          input.accountId,
+          {
+            platforms: [...new Set(input.platforms)],
+            gamePassActive: input.gamePassActive,
+            minMinutes: input.minMinutes,
+          },
+        );
+        if (outcome === 'not_found')
+          throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+        if (outcome === 'needs_reauth')
+          throw new ORPCError('FORBIDDEN', {
+            message: "Il collegamento a Xbox è scaduto: ricollega l'account",
+          });
+        if (outcome === 'running')
+          throw new ORPCError('CONFLICT', { message: 'Import in corso' });
+      }),
 
     rename: os.accounts.rename
       .use(authed)

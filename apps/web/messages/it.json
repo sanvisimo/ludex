@@ -960,6 +960,60 @@
       "removeFailed": "Non sono riuscito a togliere il login",
       "removeWhileSyncing": "C'è un'importazione in corso: togli il login quando ha finito"
     },
+    "xbox": {
+      "title": "Collega Xbox",
+      "description": "Scegli su cosa giochi, poi conferma un codice su Microsoft: anche dal telefono.",
+      "platformsTitle": "Su cosa giochi?",
+      "platformsHint": "Xbox non dice su che console giochi: spunta quelle che hai. Ogni gioco va su quelle dove gira.",
+      "platforms": {
+        "pc_windows": "PC (Windows)",
+        "xbox": "Xbox (la prima)",
+        "xbox360": "Xbox 360",
+        "xbox_one": "Xbox One",
+        "xbox_series": "Xbox Series"
+      },
+      "gamePass": "Ho il Game Pass attivo",
+      "gamePassHint": "Qualunque livello, anche Essential. Senza, i giochi del Game Pass e i Gold che hai giocato entrano come «giocati».",
+      "minMinutes": "Importa i Game Pass e i Gold giocati almeno {minutes} min",
+      "minMinutesAll": "Importa tutti i Game Pass e i Gold che hai avviato",
+      "minMinutesLabel": "Minuti di gioco minimi",
+      "minMinutesHint": "Sotto, di solito li hai solo installati o aperti un attimo. A 0 entrano tutti quelli avviati, anche senza minuti.",
+      "continue": "Continua",
+      "pickOne": "Spunta almeno una piattaforma.",
+      "back": "Indietro",
+      "codeTitle": "Conferma su Microsoft",
+      "copy": "Copia",
+      "copied": "Codice copiato",
+      "open": "Apri microsoft.com/link",
+      "step1": "1. Apri microsoft.com/link, anche dal telefono",
+      "step2": "2. Entra con l'account Microsoft di Xbox",
+      "step3": "3. Scrivi il codice e premi «Consenti»",
+      "waiting": "In attesa della conferma…",
+      "validFor": "Il codice vale ancora {time}",
+      "closeHint": "Chiudere il dialogo smette di chiedere. Un codice nuovo annulla quello di prima.",
+      "preparing": "Chiedo il codice a Microsoft…",
+      "startFailed": "Non riesco a chiedere il codice a Microsoft. Riprova tra poco.",
+      "done": "Xbox collegato: importazione in corso",
+      "expired": "Il codice è scaduto.",
+      "newCode": "Nuovo codice",
+      "retry": "Riprova",
+      "declined": "Hai premuto «Nega» su Microsoft.",
+      "noProfile": "Questo account Microsoft non ha un profilo Xbox: crealo su xbox.com e riprova.",
+      "country": "Xbox non è disponibile nel paese di questo account Microsoft.",
+      "child": "È l'account di un minore: serve il consenso di un adulto nella famiglia Microsoft.",
+      "wrongAccount": "Hai confermato con un altro account Xbox: entra con quello da ricollegare e riprova.",
+      "failed": "Il collegamento non è riuscito. Riprova.",
+      "platformsCount": "{count} piattaforme",
+      "gamePassOn": "Game Pass attivo",
+      "gamePassOff": "Game Pass non attivo",
+      "changeSettings": "Impostazioni dell'import",
+      "settingsTitle": "Impostazioni dell'import",
+      "settingsDescription": "Le scelte di adesso, già spuntate.",
+      "settingsWarning": "Togliere una piattaforma o alzare la soglia dei minuti non toglie le copie già importate: si tolgono dalla scheda del gioco. Il Game Pass cambia solo i giochi che arrivano dopo.",
+      "save": "Salva e aggiorna",
+      "saved": "Salvato: importazione in corso",
+      "saveFailed": "Non riesco a salvare le scelte."
+    },
     "nintendoGuide": {
       "caption": "Disegno schematico: la pagina vera può avere un aspetto diverso.",
       "name": "il tuo nome",
@@ -1098,7 +1152,9 @@
   "subscription": {
     "ps_plus": "PS Plus",
     "steam_family": "Famiglia Steam",
-    "ea_play": "EA Play"
+    "ea_play": "EA Play",
+    "game_pass": "Game Pass",
+    "games_with_gold": "Games with Gold"
   },
   "medium": {
     "digital": "Digitale",
@@ -1248,7 +1304,9 @@
       },
       "xbox": {
         "title": "La libreria Xbox",
-        "text": "Da Xbox torna ciò che hai giocato, non ciò che possiedi: prima di costruirla va deciso cosa mostrare."
+        "p1": "In Librerie si collega Xbox confermando un codice su microsoft.com/link, anche dal telefono. Prima scegli su cosa giochi — PC, Xbox, 360, One, Series — e ogni gioco va sulle piattaforme dove gira.",
+        "p2": "Entrano i giochi che hai comprato, anche quelli mai avviati e i 360 retrocompatibili. Quelli del Game Pass e dei Games with Gold solo se ci hai giocato: senza abbonamento attivo entrano come «giocati», e solo sopra una soglia di minuti che scegli tu.",
+        "p3": "Con le ore di gioco di Xbox. Piattaforme, Game Pass e soglia si cambiano dalla scheda, in «Impostazioni dell'import», senza rifare il login."
       },
       "playlists": {
         "title": "Playlist, wishlist e gioco a caso",

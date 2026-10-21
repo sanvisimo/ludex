@@ -414,6 +414,13 @@
       "when": 1792420227538,
       "tag": "0058_volatile_alice",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1792422426672,
+      "tag": "0059_clammy_scarecrow",
+      "breakpoints": true
     }
   ]
 }

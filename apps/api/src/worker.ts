@@ -51,6 +51,7 @@ import {
   enqueueDueWishlistImports,
 } from './services/library-sync';
 import { importNintendoLibrary } from './services/nintendo-import';
+import { importXboxLibrary } from './services/xbox-import';
 import { importPsnLibrary } from './services/psn-import';
 import { type ImportReport } from './services/library-import';
 import { SteamLibraryNotVisibleError } from './external/steam';
@@ -226,6 +227,7 @@ const importers: Partial<
   psn: importPsnLibrary,
   nintendo: importNintendoLibrary,
   ea: importEaLibrary,
+  xbox: importXboxLibrary,
 };
 
 // Coda a parte: un import genera centinaia di job di enrichment, e sulla stessa

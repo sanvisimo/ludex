@@ -6,21 +6,25 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 
 I numeri degli step sono nomi, non una sequenza: compaiono nei piani, nei
 commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
-in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10, il 18/10 e il 19/10),
-e l'ordine è anche quello della [roadmap](../apps/web/lib/roadmap.ts) pubblica:
+in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10, il 18/10, il 19/10 e
+il 21/10), e l'ordine è anche quello della [roadmap](../apps/web/lib/roadmap.ts)
+pubblica:
 
-1. **9e — Xbox**, in corso dal 18/10/2026: la decisione sul significato, poi un
-   login e un nuovo negozio da zero.
+1. **14 — Abbonamenti**, in corso dal 21/10/2026: il codice è poco, ma le tre
+   domande aperte vanno prima decise. Il 9e gli ha appena portato `game_pass` e
+   `games_with_gold`.
 2. **Rilascio**: un server stabile al posto del mini PC e l'app aperta a
    tutti, senza Cloudflare Access; con la verifica dell'email, il recupero
    della password e login e registrazione da stabilizzare. Non ha un numero:
    non è una feature ma il passaggio da ambiente di prova a servizio. Piano in
    `plans/rilascio.md`.
-3. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
-   decise.
-4. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+3. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-5. **Mobile**: un'app nuova, con le sue schermate.
+4. **Mobile**: un'app nuova, con le sue schermate.
+
+Xbox (9e) era il primo della lista ed è **fatto dal 21/10/2026**: vedi lo step
+9e più sotto, «Xbox (9e)» in [negozi](negozi.md) e `plans/9e-xbox.md`. Lo stesso
+giorno gli abbonamenti sono saliti prima del rilascio.
 
 L'import CSV (10), in corso insieme a Xbox dal 18/10, è **fatto dal
 19/10/2026**: vedi lo step 10 più sotto e `plans/10-import-csv.md`.
@@ -58,7 +62,9 @@ del negozio, è **chiuso il 16/10/2026** per tutte le librerie collegate:
 - EA e Nintendo: controllati a mano;
 - Amazon: verificata.
 
-Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
+Xbox (9e) è stato controllato a mano il 20/10/2026, con un foglio di revisione
+del primo import (`plans/9e-xbox-revisione.csv`). Resta Meta Quest, che non è
+ancora una libreria collegata.
 
 1. **Registrazione e auth**
 2. **Inserimento manuale + prima UI web** — `backlog` con possesso, piattaforme e
@@ -152,9 +158,13 @@ Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
      blocchi, e segnato «fatto» nella roadmap il 12/10/2026. Resta non misurato
      il caso di molti utenti da un solo indirizzo: il rinnovo lo fa il server con
      due identità non nostre (l'app e il portale).
-   - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
-     prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
-     librerie», e per ora è volutamente aperta.
+   - **9e — Xbox** — **fatto il 21/10/2026**, piano in `plans/9e-xbox.md`. Il
+     login è il device code col client di xbox.com; posseduto è ciò che sta in
+     Collections (comprato, o `games_with_gold`) più i 360 comprati, e tutto il
+     resto giocato è `game_pass`. Ogni gioco prende una copia per ciascuna
+     piattaforma spuntata su cui gira. Col Game Pass non attivo, Game Pass e
+     Gold entrano come `played` e solo sopra una soglia di minuti scelta
+     dall'utente. Vedi «Xbox (9e)» in [negozi](negozi.md).
    - **9f — Steam con login e Family**: il login Steam col QR **accanto** al
      solo profilo pubblico (le due cose sulla stessa riga), e con lui la
      libreria della famiglia. La domanda sul «gioco di tuo fratello» ha avuto la
