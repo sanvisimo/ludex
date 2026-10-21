@@ -1304,7 +1304,9 @@
       },
       "xbox": {
         "title": "La libreria Xbox",
-        "text": "I giochi che possiedi su Xbox e su PC, anche quelli mai avviati, con le ore di gioco e il Game Pass. Ci si collega confermando un codice su microsoft.com/link."
+        "p1": "In Librerie si collega Xbox confermando un codice su microsoft.com/link, anche dal telefono. Prima scegli su cosa giochi — PC, Xbox, 360, One, Series — e ogni gioco va sulle piattaforme dove gira.",
+        "p2": "Entrano i giochi che hai comprato, anche quelli mai avviati e i 360 retrocompatibili. Quelli del Game Pass e dei Games with Gold solo se ci hai giocato: senza abbonamento attivo entrano come «giocati», e solo sopra una soglia di minuti che scegli tu.",
+        "p3": "Con le ore di gioco di Xbox. Piattaforme, Game Pass e soglia si cambiano dalla scheda, in «Impostazioni dell'import», senza rifare il login."
       },
       "playlists": {
         "title": "Playlist, wishlist e gioco a caso",

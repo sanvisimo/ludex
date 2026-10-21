@@ -1,11 +1,13 @@
 # Step 9e — Xbox
 
-**Stato: passi 1–6 fatti (20/10/2026); la revisione del primo import vero ha
-portato la soglia dei minuti e i 360 in Collections (21/10/2026).** Il probe
+**Stato: chiuso il 21/10/2026**, segnato «fatto» nella roadmap. Il probe
 (`apps/api/src/scripts/xbox-probe.ts`) è stato lanciato dall'utente, le
 decisioni prese sui suoi dati («Le misure» e «Decisioni»), il lato server e la
-scheda in `/account` sono scritti e testati. Manca il reimport con le regole
-nuove, e il passo 7 (documentazione).
+scheda in `/account` scritti e testati, e il primo import vero rivisto a mano:
+ne sono venute la soglia dei minuti e i 360 in Collections (decisioni 10 e 11).
+Il passo 7, la documentazione, è in «Xbox (9e)» di `docs/negozi.md`,
+`docs/ordine-sviluppo.md` e `apps/web/CLAUDE.md`. Quello che resta aperto è in
+fondo alle decisioni.
 
 ## Contesto
 

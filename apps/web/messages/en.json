@@ -1305,7 +1305,9 @@
       },
       "xbox": {
         "title": "The Xbox library",
-        "text": "The games you own on Xbox and PC, including the ones you never launched, with playtime and Game Pass. You connect by confirming a code on microsoft.com/link."
+        "p1": "In Libraries you connect Xbox by confirming a code on microsoft.com/link, from your phone too. First you pick what you play on — PC, Xbox, 360, One, Series — and every game goes on the platforms it runs on.",
+        "p2": "The games you bought come in, including the ones you never launched and backward compatible 360 games. Game Pass and Games with Gold ones only if you played them: without an active subscription they come in as «played», and only above a number of minutes you choose.",
+        "p3": "With Xbox playtime. Platforms, Game Pass and the threshold can be changed from the card, in «Import settings», without signing in again."
       },
       "playlists": {
         "title": "Playlists, wishlists and random game",
