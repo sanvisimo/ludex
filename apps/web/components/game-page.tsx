@@ -38,7 +38,7 @@ import { GameCover } from '@/components/game-cover';
 import { useOpenIgdbHit } from '@/components/game-search';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { HltbTimes } from '@/components/hltb-times';
-import { RatingValue } from '@/components/rating-value';
+import { RatingStars } from '@/components/rating-stars';
 import { ScrollRow } from '@/components/scroll-row';
 import { statusIcons } from '@/components/status-icon';
 import { useDuration } from '@/lib/duration';
@@ -491,7 +491,8 @@ export function DurationAndCritics({
 // --- la colonna laterale: il tuo backlog ---
 
 /**
- * Stato, voto, copie, note e tag. Ogni copia ha l'icona del negozio, che
+ * Stato, voto, copie, note e tag. Il voto si dà da qui, al volo: le cinque
+ * stelle ci sono sempre, vuote se non hai votato. Ogni copia ha l'icona del negozio, che
  * porta alla pagina del gioco su quel negozio quando sappiamo dov'è: quella
  * della copia (`storePageUrl`), e senza quella la riga dello stesso negozio
  * nella card «Links» (`storeLinks`, dove arriva anche il link di IGDB: è il
@@ -502,12 +503,15 @@ export function BacklogPanel({
   entry,
   storeLinks,
   onStatus,
+  onRating,
   actions,
   hiddenNotice,
 }: {
   entry: BacklogEntry;
   storeLinks: GameDetail['storeLinks'];
   onStatus: (entry: BacklogEntry, status: BacklogStatus) => void;
+  /** Il voto al volo, senza aprire «Modifica»; `null` lo toglie. */
+  onRating: (entry: BacklogEntry, rating: number | null) => void;
   actions: ReactNode;
   hiddenNotice: ReactNode;
 }) {
@@ -528,7 +532,11 @@ export function BacklogPanel({
       <XStack items="center" justify="space-between" gap={8}>
         <PanelTitle>{t('inBacklog')}</PanelTitle>
         <XStack items="center" gap={8}>
-          <RatingValue value={entry.rating} />
+          <RatingStars
+            size="sm"
+            value={entry.rating}
+            onChange={(rating) => onRating(entry, rating)}
+          />
           <StatusButton entry={entry} onStatus={onStatus} />
         </XStack>
       </XStack>

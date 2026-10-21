@@ -72,6 +72,7 @@
     "addLibrary": "Aggiungi libreria",
     "remove": "Rimuovi",
     "statusFailed": "Non sono riuscito a cambiare lo stato",
+    "ratingFailed": "Non sono riuscito a salvare il voto",
     "edit": "Modifica",
     "noMatchTitle": "Nessun gioco corrisponde.",
     "noMatchHint": "Prova ad allargare i filtri: le spunte dello stesso criterio si sommano, quindi due tag insieme vogliono i giochi che li hanno entrambi.",
@@ -496,6 +497,7 @@
     "noRating": "non votato",
     "ratingOf": "{value} su 5",
     "ratingValue": "Vota {value} su 5",
+    "clearRating": "Togli il voto",
     "notesLabel": "Note",
     "notesPlaceholder": "Appunti tuoi su questo gioco",
     "categoriesLabel": "Categorie",
@@ -1225,6 +1227,11 @@
       "release": {
         "title": "Ludex aperto a tutti",
         "text": "Un server stabile al posto di quello di prova, senza codice d'accesso all'ingresso: con la conferma dell'email e il recupero della password."
+      },
+      "quickRating": {
+        "title": "Il voto al volo",
+        "p1": "Sulla pagina del gioco le cinque stelle ci sono sempre, vuote se non hai votato: si vota con un clic, a mezze stelle, senza aprire «Modifica».",
+        "p2": "Ricliccando il voto scelto lo togli; in «Modifica» c'è anche una × accanto al voto."
       },
       "subscriptions": {
         "title": "Gli abbonamenti",

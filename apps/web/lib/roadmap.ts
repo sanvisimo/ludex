@@ -46,6 +46,13 @@ export const roadmap: RoadmapEntry[] = [
   { id: 'openPlaylists', status: 'idea', areas: ['playlists'] },
   { id: 'metaquest', status: 'next', areas: ['import'] },
   {
+    id: 'quickRating',
+    status: 'done',
+    areas: ['game'],
+    month: '2026-10',
+    points: 2,
+  },
+  {
     id: 'subscriptions',
     status: 'done',
     areas: ['library'],

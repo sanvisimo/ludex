@@ -120,6 +120,20 @@ function GamePage() {
       toast.error(errorMessage(error, { fallback: tBacklog('statusFailed') })),
   });
 
+  // Il voto al volo dal pannello: solo il voto, gli altri campi assenti non si
+  // toccano (vedi `backlog.update` nel contratto).
+  const setRating = useMutation({
+    mutationFn: (input: { id: string; rating: number | null }) =>
+      client.backlog.update(input),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: api.games.bySlug.key() }),
+        queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),
+      ]),
+    onError: (error) =>
+      toast.error(errorMessage(error, { fallback: tBacklog('ratingFailed') })),
+  });
+
   if (isPending) {
     return (
       <Page maxW={GAME_PAGE_WIDTH} hero={<HeroSkeleton />}>
@@ -181,10 +195,19 @@ function GamePage() {
           <DurationAndCritics game={game} entry={entry} />
           {entry ? (
             <BacklogPanel
-              entry={entry}
+              // Mentre il voto si salva si mostra già quello scelto: senza,
+              // le stelle tornerebbero indietro fino alla rilettura.
+              entry={
+                setRating.isPending
+                  ? { ...entry, rating: setRating.variables.rating }
+                  : entry
+              }
               storeLinks={game.storeLinks}
               onStatus={(row, status) =>
                 setStatus.mutate({ id: row.id, status })
+              }
+              onRating={(row, rating) =>
+                setRating.mutate({ id: row.id, rating })
               }
               hiddenNotice={
                 // Ci si arriva da una ricerca o da un link: senza, il gioco

@@ -72,6 +72,7 @@
     "addLibrary": "Add library",
     "remove": "Remove",
     "statusFailed": "I couldn't change the status",
+    "ratingFailed": "I couldn't save the rating",
     "edit": "Edit",
     "noMatchTitle": "No game matches.",
     "noMatchHint": "Try loosening the filters: ticks within the same criterion add up, so two tags together mean the games that have both.",
@@ -497,6 +498,7 @@
     "noRating": "not rated",
     "ratingOf": "{value} out of 5",
     "ratingValue": "Rate {value} out of 5",
+    "clearRating": "Clear rating",
     "notesLabel": "Notes",
     "notesPlaceholder": "Your own notes on this game",
     "categoriesLabel": "Categories",
@@ -1226,6 +1228,11 @@
       "release": {
         "title": "Ludex open to everyone",
         "text": "A stable server instead of the test one, with no access code at the door: with email confirmation and password recovery."
+      },
+      "quickRating": {
+        "title": "Quick rating",
+        "p1": "On a game's page the five stars are always there, empty if you haven't rated it: rate with one click, in half stars, without opening “Edit”.",
+        "p2": "Click your rating again to clear it; in “Edit” there's also a × next to the rating."
       },
       "subscriptions": {
         "title": "Subscriptions",
