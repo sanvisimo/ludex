@@ -16,7 +16,8 @@ pubblica:
    non è una feature ma il passaggio da ambiente di prova a servizio. Piano in
    `plans/rilascio.md`.
 2. **13 — AI**: interfaccia del provider, embedding con il modello salvato
-   accanto al vettore, ranking, prompt e schermata.
+   accanto al vettore, ranking, prompt e schermata. Analisi di fornitori e
+   costi, fatta in anticipo (18–22/10/2026), in `plans/13-ai.md`.
 3. **Mobile**: un'app nuova, con le sue schermate.
 
 Gli abbonamenti (14) erano i primi della lista e sono **fatti dal
