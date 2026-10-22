@@ -56,6 +56,7 @@ compose). Gli utenti sono europei: i dati restano in UE o in Svizzera.
     Svizzera ha la decisione di adeguatezza UE.
 
   Il server dell'app e il fornitore dell'LLM sono scelte indipendenti.
+
 - **Scartati**: un PaaS (Render, Railway) — Postgres e backup gestiti, ma tre
   servizi a pagamento più database, circa 40–70 €/mese, e `deploy.sh` da
   buttare; restare sul mini PC togliendo solo Access — utenti veri sulla
