@@ -1,4 +1,5 @@
 import {
+  type BacklogStatus,
   hiddenKindValues,
   storeAccountStatusValues,
   wishlistErrorValues,
@@ -9,6 +10,7 @@ import {
   customType,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -116,6 +118,13 @@ export const storeAccounts = pgTable(
     // dell'account li legge.
     wishlistSyncedAt: timestamp('wishlist_synced_at'),
     wishlistError: wishlistError('wishlist_error'),
+    // L'account **interno** dell'import da CSV (10): non una libreria, ma il
+    // posto a cui un import si lega (scarti, doppioni). Uno per negozio e
+    // utente, con `external_account_id = 'csv'`; non compare fra le librerie,
+    // non ha credenziali e non si aggiorna da solo. Le sue copie cedono il
+    // posto a quelle di un collegamento vero dello stesso negozio: vedi
+    // `ensureOwnerships`.
+    fromFile: boolean('from_file').notNull().default(false),
     ...timestamps,
   },
   (table) => [
@@ -217,6 +226,16 @@ export const unresolvedImports = pgTable(
     // diventava _Amazon_): le decide l'utente, nella tab «Possibili doppioni».
     // Nulla per tutte le altre.
     sameProductAs: text('same_product_as'),
+    // Ciò che la riga di backlog prende **alla nascita**, se la voce porta dati
+    // dell'utente: stato, categorie e tag dell'import da CSV (10). Senza, uno
+    // scarto collegato a mano nasceva nudo, mentre lo stesso gioco riconosciuto
+    // dall'import li avrebbe presi. Nulla per i negozi, e sugli scarti del CSV
+    // nati prima della colonna: la riempie il prossimo caricamento del file.
+    atBirth: jsonb('at_birth').$type<{
+      status?: BacklogStatus;
+      categories?: string[];
+      tags?: string[];
+    }>(),
     // Nascosta dall'utente: non compare più fra i «da sistemare».
     //
     // Prima c'era `dismiss`, che **cancellava** la riga — e il prossimo import

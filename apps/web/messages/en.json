@@ -72,6 +72,7 @@
     "addLibrary": "Add library",
     "remove": "Remove",
     "statusFailed": "I couldn't change the status",
+    "ratingFailed": "I couldn't save the rating",
     "edit": "Edit",
     "noMatchTitle": "No game matches.",
     "noMatchHint": "Try loosening the filters: ticks within the same criterion add up, so two tags together mean the games that have both.",
@@ -437,6 +438,7 @@
     "played": "{duration} played",
     "lastPlayed": "last played {date}",
     "acquired": "added {date}",
+    "subscriptionEnded": "no longer yours",
     "screenshotAlt": "Screenshot {index} of {name}",
     "notes": "Notes",
     "galleryPrevious": "Previous",
@@ -496,6 +498,7 @@
     "noRating": "not rated",
     "ratingOf": "{value} out of 5",
     "ratingValue": "Rate {value} out of 5",
+    "clearRating": "Clear rating",
     "notesLabel": "Notes",
     "notesPlaceholder": "Your own notes on this game",
     "categoriesLabel": "Categories",
@@ -591,6 +594,7 @@
     "epic": "Epic",
     "ea": "EA",
     "battlenet": "Battle.net",
+    "ubisoft": "Ubisoft Connect",
     "amazon": "Amazon",
     "psn": "PlayStation Store",
     "xbox": "Xbox",
@@ -960,6 +964,60 @@
       "removeFailed": "Couldn't remove the login",
       "removeWhileSyncing": "An import is running: remove the login when it's done"
     },
+    "xbox": {
+      "title": "Connect Xbox",
+      "description": "Choose what you play on, then confirm a code on Microsoft: your phone works too.",
+      "platformsTitle": "What do you play on?",
+      "platformsHint": "Xbox doesn't say which console you play on: tick the ones you own. Each game goes on the ones it runs on.",
+      "platforms": {
+        "pc_windows": "PC (Windows)",
+        "xbox": "Xbox (original)",
+        "xbox360": "Xbox 360",
+        "xbox_one": "Xbox One",
+        "xbox_series": "Xbox Series"
+      },
+      "gamePass": "I have an active Game Pass",
+      "gamePassHint": "Any tier, Essential included. Without it, the Game Pass and Gold games you played come in as «played».",
+      "minMinutes": "Import Game Pass and Gold games played at least {minutes} min",
+      "minMinutesAll": "Import every Game Pass and Gold game you started",
+      "minMinutesLabel": "Minimum minutes played",
+      "minMinutesHint": "Below that, you usually only installed them or opened them briefly. At 0, everything you started comes in, even without minutes.",
+      "continue": "Continue",
+      "pickOne": "Tick at least one platform.",
+      "back": "Back",
+      "codeTitle": "Confirm on Microsoft",
+      "copy": "Copy",
+      "copied": "Code copied",
+      "open": "Open microsoft.com/link",
+      "step1": "1. Open microsoft.com/link, from your phone too",
+      "step2": "2. Sign in with your Xbox Microsoft account",
+      "step3": "3. Enter the code and press «Allow»",
+      "waiting": "Waiting for confirmation…",
+      "validFor": "The code is valid for {time}",
+      "closeHint": "Closing the dialog stops checking. A new code cancels the previous one.",
+      "preparing": "Asking Microsoft for a code…",
+      "startFailed": "Couldn't get a code from Microsoft. Try again shortly.",
+      "done": "Xbox connected: import in progress",
+      "expired": "The code has expired.",
+      "newCode": "New code",
+      "retry": "Try again",
+      "declined": "You pressed «Deny» on Microsoft.",
+      "noProfile": "This Microsoft account has no Xbox profile: create one on xbox.com and try again.",
+      "country": "Xbox isn't available in this Microsoft account's country.",
+      "child": "This is a child account: an adult has to allow it in the Microsoft family settings.",
+      "wrongAccount": "You confirmed with a different Xbox account: sign in with the one to reconnect and try again.",
+      "failed": "The connection didn't work. Try again.",
+      "platformsCount": "{count} platforms",
+      "gamePassOn": "Game Pass active",
+      "gamePassOff": "Game Pass not active",
+      "changeSettings": "Import settings",
+      "settingsTitle": "Import settings",
+      "settingsDescription": "Your current choices, already ticked.",
+      "settingsWarning": "Removing a platform or raising the minutes threshold doesn't remove copies already imported: remove them from the game page. Game Pass only affects games that come in later.",
+      "save": "Save and update",
+      "saved": "Saved: import in progress",
+      "saveFailed": "Couldn't save your choices."
+    },
     "nintendoGuide": {
       "caption": "Schematic drawing: the real page may look different.",
       "name": "your name",
@@ -971,6 +1029,115 @@
       "search": "Search by name…",
       "allStores": "Store: all",
       "noMatch": "Nothing matches these filters."
+    },
+    "csvImport": {
+      "title": "From a CSV file",
+      "description": "Games from stores Ludex can't link, like Ubisoft Connect and Battle.net, or from stores you'd rather not link: a Playnite export, for example.",
+      "open": "Import from CSV",
+      "lastImport": "Last import: {date} · tag “{tag}”",
+      "syncing": "importing…",
+      "tag": "Imported on {date}",
+      "dialogTitle": "Import from a CSV file",
+      "dialogDescription": "One row per game. New games join your backlog with the tag “{tag}”.",
+      "example": "Download the example CSV",
+      "columnsTitle": "Columns",
+      "required": "Required",
+      "optional": "Optional",
+      "columns": {
+        "name": "the game's name",
+        "sources": "the store: Steam, GOG, Epic, Amazon, EA app, Ubisoft Connect, Battle.net, PlayStation, Nintendo, Xbox",
+        "gameId": "the store's id; without it, the row is matched by name",
+        "platforms": "just one, for console stores: Sony PlayStation 5, Nintendo Switch…",
+        "releaseDate": "helps tell apart two games with the same name",
+        "links": "the Steam page link helps find the game",
+        "timePlayed": "time played, in seconds as Playnite writes it",
+        "lastPlayed": "the date you last played",
+        "completionStatus": "Plan to Play, Playing, Beaten, Completed, Abandoned, Won't Play…",
+        "categories": "your categories, separated by commas"
+      },
+      "columnsNote": "Columns separated by commas or tabs; dates like 2026-10-19 or 19/10/2026. Other columns are ignored, and Playnite's and LaunchBox's column names work too, Italian ones included.",
+      "sourcesTitle": "Where to get the file",
+      "playnite": {
+        "title": "Playnite",
+        "steps": [
+          "In Playnite open Add-ons → Browse, search for “Library Exporter Advanced” and install it.",
+          "Open it from the extensions menu and tick the columns above.",
+          "Press “Export all games” and upload the file here as it is."
+        ]
+      },
+      "launchbox": {
+        "title": "LaunchBox",
+        "steps": [
+          "Switch to the list view: you need at least the Title and Source columns, and with Application Path Ludex also gets the game's id.",
+          "Select the games (Ctrl+A for all), copy them (Ctrl+C) and paste them into a text file.",
+          "Save it, .txt is fine, and upload it here as it is."
+        ]
+      },
+      "drop": "Drop the .csv or .txt file here or",
+      "choose": "Choose the file",
+      "change": "Change file",
+      "fileLabel": "The CSV file",
+      "notes": [
+        "Games you already have from a linked store aren't duplicated.",
+        "Status and categories from the file only apply to games you don't have in Ludex yet.",
+        "Games Ludex doesn't recognise go to “Needs attention”."
+      ],
+      "cancel": "Cancel",
+      "submit": "Import",
+      "errors": {
+        "missing_columns": "The file is missing {count, plural, one {the column} other {the columns}} {columns}: see the table above.",
+        "not_csv": "The file isn't a CSV that can be read.",
+        "empty": "The file has no game rows.",
+        "tooBig": "The file is larger than 10 MB.",
+        "failed": "I couldn't import the file."
+      },
+      "report": {
+        "title": "Import started",
+        "description": "New games reach your backlog in a few minutes, with the tag “{tag}”.",
+        "nothing": "The file has no rows Ludex knows how to import.",
+        "rows": "{count, plural, one {# row} other {# rows}}",
+        "alreadyRunning": "an import is already running: upload the file again when it's done",
+        "skippedTitle": "Skipped rows",
+        "noPlatform": "{count, plural, one {# console store row} other {# console store rows}} without a single platform Ludex knows: we can't tell which one you own it on",
+        "noStore": "{count, plural, one {# row} other {# rows}} without a store Ludex knows: {sources}",
+        "emptySource": "no source",
+        "seeGames": "See the games in your backlog",
+        "close": "Close",
+        "duplicates": "{count, plural, one {# duplicate row} other {# duplicate rows}} in the file: the first one counts",
+        "excluded": "{count, plural, one {# row excluded by you} other {# rows excluded by you}}"
+      },
+      "preview": {
+        "title": "Check what to import",
+        "description": "{file} · {count, plural, one {# row} other {# rows}}. Untick the ones you don't want to import.",
+        "filterLabel": "Show",
+        "all": "All",
+        "new": "New",
+        "in_backlog": "Already in backlog",
+        "unknown": "To recognise",
+        "skipped": "Skipped",
+        "search": "Search by name…",
+        "selectAll": "Select the visible rows",
+        "colFile": "In the file",
+        "colLudex": "In Ludex",
+        "colStore": "Store · platform",
+        "colStatus": "Status",
+        "colOutcome": "Outcome",
+        "outcome": {
+          "new": "New",
+          "in_backlog": "Already in backlog",
+          "unknown": "To recognise",
+          "skipped": "Skipped"
+        },
+        "skip": {
+          "no_store": "unknown store",
+          "platform": "several consoles",
+          "duplicate": "duplicate in the file"
+        },
+        "empty": "No rows with this filter.",
+        "next": "Next",
+        "back": "Back",
+        "submit": "{count, plural, =0 {No rows to import} one {Import # row} other {Import # rows}}"
+      }
     }
   },
   "critic": {
@@ -989,7 +1156,9 @@
   "subscription": {
     "ps_plus": "PS Plus",
     "steam_family": "Steam Family",
-    "ea_play": "EA Play"
+    "ea_play": "EA Play",
+    "game_pass": "Game Pass",
+    "games_with_gold": "Games with Gold"
   },
   "medium": {
     "digital": "Digital",
@@ -1060,9 +1229,16 @@
         "title": "Ludex open to everyone",
         "text": "A stable server instead of the test one, with no access code at the door: with email confirmation and password recovery."
       },
+      "quickRating": {
+        "title": "Quick rating",
+        "p1": "On a game's page the five stars are always there, empty if you haven't rated it: rate with one click, in half stars, without opening “Edit”.",
+        "p2": "Click your rating again to clear it; in “Edit” there's also a × next to the rating."
+      },
       "subscriptions": {
         "title": "Subscriptions",
-        "text": "PS Plus, Game Pass and the rest: telling apart the games in your library that are yours from the ones that are there while the subscription lasts."
+        "p1": "When a subscription ends — PS Plus, Game Pass, EA Play, Games with Gold or your Steam family — the next import notices: the games the store no longer lists leave your backlog.",
+        "p2": "A game you've rated, noted, tagged or given a status stays, and its copy says “no longer yours”. If you also own it elsewhere, only the subscription copy goes.",
+        "p3": "A copy that's no longer yours doesn't count in the platform filter, since you can't launch it tonight. If the subscription comes back, the first import makes it yours again."
       },
       "sourceLinks": {
         "title": "Links to the sources",
@@ -1083,7 +1259,9 @@
       },
       "csv": {
         "title": "Import from a CSV file",
-        "text": "Bring a library you already keep elsewhere into Ludex, for example a Playnite export."
+        "p1": "In Libraries, “Import from CSV” brings in games from stores that can't be linked, like Ubisoft Connect and Battle.net, or from stores you'd rather not link. A Playnite export works, so does LaunchBox's list view pasted into a text file, or a CSV written by hand from the example one.",
+        "p2": "Before importing you see, row by row, what will happen — new game, already in your backlog, to be recognised or skipped, and why — and untick what you don't want.",
+        "p3": "New games come in with the file's status and categories and an “Imported on…” tag, including the ones you link by hand later. Games you already have from a linked store aren't duplicated."
       },
       "randomFilter": {
         "title": "A random game from your filter",
@@ -1137,7 +1315,9 @@
       },
       "xbox": {
         "title": "The Xbox library",
-        "text": "Xbox gives back what you played, not what you own: before building it we have to decide what to show."
+        "p1": "In Libraries you connect Xbox by confirming a code on microsoft.com/link, from your phone too. First you pick what you play on — PC, Xbox, 360, One, Series — and every game goes on the platforms it runs on.",
+        "p2": "The games you bought come in, including the ones you never launched and backward compatible 360 games. Game Pass and Games with Gold ones only if you played them: without an active subscription they come in as «played», and only above a number of minutes you choose.",
+        "p3": "With Xbox playtime. Platforms, Game Pass and the threshold can be changed from the card, in «Import settings», without signing in again."
       },
       "playlists": {
         "title": "Playlists, wishlists and random game",

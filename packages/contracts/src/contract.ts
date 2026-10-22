@@ -53,6 +53,10 @@ import {
   SteamLoginStartSchema,
   SourceReasonSchema,
   SteamLoginStatusSchema,
+  XboxLoginStartSchema,
+  XboxLoginStatusSchema,
+  XboxMinMinutesSchema,
+  XboxPlatformSchema,
   StoreAccountSchema,
   StoreSchema,
   SyncAllResultSchema,
@@ -288,6 +292,48 @@ export const contract = {
         .output(SteamLoginRemovedSchema),
     },
 
+    // Il login Xbox col device code (9e). Non passa da `link`, come il QR di
+    // Steam: `start` apre la sessione e rende il codice da confermare su
+    // microsoft.com/link, `status` si interroga a intervalli, e a `done`
+    // l'account è scritto e l'import accodato. Le piattaforme spuntate, il Game
+    // Pass attivo e la soglia dei minuti si scelgono qui e stanno nel
+    // credenziale; si cambiano con `xboxSettings`. `accountId` su un ricollegamento, con `wrong_account` se il
+    // login è di un altro account. Una sola sessione attiva per utente.
+    xboxLogin: {
+      start: oc
+        .input(
+          z.object({
+            platforms: z.array(XboxPlatformSchema).min(1),
+            gamePassActive: z.boolean(),
+            minMinutes: XboxMinMinutesSchema,
+            label: z.string().trim().max(60).nullish(),
+            accountId: z.uuid().nullish(),
+          }),
+        )
+        .output(XboxLoginStartSchema),
+
+      status: oc
+        .input(z.object({ loginId: z.uuid() }))
+        .output(XboxLoginStatusSchema),
+    },
+
+    // Cambia le piattaforme spuntate, il Game Pass e la soglia dei minuti di un
+    // account Xbox (9e), **senza un login**: è una scelta nostra, non di
+    // Microsoft. Le riscrive nel credenziale e accoda l'import. Le copie già
+    // importate restano, anche su una piattaforma tolta o sotto una soglia
+    // alzata. `FORBIDDEN` se l'account va ricollegato, `CONFLICT` con un
+    // import in corso.
+    xboxSettings: oc
+      .input(
+        z.object({
+          accountId: z.uuid(),
+          platforms: z.array(XboxPlatformSchema).min(1),
+          gamePassActive: z.boolean(),
+          minMinutes: XboxMinMinutesSchema,
+        }),
+      )
+      .output(z.void()),
+
     // Rinomina un account già collegato. Esiste separata da `link` perché
     // altrimenti etichettare quelli che hai già vorrebbe dire scollegarli e
     // rifare il giro dal browser per scrivere un campo di testo. Vuota = togli.
@@ -450,6 +496,73 @@ export const contract = {
     move: oc
       .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
       .output(z.void()),
+  },
+
+  // L'import da CSV (10): giochi da un file, per esempio l'export di Playnite.
+  // **Non è una libreria**: non ha schede fra gli account, e i giochi che
+  // entrano nel backlog col file prendono il tag `tag`.
+  csvImport: {
+    // Il file si legge subito: un formato sbagliato torna come BAD_REQUEST con
+    // `data: { reason, missing }` (le colonne obbligatorie che mancano). Il
+    // riconoscimento dei giochi lo fa il worker, un import per negozio.
+    //
+    // `tag` lo compone il client nella lingua di chi carica: «Importato il
+    // 19/10/2026». 10 MB bastano largamente: l'export di Playnite con tutti i
+    // campi, descrizioni comprese, fa 50 KB ogni cento giochi.
+    upload: oc
+      .input(
+        z.object({
+          file: z.file().max(10 * 1024 * 1024),
+          tag: z.string().trim().min(1).max(60),
+          // Le righe tolte nell'anteprima, coi numeri che lei ha dato.
+          exclude: z.array(z.number().int().min(0)).max(100_000).default([]),
+        }),
+      )
+      .output(
+        z.object({
+          // Il tag del file, già creato: il resoconto ci filtra il backlog.
+          tagId: z.uuid().nullable(),
+          queued: z.array(
+            z.object({ store: StoreSchema, entries: z.number().int() }),
+          ),
+          alreadyRunning: z.array(StoreSchema),
+          noStore: z.record(z.string(), z.number().int()),
+          noPlatform: z.number().int(),
+          duplicates: z.number().int(),
+        }),
+      ),
+
+    // L'anteprima: cosa farebbe `upload`, riga per riga, senza scrivere niente
+    // e senza IGDB. Il gioco si dice solo dove l'id è già noto a Ludex; gli
+    // altri sono `unknown` e li riconoscerà il worker. Stessi errori di formato
+    // di `upload`.
+    preview: oc
+      .input(z.object({ file: z.file().max(10 * 1024 * 1024) }))
+      .output(
+        z.object({
+          rows: z.array(
+            z.object({
+              index: z.number().int(),
+              name: z.string(),
+              source: z.string(),
+              store: StoreSchema.nullable(),
+              platform: z.string().nullable(),
+              status: BacklogStatusSchema,
+              outcome: z.enum(['new', 'in_backlog', 'unknown', 'skipped']),
+              skipReason: z
+                .enum(['no_store', 'platform', 'duplicate'])
+                .nullable(),
+              game: z.object({ name: z.string(), slug: z.string() }).nullable(),
+            }),
+          ),
+        }),
+      ),
+
+    // Per il riquadro in Librerie: l'ultimo import finito e se ce n'è uno in
+    // corso. Il tag non serve: è la data, scritta nella lingua di chi guarda.
+    status: oc.output(
+      z.object({ lastImportAt: z.date().nullable(), syncing: z.boolean() }),
+    ),
   },
 
   // Le liste a mano (step 15b): giochi che non hai ancora e vuoi tenere d'occhio.

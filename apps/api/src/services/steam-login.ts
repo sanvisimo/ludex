@@ -6,13 +6,13 @@ import QRCode from 'qrcode';
 
 import { beginSteamQrLogin, SteamQrTimeoutError } from '../external/steam-auth';
 import { enqueueImport } from '../queue/imports';
-import { pruneFamilyCopies } from './steam-import';
 import {
   findStoreAccount,
   type LinkOptions,
   linkSteamLogin,
   StoreAccountMismatchError,
 } from './store-accounts';
+import { pruneSubscriptionCopies } from './subscription-copies';
 
 /**
  * Il login Steam col QR (9f), dal lato del server.
@@ -205,7 +205,7 @@ export function steamLoginStatus(
  * ha niente da ricollegare), e le copie della famiglia escono come se la
  * famiglia fosse vuota: senza login non la si legge più, e lasciarle vorrebbe
  * dire giochi «di un parente» che nessun import potrà mai più confermare né
- * togliere.
+ * togliere. Quelle con dati dell'utente restano, «non più tue».
  *
  * **Prima la credenziale, poi la potatura.** Se la seconda fallisse a metà, con
  * la credenziale ancora lì il prossimo import riscriverebbe le copie appena
@@ -231,5 +231,5 @@ export async function removeSteamLogin(userId: string, accountId: string) {
     .where(eq(schema.storeAccounts.id, account.id))
     .returning();
 
-  return pruneFamilyCopies(pulito!, new Set());
+  return pruneSubscriptionCopies(pulito!, new Set());
 }

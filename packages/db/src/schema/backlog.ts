@@ -154,9 +154,23 @@ export const ownerships = pgTable(
     // comprato su Steam resta comprato anche se su PS5 ce l'hai col Plus.
     //
     // Nasce col 9b perché PSN è il primo posto in cui la cosa si vede: su una
-    // libreria vera sono 274 righe su 336. Cosa farne è lo step 14; questa
-    // colonna serve a non aver buttato l'informazione prima di arrivarci.
+    // libreria vera sono 274 righe su 336. Cosa farne quando l'abbonamento
+    // finisce lo dice lo step 14, nella colonna qui sotto.
     subscription: subscription('subscription'),
+    // **Quando l'abbonamento ha smesso di coprire questa copia** (step 14).
+    // Nulla = attivo, o comprata.
+    //
+    // La scrive `pruneSubscriptionCopies`, sull'unico caso in cui una copia
+    // uscita non si cancella: è l'ultima del gioco e la riga ha dati
+    // dell'utente — voto, note, tag, stato —, che non spariscono perché è
+    // finito il Plus. La copia resta e dice «non più tua»; la data è quella del
+    // primo import che non l'ha vista, e non si sposta ai successivi.
+    //
+    // Il reimport che ritrova il gioco la azzera: l'abbonamento è ripartito.
+    // Una copia marcata non conta per il filtro della piattaforma — stasera
+    // non la puoi avviare — ma si vede ovunque il resto: è ancora una copia,
+    // e cancellarla avrebbe portato via la riga con i dati sopra.
+    subscriptionEndedAt: timestamp('subscription_ended_at'),
     // **Disco o digitale?** Nullo = non dichiarato: le righe di prima che il
     // campo si potesse scrivere a mano, e chi non se ne cura.
     //

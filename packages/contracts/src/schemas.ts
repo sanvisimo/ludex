@@ -22,6 +22,8 @@ import {
   subscriptionValues,
   userTagKindValues,
   wishlistSortValues,
+  xboxPlatformValues,
+  XBOX_MAX_MIN_MINUTES,
 } from './vocabulary';
 
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
@@ -33,6 +35,12 @@ export const StoreAccountStatusSchema = z.enum(storeAccountStatusValues);
 export const WishlistErrorSchema = z.enum(wishlistErrorValues);
 export const SubscriptionSchema = z.enum(subscriptionValues);
 export const MediumSchema = z.enum(mediumValues);
+export const XboxPlatformSchema = z.enum(xboxPlatformValues);
+export const XboxMinMinutesSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(XBOX_MAX_MIN_MINUTES);
 export const HiddenKindSchema = z.enum(hiddenKindValues);
 export const GameTypeSchema = z.enum(gameTypeValues);
 export const ScoreSourceSchema = z.enum(scoreSourceValues);
@@ -285,6 +293,10 @@ export const OwnershipSchema = z.object({
   // poter vedere sul possesso: «ce l'hai finché paghi» non è un dettaglio da
   // tenere solo nel database.
   subscription: SubscriptionSchema.nullable(),
+  // Quando l'abbonamento ha smesso di coprire la copia (step 14): nulla finché
+  // dura. Una copia con la data è «non più tua», e resta solo perché la riga
+  // ha dati dell'utente sopra.
+  subscriptionEndedAt: z.date().nullable(),
   // Disco o digitale; nullo sugli inserimenti manuali. Va al client per la
   // stessa ragione dell'abbonamento: un disco si avvia inserendolo, e il badge
   // del possesso deve poterlo dire.
@@ -365,6 +377,15 @@ export const StoreAccountSchema = z.object({
   loginKind: z.enum(['qr', 'token']).nullish(),
   // Quando scade il token web. Nullo per il QR, che non ha una scadenza da dire.
   loginExpiresAt: z.date().nullish(),
+  // Solo Xbox (9e): le piattaforme spuntate, se il Game Pass è attivo e la
+  // soglia dei minuti, lette dal credenziale (mai il token). Nullo altrove.
+  xbox: z
+    .object({
+      platforms: z.array(XboxPlatformSchema),
+      gamePassActive: z.boolean(),
+      minMinutes: XboxMinMinutesSchema,
+    })
+    .nullish(),
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
   // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
   syncing: z.boolean(),
@@ -399,6 +420,30 @@ export const SteamLoginStatusSchema = z.object({
   // Solo quando la schermata deve dire una cosa specifica: il login è stato fatto
   // con un altro account Steam da quello che si stava ricollegando.
   reason: z.enum(['wrong_account']).nullable(),
+});
+
+// Il login Xbox col device code (9e). Come il QR di Steam è una sessione che il
+// server tiene aperta: rende un codice da confermare su `verificationUri`, anche
+// dal telefono, e la schermata chiede a che punto è.
+export const XboxLoginStartSchema = z.object({
+  loginId: z.uuid(),
+  // Il codice da scrivere sulla pagina di Microsoft.
+  userCode: z.string(),
+  verificationUri: z.string(),
+  // Dopo, il codice non vale più: la schermata ne chiede uno nuovo.
+  expiresAt: z.date(),
+});
+
+export const XboxLoginStatusSchema = z.object({
+  // `expired` vale anche per una sessione che non c'è o che non è tua.
+  status: z.enum(['waiting', 'done', 'expired', 'failed']),
+  accountId: z.uuid().nullable(),
+  // Perché è fallito, quando la schermata deve dirlo: un altro account su un
+  // ricollegamento, «Nega» premuto, o un account che Xbox non fa entrare (senza
+  // profilo, paese, minore).
+  reason: z
+    .enum(['wrong_account', 'declined', 'no_profile', 'country', 'child'])
+    .nullable(),
 });
 
 // Cosa ha portato via la rimozione del solo login: le copie della famiglia.
@@ -713,6 +758,7 @@ export const AccountExportSchema = z.object({
           account: z.string().nullable(),
           medium: MediumSchema.nullable(),
           subscription: SubscriptionSchema.nullable(),
+          subscriptionEndedAt: z.date().nullable(),
           playtimeMinutes: z.number().nullable(),
           lastPlayedAt: z.date().nullable(),
           acquiredAt: z.date().nullable(),
@@ -1296,6 +1342,8 @@ export type UnlinkImpact = z.infer<typeof UnlinkImpactSchema>;
 export type SteamLoginStart = z.infer<typeof SteamLoginStartSchema>;
 export type SteamLoginStatus = z.infer<typeof SteamLoginStatusSchema>;
 export type SteamLoginRemoved = z.infer<typeof SteamLoginRemovedSchema>;
+export type XboxLoginStart = z.infer<typeof XboxLoginStartSchema>;
+export type XboxLoginStatus = z.infer<typeof XboxLoginStatusSchema>;
 export type SyncAllResult = z.infer<typeof SyncAllResultSchema>;
 export type UserSettings = z.infer<typeof UserSettingsSchema>;
 export type UnresolvedImport = z.infer<typeof UnresolvedImportSchema>;

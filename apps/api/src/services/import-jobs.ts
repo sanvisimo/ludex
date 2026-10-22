@@ -5,6 +5,8 @@ import { eq } from '@repo/db/orm';
 import { UnrecoverableError } from 'bullmq';
 
 import { SteamWishlistNotVisibleError } from '../external/steam';
+import type { FileJobEntry } from '../queue/imports';
+import { importLibrary } from './library-import';
 import {
   type StoreAccountRow,
   StoreReauthRequiredError,
@@ -38,6 +40,33 @@ export async function findLinkedAccount(
     );
   }
   return account;
+}
+
+/**
+ * Il job dell'import da CSV (10): le voci arrivano col job, e le date come
+ * stringhe, perché passano da JSON. Il tag del file va su ogni voce, e lo
+ * prendono solo i giochi che nascono. Un account che non è da file non si
+ * importa così: sarebbe un job accodato a mano, e le voci non sono sue.
+ */
+export async function runFileImportJob(
+  storeAccountId: string,
+  entries: FileJobEntry[],
+  tag: string,
+) {
+  const account = await findLinkedAccount(storeAccountId);
+  if (!account.fromFile) {
+    throw new UnrecoverableError(
+      `L'account ${storeAccountId} non è un account da file`,
+    );
+  }
+  return importLibrary(
+    account,
+    entries.map((entry) => ({
+      ...entry,
+      lastPlayedAt: entry.lastPlayedAt ? new Date(entry.lastPlayedAt) : null,
+      tags: [tag],
+    })),
+  );
 }
 
 /**

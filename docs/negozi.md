@@ -133,7 +133,7 @@ Le due domande che decidono l'ordine sono **quanto dura il credenziale** e
 | PSN              | refresh token da npsso, **10 giorni** che ripartono a ogni rinnovo                                          | **nessuno** sugli acquisti, `concept.id` sui giocati: vedi sotto                               | parziali                                                    |
 | EA               | token di **4 ore** (`connect/auth`, dal browser entrato su ea.com), non si rinnova: importazione una tantum | nessuno: **per nome**, chiave `gameSlug` (uno per gioco, le edizioni collassano)               | **solo i giocati di recente** (`recentGames`: 1 riga su 44) |
 | Nintendo         | session token **730 giorni** (non ruota, non verificato), access token 15 min                               | nessuno: **per nome**; le licenze digitali portano un id (16 esadecimali) che IGDB non conosce | parziali                                                    |
-| Xbox             | chiave OpenXBL, o XSTS in proprio                                                                           | `titleId` → ProductId via `displaycatalog`, sorgente 11                                        | sì                                                          |
+| Xbox             | refresh token del device code di xbox.com, **cambia a ogni rinnovo**; XBL e XSTS rifatti a ogni import      | `productId` (Collections), sorgente 11 in maiuscolo — **75% su 88 giochi**                     | sì, per titolo (83 su 164)                                  |
 | Steam, col login | refresh token **210–212 giorni**, access token 24 ore, rinnovo dentro l'import                              | appid, la sorgente Steam di IGDB, come col solo profilo                                        | sì                                                          |
 
 Le prime due colonne sono state scritte **prima** di provare, e il 9b ha
@@ -147,6 +147,12 @@ Anche la riga di EA è stata scritta prima e corretta dalla misura del 13/10/202
 (`ea:probe`, tre giri, il dettaglio in `plans/9c-ea.md`): diceva «sessione corta»
 e «ore: sì». Il token dura quattro ore, che bastano a un import ma non a un
 collegamento; le ore EA le dà solo per i giochi avviati di recente.
+
+E così quella di Xbox, misurata il 19/10/2026 (`xbox:probe`, il dettaglio in
+`plans/9e-xbox.md`): diceva «chiave OpenXBL, o XSTS in proprio» e «`titleId` →
+ProductId via `displaycatalog`». OpenXBL è scartato (un terzo che terrebbe i
+token dei nostri utenti); il login è il device code col client di xbox.com, e
+l'id viene già come `productId` da Collections, senza passare dal catalogo.
 
 Dove l'id c'è l'import costa nulla: i 435 giochi GOG si risolvono in **tre**
 richieste da 200 id, e il matcher per nome ne recupera altri 16, per un 98,2%
@@ -383,7 +389,9 @@ client installato e il registro di Windows, non una API. Non c'è nessun
 credenziale di rete da acquisire, da rinnovare o da cifrare — c'è un disco a cui
 un server non è attaccato. Con Battle.net non c'è nemmeno il ripiego di un
 endpoint pubblico: l'OAuth ufficiale di Blizzard esiste ma non espone la libreria
-a nessuno.
+a nessuno. **Dal 19/10/2026 entrano dall'import da CSV** (step 10): l'export di
+Playnite o di LaunchBox li porta, col negozio `ubisoft` o `battlenet`. Vedi
+«L'import da CSV» in [import-librerie](import-librerie.md).
 
 Steam Family (9f) era descritta qui come lo stesso `GetOwnedGames` chiamato su N
 SteamID64, senza credenziali nuove. **Smentito il 05/10/2026**: la famiglia non
@@ -418,12 +426,58 @@ Steam Family e Xbox, dove ciò che torna non è nemmeno un abbonamento tuo. Per
 **Steam** il 9f ha risposto nello stesso modo: le copie della famiglia **entrano**
 nel backlog, marcate `steam_family` — non è un abbonamento ma la domanda è la
 stessa, «è tua o ce l'hai finché dura un diritto che non è tuo?» — e se ne vanno
-quando la famiglia le toglie (vedi «Steam Family e il login Steam»). Per Xbox
-resta aperto.
+quando la famiglia le toglie (vedi «Steam Family e il login Steam»). Per **Xbox**
+il 9e ha risposto nello stesso modo, con una soglia in più: ciò che si è giocato
+e non sta in Collections entra come `game_pass`, i Games with Gold come
+`games_with_gold`, e senza un abbonamento attivo solo se ci si è giocato
+abbastanza (vedi «Xbox (9e)»).
 
 **`store_account_id` non è quella risposta**, e non va scambiato per tale: dice
 di chi è la copia, non se è tua — e ora nemmeno `subscription` va scambiata per
 la stessa cosa, perché dice a che titolo ce l'hai, non di chi è l'abbonamento.
+
+## Quando l'abbonamento finisce (14)
+
+Deciso il 21/10/2026 (piano in `plans/14-abbonamenti.md`). **Se ne accorge
+l'import successivo**: una copia con `subscription` che il negozio non elenca
+più è uscita. Nessun controllo esplicito dello stato dell'abbonamento: né
+`isPlus` di PSN, né altro. Il destino lo decide ciò che c'è sopra
+(`pruneSubscriptionCopies`, in `services/subscription-copies.ts`):
+
+- **un'altra copia ancora tua** dello stesso gioco → esce solo questa;
+- **l'ultima, e la riga non ha dati dell'utente** (voto, note, tag, stato) →
+  escono la copia e la riga di backlog. Una riga di `games` non si tocca;
+- **l'ultima, e la riga ha dati dell'utente** → la copia resta, con
+  `subscription_ended_at`: **«non più tua»** sulla pagina del gioco, e fuori dal
+  filtro della piattaforma, perché stasera non la avvii.
+
+Si tiene per **gioco e piattaforma**, non per gioco: su Xbox la console tolta
+dalle spunte è una copia che il negozio non elenca più. Due copie uscite non si
+tengono in vita a vicenda, e una già marcata nemmeno; le marcate tornano a ogni
+giro, così una riga a cui l'utente toglie i dati se ne va al primo import dopo.
+La data della marca è quella del primo import che non l'ha vista. Il reimport
+che ritrova la copia la azzera, nell'upsert dei possessi.
+
+Si pota **solo dopo una lettura completa**: la chiamano Steam (col login, e
+allo scollegamento della famiglia), PSN, EA e Xbox dopo `importLibrary`. Un
+token rifiutato o scaduto esce prima dell'import, e Steam senza token non tocca
+la famiglia.
+
+Per negozio, cosa fa uscire una copia:
+
+- **Steam Family**: la famiglia che toglie il gioco, o il login tolto;
+- **EA Play**: EA senza abbonamento attivo quei giochi non li elenca
+  (verificato dall'utente, 21/10/2026);
+- **Game Pass**: lo storico i giochi li rende sempre; a farli uscire è la
+  spunta «Game Pass attivo» tolta, che lascia fuori ciò che sta sotto la soglia
+  dei minuti;
+- **PS Plus**: **non misurato** che Sony tolga i `PS_PLUS` dagli acquisti a Plus
+  scaduto. Se non lo fa non esce niente, e le righe continuano a dire «PS Plus»
+  finché non lo si misura su un Plus scaduto vero.
+
+**Il disco coperto dal Plus** (_God of War_ 2018) non è un rischio vero: un
+disco che si gioca ricompare fra i giocati come fisico, lo si è visto su PSN e
+su Nintendo. Per questo non si chiede conferma prima di cancellare.
 
 ## Steam Family e il login Steam (9f)
 
@@ -583,9 +637,11 @@ Sul branch `feat/9f-steam-login`. Il piano e le ragioni sono in
   comprare smette di dire «da abbonamento».
 - **Cosa esce, e cosa resta.** Una copia della famiglia che la famiglia non ha
   più si toglie al reimport; se non resta altro e la riga ha dati dell'utente
-  (voto, note, tag, stato) **la copia resta**, perché una riga senza possessi non
-  è uno stato legittimo e il voto non sparisce per una licenza tolta. Non
-  adotta i possessi scritti a mano: restano due righe.
+  (voto, note, tag, stato) **la copia resta**, marcata «non più tua», perché una
+  riga senza possessi non è uno stato legittimo e il voto non sparisce per una
+  licenza tolta. Dallo step 14 è la regola di ogni abbonamento: vedi «Quando
+  l'abbonamento finisce (14)». Non adotta i possessi scritti a mano: restano due
+  righe.
 - **Le date d'acquisto** si scrivono sulle copie proprie, dove l'utente è fra i
   proprietari. Un'app nella libreria propria che la famiglia elenca con un altro
   proprietario soltanto resta senza data.
@@ -1008,6 +1064,58 @@ rifiuta senza `pc_sign`, un'impronta dell'hardware firmata con una chiave di EA
 Desktop («pc_sign is missing», 102105), già prima di dare il codice.
 Inventarla dal server non si fa. Le misure sono in
 [`plans/9c-ea-rinnovo.md`](../plans/9c-ea-rinnovo.md).
+
+## Xbox (9e)
+
+**Il login è un device code**, col `client_id` di xbox.com
+(`1f907974-e22b-4810-a9de-d9647380c97e`, preso da Unifideck), su
+`login.microsoftonline.com/consumers`: l'utente conferma un codice su
+microsoft.com/link, anche dal telefono, e il server interroga Microsoft finché
+non arriva il token (`services/xbox-login.ts`, sessioni in memoria, una per
+utente). **Il client non è nostro**, come l'identità dell'app di Nintendo: non
+sappiamo come Microsoft tratti molti account che entrano dallo stesso indirizzo,
+e il 05/10/2026 Steam ha bloccato l'account dell'utente dopo prove simili (vedi
+«Il blocco dell'account»). Per questo il probe (`xbox:probe`) si lancia solo
+concordato, e una volta.
+
+Il refresh token **cambia a ogni rinnovo**, quindi si riscrive ogni volta;
+Xbox Live e XSTS (per `xboxlive.com` e per `mp.microsoft.com`) si rifanno a
+ogni import. Nel credenziale cifrato stanno anche le scelte dell'utente:
+piattaforme, Game Pass attivo e soglia dei minuti.
+
+**Cosa entra** (le misure e le decisioni in `plans/9e-xbox.md`):
+
+- **posseduto** è ciò che sta in Collections: comprato, o Games with Gold
+  (`licensingRequired`, copia `games_with_gold`). I Gold di 360 Collections li
+  dà già come comprati, coerente con Microsoft: restano tuoi. Più i **360
+  comprati** fuori da Collections, che si trovano incrociando ordini, storico e
+  `productActions` (al più 30 richieste, e vuole l'header `MS-CV`);
+- **tutto il resto che si è giocato è Game Pass** (`game_pass`), dallo storico
+  (titlehub). I titoli solo `Win32` no: sono giochi di altri negozi che l'app
+  Xbox per PC ha visto. Gli elenchi pubblici del Game Pass non entrano mai;
+- **col Game Pass non attivo**, Game Pass e Gold entrano come `played` e solo
+  con almeno `minMinutes` minuti (0–120, 60 di partenza): sotto, l'utente li ha
+  quasi sempre solo installati. Il 60 viene dal foglio di revisione del primo
+  import vero (`plans/9e-xbox-revisione.csv`);
+- **una copia per ogni piattaforma spuntata su cui il gioco gira**: Collections
+  e lo storico non dicono su che console si gioca, e il catalogo dice «One e
+  Series» per quasi tutto. I 360 retrocompatibili il catalogo li dà come One:
+  li riconosce il pacchetto, `Xbox360BackwardCompatibil.`, e vanno su 360, One
+  e Series. La piattaforma della copia è «dove ci puoi giocare», non «per cosa
+  l'hai comprato»;
+- **le ore** (`MinutesPlayed` di userstats) sono per titolo: vanno su una copia
+  sola, la console più recente.
+
+L'id esterno è il `productId` in maiuscolo, che è l'uid della sorgente IGDB 11.
+Le impostazioni si cambiano senza un login (`accounts.xboxSettings`), e
+rilanciano l'import; le copie già importate restano, anche su una piattaforma
+tolta o sotto una soglia alzata, perché il reimport non pota i possessi.
+
+**Restano aperti**: i giochi dello Store di Windows 8 (Adera, `9WZDNCRF…`),
+che non stanno in Collections e finiscono fra i Game Pass; i **bundle** (FIFA 17
+comprato con la console arriva come bundle non risolto); le **app** che arrivano
+come giochi (EA Access Hub); le copie PC vuote dei giochi Game Pass quando sono
+spuntati PC e Series. La wishlist Xbox non c'è: vedi sotto.
 
 ## Le wishlist dei negozi (15e)
 

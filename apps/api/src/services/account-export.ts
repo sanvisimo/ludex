@@ -241,6 +241,7 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
             : null,
           medium: o.medium,
           subscription: o.subscription,
+          subscriptionEndedAt: o.subscriptionEndedAt,
           playtimeMinutes: o.playtimeMinutes,
           lastPlayedAt: o.lastPlayedAt,
           acquiredAt: o.acquiredAt,

@@ -25,6 +25,8 @@ import type { LinkableStore, Store } from './vocabulary';
  *   giochi su 44 e dice «posseduto», che è ciò che serve a una copia. Il
  *   catalogo dichiara i soli mercati US e CN: se un giorno si chiude, la regola
  *   cambia qui. La card «Links» usa invece ea.com: vedi `storeGameUrl`.
+ * - **Xbox** (9e): `storePage` è il `productId`, e la pagina è quella del
+ *   negozio di xbox.com, la stessa della card «Links».
  *
  * Nullo = l'icona del negozio senza link.
  */
@@ -48,6 +50,10 @@ export function storePageUrl(
       const slug = storePage?.split('/').pop();
       return slug ? `https://store.ea.com/commerce/app/products/${slug}` : null;
     }
+    case 'xbox':
+      return storePage
+        ? `https://www.xbox.com/games/store/x/${storePage}`
+        : null;
     default:
       return null;
   }
@@ -92,7 +98,7 @@ export function storeGameUrl(
         ? storePageUrl('psn', `concept/${externalId}`)
         : null;
     case 'xbox':
-      return `https://www.xbox.com/games/store/x/${externalId}`;
+      return storePageUrl('xbox', externalId);
     default:
       return null;
   }
@@ -144,9 +150,10 @@ export function storeCoverFallbackUrl(
 
 /**
  * Un negozio che si collega con un login nel browser e un copia-incolla: tutti
- * i collegabili tranne Steam, che ha il suo modo (il QR o il profilo).
+ * i collegabili tranne Steam, che ha il suo modo (il QR o il profilo), e Xbox,
+ * che ha un codice da confermare (9e).
  */
-export type GuidedStore = Exclude<LinkableStore, 'steam'>;
+export type GuidedStore = Exclude<LinkableStore, 'steam' | 'xbox'>;
 
 /** `ok`: sembra quello giusto. `wrong`: non sembra. Nullo: il campo è vuoto. */
 export type PastedLoginCheck = 'ok' | 'wrong' | null;

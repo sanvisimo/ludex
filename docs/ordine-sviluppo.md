@@ -6,24 +6,30 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 
 I numeri degli step sono nomi, non una sequenza: compaiono nei piani, nei
 commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
-in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10 e il 18/10), e l'ordine è
-anche quello della [roadmap](../apps/web/lib/roadmap.ts) pubblica:
+in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10, il 18/10, il 19/10 e
+il 21/10), e l'ordine è anche quello della [roadmap](../apps/web/lib/roadmap.ts)
+pubblica:
 
-1. **In corso insieme, dal 18/10/2026:**
-   - **10 — Import CSV**: serve un parser, la risoluzione dell'identità per
-     nome e la deduplica.
-   - **9e — Xbox**: la decisione sul significato, poi un login e un nuovo
-     negozio da zero.
-2. **Rilascio**: un server stabile al posto del mini PC e l'app aperta a
+1. **Rilascio**: un server stabile al posto del mini PC e l'app aperta a
    tutti, senza Cloudflare Access; con la verifica dell'email, il recupero
    della password e login e registrazione da stabilizzare. Non ha un numero:
    non è una feature ma il passaggio da ambiente di prova a servizio. Piano in
    `plans/rilascio.md`.
-3. **14 — Abbonamenti**: il codice è poco, ma le tre domande aperte vanno prima
-   decise.
-4. **13 — AI**: interfaccia del provider, embedding con il modello salvato
+2. **13 — AI**: interfaccia del provider, embedding con il modello salvato
    accanto al vettore, ranking, prompt e schermata.
-5. **Mobile**: un'app nuova, con le sue schermate.
+3. **Mobile**: un'app nuova, con le sue schermate.
+
+Gli abbonamenti (14) erano i primi della lista e sono **fatti dal
+21/10/2026**, decisi e chiusi lo stesso giorno: vedi lo step 14 più sotto,
+«Quando l'abbonamento finisce (14)» in [negozi](negozi.md) e
+`plans/14-abbonamenti.md`.
+
+Xbox (9e) era il primo della lista ed è **fatto dal 21/10/2026**: vedi lo step
+9e più sotto, «Xbox (9e)» in [negozi](negozi.md) e `plans/9e-xbox.md`. Lo stesso
+giorno gli abbonamenti sono saliti prima del rilascio.
+
+L'import CSV (10), in corso insieme a Xbox dal 18/10, è **fatto dal
+19/10/2026**: vedi lo step 10 più sotto e `plans/10-import-csv.md`.
 
 Il 18/10/2026 Xbox è salita prima degli abbonamenti, in corso insieme al CSV,
 ed è entrato il rilascio subito dopo i due.
@@ -58,7 +64,9 @@ del negozio, è **chiuso il 16/10/2026** per tutte le librerie collegate:
 - EA e Nintendo: controllati a mano;
 - Amazon: verificata.
 
-Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
+Xbox (9e) è stato controllato a mano il 20/10/2026, con un foglio di revisione
+del primo import (`plans/9e-xbox-revisione.csv`). Resta Meta Quest, che non è
+ancora una libreria collegata.
 
 1. **Registrazione e auth**
 2. **Inserimento manuale + prima UI web** — `backlog` con possesso, piattaforme e
@@ -152,9 +160,13 @@ Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
      blocchi, e segnato «fatto» nella roadmap il 12/10/2026. Resta non misurato
      il caso di molti utenti da un solo indirizzo: il rinnovo lo fa il server con
      due identità non nostre (l'app e il portale).
-   - **9e — Xbox**: ciò che torna è «giocato», non «posseduto». Non si comincia
-     prima di aver deciso cosa vuol dire — è la domanda in fondo a «Le altre
-     librerie», e per ora è volutamente aperta.
+   - **9e — Xbox** — **fatto il 21/10/2026**, piano in `plans/9e-xbox.md`. Il
+     login è il device code col client di xbox.com; posseduto è ciò che sta in
+     Collections (comprato, o `games_with_gold`) più i 360 comprati, e tutto il
+     resto giocato è `game_pass`. Ogni gioco prende una copia per ciascuna
+     piattaforma spuntata su cui gira. Col Game Pass non attivo, Game Pass e
+     Gold entrano come `played` e solo sopra una soglia di minuti scelta
+     dall'utente. Vedi «Xbox (9e)» in [negozi](negozi.md).
    - **9f — Steam con login e Family**: il login Steam col QR **accanto** al
      solo profilo pubblico (le due cose sulla stessa riga), e con lui la
      libreria della famiglia. La domanda sul «gioco di tuo fratello» ha avuto la
@@ -166,9 +178,18 @@ Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
      due account; segnato «fatto» nella roadmap il 12/10/2026. Vedi «Il blocco
      dell'account» in
      [negozi](negozi.md) e il piano in `plans/9f-steam-login.md`.
-10. **Import da file** — importazione di giochi da file CSV. **In analisi.**
-    Il file di prova è un export di Playnite, in
-    `apps/api/test/fixtures/playnite-export-2026-08.csv`.
+10. **Import da CSV** — **fatto il 19/10/2026**, piano in
+    `plans/10-import-csv.md`. In Librerie, «Importa da CSV»: un file con una
+    riga per gioco, colonne riconosciute per nome (quelle di Playnite e di
+    LaunchBox, in inglese e in italiano; obbligatorie solo nome e sorgente),
+    a virgole o a tabulazioni. Prima di importare un'anteprima riga per riga,
+    con le spunte per escludere. **Non è una libreria**: gli account interni
+    (uno per negozio, `store_accounts.from_file`) non compaiono fra gli
+    account. Stato, categorie e il tag «Importato il {data}» solo alla
+    nascita, anche per gli scarti collegati a mano. Regole in
+    [import-librerie](import-librerie.md#limport-da-csv-10). Restano aperte le
+    righe console con più piattaforme (le Xbox di Playnite, saltate) e le
+    forme dell'id di LaunchBox diverse da Ubisoft.
 11. **Admin** — dove finisce ciò che nessun automatismo ha saputo chiudere.
     Diviso in due lotti:
     - **11a, fatto** (piano in `plans/11a-admin.md`). Il ruolo admin col
@@ -207,30 +228,26 @@ Restano Xbox (9e) e Meta Quest, che non sono ancora librerie collegate.
     decide cosa succede quando l'abbonamento **finisce**, che è l'unico momento
     in cui quelle righe cominciano a mentire.
 
-    Le domande sono tre e nessuna ha una risposta ovvia: si cancellano, si
-    nascondono o si lasciano lì marcate come «non più tuo»? Chi se ne accorge —
-    l'import successivo, che non li vedrà più tornare, o un controllo esplicito
-    dello stato dell'abbonamento (PSN lo dichiara: il profilo porta `isPlus`)?
-    E il voto o i tag che l'utente ci ha messo sopra, che restano roba sua anche
-    quando il gioco non c'è più?
+    Le tre domande — si cancellano, si nascondono o restano «non più tuo»?
+    chi se ne accorge? e il voto e i tag sopra? — hanno **risposta dal
+    21/10/2026** (piano in `plans/14-abbonamenti.md`, regola e misure in
+    «Quando l'abbonamento finisce (14)» di [negozi](negozi.md)):
+    - **se ne accorge l'import successivo**: una copia da abbonamento che il
+      negozio non elenca più è uscita. Niente controllo di `isPlus`;
+    - una copia uscita **si cancella** se il gioco ha un'altra copia ancora
+      tua, o se è l'ultima e la riga non ha dati dell'utente (con la riga di
+      backlog); **resta «non più tua»** (`ownerships.subscription_ended_at`)
+      se è l'ultima e la riga ha voto, note, tag o stato;
+    - **voto e tag** sono quindi la condizione stessa: dove ci sono, la riga
+      resta.
 
-    Una cosa che l'API **non** può aiutare a decidere, ed è misurata: Sony marca
-    `PS_PLUS` tanto il gioco mensile riscattato — che resta tuo finché sei
-    abbonato — quanto il catalogo Extra/Premium, che tuo non è mai stato. Quella
-    distinzione lì dentro non c'è, e nessuna colonna nostra può inventarla.
-
-    E ce n'è una terza, peggiore delle due: `PS_PLUS` può coprire un **disco**.
-    _God of War_ (2018) comprato su disco e poi arrivato nel Plus è marcato
-    abbonamento su entrambi gli elenchi. Cancellarlo alla fine del Plus
-    toglierebbe dal backlog un gioco che sta sullo scaffale.
-
-    Metà risposta c'è già, ed è il supporto dentro la chiave del vincolo: chi
-    dichiara il disco si ritrova **due righe**, e cancellando quella
-    dell'abbonamento il gioco resta. Metà, perché nessuno può dichiarare un
-    disco che non sa di dover dichiarare: finché il Plus dura le due copie si
-    somigliano, e la differenza si scopre il giorno in cui è troppo tardi. Se
-    questo step decidesse di cancellare, dovrebbe **chiedere prima** — è
-    l'unico momento in cui l'utente ha l'informazione e noi no.
+    Restano due limiti, scritti e accettati. Sony marca `PS_PLUS` tanto il
+    gioco mensile riscattato quanto il catalogo Extra/Premium, e la differenza
+    nessuna colonna può inventarla. E `PS_PLUS` può coprire un **disco**
+    (_God of War_ 2018): non si chiede conferma prima di cancellare, perché un
+    disco che si gioca ricompare fra i giocati come fisico — visto su PSN e su
+    Nintendo. Non è misurato invece che Sony tolga i `PS_PLUS` dagli acquisti a
+    Plus scaduto: se non lo fa, non esce niente.
 
 15. **Playlist, wishlist e gioco a caso** — tre pezzi, nell'ordine 15a, 15b,
     15c. La 15b riusa la tabella della 15a; la 15c non dipende dalle altre due.

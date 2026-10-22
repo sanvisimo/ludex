@@ -690,6 +690,26 @@ describe('importSteamLibrary col login (9f)', () => {
     expect((await byApp(userId)).get('400')?.subscription).toBe('steam_family');
     expect(await backlogOf(userId)).toMatchObject([{ rating: 4.5 }]);
     expect(report.family).toEqual({ copies: 0, removed: 0, kept: 1 });
+    // Resta, ma «non più tua» (step 14).
+    const [copia] = await db.select().from(schema.ownerships);
+    expect(copia?.subscriptionEndedAt).toBeInstanceOf(Date);
+  });
+
+  it('se la famiglia lo rimette, la copia torna tua', async () => {
+    mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+    igdbKnowsAll(['400']);
+    await importSteamLibrary(account);
+    await db.update(schema.backlog).set({ rating: 4.5 });
+    mockedFamily.mockResolvedValue(family([]));
+    await importSteamLibrary(account);
+
+    mockedFamily.mockResolvedValue(family([{ externalId: '400' }]));
+    const report = await importSteamLibrary(account);
+
+    const copie = await db.select().from(schema.ownerships);
+    expect(copie).toHaveLength(1);
+    expect(copie[0]?.subscriptionEndedAt).toBeNull();
+    expect(report.family).toEqual({ copies: 1, removed: 0, kept: 0 });
   });
 
   it('con un’altra copia, esce solo quella della famiglia', async () => {

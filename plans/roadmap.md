@@ -31,6 +31,9 @@ segnalazioni spostate dalla mail alle issue di GitHub.
 
 ## Da sapere
 
+- **Il 19/10/2026** «Importa da un file CSV» (`csv`) è passata a «Fatto», con
+  tre punti al posto del testo (era «In corso» dal 16/10): il lotto 10, piano
+  in [10-import-csv.md](10-import-csv.md). In «In corso» resta Xbox.
 - I mesi delle voci fatte sono approssimati: la storia dei commit è fatta di
   merge, non di step. Si correggono in `lib/roadmap.ts`.
 - **Il 18/10/2026** «Importa da un file CSV» (`csv`) e «La libreria Xbox»

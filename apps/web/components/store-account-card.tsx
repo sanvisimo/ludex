@@ -44,6 +44,7 @@ import {
   LogOut,
   Pencil,
   RefreshCw,
+  SlidersHorizontal,
   Unlink,
 } from '@repo/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -55,6 +56,8 @@ import { SteamLink } from '@/components/steam-link';
 import { StoreWishlistRow } from '@/components/store-wishlist-row';
 import { useSyncWishlist } from '@/components/use-sync-wishlist';
 import { StoreLinkForm } from '@/components/store-link-form';
+import { XboxLink } from '@/components/xbox-link';
+import { XboxSettingsDialog } from '@/components/xbox-settings-dialog';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
 import { STORE_BRAND } from '@/lib/store-brand';
@@ -148,6 +151,13 @@ export function StoreAccountCard({
   const [loggingIn, setLoggingIn] = useState(false);
   const [removingLogin, setRemovingLogin] = useState(false);
   const tSteam = useTranslations('account.steamLogin');
+  const tXbox = useTranslations('account.xbox');
+  // Xbox (9e): «Impostazioni dell'import», senza un login.
+  const [changingXbox, setChangingXbox] = useState(false);
+  const isXbox = account.store === 'xbox';
+  const xboxPlatformNames = (account.xbox?.platforms ?? [])
+    .map((platform) => tXbox(`platforms.${platform}`))
+    .join(', ');
   const tWishlist = useTranslations('wishlist.store');
   const isSteam = account.store === 'steam';
   // Il token del browser, scaduto: vedi il badge più sotto.
@@ -173,11 +183,15 @@ export function StoreAccountCard({
       client.accounts.setAutoSync({ accountId: account.id, autoSync: value }),
     // La riga che torna è già quella giusta: si scrive nella lista invece di
     // ricaricarla, così l'interruttore non torna indietro per un istante.
+    // Sopra la riga di prima: quella che torna non ha ciò che la lista ricava
+    // dal credenziale (il login Steam, le scelte Xbox), e lo perderebbe.
     onSuccess: (saved) =>
       queryClient.setQueryData(
         api.accounts.list.queryKey(),
         (rows: StoreAccount[] | undefined) =>
-          rows?.map((row) => (row.id === saved.id ? saved : row)),
+          rows?.map((row) =>
+            row.id === saved.id ? { ...row, ...saved } : row,
+          ),
       ),
     onError: (error) =>
       toast.error(errorMessage(error, { fallback: t('autoSyncFailed') })),
@@ -318,6 +332,15 @@ export function StoreAccountCard({
                 {tSteam('newToken')}
               </DropdownMenuItem>
             )}
+            {isXbox && account.status === 'ok' && (
+              <DropdownMenuItem
+                icon={<SlidersHorizontal size={16} />}
+                onClick={() => setChangingXbox(true)}
+                disabled={busy || syncing}
+              >
+                {tXbox('changeSettings')}
+              </DropdownMenuItem>
+            )}
             {isSteam && account.hasLogin && (
               <DropdownMenuItem
                 icon={<LogOut size={16} />}
@@ -403,6 +426,39 @@ export function StoreAccountCard({
               </Button>
             </XStack>
           ))}
+        {/* Xbox dice le scelte fatte al collegamento: su cosa importa, e se
+            il Game Pass è attivo. Si cambiano dal menu, e lì si vede anche la
+            soglia dei minuti. Fino a due piattaforme un badge ciascuna; oltre,
+            in tutte e cinque l'elenco non stava nella scheda: un badge col
+            numero, e i nomi nel suggerimento. */}
+        {isXbox && account.xbox && (
+          <XStack items="center" gap={8} flexWrap="wrap">
+            {account.xbox.platforms.length <= 2 ? (
+              account.xbox.platforms.map((platform) => (
+                <Badge key={platform} variant="secondary">
+                  {tXbox(`platforms.${platform}`)}
+                </Badge>
+              ))
+            ) : (
+              <Tooltip content={xboxPlatformNames}>
+                <Badge
+                  variant="secondary"
+                  tabIndex={0}
+                  aria-label={xboxPlatformNames}
+                >
+                  {tXbox('platformsCount', {
+                    count: account.xbox.platforms.length,
+                  })}
+                </Badge>
+              </Tooltip>
+            )}
+            <Text fontSize={13} color="$color11">
+              {account.xbox.gamePassActive
+                ? tXbox('gamePassOn')
+                : tXbox('gamePassOff')}
+            </Text>
+          </XStack>
+        )}
       </Slot>
 
       {/* Lo stato in una riga: da ricollegare, in corso, o quando è stata
@@ -566,6 +622,14 @@ export function StoreAccountCard({
               submitLabel={t('reimport')}
               onLinked={() => setRelinking(false)}
             />
+          ) : relinkStore === 'xbox' ? (
+            // Un codice nuovo, con le scelte di adesso già spuntate: il server
+            // rifiuta un login fatto con un altro account Xbox.
+            <XboxLink
+              accountId={account.id}
+              initial={account.xbox}
+              onLinked={() => setRelinking(false)}
+            />
           ) : relinkStore === 'steam' ? (
             // Un account Steam da ricollegare ha un login scaduto: si rifà il
             // QR, non si incolla il profilo, che di credenziale non ne ha.
@@ -606,6 +670,13 @@ export function StoreAccountCard({
             )}
           </DialogContent>
         </Dialog>
+      )}
+
+      {isXbox && (
+        <XboxSettingsDialog
+          account={changingXbox ? account : null}
+          onOpenChange={setChangingXbox}
+        />
       )}
 
       {isSteam && (

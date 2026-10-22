@@ -24,6 +24,9 @@ export const storeValues = [
   'epic',
   'ea',
   'battlenet',
+  // Ubisoft Connect (10): non si collega, i suoi giochi arrivano solo
+  // dall'import da CSV. Vedi `plans/10-import-csv.md`.
+  'ubisoft',
   'amazon',
   'psn',
   'xbox',
@@ -47,7 +50,7 @@ export const wishlistErrorValues = ['not_visible', 'reauth', 'failed'] as const;
 // Sottoinsieme di `storeValues`, che è invece l'elenco dei posti da cui un gioco
 // può provenire — compresi quelli che l'utente scrive a mano su un possesso e
 // quelli che non si collegheranno mai (Ubisoft e Battle.net leggono un file del
-// client installato, non una API).
+// client installato, non una API: arrivano solo dall'import da CSV, step 10).
 //
 // Sta nel vocabolario e non solo nel router perché è la UI ad averne bisogno:
 // `/account` disegna una scheda per ciascuno, e senza questa lista dovrebbe
@@ -60,7 +63,29 @@ export const linkableStoreValues = [
   'psn',
   'nintendo',
   'ea',
+  // Col device code (9e), non con un valore incollato: `accounts.xboxLogin`.
+  'xbox',
 ] as const;
+
+// Le piattaforme che l'utente spunta collegando Xbox (9e): ogni gioco prende una
+// copia per ciascuna di quelle spuntate su cui gira. Collections e lo storico non
+// dicono su che console si gioca, e il catalogo dice «One e Series» per quasi
+// tutto. Sono slug di `platforms`.
+export const xboxPlatformValues = [
+  'pc_windows',
+  'xbox',
+  'xbox360',
+  'xbox_one',
+  'xbox_series',
+] as const;
+
+// La soglia dei giochi Game Pass e Gold quando il Game Pass non è attivo (9e):
+// entrano, come giocati, solo quelli con almeno tanti minuti. 0 = tutti quelli
+// avviati, anche senza minuti. La sceglie l'utente con le piattaforme; 60 è il
+// valore tarato sulla libreria vera (plans/9e-xbox.md), e vale per gli account
+// collegati prima della soglia.
+export const XBOX_DEFAULT_MIN_MINUTES = 60;
+export const XBOX_MAX_MIN_MINUTES = 120;
 
 // I negozi che **si importano una volta sola**, ogni volta che l'utente
 // rifà il gesto: il credenziale non si rinnova, quindi niente aggiornamento
@@ -125,10 +150,18 @@ export const storeAccountStatusValues = [
 // `ea_play` arriva col 9c: EA Play, anche quello preso dentro Game Pass, Steam o
 // Epic. EA lo dice nei modi di possesso della voce (`VAULT`, `XGP_VAULT`,
 // `STEAM_VAULT`…), e lo è solo se nessuno di quei modi è un acquisto.
+//
+// `game_pass` e `games_with_gold` arrivano col 9e (`plans/9e-xbox.md`).
+// `games_with_gold`: le voci di Collections con `licensingRequired`, giocabili
+// solo con l'abbonamento. `game_pass`: i giochi dello storico Xbox che
+// Collections non ha (tolti i `Win32`, che sono di altri negozi), anche quelli
+// usciti dal catalogo del Game Pass.
 export const subscriptionValues = [
   'ps_plus',
   'steam_family',
   'ea_play',
+  'game_pass',
+  'games_with_gold',
 ] as const;
 
 // **Su che supporto** sta una copia: un diritto digitale o un disco.
@@ -357,6 +390,7 @@ export const AUTO_SYNC_EVERY_DAYS: Record<
   amazon: 7,
   psn: 3,
   nintendo: 7,
+  xbox: 7,
 };
 
 export type BacklogStatus = (typeof backlogStatusValues)[number];
@@ -369,6 +403,7 @@ export type WishlistStore = (typeof wishlistStoreValues)[number];
 export type WishlistError = (typeof wishlistErrorValues)[number];
 export type LinkableStore = (typeof linkableStoreValues)[number];
 export type OneShotStore = (typeof oneShotStoreValues)[number];
+export type XboxPlatform = (typeof xboxPlatformValues)[number];
 
 /** Un negozio che si importa una volta sola: vedi `oneShotStoreValues`. */
 export const isOneShotStore = (store: Store): store is OneShotStore =>

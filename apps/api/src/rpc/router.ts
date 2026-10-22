@@ -97,6 +97,7 @@ import {
   startSteamLogin,
   steamLoginStatus,
 } from '../services/steam-login';
+import { startXboxLogin, xboxLoginStatus } from '../services/xbox-login';
 import {
   searchCatalog,
   searchIgdbNotInCatalog,
@@ -107,6 +108,13 @@ import {
 } from '../services/platforms';
 import { pickRandomGame } from '../services/random-game';
 import { deleteUserTag, listUserTags } from '../services/tags';
+import { CsvFileError } from '../services/csv-file';
+import {
+  csvImportStatus,
+  importCsvFile,
+  previewCsvFile,
+} from '../services/csv-import';
+
 import {
   findStoreAccount,
   linkSteamWebToken,
@@ -121,6 +129,7 @@ import {
   syncAllStoreAccounts,
   unlinkImpact,
   unlinkStoreAccount,
+  updateXboxSettings,
 } from '../services/store-accounts';
 import {
   listUnresolvedImports,
@@ -138,6 +147,19 @@ import {
 } from '../queue/imports';
 import { admin, authed, maybeAuthed, os } from './context';
 import { asAdminAuthCall } from './admin-auth';
+
+/**
+ * Un file sbagliato è `BAD_REQUEST` col perché: la schermata dice cosa non va
+ * dalla `reason`, non dal testo. Il resto passa com'è.
+ */
+function csvFileError(error: unknown) {
+  return error instanceof CsvFileError
+    ? new ORPCError('BAD_REQUEST', {
+        message: error.message,
+        data: { reason: error.reason, missing: error.missing },
+      })
+    : error;
+}
 
 /**
  * L'account che si sta ricollegando, se la richiesta ne nomina uno.
@@ -261,6 +283,13 @@ export const router = os.router({
       }),
 
     link: os.accounts.link.use(authed).handler(async ({ input, context }) => {
+      // Xbox non ha un valore da incollare: si collega col codice
+      // (`xboxLogin`).
+      if (input.store === 'xbox') {
+        throw new ORPCError('BAD_REQUEST', {
+          message: 'Xbox si collega confermando un codice, non incollando',
+        });
+      }
       const relinking = await relinkTarget(
         context.user.id,
         input.store,
@@ -377,6 +406,55 @@ export const router = os.router({
         }),
     },
 
+    xboxLogin: {
+      start: os.accounts.xboxLogin.start
+        .use(authed)
+        .handler(async ({ input, context }) => {
+          const relinking = await relinkTarget(
+            context.user.id,
+            'xbox',
+            input.accountId,
+          );
+          return startXboxLogin(
+            context.user.id,
+            {
+              platforms: [...new Set(input.platforms)],
+              gamePassActive: input.gamePassActive,
+              minMinutes: input.minMinutes,
+            },
+            { label: input.label, relinking },
+          );
+        }),
+
+      status: os.accounts.xboxLogin.status
+        .use(authed)
+        .handler(({ input, context }) =>
+          xboxLoginStatus(context.user.id, input.loginId),
+        ),
+    },
+
+    xboxSettings: os.accounts.xboxSettings
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const outcome = await updateXboxSettings(
+          context.user.id,
+          input.accountId,
+          {
+            platforms: [...new Set(input.platforms)],
+            gamePassActive: input.gamePassActive,
+            minMinutes: input.minMinutes,
+          },
+        );
+        if (outcome === 'not_found')
+          throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+        if (outcome === 'needs_reauth')
+          throw new ORPCError('FORBIDDEN', {
+            message: "Il collegamento a Xbox è scaduto: ricollega l'account",
+          });
+        if (outcome === 'running')
+          throw new ORPCError('CONFLICT', { message: 'Import in corso' });
+      }),
+
     rename: os.accounts.rename
       .use(authed)
       .handler(async ({ input, context }) => {
@@ -437,6 +515,12 @@ export const router = os.router({
 
       // EA si importa una volta sola per token: reimportare è incollarne uno
       // nuovo (`accounts.link` sulla stessa riga), non premere «aggiorna».
+      // L'import da CSV (10) non è una libreria: si carica di nuovo il file.
+      if (account.fromFile) {
+        throw new ORPCError('BAD_REQUEST', {
+          message: `${account.store} da CSV si reimporta caricando il file`,
+        });
+      }
       if (isOneShotStore(account.store)) {
         throw new ORPCError('BAD_REQUEST', {
           message: `${account.store} si reimporta incollando di nuovo il token`,
@@ -645,6 +729,42 @@ export const router = os.router({
         if (!removed)
           throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
       }),
+  },
+
+  csvImport: {
+    upload: os.csvImport.upload
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        try {
+          return await importCsvFile(
+            context.user.id,
+            await input.file.text(),
+            input.tag,
+            input.exclude,
+          );
+        } catch (error) {
+          throw csvFileError(error);
+        }
+      }),
+
+    preview: os.csvImport.preview
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        try {
+          return {
+            rows: await previewCsvFile(
+              context.user.id,
+              await input.file.text(),
+            ),
+          };
+        } catch (error) {
+          throw csvFileError(error);
+        }
+      }),
+
+    status: os.csvImport.status
+      .use(authed)
+      .handler(({ context }) => csvImportStatus(context.user.id)),
   },
 
   wishlists: {

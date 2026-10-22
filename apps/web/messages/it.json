@@ -72,6 +72,7 @@
     "addLibrary": "Aggiungi libreria",
     "remove": "Rimuovi",
     "statusFailed": "Non sono riuscito a cambiare lo stato",
+    "ratingFailed": "Non sono riuscito a salvare il voto",
     "edit": "Modifica",
     "noMatchTitle": "Nessun gioco corrisponde.",
     "noMatchHint": "Prova ad allargare i filtri: le spunte dello stesso criterio si sommano, quindi due tag insieme vogliono i giochi che li hanno entrambi.",
@@ -437,6 +438,7 @@
     "played": "{duration} giocate",
     "lastPlayed": "ultima partita {date}",
     "acquired": "preso il {date}",
+    "subscriptionEnded": "non più tua",
     "screenshotAlt": "Screenshot {index} di {name}",
     "notes": "Note",
     "galleryPrevious": "Precedente",
@@ -495,6 +497,7 @@
     "noRating": "non votato",
     "ratingOf": "{value} su 5",
     "ratingValue": "Vota {value} su 5",
+    "clearRating": "Togli il voto",
     "notesLabel": "Note",
     "notesPlaceholder": "Appunti tuoi su questo gioco",
     "categoriesLabel": "Categorie",
@@ -590,6 +593,7 @@
     "epic": "Epic",
     "ea": "EA",
     "battlenet": "Battle.net",
+    "ubisoft": "Ubisoft Connect",
     "amazon": "Amazon",
     "psn": "PlayStation Store",
     "xbox": "Xbox",
@@ -959,6 +963,60 @@
       "removeFailed": "Non sono riuscito a togliere il login",
       "removeWhileSyncing": "C'è un'importazione in corso: togli il login quando ha finito"
     },
+    "xbox": {
+      "title": "Collega Xbox",
+      "description": "Scegli su cosa giochi, poi conferma un codice su Microsoft: anche dal telefono.",
+      "platformsTitle": "Su cosa giochi?",
+      "platformsHint": "Xbox non dice su che console giochi: spunta quelle che hai. Ogni gioco va su quelle dove gira.",
+      "platforms": {
+        "pc_windows": "PC (Windows)",
+        "xbox": "Xbox (la prima)",
+        "xbox360": "Xbox 360",
+        "xbox_one": "Xbox One",
+        "xbox_series": "Xbox Series"
+      },
+      "gamePass": "Ho il Game Pass attivo",
+      "gamePassHint": "Qualunque livello, anche Essential. Senza, i giochi del Game Pass e i Gold che hai giocato entrano come «giocati».",
+      "minMinutes": "Importa i Game Pass e i Gold giocati almeno {minutes} min",
+      "minMinutesAll": "Importa tutti i Game Pass e i Gold che hai avviato",
+      "minMinutesLabel": "Minuti di gioco minimi",
+      "minMinutesHint": "Sotto, di solito li hai solo installati o aperti un attimo. A 0 entrano tutti quelli avviati, anche senza minuti.",
+      "continue": "Continua",
+      "pickOne": "Spunta almeno una piattaforma.",
+      "back": "Indietro",
+      "codeTitle": "Conferma su Microsoft",
+      "copy": "Copia",
+      "copied": "Codice copiato",
+      "open": "Apri microsoft.com/link",
+      "step1": "1. Apri microsoft.com/link, anche dal telefono",
+      "step2": "2. Entra con l'account Microsoft di Xbox",
+      "step3": "3. Scrivi il codice e premi «Consenti»",
+      "waiting": "In attesa della conferma…",
+      "validFor": "Il codice vale ancora {time}",
+      "closeHint": "Chiudere il dialogo smette di chiedere. Un codice nuovo annulla quello di prima.",
+      "preparing": "Chiedo il codice a Microsoft…",
+      "startFailed": "Non riesco a chiedere il codice a Microsoft. Riprova tra poco.",
+      "done": "Xbox collegato: importazione in corso",
+      "expired": "Il codice è scaduto.",
+      "newCode": "Nuovo codice",
+      "retry": "Riprova",
+      "declined": "Hai premuto «Nega» su Microsoft.",
+      "noProfile": "Questo account Microsoft non ha un profilo Xbox: crealo su xbox.com e riprova.",
+      "country": "Xbox non è disponibile nel paese di questo account Microsoft.",
+      "child": "È l'account di un minore: serve il consenso di un adulto nella famiglia Microsoft.",
+      "wrongAccount": "Hai confermato con un altro account Xbox: entra con quello da ricollegare e riprova.",
+      "failed": "Il collegamento non è riuscito. Riprova.",
+      "platformsCount": "{count} piattaforme",
+      "gamePassOn": "Game Pass attivo",
+      "gamePassOff": "Game Pass non attivo",
+      "changeSettings": "Impostazioni dell'import",
+      "settingsTitle": "Impostazioni dell'import",
+      "settingsDescription": "Le scelte di adesso, già spuntate.",
+      "settingsWarning": "Togliere una piattaforma o alzare la soglia dei minuti non toglie le copie già importate: si tolgono dalla scheda del gioco. Il Game Pass cambia solo i giochi che arrivano dopo.",
+      "save": "Salva e aggiorna",
+      "saved": "Salvato: importazione in corso",
+      "saveFailed": "Non riesco a salvare le scelte."
+    },
     "nintendoGuide": {
       "caption": "Disegno schematico: la pagina vera può avere un aspetto diverso.",
       "name": "il tuo nome",
@@ -970,6 +1028,115 @@
       "search": "Cerca per nome…",
       "allStores": "Negozio: tutti",
       "noMatch": "Nessuna voce con questi filtri."
+    },
+    "csvImport": {
+      "title": "Da un file CSV",
+      "description": "Giochi di negozi che Ludex non collega, come Ubisoft Connect e Battle.net, o di quelli che non vuoi collegare: per esempio l'export di Playnite.",
+      "open": "Importa da CSV",
+      "lastImport": "Ultimo import: {date} · tag «{tag}»",
+      "syncing": "importazione in corso…",
+      "tag": "Importato il {date}",
+      "dialogTitle": "Importa da un file CSV",
+      "dialogDescription": "Una riga per gioco. I giochi nuovi entrano nel backlog col tag «{tag}».",
+      "example": "Scarica il CSV d'esempio",
+      "columnsTitle": "Le colonne",
+      "required": "Obbligatorie",
+      "optional": "Facoltative",
+      "columns": {
+        "name": "il nome del gioco",
+        "sources": "il negozio: Steam, GOG, Epic, Amazon, EA app, Ubisoft Connect, Battle.net, PlayStation, Nintendo, Xbox",
+        "gameId": "l'id del negozio; senza, la riga si riconosce dal nome",
+        "platforms": "una sola, per i negozi console: Sony PlayStation 5, Nintendo Switch…",
+        "releaseDate": "aiuta a scegliere fra due giochi con lo stesso nome",
+        "links": "il link alla pagina Steam aiuta a trovare il gioco",
+        "timePlayed": "il tempo giocato, in secondi come lo scrive Playnite",
+        "lastPlayed": "la data dell'ultima partita",
+        "completionStatus": "Plan to Play, Playing, Beaten, Completed, Abandoned, Won't Play…",
+        "categories": "le tue categorie, separate da virgola"
+      },
+      "columnsNote": "Colonne separate da virgole o da tabulazioni; date come 2026-10-19 o 19/10/2026. Le altre colonne si ignorano, e valgono anche i nomi di Playnite e LaunchBox, in italiano compresi (Nome, Titolo, Sorgenti, Fonte…).",
+      "sourcesTitle": "Da dove prendere il file",
+      "playnite": {
+        "title": "Playnite",
+        "steps": [
+          "In Playnite apri Componenti aggiuntivi → Sfoglia, cerca «Library Exporter Advanced» e installalo.",
+          "Aprila dal menu delle estensioni e spunta le colonne qui sopra: in Playnite in italiano si chiamano Nome, Sorgenti, Id del gioco e così via.",
+          "Premi «Esporta tutti i giochi» e carica qui il file così com'è."
+        ]
+      },
+      "launchbox": {
+        "title": "LaunchBox",
+        "steps": [
+          "Passa alla vista a elenco: servono almeno le colonne Title e Source, e con Application Path Ludex prende anche l'id del gioco.",
+          "Seleziona i giochi (Ctrl+A per tutti), copiali (Ctrl+C) e incollali in un file di testo.",
+          "Salvalo, anche come .txt, e caricalo qui così com'è."
+        ]
+      },
+      "drop": "Trascina qui il file .csv o .txt oppure",
+      "choose": "Scegli il file",
+      "change": "Cambia file",
+      "fileLabel": "Il file CSV",
+      "notes": [
+        "I giochi che hai già da un negozio collegato non si doppiano.",
+        "Stato e categorie del file valgono solo per i giochi che non hai ancora in Ludex.",
+        "Quelli che Ludex non riconosce vanno in «Da sistemare»."
+      ],
+      "cancel": "Annulla",
+      "submit": "Importa",
+      "errors": {
+        "missing_columns": "Al file {count, plural, one {manca la colonna} other {mancano le colonne}} {columns}: guarda la tabella qui sopra.",
+        "not_csv": "Il file non è un CSV che si riesce a leggere.",
+        "empty": "Il file non ha righe di giochi.",
+        "tooBig": "Il file supera i 10 MB.",
+        "failed": "Non sono riuscito a importare il file."
+      },
+      "report": {
+        "title": "Importazione avviata",
+        "description": "I giochi nuovi arrivano nel backlog in qualche minuto, col tag «{tag}».",
+        "nothing": "Nel file non c'è nessuna riga che Ludex sappia importare.",
+        "rows": "{count, plural, one {# riga} other {# righe}}",
+        "alreadyRunning": "c'è già un import in corso: carica di nuovo il file quando finisce",
+        "skippedTitle": "Righe saltate",
+        "noPlatform": "{count, plural, one {# riga di un negozio console} other {# righe di negozi console}} senza una piattaforma sola che Ludex conosce: non sappiamo su quale ce l'hai",
+        "noStore": "{count, plural, one {# riga} other {# righe}} senza un negozio che Ludex conosce: {sources}",
+        "emptySource": "senza sorgente",
+        "seeGames": "Vedi i giochi nel backlog",
+        "close": "Chiudi",
+        "duplicates": "{count, plural, one {# riga doppia} other {# righe doppie}} nel file: vale la prima",
+        "excluded": "{count, plural, one {# riga esclusa da te} other {# righe escluse da te}}"
+      },
+      "preview": {
+        "title": "Controlla cosa importare",
+        "description": "{file} · {count, plural, one {# riga} other {# righe}}. Togli la spunta a quelle che non vuoi importare.",
+        "filterLabel": "Mostra",
+        "all": "Tutte",
+        "new": "Nuove",
+        "in_backlog": "Già nel backlog",
+        "unknown": "Da riconoscere",
+        "skipped": "Saltate",
+        "search": "Cerca per nome…",
+        "selectAll": "Seleziona le righe visibili",
+        "colFile": "Nel file",
+        "colLudex": "In Ludex",
+        "colStore": "Negozio · piattaforma",
+        "colStatus": "Stato",
+        "colOutcome": "Esito",
+        "outcome": {
+          "new": "Nuovo",
+          "in_backlog": "Già nel backlog",
+          "unknown": "Da riconoscere",
+          "skipped": "Saltata"
+        },
+        "skip": {
+          "no_store": "negozio sconosciuto",
+          "platform": "più console",
+          "duplicate": "doppione nel file"
+        },
+        "empty": "Nessuna riga con questo filtro.",
+        "next": "Avanti",
+        "back": "Indietro",
+        "submit": "{count, plural, =0 {Nessuna riga da importare} one {Importa # riga} other {Importa # righe}}"
+      }
     }
   },
   "critic": {
@@ -988,7 +1155,9 @@
   "subscription": {
     "ps_plus": "PS Plus",
     "steam_family": "Famiglia Steam",
-    "ea_play": "EA Play"
+    "ea_play": "EA Play",
+    "game_pass": "Game Pass",
+    "games_with_gold": "Games with Gold"
   },
   "medium": {
     "digital": "Digitale",
@@ -1059,9 +1228,16 @@
         "title": "Ludex aperto a tutti",
         "text": "Un server stabile al posto di quello di prova, senza codice d'accesso all'ingresso: con la conferma dell'email e il recupero della password."
       },
+      "quickRating": {
+        "title": "Il voto al volo",
+        "p1": "Sulla pagina del gioco le cinque stelle ci sono sempre, vuote se non hai votato: si vota con un clic, a mezze stelle, senza aprire «Modifica».",
+        "p2": "Ricliccando il voto scelto lo togli; in «Modifica» c'è anche una × accanto al voto."
+      },
       "subscriptions": {
         "title": "Gli abbonamenti",
-        "text": "PS Plus, Game Pass e gli altri: capire quali giochi della tua libreria sono tuoi e quali ci sono finché l'abbonamento resta attivo."
+        "p1": "Quando un abbonamento finisce — PS Plus, Game Pass, EA Play, Games with Gold o la famiglia Steam — se ne accorge l'import successivo: i giochi che il negozio non elenca più escono dal backlog.",
+        "p2": "Un gioco su cui hai messo un voto, una nota, un tag o uno stato resta, e la sua copia dice «non più tua». Se ce l'hai anche altrove, esce solo la copia dell'abbonamento.",
+        "p3": "Una copia «non più tua» non conta nel filtro delle piattaforme, perché stasera non la avvii. Se l'abbonamento riparte, il primo import la rimette tua."
       },
       "sourceLinks": {
         "title": "I link alle fonti",
@@ -1082,7 +1258,9 @@
       },
       "csv": {
         "title": "Importa da un file CSV",
-        "text": "Porta in Ludex una libreria che hai già altrove, per esempio l'export di Playnite."
+        "p1": "In Librerie, «Importa da CSV» porta in Ludex i giochi di negozi che non si collegano, come Ubisoft Connect e Battle.net, o di quelli che non vuoi collegare. Va bene l'export di Playnite, la vista a elenco di LaunchBox incollata in un file di testo, o un CSV scritto a mano partendo da quello d'esempio.",
+        "p2": "Prima di importare vedi riga per riga cosa succederà — gioco nuovo, già nel backlog, da riconoscere o saltato, e perché — e togli la spunta a quello che non vuoi.",
+        "p3": "I giochi nuovi entrano con lo stato e le categorie del file e col tag «Importato il…», anche quelli che colleghi a mano dopo. Quelli che hai già da un negozio collegato non si doppiano."
       },
       "randomFilter": {
         "title": "Il gioco a caso dal filtro",
@@ -1136,7 +1314,9 @@
       },
       "xbox": {
         "title": "La libreria Xbox",
-        "text": "Da Xbox torna ciò che hai giocato, non ciò che possiedi: prima di costruirla va deciso cosa mostrare."
+        "p1": "In Librerie si collega Xbox confermando un codice su microsoft.com/link, anche dal telefono. Prima scegli su cosa giochi — PC, Xbox, 360, One, Series — e ogni gioco va sulle piattaforme dove gira.",
+        "p2": "Entrano i giochi che hai comprato, anche quelli mai avviati e i 360 retrocompatibili. Quelli del Game Pass e dei Games with Gold solo se ci hai giocato: senza abbonamento attivo entrano come «giocati», e solo sopra una soglia di minuti che scegli tu.",
+        "p3": "Con le ore di gioco di Xbox. Piattaforme, Game Pass e soglia si cambiano dalla scheda, in «Impostazioni dell'import», senza rifare il login."
       },
       "playlists": {
         "title": "Playlist, wishlist e gioco a caso",

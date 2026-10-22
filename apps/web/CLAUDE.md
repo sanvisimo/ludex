@@ -344,6 +344,22 @@ direzione col CSS. Cose che non si indovinano:
   l'account ha il login (`hasLogin`) e il menu ha «Accedi con Steam» e «Togli il
   login». Un import fallito **non arriva alla schermata**, per questo il profilo
   privato si controlla al collegamento e l'avviso sta nel dialogo.
+- **Xbox ha un corpo suo nel dialogo «Aggiungi libreria»** (9e,
+  `xbox-link.tsx`): **prima le scelte, poi il codice**, perché il server le
+  salva insieme al token. Le scelte sono `xbox-choices.tsx` — piattaforme, Game
+  Pass e, solo col Game Pass non attivo, lo slider della soglia dei minuti —, lo
+  stesso componente di «Impostazioni dell'import» (`xbox-settings-dialog.tsx`),
+  che le riscrive **senza un login** e rilancia l'import. Il codice è
+  `xbox-code-panel.tsx`, con la forma del QR di Steam: lo chiede all'apertura,
+  interroga `status` ogni due secondi, e chiuderlo smette di chiedere. La scheda
+  mostra fino a due piattaforme come badge, oltre il numero con i nomi nel
+  suggerimento; la soglia si vede solo nelle impostazioni.
+- **L'import da CSV** (10, `components/csv-import.tsx`) è un riquadro sotto le
+  schede delle librerie, non una scheda: un file non è una libreria. Il dialogo
+  ha tre passi — istruzioni e file, anteprima con le spunte
+  (`csvImport.preview`, allargato oltre i 720), resoconto — e il tag del file lo
+  compone il client (`lib/import-tag.ts`). Il CSV d'esempio sta in
+  `public/ludex-import-example.csv`, e un test dell'API controlla che si legga.
 - **EA si importa una volta sola** (9c, `isOneShotStore`): la sua scheda ha
   «Importa di nuovo» al posto del ↻, che apre il modulo del ricollegamento sulla
   stessa riga per incollare un token nuovo, e non ha l'interruttore «Auto».

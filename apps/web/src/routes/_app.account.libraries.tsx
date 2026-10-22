@@ -16,6 +16,7 @@ import { useTranslations } from 'use-intl';
 
 import { AddStoreAccount } from '@/components/add-store-account';
 import { AutoSyncSettings } from '@/components/auto-sync-settings';
+import { CsvImportPanel } from '@/components/csv-import';
 import { RenameAccountDialog } from '@/components/rename-account-dialog';
 import { StoreAccountCard } from '@/components/store-account-card';
 import { UnlinkAccountDialog } from '@/components/unlink-account-dialog';
@@ -100,12 +101,16 @@ function LibrariesSection() {
           <Skeleton height={192} width="100%" rounded={12} />
         </YStack>
       ) : rows.length === 0 ? (
-        <EmptyState
-          icon={<Library size={24} color="$color11" />}
-          title={t('libraries.emptyTitle')}
-          description={t('libraries.emptyDescription')}
-          action={<AddStoreAccount variant="default" />}
-        />
+        <>
+          <EmptyState
+            icon={<Library size={24} color="$color11" />}
+            title={t('libraries.emptyTitle')}
+            description={t('libraries.emptyDescription')}
+            action={<AddStoreAccount variant="default" />}
+          />
+          {/* Anche senza librerie: un CSV non è una libreria (10). */}
+          <CsvImportPanel />
+        </>
       ) : (
         <>
           {settings.data && (
@@ -144,6 +149,10 @@ function LibrariesSection() {
               />
             ))}
           </div>
+
+          {/* L'import da CSV (10): un riquadro sotto le schede, non una
+              scheda, perché un file non è una libreria. */}
+          <CsvImportPanel />
         </>
       )}
 

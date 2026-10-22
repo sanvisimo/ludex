@@ -10,13 +10,20 @@ negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
   `auth.ts` è generato e viene riscritto. Allo step 4 teneva solo l'identità
   pubblica dell'account, perché a Steam basta uno SteamID64; dallo step 9 tiene
   anche i token, e come sono fatti lo dice «Le altre librerie» qui sotto.
-- **abbonamento su `ownerships`**: `subscription` (`ps_plus`, `steam_family`), nullo se la copia è comprata.
+- **abbonamento su `ownerships`**: `subscription` (`ps_plus`, `steam_family`,
+  `ea_play`, `game_pass`, `games_with_gold`), nullo se la copia è comprata.
   Vedi «un gioco a cui puoi giocare stasera ma che non è tuo», più sotto: è la
   risposta parziale che il 9b ha dovuto dare, non un campo in più. `steam_family`
   (9f) non è un abbonamento ma risponde alla stessa domanda per la libreria di un
-  familiare: **non esce mai da sola** per un gioco su cui l'utente ha messo dati
-  suoi, e **non adotta** i possessi scritti a mano. Vedi «Come è fatto (9f)» in
-  [negozi](negozi.md).
+  familiare, e **non adotta** i possessi scritti a mano. Vedi «Come è fatto (9f)»
+  in [negozi](negozi.md).
+- **fine dell'abbonamento su `ownerships`** (step 14): `subscription_ended_at`,
+  nulla finché dura. Una copia da abbonamento che il negozio non elenca più
+  **esce al reimport** (`pruneSubscriptionCopies`): sola lei se il gioco ha
+  un'altra copia ancora tua, con la riga di backlog se è l'ultima e la riga non
+  ha dati dell'utente; se li ha **resta, marcata «non più tua»**, e non conta
+  per il filtro della piattaforma. Il reimport che la ritrova la azzera. Vedi
+  «Quando l'abbonamento finisce (14)» in [negozi](negozi.md).
 - **pagina del negozio su `ownerships`**: `store_page`, il pezzo di
   indirizzo che il negozio dà (Steam `app/{appid}`, GOG l'`url` del prodotto,
   PSN `product/{id}` o `concept/{id}`); l'URL intero lo compone
@@ -605,3 +612,33 @@ rinasconde, e gli scarti che c'erano già non cambiano. Vale per tutti i negozi:
 anche le voci in più di un prodotto Epic con quei nomi (_Barony (Beta)_,
 _Chivalry 2 - Public Testing_) nascono nascoste invece che fra i «Possibili
 doppioni».
+
+## L'import da CSV (10)
+
+Fatto il 19/10/2026; misure, decisioni e wireframe in
+[il piano](../plans/10-import-csv.md). Un file non è una libreria, ma passa
+dalla stessa strada di ogni import (`importLibrary`), e da lì le sue regole:
+
+- **un account interno per negozio** del file (`store_accounts.from_file`,
+  `external_account_id = 'csv'`, nome «CSV»), che non compare fra gli account,
+  non si aggiorna da solo, non ha «aggiorna» né wishlist. Uno per negozio e non
+  uno solo, perché `importLibrary` lavora su un negozio per volta e pota gli
+  scarti che non ha visto: con più negozi sullo stesso account ognuno
+  cancellerebbe quelli degli altri. Gli scarti si leggono «Ubisoft Connect ·
+  CSV».
+- **i doppioni non si scrivono**: una copia del CSV che l'utente ha già da un
+  altro account (stesso gioco, piattaforma, negozio e supporto) si salta
+  (`togliGiaPossedute`), e un collegamento vero dello stesso negozio **adotta**
+  le copie del CSV come quelle scritte a mano (`adottaPossessiMenoSpecifici`).
+- **stato, categorie e tag solo alla nascita** della riga di backlog: lo stato
+  e le categorie del file, e il tag «Importato il {data}» del caricamento. Chi
+  c'era già non li prende, e i tag non si accumulano a ogni caricamento. Gli
+  scarti li conservano (`unresolved_imports.at_birth`), e collegati a mano li
+  applicano con la stessa regola.
+- **la ricerca**: nome con l'anno, poi senza (le date di Playnite sono spesso
+  della riedizione), poi l'appid Steam dei `Collegamenti`, che è metadata di
+  Playnite e può mentire (`resolveByNameWithFallbacks`).
+- **senza id** la riga si riconosce dal nome: l'id esterno è `name:` più il
+  nome minuscolo, e non può coincidere con un id vero del negozio.
+- **le righe console** vogliono una piattaforma sola: quelle con più console
+  (le Xbox di Playnite) si saltano, finché non si decide cosa significano.

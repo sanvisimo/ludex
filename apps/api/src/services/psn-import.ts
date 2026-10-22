@@ -19,6 +19,7 @@ import {
   type StoreAccountRow,
   storeAccessToken,
 } from './store-accounts';
+import { pruneUnlistedSubscriptionCopies } from './subscription-copies';
 
 /**
  * Import della libreria PSN.
@@ -193,5 +194,9 @@ export async function importPsnLibrary(
     console.log(`[import] psn: ${dischi} dischi dall'elenco dei giocati`);
   }
 
-  return importLibrary(account, entries);
+  const report = await importLibrary(account, entries);
+  // Il Plus scaduto: i `PS_PLUS` che Sony non elenca più. **Non misurato** che
+  // li tolga davvero dagli acquisti; se non lo fa, qui non esce niente.
+  await pruneUnlistedSubscriptionCopies(account, entries);
+  return report;
 }
