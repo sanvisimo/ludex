@@ -6,19 +6,47 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 
 I numeri degli step sono nomi, non una sequenza: compaiono nei piani, nei
 commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
-in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10, il 18/10, il 19/10 e
-il 21/10), e l'ordine è anche quello della [roadmap](../apps/web/lib/roadmap.ts)
-pubblica:
+in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10, il 18/10, il 19/10,
+il 21/10 e il 22/10), e l'ordine è anche quello della
+[roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
 1. **Rilascio**: un server stabile al posto del mini PC e l'app aperta a
    tutti, senza Cloudflare Access; con la verifica dell'email, il recupero
    della password e login e registrazione da stabilizzare. Non ha un numero:
    non è una feature ma il passaggio da ambiente di prova a servizio. Piano in
-   `plans/rilascio.md`.
-2. **13 — AI**: interfaccia del provider, embedding con il modello salvato
-   accanto al vettore, ranking, prompt e schermata. Analisi di fornitori e
-   costi, fatta in anticipo (18–22/10/2026), in `plans/13-ai.md`.
-3. **Mobile**: un'app nuova, con le sue schermate.
+   `plans/rilascio.md`. **Per prima la prova degli import da un VPS preso a
+   ore**, perché può cambiare la scelta di dove andare; poi server ed email,
+   il codice, il trasloco. La prova parla con gli account veri dell'utente:
+   un negozio alla volta, concordato, e Steam solo se l'utente lo decide.
+2. **13a e 13b — AI**: la base (provider, embedding, profilo, serie IGDB) e
+   l'assistente in sola lettura. Analisi di fornitori e costi, fatta in
+   anticipo (18–22/10/2026), in `plans/13-ai.md`.
+3. **I prerequisiti del 13c**, utili anche senza AI: le playlist aperte (15f
+   A, `plans/15f-playlist-aperte.md`), un tag a tutti i giochi di un filtro, e
+   `criticMax` nel filtro.
+4. **13c — le azioni** dell'assistente, con la scheda di conferma.
+5. **Mobile**: un'app nuova, con le sue schermate (`plans/mobile.md`).
+6. **Dopo**, secondari rispetto a «cosa gioco adesso»: la 15f B (playlist
+   pubbliche) e il catalogo con i filtri (parte B di
+   `plans/pagine-categoria.md`). Restano idee, fuori dall'ordine, Meta Quest
+   (9g, fermo: manca chi ha un visore) e le piattaforme dell'utente
+   (`plans/piattaforme-dell-utente.md`).
+
+Rivisto il 22/10/2026, con l'analisi di hosting e fornitori arrivata lo stesso
+giorno. Cosa è cambiato e perché:
+
+- **i badge della pagina del gioco** (parte A delle pagine categoria) sono
+  stati fatti subito, il 22/10: piccoli e senza dipendenze;
+- **la 15f A, i tag in blocco e `criticMax` stanno prima del 13c** e non prima
+  di tutto il 13: il 13c li usa (le playlist dei «10 migliori», «applica il
+  tag», «sotto 60»), 13a e 13b no, e così «cosa gioco adesso» arriva prima;
+- **le due parti pubbliche scendono dopo il mobile**: hanno senso solo con
+  l'app aperta, e sono scoperta, non decisione;
+- **server dell'app e fornitore dell'LLM restano scelte indipendenti**
+  (`plans/rilascio.md`), quindi non si decidono insieme.
+
+Le correzioni a mano sul mini PC (`plans/minipc-correzioni.md`) sono chiuse
+dall'utente il 22/10/2026, prima del trasloco.
 
 Gli abbonamenti (14) erano i primi della lista e sono **fatti dal
 21/10/2026**, decisi e chiusi lo stesso giorno: vedi lo step 14 più sotto,
