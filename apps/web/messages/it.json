@@ -1312,6 +1312,10 @@
         "title": "Playlist aperte",
         "text": "Liste di giochi scelti a mano, nell'ordine che vuoi: «i 20 RPG più belli di sempre». Private, con un link o pubbliche."
       },
+      "categoryPages": {
+        "title": "Le pagine categoria",
+        "text": "Sulla pagina di un gioco un clic su un genere, un tema, il tipo o un tuo tag porta ai giochi del tuo backlog che ce l'hanno. Poi lo stesso su tutto il catalogo di Ludex, con i filtri."
+      },
       "xbox": {
         "title": "La libreria Xbox",
         "p1": "In Librerie si collega Xbox confermando un codice su microsoft.com/link, anche dal telefono. Prima scegli su cosa giochi — PC, Xbox, 360, One, Series — e ogni gioco va sulle piattaforme dove gira.",
