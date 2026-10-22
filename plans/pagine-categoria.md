@@ -1,8 +1,9 @@
 # Le pagine categoria, dai badge della pagina del gioco
 
-**Stato: piano, non cominciato (22/10/2026).** Nella roadmap è «in arrivo»
-(`categoryPages`). Va messo in fila rispetto a rilascio · 13 · mobile: non è
-uno degli step di [docs/ordine-sviluppo.md](../docs/ordine-sviluppo.md).
+**Stato: A chiusa il 22/10/2026**, dall'utente dopo averla guardata (branch
+`feat/badge-cliccabili`), voce `badgeLinks` «fatta» nella roadmap. **B non
+cominciata**: `categoryPages` torna «in arrivo» col testo del solo catalogo, e
+nell'[ordine di lavoro](../docs/ordine-sviluppo.md) viene dopo il mobile.
 
 ## La richiesta
 
@@ -18,11 +19,11 @@ Sono due pezzi di misura diversa, e il primo si usa da solo.
 I tre badge e il criterio che il filtro di `/backlog` sa già leggere
 ([backlog-filter.ts](../apps/web/lib/backlog-filter.ts)):
 
-| Badge                 | Dove                                                              | Filtro             |
-| --------------------- | ----------------------------------------------------------------- | ------------------ |
-| Generi e temi IGDB    | hero, [game-page.tsx](../apps/web/components/game-page.tsx)       | `attributes=<id>`  |
-| Tipo (DLC, Remaster…) | hero, `GameTypeBadge`                                             | `gameTypes=<tipo>` |
-| Categorie e tag tuoi  | pannello del backlog, `EntryTags`                                 | `tags=<uuid>`      |
+| Badge                 | Dove                                                        | Filtro             |
+| --------------------- | ----------------------------------------------------------- | ------------------ |
+| Generi e temi IGDB    | hero, [game-page.tsx](../apps/web/components/game-page.tsx) | `attributes=<id>`  |
+| Tipo (DLC, Remaster…) | hero, `GameTypeBadge`                                       | `gameTypes=<tipo>` |
+| Categorie e tag tuoi  | pannello del backlog, `EntryTags`                           | `tags=<uuid>`      |
 
 Cosa manca: `attributes` vuole l'id di `igdb_attributes`, e la pagina del gioco
 riceve solo `kind`, `igdbId` e `name`.
@@ -44,6 +45,23 @@ Decisioni di default:
 - **Solo sulla pagina del gioco**: nelle card di `/backlog` gli stessi badge
   stanno dentro il link della card, e un link non sta dentro un link.
 - **Niente wireframe**: la schermata non cambia struttura.
+
+### Com'è fatto (22/10/2026)
+
+- `id` in `GameAttributeSchema` e nella query di `findGameDetailById`.
+- [badge-link.tsx](../apps/web/components/badge-link.tsx): `BadgeLink`, il
+  `ButtonLink` dei badge. L'indirizzo lo fa `useBacklogHref` in
+  [backlog-filter.ts](../apps/web/lib/backlog-filter.ts) (`toSearch`, quindi lo
+  stato resta il default).
+- `GameTypeBadge` prende `href`; `EntryTags` prende `linked`, acceso solo nel
+  pannello del backlog della pagina del gioco.
+- **Smentito il piano su un punto**: generi, temi e tipo sono link solo se sono
+  fra le voci del pannello dei filtri (`backlog.filterOptions`), cioè se il tuo
+  backlog ne ha almeno uno. Su un gioco che non hai, un genere che non hai
+  altrove avrebbe aperto una lista vuota con un chip che dice l'id e non il
+  nome (`backlog-filters.tsx`, il nome viene da quelle voci). I tag sono sempre
+  link: sono della riga di backlog, quindi il gioco c'è.
+- Verificato: `pnpm check-types`, `pnpm lint`, e a schermo dall'utente.
 
 ## B. Il catalogo con i filtri (medio)
 

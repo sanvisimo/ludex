@@ -30,6 +30,7 @@ import { Link } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
+import { BadgeLink } from '@/components/badge-link';
 import { StatusButton } from '@/components/backlog-views';
 import { CriticScores } from '@/components/critic-scores';
 import { Muted, Strong } from '@/components/detail-text';
@@ -41,6 +42,7 @@ import { HltbTimes } from '@/components/hltb-times';
 import { RatingStars } from '@/components/rating-stars';
 import { ScrollRow } from '@/components/scroll-row';
 import { statusIcons } from '@/components/status-icon';
+import { useBacklogHref } from '@/lib/backlog-filter';
 import { useDuration } from '@/lib/duration';
 import { igdbImageUrl } from '@/lib/igdb-image';
 import { platformIconUrl } from '@/lib/platform-icons';
@@ -132,6 +134,21 @@ export const GAME_PAGE_WIDTH = 1200;
 export function GameHero({ game }: { game: GameDetail }) {
   const t = useTranslations('game');
   const year = game.firstReleaseDate?.getFullYear() ?? null;
+  // Da loggati generi, temi e tipo portano a `/backlog` filtrato; da anonimi
+  // restano semplici, perché `/backlog` è privato. E solo se sono fra le voci
+  // del pannello dei filtri, cioè se il tuo backlog ne ha almeno uno: altrimenti
+  // il link aprirebbe una lista vuota, con un chip che il nome non lo sa.
+  const { data: session } = useSession();
+  const backlogHref = useBacklogHref();
+  const { data: options } = useQuery({
+    ...api.backlog.filterOptions.queryOptions(),
+    enabled: !!session,
+  });
+  const attributeIds = new Set(options?.attributes.map((row) => row.id));
+  const typeHref =
+    game.gameType && options?.gameTypes.includes(game.gameType)
+      ? backlogHref({ gameTypes: [game.gameType] })
+      : undefined;
 
   const artwork = game.artworkImageIds?.[0] ?? game.screenshotImageIds?.[0];
   const background = artwork
@@ -220,7 +237,7 @@ export function GameHero({ game }: { game: GameDetail }) {
               >
                 {game.name}
               </Text>
-              <GameTypeBadge type={game.gameType} />
+              <GameTypeBadge type={game.gameType} href={typeHref} />
             </XStack>
             {meta.length > 0 && <Muted>{meta.join(' · ')}</Muted>}
             {game.parent && (
@@ -241,14 +258,21 @@ export function GameHero({ game }: { game: GameDetail }) {
             )}
             {game.attributes.length > 0 && (
               <XStack flexWrap="wrap" gap={6}>
-                {game.attributes.map((attribute) => (
-                  <Badge
-                    key={`${attribute.kind}-${attribute.igdbId}`}
-                    variant="secondary"
-                  >
-                    {attribute.name}
-                  </Badge>
-                ))}
+                {game.attributes.map((attribute) =>
+                  attributeIds.has(attribute.id) ? (
+                    <BadgeLink
+                      key={attribute.id}
+                      variant="secondary"
+                      href={backlogHref({ attributes: [attribute.id] })}
+                    >
+                      {attribute.name}
+                    </BadgeLink>
+                  ) : (
+                    <Badge key={attribute.id} variant="secondary">
+                      {attribute.name}
+                    </Badge>
+                  ),
+                )}
               </XStack>
             )}
           </YStack>
@@ -637,7 +661,7 @@ export function BacklogPanel({
           </Text>
         </YStack>
       )}
-      <EntryTags tags={entry.tags} />
+      <EntryTags tags={entry.tags} linked />
       <XStack flexWrap="wrap" gap={8}>
         {actions}
       </XStack>

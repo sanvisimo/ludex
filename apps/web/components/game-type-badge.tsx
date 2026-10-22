@@ -1,6 +1,7 @@
 import type { GameType } from '@repo/contracts';
 import { Badge, type BadgeProps } from '@repo/ui';
 
+import { BadgeLink } from '@/components/badge-link';
 import { useGameTypeLabels } from '@/lib/labels';
 
 /**
@@ -12,14 +13,24 @@ import { useGameTypeLabels } from '@/lib/labels';
  *
  * Serve perché un DLC agganciato per sbaglio dall'import sta in lista identico a
  * un gioco, e da fuori non c'è modo di accorgersene.
+ *
+ * Con `href` è un link (la pagina del gioco, verso `/backlog` filtrato per tipo).
  */
 export function GameTypeBadge({
   type,
+  href,
   ...props
-}: { type: GameType | null } & Omit<BadgeProps, 'children'>) {
+}: { type: GameType | null; href?: string } & Omit<
+  BadgeProps,
+  'children' | 'render' | 'onPress'
+>) {
   const labels = useGameTypeLabels();
   if (type === null || type === 'main_game') return null;
-  return (
+  return href ? (
+    <BadgeLink variant="secondary" href={href} {...props}>
+      {labels[type]}
+    </BadgeLink>
+  ) : (
     <Badge variant="secondary" {...props}>
       {labels[type]}
     </Badge>

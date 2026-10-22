@@ -31,6 +31,17 @@ segnalazioni spostate dalla mail alle issue di GitHub.
 
 ## Da sapere
 
+- **A sera del 22/10/2026**, chiusi i badge: voce nuova «I badge della pagina
+  del gioco» (`badgeLinks`) «fatta», e `categoryPages` torna «in arrivo» col
+  solo catalogo, in fondo. «In arrivo» segue l'ordine rivisto lo stesso giorno
+  ([ordine-sviluppo](../docs/ordine-sviluppo.md)): `ai`, `openPlaylists`,
+  `mobile`, `categoryPages`.
+- **Ancora il 22/10/2026**: «Le pagine categoria» (`categoryPages`) è passata
+  a «In corso» (i badge cliccabili, parte A di
+  [pagine-categoria.md](pagine-categoria.md)), e «La libreria Meta Quest»
+  (`metaquest`) da «In corso» a «Idea», col testo cambiato: l'utente non ha un
+  visore e il probe non ha un account su cui girare
+  ([9g-meta-quest.md](9g-meta-quest.md)).
 - **Il 22/10/2026** «Playlist aperte» (`openPlaylists`) è passata da «Idea» a
   «In arrivo», in fondo: decisa ma non cominciata, e il suo posto nell'ordine
   di lavoro è ancora da decidere. Piano in

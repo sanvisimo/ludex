@@ -119,7 +119,9 @@ export async function findGameDetailById(
       attributes: {
         columns: {},
         with: {
-          attribute: { columns: { kind: true, igdbId: true, name: true } },
+          attribute: {
+            columns: { id: true, kind: true, igdbId: true, name: true },
+          },
         },
       },
       sources: { columns: { source: true, syncedAt: true, externalId: true } },

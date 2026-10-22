@@ -536,6 +536,16 @@ export function newSeed() {
   return Math.random().toString(36).slice(2, 10) || 'a';
 }
 
+/**
+ * L'indirizzo di `/backlog` con dei criteri accesi, per un link: i badge della
+ * pagina del gioco. Ciò che non si passa resta al default, stato compreso.
+ */
+export function useBacklogHref() {
+  const router = useRouter();
+  return (filter: Partial<BacklogFilterState>) =>
+    router.buildLocation({ to: '/backlog', search: toSearch(filter) }).href;
+}
+
 export function useBacklogFilter() {
   const search = route.useSearch();
   const navigate = route.useNavigate();

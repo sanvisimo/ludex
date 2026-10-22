@@ -285,7 +285,12 @@ meno di 2 minuti) mostra lo skeleton con «Sto recuperando i dati da IGDB…» e
 si rilegge ogni 5 secondi; oltre, la pagina com'è (`isEnriching`). Remake e
 simili si aprono con la regola della ricerca: in catalogo sono un link, fuori
 catalogo da loggati un bottone che li crea (`useOpenIgdbHit`), da ospiti
-niente; attenuati se non sono tuoi.
+niente; attenuati se non sono tuoi. **I badge** — generi e temi, il tipo, le
+tue categorie e i tuoi tag — portano a `/backlog` con quel criterio acceso
+(`BadgeLink`, `useBacklogHref`): da loggati, e generi, temi e tipo solo se sono
+fra le voci del pannello dei filtri, o il link aprirebbe una lista vuota.
+Nelle card di `/backlog` restano semplici, perché stanno dentro il link della
+card.
 
 **La pagina account** (`/account`) è un layout, `_app.account.tsx`, con quattro
 sezioni che sono rotte figlie: `profile`, `libraries`, `needs-attention`, `hidden`.

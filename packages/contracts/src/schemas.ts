@@ -120,6 +120,9 @@ export const GameSchema = z.object({
 });
 
 export const GameAttributeSchema = z.object({
+  // L'id di `igdb_attributes`: è ciò che il filtro `attributes` di `/backlog`
+  // vuole, e serve ai badge della pagina del gioco che ci portano.
+  id: z.number().int().positive(),
   kind: AttributeKindSchema,
   igdbId: z.number().int(),
   name: z.string(),
