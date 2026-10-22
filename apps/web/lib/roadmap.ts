@@ -41,10 +41,11 @@ export type RoadmapEntry = {
  */
 export const roadmap: RoadmapEntry[] = [
   { id: 'release', status: 'doing', areas: ['account'] },
+  { id: 'metaquest', status: 'doing', areas: ['import'] },
   { id: 'ai', status: 'next', areas: ['ai'] },
   { id: 'mobile', status: 'next', areas: ['mobile'] },
+  { id: 'categoryPages', status: 'next', areas: ['game', 'library'] },
   { id: 'openPlaylists', status: 'idea', areas: ['playlists'] },
-  { id: 'metaquest', status: 'next', areas: ['import'] },
   {
     id: 'quickRating',
     status: 'done',

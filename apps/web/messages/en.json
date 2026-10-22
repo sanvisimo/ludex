@@ -1313,6 +1313,10 @@
         "title": "Open playlists",
         "text": "Lists of hand-picked games in the order you want: \"the 20 best RPGs ever\". Private, with a link, or public."
       },
+      "categoryPages": {
+        "title": "Category pages",
+        "text": "On a game's page, clicking a genre, a theme, the type or one of your tags takes you to the games in your backlog that have it. Then the same across the whole Ludex catalog, with filters."
+      },
       "xbox": {
         "title": "The Xbox library",
         "p1": "In Libraries you connect Xbox by confirming a code on microsoft.com/link, from your phone too. First you pick what you play on — PC, Xbox, 360, One, Series — and every game goes on the platforms it runs on.",

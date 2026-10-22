@@ -45,7 +45,18 @@ regole complete, le ragioni e le misure.
     cancellarli è una `delete where source = 'opencritic'`.
   - **monetizzare in qualunque forma, o pubblicare l'app su uno store**,
     richiede il piano commerciale («MEGA»); per lo store anche il credito a
-    OpenCritic nella descrizione dell'app. Vale per il mobile.
+    OpenCritic nella descrizione dell'app. Vale per il mobile. Il testo,
+    riportato dall'utente il 22/10/2026:
+
+    > 5. You must purchase a Commercial Plan (aka "MEGA Plan") to monetize in
+    >    any form
+    > 6. If Publishing an app to an App Store, you MUST have purchased a
+    >    Commercial Plan and MUST credit OpenCritic in the app description.
+
+    Restano da chiarire con OpenCritic: se F-Droid conta come «App Store»
+    (la lettura prudente è sì; un APK dal nostro sito non lo è) e se un link
+    di donazioni (Ko-fi, [offrimi-un-caffe](../../plans/offrimi-un-caffe.md))
+    è «monetize in any form».
 
 - **Metacritic** — punteggi critica, **per piattaforma**. Nessuna API pubblica:
   stesso trattamento di HLTB, l'endpoint che usa il loro sito e il risultato
