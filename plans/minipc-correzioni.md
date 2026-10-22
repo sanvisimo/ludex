@@ -9,21 +9,31 @@ Steam (14–15/10/2026). Raccolte dai piani
 scritti vincono sulle regole nuove: un reimport non li corregge da solo.
 
 **Stato: chiuso dall'utente il 22/10/2026**: il mini PC torna, le caselle
-vuote qui sotto non sono state aggiornate una per una. Resta una voce:
+vuote qui sotto non sono state aggiornate una per una. L'ultima voce,
+sistemata lo stesso giorno:
 
 - **_METAL GEAR SOLID: MASTER COLLECTION Vol.1 BONUS CONTENT_** (PSN,
-  `PPSA16257_00`) è collegato a _Metal Gear Solid_. È un contenuto bonus, e
-  IGDB non ha una scheda sua: cercato il 22/10/2026 con la nostra chiave,
-  nessun risultato. Sul database di sviluppo, importato da zero dopo la regola
-  della piattaforma del 9b, la stessa voce sta fra i «Da sistemare», non
-  collegata: il nome la manda su _Metal Gear Solid_ (375), la regola la ferma
-  perché quel gioco su PS5 non esiste. Sul mini PC il collegamento è nato
-  prima della regola, e resta. La proposta: dalla pagina di _Metal Gear
-  Solid_ si **toglie la copia PSN** (PS5). La copia tolta si ricorda in
-  `ownership_rejections`, quindi il reimport non la ricrea, e restano le altre
-  copie del gioco. «Scollega» dell'admin non basta: è l'unico id PSN sul gioco,
-  e il dialogo in quel caso offre solo di ripuntare, ma un gioco giusto su cui
-  ripuntare non c'è.
+  `PPSA16257_00`) era collegato a _Metal Gear Solid_ (375). È un contenuto
+  bonus, e IGDB non ha una scheda sua: cercato con la nostra chiave, nessun
+  risultato. Sul database di sviluppo, importato da zero dopo la regola della
+  piattaforma del 9b, la voce stava già fra i «Da sistemare»: il nome la manda
+  su _Metal Gear Solid_, la regola la ferma perché quel gioco su PS5 non
+  esiste. Sul mini PC il collegamento era nato prima della regola.
+
+  **Cosa non funzionava.** Togliere la copia non basta: la riga di
+  `external_ids` aggancia la voce per id esatto, prima di ogni ricerca per
+  nome, e la regola della piattaforma non entra mai in gioco. «Rimuovi» sul
+  gioco toglie la riga di backlog coi suoi rifiuti, e l'import la ricrea (il
+  dialogo lo dice). «Scollega» dell'admin rifiuta l'unico id del negozio sul
+  gioco (`only_link` in `unlinkExternalId`): la sua ragione — il nome
+  ricollegherebbe lo stesso gioco — qui non vale, perché lo ferma la regola.
+
+  **Com'è stato sistemato**: la riga tolta a mano dal database
+  (`delete from external_ids where source = 'psn' and external_id =
+'PPSA16257_00'`, cioè quello che fa «Scollega»), poi «Rimuovi» su _Metal
+  Gear Solid_ e un import PSN. La voce è finita fra i «Da sistemare».
+  Permettere «Scollega» sull'unico id quando la regola fermerebbe la voce è
+  rimandato: se il caso ricapita.
 
 ## Prima
 
@@ -99,7 +109,7 @@ docker exec ludex-postgres psql -U ludex -d ludex -c "select e.id as link, b.id 
 
 - [x] se la riga del backlog non ha dati dell'utente e nessun altro ha il
       gioco: cancellare il collegamento, le copie con `store_page =
-  'app/5000760'` e la riga del backlog. Al reimport la demo torna fra gli
+'app/5000760'` e la riga del backlog. Al reimport la demo torna fra gli
       scarti, nascosta come `prerelease`
 
 ### Moonrise (9f), solo se risolto a mano anche lì
