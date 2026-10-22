@@ -1228,6 +1228,11 @@
         "title": "Ludex aperto a tutti",
         "text": "Un server stabile al posto di quello di prova, senza codice d'accesso all'ingresso: con la conferma dell'email e il recupero della password."
       },
+      "badgeLinks": {
+        "title": "I badge della pagina del gioco",
+        "p1": "Un clic su un genere, un tema, il tipo o un tuo tag porta ai giochi del tuo backlog che ce l'hanno, col filtro già acceso.",
+        "p2": "Sono link solo se il tuo backlog ha almeno un gioco con quel valore, e solo quando hai fatto l'accesso."
+      },
       "quickRating": {
         "title": "Il voto al volo",
         "p1": "Sulla pagina del gioco le cinque stelle ci sono sempre, vuote se non hai votato: si vota con un clic, a mezze stelle, senza aprire «Modifica».",
@@ -1292,7 +1297,7 @@
       },
       "metaquest": {
         "title": "La libreria Meta Quest",
-        "text": "Studio di fattibilità della libreria Meta Quest"
+        "text": "Lo studio di fattibilità è fatto: per andare avanti serve qualcuno con un visore che provi l'import"
       },
       "steamNintendo": {
         "title": "Steam con login e Nintendo",
@@ -1314,7 +1319,7 @@
       },
       "categoryPages": {
         "title": "Le pagine categoria",
-        "text": "Sulla pagina di un gioco un clic su un genere, un tema, il tipo o un tuo tag porta ai giochi del tuo backlog che ce l'hanno. Poi lo stesso su tutto il catalogo di Ludex, con i filtri."
+        "text": "Il catalogo di tutto Ludex con i filtri del backlog: generi, temi, tipo, durata, voto della critica. E da lì porteranno i badge della pagina del gioco, anche senza accesso."
       },
       "xbox": {
         "title": "La libreria Xbox",

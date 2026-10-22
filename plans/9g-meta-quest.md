@@ -1,10 +1,12 @@
 # Step 9g — Meta Quest
 
-**Stato: in corso dal 22/10/2026**, segnato «in corso» nella roadmap. Fatto il
-passo 1 (questo piano). Si fa adesso **solo lo studio e il probe**, fuori
-dall'ordine di lavoro di [ordine-sviluppo](../docs/ordine-sviluppo.md)
-(rilascio · 13 · mobile): costa poco e non tocca il rilascio. L'import vero si
-mette in coda dopo, guardando i dati.
+**Stato: fermo al passo 1 dal 22/10/2026**, «idea» nella roadmap (era «in
+corso» dalla mattina). L'utente non ha un Meta Quest: il probe del passo 2 non
+ha un account su cui girare, e senza le sue misure l'import si scriverebbe al
+buio — le query sono opache, e nemmeno frame-control ha mai provato il login
+vero. Riparte quando c'è qualcuno con un visore disposto a lanciare il probe,
+per esempio da una issue dopo il [rilascio](rilascio.md). Lo studio qui sotto
+resta valido.
 
 ## Contesto
 

@@ -1229,6 +1229,11 @@
         "title": "Ludex open to everyone",
         "text": "A stable server instead of the test one, with no access code at the door: with email confirmation and password recovery."
       },
+      "badgeLinks": {
+        "title": "Badges on the game page",
+        "p1": "Clicking a genre, a theme, the type or one of your tags takes you to the games in your backlog that have it, with the filter already on.",
+        "p2": "They are links only when your backlog has at least one game with that value, and only when you're signed in."
+      },
       "quickRating": {
         "title": "Quick rating",
         "p1": "On a game's page the five stars are always there, empty if you haven't rated it: rate with one click, in half stars, without opening “Edit”.",
@@ -1293,7 +1298,7 @@
       },
       "metaquest": {
         "title": "The Meta Quest library",
-        "text": "Feasibility study of the Meta Quest library"
+        "text": "The feasibility study is done: to go further we need someone with a headset to try the import"
       },
       "steamNintendo": {
         "title": "Steam with login, and Nintendo",
@@ -1315,7 +1320,7 @@
       },
       "categoryPages": {
         "title": "Category pages",
-        "text": "On a game's page, clicking a genre, a theme, the type or one of your tags takes you to the games in your backlog that have it. Then the same across the whole Ludex catalog, with filters."
+        "text": "The whole Ludex catalog with the backlog's filters: genres, themes, type, length, critic score. The game page badges will lead there too, even when signed out."
       },
       "xbox": {
         "title": "The Xbox library",
