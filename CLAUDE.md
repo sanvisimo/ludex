@@ -38,7 +38,7 @@ Tutto TypeScript/Node, per preferenza e non per divieto: un altro linguaggio
 c'è o costerebbe molto di più, e allora si aggiorna questo file. Vale per ogni
 scelta scritta qui: se le cose cambiano, cambia anche il file.
 
-**Scelte già scartate, da non riproporre**: NestJS, Express, tRPC (sostituito da
+**Scelte già scartate, da non riproporre senza una ragione nuova**: NestJS, Express, tRPC (sostituito da
 oRPC), Prisma, backend Python, fine-tuning, Base UI + shadcn, react-strict-dom,
 NativeWind, gluestack-ui, Panda CSS, DTCG / Style Dictionary. Le ragioni sono in
 [docs/scelte-scartate.md](docs/scelte-scartate.md).

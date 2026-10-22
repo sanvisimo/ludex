@@ -18,6 +18,8 @@ il cancello davanti.
 Segnato dall'utente il 18/10/2026; niente è ancora analizzato né deciso.
 
 - [ ] **Trovare dove metterlo**: il server stabile al posto del mini PC.
+      Analisi del 18–22/10/2026 in «Dove metterlo» più sotto; la scelta è
+      ancora aperta.
 - [ ] **Spostarlo dal mini PC**.
 - [ ] **Togliere Cloudflare Access**: l'app si apre senza One-time PIN.
 - [ ] **Verifica dell'email** alla registrazione. Oggi è spenta
@@ -32,6 +34,37 @@ Segnato dall'utente il 18/10/2026; niente è ancora analizzato né deciso.
       aggiunto dall'utente il 21/10/2026.
 - [x] **Cambio password**: c'è già, dal lotto 12g (la scheda «Password» del
       profilo, `apps/web/components/change-password.tsx`).
+
+## Dove metterlo
+
+Analisi del 18–22/10/2026, **niente è ancora deciso**.
+
+Quello che conta: sei container (Postgres con pgvector, Redis, `migrate`,
+`api`, `worker`, `web`), un worker BullMQ sempre acceso — quindi niente
+serverless —, un'immagine sola già pubblicata su `ghcr.io/sanvisimo/ludex` e
+un deploy che funziona (`deploy.sh`, dump prima di ogni deploy, override del
+compose). Gli utenti sono europei: i dati restano in UE o in Svizzera.
+
+- **Un VPS con lo stesso Docker Compose del mini PC** — la strada consigliata. Si sposta quasi tutto così com'è; Cloudflare Tunnel può restare,
+  togliendo solo Access. Va rifatto quello che sul mini PC facevano altri:
+  i backup (oggi Borg via Nextcloud AIO) e il monitoraggio (oggi Kuma in LAN).
+  Un 4 vCPU / 8 GB basta per tutto.
+- **Dove**, i due candidati:
+  - **Hetzner** (Germania o Finlandia), circa 8–15 €/mese per quella taglia.
+  - **Infomaniak** (Svizzera): ha anche l'API LLM candidata per lo step 13
+    ([13-ai.md](13-ai.md)), quindi dati e fattura da un fornitore solo. La
+    Svizzera ha la decisione di adeguatezza UE.
+
+  Il server dell'app e il fornitore dell'LLM sono scelte indipendenti.
+- **Scartati**: un PaaS (Render, Railway) — Postgres e backup gestiti, ma tre
+  servizi a pagamento più database, circa 40–70 €/mese, e `deploy.sh` da
+  buttare; restare sul mini PC togliendo solo Access — utenti veri sulla
+  connessione di casa.
+
+**Da verificare prima del trasloco**: oggi gli import dei negozi (PSN, Epic,
+GOG, Nintendo) partono dall'IP di casa; da un datacenter qualcuno potrebbe
+rispondere diversamente o bloccare. Una prova su un VPS preso a ore, un import
+per negozio.
 
 ## Proposti, da confermare
 
