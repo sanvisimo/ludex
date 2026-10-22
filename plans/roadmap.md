@@ -31,6 +31,10 @@ segnalazioni spostate dalla mail alle issue di GitHub.
 
 ## Da sapere
 
+- **Il 22/10/2026** «Playlist aperte» (`openPlaylists`) è passata da «Idea» a
+  «In arrivo», in fondo: decisa ma non cominciata, e il suo posto nell'ordine
+  di lavoro è ancora da decidere. Piano in
+  [15f-playlist-aperte.md](15f-playlist-aperte.md).
 - **Il 19/10/2026** «Importa da un file CSV» (`csv`) è passata a «Fatto», con
   tre punti al posto del testo (era «In corso» dal 16/10): il lotto 10, piano
   in [10-import-csv.md](10-import-csv.md). In «In corso» resta Xbox.
@@ -70,4 +74,5 @@ segnalazioni spostate dalla mail alle issue di GitHub.
   dal 09/10/2026 «Giochi doppi, uniti in uno» e, dal 10/10, «Un admin migliore».
   Lo stato c'era già nel tipo (`doing`) e nello stile, ma nessuna voce lo usava.
 - «I link alle fonti» è passata a «Fatto» il 09/10/2026.
-- L'unica idea è **le playlist aperte**: vedi [15b-wishlist.md](15b-wishlist.md).
+- L'unica idea era **le playlist aperte**: vedi [15b-wishlist.md](15b-wishlist.md).
+  Dal 22/10/2026 è «In arrivo».

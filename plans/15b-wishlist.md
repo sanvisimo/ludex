@@ -185,6 +185,10 @@ vuoto per metterlo da parte e pieno se sta in una lista.
 
 ## Da decidere: playlist «aperte» (08/10/2026, idea dell'utente)
 
+**Decisa il 22/10/2026**: piano in
+[15f-playlist-aperte.md](15f-playlist-aperte.md). Le domande qui sotto hanno
+lì la loro risposta.
+
 Una lista di giochi **scelti a mano, nell'ordine voluto**, che non segue il
 backlog: es. «i 20 RPG più belli di sempre». Si sceglie un gioco alla volta e
 lo si aggiunge alla playlist; l'ordine è quello deciso da chi la fa. Non è

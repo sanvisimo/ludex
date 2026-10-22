@@ -45,7 +45,7 @@ export const roadmap: RoadmapEntry[] = [
   { id: 'ai', status: 'next', areas: ['ai'] },
   { id: 'mobile', status: 'next', areas: ['mobile'] },
   { id: 'categoryPages', status: 'next', areas: ['game', 'library'] },
-  { id: 'openPlaylists', status: 'idea', areas: ['playlists'] },
+  { id: 'openPlaylists', status: 'next', areas: ['playlists'] },
   {
     id: 'quickRating',
     status: 'done',
