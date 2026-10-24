@@ -19,6 +19,9 @@
  *   giocato su Series ha la copia `xbox_series`, e IGDB lo dà solo su «Xbox
  *   One»: senza, finirebbe fra i «da sistemare». La Series vale anche per One,
  *   360 e la prima Xbox; la One per 360 e prima Xbox.
+ * - **La Switch 2 fa girare i giochi Switch.** _Zelda: Breath of the Wild –
+ *   Nintendo Switch 2 Edition_, tolta la coda, è il gioco del 2017, che IGDB
+ *   dà su Switch e Wii U: senza, la copia Switch 2 andrebbe fra gli scarti.
  */
 
 const PC = [
@@ -37,6 +40,7 @@ const ANCHE: Record<string, number[]> = {
   pc_windows: PC,
   xbox_series: [49, 12, 11], // Xbox One, Xbox 360, Xbox
   xbox_one: [12, 11], // Xbox 360, Xbox
+  nintendo_switch2: [130], // Nintendo Switch
 };
 
 /**
