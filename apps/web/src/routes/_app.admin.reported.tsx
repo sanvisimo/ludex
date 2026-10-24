@@ -65,6 +65,7 @@ function ReportList() {
       key: 'game',
       header: t('games.game'),
       flex: 2,
+      minWidth: 160,
       render: (report) => (
         <YStack flex={1} minW={0}>
           <Link to="/admin/games/$slug" params={{ slug: report.slug }}>
@@ -95,6 +96,7 @@ function ReportList() {
       key: 'suggested',
       header: t('games.suggested'),
       flex: 2,
+      minWidth: 200,
       render: (report) => (
         <YStack flex={1} minW={0}>
           <CellText muted>

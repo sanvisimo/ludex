@@ -247,6 +247,7 @@ function OpenList({
       key: 'name',
       header: t('name'),
       flex: 2,
+      minWidth: 200,
       // Tutta la voce apre il dettaglio: nella tabella i testi si tagliano.
       render: (row) => (
         <XStack
@@ -287,6 +288,7 @@ function OpenList({
       key: 'hidden',
       header: t('hiddenBy'),
       flex: 1,
+      minWidth: 140,
       render: (row) => <CellText muted>{hiddenSummary(row) || '—'}</CellText>,
     },
     {
@@ -468,6 +470,7 @@ function GlobalHiddenList({
       key: 'name',
       header: t('name'),
       flex: 2,
+      minWidth: 200,
       render: (rule) => (
         <YStack flex={1} minW={0}>
           <CellText>{rule.name}</CellText>
@@ -493,6 +496,7 @@ function GlobalHiddenList({
       key: 'decided',
       header: t('decidedBy'),
       flex: 1,
+      minWidth: 160,
       render: (rule) => (
         <CellText muted>
           {[

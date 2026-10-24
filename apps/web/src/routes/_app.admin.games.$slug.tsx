@@ -125,6 +125,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       key: 'id',
       header: t('game.externalId'),
       flex: 2,
+      minWidth: 120,
       // Il link alla pagina sul negozio, per controllare che sia il gioco
       // giusto: dove il negozio un link non lo dà, solo l'id.
       render: (link) =>
@@ -140,6 +141,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       key: 'storeTitle',
       header: t('game.storeTitle'),
       flex: 2,
+      minWidth: 180,
       // Come il negozio chiama e mostra quell'id: due id Epic sullo stesso
       // gioco si distinguono solo così, perché Epic una pagina da aprire non
       // la dà. Il titolo può ingannare (Aiko's Choice ha quello del gioco
@@ -166,6 +168,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       key: 'copies',
       header: t('game.copies'),
       flex: 1,
+      minWidth: 130,
       render: (link) => (
         <CellText muted>
           {t('game.copiesCount', { users: link.users, copies: link.copies })}
