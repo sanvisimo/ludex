@@ -999,6 +999,12 @@ lo ha confermato). Si saltano, come i DLC di Epic che collassano sul gioco. Se i
   coincidessero, ogni gioco giocato e digitale comparirebbe due volte;
 - le app dell'abbonamento e le demo **non si filtrano**: nessun campo le distingue da un
   gioco, e cadono da sole fra gli scarti, come i _goodies_ di GOG;
+- la **coda di piattaforma** del titolo («– Nintendo Switch 2 Edition», «- Nintendo
+  Switch 2», «Versione Nintendo Switch 2», «Nintendo Switch Ver.», con qualunque
+  trattino) si toglie prima della ricerca su IGDB (`stripPlatformSuffix`); il nome del
+  negozio resta quello degli scarti. Una copia Switch 2 vale anche per un gioco che IGDB
+  dà solo su Switch (`copy-platforms.ts`), come la Series per i giochi One. `体験版` è
+  «demo» e va fra gli scarti già nascosta (24/10/2026);
 - l'account è il `sub` dell'`id_token`, che coincide con `ownerNaId`; il nickname, se il
   profilo risponde, è solo il nome leggibile;
 - il **paese** si prende al collegamento: dalla claim `country` dell'`id_token` se c'è,

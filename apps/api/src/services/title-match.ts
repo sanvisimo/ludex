@@ -165,6 +165,33 @@ export function shortenTitle(name: string, reverse = false) {
   return testa;
 }
 
+/**
+ * La coda con cui Nintendo marca la versione di una piattaforma: «… –
+ * Nintendo Switch 2 Edition», «… - Nintendo Switch 2», «… Versione Nintendo
+ * Switch 2», «MONSTER HUNTER XX Nintendo Switch Ver.».
+ *
+ * Il trattino è uno qualunque (`\p{Pd}`): il negozio usa quello semplice, il
+ * lungo o quello giapponese a larghezza piena, e per IGDB sono tutti uguali.
+ * Sta **solo in coda**, e va separata dal titolo da uno spazio, un trattino o
+ * due punti: «Nintendo Switch Sports» non perde niente.
+ */
+const PLATFORM_SUFFIX =
+  /[\s\p{Pd}:]+(?:nintendo switch 2 edition|versione nintendo switch 2|nintendo switch 2|nintendo switch ver\.?)\s*$/iu;
+
+/**
+ * Il titolo senza la coda di piattaforma, o null se non ce l'ha.
+ *
+ * Con la coda IGDB non trova niente, o trova il gioco e il giudizio lo
+ * boccia: «the legend of zelda breath of the wild nintendo switch 2 edition»
+ * somiglia troppo poco a «The Legend of Zelda: Breath of the Wild». Non
+ * passa da `shortenTitle`, che sul trattino non taglia apposta.
+ */
+export function stripPlatformSuffix(name: string) {
+  const pulito = name.replace(PLATFORM_SUFFIX, '').trim();
+  if (pulito === name.trim() || pulito.length < 3) return null;
+  return pulito;
+}
+
 function bigrams(value: string) {
   const grams = new Map<string, number>();
   for (let i = 0; i < value.length - 1; i += 1) {

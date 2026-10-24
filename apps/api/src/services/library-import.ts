@@ -33,6 +33,7 @@ import {
   type Ranked,
   rankCandidates,
   shortenTitle,
+  stripPlatformSuffix,
 } from './title-match';
 
 /**
@@ -440,8 +441,12 @@ async function recordStoreDetails(store: Store, entries: LibraryEntry[]) {
  * dove la mette; altrimenti va fra gli scarti già nascosta come `prerelease`
  * (decisione dell'utente, 15/10/2026). Vale per tutti i negozi: le beta ci sono
  * anche su Epic e GOG.
+ *
+ * `体験版` è «demo» in giapponese, e arriva così da Nintendo: _MONSTER HUNTER
+ * XX Nintendo Switch Ver. 体験版_. Fuori dai `\b`, che sui caratteri
+ * giapponesi non riconoscono un confine di parola.
  */
-const PRERELEASE_NAME = /\b(demo|beta|playtest|public test(ing)?)\b/i;
+const PRERELEASE_NAME = /\b(demo|beta|playtest|public test(ing)?)\b|体験版/i;
 
 export const isPrereleaseName = (name: string) => PRERELEASE_NAME.test(name);
 
@@ -699,14 +704,20 @@ async function currentUnresolvedIds(storeAccountId: string) {
  * modo in cui questo ripiego era stato dimenticato la prima volta.
  */
 export async function searchWithFallback(name: string) {
+  // La coda di piattaforma di Nintendo («– Nintendo Switch 2 Edition») si
+  // toglie prima di cercare, e il titolo pulito torna al giudizio come
+  // `searchedAs`: vedi `stripPlatformSuffix`.
+  const pulito = stripPlatformSuffix(name);
+  const base = pulito ?? name;
+
   // Normalizzato **anche al primo tentativo**, come fa HLTB. I negozi infilano
   // ™ e ® nei titoli — Epic in particolare — e IGDB su quelli non trova niente:
   // «Rocket League®» dà zero risultati, «rocket league» venti.
-  const hits = await searchIgdbGames(normalizeTitle(name));
-  if (hits.length > 0) return { hits, searchedAs: null as string | null };
+  const hits = await searchIgdbGames(normalizeTitle(base));
+  if (hits.length > 0) return { hits, searchedAs: pulito };
 
   const tried: string[] = [];
-  for (const searchedAs of [shortenTitle(name), shortenTitle(name, true)]) {
+  for (const searchedAs of [shortenTitle(base), shortenTitle(base, true)]) {
     if (!searchedAs || tried.includes(searchedAs)) continue;
     tried.push(searchedAs);
 

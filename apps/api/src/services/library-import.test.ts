@@ -930,6 +930,36 @@ describe('importLibrary: il nome vale solo sulla piattaforma della voce (9b PSN)
     expect(report).toMatchObject({ resolved: 1, unresolved: 1 });
   });
 
+  it('una copia Switch 2 con la coda trova il gioco Switch', async () => {
+    const nintendo = await linkStoreAccount(userId, 'nintendo');
+    // Con la coda IGDB non trova niente; senza, il gioco del 2017, che IGDB
+    // dà su Switch (130) e Wii U (41), non su Switch 2.
+    mockedSearch.mockImplementation(async (name) =>
+      name === 'the legend of zelda breath of the wild'
+        ? [
+            hit({
+              igdbId: 7346,
+              name: 'The Legend of Zelda: Breath of the Wild',
+              platformIds: [130, 41],
+            }),
+          ]
+        : [],
+    );
+
+    const report = await importLibrary(nintendo, [
+      {
+        externalId: '0100f2c0115b6000',
+        name: 'The Legend of Zelda: Breath of the Wild – Nintendo Switch 2 Edition',
+        platformSlug: 'nintendo_switch2',
+      },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 1, unresolved: 0 });
+    expect(await gamesOf(userId)).toEqual([
+      { name: 'The Legend of Zelda: Breath of the Wild', igdbId: 7346 },
+    ]);
+  });
+
   it('in cross-buy scarta solo la riga della console sbagliata', async () => {
     const psn = await linkStoreAccount(userId, 'psn');
     soloTagliato('gioco', hit({ igdbId: 9, name: 'Gioco', platformIds: [48] }));
@@ -1896,11 +1926,16 @@ describe('importLibrary: demo e beta non si cercano per nome (9f)', () => {
       { externalId: '397080', name: 'Magicka 2: Spell Balance Beta' },
       { externalId: '1', name: 'Chivalry 2 - Public Testing' },
       { externalId: '2', name: 'Some Game Playtest' },
+      // «Demo» in giapponese, da Nintendo.
+      {
+        externalId: '4',
+        name: 'MONSTER HUNTER XX Nintendo Switch Ver. 体験版',
+      },
     ]);
 
     expect(mockedSearch).not.toHaveBeenCalled();
     const scarti = await unresolvedOf(userId);
-    expect(scarti).toHaveLength(4);
+    expect(scarti).toHaveLength(5);
     expect(scarti.every((s) => s.hiddenKind === 'prerelease')).toBe(true);
   });
 

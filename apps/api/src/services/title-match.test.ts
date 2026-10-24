@@ -6,6 +6,7 @@ import {
   pickByName,
   rankCandidates,
   shortenTitle,
+  stripPlatformSuffix,
   titleSimilarity,
 } from './title-match';
 
@@ -334,5 +335,33 @@ describe('shortenTitle', () => {
     // Testa troppo corta: non sarebbe una ricerca, sarebbe un pescaggio a caso.
     expect(shortenTitle('F1: Manager')).toBeNull();
     expect(shortenTitle(': qualcosa')).toBeNull();
+  });
+});
+
+describe('stripPlatformSuffix', () => {
+  it('toglie la coda di piattaforma di Nintendo, con ogni trattino', () => {
+    const zelda = 'The Legend of Zelda: Breath of the Wild';
+    expect(stripPlatformSuffix(`${zelda} – Nintendo Switch 2 Edition`)).toBe(
+      zelda,
+    );
+    expect(stripPlatformSuffix(`${zelda} - Nintendo Switch 2`)).toBe(zelda);
+    expect(stripPlatformSuffix(`${zelda} — Versione Nintendo Switch 2`)).toBe(
+      zelda,
+    );
+    expect(stripPlatformSuffix(`${zelda} － Nintendo Switch 2`)).toBe(zelda);
+    expect(stripPlatformSuffix(`${zelda} versione nintendo switch 2`)).toBe(
+      zelda,
+    );
+    expect(stripPlatformSuffix('MONSTER HUNTER XX Nintendo Switch Ver.')).toBe(
+      'MONSTER HUNTER XX',
+    );
+  });
+
+  it("non tocca un titolo che la coda non ce l'ha", () => {
+    expect(stripPlatformSuffix('Hollow Knight')).toBeNull();
+    expect(stripPlatformSuffix('Nintendo Switch Sports')).toBeNull();
+    expect(stripPlatformSuffix('Nintendo Switch 2 Welcome Tour')).toBeNull();
+    // Il titolo è tutto coda: non resterebbe niente da cercare.
+    expect(stripPlatformSuffix('Nintendo Switch 2')).toBeNull();
   });
 });
