@@ -85,6 +85,7 @@ function MismatchTable({ dismissed }: { dismissed: boolean }) {
       key: 'game',
       header: tGames('game'),
       flex: 2,
+      minWidth: 200,
       render: (row) => (
         <Link
           to="/admin/games/$slug"
@@ -111,6 +112,7 @@ function MismatchTable({ dismissed }: { dismissed: boolean }) {
       key: 'copies',
       header: t('copies'),
       flex: 2,
+      minWidth: 180,
       render: (row) => (
         <YStack flex={1} minW={0}>
           {copiesByStore(row).map(([store, platforms]) => (
@@ -125,6 +127,7 @@ function MismatchTable({ dismissed }: { dismissed: boolean }) {
       key: 'igdb',
       header: t('igdb'),
       flex: 2,
+      minWidth: 160,
       render: (row) => (
         <CellText muted>{row.igdbPlatforms.join(', ')}</CellText>
       ),

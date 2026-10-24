@@ -265,14 +265,17 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
       width: 130,
       render: (row) => <CellText>{t(`source.${row.source}`)}</CellText>,
     },
-    ...missingBucketValues.map(
-      (bucket): AdminColumn<Row> => ({
+    ...missingBucketValues.map((bucket): AdminColumn<Row> => {
+      // Le due con la nota accanto al numero: «12 · since 03/10».
+      const wide = bucket === 'pending' || bucket === 'empty';
+      return {
         key: bucket,
         header: t(`bucket.${bucket}`),
-        flex: bucket === 'pending' || bucket === 'empty' ? 1.4 : 1,
+        flex: wide ? 1.4 : 1,
+        minWidth: wide ? 120 : 70,
         render: (row) => cell(row, bucket),
-      }),
-    ),
+      };
+    }),
   ];
 
   return (
