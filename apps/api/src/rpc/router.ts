@@ -123,6 +123,7 @@ import {
   deleteStoreWishlist,
   renameStoreAccount,
   requestWishlistImport,
+  setPlayedThreshold,
   setStoreAccountAutoSync,
   StoreAccountMismatchError,
   storeLoginUrl,
@@ -304,6 +305,7 @@ export const router = os.router({
           label: input.label,
           state: input.state,
           relinking,
+          playedMinMinutes: input.playedMinMinutes,
         },
       ).catch((error: unknown) => {
         if (error instanceof StoreAccountMismatchError) {
@@ -339,6 +341,7 @@ export const router = os.router({
           return startSteamLogin(context.user.id, {
             label: input.label,
             relinking,
+            playedMinMinutes: input.playedMinMinutes,
           });
         }),
 
@@ -353,7 +356,11 @@ export const router = os.router({
           const account = await linkSteamWebToken(
             context.user.id,
             input.token,
-            { label: input.label, relinking },
+            {
+              label: input.label,
+              relinking,
+              playedMinMinutes: input.playedMinMinutes,
+            },
           ).catch((error: unknown) => {
             if (error instanceof SteamWebTokenError) {
               throw new ORPCError('BAD_REQUEST', {
@@ -453,6 +460,19 @@ export const router = os.router({
           });
         if (outcome === 'running')
           throw new ORPCError('CONFLICT', { message: 'Import in corso' });
+      }),
+
+    playedThreshold: os.accounts.playedThreshold
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const promoted = await setPlayedThreshold(
+          context.user.id,
+          input.accountId,
+          input.minMinutes,
+        );
+        if (promoted === null)
+          throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+        return { promoted };
       }),
 
     rename: os.accounts.rename

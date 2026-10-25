@@ -41,6 +41,7 @@ export type RoadmapEntry = {
  */
 export const roadmap: RoadmapEntry[] = [
   { id: 'release', status: 'doing', areas: ['account'] },
+  { id: 'playedThreshold', status: 'doing', areas: ['import'] },
   { id: 'ai', status: 'next', areas: ['ai'] },
   { id: 'openPlaylists', status: 'next', areas: ['playlists'] },
   { id: 'mobile', status: 'next', areas: ['mobile'] },

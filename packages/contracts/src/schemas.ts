@@ -23,7 +23,7 @@ import {
   userTagKindValues,
   wishlistSortValues,
   xboxPlatformValues,
-  XBOX_MAX_MIN_MINUTES,
+  PLAYED_MAX_MIN_MINUTES,
 } from './vocabulary';
 
 export const BacklogStatusSchema = z.enum(backlogStatusValues);
@@ -36,11 +36,11 @@ export const WishlistErrorSchema = z.enum(wishlistErrorValues);
 export const SubscriptionSchema = z.enum(subscriptionValues);
 export const MediumSchema = z.enum(mediumValues);
 export const XboxPlatformSchema = z.enum(xboxPlatformValues);
-export const XboxMinMinutesSchema = z
+export const PlayedMinMinutesSchema = z
   .number()
   .int()
   .min(0)
-  .max(XBOX_MAX_MIN_MINUTES);
+  .max(PLAYED_MAX_MIN_MINUTES);
 export const HiddenKindSchema = z.enum(hiddenKindValues);
 export const GameTypeSchema = z.enum(gameTypeValues);
 export const ScoreSourceSchema = z.enum(scoreSourceValues);
@@ -386,9 +386,13 @@ export const StoreAccountSchema = z.object({
     .object({
       platforms: z.array(XboxPlatformSchema),
       gamePassActive: z.boolean(),
-      minMinutes: XboxMinMinutesSchema,
+      minMinutes: PlayedMinMinutesSchema,
     })
     .nullish(),
+  // La soglia «conta come giocato» (plans/soglia-giocato.md): da quanti minuti
+  // un gioco di questo account passa a `played`. Nulla = spenta. Su Xbox è
+  // sempre nulla: la sua sta in `xbox.minMinutes`.
+  playedMinMinutes: PlayedMinMinutesSchema.nullable(),
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
   // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
   syncing: z.boolean(),

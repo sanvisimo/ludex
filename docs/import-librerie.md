@@ -117,6 +117,17 @@ negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
   lo stato**: due ore su un GDR da sessanta non vogliono dire "giocato", e
   `played` allo step 13 pesa.
 
+  **Salvo che l'utente lo chieda** (25/10/2026, `plans/soglia-giocato.md`): per
+  ogni account che dà i tempi (Steam, PSN, Nintendo, Xbox, ed EA per i soli
+  giochi avviati di recente) può scegliere da
+  quanti minuti un gioco conta come giocato, `store_accounts.played_min_minutes`
+  (su Xbox nel credenziale, `minMinutes`). Spenta di partenza. Accesa,
+  **promuove soltanto**, da `backlog` a `played`: gli altri stati sono giudizi
+  dell'utente. L'import promuove i giochi che **passano** la soglia in quel
+  giro — prima sotto o senza copia, dopo sopra —, così un gioco riportato a mano
+  in `backlog` non torna `played` al giro dopo; salvarla dalle impostazioni la
+  applica invece a tutto ciò che c'è (`services/played-threshold.ts`).
+
   **Dove si vedono** (deciso il 07/10/2026). Nel backlog, nelle card e nella
   vista compatta, **un tempo solo, con l'orologio e senza data**: quello della
   copia con l'ultima partita più recente, fra quelle che hanno ore (senza date,

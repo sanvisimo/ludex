@@ -428,6 +428,13 @@
       "when": 1792575467258,
       "tag": "0060_nervous_punisher",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1792923699226,
+      "tag": "0061_silly_nextwave",
+      "breakpoints": true
     }
   ]
 }

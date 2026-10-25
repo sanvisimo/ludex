@@ -1,12 +1,13 @@
 import type { XboxPlatform } from '@repo/contracts';
 import {
-  XBOX_DEFAULT_MIN_MINUTES,
-  XBOX_MAX_MIN_MINUTES,
+  PLAYED_DEFAULT_MIN_MINUTES,
   xboxPlatformValues,
 } from '@repo/contracts';
-import { Checkbox, Label, Slider, Text, XStack, YStack } from '@repo/ui';
-import { useEffect, useId, useState } from 'react';
+import { Checkbox, Label, Text, XStack, YStack } from '@repo/ui';
+import { useId } from 'react';
 import { useTranslations } from 'use-intl';
+
+import { PlayedMinutesSlider } from '@/components/played-threshold';
 
 export type XboxChoicesValue = {
   platforms: XboxPlatform[];
@@ -18,21 +19,23 @@ export type XboxChoicesValue = {
 export const NO_XBOX_CHOICES: XboxChoicesValue = {
   platforms: [],
   gamePassActive: false,
-  minMinutes: XBOX_DEFAULT_MIN_MINUTES,
+  minMinutes: PLAYED_DEFAULT_MIN_MINUTES,
 };
 
 /**
  * Le scelte di un account Xbox (9e): su quali piattaforme gioca, se il Game
- * Pass è attivo e, quando non lo è, da quanti minuti un gioco del Game Pass o un
- * Gold conta come giocato. Servono prima del codice, al collegamento, e di nuovo
- * nelle impostazioni dell'import: per questo stanno qui e non dentro uno dei due.
+ * Pass è attivo, e da quanti minuti un gioco conta come giocato. Servono prima
+ * del codice, al collegamento, e di nuovo nelle impostazioni dell'import: per
+ * questo stanno qui e non dentro uno dei due.
  *
  * Collections e lo storico non dicono su che console si gioca, e il catalogo
  * dice «One e Series» per quasi tutto: ogni gioco prende una copia per ciascuna
  * piattaforma spuntata su cui gira.
  *
- * La soglia si vede solo col Game Pass non attivo: con l'abbonamento i giochi
- * entrano tutti, da giocare, e il numero non conterebbe niente.
+ * **La soglia si vede sempre** (plans/soglia-giocato.md): fa passare a
+ * `played` ogni gioco che la supera, comprati compresi. Col Game Pass non
+ * attivo decide anche quali giochi del Game Pass e Gold entrano. Su Xbox non
+ * ha la casella degli altri negozi: c'era già, ed è sempre accesa.
  */
 export function XboxChoices({
   value,
@@ -43,10 +46,6 @@ export function XboxChoices({
 }) {
   const t = useTranslations('account.xbox');
   const id = useId();
-  // Lo slider solo nel browser, come nei filtri del backlog: Tamagui misura il
-  // binario per mettere la maniglia, e sul server non c'è.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   const toggle = (platform: XboxPlatform, on: boolean) =>
     onChange({
@@ -97,33 +96,18 @@ export function XboxChoices({
         </Text>
       </YStack>
 
-      {!value.gamePassActive && (
-        <YStack gap={8} pl={26}>
-          <Text fontSize={14} color="$color12">
-            {value.minMinutes === 0
-              ? t('minMinutesAll')
-              : t('minMinutes', { minutes: value.minMinutes })}
-          </Text>
-          {mounted ? (
-            <Slider
-              min={0}
-              max={XBOX_MAX_MIN_MINUTES}
-              step={5}
-              value={[value.minMinutes]}
-              onValueChange={([minutes]) =>
-                onChange({ ...value, minMinutes: minutes ?? 0 })
-              }
-              thumbLabels={[t('minMinutesLabel')]}
-              mx={8}
-            />
-          ) : (
-            <YStack height={20} />
-          )}
-          <Text fontSize={12} color="$color11">
-            {t('minMinutesHint')}
-          </Text>
-        </YStack>
-      )}
+      {/* Non rientrata sotto il Game Pass: vale per tutti i giochi. */}
+      <PlayedMinutesSlider
+        value={value.minMinutes}
+        onChange={(minutes) => onChange({ ...value, minMinutes: minutes })}
+        text={
+          value.minMinutes === 0
+            ? t('minMinutesAll')
+            : t('minMinutes', { minutes: value.minMinutes })
+        }
+        hint={t('minMinutesHint')}
+        label={t('minMinutesLabel')}
+      />
     </YStack>
   );
 }

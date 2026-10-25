@@ -13,6 +13,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslations } from 'use-intl';
 
+import { PlayedThreshold } from '@/components/played-threshold';
 import { SteamQrPanel } from '@/components/steam-qr-panel';
 import { SteamTokenPanel } from '@/components/steam-token-panel';
 import { hasErrorCode, useApiErrorMessage } from '@/lib/api-error';
@@ -31,6 +32,9 @@ import { api, client } from '@/lib/orpc';
  * QR crea un dispositivo nuovo («Galaxy S25») nel suo elenco di Steam Guard e si
  * rinnova da solo; il token del browser non crea niente, ma dura 24 ore. Il
  * profilo resta come era per chi lo preferisce.
+ *
+ * In cima, la soglia «conta come giocato» (plans/soglia-giocato.md): come il
+ * nome, vale per tutti e tre i modi.
  *
  * `loginOnly` per ricollegare un login scaduto o aggiungerlo a un account che
  * aveva solo il profilo: si sceglie fra i due login, e col profilo non c'è niente
@@ -57,6 +61,10 @@ export function SteamLink({
   const [mode, setMode] = useState<'choose' | 'qr' | 'token'>('choose');
   const [profile, setProfile] = useState('');
   const [label, setLabel] = useState('');
+  // La soglia «conta come giocato», spenta di partenza: vale per tutti e tre i
+  // modi, come il nome. Non su un ricollegamento, dove resta quella che c'è.
+  const [played, setPlayed] = useState<number | null>(null);
+  const playedMinMinutes = loginOnly ? undefined : played;
   // Il profilo è privato: la libreria non si può leggere, e il messaggio sta nel
   // dialogo accanto al bottone che porta fuori dal problema, non in un toast.
   const [privateProfile, setPrivateProfile] = useState(false);
@@ -69,6 +77,7 @@ export function SteamLink({
         label: label.trim() || null,
         state: null,
         accountId: accountId ?? null,
+        playedMinMinutes,
       }),
     onSuccess: async () => {
       setPrivateProfile(false);
@@ -105,11 +114,17 @@ export function SteamLink({
           ← {t('back')}
         </Button>
         {mode === 'qr' ? (
-          <SteamQrPanel label={label} accountId={accountId} onDone={onLinked} />
+          <SteamQrPanel
+            label={label}
+            accountId={accountId}
+            playedMinMinutes={playedMinMinutes}
+            onDone={onLinked}
+          />
         ) : (
           <SteamTokenPanel
             label={label}
             accountId={accountId}
+            playedMinMinutes={playedMinMinutes}
             onDone={onLinked}
           />
         )}
@@ -124,6 +139,10 @@ export function SteamLink({
           <AlertDescription>{t('privateProfile')}</AlertDescription>
         </Alert>
       )}
+
+      {/* Prima le scelte, poi il login, come per Xbox: i due login partono
+          dal loro bottone, e una soglia scritta sotto non la vedrebbe nessuno. */}
+      {!loginOnly && <PlayedThreshold value={played} onChange={setPlayed} />}
 
       <Text fontSize={13} color="$color11">
         {t('chooseLogin')}

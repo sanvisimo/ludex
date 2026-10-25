@@ -1,11 +1,12 @@
 import type { GuidedStore } from '@repo/contracts';
-import { checkPastedLogin } from '@repo/contracts';
+import { checkPastedLogin, hasPlaytime } from '@repo/contracts';
 import { Button, Input, Label, toast } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'use-intl';
 import { useState } from 'react';
 
 import { NintendoLinkIllustration } from '@/components/nintendo-link-illustration';
+import { PlayedThreshold } from '@/components/played-threshold';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { linkGuide } from '@/lib/link-guide';
 import { api, client } from '@/lib/orpc';
@@ -59,6 +60,11 @@ export function StoreLinkForm({
 
   const [value, setValue] = useState('');
   const [label, setLabel] = useState('');
+  // La soglia «conta come giocato» (plans/soglia-giocato.md), dove il negozio
+  // dà i tempi (PSN, Nintendo, EA), e solo collegando: su un ricollegamento resta
+  // quella che c'è, e si cambia dalle impostazioni della scheda.
+  const withThreshold = hasPlaytime(store) && !accountId;
+  const [played, setPlayed] = useState<number | null>(null);
   // Lo `state` del login che l'utente ha **davvero** aperto. Su Amazon cambia a
   // ogni richiesta (è il serial di un dispositivo nuovo), e il codice che torna
   // vale solo con quello: rileggerlo dalla query al momento di collegare
@@ -82,6 +88,7 @@ export function StoreLinkForm({
         label: label.trim() || null,
         state: openedState ?? loginUrl.data?.state ?? null,
         accountId: accountId ?? null,
+        ...(withThreshold ? { playedMinMinutes: played } : {}),
       }),
     onSuccess: async () => {
       setValue('');
@@ -114,6 +121,12 @@ export function StoreLinkForm({
 
   return (
     <div className="grid gap-5">
+      {/* Prima delle istruzioni, come per Steam e Xbox: è una scelta, non un
+          passo del login. */}
+      {withThreshold && (
+        <PlayedThreshold value={played} onChange={setPlayed} store={store} />
+      )}
+
       <ol className="m-0 grid list-none gap-5 p-0">
         {steps.map((text, index) => {
           const last = index === steps.length - 1;

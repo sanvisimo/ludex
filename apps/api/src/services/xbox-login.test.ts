@@ -2,7 +2,7 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createUser, linkStoreAccount } from '../../test/factories';
+import { createGame, createUser, linkStoreAccount } from '../../test/factories';
 import {
   openXboxSession,
   pollXboxDeviceCode,
@@ -318,6 +318,33 @@ describe('le scelte di un account Xbox', () => {
     expect(mockedEnqueue).toHaveBeenCalledWith('xbox', {
       storeAccountId: accountId,
     });
+  });
+
+  it('salvarle applica subito la soglia ai giochi che ci sono, comprati compresi', async () => {
+    const game = await createGame();
+    const [entry] = await db
+      .insert(schema.backlog)
+      .values({ userId, gameId: game.id })
+      .returning({ id: schema.backlog.id });
+    await db.insert(schema.ownerships).values({
+      backlogId: entry!.id,
+      platformSlug: 'xbox_series',
+      store: 'xbox',
+      storeAccountId: accountId,
+      playtimeMinutes: 200,
+    });
+
+    await updateXboxSettings(userId, accountId, {
+      platforms: ['xbox_series'],
+      gamePassActive: true,
+      minMinutes: 180,
+    });
+
+    const [row] = await db
+      .select({ status: schema.backlog.status })
+      .from(schema.backlog)
+      .where(eq(schema.backlog.id, entry!.id));
+    expect(row!.status).toBe('played');
   });
 
   it('con un import in corso o da ricollegare non scrive niente', async () => {

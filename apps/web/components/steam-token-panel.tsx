@@ -43,10 +43,13 @@ function reasonOf(error: unknown): 'format' | 'wrong_kind' | 'expired' | null {
 export function SteamTokenPanel({
   label,
   accountId,
+  playedMinMinutes,
   onDone,
 }: {
   label?: string;
   accountId?: string;
+  /** La soglia scelta collegando; assente su un ricollegamento. */
+  playedMinMinutes?: number | null;
   /** Collegato: l'account è già scritto e l'import accodato. */
   onDone: () => void;
 }) {
@@ -61,6 +64,7 @@ export function SteamTokenPanel({
         token: pasted.trim(),
         label: label?.trim() || null,
         accountId: accountId ?? null,
+        playedMinMinutes,
       }),
     onSuccess: async () => {
       setProblem(null);

@@ -41,10 +41,13 @@ const POLL_MS = 2000;
 export function SteamQrPanel({
   label,
   accountId,
+  playedMinMinutes,
   onDone,
 }: {
   label?: string;
   accountId?: string;
+  /** La soglia scelta collegando; assente su un ricollegamento. */
+  playedMinMinutes?: number | null;
   /** A login confermato. L'account è già scritto e l'import accodato. */
   onDone: () => void;
 }) {
@@ -57,6 +60,7 @@ export function SteamQrPanel({
       client.accounts.steamLogin.start({
         label: label?.trim() || null,
         accountId: accountId ?? null,
+        playedMinMinutes,
       }),
     onError: (error) =>
       toast.error(errorMessage(error, { fallback: t('startFailed') })),

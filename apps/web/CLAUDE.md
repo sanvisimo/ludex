@@ -352,13 +352,21 @@ direzione col CSS. Cose che non si indovinano:
 - **Xbox ha un corpo suo nel dialogo «Aggiungi libreria»** (9e,
   `xbox-link.tsx`): **prima le scelte, poi il codice**, perché il server le
   salva insieme al token. Le scelte sono `xbox-choices.tsx` — piattaforme, Game
-  Pass e, solo col Game Pass non attivo, lo slider della soglia dei minuti —, lo
+  Pass e, sempre visibile, lo slider della soglia dei minuti —, lo
   stesso componente di «Impostazioni dell'import» (`xbox-settings-dialog.tsx`),
   che le riscrive **senza un login** e rilancia l'import. Il codice è
   `xbox-code-panel.tsx`, con la forma del QR di Steam: lo chiede all'apertura,
   interroga `status` ogni due secondi, e chiuderlo smette di chiedere. La scheda
   mostra fino a due piattaforme come badge, oltre il numero con i nomi nel
   suggerimento; la soglia si vede solo nelle impostazioni.
+- **La soglia «conta come giocato»** (`plans/soglia-giocato.md`) sta nel
+  collegamento di Steam, PSN, Nintendo ed EA (con una nota: EA dà i tempi dei
+  soli giochi recenti), **prima** dei modi di accedere (come
+  le scelte di Xbox), e nelle «Impostazioni dell'import» della scheda
+  (`played-threshold-dialog.tsx`), che la salvano e la applicano subito senza
+  rilanciare l'import. Casella e slider sono `played-threshold.tsx`, il cui
+  slider usano anche le scelte di Xbox. Su un ricollegamento non si chiede:
+  resta quella che c'è.
 - **L'import da CSV** (10, `components/csv-import.tsx`) è un riquadro sotto le
   schede delle librerie, non una scheda: un file non è una libreria. Il dialogo
   ha tre passi — istruzioni e file, anteprima con le spunte

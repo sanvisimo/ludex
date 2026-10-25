@@ -111,6 +111,12 @@ export const storeAccounts = pgTable(
     // Amazon su cui non si riscatta niente da un anno — e aggiornarle è solo
     // una manciata di ricerche IGDB buttate a ogni giro.
     autoSync: boolean('auto_sync').notNull().default(true),
+    // La soglia «conta come giocato» (plans/soglia-giocato.md): un gioco con
+    // almeno tanti minuti su questo account passa da `backlog` a `played`.
+    // Nulla = spenta, ed è com'è di partenza. Colonna e non credenziale perché
+    // la vuole anche Steam col solo profilo, che un credenziale non ce l'ha.
+    // Xbox non la usa: la sua sta nel credenziale con le altre scelte (9e).
+    playedMinMinutes: integer('played_min_minutes'),
     // L'ultimo import della **wishlist** del negozio (15e), a parte da quello della
     // libreria: l'una non dice niente dell'altra. `wishlist_synced_at` è l'ultimo
     // andato a buon fine (nullo = mai importata); `wishlist_error`, se l'ultimo

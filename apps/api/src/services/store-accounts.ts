@@ -1,9 +1,10 @@
 import {
+  hasPlaytime,
   type LinkableStore,
   oneShotStoreValues,
+  PLAYED_DEFAULT_MIN_MINUTES,
   type Store,
   wishlistStoreValues,
-  XBOX_DEFAULT_MIN_MINUTES,
   type XboxPlatform,
 } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
@@ -86,6 +87,7 @@ import {
   isWishlistImportRunning,
 } from '../queue/imports';
 import { hasPersonalData } from './personal-data';
+import { applyPlayedThreshold } from './played-threshold';
 
 /**
  * Gli account di negozio collegati, e il ciclo di vita dei loro credenziali.
@@ -148,6 +150,11 @@ export type LinkOptions = {
   label?: string | null;
   state?: string | null;
   relinking?: Pick<StoreAccountRow, 'externalAccountId'> | null;
+  /**
+   * La soglia «conta come giocato» (plans/soglia-giocato.md), solo per i
+   * negozi che danno i tempi. Assente = resta quella che c'era.
+   */
+  playedMinMinutes?: number | null;
 };
 
 /** Ciò che di un account esce dall'API. Mai le credenziali. */
@@ -160,6 +167,7 @@ const accountColumns = {
   status: schema.storeAccounts.status,
   lastSyncAt: schema.storeAccounts.lastSyncAt,
   autoSync: schema.storeAccounts.autoSync,
+  playedMinMinutes: schema.storeAccounts.playedMinMinutes,
   wishlistSyncedAt: schema.storeAccounts.wishlistSyncedAt,
   wishlistError: schema.storeAccounts.wishlistError,
   // Se c'è una credenziale, **non** la credenziale: vedi `StoreAccountSchema`.
@@ -420,6 +428,8 @@ async function upsertAccount(input: {
   expiresAt?: Date | null;
   /** Chi ci si aspetta di trovare, su un ricollegamento. */
   expectedExternalAccountId?: string | null;
+  /** Vedi `LinkOptions`: assente = resta quella che c'era. */
+  playedMinMinutes?: number | null;
 }) {
   if (
     input.expectedExternalAccountId &&
@@ -443,6 +453,7 @@ async function upsertAccount(input: {
       label: input.label ?? null,
       credentials,
       credentialsExpireAt: input.expiresAt ?? null,
+      playedMinMinutes: input.playedMinMinutes ?? null,
       status: 'ok',
     })
     .onConflictDoUpdate({
@@ -468,6 +479,9 @@ async function upsertAccount(input: {
         ...(credentials === null
           ? {}
           : { credentials, credentialsExpireAt: input.expiresAt ?? null }),
+        ...(input.playedMinMinutes === undefined
+          ? {}
+          : { playedMinMinutes: input.playedMinMinutes }),
         status: 'ok',
         lastSyncAt: null,
         updatedAt: new Date(),
@@ -696,6 +710,7 @@ export async function linkSteamAccount(
     displayName: await fetchSteamPersonaName(steamId),
     label: options.label,
     expectedExternalAccountId: options.relinking?.externalAccountId,
+    playedMinMinutes: options.playedMinMinutes,
   });
 }
 
@@ -723,6 +738,7 @@ export async function linkSteamLogin(
     credentials: login.credentials,
     expiresAt: new Date(login.credentials.expiresAt),
     expectedExternalAccountId: options.relinking?.externalAccountId,
+    playedMinMinutes: options.playedMinMinutes,
   });
 }
 
@@ -752,6 +768,7 @@ export async function linkSteamWebToken(
     credentials,
     expiresAt: new Date(credentials.expiresAt),
     expectedExternalAccountId: options.relinking?.externalAccountId,
+    playedMinMinutes: options.playedMinMinutes,
   });
 }
 
@@ -975,6 +992,7 @@ export async function linkPsnAccount(
     expiresAt: new Date(credentials.expiresAt),
     label: options.label,
     expectedExternalAccountId: options.relinking?.externalAccountId,
+    playedMinMinutes: options.playedMinMinutes,
   });
 }
 
@@ -1037,6 +1055,7 @@ export async function linkNintendoAccount(
     expiresAt: new Date(credentials.expiresAt),
     label: options.label,
     expectedExternalAccountId: options.relinking?.externalAccountId,
+    playedMinMinutes: options.playedMinMinutes,
   });
 }
 
@@ -1083,6 +1102,7 @@ export async function linkEaAccount(
     expiresAt: new Date(token.expiresAt),
     label: options.label,
     expectedExternalAccountId: options.relinking?.externalAccountId,
+    playedMinMinutes: options.playedMinMinutes,
   });
 }
 
@@ -1469,14 +1489,16 @@ export type XboxSettings = {
   gamePassActive: boolean;
   /**
    * Col Game Pass non attivo, un gioco del Game Pass o un Gold entra solo con
-   * almeno tanti minuti. 0 = tutti quelli avviati, anche senza minuti.
+   * almeno tanti minuti. 0 = tutti quelli avviati, anche senza minuti. Ed è
+   * la soglia «conta come giocato» di tutti i giochi dell'account
+   * (plans/soglia-giocato.md), che su Xbox non sta nella colonna.
    */
   minMinutes: number;
 };
 
 /**
  * `minMinutes` manca sui credenziali scritti prima della soglia
- * (21/10/2026): lì vale `XBOX_DEFAULT_MIN_MINUTES`, vedi `readXboxSettings`.
+ * (21/10/2026): lì vale `PLAYED_DEFAULT_MIN_MINUTES`, vedi `readXboxSettings`.
  */
 export type XboxStoredCredentials = XboxCredentials &
   Omit<XboxSettings, 'minMinutes'> & { minMinutes?: number };
@@ -1486,7 +1508,7 @@ export function readXboxSettings(stored: XboxStoredCredentials): XboxSettings {
   return {
     platforms: stored.platforms,
     gamePassActive: stored.gamePassActive,
-    minMinutes: stored.minMinutes ?? XBOX_DEFAULT_MIN_MINUTES,
+    minMinutes: stored.minMinutes ?? PLAYED_DEFAULT_MIN_MINUTES,
   };
 }
 
@@ -1592,7 +1614,44 @@ export async function updateXboxSettings(
       updatedAt: new Date(),
     })
     .where(eq(schema.storeAccounts.id, account.id));
+  // La soglia vale subito su ciò che c'è, come per gli altri negozi
+  // (`setPlayedThreshold`); l'import serve alle piattaforme e al Game Pass.
+  await applyPlayedThreshold(account.id, settings.minMinutes);
 
   await enqueueImport('xbox', { storeAccountId: account.id });
   return 'queued' as const;
+}
+
+/**
+ * Cambia la soglia «conta come giocato» di un account Steam, PSN, Nintendo o
+ * EA (plans/soglia-giocato.md); Xbox ha la sua in `updateXboxSettings`.
+ *
+ * Accesa, **vale subito** su ciò che l'account ha già: è il gesto di chi la
+ * sceglie, e non serve un import per applicarla. Da lì in poi la applica
+ * l'import, ai soli giochi che la passano (`promoteCrossed`). Spenta, non
+ * rimette niente in `backlog`: si promuove soltanto.
+ *
+ * Rende quanti giochi sono passati a `played`, o `null` se l'account non c'è.
+ */
+export async function setPlayedThreshold(
+  userId: string,
+  accountId: string,
+  minMinutes: number | null,
+) {
+  const account = await findStoreAccount(userId, accountId);
+  if (
+    !account ||
+    account.status === 'unlinked' ||
+    account.store === 'xbox' ||
+    !hasPlaytime(account.store)
+  ) {
+    return null;
+  }
+
+  await db
+    .update(schema.storeAccounts)
+    .set({ playedMinMinutes: minMinutes, updatedAt: new Date() })
+    .where(eq(schema.storeAccounts.id, account.id));
+
+  return minMinutes === null ? 0 : applyPlayedThreshold(account.id, minMinutes);
 }
