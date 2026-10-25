@@ -1340,6 +1340,10 @@
         "title": "Le pagine categoria",
         "text": "Il catalogo di tutto Ludex con i filtri del backlog: generi, temi, tipo, durata, voto della critica. E da lì porteranno i badge della pagina del gioco, anche senza accesso."
       },
+      "itadPrice": {
+        "title": "Il prezzo più basso, da IsThereAnyDeal",
+        "text": "Nella pagina del gioco il link a IsThereAnyDeal e il prezzo più basso di adesso, con un segnale quando è anche il minimo storico. Per i giochi PC."
+      },
       "xbox": {
         "title": "La libreria Xbox",
         "p1": "In Librerie si collega Xbox confermando un codice su microsoft.com/link, anche dal telefono. Prima scegli su cosa giochi — PC, Xbox, 360, One, Series — e ogni gioco va sulle piattaforme dove gira.",

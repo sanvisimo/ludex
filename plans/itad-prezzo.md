@@ -1,6 +1,7 @@
 # Il prezzo più basso, da IsThereAnyDeal
 
-**Stato: da approvare** (25/10/2026). Branch `ccr-0d87f8d3-b0k3nh`.
+**Stato: da approvare** (25/10/2026), voce `itadPrice` della roadmap in «in
+arrivo». Branch `ccr-0d87f8d3-b0k3nh`.
 Fuori dall'ordine di lavoro di [ordine-sviluppo](../docs/ordine-sviluppo.md):
 quando farlo è da decidere.
 
@@ -73,15 +74,15 @@ bloccato dalla rete.
 
 ## Passi
 
-| #   | Cosa                                                                                                                                                                                                     | Stato |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| 0   | tu: registri l'app su ITAD e metti `ITAD_API_KEY` nel `.env`. La variabile va anche in `globalEnv` di `turbo.json`                                                                                       | —     |
-| 1   | `itad:probe`, non scrive: forma di lookup e overview, quali negozi accetta il lookup in blocco, limiti di frequenza, termini d'uso e attribuzione. Su quanti giochi del catalogo di sviluppo trova un id | —     |
-| 2   | `itad` in `data_source` (migration da drizzle-kit), client in `apps/api/src/external/itad.ts`, job di enrichment e riapertura sull'appid; test contro Postgres                                           | —     |
-| 3   | `itad:resolve`, il backfill in blocco                                                                                                                                                                    | —     |
-| 4   | `games.price` nel contratto e nel router, con la cache Redis                                                                                                                                             | —     |
-| 5   | la riga nella card «Links», col segnale; messaggi it/en                                                                                                                                                  | —     |
-| 6   | ITAD in `/credits` ([credits.ts](../apps/web/lib/credits.ts)), la fonte in [apps/api/CLAUDE.md](../apps/api/CLAUDE.md) coi suoi termini, la roadmap, questo piano                                       | —     |
+| #   | Cosa                                                                                                                                                                                                                                             | Stato |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| 0   | tu: registri l'app su ITAD e metti `ITAD_API_KEY` nel `.env`. La variabile va anche in `globalEnv` di `turbo.json`                                                                                                                               | —     |
+| 1   | `itadPrice` a «in corso» nella roadmap. `itad:probe`, non scrive: forma di lookup e overview, quali negozi accetta il lookup in blocco, limiti di frequenza, termini d'uso e attribuzione. Su quanti giochi del catalogo di sviluppo trova un id | —     |
+| 2   | `itad` in `data_source` (migration da drizzle-kit), client in `apps/api/src/external/itad.ts`, job di enrichment e riapertura sull'appid; test contro Postgres                                                                                   | —     |
+| 3   | `itad:resolve`, il backfill in blocco                                                                                                                                                                                                            | —     |
+| 4   | `games.price` nel contratto e nel router, con la cache Redis                                                                                                                                                                                     | —     |
+| 5   | la riga nella card «Links», col segnale; messaggi it/en                                                                                                                                                                                          | —     |
+| 6   | ITAD in `/credits` ([credits.ts](../apps/web/lib/credits.ts)), la fonte in [apps/api/CLAUDE.md](../apps/api/CLAUDE.md) coi suoi termini, questo piano. `itadPrice` a «fatto» quando dici che il lotto è pronto                                   | —     |
 
 Il passo 1 può cambiare la proposta: se l'overview non dà il minimo storico,
 o se i termini chiedono un'attribuzione vicino al prezzo come OpenCritic, si
