@@ -96,6 +96,10 @@ export {
   type InputGroupProps,
 } from './components/input-group';
 export {
+  ClearableInput,
+  type ClearableInputProps,
+} from './components/clearable-input';
+export {
   BrandIcon,
   brandTitle,
   brandValues,

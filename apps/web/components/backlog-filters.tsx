@@ -794,6 +794,15 @@ export function FilterPanel({ onSave }: { onSave: () => void }) {
 
   return (
     <YStack gap={16}>
+      {/* Sul telefono il pannello copre la barra, e con lei la ricerca: qui
+          la stessa, sullo stesso `q`. Da `$sm` la barra resta visibile
+          accanto al pannello, e due caselle sarebbero una di troppo. */}
+      <YStack $sm={{ display: 'none' }}>
+        <SearchInput
+          value={filter.q}
+          onChange={(q) => void setFilter({ q: q || null })}
+        />
+      </YStack>
       <SortControl />
       {/* Un sì o un no, non un elenco: fuori dalle sezioni. */}
       <XStack gap={8} items="center">

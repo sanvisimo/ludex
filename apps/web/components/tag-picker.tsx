@@ -1,5 +1,5 @@
 import type { UserTag, UserTagKind } from '@repo/contracts';
-import { Button, Input, toast } from '@repo/ui';
+import { Button, ClearableInput, YStack, toast } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'use-intl';
@@ -38,6 +38,7 @@ export function TagPicker({
   onChange: (value: string[]) => void;
 }) {
   const t = useTranslations('editEntry');
+  const tSearch = useTranslations('search');
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
 
@@ -116,21 +117,23 @@ export function TagPicker({
   return (
     <div className="grid gap-2">
       <div className="flex gap-2">
-        <Input
-          flex={1}
-          value={filter}
-          onChange={(event) => setFilter(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key !== 'Enter') return;
-            // Senza questo l'Invio invierebbe il form e chiuderebbe il dialog.
-            event.preventDefault();
-            create();
-          }}
-          placeholder={t(
-            kind === 'tag' ? 'tagPlaceholder' : 'categoryPlaceholder',
-          )}
-          maxLength={50}
-        />
+        <YStack flex={1} minW={0}>
+          <ClearableInput
+            value={filter}
+            onChangeText={setFilter}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return;
+              // Senza questo l'Invio invierebbe il form e chiuderebbe il dialog.
+              event.preventDefault();
+              create();
+            }}
+            placeholder={t(
+              kind === 'tag' ? 'tagPlaceholder' : 'categoryPlaceholder',
+            )}
+            clearLabel={tSearch('clear')}
+            maxLength={50}
+          />
+        </YStack>
         <Button
           type="button"
           variant="outline"

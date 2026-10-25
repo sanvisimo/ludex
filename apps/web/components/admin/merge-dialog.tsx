@@ -3,13 +3,13 @@ import {
   Alert,
   AlertDescription,
   Button,
+  ClearableInput,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Input,
   Skeleton,
   Text,
   toast,
@@ -226,6 +226,7 @@ function GamePicker({
   onPick: (game: Picked) => void;
 }) {
   const t = useTranslations('admin.merge');
+  const tSearch = useTranslations('search');
   const [text, setText] = useState('');
   const [q, setQ] = useState('');
   useEffect(() => {
@@ -241,11 +242,12 @@ function GamePicker({
 
   return (
     <YStack gap={8}>
-      <Input
+      <ClearableInput
         value={text}
         onChangeText={setText}
         placeholder={t('find')}
         aria-label={t('find')}
+        clearLabel={tSearch('clear')}
         autoFocus
       />
       {games?.length === 0 ? (

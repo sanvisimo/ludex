@@ -9,13 +9,13 @@ import {
   BrandIcon,
   Button,
   Checkbox,
+  ClearableInput,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Input,
   ScrollView,
   Text,
   ToggleGroup,
@@ -637,6 +637,7 @@ function CsvPreview({
   error: string | null;
 }) {
   const t = useTranslations('account.csvImport');
+  const tSearch = useTranslations('search');
   const storeLabels = useStoreLabels();
   const statusLabels = useStatusLabels();
   const [filter, setFilter] = useState<'all' | Outcome>('all');
@@ -724,11 +725,12 @@ function CsvPreview({
           </ToggleGroup>
         </XStack>
         <YStack grow={1} flexBasis={200}>
-          <Input
+          <ClearableInput
             value={query}
             onChangeText={setQuery}
             placeholder={t('preview.search')}
             aria-label={t('preview.search')}
+            clearLabel={tSearch('clear')}
           />
         </YStack>
       </XStack>

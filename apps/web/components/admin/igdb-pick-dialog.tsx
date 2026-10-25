@@ -1,12 +1,12 @@
 import type { IgdbSearchHit } from '@repo/contracts';
 import {
   Button,
+  ClearableInput,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  Input,
   Label,
   Skeleton,
   Text,
@@ -51,6 +51,7 @@ export function IgdbPicker({
   onPick: (hit: IgdbSearchHit) => void;
 }) {
   const t = useTranslations('admin.igdbPick');
+  const tSearch = useTranslations('search');
   const gameTypeLabels = useGameTypeLabels();
   const [query, setQuery] = useState(initialQuery);
   const [submitted, setSubmitted] = useState<string | null>(
@@ -78,15 +79,16 @@ export function IgdbPicker({
         <Label htmlFor="igdb-pick">{t('label')}</Label>
         {/* Una riga sola dove c'è posto; su un telefono va a capo. */}
         <XStack gap={8} flexWrap="wrap">
-          <Input
-            id="igdb-pick"
-            flex={1}
-            minW={200}
-            value={query}
-            onChangeText={setQuery}
-            onSubmitEditing={() => setSubmitted(query)}
-            autoFocus
-          />
+          <YStack flex={1} minW={200}>
+            <ClearableInput
+              id="igdb-pick"
+              value={query}
+              onChangeText={setQuery}
+              onSubmitEditing={() => setSubmitted(query)}
+              clearLabel={tSearch('clear')}
+              autoFocus
+            />
+          </YStack>
           <YStack width={220}>
             <PlatformCombobox
               aria-label={t('platform')}

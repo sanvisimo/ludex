@@ -1,7 +1,7 @@
 import type { BacklogSort, SortDirection } from '@repo/contracts';
 import {
   Button,
-  Input,
+  ClearableInput,
   Select,
   SelectContent,
   SelectItem,
@@ -37,6 +37,7 @@ export function SearchInput({
   onChange: (value: string) => void;
 }) {
   const t = useTranslations('filters');
+  const tSearch = useTranslations('search');
   const [text, setText] = useState(value);
   // L'ultima `onChange` senza farla entrare fra le dipendenze del ritardo: chi
   // ci passa una funzione scritta nel render ne crea una nuova a ogni render, e
@@ -60,12 +61,16 @@ export function SearchInput({
   }, [text, value]);
 
   return (
-    <Input
+    <ClearableInput
       value={text}
-      onChange={(event) => setText(event.target.value)}
+      onChangeText={(next) => {
+        setText(next);
+        // La x svuota subito, senza il ritardo: non è una parola a metà.
+        if (!next) onChangeRef.current('');
+      }}
       placeholder={t('searchPlaceholder')}
       aria-label={t('searchPlaceholder')}
-      width="100%"
+      clearLabel={tSearch('clear')}
       maxLength={100}
     />
   );
