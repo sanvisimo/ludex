@@ -360,7 +360,8 @@ direzione col CSS. Cose che non si indovinano:
   mostra fino a due piattaforme come badge, oltre il numero con i nomi nel
   suggerimento; la soglia si vede solo nelle impostazioni.
 - **La soglia «conta come giocato»** (`plans/soglia-giocato.md`) sta nel
-  collegamento di Steam, PSN e Nintendo, **prima** dei modi di accedere (come
+  collegamento di Steam, PSN, Nintendo ed EA (con una nota: EA dà i tempi dei
+  soli giochi recenti), **prima** dei modi di accedere (come
   le scelte di Xbox), e nelle «Impostazioni dell'import» della scheda
   (`played-threshold-dialog.tsx`), che la salvano e la applicano subito senza
   rilanciare l'import. Casella e slider sono `played-threshold.tsx`, il cui

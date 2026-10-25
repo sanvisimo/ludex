@@ -19,10 +19,11 @@ Due cose, arrivate insieme dal telefono:
 
 - **Il dialogo**: altezza massima pari allo schermo e scorrimento dentro il
   pannello, nel `DialogContent` di `packages/ui`. Vale per tutti i dialoghi.
-- **Negozi**: Steam, PSN, Nintendo e Xbox, quelli che ci danno i tempi.
+- **Negozi**: Steam, PSN, Nintendo, Xbox ed EA, quelli che ci danno i tempi.
   GOG, Epic e Amazon non li danno. **EA li dà solo per i giochi avviati di
-  recente** (`recentGames`, 1 su 44 nella misura del 13/10, `9c-ea.md`): resta
-  fuori, salvo diversa decisione dell'utente.
+  recente** (`recentGames`, 1 su 44 nella misura del 13/10, `9c-ea.md`): c'è lo
+  stesso, con una nota sotto la casella che lo dice (decisione del 25/10, dopo
+  il primo giro).
 - **Il controllo**: una casella «Segna come giocati…» e lo slider, da 0 a
   **240** minuti a passi di 5, 60 di partenza. **Spenta di partenza**: sugli
   account già collegati non cambia niente finché non la si accende.
@@ -30,7 +31,7 @@ Due cose, arrivate insieme dal telefono:
   già e resta accesa. Vale per tutti i giochi, comprati e del Game Pass; col
   Game Pass non attivo continua anche a decidere quali giochi del Game Pass e
   Gold entrano.
-- **Dove**: nel collegamento (Steam, PSN, Nintendo, Xbox) e nelle
+- **Dove**: nel collegamento (Steam, PSN, Nintendo, Xbox, EA) e nelle
   «Impostazioni dell'import» della scheda, che c'erano solo per Xbox.
 - **Il tempo si importa sempre**: la soglia decide solo lo stato.
 - **Si promuove solo da `backlog` a `played`**. `playing`, `completed`,
@@ -46,7 +47,7 @@ Due cose, arrivate insieme dal telefono:
   mano in `backlog` non torna `played` al giro dopo. Con 0, basta un minuto.
 - **Salvare la soglia** dalle impostazioni la applica subito a tutto quello che
   c'è, con una `update` sola: è l'utente che chiede di applicarla. Per Steam,
-  PSN e Nintendo non serve un import; Xbox lo accoda come prima, per le
+  PSN, Nintendo ed EA non serve un import; Xbox lo accoda come prima, per le
   piattaforme.
 - **Cambia una regola di `docs/import-librerie.md`**: «le ore non si usano per
   indovinare lo stato» vale finché l'utente non sceglie una soglia.

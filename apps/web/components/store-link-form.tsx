@@ -61,7 +61,7 @@ export function StoreLinkForm({
   const [value, setValue] = useState('');
   const [label, setLabel] = useState('');
   // La soglia «conta come giocato» (plans/soglia-giocato.md), dove il negozio
-  // dà i tempi (PSN, Nintendo), e solo collegando: su un ricollegamento resta
+  // dà i tempi (PSN, Nintendo, EA), e solo collegando: su un ricollegamento resta
   // quella che c'è, e si cambia dalle impostazioni della scheda.
   const withThreshold = hasPlaytime(store) && !accountId;
   const [played, setPlayed] = useState<number | null>(null);
@@ -123,7 +123,9 @@ export function StoreLinkForm({
     <div className="grid gap-5">
       {/* Prima delle istruzioni, come per Steam e Xbox: è una scelta, non un
           passo del login. */}
-      {withThreshold && <PlayedThreshold value={played} onChange={setPlayed} />}
+      {withThreshold && (
+        <PlayedThreshold value={played} onChange={setPlayed} store={store} />
+      )}
 
       <ol className="m-0 grid list-none gap-5 p-0">
         {steps.map((text, index) => {

@@ -1029,7 +1029,8 @@
       "settingsWarning": "Vale subito: i giochi ancora da giocare sopra la soglia passano a «giocato». Spenta, non rimette niente da giocare.",
       "save": "Salva",
       "saved": "{count, plural, =0 {Salvato} one {Salvato: # gioco passato a «giocato»} other {Salvato: # giochi passati a «giocato»}}",
-      "saveFailed": "Non riesco a salvare la soglia."
+      "saveFailed": "Non riesco a salvare la soglia.",
+      "eaNote": "EA dà i tempi solo per i giochi avviati di recente: la soglia vale soltanto per quelli."
     },
     "nintendoGuide": {
       "caption": "Disegno schematico: la pagina vera può avere un aspetto diverso.",
@@ -1244,7 +1245,7 @@
       },
       "playedThreshold": {
         "title": "Giocato da quanti minuti, per libreria",
-        "text": "Per ogni libreria che dà i tempi — Steam, PlayStation, Nintendo, Xbox — scegli da quanti minuti un gioco conta come giocato: sopra, all'import passa a «giocato», sotto resta da giocare."
+        "text": "Per ogni libreria che dà i tempi — Steam, PlayStation, Nintendo, Xbox, EA — scegli da quanti minuti un gioco conta come giocato: sopra, all'import passa a «giocato», sotto resta da giocare."
       },
       "badgeLinks": {
         "title": "I badge della pagina del gioco",

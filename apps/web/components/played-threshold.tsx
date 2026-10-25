@@ -58,16 +58,22 @@ export function PlayedMinutesSlider({
 }
 
 /**
- * La soglia di un account Steam, PSN o Nintendo: una casella, e lo slider
+ * La soglia di un account Steam, PSN, Nintendo o EA: una casella, e lo slider
  * quando è spuntata. `null` è spenta, ed è com'è di partenza: le ore da sole
  * non dicono niente sullo stato, finché l'utente non sceglie che lo dicano.
+ *
+ * `store` per la nota di EA, che dà i tempi solo per i giochi avviati di
+ * recente: sotto la casella, anche spenta, perché serve a decidere se
+ * accenderla.
  */
 export function PlayedThreshold({
   value,
   onChange,
+  store,
 }: {
   value: number | null;
   onChange: (value: number | null) => void;
+  store?: string;
 }) {
   const t = useTranslations('account.played');
   const id = useId();
@@ -84,6 +90,11 @@ export function PlayedThreshold({
         />
         <Label htmlFor={id}>{t('toggle')}</Label>
       </XStack>
+      {store === 'ea' && (
+        <Text fontSize={12} color="$color11" pl={26}>
+          {t('eaNote')}
+        </Text>
+      )}
       {value !== null && (
         <YStack pl={26}>
           <PlayedMinutesSlider

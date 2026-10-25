@@ -341,7 +341,7 @@ export const contract = {
       )
       .output(z.void()),
 
-    // La soglia «conta come giocato» di un account Steam, PSN o Nintendo
+    // La soglia «conta come giocato» di un account Steam, PSN, Nintendo o EA
     // (plans/soglia-giocato.md); Xbox ha la sua in `xboxSettings`. Nulla =
     // spenta. Accesa, vale **subito** su tutto ciò che l'account ha già: i
     // giochi ancora in `backlog` con almeno tanti minuti passano a `played`.

@@ -1350,6 +1350,17 @@ describe('la soglia «conta come giocato»', () => {
     expect(row!.playedMinMinutes).toBeNull();
   });
 
+  it('vale anche su EA, che dà i tempi dei soli giochi recenti', async () => {
+    const ea = await linkStoreAccount(userId, 'ea');
+    const recente = await giocato(ea.id, 300);
+    const senzaOre = await giocato(ea.id, null);
+
+    expect(await setPlayedThreshold(userId, ea.id, 60)).toBe(1);
+
+    expect(await statoDi(recente)).toBe('played');
+    expect(await statoDi(senzaOre)).toBe('backlog');
+  });
+
   it('non vale su un negozio senza tempi, né su Xbox, né per un altro utente', async () => {
     const gog = await linkStoreAccount(userId, 'gog');
     const xbox = await linkStoreAccount(userId, 'xbox');

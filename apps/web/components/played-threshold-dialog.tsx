@@ -21,7 +21,7 @@ import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
 /**
- * «Impostazioni dell'import» di un account Steam, PSN o Nintendo: la soglia
+ * «Impostazioni dell'import» di un account Steam, PSN, Nintendo o EA: la soglia
  * «conta come giocato» (plans/soglia-giocato.md). Xbox ha le sue, con le
  * piattaforme (`xbox-settings-dialog.tsx`).
  *
@@ -92,7 +92,11 @@ function PlayedThresholdForm({
         <DialogDescription>{t('settingsDescription')}</DialogDescription>
       </DialogHeader>
       <YStack gap={16}>
-        <PlayedThreshold value={played} onChange={setPlayed} />
+        <PlayedThreshold
+          value={played}
+          onChange={setPlayed}
+          store={account.store}
+        />
         <Alert>
           <AlertDescription>{t('settingsWarning')}</AlertDescription>
         </Alert>

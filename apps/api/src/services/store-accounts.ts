@@ -1102,6 +1102,7 @@ export async function linkEaAccount(
     expiresAt: new Date(token.expiresAt),
     label: options.label,
     expectedExternalAccountId: options.relinking?.externalAccountId,
+    playedMinMinutes: options.playedMinMinutes,
   });
 }
 
@@ -1622,8 +1623,8 @@ export async function updateXboxSettings(
 }
 
 /**
- * Cambia la soglia «conta come giocato» di un account Steam, PSN o Nintendo
- * (plans/soglia-giocato.md); Xbox ha la sua in `updateXboxSettings`.
+ * Cambia la soglia «conta come giocato» di un account Steam, PSN, Nintendo o
+ * EA (plans/soglia-giocato.md); Xbox ha la sua in `updateXboxSettings`.
  *
  * Accesa, **vale subito** su ciò che l'account ha già: è il gesto di chi la
  * sceglie, e non serve un import per applicarla. Da lì in poi la applica

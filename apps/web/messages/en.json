@@ -1030,7 +1030,8 @@
       "settingsWarning": "It applies right away: games still to play above the threshold become «played». Turning it off doesn't move anything back.",
       "save": "Save",
       "saved": "{count, plural, =0 {Saved} one {Saved: # game is now «played»} other {Saved: # games are now «played»}}",
-      "saveFailed": "Couldn't save the threshold."
+      "saveFailed": "Couldn't save the threshold.",
+      "eaNote": "EA only reports play time for recently played games: the threshold only applies to those."
     },
     "nintendoGuide": {
       "caption": "Schematic drawing: the real page may look different.",
@@ -1245,7 +1246,7 @@
       },
       "playedThreshold": {
         "title": "Played from how many minutes, per library",
-        "text": "For each library that reports play time — Steam, PlayStation, Nintendo, Xbox — choose from how many minutes a game counts as played: above it, the import marks it «played», below it stays to play."
+        "text": "For each library that reports play time — Steam, PlayStation, Nintendo, Xbox, EA — choose from how many minutes a game counts as played: above it, the import marks it «played», below it stays to play."
       },
       "badgeLinks": {
         "title": "Badges on the game page",

@@ -92,13 +92,15 @@ export const PLAYED_DEFAULT_MIN_MINUTES = 60;
 export const PLAYED_MAX_MIN_MINUTES = 240;
 
 // I negozi che danno i minuti giocati, e su cui quindi la soglia ha senso. GOG,
-// Epic e Amazon non li danno; EA solo per i giochi avviati di recente (una
-// riga su 44 nella misura del 9c), e resta fuori.
+// Epic e Amazon non li danno. EA li dà solo per i giochi avviati di recente
+// (una riga su 44 nella misura del 9c): c'è lo stesso, e la schermata lo dice
+// accanto alla soglia.
 export const playtimeStoreValues = [
   'steam',
   'psn',
   'nintendo',
   'xbox',
+  'ea',
 ] as const;
 export type PlaytimeStore = (typeof playtimeStoreValues)[number];
 

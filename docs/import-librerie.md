@@ -118,7 +118,8 @@ negozio, account)` — **non uno per negozio**: due account Amazon sono un caso
   `played` allo step 13 pesa.
 
   **Salvo che l'utente lo chieda** (25/10/2026, `plans/soglia-giocato.md`): per
-  ogni account che dà i tempi (Steam, PSN, Nintendo, Xbox) può scegliere da
+  ogni account che dà i tempi (Steam, PSN, Nintendo, Xbox, ed EA per i soli
+  giochi avviati di recente) può scegliere da
   quanti minuti un gioco conta come giocato, `store_accounts.played_min_minutes`
   (su Xbox nel credenziale, `minMinutes`). Spenta di partenza. Accesa,
   **promuove soltanto**, da `backlog` a `played`: gli altri stati sono giudizi

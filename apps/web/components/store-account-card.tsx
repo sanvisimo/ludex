@@ -157,7 +157,7 @@ export function StoreAccountCard({
   // Xbox (9e): «Impostazioni dell'import», senza un login.
   const [changingXbox, setChangingXbox] = useState(false);
   const isXbox = account.store === 'xbox';
-  // Steam, PSN e Nintendo: «Impostazioni dell'import» con la sola soglia
+  // Steam, PSN, Nintendo ed EA: «Impostazioni dell'import» con la sola soglia
   // «conta come giocato» (plans/soglia-giocato.md). Xbox ha le sue.
   const [changingPlayed, setChangingPlayed] = useState(false);
   const tPlayed = useTranslations('account.played');
