@@ -46,6 +46,7 @@ export const roadmap: RoadmapEntry[] = [
   { id: 'openPlaylists', status: 'next', areas: ['playlists'] },
   { id: 'mobile', status: 'next', areas: ['mobile'] },
   { id: 'categoryPages', status: 'next', areas: ['game', 'library'] },
+  { id: 'itadPrice', status: 'next', areas: ['game'] },
   { id: 'metaquest', status: 'idea', areas: ['import'] },
   {
     id: 'badgeLinks',
