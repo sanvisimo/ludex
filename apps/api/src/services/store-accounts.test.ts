@@ -50,6 +50,7 @@ import {
   storeLoginUrl,
   deleteStoreWishlist,
   requestWishlistImport,
+  setPlayedThreshold,
   syncAllStoreAccounts,
   unlinkImpact,
   unlinkStoreAccount,
@@ -1266,5 +1267,96 @@ describe('EA (9c)', () => {
     expect(storeLoginUrl(userId, 'ea').url).toMatch(
       /^https:\/\/accounts\.ea\.com\/connect\/auth\?client_id=ORIGIN_JS_SDK/,
     );
+  });
+});
+
+describe('la soglia «conta come giocato»', () => {
+  let userId: string;
+
+  /** Un gioco dell'account, con le sue ore e il suo stato. */
+  async function giocato(
+    accountId: string,
+    playtimeMinutes: number | null,
+    status: 'backlog' | 'playing' | 'dropped' = 'backlog',
+  ) {
+    const game = await createGame();
+    const [entry] = await db
+      .insert(schema.backlog)
+      .values({ userId, gameId: game.id, status })
+      .returning({ id: schema.backlog.id });
+    await db.insert(schema.ownerships).values({
+      backlogId: entry!.id,
+      platformSlug: 'pc_windows',
+      store: 'steam',
+      storeAccountId: accountId,
+      playtimeMinutes,
+    });
+    return entry!.id;
+  }
+
+  const statoDi = async (backlogId: string) => {
+    const [row] = await db
+      .select({ status: schema.backlog.status })
+      .from(schema.backlog)
+      .where(eq(schema.backlog.id, backlogId));
+    return row!.status;
+  };
+
+  beforeEach(async () => {
+    userId = await createUser();
+    mockedRunning.mockResolvedValue(false);
+    mockedPersona.mockResolvedValue(null);
+    mockedLibrary.mockResolvedValue([]);
+  });
+
+  it('si sceglie collegando, e ricollegando senza dirla resta', async () => {
+    mockedResolve.mockResolvedValue('76561190000000001');
+
+    const account = await linkSteamAccount(userId, 'pippo', {
+      playedMinMinutes: 60,
+    });
+    expect(account.playedMinMinutes).toBe(60);
+
+    const ricollegato = await linkSteamAccount(userId, 'pippo');
+    expect(ricollegato.playedMinMinutes).toBe(60);
+  });
+
+  it('salvata, vale subito su ciò che c’è: solo da backlog, solo sopra', async () => {
+    const account = await seedAccount(userId);
+    const finito = await giocato(account.id, 900);
+    const provato = await giocato(account.id, 25);
+    const senzaOre = await giocato(account.id, null);
+    const lasciato = await giocato(account.id, 900, 'dropped');
+
+    expect(await setPlayedThreshold(userId, account.id, 60)).toBe(1);
+
+    expect(await statoDi(finito)).toBe('played');
+    expect(await statoDi(provato)).toBe('backlog');
+    expect(await statoDi(senzaOre)).toBe('backlog');
+    expect(await statoDi(lasciato)).toBe('dropped');
+    const [row] = await listStoreAccounts(userId);
+    expect(row!.playedMinMinutes).toBe(60);
+  });
+
+  it('spenta, non rimette niente in backlog', async () => {
+    const account = await seedAccount(userId);
+    const finito = await giocato(account.id, 900);
+    await setPlayedThreshold(userId, account.id, 60);
+
+    expect(await setPlayedThreshold(userId, account.id, null)).toBe(0);
+
+    expect(await statoDi(finito)).toBe('played');
+    const [row] = await listStoreAccounts(userId);
+    expect(row!.playedMinMinutes).toBeNull();
+  });
+
+  it('non vale su un negozio senza tempi, né su Xbox, né per un altro utente', async () => {
+    const gog = await linkStoreAccount(userId, 'gog');
+    const xbox = await linkStoreAccount(userId, 'xbox');
+    const altro = await seedAccount(await createUser());
+
+    expect(await setPlayedThreshold(userId, gog.id, 60)).toBeNull();
+    expect(await setPlayedThreshold(userId, xbox.id, 60)).toBeNull();
+    expect(await setPlayedThreshold(userId, altro.id, 60)).toBeNull();
   });
 });

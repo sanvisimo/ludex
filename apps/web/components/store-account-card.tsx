@@ -5,6 +5,7 @@ import type {
   Wishlist,
 } from '@repo/contracts';
 import {
+  hasPlaytime,
   isOneShotStore,
   linkableStoreValues,
   storeAccountName,
@@ -57,6 +58,7 @@ import { StoreWishlistRow } from '@/components/store-wishlist-row';
 import { useSyncWishlist } from '@/components/use-sync-wishlist';
 import { StoreLinkForm } from '@/components/store-link-form';
 import { XboxLink } from '@/components/xbox-link';
+import { PlayedThresholdDialog } from '@/components/played-threshold-dialog';
 import { XboxSettingsDialog } from '@/components/xbox-settings-dialog';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
@@ -155,6 +157,11 @@ export function StoreAccountCard({
   // Xbox (9e): «Impostazioni dell'import», senza un login.
   const [changingXbox, setChangingXbox] = useState(false);
   const isXbox = account.store === 'xbox';
+  // Steam, PSN e Nintendo: «Impostazioni dell'import» con la sola soglia
+  // «conta come giocato» (plans/soglia-giocato.md). Xbox ha le sue.
+  const [changingPlayed, setChangingPlayed] = useState(false);
+  const tPlayed = useTranslations('account.played');
+  const withThreshold = hasPlaytime(account.store) && !isXbox;
   const xboxPlatformNames = (account.xbox?.platforms ?? [])
     .map((platform) => tXbox(`platforms.${platform}`))
     .join(', ');
@@ -339,6 +346,15 @@ export function StoreAccountCard({
                 disabled={busy || syncing}
               >
                 {tXbox('changeSettings')}
+              </DropdownMenuItem>
+            )}
+            {withThreshold && (
+              <DropdownMenuItem
+                icon={<SlidersHorizontal size={16} />}
+                onClick={() => setChangingPlayed(true)}
+                disabled={busy}
+              >
+                {tPlayed('changeSettings')}
               </DropdownMenuItem>
             )}
             {isSteam && account.hasLogin && (
@@ -676,6 +692,13 @@ export function StoreAccountCard({
         <XboxSettingsDialog
           account={changingXbox ? account : null}
           onOpenChange={setChangingXbox}
+        />
+      )}
+
+      {withThreshold && (
+        <PlayedThresholdDialog
+          account={changingPlayed ? account : null}
+          onOpenChange={setChangingPlayed}
         />
       )}
 

@@ -1,0 +1,1 @@
+ALTER TABLE "store_accounts" ADD COLUMN "played_min_minutes" integer;

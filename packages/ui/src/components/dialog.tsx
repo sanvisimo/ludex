@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { Dialog as DialogBase, XStack, YStack, styled } from 'tamagui';
+import { Dialog as DialogBase, XStack, YStack, isWeb, styled } from 'tamagui';
 import type { GetProps } from 'tamagui';
 
 import { X } from '../icons';
@@ -43,6 +43,11 @@ type DialogContentProps = GetProps<typeof DialogBase.Content> & {
  * per tutte le finestre: una sola misura, abbastanza larga da non mandare a
  * capo le righe dei moduli. Sotto quella misura il pannello prende lo schermo,
  * meno i margini. `maxW` resta per l'eccezione (la galleria delle immagini).
+ *
+ * **Mai più alto dello schermo**: oltre, il pannello scorre dentro di sé. Il
+ * contenuto lungo su un telefono — i modi di collegare Steam — sbordava sopra e
+ * sotto, e la tendina in cima e la ✕ restavano fuori. `dvh` e non `vh`: sul
+ * telefono la barra del browser che compare e scompare la conta solo `dvh`.
  */
 export function DialogContent({
   children,
@@ -64,6 +69,7 @@ export function DialogContent({
         key="content"
         width="100%"
         maxW={720}
+        maxH={isWeb ? ('calc(100dvh - 32px)' as never) : '90%'}
         mx={16}
         p={16}
         gap={16}
@@ -76,6 +82,9 @@ export function DialogContent({
         scale={1}
         enterStyle={{ opacity: 0, scale: 0.95 }}
         exitStyle={{ opacity: 0, scale: 0.95 }}
+        // `auto` e non `scroll`: la barra solo quando serve. Come nelle
+        // schermate, dallo `style`, che Tamagui non tipizza per `overflowY`.
+        {...({ style: { overflowY: 'auto' } } as object)}
         {...props}
       >
         {children}

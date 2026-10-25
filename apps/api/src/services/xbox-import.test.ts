@@ -397,21 +397,28 @@ describe('importXboxLibrary', () => {
 
   it('porta a importLibrary le voci, con le scelte salvate', async () => {
     await importXboxLibrary(account);
-    expect(vi.mocked(importLibrary)).toHaveBeenCalledWith(account, [
-      expect.objectContaining({
-        externalId: '9PPT8K6GQHRZ',
-        platformSlug: 'xbox_series',
-        subscription: 'game_pass',
-        status: 'played',
-        playtimeMinutes: 90,
-      }),
-    ]);
+    expect(vi.mocked(importLibrary)).toHaveBeenCalledWith(
+      account,
+      [
+        expect.objectContaining({
+          externalId: '9PPT8K6GQHRZ',
+          platformSlug: 'xbox_series',
+          subscription: 'game_pass',
+          status: 'played',
+          playtimeMinutes: 90,
+        }),
+      ],
+      { playedMinMinutes: 60 },
+    );
   });
 
   it('un account collegato prima della soglia vale 60 minuti', async () => {
     vi.mocked(fetchXboxMinutes).mockResolvedValue(new Map([['1', 59]]));
     await importXboxLibrary(account);
-    expect(vi.mocked(importLibrary)).toHaveBeenCalledWith(account, []);
+    // E la stessa soglia passa all'import, per lo stato di tutti i giochi.
+    expect(vi.mocked(importLibrary)).toHaveBeenCalledWith(account, [], {
+      playedMinMinutes: 60,
+    });
   });
 
   it('dopo l’import pota le copie da abbonamento che le voci non portano più', async () => {
@@ -444,9 +451,11 @@ describe('importXboxLibrary', () => {
     });
     vi.mocked(fetchXboxMinutes).mockResolvedValue(new Map([['1', 20]]));
     await importXboxLibrary(account);
-    expect(vi.mocked(importLibrary)).toHaveBeenCalledWith(account, [
-      expect.objectContaining({ playtimeMinutes: 20, status: 'played' }),
-    ]);
+    expect(vi.mocked(importLibrary)).toHaveBeenCalledWith(
+      account,
+      [expect.objectContaining({ playtimeMinutes: 20, status: 'played' })],
+      { playedMinMinutes: 15 },
+    );
   });
 
   it('senza console spuntate non cerca i 360', async () => {

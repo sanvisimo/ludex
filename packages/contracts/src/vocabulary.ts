@@ -79,13 +79,32 @@ export const xboxPlatformValues = [
   'xbox_series',
 ] as const;
 
-// La soglia dei giochi Game Pass e Gold quando il Game Pass non è attivo (9e):
-// entrano, come giocati, solo quelli con almeno tanti minuti. 0 = tutti quelli
-// avviati, anche senza minuti. La sceglie l'utente con le piattaforme; 60 è il
-// valore tarato sulla libreria vera (plans/9e-xbox.md), e vale per gli account
-// collegati prima della soglia.
-export const XBOX_DEFAULT_MIN_MINUTES = 60;
-export const XBOX_MAX_MIN_MINUTES = 120;
+// La soglia «conta come giocato» di un account (plans/soglia-giocato.md): un
+// gioco con almeno tanti minuti su quell'account passa da `backlog` a
+// `played`. La sceglie l'utente per account, e solo dove il negozio dà i tempi
+// (`playtimeStoreValues`). 0 = basta un minuto.
+//
+// Su Xbox (9e) c'era già, e fa anche un'altra cosa: col Game Pass non attivo
+// decide quali giochi del Game Pass e Gold entrano (0 = tutti quelli avviati,
+// anche senza minuti). 60 è il valore tarato sulla libreria vera
+// (plans/9e-xbox.md), e vale per gli account Xbox collegati prima della soglia.
+export const PLAYED_DEFAULT_MIN_MINUTES = 60;
+export const PLAYED_MAX_MIN_MINUTES = 240;
+
+// I negozi che danno i minuti giocati, e su cui quindi la soglia ha senso. GOG,
+// Epic e Amazon non li danno; EA solo per i giochi avviati di recente (una
+// riga su 44 nella misura del 9c), e resta fuori.
+export const playtimeStoreValues = [
+  'steam',
+  'psn',
+  'nintendo',
+  'xbox',
+] as const;
+export type PlaytimeStore = (typeof playtimeStoreValues)[number];
+
+export function hasPlaytime(store: string): store is PlaytimeStore {
+  return (playtimeStoreValues as readonly string[]).includes(store);
+}
 
 // I negozi che **si importano una volta sola**, ogni volta che l'utente
 // rifà il gesto: il credenziale non si rinnova, quindi niente aggiornamento

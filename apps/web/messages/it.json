@@ -977,10 +977,10 @@
       },
       "gamePass": "Ho il Game Pass attivo",
       "gamePassHint": "Qualunque livello, anche Essential. Senza, i giochi del Game Pass e i Gold che hai giocato entrano come «giocati».",
-      "minMinutes": "Importa i Game Pass e i Gold giocati almeno {minutes} min",
-      "minMinutesAll": "Importa tutti i Game Pass e i Gold che hai avviato",
+      "minMinutes": "Conta come giocato da {minutes} min",
+      "minMinutesAll": "Conta come giocato appena avviato",
       "minMinutesLabel": "Minuti di gioco minimi",
-      "minMinutesHint": "Sotto, di solito li hai solo installati o aperti un attimo. A 0 entrano tutti quelli avviati, anche senza minuti.",
+      "minMinutesHint": "Sopra la soglia un gioco ancora da giocare passa a «giocato», comprato o del Game Pass. Senza il Game Pass attivo, i Game Pass e i Gold sotto la soglia non entrano: di solito li hai solo installati o aperti un attimo.",
       "continue": "Continua",
       "pickOne": "Spunta almeno una piattaforma.",
       "back": "Indietro",
@@ -1012,10 +1012,24 @@
       "changeSettings": "Impostazioni dell'import",
       "settingsTitle": "Impostazioni dell'import",
       "settingsDescription": "Le scelte di adesso, già spuntate.",
-      "settingsWarning": "Togliere una piattaforma o alzare la soglia dei minuti non toglie le copie già importate: si tolgono dalla scheda del gioco. Il Game Pass cambia solo i giochi che arrivano dopo.",
+      "settingsWarning": "Togliere una piattaforma o alzare la soglia dei minuti non toglie le copie già importate: si tolgono dalla scheda del gioco. Il Game Pass cambia solo i giochi che arrivano dopo. La soglia vale subito: i giochi ancora da giocare sopra passano a «giocato».",
       "save": "Salva e aggiorna",
       "saved": "Salvato: importazione in corso",
       "saveFailed": "Non riesco a salvare le scelte."
+    },
+    "played": {
+      "toggle": "Segna come giocati i giochi con abbastanza minuti",
+      "minutes": "Giocato da {minutes} min",
+      "minutesAll": "Giocato appena c'è un minuto",
+      "label": "Minuti di gioco minimi",
+      "hint": "Il tempo si importa sempre: la soglia decide solo se un gioco ancora da giocare passa a «giocato». Quelli che hai segnato tu non li tocca.",
+      "changeSettings": "Impostazioni dell'import",
+      "settingsTitle": "Impostazioni dell'import",
+      "settingsDescription": "Da quanti minuti un gioco di questa libreria conta come giocato.",
+      "settingsWarning": "Vale subito: i giochi ancora da giocare sopra la soglia passano a «giocato». Spenta, non rimette niente da giocare.",
+      "save": "Salva",
+      "saved": "{count, plural, =0 {Salvato} one {Salvato: # gioco passato a «giocato»} other {Salvato: # giochi passati a «giocato»}}",
+      "saveFailed": "Non riesco a salvare la soglia."
     },
     "nintendoGuide": {
       "caption": "Disegno schematico: la pagina vera può avere un aspetto diverso.",
@@ -1227,6 +1241,10 @@
       "release": {
         "title": "Ludex aperto a tutti",
         "text": "Un server stabile al posto di quello di prova, senza codice d'accesso all'ingresso: con la conferma dell'email e il recupero della password."
+      },
+      "playedThreshold": {
+        "title": "Giocato da quanti minuti, per libreria",
+        "text": "Per ogni libreria che dà i tempi — Steam, PlayStation, Nintendo, Xbox — scegli da quanti minuti un gioco conta come giocato: sopra, all'import passa a «giocato», sotto resta da giocare."
       },
       "badgeLinks": {
         "title": "I badge della pagina del gioco",

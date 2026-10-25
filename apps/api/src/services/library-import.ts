@@ -23,6 +23,7 @@ import {
   ensureOwnerships,
 } from './backlog';
 import { playsOn } from './copy-platforms';
+import { playtimeByBacklog, promoteCrossed } from './played-threshold';
 import type { StoreAccountRow } from './store-accounts';
 import { ensureUserTags } from './tags';
 import { type ExternalGameLink, linkExternalGames } from './games';
@@ -1173,8 +1174,21 @@ async function forgetLinks(store: Store, externalIds: string[]) {
 export async function importLibrary(
   account: StoreAccountRow,
   library: LibraryEntry[],
+  options: {
+    /**
+     * La soglia «conta come giocato» quando non è quella della colonna: Xbox,
+     * che la tiene nel credenziale con le altre scelte (9e).
+     */
+    playedMinMinutes?: number | null;
+  } = {},
 ): Promise<ImportReport> {
   const { id: storeAccountId, userId, store } = account;
+  // L'import da file (10) porta lo stato dell'utente, e non ha soglia.
+  const playedMinMinutes = account.fromFile
+    ? null
+    : options.playedMinMinutes !== undefined
+      ? options.playedMinMinutes
+      : account.playedMinMinutes;
 
   // Una voce per id per tutto ciò che riguarda l'**identità**: cercarla,
   // collegarla, ricordarla fra gli scarti. Due voci con lo stesso id sono lo
@@ -1367,6 +1381,11 @@ export async function importLibrary(
     }),
   );
 
+  // Le ore di prima, per sapere dopo quali giochi hanno passato la soglia con
+  // questo giro: vedi `promoteCrossed`.
+  const orePrima =
+    playedMinMinutes === null ? null : await playtimeByBacklog(storeAccountId);
+
   // Un possesso per voce di libreria. Due id che puntano allo stesso gioco
   // producono la stessa riga **se stanno sulla stessa piattaforma**: il vincolo
   // unique la collassa, e vince l'ultima che porta le ore. Se le piattaforme
@@ -1393,6 +1412,10 @@ export async function importLibrary(
       fromFile: account.fromFile,
     })),
   );
+
+  if (orePrima !== null && playedMinMinutes !== null) {
+    await promoteCrossed(storeAccountId, playedMinMinutes, orePrima);
+  }
 
   await advanceAddedAt([...byGameId.values()]);
   await hideEntriesFromHiddenUnresolved(

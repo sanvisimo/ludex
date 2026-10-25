@@ -55,7 +55,7 @@ import {
   SteamLoginStatusSchema,
   XboxLoginStartSchema,
   XboxLoginStatusSchema,
-  XboxMinMinutesSchema,
+  PlayedMinMinutesSchema,
   XboxPlatformSchema,
   StoreAccountSchema,
   StoreSchema,
@@ -239,6 +239,10 @@ export const contract = {
           // legato — il collegamento si rifiuta con CONFLICT, invece di
           // aggiornare in silenzio l'altro.
           accountId: z.uuid().nullish(),
+          // La soglia «conta come giocato», dove il negozio dà i tempi
+          // (`playtimeStoreValues`): vale già per il primo import. Nulla =
+          // spenta; assente = resta quella che c'era, su un ricollegamento.
+          playedMinMinutes: PlayedMinMinutesSchema.nullish(),
         }),
       )
       .output(StoreAccountSchema),
@@ -262,6 +266,8 @@ export const contract = {
           z.object({
             label: z.string().trim().max(60).nullish(),
             accountId: z.uuid().nullish(),
+            // Come per `link`.
+            playedMinMinutes: PlayedMinMinutesSchema.nullish(),
           }),
         )
         .output(SteamLoginStartSchema),
@@ -276,6 +282,7 @@ export const contract = {
             token: z.string().trim().min(1).max(8000),
             label: z.string().trim().max(60).nullish(),
             accountId: z.uuid().nullish(),
+            playedMinMinutes: PlayedMinMinutesSchema.nullish(),
           }),
         )
         .output(StoreAccountSchema),
@@ -305,7 +312,7 @@ export const contract = {
           z.object({
             platforms: z.array(XboxPlatformSchema).min(1),
             gamePassActive: z.boolean(),
-            minMinutes: XboxMinMinutesSchema,
+            minMinutes: PlayedMinMinutesSchema,
             label: z.string().trim().max(60).nullish(),
             accountId: z.uuid().nullish(),
           }),
@@ -329,10 +336,25 @@ export const contract = {
           accountId: z.uuid(),
           platforms: z.array(XboxPlatformSchema).min(1),
           gamePassActive: z.boolean(),
-          minMinutes: XboxMinMinutesSchema,
+          minMinutes: PlayedMinMinutesSchema,
         }),
       )
       .output(z.void()),
+
+    // La soglia «conta come giocato» di un account Steam, PSN o Nintendo
+    // (plans/soglia-giocato.md); Xbox ha la sua in `xboxSettings`. Nulla =
+    // spenta. Accesa, vale **subito** su tutto ciò che l'account ha già: i
+    // giochi ancora in `backlog` con almeno tanti minuti passano a `played`.
+    // Non serve un import, e non ne accoda. `NOT_FOUND` su un account che non
+    // c'è o di un negozio senza tempi.
+    playedThreshold: oc
+      .input(
+        z.object({
+          accountId: z.uuid(),
+          minMinutes: PlayedMinMinutesSchema.nullable(),
+        }),
+      )
+      .output(z.object({ promoted: z.number().int() })),
 
     // Rinomina un account già collegato. Esiste separata da `link` perché
     // altrimenti etichettare quelli che hai già vorrebbe dire scollegarli e

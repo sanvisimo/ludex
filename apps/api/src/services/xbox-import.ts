@@ -49,6 +49,8 @@ import { pruneUnlistedSubscriptionCopies } from './subscription-copies';
  *   `played`, e solo se hanno almeno `minMinutes` minuti — sotto, li hai solo
  *   installati o aperti un attimo (la soglia la sceglie l'utente; 60 è tarata
  *   sulla libreria vera, plans/9e-xbox.md);
+ * - la stessa soglia fa passare a `played` **ogni** gioco, comprati compresi,
+ *   che la supera (plans/soglia-giocato.md): Game Pass attivo o no;
  * - un **Xbox 360 retrocompatibile** gira su 360, One e Series, anche quando
  *   sta in Collections: lo dice il pacchetto nel catalogo.
  *
@@ -345,7 +347,11 @@ export async function importXboxLibrary(
       `${conteggi.fuoriDallePiattaforme} fuori dalle piattaforme spuntate`,
   );
 
-  const report = await importLibrary(account, entries);
+  // La soglia vale anche per lo stato di tutti i giochi, comprati compresi
+  // (plans/soglia-giocato.md): sta nel credenziale, non nella colonna.
+  const report = await importLibrary(account, entries, {
+    playedMinMinutes: settings.minMinutes,
+  });
   // Lo storico i Game Pass li rende sempre: a farli uscire è la spunta «Game
   // Pass attivo» tolta, che lascia fuori ciò che sta sotto la soglia.
   await pruneUnlistedSubscriptionCopies(account, entries);

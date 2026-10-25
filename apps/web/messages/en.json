@@ -978,10 +978,10 @@
       },
       "gamePass": "I have an active Game Pass",
       "gamePassHint": "Any tier, Essential included. Without it, the Game Pass and Gold games you played come in as «played».",
-      "minMinutes": "Import Game Pass and Gold games played at least {minutes} min",
-      "minMinutesAll": "Import every Game Pass and Gold game you started",
+      "minMinutes": "Counts as played from {minutes} min",
+      "minMinutesAll": "Counts as played once started",
       "minMinutesLabel": "Minimum minutes played",
-      "minMinutesHint": "Below that, you usually only installed them or opened them briefly. At 0, everything you started comes in, even without minutes.",
+      "minMinutesHint": "Above the threshold, a game still to play becomes «played», bought or from Game Pass. Without an active Game Pass, Game Pass and Gold games below it don't come in: you usually only installed them or opened them briefly.",
       "continue": "Continue",
       "pickOne": "Tick at least one platform.",
       "back": "Back",
@@ -1013,10 +1013,24 @@
       "changeSettings": "Import settings",
       "settingsTitle": "Import settings",
       "settingsDescription": "Your current choices, already ticked.",
-      "settingsWarning": "Removing a platform or raising the minutes threshold doesn't remove copies already imported: remove them from the game page. Game Pass only affects games that come in later.",
+      "settingsWarning": "Removing a platform or raising the minutes threshold doesn't remove copies already imported: remove them from the game page. Game Pass only affects games that come in later. The threshold applies right away: games still to play above it become «played».",
       "save": "Save and update",
       "saved": "Saved: import in progress",
       "saveFailed": "Couldn't save your choices."
+    },
+    "played": {
+      "toggle": "Mark games with enough minutes as played",
+      "minutes": "Played from {minutes} min",
+      "minutesAll": "Played from the first minute",
+      "label": "Minimum minutes played",
+      "hint": "Play time is always imported: the threshold only decides whether a game still to play becomes «played». Games you marked yourself stay as they are.",
+      "changeSettings": "Import settings",
+      "settingsTitle": "Import settings",
+      "settingsDescription": "From how many minutes a game in this library counts as played.",
+      "settingsWarning": "It applies right away: games still to play above the threshold become «played». Turning it off doesn't move anything back.",
+      "save": "Save",
+      "saved": "{count, plural, =0 {Saved} one {Saved: # game is now «played»} other {Saved: # games are now «played»}}",
+      "saveFailed": "Couldn't save the threshold."
     },
     "nintendoGuide": {
       "caption": "Schematic drawing: the real page may look different.",
@@ -1228,6 +1242,10 @@
       "release": {
         "title": "Ludex open to everyone",
         "text": "A stable server instead of the test one, with no access code at the door: with email confirmation and password recovery."
+      },
+      "playedThreshold": {
+        "title": "Played from how many minutes, per library",
+        "text": "For each library that reports play time — Steam, PlayStation, Nintendo, Xbox — choose from how many minutes a game counts as played: above it, the import marks it «played», below it stays to play."
       },
       "badgeLinks": {
         "title": "Badges on the game page",

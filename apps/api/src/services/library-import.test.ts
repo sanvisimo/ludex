@@ -2089,3 +2089,128 @@ describe('importLibrary: uno scarto risolto a mano nasce come la copia dell’im
     );
   });
 });
+
+describe('importLibrary: la soglia «conta come giocato»', () => {
+  let userId: string;
+  let account: Awaited<ReturnType<typeof linkStoreAccount>>;
+
+  const ids: Record<string, number> = {
+    'Hollow Knight': 14593,
+    'SteamWorld Dig': 7323,
+    Celeste: 26226,
+  };
+
+  const statoDi = async (name: string) => {
+    const [row] = await db
+      .select({ status: schema.backlog.status })
+      .from(schema.backlog)
+      .innerJoin(schema.games, eq(schema.games.id, schema.backlog.gameId))
+      .where(eq(schema.games.name, name));
+    return row?.status;
+  };
+
+  const conSoglia = async (minutes: number | null) => {
+    await db
+      .update(schema.storeAccounts)
+      .set({ playedMinMinutes: minutes })
+      .where(eq(schema.storeAccounts.id, account.id));
+    account = { ...account, playedMinMinutes: minutes };
+  };
+
+  const libreria = (minuti: Record<string, number | null>) =>
+    Object.entries(minuti).map(([name, playtimeMinutes]) => ({
+      externalId: `ext-${name}`,
+      name,
+      platformSlug: 'sony_playstation5',
+      playtimeMinutes,
+    }));
+
+  beforeEach(async () => {
+    userId = await createUser();
+    account = await linkStoreAccount(userId, 'psn');
+    mockedById.mockResolvedValue(new Map());
+    mockedSource.mockReturnValue(null);
+    mockedBySource.mockResolvedValue(new Map());
+    mockedSearch.mockImplementation(async (term: string) => {
+      const name = Object.keys(ids).find(
+        (key) => key.toLowerCase() === term.toLowerCase(),
+      );
+      return name ? [hit({ igdbId: ids[name]!, name })] : [];
+    });
+  });
+
+  it('spenta, lo stato non lo tocca: le ore non indovinano niente', async () => {
+    await importLibrary(account, libreria({ 'Hollow Knight': 900 }));
+
+    expect(await statoDi('Hollow Knight')).toBe('backlog');
+  });
+
+  it('accesa, passa a giocato solo ciò che arriva alla soglia', async () => {
+    await conSoglia(60);
+
+    await importLibrary(
+      account,
+      libreria({ 'Hollow Knight': 900, 'SteamWorld Dig': 25, Celeste: null }),
+    );
+
+    expect(await statoDi('Hollow Knight')).toBe('played');
+    expect(await statoDi('SteamWorld Dig')).toBe('backlog');
+    expect(await statoDi('Celeste')).toBe('backlog');
+  });
+
+  it('con 0 basta un minuto, ma non zero minuti', async () => {
+    await conSoglia(0);
+
+    await importLibrary(
+      account,
+      libreria({ 'Hollow Knight': 1, 'SteamWorld Dig': 0 }),
+    );
+
+    expect(await statoDi('Hollow Knight')).toBe('played');
+    expect(await statoDi('SteamWorld Dig')).toBe('backlog');
+  });
+
+  it('promuove il gioco che passa la soglia a un giro successivo', async () => {
+    await conSoglia(60);
+    await importLibrary(account, libreria({ 'SteamWorld Dig': 25 }));
+    expect(await statoDi('SteamWorld Dig')).toBe('backlog');
+
+    await importLibrary(account, libreria({ 'SteamWorld Dig': 80 }));
+
+    expect(await statoDi('SteamWorld Dig')).toBe('played');
+  });
+
+  it('non ripromuove il gioco riportato a mano in backlog', async () => {
+    await conSoglia(60);
+    await importLibrary(account, libreria({ 'Hollow Knight': 900 }));
+    await db
+      .update(schema.backlog)
+      .set({ status: 'backlog' })
+      .where(eq(schema.backlog.userId, userId));
+
+    await importLibrary(account, libreria({ 'Hollow Knight': 960 }));
+
+    expect(await statoDi('Hollow Knight')).toBe('backlog');
+  });
+
+  it('non tocca gli altri stati: si promuove solo da backlog', async () => {
+    await importLibrary(account, libreria({ 'Hollow Knight': 30 }));
+    await db
+      .update(schema.backlog)
+      .set({ status: 'dropped' })
+      .where(eq(schema.backlog.userId, userId));
+    await conSoglia(60);
+
+    await importLibrary(account, libreria({ 'Hollow Knight': 900 }));
+
+    expect(await statoDi('Hollow Knight')).toBe('dropped');
+  });
+
+  it('vale quella passata da chi la tiene altrove, come Xbox', async () => {
+    await importLibrary(account, libreria({ 'Hollow Knight': 900 }), {
+      playedMinMinutes: 60,
+    });
+
+    expect(await statoDi('Hollow Knight')).toBe('played');
+  });
+});
