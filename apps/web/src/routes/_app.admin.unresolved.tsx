@@ -10,12 +10,12 @@ import {
 } from '@repo/contracts/vocabulary';
 import {
   Button,
+  ClearableInput,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   EmptyState,
-  Input,
   Pagination,
   Select,
   SelectContent,
@@ -149,6 +149,7 @@ function OpenList({
   page: number;
 }) {
   const t = useTranslations('admin.unresolved');
+  const tSearch = useTranslations('search');
   const tStore = useTranslations('store');
   const tKind = useTranslations('account.hiddenTab.tabs');
   const tBacklog = useTranslations('backlog');
@@ -369,13 +370,15 @@ function OpenList({
             ))}
           </SelectContent>
         </Select>
-        <Input
-          width={240}
-          value={text}
-          onChangeText={setText}
-          placeholder={t('search')}
-          aria-label={t('search')}
-        />
+        <YStack width={240}>
+          <ClearableInput
+            value={text}
+            onChangeText={setText}
+            placeholder={t('search')}
+            aria-label={t('search')}
+            clearLabel={tSearch('clear')}
+          />
+        </YStack>
       </XStack>
 
       {list.isPending ? (

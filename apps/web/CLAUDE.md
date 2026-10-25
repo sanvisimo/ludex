@@ -100,8 +100,9 @@ sostituire. Cose che non si indovinano:
 - **I tag mancanti** (cancellati dal vocabolario) la playlist li ignora e li
   dice con un avviso: lo conta il server (`missingTags`).
 
-**Il pannello dei filtri** (`FilterPanel`, nel drawer di `/backlog`) ha l'ordinamento
-in cima, poi «Mai giocato» come spunta semplice fuori dalle sezioni, poi una
+**Il pannello dei filtri** (`FilterPanel`, nel drawer di `/backlog`) ha in cima,
+solo sotto `$sm`, la stessa ricerca della barra, che lì il drawer copre; poi
+l'ordinamento, poi «Mai giocato» come spunta semplice fuori dalle sezioni, poi una
 sezione per criterio: stato, piattaforme, store, abbonamenti, tipo, attributi,
 tag, durata, il mio voto, **voto critica**, uscita. Lo stato ha le stesse sei
 spunte dei bottoni in barra, sulla stessa selezione.

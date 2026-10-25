@@ -10,8 +10,8 @@ import {
 } from '@repo/contracts/vocabulary';
 import {
   Button,
+  ClearableInput,
   EmptyState,
-  Input,
   Pagination,
   Select,
   SelectContent,
@@ -316,6 +316,7 @@ function MissingList({
   title?: string;
 }) {
   const t = useTranslations('admin');
+  const tSearch = useTranslations('search');
   const tBacklog = useTranslations('backlog');
   const navigate = useNavigate({ from: Route.fullPath });
   const errorMessage = useApiErrorMessage();
@@ -514,13 +515,15 @@ function MissingList({
             </SelectContent>
           </Select>
         ) : null}
-        <Input
-          width={240}
-          value={text}
-          onChangeText={setText}
-          placeholder={t('missing.search')}
-          aria-label={t('missing.search')}
-        />
+        <YStack width={240}>
+          <ClearableInput
+            value={text}
+            onChangeText={setText}
+            placeholder={t('missing.search')}
+            aria-label={t('missing.search')}
+            clearLabel={tSearch('clear')}
+          />
+        </YStack>
       </XStack>
 
       {list.isPending ? (

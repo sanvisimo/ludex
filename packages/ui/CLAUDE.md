@@ -60,7 +60,9 @@ che ha già e le filtra lui; il SearchField è una ricerca: il testo è il
 valore, le voci (in gruppi, con dentro quello che vuole l'app) le porta chi
 chiama, e Invio senza una voce evidenziata cerca invece di scegliere. Il
 pattern ARIA è lo stesso, col fuoco che resta nel campo. La prop delle voci è
-`options` e non `items`, che in Tamagui è l'allineamento.
+`options` e non `items`, che in Tamagui è l'allineamento. Una ricerca senza
+tendina è `ClearableInput`: un campo con la stessa x che svuota, e ogni ricerca
+dell'app ce l'ha.
 
 **`Tabs` e `ToggleGroup` non sono la stessa cosa.** I tab sono le sezioni di una
 stessa lista — i nascosti per tipo: testo sopra una linea, sottolineatura

@@ -2,6 +2,7 @@ import type { AdminUser } from '@repo/contracts';
 import {
   Badge,
   Button,
+  ClearableInput,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -65,6 +66,7 @@ const BAN_DAYS = [1, 7, 30, 365] as const;
  */
 function UsersSection() {
   const t = useTranslations('admin.users');
+  const tSearch = useTranslations('search');
   const format = useFormatter();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
@@ -253,13 +255,15 @@ function UsersSection() {
         <Text render="h2" fontSize={18} lineHeight={24} fontWeight="600">
           {t('title')}
         </Text>
-        <Input
-          width={280}
-          value={text}
-          onChangeText={setText}
-          placeholder={t('search')}
-          aria-label={t('search')}
-        />
+        <YStack width={280}>
+          <ClearableInput
+            value={text}
+            onChangeText={setText}
+            placeholder={t('search')}
+            aria-label={t('search')}
+            clearLabel={tSearch('clear')}
+          />
+        </YStack>
       </XStack>
 
       {users.isPending ? (

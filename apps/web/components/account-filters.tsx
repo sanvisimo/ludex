@@ -1,12 +1,13 @@
 import { storeValues, type Store } from '@repo/contracts/vocabulary';
 import {
-  Input,
+  ClearableInput,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
   XStack,
+  YStack,
 } from '@repo/ui';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'use-intl';
@@ -52,6 +53,7 @@ export function AccountFilters({
   onChange: (next: AccountFilter) => void;
 }) {
   const t = useTranslations('account.filters');
+  const tSearch = useTranslations('search');
   const storeLabels = useStoreLabels();
   const [text, setText] = useState(filter.q ?? '');
 
@@ -90,13 +92,15 @@ export function AccountFilters({
           ))}
         </SelectContent>
       </Select>
-      <Input
-        width={240}
-        value={text}
-        onChangeText={setText}
-        placeholder={t('search')}
-        aria-label={t('search')}
-      />
+      <YStack width={240}>
+        <ClearableInput
+          value={text}
+          onChangeText={setText}
+          placeholder={t('search')}
+          aria-label={t('search')}
+          clearLabel={tSearch('clear')}
+        />
+      </YStack>
     </XStack>
   );
 }

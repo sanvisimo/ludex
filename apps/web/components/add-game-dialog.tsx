@@ -13,6 +13,7 @@ import {
 import {
   Badge,
   Button,
+  ClearableInput,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -20,7 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  Input,
   Label,
   Select,
   SelectContent,
@@ -29,6 +29,7 @@ import {
   SelectValue,
   Skeleton,
   toast,
+  YStack,
 } from '@repo/ui';
 import { Plus } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -77,6 +78,7 @@ export function AddGameDialog({
   trigger?: ReactElement;
 } = {}) {
   const t = useTranslations('addGame');
+  const tSearch = useTranslations('search');
   // Il tipo di una scheda IGDB arriva come valore (`dlc`, `remaster`): il nome
   // da mostrare lo mette il client, e su un gioco principale non si mostra —
   // è la normalità, non un'informazione.
@@ -199,7 +201,7 @@ export function AddGameDialog({
         render={
           trigger ?? (
             <Button>
-             <Plus size={16} color="$black1" />
+              <Plus size={16} color="$black1" />
               {game ? t('triggerForGame') : t('trigger')}
             </Button>
           )
@@ -219,14 +221,16 @@ export function AddGameDialog({
             <div className="grid gap-2">
               <Label htmlFor="titolo">{t('titleLabel')}</Label>
               <div className="flex gap-2">
-                <Input
-                  flex={1}
-                  id="titolo"
-                  value={title}
-                  onChange={(event) => editTitle(event.target.value)}
-                  placeholder={t('titlePlaceholder')}
-                  autoFocus
-                />
+                <YStack flex={1} minW={0}>
+                  <ClearableInput
+                    id="titolo"
+                    value={title}
+                    onChangeText={editTitle}
+                    placeholder={t('titlePlaceholder')}
+                    clearLabel={tSearch('clear')}
+                    autoFocus
+                  />
+                </YStack>
                 <Button
                   type="button"
                   variant="outline"

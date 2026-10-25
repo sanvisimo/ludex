@@ -1,4 +1,4 @@
-import { Input, Pagination, Skeleton, Text, YStack } from '@repo/ui';
+import { ClearableInput, Pagination, Skeleton, Text, YStack } from '@repo/ui';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -108,14 +108,14 @@ function SearchPage() {
   return (
     <Page title={t('title')} maxW={1280}>
       <YStack maxW={560} width="100%">
-        <Input
+        <ClearableInput
           value={text}
-          onChange={(event) => setText(event.target.value)}
+          onChangeText={setText}
           placeholder={t('placeholder')}
           aria-label={t('placeholder')}
+          clearLabel={t('clear')}
           maxLength={100}
           autoFocus
-          width="100%"
         />
       </YStack>
 
