@@ -1,6 +1,6 @@
 # Ricerca nei filtri su telefono, e la x che svuota
 
-**Stato: deciso il 25/10/2026, in corso.** Due commenti dall'uso sul telefono
+**Stato: fatto il 25/10/2026, lotto chiuso dall'utente.** Due commenti dall'uso sul telefono
 (il web, non l'app Expo):
 
 1. aprendo i filtri di `/backlog` la ricerca sparisce: il pannello copre il
@@ -51,3 +51,9 @@ della playlist condivisa.
 
 `pnpm lint`, `pnpm check-types`, `pnpm --filter @repo/ui test`, e una prova a
 390 px con Playwright sul pannello dei filtri.
+
+Fatte il 25/10: lint e typecheck di `@repo/ui` e `web` puliti, le storie in
+Chromium (148) e i test del web (55) verdi. Con Playwright a 390 px la ricerca
+del pannello porta il testo della barra, la x svuota e tiene il fuoco, e
+scrivendo l'URL diventa `?q=…`; a 1280 px il pannello non ha la casella, e
+`/search` e i nascosti dell'account hanno la x.
