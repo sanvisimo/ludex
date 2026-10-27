@@ -47,6 +47,23 @@ negozi, note, data di aggiunta, «Segnala un errore», «Inserisci id» e motivo
 del ban dell'admin, i campi numerici degli slider e «Vai a pagina», il link
 della playlist condivisa.
 
+## 3. Le azioni dell'intestazione vanno a capo, a destra
+
+Dall'uso (27/10, Firefox su Pixel 9, pagina ingrandita a circa 288 px): su
+`/backlog` «Aggiungi gioco» usciva dal margine destro. Il gruppo delle azioni
+di `Page` (`apps/web/src/components/page.tsx`) aveva `flexWrap`, ma una view di
+Tamagui non si restringe: restava largo quanto i bottoni in fila e i bottoni
+non andavano mai a capo. Ora ha `maxW="100%"`, quindi a 288 «Aggiungi gioco»
+va sotto «Nascosti», e — scelta dell'utente — `ml="auto"` e
+`justify="flex-end"`: le azioni stanno a destra anche su una riga loro. Vale per
+ogni pagina con azioni; da `$md` non cambia niente.
+
+Il blocco dei filtri a 288 va a capo (la vista sulla riga sotto, a destra) ma
+resta nei margini: non si tocca.
+
+Provato con Playwright in Chromium a 288, 412 e 1280: prima a 288 il bottone
+finiva 13 px oltre l'intestazione, dopo nessuno la supera.
+
 ## Verifiche
 
 `pnpm lint`, `pnpm check-types`, `pnpm --filter @repo/ui test`, e una prova a
