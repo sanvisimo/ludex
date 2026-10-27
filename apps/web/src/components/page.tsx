@@ -62,8 +62,19 @@ export function Page({
                 </Text>
               ) : null}
             </YStack>
+            {/* `maxW`, o il gruppo resta largo quanto i bottoni in fila (le
+                view di Tamagui non si restringono), esce dall'intestazione
+                e non va mai a capo. `ml="auto"` lo tiene a destra anche
+                quando finisce su una riga sua. */}
             {actions ? (
-              <XStack flexWrap="wrap" items="center" gap={8}>
+              <XStack
+                flexWrap="wrap"
+                items="center"
+                justify="flex-end"
+                gap={8}
+                maxW="100%"
+                ml="auto"
+              >
                 {actions}
               </XStack>
             ) : null}
