@@ -284,7 +284,9 @@ Il `.env` sta **alla radice del repo** e lo leggono tutti i workspace: i task tu
 girano con cwd = cartella del package, quindi il path è sempre `../../.env`.
 
 Porte: web 8085, api 3005, dashboard delle code 3002, Postgres **5433** e Redis
-**6380** sull'host (la 5432 e la 6379 sono occupate da un altro progetto). Un
+**6380** sull'host (la 5432 e la 6379 sono occupate da un altro progetto),
+Mailpit 1025 (SMTP) e **8025**, dove si leggono le email che l'app spedisce in
+sviluppo: verifica, recupero password, cambio email. Un
 `REDIS_URL` rimasto sulla 6379 non dà errore: si collega al Redis dell'altro
 progetto, e server e worker lavorano su una coda vuota.
 
@@ -295,7 +297,7 @@ progetto, e server e worker lavorano su una coda vuota.
 | `pnpm dev`                       | avvia tutto (turbo)                       |
 | `pnpm lint` / `pnpm check-types` | lint e typecheck sul monorepo             |
 | `pnpm test`                      | vitest sul monorepo (serve Postgres su)   |
-| `pnpm db:up` / `pnpm db:down`    | Postgres in Docker                        |
+| `pnpm db:up` / `pnpm db:down`    | Postgres, Redis e Mailpit in Docker       |
 | `pnpm db:generate`               | genera la migration dal diff dello schema |
 | `pnpm db:migrate`                | applica le migration                      |
 | `pnpm db:studio`                 | Drizzle Studio                            |

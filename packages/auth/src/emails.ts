@@ -34,6 +34,11 @@ const texts = {
       body: (name: string, url: string) =>
         `Ciao ${name},\n\nhai chiesto di reimpostare la password di Ludex. Scegli quella nuova da qui:\n\n${url}\n\nIl link vale un'ora. Se non l'hai chiesto tu, ignora questa email: la password resta quella di prima.`,
     },
+    existing: {
+      subject: 'Hai già un account Ludex',
+      body: (name: string, url: string) =>
+        `Ciao ${name},\n\nqualcuno, forse tu, ha provato a registrarsi su Ludex con questo indirizzo, che ha già un account. Per entrare usa la password di sempre; se non la ricordi, scegline una nuova da qui:\n\n${url}\n\nSe non sei stato tu, ignora questa email: il tuo account non è cambiato.`,
+    },
     changeEmail: {
       subject: 'Conferma il cambio di indirizzo email',
       body: (name: string, url: string, newEmail: string) =>
@@ -51,6 +56,11 @@ const texts = {
       subject: 'Reset your password',
       body: (name: string, url: string) =>
         `Hi ${name},\n\nyou asked to reset your Ludex password. Choose the new one here:\n\n${url}\n\nThe link is valid for one hour. If you didn't ask for it, ignore this email: your password stays the same.`,
+    },
+    existing: {
+      subject: 'You already have a Ludex account',
+      body: (name: string, url: string) =>
+        `Hi ${name},\n\nsomeone, maybe you, tried to sign up to Ludex with this address, which already has an account. To get in use your usual password; if you don't remember it, choose a new one here:\n\n${url}\n\nIf it wasn't you, ignore this email: your account hasn't changed.`,
     },
     changeEmail: {
       subject: 'Confirm your new email address',
@@ -77,6 +87,21 @@ export function resetPassword(user: User, url: string, locale: Locale): Mail {
     to: user.email,
     subject: t.reset.subject,
     text: `${t.reset.body(user.name, url)}\n\n${t.signature}\n`,
+  };
+}
+
+/**
+ * A chi si registra con un indirizzo che ha già un account. La registrazione
+ * risponde come per un indirizzo nuovo, così non si scopre chi è iscritto:
+ * senza questa email chi ha dimenticato di esserlo aspetterebbe un link che
+ * non arriva. `url` porta al recupero della password, non a un reset diretto.
+ */
+export function existingAccount(user: User, url: string, locale: Locale): Mail {
+  const t = texts[locale];
+  return {
+    to: user.email,
+    subject: t.existing.subject,
+    text: `${t.existing.body(user.name, url)}\n\n${t.signature}\n`,
   };
 }
 

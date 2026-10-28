@@ -41,6 +41,17 @@ services:
       timeout: 5s
       retries: 10
 
+  mailpit:
+    # Le email in sviluppo (rilascio): verifica, recupero password, cambio
+    # email. Le prende tutte e non ne spedisce nessuna; si leggono su
+    # http://localhost:8025. Sul server non serve: lì c'è Scaleway TEM.
+    image: axllent/mailpit:v1
+    container_name: ludex-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   postgres-data:
   redis-data:

@@ -19,7 +19,8 @@
     "backToTop": "Torna su",
     "admin": "Admin",
     "playlists": "Playlist",
-    "wishlist": "Wishlist"
+    "wishlist": "Wishlist",
+    "coffee": "Offrimi un caffè"
   },
   "theme": {
     "label": "Tema",
@@ -543,7 +544,10 @@
     "submit": "Accedi",
     "pending": "Attendi…",
     "failed": "Accesso fallito",
-    "noAccount": "Non hai un account? <link>Registrati</link>"
+    "noAccount": "Non hai un account? <link>Registrati</link>",
+    "forgot": "Password dimenticata?",
+    "verifyFailed": "Il link di conferma è scaduto o non è valido: accedi e te ne mandiamo uno nuovo.",
+    "passwordReset": "Password cambiata: accedi con quella nuova."
   },
   "register": {
     "title": "Registrati",
@@ -556,7 +560,11 @@
     "pending": "Attendi…",
     "failed": "Registrazione fallita",
     "notice": "Registrandoti accetti le <terms>condizioni d'uso</terms> e dichiari di aver letto <privacy>l'informativa sulla privacy</privacy>.",
-    "hasAccount": "Hai già un account? <link>Accedi</link>"
+    "hasAccount": "Hai già un account? <link>Accedi</link>",
+    "checkTitle": "Controlla la posta",
+    "checkText": "Ti abbiamo scritto a {email}. Apri il link per entrare: vale un'ora.",
+    "checkHint": "Non arriva? Guarda nello spam, oppure accedi: te ne mandiamo uno nuovo.",
+    "toLogin": "Vai all'accesso"
   },
   "platform": {
     "placeholder": "Scegli una piattaforma",
@@ -618,11 +626,16 @@
     "INVALID_PASSWORD": "La password attuale non è corretta.",
     "PASSWORD_TOO_SHORT": "La password è troppo corta.",
     "PASSWORD_TOO_LONG": "La password è troppo lunga.",
-    "EMAIL_NOT_VERIFIED": "Devi prima verificare l'indirizzo email.",
+    "EMAIL_NOT_VERIFIED": "L'indirizzo email non è ancora verificato: ti abbiamo mandato un link nuovo, aprilo per entrare.",
     "FAILED_TO_CREATE_USER": "Non sono riuscito a creare l'account.",
     "LAST_ADMIN": "Sei l'ultimo admin: nomina prima qualcun altro dalla sezione Utenti, poi potrai cancellare l'account.",
     "PASSWORD_REQUIRED": "Per cancellare l'account serve la password.",
-    "BANNED_USER": "Questo account è sospeso. Se pensi che sia un errore, scrivici: l'indirizzo è nelle condizioni d'uso."
+    "BANNED_USER": "Questo account è sospeso. Se pensi che sia un errore, scrivici: l'indirizzo è nelle condizioni d'uso.",
+    "INVALID_TOKEN": "Il link non è valido o è già stato usato.",
+    "TOKEN_EXPIRED": "Il link è scaduto.",
+    "MISSING_RESPONSE": "Completa la verifica qui sopra prima di inviare.",
+    "VERIFICATION_FAILED": "La verifica non è riuscita: riprova.",
+    "TOO_MANY_REQUESTS": "Troppi tentativi: aspetta un momento e riprova."
   },
   "account": {
     "title": "Account",
@@ -646,7 +659,17 @@
       "save": "Salva",
       "cancel": "Annulla",
       "nameSaved": "Nome salvato",
-      "nameFailed": "Non sono riuscito a salvare il nome"
+      "nameFailed": "Non sono riuscito a salvare il nome",
+      "changeEmail": "Cambia",
+      "emailDialogTitle": "Cambia email",
+      "emailDialogDescription": "Ti scriviamo prima all'indirizzo di adesso per confermare, poi a quello nuovo per verificarlo.",
+      "newEmail": "Nuovo indirizzo",
+      "send": "Invia",
+      "emailSame": "È già il tuo indirizzo.",
+      "emailSent": "Controlla la posta di {email} per confermare il cambio.",
+      "emailFailed": "Non sono riuscito a chiedere il cambio",
+      "emailLinkOpened": "Se l'indirizzo qui sopra non è ancora quello nuovo, apri il link che ti abbiamo mandato lì.",
+      "emailLinkFailed": "Il link per cambiare l'email è scaduto o non è valido: chiedi di nuovo il cambio."
     },
     "password": {
       "title": "Password",
@@ -1754,5 +1777,30 @@
       "banConfirm": "Banna",
       "cancel": "Annulla"
     }
+  },
+  "forgotPassword": {
+    "title": "Password dimenticata",
+    "subtitle": "Ti mandiamo un link per sceglierne una nuova.",
+    "email": "Email",
+    "submit": "Mandami il link",
+    "pending": "Attendi…",
+    "failed": "Non sono riuscito a mandare il link",
+    "sent": "Se l'indirizzo è registrato ti arriva un link. Vale un'ora.",
+    "back": "Torna all'accesso"
+  },
+  "resetPassword": {
+    "title": "Nuova password",
+    "subtitle": "Scegli la password nuova.",
+    "password": "Nuova password",
+    "hint": "Almeno {min} caratteri.",
+    "signOutNote": "Uscirai da tutti i dispositivi.",
+    "submit": "Salva la password",
+    "pending": "Attendi…",
+    "failed": "Non sono riuscito a salvare la password",
+    "invalid": "Il link è scaduto o non è valido.",
+    "again": "Chiedine un altro"
+  },
+  "captcha": {
+    "unavailable": "Non riesco a caricare la verifica anti-bot di Cloudflare: se hai un blocco degli annunci o un'estensione per la privacy, prova a disattivarla per questo sito e ricarica la pagina."
   }
 }

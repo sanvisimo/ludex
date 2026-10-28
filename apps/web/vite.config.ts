@@ -57,6 +57,11 @@ export default defineConfig(({ mode }) => {
       'process.env.PUBLIC_API_URL': JSON.stringify(
         env.PUBLIC_API_URL ?? 'http://localhost:3005',
       ),
+      // La chiave pubblica di Turnstile (rilascio): vuota, il CAPTCHA non
+      // compare. Va insieme a `TURNSTILE_SECRET_KEY` dell'API.
+      'process.env.PUBLIC_TURNSTILE_SITE_KEY': JSON.stringify(
+        env.PUBLIC_TURNSTILE_SITE_KEY ?? '',
+      ),
     },
     plugins: [
       tanstackStart(),

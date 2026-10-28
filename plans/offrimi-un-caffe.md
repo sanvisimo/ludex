@@ -1,6 +1,9 @@
 # Offrimi un caffè
 
-**Stato: piano, da approvare.** Branch `ccr-32888f38-imrpc3`. Fa parte del
+**Stato: segnaposto fatto il 28/10/2026** nel lotto del [rilascio](rilascio.md):
+`kofiUrl` in `lib/credits.ts` è `null`, e finché lo è la voce del footer non
+si vede. Restano il nome Ko-fi e il chiarimento fiscale qui sotto.
+Prima era: **piano, da approvare.** Branch `ccr-32888f38-imrpc3`. Fa parte del
 [rilascio](rilascio.md), aggiunto il 21/10/2026.
 Roadmap: nessuna voce (vedi sotto).
 

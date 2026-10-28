@@ -5,7 +5,7 @@ import { useTranslations } from 'use-intl';
 // stessa divisione che vale per gli errori oRPC in `lib/api-error.ts`.
 //
 // Sono elencati solo i codici raggiungibili dai flussi email/password, gli unici
-// attivi allo step 1. Aggiungendo un provider social, qui va aggiunta la riga
+// attivi. Aggiungendo un provider social, qui va aggiunta la riga
 // corrispondente: quello che manca ricade sul messaggio generico della pagina.
 const codes = [
   'INVALID_EMAIL_OR_PASSWORD',
@@ -25,6 +25,15 @@ const codes = [
   // il server pretende la password.
   'LAST_ADMIN',
   'PASSWORD_REQUIRED',
+  // Il recupero della password (rilascio): il link scaduto o già usato.
+  'INVALID_TOKEN',
+  'TOKEN_EXPIRED',
+  // Il CAPTCHA (rilascio): il plugin `captcha` di Better Auth.
+  'MISSING_RESPONSE',
+  'VERIFICATION_FAILED',
+  // I limiti di frequenza: Better Auth risponde 429 senza codice, e qui gli
+  // si dà un nome (`message` qui sotto).
+  'TOO_MANY_REQUESTS',
 ] as const;
 
 type AuthErrorCode = (typeof codes)[number];
@@ -37,9 +46,10 @@ export function useAuthErrorMessage() {
   const t = useTranslations('authErrors');
 
   return function message(
-    error: { code?: string } | null | undefined,
+    error: { code?: string; status?: number } | null | undefined,
     fallback: string,
   ): string {
+    if (error?.status === 429) return t('TOO_MANY_REQUESTS');
     return isKnown(error?.code) ? t(error.code as AuthErrorCode) : fallback;
   };
 }

@@ -20,8 +20,10 @@ import { Route as AppPrivacyRouteImport } from './routes/_app.privacy'
 import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
 import { Route as AppSearchRouteImport } from './routes/_app.search'
 import { Route as AppTermsRouteImport } from './routes/_app.terms'
+import { Route as GuestForgotPasswordRouteImport } from './routes/_guest.forgot-password'
 import { Route as GuestLoginRouteImport } from './routes/_guest.login'
 import { Route as GuestRegisterRouteImport } from './routes/_guest.register'
+import { Route as GuestResetPasswordRouteImport } from './routes/_guest.reset-password'
 import { Route as AppPrivateBacklogRouteImport } from './routes/_app._private.backlog'
 import { Route as AppAccountIndexRouteImport } from './routes/_app.account.index'
 import { Route as AppAccountHiddenRouteImport } from './routes/_app.account.hidden'
@@ -94,6 +96,11 @@ const AppTermsRoute = AppTermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => AppRoute,
 } as any)
+const GuestForgotPasswordRoute = GuestForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => GuestRoute,
+} as any)
 const GuestLoginRoute = GuestLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -102,6 +109,11 @@ const GuestLoginRoute = GuestLoginRouteImport.update({
 const GuestRegisterRoute = GuestRegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => GuestRoute,
+} as any)
+const GuestResetPasswordRoute = GuestResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => GuestRoute,
 } as any)
 const AppPrivateBacklogRoute = AppPrivateBacklogRouteImport.update({
@@ -210,8 +222,10 @@ export interface FileRoutesByFullPath {
   '/roadmap': typeof AppRoadmapRoute
   '/search': typeof AppSearchRoute
   '/terms': typeof AppTermsRoute
+  '/forgot-password': typeof GuestForgotPasswordRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
+  '/reset-password': typeof GuestResetPasswordRoute
   '/backlog': typeof AppPrivateBacklogRoute
   '/account/hidden': typeof AppAccountHiddenRoute
   '/account/libraries': typeof AppAccountLibrariesRoute
@@ -239,8 +253,10 @@ export interface FileRoutesByTo {
   '/roadmap': typeof AppRoadmapRoute
   '/search': typeof AppSearchRoute
   '/terms': typeof AppTermsRoute
+  '/forgot-password': typeof GuestForgotPasswordRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
+  '/reset-password': typeof GuestResetPasswordRoute
   '/backlog': typeof AppPrivateBacklogRoute
   '/account/hidden': typeof AppAccountHiddenRoute
   '/account/libraries': typeof AppAccountLibrariesRoute
@@ -273,8 +289,10 @@ export interface FileRoutesById {
   '/_app/roadmap': typeof AppRoadmapRoute
   '/_app/search': typeof AppSearchRoute
   '/_app/terms': typeof AppTermsRoute
+  '/_guest/forgot-password': typeof GuestForgotPasswordRoute
   '/_guest/login': typeof GuestLoginRoute
   '/_guest/register': typeof GuestRegisterRoute
+  '/_guest/reset-password': typeof GuestResetPasswordRoute
   '/_app/': typeof AppIndexRoute
   '/_app/_private/backlog': typeof AppPrivateBacklogRoute
   '/_app/account/hidden': typeof AppAccountHiddenRoute
@@ -307,8 +325,10 @@ export interface FileRouteTypes {
     | '/roadmap'
     | '/search'
     | '/terms'
+    | '/forgot-password'
     | '/login'
     | '/register'
+    | '/reset-password'
     | '/backlog'
     | '/account/hidden'
     | '/account/libraries'
@@ -336,8 +356,10 @@ export interface FileRouteTypes {
     | '/roadmap'
     | '/search'
     | '/terms'
+    | '/forgot-password'
     | '/login'
     | '/register'
+    | '/reset-password'
     | '/backlog'
     | '/account/hidden'
     | '/account/libraries'
@@ -369,8 +391,10 @@ export interface FileRouteTypes {
     | '/_app/roadmap'
     | '/_app/search'
     | '/_app/terms'
+    | '/_guest/forgot-password'
     | '/_guest/login'
     | '/_guest/register'
+    | '/_guest/reset-password'
     | '/_app/'
     | '/_app/_private/backlog'
     | '/_app/account/hidden'
@@ -477,6 +501,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTermsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_guest/forgot-password': {
+      id: '/_guest/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof GuestForgotPasswordRouteImport
+      parentRoute: typeof GuestRoute
+    }
     '/_guest/login': {
       id: '/_guest/login'
       path: '/login'
@@ -489,6 +520,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof GuestRegisterRouteImport
+      parentRoute: typeof GuestRoute
+    }
+    '/_guest/reset-password': {
+      id: '/_guest/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof GuestResetPasswordRouteImport
       parentRoute: typeof GuestRoute
     }
     '/_app/_private/backlog': {
@@ -722,13 +760,17 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface GuestRouteChildren {
+  GuestForgotPasswordRoute: typeof GuestForgotPasswordRoute
   GuestLoginRoute: typeof GuestLoginRoute
   GuestRegisterRoute: typeof GuestRegisterRoute
+  GuestResetPasswordRoute: typeof GuestResetPasswordRoute
 }
 
 const GuestRouteChildren: GuestRouteChildren = {
+  GuestForgotPasswordRoute: GuestForgotPasswordRoute,
   GuestLoginRoute: GuestLoginRoute,
   GuestRegisterRoute: GuestRegisterRoute,
+  GuestResetPasswordRoute: GuestResetPasswordRoute,
 }
 
 const GuestRouteWithChildren = GuestRoute._addFileChildren(GuestRouteChildren)

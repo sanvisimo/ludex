@@ -7,6 +7,7 @@ import { useTranslations } from 'use-intl';
 import { GameSearchBox } from '@/components/game-search';
 import { RandomGameDice } from '@/components/random-game-dice';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { kofiUrl } from '@/lib/credits';
 import { BackToTop } from '@/src/components/back-to-top';
 import { ButtonLink } from '@/src/components/button-link';
 import { LocaleSwitcher } from '@/src/components/locale-switcher';
@@ -189,6 +190,9 @@ function Footer() {
         <FooterLink to="/credits">{t('credits')}</FooterLink>
         <FooterLink to="/privacy">{t('privacy')}</FooterLink>
         <FooterLink to="/terms">{t('terms')}</FooterLink>
+        {kofiUrl && (
+          <FooterExternalLink href={kofiUrl}>{t('coffee')}</FooterExternalLink>
+        )}
       </XStack>
     </YStack>
   );
@@ -197,6 +201,30 @@ function Footer() {
 function FooterText({ children }: { children: ReactNode }) {
   return (
     <Text fontSize={12} lineHeight={16} color="$color10">
+      {children}
+    </Text>
+  );
+}
+
+/** Come `FooterLink`, ma esce dall'app: nuova scheda, senza `referrer`. */
+function FooterExternalLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: string;
+}) {
+  return (
+    <Text
+      render="a"
+      {...({ href, target: '_blank', rel: 'noopener noreferrer' } as object)}
+      fontSize={12}
+      lineHeight={16}
+      color="$color11"
+      textDecorationLine="underline"
+      cursor="pointer"
+      hoverStyle={{ color: '$color12' }}
+    >
       {children}
     </Text>
   );

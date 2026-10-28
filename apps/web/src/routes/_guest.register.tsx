@@ -12,11 +12,12 @@ import {
   Label,
 } from '@repo/ui';
 import { useTranslations } from 'use-intl';
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
-import { useQueryClient } from '@tanstack/react-query';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import { useCaptcha } from '@/components/captcha';
 import { useAuthErrorMessage } from '@/lib/auth-error';
+import { ButtonLink } from '@/src/components/button-link';
 
 export const Route = createFileRoute('/_guest/register')({
   component: RegisterPage,
@@ -25,32 +26,43 @@ export const Route = createFileRoute('/_guest/register')({
 function RegisterPage() {
   const t = useTranslations('register');
   const authErrorMessage = useAuthErrorMessage();
-  const router = useRouter();
-  const queryClient = useQueryClient();
+  const captcha = useCaptcha();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  // L'indirizzo a cui è partito il link: la card prende il posto del modulo.
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const email = String(form.get('email'));
     setPending(true);
     setError(null);
 
-    const { error } = await signUp.email({
-      name: String(form.get('name')),
-      email: String(form.get('email')),
-      password: String(form.get('password')),
-    });
+    const { error } = await signUp.email(
+      {
+        name: String(form.get('name')),
+        email,
+        password: String(form.get('password')),
+        // Il link di conferma fa entrare e riporta all'accesso, che da
+        // loggati passa al backlog; se è scaduto, l'accesso lo dice.
+        callbackURL: `${window.location.origin}/login?verified=1`,
+      },
+      { headers: captcha.headers },
+    );
 
     setPending(false);
+    captcha.reset();
     if (error) {
       setError(authErrorMessage(error, t('failed')));
       return;
     }
-    // Come all'accesso: niente dei dati di chi c'era prima.
-    queryClient.clear();
-    await router.navigate({ to: '/' });
+    // La registrazione non apre una sessione: si entra dal link. Un indirizzo
+    // già iscritto risponde allo stesso modo, e riceve un'email diversa.
+    setSentTo(email);
   }
+
+  if (sentTo) return <CheckYourEmail email={sentTo} />;
 
   return (
     <main className="flex flex-1 items-center justify-center p-6">
@@ -92,13 +104,15 @@ function RegisterPage() {
               <p className="text-muted-foreground">{t('passwordHint')}</p>
             </div>
 
+            {captcha.widget}
+
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={pending || !captcha.ready}>
               {pending ? t('pending') : t('submit')}
             </Button>
 
@@ -128,6 +142,29 @@ function RegisterPage() {
               })}
             </p>
           </form>
+        </CardContent>
+      </Card>
+    </main>
+  );
+}
+
+function CheckYourEmail({ email }: { email: string }) {
+  const t = useTranslations('register');
+
+  return (
+    <main className="flex flex-1 items-center justify-center p-6">
+      <Card width="100%" maxW={384}>
+        <CardHeader>
+          <CardTitle fontSize={18} lineHeight={28}>
+            {t('checkTitle')}
+          </CardTitle>
+          <CardDescription>{t('checkText', { email })}</CardDescription>
+        </CardHeader>
+        <CardContent gap={16}>
+          <p className="text-muted-foreground">{t('checkHint')}</p>
+          <ButtonLink href="/login" variant="outline">
+            {t('toLogin')}
+          </ButtonLink>
         </CardContent>
       </Card>
     </main>

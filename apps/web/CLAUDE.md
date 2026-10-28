@@ -221,7 +221,24 @@ le ragioni sono nel piano del 12a, il passaggio nel piano del 12b.
 
 **Il guscio** è il layout `_app` (`apps/web/src/routes/_app.tsx`), che avvolge
 tutte le rotte tranne accesso e registrazione: quelle stanno sotto `_guest`, a
-pagina piena. `AppShell` è **una barra sola** e un footer, senza barra
+pagina piena, con «Password dimenticata» e «Nuova password» (rilascio,
+`plans/rilascio.md`). `_guest` porta al backlog chi è già dentro, tranne su
+`/reset-password`: il link dell'email si apre anche dove si è entrati. Cose che
+non si indovinano:
+
+- **la registrazione non apre una sessione**: si entra dal link dell'email,
+  che passa dall'API e torna a `/login?verified=1` (con `&error=…` se è
+  scaduto); andato bene, la sessione c'è e `_guest` porta al backlog. Lo
+  stesso link parte di nuovo a ogni accesso tentato con la password giusta.
+- **il CAPTCHA è `useCaptcha`** (`components/captcha.tsx`, Cloudflare
+  Turnstile) su accesso, registrazione e recupero: il token va nelle
+  `headers` della chiamata a Better Auth e vale una volta, quindi `reset()`
+  dopo ogni invio. Senza `PUBLIC_TURNSTILE_SITE_KEY` non c'è, ed è così in
+  sviluppo.
+- **gli URL di ritorno sono assoluti** (`window.location.origin`): li apre
+  l'API, che sta su un'altra origine, e li controlla con `trustedOrigins`.
+
+`AppShell` è **una barra sola** e un footer, senza barra
 laterale né menu a scomparsa: a sinistra il nome, che porta al catalogo, o al
 backlog da loggati; a destra l'avatar, col menu di home, backlog, account, tema, lingua e uscita, o da
 anonimo tema, lingua, «Accedi» e «Registrati», che sotto `$md` in barra non
@@ -342,7 +359,13 @@ direzione col CSS. Cose che non si indovinano:
 - **Provarla con Playwright**: la pagina tiene aperta una connessione per gli
   eventi, quindi `networkidle` non scatta mai; si aspetta un selettore. L'accesso
   si fa con una `POST /api/auth/sign-in/email` dal contesto del browser: il cookie
-  è per host e non per porta, quindi vale anche sul web.
+  è per host e non per porta, quindi vale anche sul web. Un utente nuovo entra
+  solo dopo il link di verifica, che si legge da Mailpit
+  (`http://localhost:8025/api/v1/messages`).
+- **Il cambio email** è un dialogo di `ProfileDetails`: due link, il primo
+  all'indirizzo di adesso e il secondo a quello nuovo, che tornano entrambi a
+  `/account/profile?emailChange=1`. La pagina non sa da quale dei due si
+  arriva, e l'avviso vale per tutti e due.
 - **Steam ha un corpo suo nel dialogo «Aggiungi libreria»** (`steam-link.tsx`): il
   login col QR sopra, il profilo sotto, e il nome facoltativo condiviso. Il QR è
   `steam-qr-panel.tsx`: lo chiede all'apertura e interroga `status` ogni due

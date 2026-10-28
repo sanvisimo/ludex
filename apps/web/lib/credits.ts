@@ -157,6 +157,15 @@ export const platformIconsLicense = '/platforms/LICENSE.md';
 export const repoUrl = 'https://github.com/sanvisimo/ludex';
 export const licenseUrl = 'https://www.gnu.org/licenses/agpl-3.0.html';
 
+/**
+ * «Offrimi un caffè» (`plans/offrimi-un-caffe.md`): la pagina Ko-fi, solo
+ * donazioni singole. Per ora un segnaposto: finché è `null` la voce del footer
+ * non c'è, perché un link che non porta da nessuna parte è peggio di nessun
+ * link. Si accende scrivendo qui `https://ko-fi.com/<nome>`, dopo il
+ * chiarimento fiscale che il piano chiede.
+ */
+export const kofiUrl: string | null = null;
+
 /** Dove arrivano suggerimenti, idee e segnalazioni: le issue, in pubblico. */
 export const issuesUrl = `${repoUrl}/issues`;
 

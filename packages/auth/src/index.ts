@@ -8,6 +8,7 @@ import { admin } from 'better-auth/plugins/admin';
 
 import {
   confirmEmailChange,
+  existingAccount,
   localeOf,
   resetPassword,
   verifyEmail,
@@ -21,13 +22,14 @@ if (!secret) {
   );
 }
 
+const webUrl = process.env.WEB_URL ?? 'http://localhost:8085';
 const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
 
 export const auth = betterAuth({
   secret,
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3005',
   // Il web gira su un'origine diversa dall'API, quindi va dichiarata esplicitamente.
-  trustedOrigins: [process.env.WEB_URL ?? 'http://localhost:8085'],
+  trustedOrigins: [webUrl],
   database: drizzleAdapter(db, { provider: 'pg', schema }),
   session: {
     // Spento il controllo di freschezza. `freshAge` si misura da `createdAt`,
@@ -110,6 +112,12 @@ export const auth = betterAuth({
     // Chi reimposta la password perché qualcuno la conosce vuole buttare
     // fuori anche lui: come il cambio password, che lo spunta di default.
     revokeSessionsOnPasswordReset: true,
+    // Con la verifica accesa, registrarsi con un indirizzo già iscritto
+    // risponde come con uno nuovo: l'avviso va per email, a chi ce l'ha.
+    onExistingUserSignUp: async ({ user }, request) =>
+      sendInBackground(
+        existingAccount(user, `${webUrl}/forgot-password`, localeOf(request)),
+      ),
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }, request) =>

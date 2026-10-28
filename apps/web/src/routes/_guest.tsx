@@ -9,8 +9,11 @@ import { hasSession } from '@/src/session';
 // Accesso e registrazione: fuori dal guscio, perché da anonimo una barra con
 // una voce sola non porterebbe da nessuna parte. Restano il nome, che riporta
 // al catalogo, e tema e lingua. Da loggato non hanno senso: si va al backlog.
+// Tranne «Nuova password»: il link dell'email si può aprire su un browser
+// dove si è ancora dentro, e rimbalzare al backlog lo renderebbe inservibile.
 export const Route = createFileRoute('/_guest')({
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
+    if (location.pathname === '/reset-password') return;
     if (await hasSession()) throw redirect({ to: '/backlog' });
   },
   component: GuestLayout,
