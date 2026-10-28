@@ -244,6 +244,34 @@ describe('mergeGames', () => {
     expect(segnalazioni.filter((r) => r.resolvedAt === null)).toHaveLength(1);
   });
 
+  it('in una playlist aperta il gioco che resta prende il posto dell’assorbito', async () => {
+    const { giusto, amano } = await coppia();
+    const userId = await createUser();
+    const altro = await createGame({ name: 'Celeste' });
+    const [lista] = await db
+      .insert(schema.playlists)
+      .values({ userId, name: 'Top', kind: 'curated' })
+      .returning({ id: schema.playlists.id });
+    await db.insert(schema.wishlistItems).values([
+      { listId: lista!.id, gameId: altro.id, position: 0 },
+      { listId: lista!.id, gameId: amano.id, position: 1 },
+    ]);
+
+    await mergeGames(await createUser(), giusto.id, amano.id);
+
+    const voci = await db
+      .select({
+        gameId: schema.wishlistItems.gameId,
+        position: schema.wishlistItems.position,
+      })
+      .from(schema.wishlistItems)
+      .orderBy(schema.wishlistItems.position);
+    expect(voci).toEqual([
+      { gameId: altro.id, position: 0 },
+      { gameId: giusto.id, position: 1 },
+    ]);
+  });
+
   it('i dati del sopravvissuto non si toccano, e l’assorbito sparisce', async () => {
     const { giusto, amano } = await coppia();
     await db.insert(schema.gameScores).values([

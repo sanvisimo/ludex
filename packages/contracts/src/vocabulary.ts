@@ -346,12 +346,15 @@ export const userTagKindValues = ['tag', 'category'] as const;
 // backlog (`filter`) o una lista di giochi scelti a mano, che non sono nel
 // backlog (`wishlist`), o la wishlist di un negozio (`store_wishlist`, step 15e):
 // una lista di sola lettura legata a un account, che l'import allinea al negozio.
+// O una playlist aperta (`curated`, step 15f): giochi scelti a mano, nell'ordine
+// voluto, che possono stare anche nel backlog («i 100 RPG più belli di sempre»).
 // Sta nel vocabolario perché l'enum del database e il client devono conoscerlo
 // senza poter importare `@repo/db`.
 export const playlistKindValues = [
   'filter',
   'wishlist',
   'store_wishlist',
+  'curated',
 ] as const;
 
 // Come si ordina una lista (step 15b). Sono i dati del gioco, più la data in cui

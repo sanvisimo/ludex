@@ -44,6 +44,13 @@ const query = (input: PlaylistQueryInput = {}) =>
 const open = (token: string, viewerId: string | null = null) =>
   openSharedPlaylist({ token, limit: 30, offset: 0 }, viewerId);
 
+/** Come `open`, per una playlist a filtro: i campi dei filtri ci sono. */
+async function openFilter(token: string) {
+  const shared = await open(token);
+  if (shared?.kind !== 'filter') throw new Error('non è una playlist a filtro');
+  return shared;
+}
+
 async function aggiungi(
   userId: string,
   game: Parameters<typeof createGame>[0],
@@ -248,6 +255,7 @@ describe('cosa esce', () => {
     expect(Object.keys(aperta!).sort()).toEqual([
       'droppedTags',
       'games',
+      'kind',
       'name',
       'query',
       'total',
@@ -348,18 +356,18 @@ describe('i filtri, per chi li riusa', () => {
       durationMax: 90,
     });
 
-    const aperta = await open(token);
-    expect(aperta!.games.map((g) => g.name)).toEqual(['Con tag']);
-    expect(aperta!.droppedTags).toBe(1);
-    expect(aperta!.query).toMatchObject({ durationMax: 90 });
-    expect(aperta!.query).not.toHaveProperty('tags');
+    const aperta = await openFilter(token);
+    expect(aperta.games.map((g) => g.name)).toEqual(['Con tag']);
+    expect(aperta.droppedTags).toBe(1);
+    expect(aperta.query).toMatchObject({ durationMax: 90 });
+    expect(aperta.query).not.toHaveProperty('tags');
     expect(JSON.stringify(aperta)).not.toContain(tag!.id);
   });
 
   it('senza tag non c’è niente da dire', async () => {
     const userId = await createUser();
     const { token } = await condivisa(userId);
-    expect((await open(token))!.droppedTags).toBe(0);
+    expect((await openFilter(token)).droppedTags).toBe(0);
   });
 });
 

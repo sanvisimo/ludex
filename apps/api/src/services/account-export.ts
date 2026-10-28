@@ -139,6 +139,48 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
         .orderBy(asc(schema.wishlistItems.addedAt), asc(schema.games.name))
     : [];
 
+  // Le playlist aperte, coi giochi nell'ordine scelto: quello che le legge
+  // `curatedPage`, posizione e poi data e gioco.
+  const curatedLists = await db
+    .select({
+      id: schema.playlists.id,
+      name: schema.playlists.name,
+      shareToken: schema.playlists.shareToken,
+    })
+    .from(schema.playlists)
+    .where(
+      and(
+        eq(schema.playlists.userId, userId),
+        eq(schema.playlists.kind, 'curated'),
+      ),
+    )
+    .orderBy(asc(schema.playlists.position), asc(schema.playlists.name));
+  const curatedItems = curatedLists.length
+    ? await db
+        .select({
+          listId: schema.wishlistItems.listId,
+          name: schema.games.name,
+          igdbId: schema.games.igdbId,
+          addedAt: schema.wishlistItems.addedAt,
+        })
+        .from(schema.wishlistItems)
+        .innerJoin(
+          schema.games,
+          eq(schema.games.id, schema.wishlistItems.gameId),
+        )
+        .where(
+          inArray(
+            schema.wishlistItems.listId,
+            curatedLists.map((list) => list.id),
+          ),
+        )
+        .orderBy(
+          sql`${schema.wishlistItems.position} asc nulls last`,
+          asc(schema.wishlistItems.addedAt),
+          asc(schema.wishlistItems.gameId),
+        )
+    : [];
+
   // Le wishlist dei negozi: i giochi in lista e, accanto, le voci non riconosciute
   // (nascoste comprese) dello stesso account.
   const storeLists = await db
@@ -263,6 +305,18 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
         .filter((item) => item.listId === list.id)
         .map((item) => ({
           game: { name: item.name, igdbId: item.igdbId },
+          addedAt: item.addedAt,
+        })),
+    })),
+    curatedPlaylists: curatedLists.map((list) => ({
+      name: list.name,
+      shared: list.shareToken !== null,
+      games: curatedItems
+        .filter((item) => item.listId === list.id)
+        // Le posizioni salvate possono avere buchi: nel file sono il posto, da 1.
+        .map((item, index) => ({
+          game: { name: item.name, igdbId: item.igdbId },
+          position: index + 1,
           addedAt: item.addedAt,
         })),
     })),

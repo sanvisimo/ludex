@@ -811,6 +811,21 @@ export const AccountExportSchema = z.object({
       ),
     }),
   ),
+  // Le playlist aperte (15f), coi giochi nell'ordine scelto: `position` parte da
+  // 1, come la leggerebbe chi apre il file.
+  curatedPlaylists: z.array(
+    z.object({
+      name: z.string(),
+      shared: z.boolean(),
+      games: z.array(
+        z.object({
+          game: z.object({ name: z.string(), igdbId: z.number().nullable() }),
+          position: z.number().int(),
+          addedAt: z.date(),
+        }),
+      ),
+    }),
+  ),
   // Le wishlist dei negozi (15e): una per account collegato, coi giochi in lista e
   // le voci che l'import non ha saputo legare a un gioco. `account` è come l'utente
   // chiama l'account, come per i possessi.
@@ -960,6 +975,32 @@ export const WishlistMembershipSchema = z.object({
   has: z.boolean(),
 });
 
+// --- Playlist aperte (step 15f) ---
+
+/**
+ * Una playlist aperta: giochi scelti a mano, nell'ordine voluto. `count` li
+ * comprende tutti, anche quelli che hai nel backlog.
+ */
+export const CuratedPlaylistSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  count: z.number().int(),
+  // Il link pubblico, se è condivisa. Lo vede solo chi l'ha fatta.
+  shareToken: z.string().nullable(),
+});
+
+/**
+ * Una playlist aperta, aperta: i giochi come li mostra il catalogo, con lo stato
+ * di chi guarda, nell'ordine scelto. `position` è il posto del gioco nella lista
+ * intera, da 0 e senza buchi, anche quando la ricerca ne mostra solo alcuni.
+ */
+export const CuratedPlaylistGamesSchema = CuratedPlaylistSchema.omit({
+  count: true,
+}).extend({
+  total: z.number().int(),
+  games: z.array(HomeGameSchema.extend({ position: z.number().int() })),
+});
+
 /**
  * Il link di una playlist condivisa (step 15d): 22 caratteri base64url. Lo
  * schema stringe prima di cercare, così un valore che non può essere un link non
@@ -980,13 +1021,24 @@ export const ShareTokenSchema = z
  * - i filtri, per chi li vuole riusare sul proprio backlog, **senza i tag**, che
  *   sono per id e di chi li ha scritti; `droppedTags` dice quanti erano.
  */
-export const SharedPlaylistSchema = z.object({
-  name: z.string(),
-  total: z.number().int(),
-  games: z.array(HomeGameSchema),
-  query: PlaylistQuerySchema.omit({ tags: true }),
-  droppedTags: z.number().int(),
-});
+export const SharedPlaylistSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('filter'),
+    name: z.string(),
+    total: z.number().int(),
+    games: z.array(HomeGameSchema),
+    query: PlaylistQuerySchema.omit({ tags: true }),
+    droppedTags: z.number().int(),
+  }),
+  // Una playlist aperta (15f): i giochi nell'ordine scelto, e niente filtri da
+  // riusare, perché non ne ha.
+  z.object({
+    kind: z.literal('curated'),
+    name: z.string(),
+    total: z.number().int(),
+    games: z.array(HomeGameSchema),
+  }),
+]);
 
 export const HomeBandSchema = z.object({
   kind: z.enum(homeBandKindValues),
@@ -1369,6 +1421,8 @@ export type Playlist = z.infer<typeof PlaylistSchema>;
 export type PlaylistDetail = z.infer<typeof PlaylistDetailSchema>;
 export type SharedPlaylist = z.infer<typeof SharedPlaylistSchema>;
 export type Wishlist = z.infer<typeof WishlistSchema>;
+export type CuratedPlaylist = z.infer<typeof CuratedPlaylistSchema>;
+export type CuratedPlaylistGames = z.infer<typeof CuratedPlaylistGamesSchema>;
 export type WishlistGames = z.infer<typeof WishlistGamesSchema>;
 export type WishlistUnresolved = z.infer<typeof WishlistUnresolvedSchema>;
 export type WishlistMembership = z.infer<typeof WishlistMembershipSchema>;

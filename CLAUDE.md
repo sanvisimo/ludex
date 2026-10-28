@@ -178,7 +178,7 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
 
 Poi il mobile. I numeri sono nomi e non si rinumerano: **quello che resta si fa
 in quest'ordine** (09/10/2026, aggiornato il 22/10) — rilascio · 13a e 13b ·
-playlist aperte (15f A), tag in blocco e `criticMax` · 13c · mobile · poi le
+playlist aperte (15f A, anticipata e in corso dal 28/10), tag in blocco e `criticMax` · 13c · mobile · poi le
 parti pubbliche (15f B, catalogo con i filtri) (la 15e e la 9c sono fatte dal 13/10/2026, i link della pagina del gioco e il gioco a caso dal filtro dal 16/10, l'import CSV dal 19/10, Xbox e gli abbonamenti (14) dal 21/10, i badge della pagina del gioco dal 22/10), con le
 ragioni in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.md). Non anticipare
 step successivi: se una feature appartiene allo step 13, non implementarla

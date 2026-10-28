@@ -9,6 +9,7 @@ import { db, schema } from '@repo/db';
 import { and, eq, inArray } from '@repo/db/orm';
 
 import { searchBacklog } from './backlog-search';
+import { curatedPage, viewerMarks } from './curated-playlists';
 import { wishlistedGameIds } from './wishlist-sync';
 
 /**
@@ -25,6 +26,10 @@ import { wishlistedGameIds } from './wishlist-sync';
  * dinamica), con due condizioni che nessun filtro salvato può togliere: né i
  * giochi nascosti né quelli «non mi interessa». Sono giudizi suoi.
  *
+ * Una playlist aperta (15f) non ha query: escono i suoi giochi nell'ordine
+ * scelto, **anche quelli che il proprietario ha nascosto**, perché li ha scelti
+ * lui uno per uno. Niente filtri da riusare.
+ *
  * `undefined` se il link non c'è: sconosciuto e revocato sono la stessa cosa,
  * o si potrebbe capire che un link è esistito.
  */
@@ -34,6 +39,8 @@ export async function openSharedPlaylist(
 ): Promise<SharedPlaylist | undefined> {
   const [row] = await db
     .select({
+      id: schema.playlists.id,
+      kind: schema.playlists.kind,
       userId: schema.playlists.userId,
       name: schema.playlists.name,
       query: schema.playlists.query,
@@ -42,15 +49,38 @@ export async function openSharedPlaylist(
     .where(
       and(
         eq(schema.playlists.shareToken, input.token),
-        eq(schema.playlists.kind, 'filter'),
+        inArray(schema.playlists.kind, ['filter', 'curated']),
       ),
     );
-  if (!row?.query) return undefined;
+  if (!row) return undefined;
+
+  if (row.kind === 'curated') {
+    const page = await curatedPage({ ...input, listId: row.id });
+    const marks = await viewerMarks(
+      viewerId,
+      page.games.map((entry) => entry.game.id),
+    );
+    return {
+      kind: 'curated',
+      name: row.name,
+      total: page.total,
+      games: page.games.map((entry) => ({
+        ...entry.game,
+        ...marks(entry.game.id),
+      })),
+    };
+  }
+  if (!row.query) return undefined;
 
   const { tags: saved = [], ...query } = PlaylistQuerySchema.parse(row.query);
   // Quanti tag il filtro del proprietario usa e chi apre non può avere: sono per
   // id e suoi. Serve a dirlo a chi riusa i filtri.
-  const base = { name: row.name, query, droppedTags: saved.length };
+  const base = {
+    kind: 'filter' as const,
+    name: row.name,
+    query,
+    droppedTags: saved.length,
+  };
 
   // Il filtro del proprietario lo applica lui: i suoi tag valgono, se esistono
   // ancora (un tag cancellato si ignora, come quando apre la playlist).

@@ -32,6 +32,10 @@ il 21/10 e il 22/10), e l'ordine è anche quello della
    (9g, fermo: manca chi ha un visore) e le piattaforme dell'utente
    (`plans/piattaforme-dell-utente.md`).
 
+**La 15f A è anticipata il 28/10/2026**, su decisione dell'utente: comincia prima
+del rilascio e di 13a e 13b, perché non dipende da nessuno dei due. Il resto
+dell'ordine non cambia. Piano in `plans/15f-playlist-aperte.md`.
+
 Rivisto il 22/10/2026, con l'analisi di hosting e fornitori arrivata lo stesso
 giorno. Cosa è cambiato e perché:
 

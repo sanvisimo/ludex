@@ -1,9 +1,12 @@
 # Step 15f — Playlist aperte
 
-**Stato: decisa il 22/10/2026, non cominciata.** Quando farla nell'ordine di
-lavoro (rilascio · 13 · mobile) lo decide l'utente con calma. Roadmap:
-`openPlaylists`, oggi «idea». Nasce dalla nota «Da decidere: playlist aperte»
-in [15b-wishlist.md](15b-wishlist.md).
+**Stato: in corso dal 28/10/2026, lotto A.** Decisa il 22/10; il 28/10 l'utente
+l'ha anticipata a prima del rilascio e di 13a e 13b
+([ordine di lavoro](../docs/ordine-sviluppo.md)). Roadmap: `openPlaylists`, «in
+corso». Nasce dalla nota «Da decidere: playlist aperte» in
+[15b-wishlist.md](15b-wishlist.md).
+
+**Fatto**: il passo 1, il server (28/10). **Prossimo**: il wireframe.
 
 ## Cosa si vuole
 
@@ -28,6 +31,10 @@ l'ordine è quello di chi la fa.
    la lista. Un top 20 fatto aprendo venti schede è scomodo.
 4. **Drag&drop** per l'ordine, con «Sposta su / giù» nel menu della card come
    alternativa.
+5. **«Sposta alla posizione…»** nello stesso menu, con un campo numerico (28/10):
+   il piano era pensato su 20 giochi, e con 100 portare l'80 al 3 a colpi di «su»
+   vorrebbe decine di clic. Sul server non costa niente: la funzione è già «sposta
+   il gioco X alla posizione N».
 
 ## Cosa c'è già
 
@@ -78,7 +85,7 @@ l'ordine è quello di chi la fa.
   lo scroll sul telefono, e copertina e titolo restano link.
 - Aggiornamento ottimistico, che torna indietro se il server dice di no.
 - **Si trascina dentro la pagina visibile.** Per un'altra pagina restano «Sposta
-  su / giù» nel menu ⋯ della card.
+  su / giù» e «Sposta alla posizione…» nel menu ⋯ della card.
 - **Con la ricerca attiva il trascinamento è spento**: su una lista filtrata
   non è chiaro dove finirebbe il gioco.
 
@@ -94,8 +101,8 @@ l'ordine è quello di chi la fa.
 
 - L'esportazione include le liste, con `igdbId` e posizione; la cancellazione
   dell'account le porta via per cascade.
-- La roadmap: `openPlaylists` va in «in arrivo» ora che è decisa, in «in corso»
-  quando il lavoro comincia.
+- La roadmap: `openPlaylists` è «in corso» dal 28/10; passa a «fatto» quando
+  l'utente dice che il lotto è pronto.
 
 ### Test (contro Postgres)
 
@@ -110,9 +117,30 @@ l'ordine è quello di chi la fa.
 - il link mostra solo dati pubblici, nell'ordine scelto;
 - l'esportazione le contiene.
 
+### Il server, com'è venuto (28/10/2026)
+
+- **Migration** `0062_playlist_kind_curated`: il valore dell'enum e
+  `wishlist_items.position`, nullo fuori dalle playlist aperte. Nessun letterale
+  del valore nuovo, quindi niente `55P04`.
+- **Servizio** in [curated-playlists.ts](../apps/api/src/services/curated-playlists.ts),
+  **contratto** `curatedPlaylists` (`list`, `create`, `rename`, `remove`, `move`,
+  `get`, `add`, `removeGame`, `moveGame`, `forGame`, `share`, `unshare`). `get`
+  dà a ogni gioco il suo `position` nella lista intera, da 0 e senza buchi, anche
+  con la ricerca: serve al web per «su», «giù» e per il numero sulla card.
+- `movePlaylist`, `sharePlaylist` e `unsharePlaylist` prendono il tipo come
+  argomento, col default di prima.
+- **Il link**: `SharedPlaylist` è diventato un'unione su `kind` (`filter` con
+  query e `droppedTags`, `curated` senza). Nel web `/shared/$token` è cambiato
+  solo quanto basta a compilare: i bottoni dei filtri e l'avviso sui tag solo per
+  `filter`. Il resto della pagina è del passo 4.
+- **La fusione** (11b) porta la posizione al gioco che resta; non era nel piano,
+  ma senza il gioco sarebbe finito in fondo.
+- **Test**: [curated-playlists.test.ts](../apps/api/src/services/curated-playlists.test.ts),
+  17 casi, tutti quelli elencati sopra; uno in più in `admin-merge.test.ts`.
+
 ### Passi
 
-1. **Server**: migration, servizio, contratti, test.
+1. **Server**: migration, servizio, contratti, test. **Fatto il 28/10.**
 2. **Wireframe** (Excalidraw): `/playlist` con le due sezioni, la lista aperta
    con maniglia e ricerca per aggiungere, il menu sulla scheda del gioco.
 3. **Dipendenza**: installare dnd-kit in `apps/web`.

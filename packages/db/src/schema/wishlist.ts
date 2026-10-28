@@ -1,5 +1,6 @@
 import {
   index,
+  integer,
   pgTable,
   primaryKey,
   text,
@@ -15,11 +16,12 @@ import { playlists } from './playlists';
 import { timestamps } from './timestamps';
 
 /**
- * I giochi di una lista (`playlists` col tipo `wishlist`, step 15b).
+ * I giochi di una lista (`playlists` col tipo `wishlist`, step 15b; o
+ * `store_wishlist`, 15e; o `curated`, la playlist aperta del 15f).
  *
- * **Solo il gioco e la data**: la lista è un promemoria, e ciò che serve a
- * scegliere (durata, voti) sta già su `games`, che si arricchisce da sé. Un gioco
- * può stare in più liste.
+ * **Solo il gioco, la data e, nelle playlist aperte, la posizione**: la lista è
+ * un promemoria, e ciò che serve a scegliere (durata, voti) sta già su `games`,
+ * che si arricchisce da sé. Un gioco può stare in più liste.
  *
  * Non c'è `user_id`: lo porta la lista, e le funzioni del servizio risolvono
  * sempre la lista **filtrando per utente** prima di toccare le voci, come per
@@ -38,6 +40,12 @@ export const wishlistItems = pgTable(
       .notNull()
       .references(() => games.id, { onDelete: 'cascade' }),
     addedAt: timestamp('added_at').defaultNow().notNull(),
+    // L'ordine scelto, solo nelle playlist aperte (`curated`): nullo nelle altre
+    // liste, che si ordinano per i dati del gioco. Non è unico, come
+    // `playlists.position`: un gioco nuovo va in fondo (`max + 1`, letto nella
+    // stessa INSERT), uno tolto lascia un buco, e lo spostamento riscrive le
+    // posizioni di tutta la lista da 0. A parità decidono data e gioco.
+    position: integer('position'),
   },
   (table) => [
     primaryKey({ columns: [table.listId, table.gameId] }),
