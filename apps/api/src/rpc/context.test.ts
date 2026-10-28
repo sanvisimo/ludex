@@ -1,9 +1,9 @@
 import { call, os as plain } from '@orpc/server';
-import { auth } from '@repo/auth';
 import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { describe, expect, it } from 'vitest';
 
+import { signUpVerified } from '../../test/factories';
 import { admin, authed, type RpcContext } from './context';
 import { router } from './router';
 
@@ -16,17 +16,8 @@ const soloAdmin = plain
   .handler(() => 'ok');
 
 /** Un utente vero, con la sua sessione: il middleware legge quella. */
-async function signedIn(email: string) {
-  const { headers, response } = await auth.api.signUpEmail({
-    body: { email, password: 'password-di-prova', name: 'Prova' },
-    returnHeaders: true,
-  });
-  const cookie = headers
-    .getSetCookie()
-    .map((value) => value.split(';')[0])
-    .join('; ');
-  return { userId: response.user.id, headers: new Headers({ cookie }) };
-}
+const signedIn = (email: string) =>
+  signUpVerified(email, 'password-di-prova', 'Prova');
 
 describe('middleware admin', () => {
   it('respinge un utente senza ruolo', async () => {

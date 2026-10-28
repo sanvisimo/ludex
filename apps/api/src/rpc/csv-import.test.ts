@@ -1,7 +1,7 @@
 import { call, ORPCError } from '@orpc/server';
-import { auth } from '@repo/auth';
 import { describe, expect, it, vi } from 'vitest';
 
+import { signUpVerified } from '../../test/factories';
 import { enqueueFileImport } from '../queue/imports';
 import { router } from './router';
 
@@ -15,19 +15,8 @@ vi.mock('../queue/imports', async (importOriginal) => ({
 }));
 
 async function signedIn() {
-  const { headers } = await auth.api.signUpEmail({
-    body: {
-      email: 'csv@esempio.test',
-      password: 'password-di-prova',
-      name: 'csv',
-    },
-    returnHeaders: true,
-  });
-  const cookie = headers
-    .getSetCookie()
-    .map((value) => value.split(';')[0])
-    .join('; ');
-  return { context: { headers: new Headers({ cookie }) } };
+  const { headers } = await signUpVerified('csv@esempio.test');
+  return { context: { headers } };
 }
 
 const csv = (testo: string) =>

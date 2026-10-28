@@ -22,7 +22,15 @@
     "STORE_TOKEN_KEY",
     "METACRITIC_API_KEY",
     "BULL_BOARD_PORT",
-    "CHROMATIC_PROJECT_TOKEN"
+    "CHROMATIC_PROJECT_TOKEN",
+    "NODE_ENV",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASS",
+    "MAIL_FROM",
+    "TURNSTILE_SECRET_KEY",
+    "PUBLIC_TURNSTILE_SITE_KEY"
   ],
   "globalDependencies": [".env"],
   "tasks": {

@@ -1242,7 +1242,7 @@
       },
       "release": {
         "title": "Ludex open to everyone",
-        "text": "A stable server instead of the test one, with no access code at the door: with email confirmation and password recovery."
+        "text": "A stable server instead of the test one, with no access code at the door: with email confirmation, password recovery and email change."
       },
       "playedThreshold": {
         "title": "Played from how many minutes, per library",

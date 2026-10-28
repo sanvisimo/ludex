@@ -1241,7 +1241,7 @@
       },
       "release": {
         "title": "Ludex aperto a tutti",
-        "text": "Un server stabile al posto di quello di prova, senza codice d'accesso all'ingresso: con la conferma dell'email e il recupero della password."
+        "text": "Un server stabile al posto di quello di prova, senza codice d'accesso all'ingresso: con la conferma dell'email, il recupero della password e il cambio dell'email."
       },
       "playedThreshold": {
         "title": "Giocato da quanti minuti, per libreria",
