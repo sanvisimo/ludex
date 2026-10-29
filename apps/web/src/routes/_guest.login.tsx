@@ -35,23 +35,15 @@ function LoginForm() {
   const authErrorMessage = useAuthErrorMessage();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { next, verified, error: linkError, reset } = Route.useSearch();
+  const { next, reset } = Route.useSearch();
   const captcha = useCaptcha();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  // Gli avvisi che arrivano dall'URL: il link di conferma dell'email andato
-  // male (Better Auth rimanda qui con `?verified=1&error=…`; andato bene, la
-  // sessione c'è già e `_guest` porta al backlog), e la password appena
-  // reimpostata. Spariscono al primo invio.
+  // La password appena reimpostata (`/reset-password` rimanda qui con
+  // `?reset=true`). Sparisce al primo invio.
   const notice =
-    error === null && !pending
-      ? verified && linkError
-        ? t('verifyFailed')
-        : reset
-          ? t('passwordReset')
-          : null
-      : null;
+    reset && error === null && !pending ? t('passwordReset') : null;
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -63,9 +55,9 @@ function LoginForm() {
       {
         email: String(form.get('email')),
         password: String(form.get('password')),
-        // Se l'email non è verificata Better Auth rispedisce il link, e il
-        // link riporta qui.
-        callbackURL: `${window.location.origin}/login?verified=1`,
+        // Se l'email non è verificata Better Auth rispedisce il link, che
+        // porta alla pagina dei link come quello della registrazione.
+        callbackURL: `${window.location.origin}/email-link?step=signup`,
       },
       { headers: captcha.headers },
     );
@@ -158,10 +150,8 @@ function LoginForm() {
 export const Route = createFileRoute('/_guest/login')({
   validateSearch: (
     search: Record<string, unknown>,
-  ): { next?: string; verified?: true; error?: string; reset?: true } => ({
+  ): { next?: string; reset?: true } => ({
     next: typeof search.next === 'string' ? search.next : undefined,
-    verified: search.verified ? true : undefined,
-    error: typeof search.error === 'string' ? search.error : undefined,
     reset: search.reset ? true : undefined,
   }),
   component: LoginPage,

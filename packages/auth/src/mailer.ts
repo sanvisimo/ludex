@@ -24,7 +24,7 @@ const transport = host
     })
   : null;
 
-export type Mail = { to: string; subject: string; text: string };
+export type Mail = { to: string; subject: string; text: string; html: string };
 
 export async function sendMail(mail: Mail) {
   // Nei test ogni registrazione ne spedirebbe una, a Mailpit se il `.env` di

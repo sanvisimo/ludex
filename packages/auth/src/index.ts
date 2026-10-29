@@ -2,16 +2,23 @@ import { db, schema } from '@repo/db';
 import { and, count, eq, ne } from '@repo/db/orm';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { APIError, createAuthMiddleware } from 'better-auth/api';
+import {
+  APIError,
+  createAuthMiddleware,
+  getSessionFromCtx,
+} from 'better-auth/api';
 import { captcha } from 'better-auth/plugins';
 import { admin } from 'better-auth/plugins/admin';
 
+import { requestTypeOf, withStep } from './email-links';
 import {
+  addressTaken,
   confirmEmailChange,
   existingAccount,
   localeOf,
   resetPassword,
   verifyEmail,
+  verifyNewAddress,
 } from './emails';
 import { sendInBackground } from './mailer';
 
@@ -51,6 +58,24 @@ export const auth = betterAuth({
           code: 'PASSWORD_REQUIRED',
           message: 'Per cancellare l’account serve la password',
         });
+
+      // Il cambio verso un indirizzo che ha già un account: Better Auth
+      // risponde 200 e non spedisce niente, per non dire chi è iscritto, e
+      // chi l'ha chiesto aspetterebbe un link che non arriva. L'avviso va
+      // all'indirizzo di adesso; la risposta resta quella di Better Auth.
+      if (ctx.path === '/change-email') {
+        const newEmail = String(ctx.body?.newEmail ?? '').toLowerCase();
+        const session = await getSessionFromCtx(ctx);
+        if (!session || !newEmail || newEmail === session.user.email) return;
+        const [taken] = await db
+          .select({ id: schema.user.id })
+          .from(schema.user)
+          .where(eq(schema.user.email, newEmail));
+        if (taken)
+          sendInBackground(
+            addressTaken(session.user, newEmail, localeOf(ctx.request)),
+          );
+      }
     }),
   },
   user: {
@@ -120,8 +145,20 @@ export const auth = betterAuth({
       ),
   },
   emailVerification: {
-    sendVerificationEmail: async ({ user, url }, request) =>
-      sendInBackground(verifyEmail(user, url, localeOf(request))),
+    // La stessa funzione spedisce la conferma della registrazione e il
+    // secondo link del cambio email, al nuovo indirizzo: li separa il tipo
+    // scritto nel token. Il secondo ha il suo testo, e torna alla pagina dei
+    // link col passo finale (`email-links.ts`).
+    sendVerificationEmail: async ({ user, url, token }, request) =>
+      sendInBackground(
+        requestTypeOf(token) === 'change-email-verification'
+          ? verifyNewAddress(
+              user,
+              withStep(url, 'change-done'),
+              localeOf(request),
+            )
+          : verifyEmail(user, url, localeOf(request)),
+      ),
     sendOnSignUp: true,
     // Chi prova ad accedere senza aver verificato riceve un link nuovo: quello
     // della registrazione vale un'ora, e così non serve un pulsante apposta.

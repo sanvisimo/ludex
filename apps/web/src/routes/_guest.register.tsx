@@ -44,9 +44,9 @@ function RegisterPage() {
         name: String(form.get('name')),
         email,
         password: String(form.get('password')),
-        // Il link di conferma fa entrare e riporta all'accesso, che da
-        // loggati passa al backlog; se è scaduto, l'accesso lo dice.
-        callbackURL: `${window.location.origin}/login?verified=1`,
+        // Il link di conferma fa entrare e porta alla pagina dei link, che
+        // dice com'è andata: confermato, o scaduto.
+        callbackURL: `${window.location.origin}/email-link?step=signup`,
       },
       { headers: captcha.headers },
     );

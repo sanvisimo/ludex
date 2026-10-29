@@ -5,6 +5,8 @@ rivisti tutti i testi». Ogni voce ha il testo di **oggi** e la **proposta**;
 correggi direttamente la proposta, o scrivi sotto una riga `Nota:`. Si fa
 prima l'italiano: l'inglese si traduce dopo, dal testo approvato.
 
+**Approvata il 29/10/2026 e messa nel codice**, in italiano e in inglese.
+
 Seconda versione, del 29/10/2026: la prima era «troppo gioviale», da rendere
 «un po' più formale, ma non troppo». Le regole:
 

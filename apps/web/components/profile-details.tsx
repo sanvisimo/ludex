@@ -30,18 +30,10 @@ import { useSession } from '@/src/use-session';
 /**
  * Nome ed email. Il nome si cambia qui, sul posto; l'email da un dialogo,
  * perché cambia solo dopo due link (rilascio): il primo all'indirizzo di
- * adesso, che conferma, il secondo a quello nuovo, che si verifica.
- *
- * `emailLink` dice se si arriva da uno di quei link: `opened` quando è andato,
- * `failed` quando era scaduto o non valido. Dal primo e dal secondo si arriva
- * allo stesso indirizzo, e la pagina non sa quale dei due: l'avviso vale per
- * entrambi.
+ * adesso, che conferma, il secondo a quello nuovo, che si verifica. Tutti e due
+ * portano a `/email-link`, che dice a che punto si è.
  */
-export function ProfileDetails({
-  emailLink,
-}: {
-  emailLink?: 'opened' | 'failed';
-}) {
+export function ProfileDetails() {
   const t = useTranslations('account.profile');
   const authErrorMessage = useAuthErrorMessage();
   const nameId = useId();
@@ -146,21 +138,16 @@ export function ProfileDetails({
           </Button>
         </XStack>
 
-        {emailRequested ? (
+        {/* Vale anche quando il nuovo indirizzo è già di un altro account:
+            all'indirizzo di adesso parte l'avviso al posto della conferma,
+            così la pagina non dice chi è iscritto. */}
+        {emailRequested && (
           <Alert>
             <AlertDescription>
               {t('emailSent', { email: session.user.email })}
             </AlertDescription>
           </Alert>
-        ) : emailLink === 'failed' ? (
-          <Alert variant="destructive">
-            <AlertDescription>{t('emailLinkFailed')}</AlertDescription>
-          </Alert>
-        ) : emailLink === 'opened' ? (
-          <Alert>
-            <AlertDescription>{t('emailLinkOpened')}</AlertDescription>
-          </Alert>
-        ) : null}
+        )}
       </CardContent>
 
       <ChangeEmailDialog
@@ -207,7 +194,10 @@ function ChangeEmailDialog({
     mutationFn: async () => {
       const { error } = await authClient.changeEmail({
         newEmail: trimmed,
-        callbackURL: `${window.location.origin}/account/profile?emailChange=1`,
+        // Tutti e due i link tornano alla pagina dei link: il primo con
+        // questo passo, il secondo con `change-done`, che scrive il server
+        // (`packages/auth/src/email-links.ts`).
+        callbackURL: `${window.location.origin}/email-link?step=change-confirmed`,
       });
       if (error) throw error;
     },

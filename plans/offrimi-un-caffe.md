@@ -1,8 +1,12 @@
 # Offrimi un caffè
 
-**Stato: segnaposto fatto il 28/10/2026** nel lotto del [rilascio](rilascio.md):
-`kofiUrl` in `lib/credits.ts` è `null`, e finché lo è la voce del footer non
-si vede. Restano il nome Ko-fi e il chiarimento fiscale qui sotto.
+**Stato: segnaposto fatto il 28/10/2026** nel lotto del [rilascio](rilascio.md),
+e il 29/10 le schede in roadmap e nell'account. La piattaforma è ancora da
+scegliere (Ko-fi è la candidata), quindi la costante è `supportUrl` in
+`lib/credits.ts`: finché è `null` non si vede niente, né il footer né le
+schede. Le schede sono nostre e non il widget pronto della piattaforma, che
+caricherebbe script e cookie di terzi. Restano la piattaforma e il
+chiarimento fiscale qui sotto.
 Prima era: **piano, da approvare.** Branch `ccr-32888f38-imrpc3`. Fa parte del
 [rilascio](rilascio.md), aggiunto il 21/10/2026.
 Roadmap: nessuna voce (vedi sotto).

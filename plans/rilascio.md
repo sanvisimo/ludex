@@ -157,6 +157,38 @@ raggiunge, quindi il widget non si è visto; provati il server (senza token
 risponde `MISSING_RESPONSE`), il CORS e l'avviso a script bloccato. **Il
 widget va provato sul server vero**, con le chiavi di prova prima.
 
+## I ritocchi del 29/10/2026
+
+Commenti dell'utente provando il lotto, approvati lo stesso giorno: testi in
+[rilascio-testi.md](rilascio-testi.md), wireframe in
+[rilascio-ritocchi.excalidraw](rilascio-ritocchi.excalidraw).
+
+- [x] **Il cambio email «non funziona»**: verso un indirizzo già di un altro
+      account Better Auth risponde 200 e non spedisce niente, per non dire
+      chi è iscritto. Ora parte l'avviso «Indirizzo email già in uso»
+      all'indirizzo di adesso (hook `before` su `/change-email`), e la pagina
+      dice sempre «Abbiamo inviato un'email a {indirizzo di adesso}», vero in
+      tutti e due i casi.
+- [x] **Il secondo link del cambio** aveva il testo della registrazione: ora
+      ha il suo (`verifyNewAddress`), scelto dal tipo scritto nel token.
+- [x] **`/email-link`**, una pagina sola dove arrivano i link delle email, al
+      posto degli avvisi sparsi in Accedi e nel Profilo. Il primo link del
+      cambio, aperto dove non si è entrati, prima finiva sull'accesso senza
+      spiegazioni.
+- [x] **`next=/login`**: il rimbalzo dall'account all'accesso scriveva in
+      `next` il percorso dell'accesso stesso (c'era già prima del lotto).
+- [x] **Le email in HTML**, con la versione in testo, e i **testi più
+      formali**, in italiano e in inglese.
+- [x] **La scheda delle donazioni** in roadmap e nell'account (da `$md`),
+      nostra e non il widget pronto della piattaforma: quello porterebbe
+      script e cookie di terzi. La piattaforma è ancora da scegliere: la
+      costante è `supportUrl`, `null` finché non c'è.
+
+Verificato con Playwright e Mailpit il 29/10/2026: registrazione e conferma,
+cambio email coi link aperti in un altro browser, link riusato, indirizzo già
+in uso (avviso all'indirizzo di adesso, niente all'altro), conferma scaduta,
+rimbalzo con `next` giusto, reset, email in inglese.
+
 ## Proposti, da confermare
 
 Aggiunti alla domanda «dimentico qualcosa?». Email, cambio email e limiti di

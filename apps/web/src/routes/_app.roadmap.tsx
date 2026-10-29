@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
+import { SupportCard } from '@/components/support-card';
 import { issuesUrl } from '@/lib/credits';
 import { roadmap, type RoadmapEntry, type RoadmapStatus } from '@/lib/roadmap';
 import { Page } from '@/src/components/page';
@@ -50,10 +51,12 @@ function RoadmapPage() {
         <YStack
           width={280}
           shrink={0}
+          gap={16}
           $max-lg={{ width: '100%' }}
           style={{ position: 'sticky', top: 72 }}
         >
           <Invitation />
+          <SupportCard />
         </YStack>
       </XStack>
     </Page>

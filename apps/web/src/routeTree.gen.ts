@@ -16,6 +16,7 @@ import { Route as AppPrivateRouteImport } from './routes/_app._private'
 import { Route as AppAccountRouteImport } from './routes/_app.account'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppCreditsRouteImport } from './routes/_app.credits'
+import { Route as AppEmailLinkRouteImport } from './routes/_app.email-link'
 import { Route as AppPrivacyRouteImport } from './routes/_app.privacy'
 import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
 import { Route as AppSearchRouteImport } from './routes/_app.search'
@@ -74,6 +75,11 @@ const AppAdminRoute = AppAdminRouteImport.update({
 const AppCreditsRoute = AppCreditsRouteImport.update({
   id: '/credits',
   path: '/credits',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmailLinkRoute = AppEmailLinkRouteImport.update({
+  id: '/email-link',
+  path: '/email-link',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPrivacyRoute = AppPrivacyRouteImport.update({
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AppAccountRouteWithChildren
   '/admin': typeof AppAdminRouteWithChildren
   '/credits': typeof AppCreditsRoute
+  '/email-link': typeof AppEmailLinkRoute
   '/privacy': typeof AppPrivacyRoute
   '/roadmap': typeof AppRoadmapRoute
   '/search': typeof AppSearchRoute
@@ -249,6 +256,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/credits': typeof AppCreditsRoute
+  '/email-link': typeof AppEmailLinkRoute
   '/privacy': typeof AppPrivacyRoute
   '/roadmap': typeof AppRoadmapRoute
   '/search': typeof AppSearchRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/_app/account': typeof AppAccountRouteWithChildren
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/credits': typeof AppCreditsRoute
+  '/_app/email-link': typeof AppEmailLinkRoute
   '/_app/privacy': typeof AppPrivacyRoute
   '/_app/roadmap': typeof AppRoadmapRoute
   '/_app/search': typeof AppSearchRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/credits'
+    | '/email-link'
     | '/privacy'
     | '/roadmap'
     | '/search'
@@ -352,6 +362,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/credits'
+    | '/email-link'
     | '/privacy'
     | '/roadmap'
     | '/search'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/_app/account'
     | '/_app/admin'
     | '/_app/credits'
+    | '/_app/email-link'
     | '/_app/privacy'
     | '/_app/roadmap'
     | '/_app/search'
@@ -471,6 +483,13 @@ declare module '@tanstack/react-router' {
       path: '/credits'
       fullPath: '/credits'
       preLoaderRoute: typeof AppCreditsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/email-link': {
+      id: '/_app/email-link'
+      path: '/email-link'
+      fullPath: '/email-link'
+      preLoaderRoute: typeof AppEmailLinkRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/privacy': {
@@ -734,6 +753,7 @@ interface AppRouteChildren {
   AppAccountRoute: typeof AppAccountRouteWithChildren
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppCreditsRoute: typeof AppCreditsRoute
+  AppEmailLinkRoute: typeof AppEmailLinkRoute
   AppPrivacyRoute: typeof AppPrivacyRoute
   AppRoadmapRoute: typeof AppRoadmapRoute
   AppSearchRoute: typeof AppSearchRoute
@@ -748,6 +768,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAccountRoute: AppAccountRouteWithChildren,
   AppAdminRoute: AppAdminRouteWithChildren,
   AppCreditsRoute: AppCreditsRoute,
+  AppEmailLinkRoute: AppEmailLinkRoute,
   AppPrivacyRoute: AppPrivacyRoute,
   AppRoadmapRoute: AppRoadmapRoute,
   AppSearchRoute: AppSearchRoute,

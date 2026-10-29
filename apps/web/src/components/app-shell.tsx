@@ -7,7 +7,7 @@ import { useTranslations } from 'use-intl';
 import { GameSearchBox } from '@/components/game-search';
 import { RandomGameDice } from '@/components/random-game-dice';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { kofiUrl } from '@/lib/credits';
+import { supportUrl } from '@/lib/credits';
 import { BackToTop } from '@/src/components/back-to-top';
 import { ButtonLink } from '@/src/components/button-link';
 import { LocaleSwitcher } from '@/src/components/locale-switcher';
@@ -190,8 +190,10 @@ function Footer() {
         <FooterLink to="/credits">{t('credits')}</FooterLink>
         <FooterLink to="/privacy">{t('privacy')}</FooterLink>
         <FooterLink to="/terms">{t('terms')}</FooterLink>
-        {kofiUrl && (
-          <FooterExternalLink href={kofiUrl}>{t('coffee')}</FooterExternalLink>
+        {supportUrl && (
+          <FooterExternalLink href={supportUrl}>
+            {t('coffee')}
+          </FooterExternalLink>
         )}
       </XStack>
     </YStack>
