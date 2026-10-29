@@ -6,7 +6,52 @@ l'ha anticipata a prima del rilascio e di 13a e 13b
 corso». Nasce dalla nota «Da decidere: playlist aperte» in
 [15b-wishlist.md](15b-wishlist.md).
 
-**Fatto**: il passo 1, il server (28/10). **Prossimo**: il wireframe.
+**Fatto**: il passo 1, il server (28/10). **In corso**: il wireframe, da
+approvare (29/10).
+
+### Il wireframe (29/10/2026, da approvare)
+
+In [15f-playlist-aperte.excalidraw](15f-playlist-aperte.excalidraw). Si parte
+dalle schermate di oggi: `/playlist` con le fasce delle playlist a filtro, la
+lista della wishlist (griglia, ricerca, ordine, «Ce l'ho» e «Togli»), la scheda
+del gioco con il pannello del backlog o con «Aggiungi al backlog» e «In
+wishlist». La proposta, schermata per schermata:
+
+1. **`/playlist`** ha due sezioni, **prima «Scelte a mano», poi «Filtri
+   salvati»**: le nuove sono quelle da costruire a mano, le altre restano com'è
+   oggi. Nell'intestazione «+ Nuova playlist», che crea una scelta a mano (quelle
+   a filtro si creano ancora dal backlog). Le fasce sono le stesse di oggi, con
+   il numero sulla card. Una sezione vuota tiene il titolo e una riga sola con
+   il suo bottone; senza niente del tutto, lo stato vuoto di oggi con tutti e
+   due i bottoni.
+   - **1b**: il dialog «Nuova playlist», col nome soltanto; crea e apre la
+     playlist. Lo stesso dialog fa «Rinomina».
+   - **1c**: il menu ⋯ di una playlist scelta a mano: su, giù, rinomina,
+     condividi, elimina. Niente «Modifica filtri».
+2. **La playlist aperta**, `/playlist/curated/$id`: intestazione con
+   «Condividi» e ⋯, poi la ricerca sul titolo e «+ Aggiungi giochi». Niente
+   menu dell'ordine. Card come quelle della wishlist, con **lo stato in alto a
+   sinistra (come oggi), il numero in basso a sinistra e il cuore in basso a
+   destra**; sotto, la maniglia ⠿ a sinistra e il menu ⋯ a destra. Si
+   trascina dentro la pagina; il numero è la posizione nella lista intera.
+   - **2b**: il menu della card: sposta su, sposta giù, sposta alla
+     posizione…, togli (con «Annulla»). Su e giù passano da una pagina
+     all'altra.
+   - **2c**: il dialog «Sposta alla posizione…», con il posto di adesso e un
+     numero da 1 a N.
+   - **2d**: con la ricerca la maniglia sparisce, il menu resta, i numeri sono
+     quelli della lista intera.
+3. **«Aggiungi giochi»**: un dialog che **resta aperto**, con la ricerca della
+   barra in alto (prima i tuoi, poi Ludex, poi IGDB). Ogni riga ha «Aggiungi»,
+   che diventa «✓ Aggiunto · n. 101»; un gioco già in lista dice il suo numero.
+4. **La scheda del gioco**: «≡ Aggiungi a playlist ▾» in una riga sua, sotto i
+   bottoni di oggi, sia per i giochi tuoi sia per gli altri. Il menu è quello
+   della wishlist: una spunta per playlist e «+ Nuova playlist…», che la crea col
+   gioco dentro. Stando in almeno una il bottone dice «In 2 playlist ▾».
+5. **Telefono**: due colonne, la maniglia si tiene premuta un attimo prima di
+   trascinare, «Condividi» diventa l'icona.
+6. **Il link**: la pagina di oggi con i numeri sulle card e senza «Usa questi
+   filtri».
 
 ## Cosa si vuole
 
@@ -143,6 +188,7 @@ l'ordine è quello di chi la fa.
 1. **Server**: migration, servizio, contratti, test. **Fatto il 28/10.**
 2. **Wireframe** (Excalidraw): `/playlist` con le due sezioni, la lista aperta
    con maniglia e ricerca per aggiungere, il menu sulla scheda del gioco.
+   **Proposto il 29/10**, vedi sopra.
 3. **Dipendenza**: installare dnd-kit in `apps/web`.
 4. **Web**: le pagine, l'aggiunta dalla scheda e dalla ricerca, il
    trascinamento, la condivisione.
