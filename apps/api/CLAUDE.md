@@ -40,6 +40,13 @@ regole complete, le ragioni e le misure.
     ordinamento del backlog.
   - **niente aggregatore concorrente**, e nessuna offerta dei loro dati
     tramite una nostra API: l'API di Ludex serve solo le app di Ludex.
+  - **un interruttore per non mostrarli** (`SHOW_OPENCRITIC=0`, deciso il
+    30/10/2026): voti e link di OpenCritic non escono più dalla pagina del
+    gioco (`findGameDetailById`), e il web non li offre fra le fonti da
+    segnalare. Serve se Ludex si monetizza senza il piano commerciale (il link
+    di donazioni del rilascio potrebbe contare): allora in produzione vanno a
+    `0` questa ed `ENABLE_OPENCRITIC`, perché le condizioni vietano di usare la
+    chiave, non solo di mostrarne i dati.
   - **possono revocare la chiave e chiedere di cancellare tutti i loro dati**,
     da eseguire entro 60 giorni. I voti stanno in `game_scores` per fonte:
     cancellarli è una `delete where source = 'opencritic'`.

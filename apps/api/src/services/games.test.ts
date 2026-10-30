@@ -293,6 +293,37 @@ describe('findGameDetailById: ciò che serve alla pagina del gioco (12d)', () =>
     });
   });
 
+  it('con SHOW_OPENCRITIC=0 non dà né voto né link di OpenCritic', async () => {
+    const game = await createGame();
+    await setSource({
+      gameId: game.id,
+      source: 'opencritic',
+      status: 'ok',
+      externalId: '8525',
+    });
+    await db.insert(schema.gameScores).values([
+      { gameId: game.id, source: 'opencritic', score: 86 },
+      { gameId: game.id, source: 'igdb', score: 80 },
+    ]);
+
+    vi.stubEnv('SHOW_OPENCRITIC', '0');
+    try {
+      const detail = await findGameDetailById(game.id);
+      expect(detail?.showOpenCritic).toBe(false);
+      expect(detail?.links.opencritic).toBeNull();
+      expect(detail?.scores.map((row) => row.source)).toEqual(['igdb']);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+
+    const visible = await findGameDetailById(game.id);
+    expect(visible?.showOpenCritic).toBe(true);
+    expect(visible?.scores.map((row) => row.source).sort()).toEqual([
+      'igdb',
+      'opencritic',
+    ]);
+  });
+
   it('dà un link per negozio, solo dove una pagina ufficiale c’è', async () => {
     const game = await createGame();
     const userId = await createUser();

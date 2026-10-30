@@ -198,6 +198,22 @@ cambio email coi link aperti in un altro browser, link riusato, indirizzo già
 in uso (avviso all'indirizzo di adesso, niente all'altro), conferma scaduta,
 rimbalzo con `next` giusto, reset, email in inglese.
 
+## Licenze e donazioni (30/10/2026)
+
+Il link di donazioni (`supportUrl`, Ko-fi) potrebbe contare come
+«monetizzare in qualunque forma», e due fonti lo legano a condizioni
+diverse dalla gratuità ([apps/api/CLAUDE.md](../apps/api/CLAUDE.md)):
+
+- [x] **OpenCritic**: o il piano commerciale, o spento. `SHOW_OPENCRITIC=0`
+      toglie voti e link dalla pagina del gioco; con `ENABLE_OPENCRITIC=0`
+      non si chiama più. In produzione senza piano: tutte e due a `0`.
+- [ ] **IGDB**: una email a `partner@igdb.com` che descriva il caso (senza
+      scopo di lucro, gratuito, niente pubblicità, solo donazioni singole) e
+      chieda se è uso commerciale. La risposta va conservata. Le condizioni
+      ufficiali: api-docs.igdb.com e il Twitch Developer Services Agreement.
+- [ ] **Fisco**: il chiarimento sulle donazioni, da
+      [offrimi-un-caffe.md](offrimi-un-caffe.md).
+
 ## Proposti, da confermare
 
 Aggiunti alla domanda «dimentico qualcosa?». Email, cambio email e limiti di

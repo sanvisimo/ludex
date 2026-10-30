@@ -226,6 +226,10 @@ export const GameDetailSchema = GameSchema.extend({
     .nullable(),
   // Remake e remaster, poi i simili, ciascuno nell'ordine di IGDB.
   related: z.array(RelatedGameSchema),
+  // Se OpenCritic si mostra (`SHOW_OPENCRITIC`). Spento, voti e link di
+  // OpenCritic qui non arrivano; serve al web per non offrirlo nemmeno fra le
+  // fonti da segnalare.
+  showOpenCritic: z.boolean(),
   // La pagina del gioco su ciascuna fonte, per il link accanto al suo dato.
   // Nulla dove la fonte non ha agganciato il gioco.
   links: z.object({
