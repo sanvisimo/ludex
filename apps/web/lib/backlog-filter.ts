@@ -484,6 +484,25 @@ export function validateWishlistSearch(
 }
 
 /**
+ * L'URL di una playlist aperta (`/playlist/curated/$id`, 15f): la pagina e la
+ * ricerca sul titolo. Niente ordine: la lista segue la posizione.
+ */
+export type CuratedSearch = Pick<PagingSearch, 'page' | 'size'> & {
+  q?: string;
+};
+
+export function validateCuratedSearch(
+  raw: Record<string, unknown>,
+): CuratedSearch {
+  const { q, page, size } = validatePlaylistSearch(raw);
+  return {
+    ...(page !== undefined && { page }),
+    ...(size !== undefined && { size }),
+    ...(q && { q }),
+  };
+}
+
+/**
  * Il dado (15c): l'URL della scheda di un gioco pescato. Il seme del mazzo e i
  * criteri del filtro da cui si pesca, piatti come in `/backlog`
  * (`/games/hades?seed=k3f9&status=backlog`), così dalla scheda il dado passa

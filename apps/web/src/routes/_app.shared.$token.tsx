@@ -185,8 +185,18 @@ function SharedPlaylistPage() {
           data && (
             <>
               <Cards>
-                {data.games.map((game) => (
-                  <HomeCard key={game.id} game={game} fill />
+                {data.games.map((game, index) => (
+                  <HomeCard
+                    key={game.id}
+                    game={game}
+                    fill
+                    // Una playlist aperta (15f) è in ordine: il numero lo dice.
+                    rank={
+                      data.kind === 'curated'
+                        ? (page - 1) * size + index + 1
+                        : undefined
+                    }
+                  />
                 ))}
               </Cards>
               {/* Quanti per pagina a sinistra, le pagine a destra; sul telefono

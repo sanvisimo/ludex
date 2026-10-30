@@ -29,6 +29,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
           // Le liste a mano: un gioco che entra nel backlog esce dalle liste, e
           // lo fa da qualunque mutazione lo aggiunga.
           void client.invalidateQueries({ queryKey: api.wishlists.key() });
+          // Le playlist aperte (15f): le card portano lo stato e il cuore.
+          void client.invalidateQueries({
+            queryKey: api.curatedPlaylists.key(),
+          });
           // Il cuore sulle card (home, ricerca, playlist condivise) e lo stato
           // che portano dipendono da liste e backlog: si rileggono.
           void client.invalidateQueries({ queryKey: api.games.home.key() });

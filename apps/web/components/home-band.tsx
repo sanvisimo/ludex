@@ -32,9 +32,15 @@ export function HomeCard({
   game,
   fill = false,
   showWishlist = true,
+  rank,
 }: {
   game: HomeGame;
   fill?: boolean;
+  /**
+   * Il posto nella playlist aperta (15f), da 1: in basso a sinistra sulla
+   * copertina, dove il cuore sta a destra.
+   */
+  rank?: number;
   /**
    * Il cuore della wishlist. Si spegne dove i giochi sono già tutti in lista
    * (la lista aperta, le fasce di `/wishlist`): lì il cuore sarebbe sempre pieno.
@@ -104,6 +110,7 @@ export function HomeCard({
             </XStack>
           )}
         </Link>
+        {rank !== undefined && <RankLabel rank={rank} />}
         {showWishlist && <WishlistHeart game={game} />}
       </YStack>
       <GameTitleLink game={game} lines={2} />
@@ -116,6 +123,35 @@ export function HomeCard({
         <GameDuration game={game} short />
       </XStack>
     </YStack>
+  );
+}
+
+/**
+ * Il numero di una card in una playlist aperta. Fuori dal link della copertina,
+ * che i lettori di schermo saltano: il posto lo dicono qui, con l'etichetta.
+ */
+function RankLabel({ rank }: { rank: number }) {
+  const t = useTranslations('curated');
+  return (
+    <XStack
+      position="absolute"
+      b={6}
+      l={6}
+      minW={28}
+      height={28}
+      px={6}
+      items="center"
+      justify="center"
+      rounded={6}
+      bg="$background"
+      pointerEvents="none"
+      role="img"
+      aria-label={t('rank', { position: rank })}
+    >
+      <Text fontSize={14} lineHeight={20} fontWeight="600" color="$color12">
+        {rank}
+      </Text>
+    </XStack>
   );
 }
 

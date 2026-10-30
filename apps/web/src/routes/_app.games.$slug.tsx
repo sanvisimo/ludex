@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { AddGameDialog } from '@/components/add-game-dialog';
+import { CuratedPlaylistControl } from '@/components/curated-playlist-control';
 import { Muted } from '@/components/detail-text';
 import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import {
@@ -258,6 +259,9 @@ function GamePage() {
               </XStack>
             )
           )}
+          {/* Le playlist scelte a mano (15f) tengono anche i giochi che hai: una
+              riga sua, uguale nei due casi, sotto i bottoni di sopra. */}
+          {session.data && <CuratedPlaylistControl game={game} />}
           <StoreLinks game={game} />
           {/* In fondo alla colonna: sotto il pannello del backlog se il gioco
               è tuo, sotto durata e critica se no. Solo da loggati: la

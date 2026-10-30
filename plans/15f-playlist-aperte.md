@@ -6,8 +6,13 @@ l'ha anticipata a prima del rilascio e di 13a e 13b
 corso». Nasce dalla nota «Da decidere: playlist aperte» in
 [15b-wishlist.md](15b-wishlist.md).
 
-**Fatto**: il passo 1, il server (28/10). **In corso**: il wireframe, da
-approvare (29/10).
+**Fatto**: il server (28/10), il wireframe (approvato il 30/10), dnd-kit e le
+pagine web (30/10). **Il lotto resta aperto** finché l'utente non lo dice pronto:
+i commenti che arrivano vedendolo in uso vanno qui.
+
+Il branch si chiama `feat/15f-playlist-aperte` dal 30/10 (prima
+`ccr-286468c8-3f1wau`, che il proxy della sessione non ha lasciato cancellare dal
+remoto: va tolto a mano).
 
 ### Il wireframe (29/10/2026, da approvare)
 
@@ -183,14 +188,35 @@ l'ordine è quello di chi la fa.
 - **Test**: [curated-playlists.test.ts](../apps/api/src/services/curated-playlists.test.ts),
   17 casi, tutti quelli elencati sopra; uno in più in `admin-merge.test.ts`.
 
+### Le pagine, come sono venute (30/10/2026)
+
+Come il wireframe, con queste differenze e aggiunte:
+
+- **`curatedPlaylists.positions`**, un endpoint in più: il dialogo «Aggiungi
+  giochi» dice «già al n. 12» prima del clic, e il server era l'unico a saperlo.
+- **Main era andato avanti** con una sua `0062`: la nostra migration è diventata
+  la `0063`, con lo stesso contenuto. Chi aveva applicato la vecchia `0062` in
+  locale (solo questa sessione) ricrea il database.
+- **«Annulla» dopo «Togli»** rimette il gioco in fondo e poi al suo posto: due
+  chiamate, perché `add` mette sempre in fondo.
+- **Le fasce di `/playlist`** troncano il nome lungo invece di mandare a capo il
+  numero dei giochi; valeva anche per quelle a filtro, ed è corretto per tutte e due.
+- In console restano due avvisi che c'erano già sulle pagine di prima (`onPress`
+  e le misure `icon` dei bottoni di Tamagui): non vengono da qui.
+- Provato con Playwright su dati finti: trascinamento col mouse e con la
+  tastiera, su, giù, alla posizione, togli e annulla, aggiungi, la ricerca che
+  spegne le maniglie, la scheda del gioco nei due casi, il link da anonimo e il
+  telefono. IGDB in questa sessione non risponde (niente credenziali), quindi i
+  risultati IGDB del dialogo non sono stati visti.
+
 ### Passi
 
 1. **Server**: migration, servizio, contratti, test. **Fatto il 28/10.**
 2. **Wireframe** (Excalidraw): `/playlist` con le due sezioni, la lista aperta
    con maniglia e ricerca per aggiungere, il menu sulla scheda del gioco.
-   **Proposto il 29/10**, vedi sopra.
-3. **Dipendenza**: installare dnd-kit in `apps/web`.
+   **Approvato il 30/10.**
+3. **Dipendenza**: installare dnd-kit in `apps/web`. **Fatto il 30/10.**
 4. **Web**: le pagine, l'aggiunta dalla scheda e dalla ricerca, il
-   trascinamento, la condivisione.
+   trascinamento, la condivisione. **Fatto il 30/10.**
 5. **Documentazione**: [modello-dati](../docs/modello-dati.md),
    [ordine-sviluppo](../docs/ordine-sviluppo.md), `apps/web/CLAUDE.md`.

@@ -100,6 +100,38 @@ sostituire. Cose che non si indovinano:
 - **I tag mancanti** (cancellati dal vocabolario) la playlist li ignora e li
   dice con un avviso: lo conta il server (`missingTags`).
 
+**Le playlist scelte a mano** (`/playlist/curated/$id`, 15f, `plans/15f-playlist-aperte.md`)
+stanno in `/playlist` con quelle a filtro, in due sezioni («Scelte a mano»
+prima, «Filtri salvati» dopo), e nascono lì con «Nuova playlist»
+(`CuratedNameDialog`). Sono giochi scelti uno per uno, nell'ordine voluto, anche
+quelli del backlog; la card porta il numero (`HomeCard` con `rank`). Cose che non
+si indovinano:
+
+- **Si riordina con dnd-kit** (`@dnd-kit/core` e `sortable`), **solo dalla
+  maniglia** sotto la card e **solo dentro la pagina** che si vede: per un'altra
+  pagina ci sono «Sposta su / giù» e «Sposta alla posizione…» nel menu ⋯ della
+  card. Mouse dopo 4 pixel, dito dopo 200 ms, tastiera con Spazio e frecce, e gli
+  annunci per lo screen reader in `curated.dnd`. Al rilascio la pagina mostra
+  subito il nuovo ordine (`reorderPage` in `lib/curated-order.ts`) e torna com'era
+  se il server dice di no. `DndContext` prende un `id` da `useId`, o gli
+  `aria-describedby` non tornano all'idratazione. **Con la ricerca la maniglia non
+  c'è**, e il numero resta quello della lista intera.
+- **`position` viene dal server**, da 0 e senza buchi, anche con la ricerca: «Sposta
+  giù» guarda il numero di giochi della lista intera (`curatedPlaylists.list`), non
+  `total`, che con la ricerca conta solo i trovati.
+- **«Aggiungi giochi»** (`curated-add-dialog.tsx`) è la ricerca della barra
+  (`useGameSearch`) in un dialogo che resta aperto; dice «già al n. 12» con
+  `curatedPlaylists.positions`, e un risultato IGDB diventa un gioco al clic, come
+  nella ricerca.
+- **Sulla scheda del gioco** «Aggiungi a playlist» (`CuratedPlaylistControl`) sta
+  in una riga sua per tutti i giochi, tuoi o no; le spunte come il menu della
+  wishlist. Il cuore non guarda queste liste.
+- **Il link** è lo stesso `/shared/$token`: `SharedPlaylist.kind` dice se è una
+  playlist a filtro o una scelta a mano, e quest'ultima ha i numeri e niente «Usa
+  questi filtri». `ShareForm` prende `kind`.
+- **Si rileggono dalla `MutationCache`** come le liste: una card porta lo stato e
+  il cuore, che cambiano da qualunque mutazione.
+
 **Il pannello dei filtri** (`FilterPanel`, nel drawer di `/backlog`) ha in cima,
 solo sotto `$sm`, la stessa ricerca della barra, che lì il drawer copre; poi
 l'ordinamento, poi «Mai giocato» come spunta semplice fuori dalle sezioni, poi una
