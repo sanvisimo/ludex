@@ -44,7 +44,11 @@ services:
   mailpit:
     # Le email in sviluppo (rilascio): verifica, recupero password, cambio
     # email. Le prende tutte e non ne spedisce nessuna; si leggono su
-    # http://localhost:8025. Sul server non serve: lì c'è Scaleway TEM.
+    # http://localhost:8025. Sul server non serve: lì c'è Scaleway TEM. Per
+    # questo sta nel profilo `dev`, che solo `pnpm db:up` accende: un
+    # `docker compose up -d` sul mini PC o sul server non lo avvia, e non apre
+    # le sue porte.
+    profiles: ["dev"]
     image: axllent/mailpit:v1
     container_name: ludex-mailpit
     restart: unless-stopped

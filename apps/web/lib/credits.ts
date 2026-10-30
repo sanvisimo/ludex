@@ -165,7 +165,11 @@ export const licenseUrl = 'https://www.gnu.org/licenses/agpl-3.0.html';
  * nessun link. Si accende scrivendo qui l'indirizzo, dopo il chiarimento
  * fiscale che il piano chiede.
  */
-export const supportUrl: string | null = 'https://ko-fi.com/sanvisimo';
+// La pagina c'è, `https://ko-fi.com/sanvisimo`: si accende dopo la risposta
+// di IGDB e il chiarimento fiscale («Licenze e donazioni» in
+// `plans/rilascio.md`). Con le donazioni accese, senza il piano commerciale di
+// OpenCritic, sul server vanno a 0 `SHOW_OPENCRITIC` ed `ENABLE_OPENCRITIC`.
+export const supportUrl: string | null = null;
 
 /** Dove arrivano suggerimenti, idee e segnalazioni: le issue, in pubblico. */
 export const issuesUrl = `${repoUrl}/issues`;
