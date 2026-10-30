@@ -1444,9 +1444,15 @@
         "title": "L'app per il telefono",
         "text": "Il backlog sempre in tasca, con la stessa libreria e le stesse playlist del web."
       },
+      "publicPlaylists": {
+        "title": "Playlist pubbliche",
+        "text": "Le playlist scelte a mano che si possono trovare, non solo aprire con un link."
+      },
       "openPlaylists": {
-        "title": "Playlist aperte",
-        "text": "Liste di giochi scelti a mano, nell'ordine che vuoi: «i 20 RPG più belli di sempre». Private, con un link o pubbliche."
+        "title": "Playlist scelte a mano",
+        "p1": "Una playlist si può fare anche gioco per gioco, nell'ordine che vuoi: «i 100 RPG più belli di sempre». Si crea da Playlist e si riempie con una ricerca dentro la playlist, dalla scheda del gioco o dal menu delle card.",
+        "p2": "L'ordine si cambia trascinando le card, o dal menu: su, giù o a un numero preciso. Ci stanno anche i giochi che hai già, ciascuno con il suo stato.",
+        "p3": "Si condivide con un link, come le altre playlist, e chi lo apre vede i giochi nell'ordine scelto. Anche le playlist e le liste della wishlist si riordinano trascinandole."
       },
       "categoryPages": {
         "title": "Le pagine categoria",

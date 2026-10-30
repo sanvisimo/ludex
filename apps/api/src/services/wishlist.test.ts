@@ -115,6 +115,14 @@ describe('le liste', () => {
       'L3',
       'L2',
     ]);
+    // A un posto, col trascinamento.
+    expect(await moveWishlist(userId, l3.id, 0)).toBe(true);
+    expect((await listWishlists(userId)).map((l) => l.name)).toEqual([
+      'L3',
+      'L1',
+      'L2',
+    ]);
+    await moveWishlist(userId, l3.id, 1);
     expect((await listPlaylists(userId)).map((p) => p.name)).toEqual([
       'P1',
       'P2',

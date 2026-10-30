@@ -39,6 +39,7 @@ import {
   CuratedPlaylistGamesSchema,
   CuratedPlaylistSchema,
   PlaylistDetailSchema,
+  ListMoveSchema,
   PlaylistNameSchema,
   PlaylistQuerySchema,
   PlaylistSchema,
@@ -515,11 +516,10 @@ export const contract = {
       .output(z.object({ token: ShareTokenSchema })),
     unshare: oc.input(z.object({ id: z.uuid() })).output(z.void()),
 
-    // Sposta di un posto verso l'alto o verso il basso nell'elenco dell'utente.
-    // Spostare la prima su, o l'ultima giù, non fa niente e non è un errore.
-    move: oc
-      .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
-      .output(z.void()),
+    // Sposta di un posto verso l'alto o verso il basso nell'elenco dell'utente,
+    // o a un posto (il trascinamento). Spostare la prima su, o l'ultima giù, non
+    // fa niente e non è un errore; un posto oltre la fine vale l'ultimo.
+    move: oc.input(ListMoveSchema).output(z.void()),
   },
 
   // L'import da CSV (10): giochi da un file, per esempio l'export di Playnite.
@@ -608,9 +608,7 @@ export const contract = {
     // scheda dell'account, e l'aggiornamento automatico non la ricrea. `CONFLICT`
     // se il suo import è in corso.
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
-    move: oc
-      .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
-      .output(z.void()),
+    move: oc.input(ListMoveSchema).output(z.void()),
 
     // La lista aperta: ricerca sul titolo, ordine e pagina. I giochi che hai nel
     // backlog non ci sono, anche se la voce c'è ancora.
@@ -684,9 +682,7 @@ export const contract = {
       .output(CuratedPlaylistSchema),
     // Toglie la playlist e le sue voci, non i giochi.
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
-    move: oc
-      .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
-      .output(z.void()),
+    move: oc.input(ListMoveSchema).output(z.void()),
 
     // La playlist aperta, nell'ordine scelto e solo in quello. La ricerca sul
     // titolo restringe i giochi, non cambia il loro `position`.

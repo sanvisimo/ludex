@@ -706,6 +706,24 @@ export const RandomSeedSchema = z.string().regex(/^[a-z0-9]{1,16}$/);
 
 export const PlaylistNameSchema = z.string().trim().min(1).max(80);
 
+/**
+ * Lo spostamento di una playlist o di una lista nel suo elenco: di un posto
+ * (`direction`, il menu) o a un posto (`position`, da 0, il trascinamento),
+ * dentro il suo gruppo. Uno dei due, non tutti e due.
+ */
+export const ListMoveSchema = z
+  .object({
+    id: z.uuid(),
+    direction: z.enum(['up', 'down']).optional(),
+    position: z.number().int().min(0).optional(),
+  })
+  .refine(
+    (move) => (move.direction === undefined) !== (move.position === undefined),
+    {
+      message: 'direction o position, uno dei due',
+    },
+  );
+
 export const PlaylistSchema = z.object({
   id: z.uuid(),
   name: z.string(),

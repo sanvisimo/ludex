@@ -17,10 +17,11 @@ import { useTranslations } from 'use-intl';
 
 import { CARD_WIDTH, HomeCard } from '@/components/home-band';
 import { ScrollRow } from '@/components/scroll-row';
+import { type BandDrag, SortableBands } from '@/components/sortable-bands';
 import { StoreImportNotices } from '@/components/store-import-notices';
 import { NewListDialog, WishlistMenu } from '@/components/wishlist-menu';
 import { useStoreLabels } from '@/lib/labels';
-import { api } from '@/lib/orpc';
+import { api, client } from '@/lib/orpc';
 import { STORE_BRAND } from '@/lib/store-brand';
 import { Page } from '@/src/components/page';
 
@@ -33,7 +34,8 @@ const BAND_SIZE = 20;
 
 /**
  * Le liste a mano (step 15b): come le playlist, una fascia per lista che scorre
- * di lato; il nome porta alla lista aperta, dove ci sono la ricerca, l'ordine e
+ * di lato, e si riordinano trascinando l'intestazione; il nome porta alla lista
+ * aperta, dove ci sono la ricerca, l'ordine e
  * le azioni sulle card. Qui si crea una lista vuota; un gioco ci arriva dalla sua
  * scheda.
  */
@@ -105,13 +107,23 @@ function WishlistsPage() {
                       : t('store.sections.stores')}
                   </Text>
                 )}
-                {group.rows.map((list, index) => (
-                  <WishlistBand
-                    key={list.id}
-                    list={list}
-                    position={{ index, count: group.rows.length }}
-                  />
-                ))}
+                {/* Si trascina dentro il gruppo: l'elenco della query li tiene
+                    tutti e due, e il server ordina per tipo. */}
+                <SortableBands
+                  items={group.rows}
+                  queryKey={api.wishlists.list.queryKey()}
+                  move={(id, position) =>
+                    client.wishlists.move({ id, position })
+                  }
+                >
+                  {(list, index, drag) => (
+                    <WishlistBand
+                      list={list}
+                      position={{ index, count: group.rows.length }}
+                      drag={drag}
+                    />
+                  )}
+                </SortableBands>
               </YStack>
             ),
           )}
@@ -131,9 +143,11 @@ function WishlistsPage() {
 function WishlistBand({
   list,
   position,
+  drag,
 }: {
   list: Wishlist;
   position: { index: number; count: number };
+  drag: BandDrag;
 }) {
   const t = useTranslations('wishlist');
   const tBacklog = useTranslations('backlog');
@@ -148,7 +162,7 @@ function WishlistBand({
 
   return (
     <ScrollRow
-      title={
+      title={drag.header(
         <XStack items="center" gap={8} shrink={1} minW={0}>
           {brand && list.store && (
             <BrandIcon
@@ -192,8 +206,8 @@ function WishlistBand({
             </Link>
           ) : null}
           <WishlistMenu list={list} position={position} />
-        </XStack>
-      }
+        </XStack>,
+      )}
       itemCount={games.length}
       arrowsFromMd
     >

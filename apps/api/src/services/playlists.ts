@@ -201,7 +201,8 @@ export async function openPlaylist(
 
 /**
  * Sposta una playlist (o, coi tipi `wishlist` e `store_wishlist`, una lista; o,
- * con `curated`, una playlist aperta) di un posto. `false` se non esiste o non è
+ * con `curated`, una playlist aperta) di un posto, su o giù, o a un posto da 0
+ * (il trascinamento; oltre la fine vale l'ultimo). `false` se non esiste o non è
  * sua.
  *
  * Le posizioni si riscrivono **per tutte**, da 0 e senza buchi, invece di
@@ -212,7 +213,7 @@ export async function openPlaylist(
 export async function movePlaylist(
   userId: string,
   id: string,
-  direction: 'up' | 'down',
+  move: 'up' | 'down' | number,
   kind: PlaylistKind = 'filter',
 ) {
   return db.transaction(async (tx) => {
@@ -238,7 +239,12 @@ export async function movePlaylist(
     const from = rows.findIndex((row) => row.id === id);
     if (from === -1) return false;
 
-    const to = direction === 'up' ? from - 1 : from + 1;
+    const to =
+      move === 'up'
+        ? from - 1
+        : move === 'down'
+          ? from + 1
+          : Math.min(move, rows.length - 1);
     const ordered = rows.map((row) => row.id);
     if (to >= 0 && to < ordered.length) {
       const [moved] = ordered.splice(from, 1);

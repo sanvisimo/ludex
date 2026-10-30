@@ -1445,9 +1445,15 @@
         "title": "The phone app",
         "text": "Your backlog always in your pocket, with the same library and playlists as the web."
       },
+      "publicPlaylists": {
+        "title": "Public playlists",
+        "text": "Hand-picked playlists that can be found, not only opened with a link."
+      },
       "openPlaylists": {
-        "title": "Open playlists",
-        "text": "Lists of hand-picked games in the order you want: \"the 20 best RPGs ever\". Private, with a link, or public."
+        "title": "Hand-picked playlists",
+        "p1": "A playlist can also be built game by game, in the order you want: \"the 100 best RPGs ever\". You create it from Playlists and fill it with a search inside the playlist, from a game's page or from the card menu.",
+        "p2": "You change the order by dragging the cards, or from the menu: up, down or to an exact number. Games you already own fit too, each with its status.",
+        "p3": "You share it with a link, like the other playlists, and whoever opens it sees the games in the order you chose. Playlists and wishlist lists can now be reordered by dragging them too."
       },
       "categoryPages": {
         "title": "Category pages",

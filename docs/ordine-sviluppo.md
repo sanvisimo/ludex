@@ -21,9 +21,9 @@ il 21/10 e il 22/10), e l'ordine è anche quello della
 2. **13a e 13b — AI**: la base (provider, embedding, profilo, serie IGDB) e
    l'assistente in sola lettura. Analisi di fornitori e costi, fatta in
    anticipo (18–22/10/2026), in `plans/13-ai.md`.
-3. **I prerequisiti del 13c**, utili anche senza AI: le playlist aperte (15f
-   A, `plans/15f-playlist-aperte.md`), un tag a tutti i giochi di un filtro, e
-   `criticMax` nel filtro.
+3. **I prerequisiti del 13c**, utili anche senza AI: un tag a tutti i giochi
+   di un filtro e `criticMax` nel filtro. Le playlist aperte (15f A) sono
+   **fatte dal 30/10/2026**, `plans/15f-playlist-aperte.md`.
 4. **13c — le azioni** dell'assistente, con la scheda di conferma.
 5. **Mobile**: un'app nuova, con le sue schermate (`plans/mobile.md`).
 6. **Dopo**, secondari rispetto a «cosa gioco adesso»: la 15f B (playlist
@@ -33,8 +33,9 @@ il 21/10 e il 22/10), e l'ordine è anche quello della
    (`plans/piattaforme-dell-utente.md`).
 
 **La 15f A è anticipata il 28/10/2026**, su decisione dell'utente: comincia prima
-del rilascio e di 13a e 13b, perché non dipende da nessuno dei due. Il resto
-dell'ordine non cambia. Piano in `plans/15f-playlist-aperte.md`.
+del rilascio e di 13a e 13b, perché non dipende da nessuno dei due, ed è **fatta
+il 30/10/2026**. Il resto dell'ordine non cambia. Piano in
+`plans/15f-playlist-aperte.md`.
 
 Rivisto il 22/10/2026, con l'analisi di hosting e fornitori arrivata lo stesso
 giorno. Cosa è cambiato e perché:
@@ -375,6 +376,17 @@ ancora una libreria collegata.
     [negozi](negozi.md#le-wishlist-dei-negozi-15e). **Ancora da fare:** i test del
     router e della colla del worker, fuori dal lotto (sezione «Test rimandati» del
     piano).
+
+    **15f A — Playlist aperte** (decisa il 22/10/2026, anticipata il 28/10,
+    **fatta il 30/10/2026**, piano in `plans/15f-playlist-aperte.md`). Playlist
+    di giochi scelti a mano, nell'ordine voluto (tipo `curated`, con la
+    posizione su `wishlist_items`, vedi [modello-dati](modello-dati.md)), anche
+    coi giochi del backlog. Si riempiono da una ricerca dentro la playlist, dalla
+    scheda del gioco e dal menu delle card; si riordinano trascinando (dnd-kit) o
+    dal menu, e si condividono col link delle playlist a filtro. Insieme,
+    playlist e liste della wishlist si riordinano trascinando la fascia. La parte
+    pubblica (15f B: trovarle, segnalarle, il nome di chi le fa) viene dopo il
+    mobile.
 
 16. **Cancellazione ed esportazione dell'account** — **fatto il 06/10/2026**
     (piano in `plans/16-cancellazione-esportazione.md`). L'utente elimina il

@@ -6,9 +6,11 @@ l'ha anticipata a prima del rilascio e di 13a e 13b
 corso». Nasce dalla nota «Da decidere: playlist aperte» in
 [15b-wishlist.md](15b-wishlist.md).
 
-**Fatto**: il server (28/10), il wireframe (approvato il 30/10), dnd-kit e le
-pagine web (30/10). **Il lotto resta aperto** finché l'utente non lo dice pronto:
-i commenti che arrivano vedendolo in uso vanno qui.
+**Stato: fatto il 30/10/2026**, chiuso dall'utente lo stesso giorno: il server
+(28/10), il wireframe (approvato il 30/10), dnd-kit, le pagine web e i commenti
+venuti vedendolo in uso (30/10). Roadmap: `openPlaylists` in «fatto», e la parte
+pubblica (15f B) in «in arrivo» come `publicPlaylists`. Prima della PR l'utente fa
+una prova a mano in locale.
 
 Il branch si chiama `feat/15f-playlist-aperte` dal 30/10 (prima
 `ccr-286468c8-3f1wau`, che il proxy della sessione non ha lasciato cancellare dal
@@ -202,9 +204,17 @@ l'ordine è quello di chi la fa.
    il menu del telefono. **La maniglia resta**, com'era, per la tastiera e come
    segno che si può trascinare.
 
+3. **Il trascinamento anche per le playlist e le liste della wishlist**, in
+   `/playlist` e `/wishlist`: si prende l'intestazione della fascia (le card della
+   fascia scorrono di lato e sono già link), dentro la sua sezione, con la maniglia
+   per la tastiera; «Sposta su / giù» del menu restano. Sul server `move` prende
+   anche `position`, per tutti e tre i tipi.
+
 Provati con Playwright: dalla copertina il gioco si sposta e la scheda non si
 apre, un clic semplice la apre, la tastiera dalla maniglia sposta, la spunta del
-dialogo aggiunge e toglie. Il dito non è provato: va visto su un telefono vero.
+dialogo aggiunge e toglie; le fasce si spostano col mouse e con la tastiera, in
+tutte e due le sezioni di `/playlist` e in `/wishlist`, e il clic sul nome apre
+ancora la playlist. Il dito non è provato: va visto su un telefono vero.
 
 ### Le pagine, come sono venute (30/10/2026)
 

@@ -65,7 +65,12 @@ chiede 15. Cose che non si indovinano:
 `/backlog` salvati con un nome: la query gira a ogni apertura. L'elenco è come
 la home, una fascia di card per playlist (20 al massimo, una query per fascia),
 e il nome porta alla playlist aperta. L'ordine è quello scelto dall'utente
-(«Sposta su» e «Sposta giù» nel menu ⋯, `playlists.move`); le nuove vanno in fondo.
+(«Sposta su» e «Sposta giù» nel menu ⋯, o trascinando la fascia, `playlists.move`
+con `direction` o `position`); le nuove vanno in fondo. **Le fasce si trascinano
+dall'intestazione** (`SortableBands`, `components/sortable-bands.tsx`), dentro la
+loro sezione, con la maniglia ⠿ davanti al nome per la tastiera; le card della
+fascia no, perché scorrono di lato e sono già link. Lo stesso in `/wishlist`, dentro
+«Le mie liste» e dentro «Dai negozi».
 Si creano **solo**
 da `/backlog`, col bottone «Salva come playlist» (`save-playlist-dialog.tsx`),
 che compare con almeno un filtro acceso e, su un nome già preso, offre di

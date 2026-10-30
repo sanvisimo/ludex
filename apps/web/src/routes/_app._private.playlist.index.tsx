@@ -13,7 +13,8 @@ import {
 import { CARD_WIDTH, HomeCard } from '@/components/home-band';
 import { PlaylistMenu } from '@/components/playlist-menu';
 import { ScrollRow } from '@/components/scroll-row';
-import { api } from '@/lib/orpc';
+import { type BandDrag, SortableBands } from '@/components/sortable-bands';
+import { api, client } from '@/lib/orpc';
 import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
 
@@ -26,7 +27,7 @@ const BAND_SIZE = 20;
 
 /**
  * L'elenco delle playlist: come la home, una fascia per playlist che scorre di
- * lato. Le fasce servono a sfogliare; la lista intera, le viste e la gestione
+ * lato, e le fasce si riordinano trascinando l'intestazione, dentro la sezione. Le fasce servono a sfogliare; la lista intera, le viste e la gestione
  * stanno nella playlist aperta, a cui porta il nome.
  *
  * Due sezioni (15f): prima le **scelte a mano**, che nascono qui con «Nuova
@@ -90,13 +91,21 @@ function PlaylistsPage() {
                 {newButton('sm')}
               </EmptyRow>
             ) : (
-              curatedRows.map((playlist, index) => (
-                <CuratedBand
-                  key={playlist.id}
-                  playlist={playlist}
-                  position={{ index, count: curatedRows.length }}
-                />
-              ))
+              <SortableBands
+                items={curatedRows}
+                queryKey={api.curatedPlaylists.list.queryKey()}
+                move={(id, position) =>
+                  client.curatedPlaylists.move({ id, position })
+                }
+              >
+                {(playlist, index, drag) => (
+                  <CuratedBand
+                    playlist={playlist}
+                    position={{ index, count: curatedRows.length }}
+                    drag={drag}
+                  />
+                )}
+              </SortableBands>
             )}
           </Section>
           <Section title={tCurated('filtersSection')}>
@@ -107,13 +116,19 @@ function PlaylistsPage() {
                 </ButtonLink>
               </EmptyRow>
             ) : (
-              filterRows.map((playlist, index) => (
-                <PlaylistBand
-                  key={playlist.id}
-                  playlist={playlist}
-                  position={{ index, count: filterRows.length }}
-                />
-              ))
+              <SortableBands
+                items={filterRows}
+                queryKey={api.playlists.list.queryKey()}
+                move={(id, position) => client.playlists.move({ id, position })}
+              >
+                {(playlist, index, drag) => (
+                  <PlaylistBand
+                    playlist={playlist}
+                    position={{ index, count: filterRows.length }}
+                    drag={drag}
+                  />
+                )}
+              </SortableBands>
             )}
           </Section>
         </YStack>
@@ -202,9 +217,11 @@ function BandTitle({ children }: { children: string }) {
 function CuratedBand({
   playlist,
   position,
+  drag,
 }: {
   playlist: CuratedPlaylist;
   position: { index: number; count: number };
+  drag: BandDrag;
 }) {
   const t = useTranslations('playlists');
   const tCurated = useTranslations('curated');
@@ -218,7 +235,7 @@ function CuratedBand({
 
   return (
     <ScrollRow
-      title={
+      title={drag.header(
         <XStack items="center" gap={8} shrink={1} minW={0}>
           <Link
             to="/playlist/curated/$id"
@@ -236,8 +253,8 @@ function CuratedBand({
             </XStack>
           )}
           <CuratedPlaylistMenu playlist={playlist} position={position} />
-        </XStack>
-      }
+        </XStack>,
+      )}
       itemCount={games.length}
       arrowsFromMd
     >
@@ -271,9 +288,11 @@ function CuratedBand({
 function PlaylistBand({
   playlist,
   position,
+  drag,
 }: {
   playlist: Playlist;
   position: { index: number; count: number };
+  drag: BandDrag;
 }) {
   const t = useTranslations('playlists');
   const tBacklog = useTranslations('backlog');
@@ -286,7 +305,7 @@ function PlaylistBand({
 
   return (
     <ScrollRow
-      title={
+      title={drag.header(
         <XStack items="center" gap={8} shrink={1} minW={0}>
           <Link
             to="/playlist/$id"
@@ -311,8 +330,8 @@ function PlaylistBand({
             query={playlist.query}
             position={position}
           />
-        </XStack>
-      }
+        </XStack>,
+      )}
       itemCount={entries.length}
       arrowsFromMd
     >

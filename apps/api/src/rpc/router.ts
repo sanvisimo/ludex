@@ -748,7 +748,7 @@ export const router = os.router({
       const moved = await movePlaylist(
         context.user.id,
         input.id,
-        input.direction,
+        input.position ?? input.direction!,
       );
       if (!moved)
         throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
@@ -847,7 +847,13 @@ export const router = os.router({
       }),
 
     move: os.wishlists.move.use(authed).handler(async ({ input, context }) => {
-      if (!(await moveWishlist(context.user.id, input.id, input.direction)))
+      if (
+        !(await moveWishlist(
+          context.user.id,
+          input.id,
+          input.position ?? input.direction!,
+        ))
+      )
         throw new ORPCError('NOT_FOUND', { message: 'Lista inesistente' });
     }),
 
@@ -980,7 +986,7 @@ export const router = os.router({
         const moved = await movePlaylist(
           context.user.id,
           input.id,
-          input.direction,
+          input.position ?? input.direction!,
           'curated',
         );
         if (!moved)
