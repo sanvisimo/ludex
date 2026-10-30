@@ -275,6 +275,44 @@ export function curatedPlaylistsForGame(userId: string, gameId: string) {
     );
 }
 
+/** Le voci di una lista col loro posto, da 0 e senza buchi: l'ordine di `itemOrder`. */
+const rankedItems = (listId: string) =>
+  db.$with('ranked').as(
+    db
+      .select({
+        gameId: schema.wishlistItems.gameId,
+        rank: sql<number>`(row_number() over (order by ${sql.join(itemOrder, sql`, `)}) - 1)::int`.as(
+          'rank',
+        ),
+      })
+      .from(schema.wishlistItems)
+      .where(eq(schema.wishlistItems.listId, listId)),
+  );
+
+/**
+ * A che posto stanno, nella playlist, quelli di questi giochi che ci sono: il
+ * dialogo «Aggiungi giochi» dice «già al n. 12». `undefined` se la playlist non è
+ * tua.
+ */
+export async function curatedPositions(
+  userId: string,
+  listId: string,
+  gameIds: string[],
+) {
+  const [list] = await db
+    .select({ id: schema.playlists.id })
+    .from(schema.playlists)
+    .where(mine(userId, listId));
+  if (!list) return undefined;
+  if (gameIds.length === 0) return [];
+  const ranked = rankedItems(list.id);
+  return db
+    .with(ranked)
+    .select({ gameId: ranked.gameId, position: ranked.rank })
+    .from(ranked)
+    .where(inArray(ranked.gameId, gameIds));
+}
+
 /**
  * Una pagina dei giochi di una playlist aperta, nell'ordine scelto, ciascuno col
  * suo posto nella lista intera (da 0). La ricerca sul titolo restringe, non
@@ -290,17 +328,7 @@ export async function curatedPage(input: {
   limit: number;
   offset: number;
 }) {
-  const ranked = db.$with('ranked').as(
-    db
-      .select({
-        gameId: schema.wishlistItems.gameId,
-        rank: sql<number>`(row_number() over (order by ${sql.join(itemOrder, sql`, `)}) - 1)::int`.as(
-          'rank',
-        ),
-      })
-      .from(schema.wishlistItems)
-      .where(eq(schema.wishlistItems.listId, input.listId)),
-  );
+  const ranked = rankedItems(input.listId);
   const rows = await db
     .with(ranked)
     .select({

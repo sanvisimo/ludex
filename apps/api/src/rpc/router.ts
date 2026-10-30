@@ -68,6 +68,7 @@ import {
   addToCuratedPlaylist,
   createCuratedPlaylist,
   curatedPlaylistsForGame,
+  curatedPositions,
   deleteCuratedPlaylist,
   listCuratedPlaylists,
   moveCuratedGame,
@@ -1035,6 +1036,19 @@ export const router = os.router({
           throw new ORPCError('NOT_FOUND', {
             message: 'Il gioco non è in questa playlist',
           });
+      }),
+
+    positions: os.curatedPlaylists.positions
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const rows = await curatedPositions(
+          context.user.id,
+          input.listId,
+          input.gameIds,
+        );
+        if (!rows)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+        return rows;
       }),
 
     forGame: os.curatedPlaylists.forGame

@@ -14,6 +14,7 @@ import {
   addToCuratedPlaylist,
   createCuratedPlaylist,
   curatedPlaylistsForGame,
+  curatedPositions,
   deleteCuratedPlaylist,
   listCuratedPlaylists,
   moveCuratedGame,
@@ -330,6 +331,27 @@ describe('le playlist aperte', () => {
     expect((await listCuratedPlaylists(userId))[0]!.name).toBe(
       'I migliori RPG',
     );
+  });
+
+  it('dice a che posto stanno i giochi che ci sono, e solo a chi l’ha fatta', async () => {
+    const { list, games } = await piena(userId, ['Uno', 'Due', 'Tre']);
+    await removeFromCuratedPlaylist(userId, list.id, games[0]!.id);
+    const fuori = await createGame();
+
+    const posti = await curatedPositions(userId, list.id, [
+      games[2]!.id,
+      games[1]!.id,
+      fuori.id,
+    ]);
+    expect(new Map(posti!.map((p) => [p.gameId, p.position]))).toEqual(
+      new Map([
+        [games[1]!.id, 0],
+        [games[2]!.id, 1],
+      ]),
+    );
+    expect(
+      await curatedPositions(altro, list.id, [games[1]!.id]),
+    ).toBeUndefined();
   });
 
   it('il menu della scheda dice in quali playlist sta il gioco', async () => {

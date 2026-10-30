@@ -724,6 +724,19 @@ export const contract = {
       )
       .output(z.void()),
 
+    // A che posto (da 0) stanno quelli di questi giochi che sono nella playlist:
+    // gli altri non ci sono. È il «già al n. 12» del dialogo «Aggiungi giochi».
+    positions: oc
+      .input(
+        z.object({
+          listId: z.uuid(),
+          gameIds: z.array(z.uuid()).max(100),
+        }),
+      )
+      .output(
+        z.array(z.object({ gameId: z.uuid(), position: z.number().int() })),
+      ),
+
     // Le tue playlist aperte, con un `has` per dire in quali sta già il gioco: è
     // il menu della scheda del gioco.
     forGame: oc

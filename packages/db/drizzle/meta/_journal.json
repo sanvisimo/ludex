@@ -442,6 +442,13 @@
       "when": 1793212792171,
       "tag": "0062_verifica-email-utenti-esistenti",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1793371784516,
+      "tag": "0063_playlist_kind_curated",
+      "breakpoints": true
     }
   ]
 }
