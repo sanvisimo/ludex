@@ -54,10 +54,18 @@ import {
 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
-import { useEffect, useId, useState } from 'react';
+import {
+  type KeyboardEventHandler,
+  type RefObject,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslations } from 'use-intl';
 
 import { CuratedAddDialog } from '@/components/curated-add-dialog';
+import { CuratedPlaylistsDialog } from '@/components/curated-playlist-control';
 import { CuratedPlaylistMenu } from '@/components/curated-playlist-menu';
 import {
   GRID_TEMPLATE,
@@ -370,9 +378,12 @@ function CuratedPlaylistPage() {
  * rilascio la pagina mostra subito il nuovo ordine (`reorderPage`), il server
  * riscrive la lista, e se dice di no la pagina torna com'era.
  *
- * Mouse dopo pochi pixel, dito dopo una pressione breve — così sul telefono
- * la pagina scorre anche toccando la maniglia di sfuggita — e tastiera: Spazio,
- * frecce, Spazio. Gli annunci per lo screen reader dicono il posto.
+ * **Col mouse e col dito si prende tutta la card**: il mouse dopo pochi pixel,
+ * così un clic resta un clic sulla copertina e sul titolo; il dito dopo una
+ * pressione breve, così uno scorrimento veloce scorre la pagina. La tastiera
+ * passa dalla maniglia, perché la card contiene due link e non può essere lei il
+ * bottone: Spazio, frecce, Spazio. Gli annunci per lo screen reader dicono il
+ * posto.
  */
 function SortableGrid({
   data,
@@ -402,6 +413,13 @@ function SortableGrid({
     }),
   );
   const queryKey = api.curatedPlaylists.get.queryKey({ input });
+  // Il clic che il browser manda al rilascio di un trascinamento aprirebbe la
+  // scheda del gioco: si ferma qui. Torna falso dopo quel clic, che arriva
+  // prima di qualunque `setTimeout`.
+  const justDragged = useRef(false);
+  const endDrag = () => {
+    setTimeout(() => (justDragged.current = false), 0);
+  };
 
   const drop = useMutation({
     mutationFn: (move: {
@@ -428,6 +446,7 @@ function SortableGrid({
     data.games.find((row) => row.id === gameId)?.name ?? '';
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
+    endDrag();
     if (!over) return;
     const from = data.games.findIndex((row) => row.id === active.id);
     const to = data.games.findIndex((row) => row.id === over.id);
@@ -446,7 +465,9 @@ function SortableGrid({
       id={dndId}
       sensors={sensors}
       collisionDetection={closestCenter}
+      onDragStart={() => (justDragged.current = true)}
       onDragEnd={onDragEnd}
+      onDragCancel={endDrag}
       accessibility={{
         screenReaderInstructions: { draggable: tDnd('instructions') },
         announcements: {
@@ -493,6 +514,7 @@ function SortableGrid({
               listId={data.id}
               listCount={listCount}
               draggable={draggable}
+              justDragged={justDragged}
             />
           ))}
         </Cards>
@@ -506,11 +528,13 @@ function SortableCard({
   listId,
   listCount,
   draggable,
+  justDragged,
 }: {
   game: Game;
   listId: string;
   listCount: number;
   draggable: boolean;
+  justDragged: RefObject<boolean>;
 }) {
   const t = useTranslations('curated');
   const {
@@ -522,10 +546,20 @@ function SortableCard({
     transition,
     isDragging,
   } = useSortable({ id: game.id, disabled: !draggable });
+  // Mouse e dito su tutta la card, la tastiera sulla maniglia.
+  const { onKeyDown, ...pointer } = listeners ?? {};
 
   return (
     <li
       ref={setNodeRef}
+      {...(draggable && pointer)}
+      onClickCapture={(event) => {
+        if (!justDragged.current) return;
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      // Il trascinamento nativo di link e immagini litigherebbe con il nostro.
+      onDragStart={(event) => event.preventDefault()}
       style={{
         listStyle: 'none',
         transform: CSS.Translate.toString(transform),
@@ -535,6 +569,14 @@ function SortableCard({
         position: 'relative',
         zIndex: isDragging ? 1 : undefined,
         opacity: isDragging ? 0.8 : 1,
+        ...(draggable && {
+          cursor: isDragging ? 'grabbing' : 'grab',
+          // La pressione lunga su un link aprirebbe il menu del telefono
+          // invece di prendere la card.
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
+          userSelect: 'none',
+        }),
       }}
     >
       <YStack gap={6}>
@@ -547,12 +589,11 @@ function SortableCard({
               variant="ghost"
               size="icon-sm"
               aria-label={t('dragHandle', { name: game.name })}
-              // Il dito sulla maniglia non scorre la pagina, una volta presa.
-              style={{ touchAction: 'manipulation', cursor: 'grab' }}
               // `role` è «button», come il bottone che è già: Tamagui vuole il
               // tipo stretto.
               {...(attributes as Omit<typeof attributes, 'role'>)}
-              {...listeners}
+              // dnd-kit tipizza i suoi gestori come `Function`.
+              onKeyDown={onKeyDown as KeyboardEventHandler | undefined}
             >
               <GripVertical size={16} color="$color11" />
             </Button>
@@ -580,8 +621,10 @@ function CardMenu({
   listCount: number;
 }) {
   const t = useTranslations('curated');
+  const tControl = useTranslations('curated.control');
   const errorMessage = useApiErrorMessage();
   const [movingTo, setMovingTo] = useState(false);
+  const [choosing, setChoosing] = useState(false);
 
   const move = useMutation({
     mutationFn: (position: number) =>
@@ -645,6 +688,13 @@ function CardMenu({
             {t('moveTo')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          {/* Per copiarlo in un'altra playlist: questa c'è, già spuntata. */}
+          <DropdownMenuItem
+            icon={<ListOrdered size={16} />}
+            onClick={() => setChoosing(true)}
+          >
+            {tControl('menuItem')}
+          </DropdownMenuItem>
           <DropdownMenuItem
             destructive
             icon={<Trash2 size={16} color="$red11" />}
@@ -656,6 +706,11 @@ function CardMenu({
         </DropdownMenuContent>
       </DropdownMenu>
 
+      <CuratedPlaylistsDialog
+        game={game}
+        open={choosing}
+        onOpenChange={setChoosing}
+      />
       <Dialog open={movingTo} onOpenChange={setMovingTo}>
         <DialogContent>
           {movingTo && (

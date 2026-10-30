@@ -132,7 +132,9 @@ l'ordine è quello di chi la fa.
   `@dnd-kit/react`, il successore, è ancora alla 0.5. Il mobile avrà la sua
   soluzione, sui gesti di React Native.
 - Si trascina da una **maniglia** sulla card: la card intera litigherebbe con
-  lo scroll sul telefono, e copertina e titolo restano link.
+  lo scroll sul telefono, e copertina e titolo restano link. **Cambiato il
+  30/10**: si trascina tutta la card, la maniglia resta per la tastiera (vedi «I
+  commenti vedendolo in uso»).
 - Aggiornamento ottimistico, che torna indietro se il server dice di no.
 - **Si trascina dentro la pagina visibile.** Per un'altra pagina restano «Sposta
   su / giù» e «Sposta alla posizione…» nel menu ⋯ della card.
@@ -187,6 +189,22 @@ l'ordine è quello di chi la fa.
   ma senza il gioco sarebbe finito in fondo.
 - **Test**: [curated-playlists.test.ts](../apps/api/src/services/curated-playlists.test.ts),
   17 casi, tutti quelli elencati sopra; uno in più in `admin-merge.test.ts`.
+
+### I commenti vedendolo in uso (30/10/2026)
+
+1. **«Aggiungi a playlist…» anche nel menu ⋯ delle card**, del backlog (e quindi
+   delle playlist a filtro) e delle scelte a mano: apre in un dialogo le stesse
+   spunte della scheda del gioco, perché il menu non ha sottomenu.
+2. **Il trascinamento su tutta la card**, non più solo dalla maniglia. La
+   decisione del 22/10 temeva il conflitto col dito e coi link: col dito parte
+   dopo 200 ms, quindi lo scorrimento veloce resta; il clic che arriva al
+   rilascio si ferma, quindi la scheda non si apre; la pressione lunga non apre
+   il menu del telefono. **La maniglia resta**, com'era, per la tastiera e come
+   segno che si può trascinare.
+
+Provati con Playwright: dalla copertina il gioco si sposta e la scheda non si
+apre, un clic semplice la apre, la tastiera dalla maniglia sposta, la spunta del
+dialogo aggiunge e toglie. Il dito non è provato: va visto su un telefono vero.
 
 ### Le pagine, come sono venute (30/10/2026)
 

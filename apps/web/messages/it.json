@@ -274,7 +274,11 @@
       "inLists": "{count, plural, one {In # playlist} other {In # playlist}}",
       "newPlaylist": "Nuova playlist…",
       "added": "Aggiunto a «{name}»",
-      "failed": "Non sono riuscito a cambiare la playlist"
+      "failed": "Non sono riuscito a cambiare la playlist",
+      "menuItem": "Aggiungi a playlist…",
+      "dialogTitle": "Aggiungi «{name}» a una playlist",
+      "none": "Non hai ancora playlist scelte a mano: creane una qui sotto.",
+      "done": "Fatto"
     }
   },
   "wishlist": {
