@@ -10,7 +10,7 @@ import {
 import { captcha } from 'better-auth/plugins';
 import { admin } from 'better-auth/plugins/admin';
 
-import { requestTypeOf, withStep } from './email-links';
+import { requestTypeOf, withCallback, withStep } from './email-links';
 import {
   addressTaken,
   confirmEmailChange,
@@ -148,7 +148,9 @@ export const auth = betterAuth({
     // La stessa funzione spedisce la conferma della registrazione e il
     // secondo link del cambio email, al nuovo indirizzo: li separa il tipo
     // scritto nel token. Il secondo ha il suo testo, e torna alla pagina dei
-    // link col passo finale (`email-links.ts`).
+    // link col passo finale (`email-links.ts`). La conferma della registrazione
+    // torna alla stessa pagina anche quando parte da un accesso tentato, che
+    // un ritorno suo non ce l'ha.
     sendVerificationEmail: async ({ user, url, token }, request) =>
       sendInBackground(
         requestTypeOf(token) === 'change-email-verification'
@@ -157,7 +159,11 @@ export const auth = betterAuth({
               withStep(url, 'change-done'),
               localeOf(request),
             )
-          : verifyEmail(user, url, localeOf(request)),
+          : verifyEmail(
+              user,
+              withCallback(url, `${webUrl}/email-link?step=signup`),
+              localeOf(request),
+            ),
       ),
     sendOnSignUp: true,
     // Chi prova ad accedere senza aver verificato riceve un link nuovo: quello

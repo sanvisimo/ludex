@@ -55,9 +55,11 @@ function LoginForm() {
       {
         email: String(form.get('email')),
         password: String(form.get('password')),
-        // Se l'email non è verificata Better Auth rispedisce il link, che
-        // porta alla pagina dei link come quello della registrazione.
-        callbackURL: `${window.location.origin}/email-link?step=signup`,
+        // Niente `callbackURL`: Better Auth lo usa anche come destinazione
+        // dopo l'accesso riuscito, e il suo client ci manda la pagina con
+        // `window.location`, scavalcando `next`. Il ritorno del link
+        // rispedito a chi non ha confermato lo scrive il server
+        // (`packages/auth/src/email-links.ts`).
       },
       { headers: captcha.headers },
     );

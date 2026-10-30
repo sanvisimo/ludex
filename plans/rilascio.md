@@ -177,6 +177,15 @@ Commenti dell'utente provando il lotto, approvati lo stesso giorno: testi in
       spiegazioni.
 - [x] **`next=/login`**: il rimbalzo dall'account all'accesso scriveva in
       `next` il percorso dell'accesso stesso (c'era già prima del lotto).
+- [x] **L'accesso portava a `/email-link?step=signup`** (segnalato il
+      30/10/2026): il `callbackURL` passato all'accesso, pensato per il link
+      rispedito a chi non ha confermato, Better Auth lo usa anche come
+      destinazione dopo un accesso riuscito, e il suo client ci manda la
+      pagina con `window.location`, scavalcando `next`. C'era dal primo giro
+      del lotto, nascosto perché `/login?verified=1` rimbalzava al backlog.
+      Ora l'accesso non lo passa, e il ritorno del link rispedito lo scrive il
+      server (`withCallback` in `email-links.ts`). Verificato: accesso → backlog,
+      accesso con `next` → quella pagina, link rispedito → pagina dei link.
 - [x] **Le email in HTML**, con la versione in testo, e i **testi più
       formali**, in italiano e in inglese.
 - [x] **La scheda delle donazioni** in roadmap e nell'account (da `$md`),
