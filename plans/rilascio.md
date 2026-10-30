@@ -407,7 +407,7 @@ diverse dalla gratuità ([apps/api/CLAUDE.md](../apps/api/CLAUDE.md)):
 - [x] **OpenCritic**: o il piano commerciale, o spento. `SHOW_OPENCRITIC=0`
       toglie voti e link dalla pagina del gioco; con `ENABLE_OPENCRITIC=0`
       non si chiama più. In produzione senza piano: tutte e due a `0`.
-- [ ] **IGDB**: una email a `partner@igdb.com` ([igdb-email.md](igdb-email.md)) che descriva il caso (senza
+- [ ] **IGDB**: email a `partner@igdb.com` inviata il 30/10/2026 ([igdb-email.md](igdb-email.md)), in attesa di risposta. Descrive il caso (senza
       scopo di lucro, gratuito, niente pubblicità, solo donazioni singole) e
       chieda se è uso commerciale. La risposta va conservata. Le condizioni
       ufficiali: api-docs.igdb.com e il Twitch Developer Services Agreement.
