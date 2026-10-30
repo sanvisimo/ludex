@@ -221,7 +221,29 @@ le ragioni sono nel piano del 12a, il passaggio nel piano del 12b.
 
 **Il guscio** è il layout `_app` (`apps/web/src/routes/_app.tsx`), che avvolge
 tutte le rotte tranne accesso e registrazione: quelle stanno sotto `_guest`, a
-pagina piena. `AppShell` è **una barra sola** e un footer, senza barra
+pagina piena, con «Password dimenticata» e «Nuova password» (rilascio,
+`plans/rilascio.md`). `_guest` porta al backlog chi è già dentro, tranne su
+`/reset-password`: il link dell'email si apre anche dove si è entrati. Cose che
+non si indovinano:
+
+- **la registrazione non apre una sessione**: si entra dal link dell'email.
+  Lo stesso link parte di nuovo a ogni accesso tentato con la password giusta.
+- **tutti i link delle email arrivano a `/email-link`** (`_app.email-link.tsx`,
+  pubblica: un link si apre anche dove non si è entrati), che legge `step`
+  (`signup`, `change-confirmed`, `change-done`) ed `error`, che aggiunge
+  Better Auth sul link scaduto. `step` lo scrive il web nell'URL di ritorno;
+  quello del secondo link del cambio email lo riscrive il server
+  (`packages/auth/src/email-links.ts`), perché Better Auth riusa l'URL del
+  primo. Il reset della password ha le sue pagine e torna a `/login?reset=true`.
+- **il CAPTCHA è `useCaptcha`** (`components/captcha.tsx`, Cloudflare
+  Turnstile) su accesso, registrazione e recupero: il token va nelle
+  `headers` della chiamata a Better Auth e vale una volta, quindi `reset()`
+  dopo ogni invio. Senza `PUBLIC_TURNSTILE_SITE_KEY` non c'è, ed è così in
+  sviluppo.
+- **gli URL di ritorno sono assoluti** (`window.location.origin`): li apre
+  l'API, che sta su un'altra origine, e li controlla con `trustedOrigins`.
+
+`AppShell` è **una barra sola** e un footer, senza barra
 laterale né menu a scomparsa: a sinistra il nome, che porta al catalogo, o al
 backlog da loggati; a destra l'avatar, col menu di home, backlog, account, tema, lingua e uscita, o da
 anonimo tema, lingua, «Accedi» e «Registrati», che sotto `$md` in barra non
@@ -342,7 +364,18 @@ direzione col CSS. Cose che non si indovinano:
 - **Provarla con Playwright**: la pagina tiene aperta una connessione per gli
   eventi, quindi `networkidle` non scatta mai; si aspetta un selettore. L'accesso
   si fa con una `POST /api/auth/sign-in/email` dal contesto del browser: il cookie
-  è per host e non per porta, quindi vale anche sul web.
+  è per host e non per porta, quindi vale anche sul web. Un utente nuovo entra
+  solo dopo il link di verifica, che si legge da Mailpit
+  (`http://localhost:8025/api/v1/messages`).
+- **Il cambio email** è un dialogo di `ProfileDetails`: due link, il primo
+  all'indirizzo di adesso e il secondo a quello nuovo, tutti e due verso
+  `/email-link`. Un indirizzo già di un altro account Better Auth lo accetta
+  in silenzio (non dice chi è iscritto): l'avviso parte per email
+  all'indirizzo di adesso, dall'hook in `packages/auth/src/index.ts`.
+- **La scheda delle donazioni** (`SupportCard`) sta in fondo alla colonna
+  della roadmap e sotto il menu dell'account, solo da `$md`; come la voce del
+  footer, c'è solo se `supportUrl` (`lib/credits.ts`) non è `null`. È nostra e
+  non il widget della piattaforma, che porterebbe script e cookie di terzi.
 - **Steam ha un corpo suo nel dialogo «Aggiungi libreria»** (`steam-link.tsx`): il
   login col QR sopra, il profilo sotto, e il nome facoltativo condiviso. Il QR è
   `steam-qr-panel.tsx`: lo chiede all'apertura e interroga `status` ogni due

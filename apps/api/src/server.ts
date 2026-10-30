@@ -26,7 +26,9 @@ app.use(
   cors({
     origin: webUrl,
     credentials: true,
-    allowHeaders: ['Content-Type', 'Authorization'],
+    // `x-captcha-response` porta il token di Turnstile (rilascio): senza, il
+    // preflight lo rifiuta e accesso e registrazione non partono.
+    allowHeaders: ['Content-Type', 'Authorization', 'x-captcha-response'],
     allowMethods: ['GET', 'POST', 'OPTIONS'],
   }),
 );

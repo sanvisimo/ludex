@@ -12,4 +12,6 @@ RUN pnpm install --frozen-lockfile
 # PUBLIC_API_URL entra nel bundle del web a build time (define di Vite):
 # cambiarla vuol dire ricostruire l'immagine, non riavviare.
 ARG PUBLIC_API_URL
+# Anche la chiave pubblica di Turnstile, per la stessa ragione.
+ARG PUBLIC_TURNSTILE_SITE_KEY
 RUN pnpm --filter web build

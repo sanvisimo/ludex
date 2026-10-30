@@ -16,6 +16,7 @@ import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { useCaptcha } from '@/components/captcha';
 import { useAuthErrorMessage } from '@/lib/auth-error';
 
 /**
@@ -34,9 +35,15 @@ function LoginForm() {
   const authErrorMessage = useAuthErrorMessage();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { next } = Route.useSearch();
+  const { next, reset } = Route.useSearch();
+  const captcha = useCaptcha();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  // La password appena reimpostata (`/reset-password` rimanda qui con
+  // `?reset=true`). Sparisce al primo invio.
+  const notice =
+    reset && error === null && !pending ? t('passwordReset') : null;
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,12 +51,22 @@ function LoginForm() {
     setPending(true);
     setError(null);
 
-    const { error } = await signIn.email({
-      email: String(form.get('email')),
-      password: String(form.get('password')),
-    });
+    const { error } = await signIn.email(
+      {
+        email: String(form.get('email')),
+        password: String(form.get('password')),
+        // Niente `callbackURL`: Better Auth lo usa anche come destinazione
+        // dopo l'accesso riuscito, e il suo client ci manda la pagina con
+        // `window.location`, scavalcando `next`. Il ritorno del link
+        // rispedito a chi non ha confermato lo scrive il server
+        // (`packages/auth/src/email-links.ts`).
+      },
+      { headers: captcha.headers },
+    );
 
     setPending(false);
+    // Il token del CAPTCHA vale una volta, riuscito o no.
+    captcha.reset();
     if (error) {
       setError(authErrorMessage(error, t('failed')));
       return;
@@ -80,7 +97,15 @@ function LoginForm() {
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="password">{t('password')}</Label>
+        <div className="flex items-baseline justify-between gap-2">
+          <Label htmlFor="password">{t('password')}</Label>
+          <Link
+            to="/forgot-password"
+            className="text-muted-foreground underline underline-offset-4"
+          >
+            {t('forgot')}
+          </Link>
+        </div>
         <Input
           id="password"
           name="password"
@@ -90,13 +115,21 @@ function LoginForm() {
         />
       </div>
 
+      {captcha.widget}
+
+      {notice && (
+        <Alert>
+          <AlertDescription>{notice}</AlertDescription>
+        </Alert>
+      )}
+
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending || !captcha.ready}>
         {pending ? t('pending') : t('submit')}
       </Button>
 
@@ -117,8 +150,11 @@ function LoginForm() {
 }
 
 export const Route = createFileRoute('/_guest/login')({
-  validateSearch: (search: Record<string, unknown>): { next?: string } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { next?: string; reset?: true } => ({
     next: typeof search.next === 'string' ? search.next : undefined,
+    reset: search.reset ? true : undefined,
   }),
   component: LoginPage,
 });

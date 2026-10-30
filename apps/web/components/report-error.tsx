@@ -163,7 +163,10 @@ function ReportDialog({
       target: { store },
       label: t('copy', { store: storeLabels[store] }),
     })),
-    ...SOURCES.map((source) => ({
+    // OpenCritic spento sul server non si offre: la pagina non lo mostra.
+    ...SOURCES.filter(
+      (source) => source !== 'opencritic' || game.showOpenCritic,
+    ).map((source) => ({
       target: { source },
       label: t(source),
     })),

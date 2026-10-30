@@ -16,12 +16,15 @@ import { Route as AppPrivateRouteImport } from './routes/_app._private'
 import { Route as AppAccountRouteImport } from './routes/_app.account'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppCreditsRouteImport } from './routes/_app.credits'
+import { Route as AppEmailLinkRouteImport } from './routes/_app.email-link'
 import { Route as AppPrivacyRouteImport } from './routes/_app.privacy'
 import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
 import { Route as AppSearchRouteImport } from './routes/_app.search'
 import { Route as AppTermsRouteImport } from './routes/_app.terms'
+import { Route as GuestForgotPasswordRouteImport } from './routes/_guest.forgot-password'
 import { Route as GuestLoginRouteImport } from './routes/_guest.login'
 import { Route as GuestRegisterRouteImport } from './routes/_guest.register'
+import { Route as GuestResetPasswordRouteImport } from './routes/_guest.reset-password'
 import { Route as AppPrivateBacklogRouteImport } from './routes/_app._private.backlog'
 import { Route as AppAccountIndexRouteImport } from './routes/_app.account.index'
 import { Route as AppAccountHiddenRouteImport } from './routes/_app.account.hidden'
@@ -74,6 +77,11 @@ const AppCreditsRoute = AppCreditsRouteImport.update({
   path: '/credits',
   getParentRoute: () => AppRoute,
 } as any)
+const AppEmailLinkRoute = AppEmailLinkRouteImport.update({
+  id: '/email-link',
+  path: '/email-link',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPrivacyRoute = AppPrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -94,6 +102,11 @@ const AppTermsRoute = AppTermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => AppRoute,
 } as any)
+const GuestForgotPasswordRoute = GuestForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => GuestRoute,
+} as any)
 const GuestLoginRoute = GuestLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -102,6 +115,11 @@ const GuestLoginRoute = GuestLoginRouteImport.update({
 const GuestRegisterRoute = GuestRegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => GuestRoute,
+} as any)
+const GuestResetPasswordRoute = GuestResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => GuestRoute,
 } as any)
 const AppPrivateBacklogRoute = AppPrivateBacklogRouteImport.update({
@@ -206,12 +224,15 @@ export interface FileRoutesByFullPath {
   '/account': typeof AppAccountRouteWithChildren
   '/admin': typeof AppAdminRouteWithChildren
   '/credits': typeof AppCreditsRoute
+  '/email-link': typeof AppEmailLinkRoute
   '/privacy': typeof AppPrivacyRoute
   '/roadmap': typeof AppRoadmapRoute
   '/search': typeof AppSearchRoute
   '/terms': typeof AppTermsRoute
+  '/forgot-password': typeof GuestForgotPasswordRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
+  '/reset-password': typeof GuestResetPasswordRoute
   '/backlog': typeof AppPrivateBacklogRoute
   '/account/hidden': typeof AppAccountHiddenRoute
   '/account/libraries': typeof AppAccountLibrariesRoute
@@ -235,12 +256,15 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/credits': typeof AppCreditsRoute
+  '/email-link': typeof AppEmailLinkRoute
   '/privacy': typeof AppPrivacyRoute
   '/roadmap': typeof AppRoadmapRoute
   '/search': typeof AppSearchRoute
   '/terms': typeof AppTermsRoute
+  '/forgot-password': typeof GuestForgotPasswordRoute
   '/login': typeof GuestLoginRoute
   '/register': typeof GuestRegisterRoute
+  '/reset-password': typeof GuestResetPasswordRoute
   '/backlog': typeof AppPrivateBacklogRoute
   '/account/hidden': typeof AppAccountHiddenRoute
   '/account/libraries': typeof AppAccountLibrariesRoute
@@ -269,12 +293,15 @@ export interface FileRoutesById {
   '/_app/account': typeof AppAccountRouteWithChildren
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/credits': typeof AppCreditsRoute
+  '/_app/email-link': typeof AppEmailLinkRoute
   '/_app/privacy': typeof AppPrivacyRoute
   '/_app/roadmap': typeof AppRoadmapRoute
   '/_app/search': typeof AppSearchRoute
   '/_app/terms': typeof AppTermsRoute
+  '/_guest/forgot-password': typeof GuestForgotPasswordRoute
   '/_guest/login': typeof GuestLoginRoute
   '/_guest/register': typeof GuestRegisterRoute
+  '/_guest/reset-password': typeof GuestResetPasswordRoute
   '/_app/': typeof AppIndexRoute
   '/_app/_private/backlog': typeof AppPrivateBacklogRoute
   '/_app/account/hidden': typeof AppAccountHiddenRoute
@@ -303,12 +330,15 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/credits'
+    | '/email-link'
     | '/privacy'
     | '/roadmap'
     | '/search'
     | '/terms'
+    | '/forgot-password'
     | '/login'
     | '/register'
+    | '/reset-password'
     | '/backlog'
     | '/account/hidden'
     | '/account/libraries'
@@ -332,12 +362,15 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/credits'
+    | '/email-link'
     | '/privacy'
     | '/roadmap'
     | '/search'
     | '/terms'
+    | '/forgot-password'
     | '/login'
     | '/register'
+    | '/reset-password'
     | '/backlog'
     | '/account/hidden'
     | '/account/libraries'
@@ -365,12 +398,15 @@ export interface FileRouteTypes {
     | '/_app/account'
     | '/_app/admin'
     | '/_app/credits'
+    | '/_app/email-link'
     | '/_app/privacy'
     | '/_app/roadmap'
     | '/_app/search'
     | '/_app/terms'
+    | '/_guest/forgot-password'
     | '/_guest/login'
     | '/_guest/register'
+    | '/_guest/reset-password'
     | '/_app/'
     | '/_app/_private/backlog'
     | '/_app/account/hidden'
@@ -449,6 +485,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCreditsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/email-link': {
+      id: '/_app/email-link'
+      path: '/email-link'
+      fullPath: '/email-link'
+      preLoaderRoute: typeof AppEmailLinkRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/privacy': {
       id: '/_app/privacy'
       path: '/privacy'
@@ -477,6 +520,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTermsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_guest/forgot-password': {
+      id: '/_guest/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof GuestForgotPasswordRouteImport
+      parentRoute: typeof GuestRoute
+    }
     '/_guest/login': {
       id: '/_guest/login'
       path: '/login'
@@ -489,6 +539,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof GuestRegisterRouteImport
+      parentRoute: typeof GuestRoute
+    }
+    '/_guest/reset-password': {
+      id: '/_guest/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof GuestResetPasswordRouteImport
       parentRoute: typeof GuestRoute
     }
     '/_app/_private/backlog': {
@@ -696,6 +753,7 @@ interface AppRouteChildren {
   AppAccountRoute: typeof AppAccountRouteWithChildren
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppCreditsRoute: typeof AppCreditsRoute
+  AppEmailLinkRoute: typeof AppEmailLinkRoute
   AppPrivacyRoute: typeof AppPrivacyRoute
   AppRoadmapRoute: typeof AppRoadmapRoute
   AppSearchRoute: typeof AppSearchRoute
@@ -710,6 +768,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAccountRoute: AppAccountRouteWithChildren,
   AppAdminRoute: AppAdminRouteWithChildren,
   AppCreditsRoute: AppCreditsRoute,
+  AppEmailLinkRoute: AppEmailLinkRoute,
   AppPrivacyRoute: AppPrivacyRoute,
   AppRoadmapRoute: AppRoadmapRoute,
   AppSearchRoute: AppSearchRoute,
@@ -722,13 +781,17 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface GuestRouteChildren {
+  GuestForgotPasswordRoute: typeof GuestForgotPasswordRoute
   GuestLoginRoute: typeof GuestLoginRoute
   GuestRegisterRoute: typeof GuestRegisterRoute
+  GuestResetPasswordRoute: typeof GuestResetPasswordRoute
 }
 
 const GuestRouteChildren: GuestRouteChildren = {
+  GuestForgotPasswordRoute: GuestForgotPasswordRoute,
   GuestLoginRoute: GuestLoginRoute,
   GuestRegisterRoute: GuestRegisterRoute,
+  GuestResetPasswordRoute: GuestResetPasswordRoute,
 }
 
 const GuestRouteWithChildren = GuestRoute._addFileChildren(GuestRouteChildren)

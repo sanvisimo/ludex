@@ -157,6 +157,20 @@ export const platformIconsLicense = '/platforms/LICENSE.md';
 export const repoUrl = 'https://github.com/sanvisimo/ludex';
 export const licenseUrl = 'https://www.gnu.org/licenses/agpl-3.0.html';
 
+/**
+ * «Offrimi un caffè» (`plans/offrimi-un-caffe.md`): la pagina delle donazioni.
+ * La piattaforma non è ancora scelta (Ko-fi è la candidata), e finché questo è
+ * `null` non si vede niente: né la voce del footer né le schede di roadmap e
+ * account (`SupportCard`). Un link che non porta da nessuna parte è peggio di
+ * nessun link. Si accende scrivendo qui l'indirizzo, dopo il chiarimento
+ * fiscale che il piano chiede.
+ */
+// La pagina c'è, `https://ko-fi.com/sanvisimo`: si accende dopo la risposta
+// di IGDB e il chiarimento fiscale («Licenze e donazioni» in
+// `plans/rilascio.md`). Con le donazioni accese, senza il piano commerciale di
+// OpenCritic, sul server vanno a 0 `SHOW_OPENCRITIC` ed `ENABLE_OPENCRITIC`.
+export const supportUrl: string | null = null;
+
 /** Dove arrivano suggerimenti, idee e segnalazioni: le issue, in pubblico. */
 export const issuesUrl = `${repoUrl}/issues`;
 

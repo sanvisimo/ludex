@@ -12,6 +12,7 @@ import {
   findIgdbGameBySlug,
   searchIgdbGames,
 } from '../external/igdb';
+import { openCriticVisible } from '../external/opencritic';
 import { chunk } from '../lib/chunk';
 import { enqueueEnrichment } from '../queue/enrichment';
 import { reopenSourcesForNewExternalIds } from './enrichment';
@@ -144,6 +145,10 @@ export async function findGameDetailById(
   } = game;
   const externalId = (source: string) =>
     sources.find((row) => row.source === source)?.externalId ?? null;
+  // OpenCritic spento (`SHOW_OPENCRITIC=0`): né voti né link escono da qui,
+  // non solo dalla pagina. Le condizioni vietano anche di offrire i loro dati
+  // tramite una nostra API.
+  const showOpenCritic = openCriticVisible();
 
   const parent =
     parentIgdbId === null
@@ -155,7 +160,10 @@ export async function findGameDetailById(
 
   return {
     ...rest,
-    scores,
+    scores: showOpenCritic
+      ? scores
+      : scores.filter((row) => row.source !== 'opencritic'),
+    showOpenCritic,
     attributes: attributes.map((row) => row.attribute),
     igdbSyncedAt:
       sources.find((row) => row.source === 'igdb')?.syncedAt ?? null,
@@ -166,7 +174,7 @@ export async function findGameDetailById(
     links: sourceLinks({
       igdbSlug,
       hltbId: externalId('hltb'),
-      openCriticId: externalId('opencritic'),
+      openCriticId: showOpenCritic ? externalId('opencritic') : null,
       metacriticSlug: externalId('metacritic'),
     }),
     storeLinks: await findStoreLinks(id, websites ?? []),

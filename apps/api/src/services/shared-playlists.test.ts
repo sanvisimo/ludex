@@ -1,12 +1,16 @@
 import { call } from '@orpc/server';
-import { auth } from '@repo/auth';
 import { PlaylistQuerySchema } from '@repo/contracts';
 import type { PlaylistQueryInput } from '@repo/contracts';
 import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createGame, createUser, linkStoreAccount } from '../../test/factories';
+import {
+  createGame,
+  createUser,
+  linkStoreAccount,
+  signUpVerified,
+} from '../../test/factories';
 import { router } from '../rpc/router';
 import { exportAccount } from './account-export';
 import {
@@ -366,17 +370,7 @@ describe('i filtri, per chi li riusa', () => {
 describe('chi guarda', () => {
   const PASSWORD = 'password-di-prova';
 
-  async function signUp(email: string) {
-    const { headers, response } = await auth.api.signUpEmail({
-      body: { email, password: PASSWORD, name: email.split('@')[0]! },
-      returnHeaders: true,
-    });
-    const cookie = headers
-      .getSetCookie()
-      .map((value) => value.split(';')[0])
-      .join('; ');
-    return { userId: response.user.id, headers: new Headers({ cookie }) };
-  }
+  const signUp = (email: string) => signUpVerified(email, PASSWORD);
 
   it('lo stato è il suo, non del proprietario', async () => {
     const owner = await createUser();

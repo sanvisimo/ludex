@@ -10,7 +10,9 @@ import type {
   ScoreSource,
   SourceReason,
 } from '@repo/contracts/vocabulary';
+import { auth } from '@repo/auth';
 import { db, schema } from '@repo/db';
+import { eq } from '@repo/db/orm';
 
 // Fixture minime: scrivono la riga e restituiscono l'id. Niente builder
 // generalizzati — quando serviranno più campi si allargano queste.
@@ -29,6 +31,36 @@ export async function createUser() {
     })
     .returning({ id: schema.user.id });
   return row!.id;
+}
+
+/**
+ * Un utente vero di Better Auth, con la sua sessione, per i test che passano
+ * dall'hook o dai plugin dell'auth. Con la verifica dell'email accesa la
+ * registrazione non apre una sessione: l'email si segna verificata qui, come
+ * avrebbe fatto il link, e poi si entra.
+ */
+export async function signUpVerified(
+  email: string,
+  password = 'password-di-prova',
+  name = email.split('@')[0]!,
+): Promise<{ userId: string; headers: Headers }> {
+  const { user } = await auth.api.signUpEmail({
+    body: { email, password, name },
+  });
+  await db
+    .update(schema.user)
+    .set({ emailVerified: true })
+    .where(eq(schema.user.id, user.id));
+
+  const { headers } = await auth.api.signInEmail({
+    body: { email, password },
+    returnHeaders: true,
+  });
+  const cookie = headers
+    .getSetCookie()
+    .map((value) => value.split(';')[0])
+    .join('; ');
+  return { userId: user.id, headers: new Headers({ cookie }) };
 }
 
 export async function createGame(

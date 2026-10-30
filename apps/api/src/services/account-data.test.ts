@@ -4,7 +4,11 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { describe, expect, it } from 'vitest';
 
-import { createGame, linkStoreAccount } from '../../test/factories';
+import {
+  createGame,
+  linkStoreAccount,
+  signUpVerified,
+} from '../../test/factories';
 import { router } from '../rpc/router';
 import { addToBacklog } from './backlog';
 
@@ -14,17 +18,7 @@ import { addToBacklog } from './backlog';
 
 const PASSWORD = 'password-di-prova';
 
-async function signUp(email: string) {
-  const { headers, response } = await auth.api.signUpEmail({
-    body: { email, password: PASSWORD, name: email.split('@')[0]! },
-    returnHeaders: true,
-  });
-  const cookie = headers
-    .getSetCookie()
-    .map((value) => value.split(';')[0])
-    .join('; ');
-  return { userId: response.user.id, headers: new Headers({ cookie }) };
-}
+const signUp = (email: string) => signUpVerified(email, PASSWORD);
 
 const makeAdmin = (userId: string) =>
   db

@@ -51,6 +51,22 @@ export function openCriticEnabled() {
   return flag !== '0' && flag !== 'false';
 }
 
+/**
+ * `SHOW_OPENCRITIC=0` toglie i voti e il link di OpenCritic dalla pagina del
+ * gioco, l'unico posto dove arrivano al pubblico (rilascio). Le condizioni
+ * gratuite della chiave vietano di monetizzare in qualunque forma, e un link
+ * di donazioni potrebbe esserlo: senza il piano commerciale, in produzione si
+ * spengono tutte e due, questa e `ENABLE_OPENCRITIC`. Sono separate perché in
+ * sviluppo serve il contrario: niente chiamate, ma i voti già salvati si
+ * vedono. I dati restano nel database, e l'admin li vede comunque.
+ *
+ * Visibile se manca, come `ENABLE_OPENCRITIC`.
+ */
+export function openCriticVisible() {
+  const flag = process.env.SHOW_OPENCRITIC?.trim().toLowerCase();
+  return flag !== '0' && flag !== 'false';
+}
+
 export type OpenCriticQuota = {
   requests: number | null;
   searches: number | null;

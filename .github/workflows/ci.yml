@@ -101,6 +101,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # La chiave pubblica di Turnstile entra nel bundle come l'URL dell'API:
+      # non è un segreto, sta nelle variabili del repo (Settings → Secrets and
+      # variables → Actions → Variables). Vuota, il widget non compare.
       # `:main` è quella che il mini PC scarica, `:<sha>` serve a tornare
       # indietro. `source` lega il pacchetto al repo su GitHub, `revision` dice
       # al mini PC quale commit sta installando.
@@ -108,7 +111,9 @@ jobs:
         with:
           context: .
           push: true
-          build-args: PUBLIC_API_URL=https://ludex.sanvisimo.tech
+          build-args: |
+            PUBLIC_API_URL=https://ludex.sanvisimo.tech
+            PUBLIC_TURNSTILE_SITE_KEY=${{ vars.TURNSTILE_SITE_KEY }}
           tags: |
             ghcr.io/sanvisimo/ludex:main
             ghcr.io/sanvisimo/ludex:${{ github.sha }}

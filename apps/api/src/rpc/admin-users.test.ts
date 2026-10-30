@@ -4,7 +4,11 @@ import { db, schema } from '@repo/db';
 import { eq } from '@repo/db/orm';
 import { describe, expect, it } from 'vitest';
 
-import { createGame, linkStoreAccount } from '../../test/factories';
+import {
+  createGame,
+  linkStoreAccount,
+  signUpVerified,
+} from '../../test/factories';
 import { router } from './router';
 
 // Ruolo, ban e sessioni passano dalle API del plugin `admin` di Better Auth:
@@ -12,21 +16,7 @@ import { router } from './router';
 
 const PASSWORD = 'password-di-prova';
 
-async function signUp(email: string) {
-  const { headers, response } = await auth.api.signUpEmail({
-    body: { email, password: PASSWORD, name: email.split('@')[0]! },
-    returnHeaders: true,
-  });
-  return { userId: response.user.id, headers: cookieOf(headers) };
-}
-
-function cookieOf(headers: Headers) {
-  const cookie = headers
-    .getSetCookie()
-    .map((value) => value.split(';')[0])
-    .join('; ');
-  return new Headers({ cookie });
-}
+const signUp = (email: string) => signUpVerified(email, PASSWORD);
 
 /** Un admin, e qualcuno su cui agisce. */
 async function adminETarget() {
