@@ -26,7 +26,7 @@ const controller = 'Simone Sanvito';
 
 const privacyIt: LegalDoc = {
   title: 'Informativa sulla privacy',
-  updated: 'Ultimo aggiornamento: 6 ottobre 2026',
+  updated: 'Ultimo aggiornamento: 28 ottobre 2026',
   sections: [
     {
       heading: 'Chi siamo',
@@ -52,7 +52,8 @@ const privacyIt: LegalDoc = {
       blocks: [
         [
           "Per darti il servizio: l'account, la libreria e l'aggiornamento dai negozi che colleghi. La base è il contratto con te (art. 6.1.b GDPR).",
-          "Per la sicurezza: le sessioni e l'indirizzo IP servono a tenere sicuro l'accesso, e la sospensione di un account a fermare un abuso. La base è il nostro legittimo interesse (art. 6.1.f GDPR).",
+          "Per la sicurezza: le sessioni e l'indirizzo IP servono a tenere sicuro l'accesso, a limitare i tentativi ripetuti di accesso e registrazione e a verificare che a compilare i moduli sia una persona (CAPTCHA); la sospensione di un account serve a fermare un abuso. La base è il nostro legittimo interesse (art. 6.1.f GDPR).",
+          "Per scriverti: l'indirizzo email serve a confermarlo alla registrazione, a recuperare la password e a confermarne il cambio. Ti scriviamo solo per questo, mai per pubblicità. La base è il contratto con te (art. 6.1.b GDPR).",
         ],
         'Non vendiamo i tuoi dati e non li usiamo per pubblicità.',
       ],
@@ -73,6 +74,8 @@ const privacyIt: LegalDoc = {
       blocks: [
         [
           'Il fornitore di hosting su cui gira Ludex, che conserva i dati per nostro conto.',
+          "Scaleway (Francia), che spedisce per nostro conto le email dell'account: riceve il tuo indirizzo e il testo dell'email.",
+          "Cloudflare, per il CAPTCHA (Turnstile) dei moduli di accesso, registrazione e recupero della password: riceve l'indirizzo IP e alcuni dati del browser mentre compili quei moduli. Ha sede negli Stati Uniti e aderisce al Data Privacy Framework UE–USA.",
           "I negozi che colleghi: ricevono le richieste con cui leggiamo la tua libreria (ad esempio Steam riceve il tuo SteamID). Alcuni hanno sede fuori dall'Unione Europea.",
           'I servizi da cui prendiamo i dati dei giochi (IGDB, HowLongToBeat, OpenCritic, Metacritic, Wikidata) ricevono solo titoli e identificativi di giochi, mai dati personali.',
         ],
@@ -114,7 +117,7 @@ const privacyIt: LegalDoc = {
 
 const privacyEn: LegalDoc = {
   title: 'Privacy notice',
-  updated: 'Last updated: 6 October 2026',
+  updated: 'Last updated: 28 October 2026',
   sections: [
     {
       heading: 'Who we are',
@@ -140,7 +143,8 @@ const privacyEn: LegalDoc = {
       blocks: [
         [
           'To provide the service: the account, the library and the updates from the stores you link. The basis is the contract with you (art. 6.1.b GDPR).',
-          'For security: sessions and the IP address keep sign-in safe, and suspending an account stops an abuse. The basis is our legitimate interest (art. 6.1.f GDPR).',
+          'For security: sessions and the IP address keep sign-in safe, limit repeated sign-in and sign-up attempts and check that a person is filling in the forms (CAPTCHA); suspending an account stops an abuse. The basis is our legitimate interest (art. 6.1.f GDPR).',
+          'To write to you: your email address is used to confirm it when you sign up, to recover your password and to confirm a change of address. We only write for this, never for advertising. The basis is the contract with you (art. 6.1.b GDPR).',
         ],
         'We do not sell your data and we do not use it for advertising.',
       ],
@@ -161,6 +165,8 @@ const privacyEn: LegalDoc = {
       blocks: [
         [
           'The hosting provider Ludex runs on, which stores the data on our behalf.',
+          'Scaleway (France), which sends the account emails on our behalf: it receives your address and the text of the email.',
+          'Cloudflare, for the CAPTCHA (Turnstile) on the sign-in, sign-up and password recovery forms: it receives your IP address and some browser data while you fill in those forms. It is based in the United States and participates in the EU–US Data Privacy Framework.',
           'The stores you link: they receive the requests we use to read your library (for example Steam receives your SteamID). Some are based outside the European Union.',
           'The services we take game data from (IGDB, HowLongToBeat, OpenCritic, Metacritic, Wikidata) only receive game titles and identifiers, never personal data.',
         ],
@@ -202,7 +208,7 @@ const privacyEn: LegalDoc = {
 
 const termsIt: LegalDoc = {
   title: "Condizioni d'uso",
-  updated: 'Ultimo aggiornamento: 1 ottobre 2026',
+  updated: 'Ultimo aggiornamento: 28 ottobre 2026',
   sections: [
     {
       heading: "Cos'è Ludex",
@@ -258,7 +264,7 @@ const termsIt: LegalDoc = {
     {
       heading: 'Chiudere o sospendere un account',
       blocks: [
-        `Puoi chiudere il tuo account in qualunque momento scrivendo a ${contactEmail}. Possiamo sospendere un account in caso di abuso.`,
+        `Puoi chiudere il tuo account in qualunque momento dalla pagina Profilo, o scrivendo a ${contactEmail}. Possiamo sospendere un account in caso di abuso.`,
       ],
     },
     {
@@ -272,7 +278,7 @@ const termsIt: LegalDoc = {
 
 const termsEn: LegalDoc = {
   title: 'Terms of use',
-  updated: 'Last updated: 1 October 2026',
+  updated: 'Last updated: 28 October 2026',
   sections: [
     {
       heading: 'What Ludex is',
@@ -328,7 +334,7 @@ const termsEn: LegalDoc = {
     {
       heading: 'Closing or suspending an account',
       blocks: [
-        `You can close your account at any time by writing to ${contactEmail}. We may suspend an account in case of abuse.`,
+        `You can close your account at any time from the Profile page, or by writing to ${contactEmail}. We may suspend an account in case of abuse.`,
       ],
     },
     {
