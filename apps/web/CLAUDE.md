@@ -65,7 +65,12 @@ chiede 15. Cose che non si indovinano:
 `/backlog` salvati con un nome: la query gira a ogni apertura. L'elenco è come
 la home, una fascia di card per playlist (20 al massimo, una query per fascia),
 e il nome porta alla playlist aperta. L'ordine è quello scelto dall'utente
-(«Sposta su» e «Sposta giù» nel menu ⋯, `playlists.move`); le nuove vanno in fondo.
+(«Sposta su» e «Sposta giù» nel menu ⋯, o trascinando la fascia, `playlists.move`
+con `direction` o `position`); le nuove vanno in fondo. **Le fasce si trascinano
+dall'intestazione** (`SortableBands`, `components/sortable-bands.tsx`), dentro la
+loro sezione, con la maniglia ⠿ davanti al nome per la tastiera; le card della
+fascia no, perché scorrono di lato e sono già link. Lo stesso in `/wishlist`, dentro
+«Le mie liste» e dentro «Dai negozi».
 Si creano **solo**
 da `/backlog`, col bottone «Salva come playlist» (`save-playlist-dialog.tsx`),
 che compare con almeno un filtro acceso e, su un nome già preso, offre di
@@ -99,6 +104,47 @@ sostituire. Cose che non si indovinano:
   mutazione nuova non deve saperne niente.
 - **I tag mancanti** (cancellati dal vocabolario) la playlist li ignora e li
   dice con un avviso: lo conta il server (`missingTags`).
+
+**Le playlist scelte a mano** (`/playlist/curated/$id`, 15f, `plans/15f-playlist-aperte.md`)
+stanno in `/playlist` con quelle a filtro, in due sezioni («Scelte a mano»
+prima, «Filtri salvati» dopo), e nascono lì con «Nuova playlist»
+(`CuratedNameDialog`). Sono giochi scelti uno per uno, nell'ordine voluto, anche
+quelli del backlog; la card porta il numero (`HomeCard` con `rank`). Cose che non
+si indovinano:
+
+- **Si riordina con dnd-kit** (`@dnd-kit/core` e `sortable`), **prendendo tutta
+  la card** col mouse (dopo 4 pixel, così un clic resta un clic) o col dito (dopo
+  200 ms, così uno scorrimento veloce scorre), e **solo dentro la pagina** che si
+  vede: per un'altra pagina ci sono «Sposta su / giù» e «Sposta alla posizione…»
+  nel menu ⋯ della card. **La tastiera passa dalla maniglia** ⠿ sotto la card
+  (Spazio, frecce, Spazio), perché la card contiene due link e non può essere un
+  bottone: i gestori di dnd-kit si dividono, `onKeyDown` alla maniglia e il resto
+  al `<li>`. Il clic che arriva al rilascio si ferma (`justDragged`), o aprirebbe
+  la scheda; sul `<li>` niente trascinamento nativo di link e immagini e niente
+  menu della pressione lunga del telefono. Gli annunci per lo screen reader sono
+  in `curated.dnd`. Al rilascio la pagina mostra
+  subito il nuovo ordine (`reorderPage` in `lib/curated-order.ts`) e torna com'era
+  se il server dice di no. `DndContext` prende un `id` da `useId`, o gli
+  `aria-describedby` non tornano all'idratazione. **Con la ricerca non si trascina**
+  e la maniglia non c'è; il numero resta quello della lista intera.
+- **`position` viene dal server**, da 0 e senza buchi, anche con la ricerca: «Sposta
+  giù» guarda il numero di giochi della lista intera (`curatedPlaylists.list`), non
+  `total`, che con la ricerca conta solo i trovati.
+- **«Aggiungi giochi»** (`curated-add-dialog.tsx`) è la ricerca della barra
+  (`useGameSearch`) in un dialogo che resta aperto; dice «già al n. 12» con
+  `curatedPlaylists.positions`, e un risultato IGDB diventa un gioco al clic, come
+  nella ricerca.
+- **Sulla scheda del gioco** «Aggiungi a playlist» (`CuratedPlaylistControl`) sta
+  in una riga sua per tutti i giochi, tuoi o no; le spunte come il menu della
+  wishlist. Il cuore non guarda queste liste. **Nel menu ⋯ delle card** del
+  backlog (`EntryActions`, quindi anche le playlist a filtro) e delle scelte a
+  mano c'è «Aggiungi a playlist…», che apre le stesse spunte in un dialogo
+  (`CuratedPlaylistsDialog`): il menu non ha sottomenu.
+- **Il link** è lo stesso `/shared/$token`: `SharedPlaylist.kind` dice se è una
+  playlist a filtro o una scelta a mano, e quest'ultima ha i numeri e niente «Usa
+  questi filtri». `ShareForm` prende `kind`.
+- **Si rileggono dalla `MutationCache`** come le liste: una card porta lo stato e
+  il cuore, che cambiano da qualunque mutazione.
 
 **Il pannello dei filtri** (`FilterPanel`, nel drawer di `/backlog`) ha in cima,
 solo sotto `$sm`, la stessa ricerca della barra, che lì il drawer copre; poi

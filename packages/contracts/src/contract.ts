@@ -36,7 +36,10 @@ import {
   OwnershipInputSchema,
   PlatformSchema,
   PlatformMismatchSchema,
+  CuratedPlaylistGamesSchema,
+  CuratedPlaylistSchema,
   PlaylistDetailSchema,
+  ListMoveSchema,
   PlaylistNameSchema,
   PlaylistQuerySchema,
   PlaylistSchema,
@@ -513,11 +516,10 @@ export const contract = {
       .output(z.object({ token: ShareTokenSchema })),
     unshare: oc.input(z.object({ id: z.uuid() })).output(z.void()),
 
-    // Sposta di un posto verso l'alto o verso il basso nell'elenco dell'utente.
-    // Spostare la prima su, o l'ultima giù, non fa niente e non è un errore.
-    move: oc
-      .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
-      .output(z.void()),
+    // Sposta di un posto verso l'alto o verso il basso nell'elenco dell'utente,
+    // o a un posto (il trascinamento). Spostare la prima su, o l'ultima giù, non
+    // fa niente e non è un errore; un posto oltre la fine vale l'ultimo.
+    move: oc.input(ListMoveSchema).output(z.void()),
   },
 
   // L'import da CSV (10): giochi da un file, per esempio l'export di Playnite.
@@ -606,9 +608,7 @@ export const contract = {
     // scheda dell'account, e l'aggiornamento automatico non la ricrea. `CONFLICT`
     // se il suo import è in corso.
     remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
-    move: oc
-      .input(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) }))
-      .output(z.void()),
+    move: oc.input(ListMoveSchema).output(z.void()),
 
     // La lista aperta: ricerca sul titolo, ordine e pagina. I giochi che hai nel
     // backlog non ci sono, anche se la voce c'è ancora.
@@ -663,6 +663,87 @@ export const contract = {
     forGame: oc
       .input(z.object({ gameId: z.uuid() }))
       .output(z.array(WishlistMembershipSchema)),
+  },
+
+  // Le playlist aperte (step 15f): giochi scelti a mano, nell'ordine voluto, che
+  // possono stare anche nel backlog. Stanno in `playlists` col tipo `curated` e
+  // **non si confondono** con le altre: un id di una playlist a filtro o di una
+  // lista qui è `NOT_FOUND`, come uno di un altro utente.
+  curatedPlaylists: {
+    // Nell'ordine scelto (`move`); a parità, per nome.
+    list: oc.output(z.array(CuratedPlaylistSchema)),
+
+    // `CONFLICT` se ne hai già una con quel nome, maiuscole a parte. Va in fondo.
+    create: oc
+      .input(z.object({ name: PlaylistNameSchema }))
+      .output(CuratedPlaylistSchema),
+    rename: oc
+      .input(z.object({ id: z.uuid(), name: PlaylistNameSchema }))
+      .output(CuratedPlaylistSchema),
+    // Toglie la playlist e le sue voci, non i giochi.
+    remove: oc.input(z.object({ id: z.uuid() })).output(z.void()),
+    move: oc.input(ListMoveSchema).output(z.void()),
+
+    // La playlist aperta, nell'ordine scelto e solo in quello. La ricerca sul
+    // titolo restringe i giochi, non cambia il loro `position`.
+    get: oc
+      .input(
+        z.object({
+          id: z.uuid(),
+          q: z.string().trim().min(1).max(100).optional(),
+          limit: z.number().int().min(1).max(200).default(50),
+          offset: z.number().int().min(0).default(0),
+        }),
+      )
+      .output(CuratedPlaylistGamesSchema),
+
+    // Mette un gioco in fondo alla playlist. Ripeterla non fa niente, e il gioco
+    // resta dov'era. Un gioco che hai nel backlog si aggiunge come gli altri.
+    add: oc
+      .input(z.object({ listId: z.uuid(), gameId: z.uuid() }))
+      .output(CuratedPlaylistSchema),
+    removeGame: oc
+      .input(z.object({ listId: z.uuid(), gameId: z.uuid() }))
+      .output(z.void()),
+
+    // Porta il gioco al posto `position`, da 0: gli altri scalano. Su e giù, il
+    // trascinamento e «Sposta alla posizione…» sono tutti questa. Un posto oltre
+    // la fine vale l'ultimo. `NOT_FOUND` se la playlist non è tua o il gioco non
+    // ci sta.
+    moveGame: oc
+      .input(
+        z.object({
+          listId: z.uuid(),
+          gameId: z.uuid(),
+          position: z.number().int().min(0),
+        }),
+      )
+      .output(z.void()),
+
+    // A che posto (da 0) stanno quelli di questi giochi che sono nella playlist:
+    // gli altri non ci sono. È il «già al n. 12» del dialogo «Aggiungi giochi».
+    positions: oc
+      .input(
+        z.object({
+          listId: z.uuid(),
+          gameIds: z.array(z.uuid()).max(100),
+        }),
+      )
+      .output(
+        z.array(z.object({ gameId: z.uuid(), position: z.number().int() })),
+      ),
+
+    // Le tue playlist aperte, con un `has` per dire in quali sta già il gioco: è
+    // il menu della scheda del gioco.
+    forGame: oc
+      .input(z.object({ gameId: z.uuid() }))
+      .output(z.array(WishlistMembershipSchema)),
+
+    // Il link pubblico, come per le playlist a filtro (15d): `/shared/$token`.
+    share: oc
+      .input(z.object({ id: z.uuid() }))
+      .output(z.object({ token: ShareTokenSchema })),
+    unshare: oc.input(z.object({ id: z.uuid() })).output(z.void()),
   },
 
   // Le playlist condivise (step 15d): **pubbliche**, per chi ha il link. Il

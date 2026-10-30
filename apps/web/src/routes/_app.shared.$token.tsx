@@ -125,8 +125,9 @@ function SharedPlaylistPage() {
 
   // Il bottone dei filtri: da loggati porta al backlog, da anonimi all'accesso e
   // poi torna qui. Finché la sessione non è nota non si mostra, o lampeggia.
+  // Una playlist aperta (15f) non ha filtri da riusare.
   const useFilters =
-    data && !session.isPending ? (
+    data?.kind === 'filter' && !session.isPending ? (
       session.data ? (
         <ButtonLink
           href={
@@ -155,7 +156,7 @@ function SharedPlaylistPage() {
       subtitle={data ? tBacklog('count', { count: total }) : ' '}
       actions={useFilters}
     >
-      {data && data.droppedTags > 0 && (
+      {data?.kind === 'filter' && data.droppedTags > 0 && (
         <YStack bg="$color3" rounded={8} px={12} py={8}>
           <Text fontSize={13} lineHeight={18} color="$color12">
             {t('droppedTags', { count: data.droppedTags })}
@@ -184,8 +185,18 @@ function SharedPlaylistPage() {
           data && (
             <>
               <Cards>
-                {data.games.map((game) => (
-                  <HomeCard key={game.id} game={game} fill />
+                {data.games.map((game, index) => (
+                  <HomeCard
+                    key={game.id}
+                    game={game}
+                    fill
+                    // Una playlist aperta (15f) è in ordine: il numero lo dice.
+                    rank={
+                      data.kind === 'curated'
+                        ? (page - 1) * size + index + 1
+                        : undefined
+                    }
+                  />
                 ))}
               </Cards>
               {/* Quanti per pagina a sinistra, le pagine a destra; sul telefono

@@ -191,6 +191,19 @@ describe('playlist', () => {
       expect(await nomiInOrdine(userId)).toEqual(['Mela', 'Zeta', 'Alfa']);
     });
 
+    it('porta a un posto, e oltre la fine vale l’ultimo', async () => {
+      const ids = await tre(userId);
+
+      expect(await movePlaylist(userId, ids.Mela!, 0)).toBe(true);
+      expect(await nomiInOrdine(userId)).toEqual(['Mela', 'Zeta', 'Alfa']);
+
+      expect(await movePlaylist(userId, ids.Mela!, 99)).toBe(true);
+      expect(await nomiInOrdine(userId)).toEqual(['Zeta', 'Alfa', 'Mela']);
+
+      expect(await movePlaylist(userId, ids.Alfa!, 1)).toBe(true);
+      expect(await nomiInOrdine(userId)).toEqual(['Zeta', 'Alfa', 'Mela']);
+    });
+
     it('la prima su e l’ultima giù non fanno niente, e non sono un errore', async () => {
       const ids = await tre(userId);
 

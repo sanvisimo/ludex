@@ -15,6 +15,7 @@ import {
   validatePlaylistSearch,
   validateRandomSearch,
   validateWishlistSearch,
+  validateCuratedSearch,
 } from './backlog-filter';
 
 // Si testa il passaggio fra i tre modi di dire lo stesso filtro — l'URL di
@@ -206,6 +207,22 @@ describe('l’URL di una playlist aperta', () => {
 
   it('una ricerca vuota o un ordine che non esiste si scartano', () => {
     expect(validatePlaylistSearch({ q: '   ', sort: 'pippo' })).toEqual({});
+  });
+});
+
+describe("l'URL di una playlist aperta", () => {
+  it('tiene ricerca, pagina e numero per pagina, e niente ordine né vista', () => {
+    expect(
+      validateCuratedSearch({
+        q: ' rpg ',
+        page: '3',
+        size: '35',
+        sort: 'name',
+        direction: 'asc',
+        view: 'compact',
+      }),
+    ).toEqual({ q: 'rpg', page: 3, size: 35 });
+    expect(validateCuratedSearch({ q: '  ' })).toEqual({});
   });
 });
 

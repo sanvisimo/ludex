@@ -313,11 +313,11 @@ c'è se e solo se il tipo è `filter`, e il nome è unico per `(utente, tipo, no
 una playlist «Brevi» e una lista «Brevi» non si contendono il nome. **Ogni
 funzione lavora sul proprio tipo e solo su quello**: un id di lista dato a una
 funzione delle playlist si comporta come un id inesistente, e viceversa. Anche
-l'ordine («Sposta su», «Sposta giù») è dentro il tipo, e solo le playlist a filtro
-si condividono.
+l'ordine («Sposta su», «Sposta giù») è dentro il tipo, e si condividono col link
+solo le playlist a filtro e quelle aperte (`curated`, più sotto).
 
 I giochi di una lista stanno in `wishlist_items(list_id, game_id, added_at)`:
-**solo il gioco e la data**. Non c'è `user_id`, che lo porta la lista, e le
+**solo il gioco e la data** (più la posizione nelle playlist aperte). Non c'è `user_id`, che lo porta la lista, e le
 funzioni risolvono la lista filtrando per utente prima di toccare le voci.
 
 - **Un gioco o è in una lista o è nel backlog.** Quando entra nel backlog — dal
@@ -375,3 +375,28 @@ transazione della migration che lo crea (`55P04`).
   Le scelte sulle voci nascoste si perdono: un nuovo import le riporta come nuove.
 - **L'esportazione dell'account** ha `storeWishlists`: per account, i giochi in lista
   e le voci non riconosciute.
+
+### Le playlist aperte: `playlists.kind = 'curated'` (step 15f)
+
+Giochi **scelti a mano, nell'ordine voluto** («i 100 RPG più belli di sempre»),
+nella stessa tabella, con i giochi in `wishlist_items` come le liste. Le voci hanno
+in più **`position`**, un intero nullo nelle altre liste: un gioco nuovo va in fondo
+(`max + 1`, letto nella stessa INSERT), uno tolto lascia un buco, e lo spostamento
+(`moveCuratedGame`, «porta il gioco X al posto N») riscrive le posizioni di tutta la
+lista da 0, in una transazione con la riga della playlist bloccata. A parità
+decidono la data e il gioco. Su, giù, il trascinamento e «Sposta alla posizione…»
+sono tutti quella funzione.
+
+- **Le regole della wishlist non valgono**: ci stanno anche i giochi che hai nel
+  backlog, entrarci non li toglie (`dropFromWishlists` guarda solo `wishlist`), non
+  accendono il cuore (`wishlistedGameIds`, idem) e il conteggio li comprende tutti.
+  Le card mostrano lo stato di chi guarda.
+- **Si ordina solo per posizione**: niente menu dell'ordine, la ricerca sul titolo
+  restringe senza rinumerare.
+- **Si condivide col link** come una playlist a filtro, con lo stesso `share_token`
+  e la stessa `/shared/$token`: escono i giochi nell'ordine scelto, anche quelli che
+  il proprietario ha nascosto, e niente di suo. `SharedPlaylist` ha un `kind` per
+  distinguere le due forme.
+- **La fusione di due giochi** (11b) porta la posizione al gioco che resta.
+- **L'esportazione dell'account** ha `curatedPlaylists`, coi giochi in ordine e il
+  posto da 1.

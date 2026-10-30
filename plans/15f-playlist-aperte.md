@@ -1,9 +1,64 @@
 # Step 15f — Playlist aperte
 
-**Stato: decisa il 22/10/2026, non cominciata.** Quando farla nell'ordine di
-lavoro (rilascio · 13 · mobile) lo decide l'utente con calma. Roadmap:
-`openPlaylists`, oggi «idea». Nasce dalla nota «Da decidere: playlist aperte»
-in [15b-wishlist.md](15b-wishlist.md).
+**Stato: in corso dal 28/10/2026, lotto A.** Decisa il 22/10; il 28/10 l'utente
+l'ha anticipata a prima del rilascio e di 13a e 13b
+([ordine di lavoro](../docs/ordine-sviluppo.md)). Roadmap: `openPlaylists`, «in
+corso». Nasce dalla nota «Da decidere: playlist aperte» in
+[15b-wishlist.md](15b-wishlist.md).
+
+**Stato: fatto il 30/10/2026**, chiuso dall'utente lo stesso giorno: il server
+(28/10), il wireframe (approvato il 30/10), dnd-kit, le pagine web e i commenti
+venuti vedendolo in uso (30/10). Roadmap: `openPlaylists` in «fatto», e la parte
+pubblica (15f B) in «in arrivo» come `publicPlaylists`. Prima della PR l'utente fa
+una prova a mano in locale.
+
+Il branch si chiama `feat/15f-playlist-aperte` dal 30/10 (prima
+`ccr-286468c8-3f1wau`, che il proxy della sessione non ha lasciato cancellare dal
+remoto: va tolto a mano).
+
+### Il wireframe (29/10/2026, da approvare)
+
+In [15f-playlist-aperte.excalidraw](15f-playlist-aperte.excalidraw). Si parte
+dalle schermate di oggi: `/playlist` con le fasce delle playlist a filtro, la
+lista della wishlist (griglia, ricerca, ordine, «Ce l'ho» e «Togli»), la scheda
+del gioco con il pannello del backlog o con «Aggiungi al backlog» e «In
+wishlist». La proposta, schermata per schermata:
+
+1. **`/playlist`** ha due sezioni, **prima «Scelte a mano», poi «Filtri
+   salvati»**: le nuove sono quelle da costruire a mano, le altre restano com'è
+   oggi. Nell'intestazione «+ Nuova playlist», che crea una scelta a mano (quelle
+   a filtro si creano ancora dal backlog). Le fasce sono le stesse di oggi, con
+   il numero sulla card. Una sezione vuota tiene il titolo e una riga sola con
+   il suo bottone; senza niente del tutto, lo stato vuoto di oggi con tutti e
+   due i bottoni.
+   - **1b**: il dialog «Nuova playlist», col nome soltanto; crea e apre la
+     playlist. Lo stesso dialog fa «Rinomina».
+   - **1c**: il menu ⋯ di una playlist scelta a mano: su, giù, rinomina,
+     condividi, elimina. Niente «Modifica filtri».
+2. **La playlist aperta**, `/playlist/curated/$id`: intestazione con
+   «Condividi» e ⋯, poi la ricerca sul titolo e «+ Aggiungi giochi». Niente
+   menu dell'ordine. Card come quelle della wishlist, con **lo stato in alto a
+   sinistra (come oggi), il numero in basso a sinistra e il cuore in basso a
+   destra**; sotto, la maniglia ⠿ a sinistra e il menu ⋯ a destra. Si
+   trascina dentro la pagina; il numero è la posizione nella lista intera.
+   - **2b**: il menu della card: sposta su, sposta giù, sposta alla
+     posizione…, togli (con «Annulla»). Su e giù passano da una pagina
+     all'altra.
+   - **2c**: il dialog «Sposta alla posizione…», con il posto di adesso e un
+     numero da 1 a N.
+   - **2d**: con la ricerca la maniglia sparisce, il menu resta, i numeri sono
+     quelli della lista intera.
+3. **«Aggiungi giochi»**: un dialog che **resta aperto**, con la ricerca della
+   barra in alto (prima i tuoi, poi Ludex, poi IGDB). Ogni riga ha «Aggiungi»,
+   che diventa «✓ Aggiunto · n. 101»; un gioco già in lista dice il suo numero.
+4. **La scheda del gioco**: «≡ Aggiungi a playlist ▾» in una riga sua, sotto i
+   bottoni di oggi, sia per i giochi tuoi sia per gli altri. Il menu è quello
+   della wishlist: una spunta per playlist e «+ Nuova playlist…», che la crea col
+   gioco dentro. Stando in almeno una il bottone dice «In 2 playlist ▾».
+5. **Telefono**: due colonne, la maniglia si tiene premuta un attimo prima di
+   trascinare, «Condividi» diventa l'icona.
+6. **Il link**: la pagina di oggi con i numeri sulle card e senza «Usa questi
+   filtri».
 
 ## Cosa si vuole
 
@@ -28,6 +83,10 @@ l'ordine è quello di chi la fa.
    la lista. Un top 20 fatto aprendo venti schede è scomodo.
 4. **Drag&drop** per l'ordine, con «Sposta su / giù» nel menu della card come
    alternativa.
+5. **«Sposta alla posizione…»** nello stesso menu, con un campo numerico (28/10):
+   il piano era pensato su 20 giochi, e con 100 portare l'80 al 3 a colpi di «su»
+   vorrebbe decine di clic. Sul server non costa niente: la funzione è già «sposta
+   il gioco X alla posizione N».
 
 ## Cosa c'è già
 
@@ -75,10 +134,12 @@ l'ordine è quello di chi la fa.
   `@dnd-kit/react`, il successore, è ancora alla 0.5. Il mobile avrà la sua
   soluzione, sui gesti di React Native.
 - Si trascina da una **maniglia** sulla card: la card intera litigherebbe con
-  lo scroll sul telefono, e copertina e titolo restano link.
+  lo scroll sul telefono, e copertina e titolo restano link. **Cambiato il
+  30/10**: si trascina tutta la card, la maniglia resta per la tastiera (vedi «I
+  commenti vedendolo in uso»).
 - Aggiornamento ottimistico, che torna indietro se il server dice di no.
 - **Si trascina dentro la pagina visibile.** Per un'altra pagina restano «Sposta
-  su / giù» nel menu ⋯ della card.
+  su / giù» e «Sposta alla posizione…» nel menu ⋯ della card.
 - **Con la ricerca attiva il trascinamento è spento**: su una lista filtrata
   non è chiaro dove finirebbe il gioco.
 
@@ -94,8 +155,8 @@ l'ordine è quello di chi la fa.
 
 - L'esportazione include le liste, con `igdbId` e posizione; la cancellazione
   dell'account le porta via per cascade.
-- La roadmap: `openPlaylists` va in «in arrivo» ora che è decisa, in «in corso»
-  quando il lavoro comincia.
+- La roadmap: `openPlaylists` è «in corso» dal 28/10; passa a «fatto» quando
+  l'utente dice che il lotto è pronto.
 
 ### Test (contro Postgres)
 
@@ -110,13 +171,80 @@ l'ordine è quello di chi la fa.
 - il link mostra solo dati pubblici, nell'ordine scelto;
 - l'esportazione le contiene.
 
+### Il server, com'è venuto (28/10/2026)
+
+- **Migration** `0062_playlist_kind_curated`: il valore dell'enum e
+  `wishlist_items.position`, nullo fuori dalle playlist aperte. Nessun letterale
+  del valore nuovo, quindi niente `55P04`.
+- **Servizio** in [curated-playlists.ts](../apps/api/src/services/curated-playlists.ts),
+  **contratto** `curatedPlaylists` (`list`, `create`, `rename`, `remove`, `move`,
+  `get`, `add`, `removeGame`, `moveGame`, `forGame`, `share`, `unshare`). `get`
+  dà a ogni gioco il suo `position` nella lista intera, da 0 e senza buchi, anche
+  con la ricerca: serve al web per «su», «giù» e per il numero sulla card.
+- `movePlaylist`, `sharePlaylist` e `unsharePlaylist` prendono il tipo come
+  argomento, col default di prima.
+- **Il link**: `SharedPlaylist` è diventato un'unione su `kind` (`filter` con
+  query e `droppedTags`, `curated` senza). Nel web `/shared/$token` è cambiato
+  solo quanto basta a compilare: i bottoni dei filtri e l'avviso sui tag solo per
+  `filter`. Il resto della pagina è del passo 4.
+- **La fusione** (11b) porta la posizione al gioco che resta; non era nel piano,
+  ma senza il gioco sarebbe finito in fondo.
+- **Test**: [curated-playlists.test.ts](../apps/api/src/services/curated-playlists.test.ts),
+  17 casi, tutti quelli elencati sopra; uno in più in `admin-merge.test.ts`.
+
+### I commenti vedendolo in uso (30/10/2026)
+
+1. **«Aggiungi a playlist…» anche nel menu ⋯ delle card**, del backlog (e quindi
+   delle playlist a filtro) e delle scelte a mano: apre in un dialogo le stesse
+   spunte della scheda del gioco, perché il menu non ha sottomenu.
+2. **Il trascinamento su tutta la card**, non più solo dalla maniglia. La
+   decisione del 22/10 temeva il conflitto col dito e coi link: col dito parte
+   dopo 200 ms, quindi lo scorrimento veloce resta; il clic che arriva al
+   rilascio si ferma, quindi la scheda non si apre; la pressione lunga non apre
+   il menu del telefono. **La maniglia resta**, com'era, per la tastiera e come
+   segno che si può trascinare.
+
+3. **Il trascinamento anche per le playlist e le liste della wishlist**, in
+   `/playlist` e `/wishlist`: si prende l'intestazione della fascia (le card della
+   fascia scorrono di lato e sono già link), dentro la sua sezione, con la maniglia
+   per la tastiera; «Sposta su / giù» del menu restano. Sul server `move` prende
+   anche `position`, per tutti e tre i tipi.
+
+Provati con Playwright: dalla copertina il gioco si sposta e la scheda non si
+apre, un clic semplice la apre, la tastiera dalla maniglia sposta, la spunta del
+dialogo aggiunge e toglie; le fasce si spostano col mouse e con la tastiera, in
+tutte e due le sezioni di `/playlist` e in `/wishlist`, e il clic sul nome apre
+ancora la playlist. Il dito non è provato: va visto su un telefono vero.
+
+### Le pagine, come sono venute (30/10/2026)
+
+Come il wireframe, con queste differenze e aggiunte:
+
+- **`curatedPlaylists.positions`**, un endpoint in più: il dialogo «Aggiungi
+  giochi» dice «già al n. 12» prima del clic, e il server era l'unico a saperlo.
+- **Main era andato avanti** con una sua `0062`: la nostra migration è diventata
+  la `0063`, con lo stesso contenuto. Chi aveva applicato la vecchia `0062` in
+  locale (solo questa sessione) ricrea il database.
+- **«Annulla» dopo «Togli»** rimette il gioco in fondo e poi al suo posto: due
+  chiamate, perché `add` mette sempre in fondo.
+- **Le fasce di `/playlist`** troncano il nome lungo invece di mandare a capo il
+  numero dei giochi; valeva anche per quelle a filtro, ed è corretto per tutte e due.
+- In console restano due avvisi che c'erano già sulle pagine di prima (`onPress`
+  e le misure `icon` dei bottoni di Tamagui): non vengono da qui.
+- Provato con Playwright su dati finti: trascinamento col mouse e con la
+  tastiera, su, giù, alla posizione, togli e annulla, aggiungi, la ricerca che
+  spegne le maniglie, la scheda del gioco nei due casi, il link da anonimo e il
+  telefono. IGDB in questa sessione non risponde (niente credenziali), quindi i
+  risultati IGDB del dialogo non sono stati visti.
+
 ### Passi
 
-1. **Server**: migration, servizio, contratti, test.
+1. **Server**: migration, servizio, contratti, test. **Fatto il 28/10.**
 2. **Wireframe** (Excalidraw): `/playlist` con le due sezioni, la lista aperta
    con maniglia e ricerca per aggiungere, il menu sulla scheda del gioco.
-3. **Dipendenza**: installare dnd-kit in `apps/web`.
+   **Approvato il 30/10.**
+3. **Dipendenza**: installare dnd-kit in `apps/web`. **Fatto il 30/10.**
 4. **Web**: le pagine, l'aggiunta dalla scheda e dalla ricerca, il
-   trascinamento, la condivisione.
+   trascinamento, la condivisione. **Fatto il 30/10.**
 5. **Documentazione**: [modello-dati](../docs/modello-dati.md),
    [ordine-sviluppo](../docs/ordine-sviluppo.md), `apps/web/CLAUDE.md`.

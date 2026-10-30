@@ -377,6 +377,8 @@ export async function mergeGames(
             listId: voce.listId,
             gameId: survivor.id,
             addedAt: voce.addedAt,
+            // Il posto nella playlist aperta (15f), dove c'è.
+            position: voce.position,
           })),
         )
         .onConflictDoNothing();

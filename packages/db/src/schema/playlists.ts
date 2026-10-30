@@ -24,7 +24,9 @@ export const playlistKind = pgEnum('playlist_kind', playlistKindValues);
  * O, col tipo `wishlist` (step 15b), una lista di giochi scelti a mano, che sta
  * in `wishlist_items` e non ha una query. O, col tipo `store_wishlist` (step
  * 15e), la wishlist di un account di un negozio: una lista di sola lettura che
- * l'import allinea al negozio, e che sparisce con l'account.
+ * l'import allinea al negozio, e che sparisce con l'account. O, col tipo
+ * `curated` (step 15f), una playlist aperta: giochi scelti a mano, in
+ * `wishlist_items` con la loro posizione, che possono stare anche nel backlog.
  *
  * **Non contiene i giochi.** È una domanda, non una risposta: la query gira a
  * ogni apertura, quindi un gioco che cambia stato o durata entra e esce da solo.
@@ -47,7 +49,8 @@ export const playlists = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
-    // `filter` (il default, le playlist di prima), `wishlist` o `store_wishlist`.
+    // `filter` (il default, le playlist di prima), `wishlist`, `store_wishlist`
+    // o `curated`.
     // Le funzioni di ogni tipo lavorano sul proprio e solo sul proprio.
     kind: playlistKind('kind').notNull().default('filter'),
     // La query c'è se e solo se il tipo è `filter`: lo dice il vincolo qui sotto.
@@ -57,7 +60,7 @@ export const playlists = pgTable(
     // che il prossimo spostamento richiude. A parità decide il nome.
     // Il default serve solo alla migration; chi inserisce lo scrive sempre.
     position: integer('position').notNull().default(0),
-    // Il link pubblico (step 15d): 16 byte casuali in base64url, nullo se la
+    // Il link pubblico (step 15d, e per le playlist aperte 15f): 16 byte casuali in base64url, nullo se la
     // playlist non è condivisa. Chi ha il link la vede, senza account; revocarlo
     // lo rimette a nullo e il link smette di funzionare, e ricondividere ne dà
     // uno nuovo. Unico, e non indovinabile: è l'unica cosa che protegge la pagina.

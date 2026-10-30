@@ -65,6 +65,18 @@ import {
 } from '../services/playlists';
 import { openSharedPlaylist } from '../services/shared-playlists';
 import {
+  addToCuratedPlaylist,
+  createCuratedPlaylist,
+  curatedPlaylistsForGame,
+  curatedPositions,
+  deleteCuratedPlaylist,
+  listCuratedPlaylists,
+  moveCuratedGame,
+  openCuratedPlaylist,
+  removeFromCuratedPlaylist,
+  renameCuratedPlaylist,
+} from '../services/curated-playlists';
+import {
   addToWishlist,
   createWishlist,
   deleteWishlist,
@@ -736,7 +748,7 @@ export const router = os.router({
       const moved = await movePlaylist(
         context.user.id,
         input.id,
-        input.direction,
+        input.position ?? input.direction!,
       );
       if (!moved)
         throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
@@ -835,7 +847,13 @@ export const router = os.router({
       }),
 
     move: os.wishlists.move.use(authed).handler(async ({ input, context }) => {
-      if (!(await moveWishlist(context.user.id, input.id, input.direction)))
+      if (
+        !(await moveWishlist(
+          context.user.id,
+          input.id,
+          input.position ?? input.direction!,
+        ))
+      )
         throw new ORPCError('NOT_FOUND', { message: 'Lista inesistente' });
     }),
 
@@ -920,6 +938,146 @@ export const router = os.router({
       .handler(({ input, context }) =>
         wishlistsForGame(context.user.id, input.gameId),
       ),
+  },
+
+  curatedPlaylists: {
+    list: os.curatedPlaylists.list
+      .use(authed)
+      .handler(({ context }) => listCuratedPlaylists(context.user.id)),
+
+    create: os.curatedPlaylists.create
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const list = await createCuratedPlaylist(context.user.id, input.name);
+        if (!list)
+          throw new ORPCError('CONFLICT', {
+            message: 'Hai già una playlist con questo nome',
+          });
+        return list;
+      }),
+
+    rename: os.curatedPlaylists.rename
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const list = await renameCuratedPlaylist(
+          context.user.id,
+          input.id,
+          input.name,
+        );
+        if (list === null)
+          throw new ORPCError('CONFLICT', {
+            message: 'Hai già una playlist con questo nome',
+          });
+        if (!list)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+        return list;
+      }),
+
+    remove: os.curatedPlaylists.remove
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        if (!(await deleteCuratedPlaylist(context.user.id, input.id)))
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+      }),
+
+    move: os.curatedPlaylists.move
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const moved = await movePlaylist(
+          context.user.id,
+          input.id,
+          input.position ?? input.direction!,
+          'curated',
+        );
+        if (!moved)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+      }),
+
+    get: os.curatedPlaylists.get
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const list = await openCuratedPlaylist(context.user.id, input);
+        if (!list)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+        return list;
+      }),
+
+    add: os.curatedPlaylists.add
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const result = await addToCuratedPlaylist(context.user.id, input);
+        if (result.ok) return result.list;
+        throw new ORPCError('NOT_FOUND', {
+          message:
+            result.reason === 'game'
+              ? 'Gioco inesistente'
+              : 'Playlist inesistente',
+        });
+      }),
+
+    removeGame: os.curatedPlaylists.removeGame
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        if (
+          !(await removeFromCuratedPlaylist(
+            context.user.id,
+            input.listId,
+            input.gameId,
+          ))
+        )
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+      }),
+
+    moveGame: os.curatedPlaylists.moveGame
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        if (
+          !(await moveCuratedGame(
+            context.user.id,
+            input.listId,
+            input.gameId,
+            input.position,
+          ))
+        )
+          throw new ORPCError('NOT_FOUND', {
+            message: 'Il gioco non è in questa playlist',
+          });
+      }),
+
+    positions: os.curatedPlaylists.positions
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const rows = await curatedPositions(
+          context.user.id,
+          input.listId,
+          input.gameIds,
+        );
+        if (!rows)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+        return rows;
+      }),
+
+    forGame: os.curatedPlaylists.forGame
+      .use(authed)
+      .handler(({ input, context }) =>
+        curatedPlaylistsForGame(context.user.id, input.gameId),
+      ),
+
+    share: os.curatedPlaylists.share
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        const token = await sharePlaylist(context.user.id, input.id, 'curated');
+        if (!token)
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+        return { token };
+      }),
+
+    unshare: os.curatedPlaylists.unshare
+      .use(authed)
+      .handler(async ({ input, context }) => {
+        if (!(await unsharePlaylist(context.user.id, input.id, 'curated')))
+          throw new ORPCError('NOT_FOUND', { message: 'Playlist inesistente' });
+      }),
   },
 
   sharedPlaylists: {

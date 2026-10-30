@@ -197,14 +197,14 @@ export async function deleteWishlist(userId: string, id: string) {
 export async function moveWishlist(
   userId: string,
   id: string,
-  direction: 'up' | 'down',
+  move: 'up' | 'down' | number,
 ) {
   const [list] = await db
     .select({ kind: schema.playlists.kind })
     .from(schema.playlists)
     .where(mineAny(userId, id));
   if (!list || list.kind === 'filter') return false;
-  return movePlaylist(userId, id, direction, list.kind);
+  return movePlaylist(userId, id, move, list.kind);
 }
 
 export type AddResult =

@@ -167,6 +167,7 @@
       "title": "Share “{name}”",
       "description": "Anyone with the link sees the games in this playlist, even without an account. They only see what the catalogue shows for each game: no status, rating, notes or tags, and not who you are. The list is always today's.",
       "notShared": "It isn't shared yet. When you create the link, whoever gets it can also use the same filters on their own backlog.",
+      "notSharedCurated": "It isn't shared yet. Whoever gets the link sees the games in the order you chose.",
       "linkLabel": "The link",
       "copy": "Copy",
       "copied": "Link copied",
@@ -187,6 +188,97 @@
       "signInToUse": "Sign in to use these filters",
       "droppedTags": "{count, plural, one {One of the sharer's tags isn't copied: tags are theirs.} other {# of the sharer's tags aren't copied: tags are theirs.}}",
       "about": "A Ludex playlist!"
+    }
+  },
+  "curated": {
+    "section": "Hand-picked",
+    "filtersSection": "Saved filters",
+    "new": "New playlist",
+    "emptySection": "No hand-picked playlists yet.",
+    "filtersEmpty": "Filters are saved from the backlog.",
+    "emptyAllTitle": "No playlists",
+    "emptyAllHint": "Create a playlist and pick its games one by one, or save some filters from the backlog.",
+    "bandEmpty": "No games yet.",
+    "rank": "Position {position}",
+    "back": "Playlists",
+    "notFoundTitle": "Playlist not found",
+    "notFoundHint": "Maybe it was deleted.",
+    "loadFailed": "I can't load the playlist.",
+    "share": "Share",
+    "add": "Add games",
+    "addShort": "Add",
+    "emptyList": "This playlist is empty.",
+    "emptyListHint": "Add games with \"Add games\" or from their page.",
+    "emptySearch": "No game in this playlist matches the search.",
+    "dragHandle": "Move {name}",
+    "actionsFor": "Actions for {name}",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "moveTo": "Move to position…",
+    "remove": "Remove from playlist",
+    "removed": "{name} removed from the playlist",
+    "undo": "Undo",
+    "removeFailed": "I couldn't remove the game",
+    "moveFailed": "I couldn't move the game",
+    "dnd": {
+      "instructions": "To move a game, press Space on its handle, use the arrow keys and press Space to drop it. Escape cancels.",
+      "start": "Picked up {name}, position {position} of {total}.",
+      "over": "{name} goes to position {position} of {total}.",
+      "end": "{name} dropped at position {position} of {total}.",
+      "cancel": "Move cancelled: {name} stays at position {position}."
+    },
+    "moveDialog": {
+      "title": "Move \"{name}\"",
+      "current": "It's at position {position} of {total}.",
+      "label": "New position",
+      "range": "from 1 to {total}",
+      "cancel": "Cancel",
+      "submit": "Move"
+    },
+    "nameDialog": {
+      "createTitle": "New playlist",
+      "renameTitle": "Rename the playlist",
+      "nameLabel": "Name",
+      "namePlaceholder": "For example: the 100 best RPGs ever",
+      "hint": "You add the games later: with a search inside the playlist or from a game's page.",
+      "cancel": "Cancel",
+      "create": "Create",
+      "rename": "Rename",
+      "exists": "You already have a playlist with this name.",
+      "failed": "I couldn't save the playlist"
+    },
+    "deleteDialog": {
+      "title": "Delete \"{name}\"?",
+      "description": "The games stay where they are: only the playlist goes away.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "deleted": "Playlist deleted",
+      "failed": "I couldn't delete the playlist"
+    },
+    "addDialog": {
+      "title": "Add to \"{name}\"",
+      "placeholder": "Search for a game",
+      "hint": "Type at least two letters of the title.",
+      "mine": "In your backlog",
+      "local": "On Ludex",
+      "igdb": "From IGDB",
+      "add": "Add",
+      "added": "Added · no. {position}",
+      "already": "Already no. {position}",
+      "none": "No games found.",
+      "done": "Done",
+      "failed": "I couldn't add the game"
+    },
+    "control": {
+      "button": "Add to playlist",
+      "inLists": "{count, plural, one {In # playlist} other {In # playlists}}",
+      "newPlaylist": "New playlist…",
+      "added": "Added to \"{name}\"",
+      "failed": "I couldn't change the playlist",
+      "menuItem": "Add to playlist…",
+      "dialogTitle": "Add \"{name}\" to a playlist",
+      "none": "You have no hand-picked playlists yet: create one below.",
+      "done": "Done"
     }
   },
   "wishlist": {
@@ -1353,9 +1445,15 @@
         "title": "The phone app",
         "text": "Your backlog always in your pocket, with the same library and playlists as the web."
       },
+      "publicPlaylists": {
+        "title": "Public playlists",
+        "text": "Hand-picked playlists that can be found, not only opened with a link."
+      },
       "openPlaylists": {
-        "title": "Open playlists",
-        "text": "Lists of hand-picked games in the order you want: \"the 20 best RPGs ever\". Private, with a link, or public."
+        "title": "Hand-picked playlists",
+        "p1": "A playlist can also be built game by game, in the order you want: \"the 100 best RPGs ever\". You create it from Playlists and fill it with a search inside the playlist, from a game's page or from the card menu.",
+        "p2": "You change the order by dragging the cards, or from the menu: up, down or to an exact number. Games you already own fit too, each with its status.",
+        "p3": "You share it with a link, like the other playlists, and whoever opens it sees the games in the order you chose. Playlists and wishlist lists can now be reordered by dragging them too."
       },
       "categoryPages": {
         "title": "Category pages",

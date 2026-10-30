@@ -33,9 +33,12 @@ const linkOf = (token: string) => `${window.location.origin}/shared/${token}`;
  */
 export function ShareForm({
   playlist,
+  kind = 'filter',
   onDone,
 }: {
   playlist: { id: string; name: string; shareToken: string | null };
+  /** Una playlist a filtro o una scelta a mano (15f): lo stesso link. */
+  kind?: 'filter' | 'curated';
   onDone: () => void;
 }) {
   const t = useTranslations('playlists.shareDialog');
@@ -44,12 +47,18 @@ export function ShareForm({
   const fieldId = useId();
   const [token, setToken] = useState(playlist.shareToken);
 
+  const endpoint =
+    kind === 'curated' ? client.curatedPlaylists : client.playlists;
+
   // La pagina pubblica e gli indicatori «condivisa» leggono dall'elenco.
   const refresh = () =>
-    queryClient.invalidateQueries({ queryKey: api.playlists.key() });
+    queryClient.invalidateQueries({
+      queryKey:
+        kind === 'curated' ? api.curatedPlaylists.key() : api.playlists.key(),
+    });
 
   const share = useMutation({
-    mutationFn: () => client.playlists.share({ id: playlist.id }),
+    mutationFn: () => endpoint.share({ id: playlist.id }),
     onSuccess: async (result) => {
       setToken(result.token);
       await refresh();
@@ -59,7 +68,7 @@ export function ShareForm({
   });
 
   const unshare = useMutation({
-    mutationFn: () => client.playlists.unshare({ id: playlist.id }),
+    mutationFn: () => endpoint.unshare({ id: playlist.id }),
     onSuccess: async () => {
       setToken(null);
       await refresh();
@@ -89,7 +98,7 @@ export function ShareForm({
 
       {token === null ? (
         <Text fontSize={13} lineHeight={18} color="$color11">
-          {t('notShared')}
+          {kind === 'curated' ? t('notSharedCurated') : t('notShared')}
         </Text>
       ) : (
         <YStack gap={8}>

@@ -14,11 +14,20 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { Eye, EyeOff, EllipsisVertical, Pencil, Trash2 } from '@repo/ui/icons';
+import {
+  Eye,
+  EyeOff,
+  EllipsisVertical,
+  ListOrdered,
+  Pencil,
+  Trash2,
+} from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
+import { useState } from 'react';
 import { useTranslations } from 'use-intl';
 
+import { CuratedPlaylistsDialog } from '@/components/curated-playlist-control';
 import { EntryTags } from '@/components/entry-tags';
 import { GameCover } from '@/components/game-cover';
 import { GRID_TEMPLATE } from '@/components/grid-columns';
@@ -140,45 +149,61 @@ function EntryActions({
 }: { entry: BacklogEntry } & Omit<EntryHandlers, 'onStatus'>) {
   const t = useTranslations('backlog');
   const tHidden = useTranslations('hidden');
+  const tCurated = useTranslations('curated.control');
+  const [choosing, setChoosing] = useState(false);
   return (
-    <DropdownMenu align="end">
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t('actionsFor', { name: entry.game.name })}
-          >
-            <EllipsisVertical size={16} color="$color11" />
-          </Button>
-        }
-      />
-      <DropdownMenuContent width={184}>
-        <DropdownMenuItem
-          icon={<Pencil size={16} />}
-          onClick={() => onEdit(entry)}
-        >
-          {t('edit')}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          icon={
-            entry.hiddenAt === null ? <EyeOff size={16} /> : <Eye size={16} />
+    <>
+      <DropdownMenu align="end">
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t('actionsFor', { name: entry.game.name })}
+            >
+              <EllipsisVertical size={16} color="$color11" />
+            </Button>
           }
-          disabled={hidingDisabled}
-          onClick={() => onToggleHidden(entry)}
-        >
-          {entry.hiddenAt === null ? tHidden('hide') : tHidden('unhide')}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          destructive
-          icon={<Trash2 size={16} color="$red11" />}
-          onClick={() => onRemove(entry)}
-        >
-          {t('remove')}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        />
+        <DropdownMenuContent width={184}>
+          <DropdownMenuItem
+            icon={<Pencil size={16} />}
+            onClick={() => onEdit(entry)}
+          >
+            {t('edit')}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            icon={
+              entry.hiddenAt === null ? <EyeOff size={16} /> : <Eye size={16} />
+            }
+            disabled={hidingDisabled}
+            onClick={() => onToggleHidden(entry)}
+          >
+            {entry.hiddenAt === null ? tHidden('hide') : tHidden('unhide')}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            icon={<ListOrdered size={16} />}
+            onClick={() => setChoosing(true)}
+          >
+            {tCurated('menuItem')}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            destructive
+            icon={<Trash2 size={16} color="$red11" />}
+            onClick={() => onRemove(entry)}
+          >
+            {t('remove')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {/* Le playlist scelte a mano (15f): il menu non ha sottomenu. */}
+      <CuratedPlaylistsDialog
+        game={entry.game}
+        open={choosing}
+        onOpenChange={setChoosing}
+      />
+    </>
   );
 }
 

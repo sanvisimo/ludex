@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 
 import type { PlaylistQuery } from '@repo/contracts';
+import type { playlistKindValues } from '@repo/contracts/vocabulary';
 import { BacklogQuerySchema, PlaylistQuerySchema } from '@repo/contracts';
 import { db, schema } from '@repo/db';
 import { and, asc, eq, inArray, isNull, sql } from '@repo/db/orm';
@@ -21,6 +22,11 @@ const NAME_INDEX = 'playlists_user_kind_name_idx';
 // di questo file lavora sulle playlist a filtro e **solo** su quelle. Un id di una
 // lista darebbe una riga senza query, e un'operazione sulla lista sbagliata.
 const isFilter = eq(schema.playlists.kind, 'filter');
+
+type PlaylistKind = (typeof playlistKindValues)[number];
+
+/** I tipi che si condividono col link: le playlist a filtro e quelle aperte. */
+type ShareableKind = Extract<PlaylistKind, 'filter' | 'curated'>;
 
 const columns = {
   id: schema.playlists.id,
@@ -194,8 +200,10 @@ export async function openPlaylist(
 }
 
 /**
- * Sposta una playlist (o, coi tipi `wishlist` e `store_wishlist`, una lista) di un
- * posto. `false` se non esiste o non è sua.
+ * Sposta una playlist (o, coi tipi `wishlist` e `store_wishlist`, una lista; o,
+ * con `curated`, una playlist aperta) di un posto, su o giù, o a un posto da 0
+ * (il trascinamento; oltre la fine vale l'ultimo). `false` se non esiste o non è
+ * sua.
  *
  * Le posizioni si riscrivono **per tutte**, da 0 e senza buchi, invece di
  * scambiarne due: dopo una cancellazione i numeri hanno dei buchi, e a pari
@@ -205,8 +213,8 @@ export async function openPlaylist(
 export async function movePlaylist(
   userId: string,
   id: string,
-  direction: 'up' | 'down',
-  kind: 'filter' | 'wishlist' | 'store_wishlist' = 'filter',
+  move: 'up' | 'down' | number,
+  kind: PlaylistKind = 'filter',
 ) {
   return db.transaction(async (tx) => {
     const rows = await tx
@@ -231,7 +239,12 @@ export async function movePlaylist(
     const from = rows.findIndex((row) => row.id === id);
     if (from === -1) return false;
 
-    const to = direction === 'up' ? from - 1 : from + 1;
+    const to =
+      move === 'up'
+        ? from - 1
+        : move === 'down'
+          ? from + 1
+          : Math.min(move, rows.length - 1);
     const ordered = rows.map((row) => row.id);
     if (to >= 0 && to < ordered.length) {
       const [moved] = ordered.splice(from, 1);
@@ -251,18 +264,23 @@ export async function movePlaylist(
 }
 
 /**
- * Il link pubblico di una playlist (step 15d): quello che c'è, o uno nuovo.
- * `undefined` se non esiste o non è sua.
+ * Il link pubblico di una playlist (step 15d), o di una playlist aperta (15f):
+ * quello che c'è, o uno nuovo. `undefined` se non esiste, non è sua o non è del
+ * tipo chiesto.
  *
  * Chiamarla due volte dà lo stesso link. L'aggiornamento scrive solo dove il
  * link è ancora nullo, così due richieste insieme non se lo sovrascrivono: la
  * seconda rilegge quello della prima.
  */
-export async function sharePlaylist(userId: string, id: string) {
+export async function sharePlaylist(
+  userId: string,
+  id: string,
+  kind: ShareableKind = 'filter',
+) {
   const mine = and(
     eq(schema.playlists.id, id),
     eq(schema.playlists.userId, userId),
-    isFilter,
+    eq(schema.playlists.kind, kind),
   );
   const read = async () => {
     const [row] = await db
@@ -287,7 +305,11 @@ export async function sharePlaylist(userId: string, id: string) {
 }
 
 /** Toglie il link: smette di funzionare subito. `false` se non è sua. */
-export async function unsharePlaylist(userId: string, id: string) {
+export async function unsharePlaylist(
+  userId: string,
+  id: string,
+  kind: ShareableKind = 'filter',
+) {
   const [row] = await db
     .update(schema.playlists)
     .set({ shareToken: null })
@@ -295,7 +317,7 @@ export async function unsharePlaylist(userId: string, id: string) {
       and(
         eq(schema.playlists.id, id),
         eq(schema.playlists.userId, userId),
-        isFilter,
+        eq(schema.playlists.kind, kind),
       ),
     )
     .returning({ id: schema.playlists.id });

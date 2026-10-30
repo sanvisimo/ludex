@@ -44,6 +44,7 @@ import { Route as AppPrivatePlaylistIdRouteImport } from './routes/_app._private
 import { Route as AppPrivateWishlistIndexRouteImport } from './routes/_app._private.wishlist.index'
 import { Route as AppPrivateWishlistIdRouteImport } from './routes/_app._private.wishlist.$id'
 import { Route as AppAdminGamesSlugRouteImport } from './routes/_app.admin.games.$slug'
+import { Route as AppPrivatePlaylistCuratedIdRouteImport } from './routes/_app._private.playlist.curated.$id'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -218,6 +219,12 @@ const AppAdminGamesSlugRoute = AppAdminGamesSlugRouteImport.update({
   path: '/games/$slug',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppPrivatePlaylistCuratedIdRoute =
+  AppPrivatePlaylistCuratedIdRouteImport.update({
+    id: '/playlist/curated/$id',
+    path: '/playlist/curated/$id',
+    getParentRoute: () => AppPrivateRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -252,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/admin/games/$slug': typeof AppAdminGamesSlugRoute
   '/playlist/': typeof AppPrivatePlaylistIndexRoute
   '/wishlist/': typeof AppPrivateWishlistIndexRoute
+  '/playlist/curated/$id': typeof AppPrivatePlaylistCuratedIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
@@ -284,6 +292,7 @@ export interface FileRoutesByTo {
   '/admin/games/$slug': typeof AppAdminGamesSlugRoute
   '/playlist': typeof AppPrivatePlaylistIndexRoute
   '/wishlist': typeof AppPrivateWishlistIndexRoute
+  '/playlist/curated/$id': typeof AppPrivatePlaylistCuratedIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -322,6 +331,7 @@ export interface FileRoutesById {
   '/_app/admin/games/$slug': typeof AppAdminGamesSlugRoute
   '/_app/_private/playlist/': typeof AppPrivatePlaylistIndexRoute
   '/_app/_private/wishlist/': typeof AppPrivateWishlistIndexRoute
+  '/_app/_private/playlist/curated/$id': typeof AppPrivatePlaylistCuratedIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/admin/games/$slug'
     | '/playlist/'
     | '/wishlist/'
+    | '/playlist/curated/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/admin/games/$slug'
     | '/playlist'
     | '/wishlist'
+    | '/playlist/curated/$id'
   id:
     | '__root__'
     | '/_app'
@@ -427,6 +439,7 @@ export interface FileRouteTypes {
     | '/_app/admin/games/$slug'
     | '/_app/_private/playlist/'
     | '/_app/_private/wishlist/'
+    | '/_app/_private/playlist/curated/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -681,6 +694,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminGamesSlugRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/_private/playlist/curated/$id': {
+      id: '/_app/_private/playlist/curated/$id'
+      path: '/playlist/curated/$id'
+      fullPath: '/playlist/curated/$id'
+      preLoaderRoute: typeof AppPrivatePlaylistCuratedIdRouteImport
+      parentRoute: typeof AppPrivateRoute
+    }
   }
 }
 
@@ -690,6 +710,7 @@ interface AppPrivateRouteChildren {
   AppPrivateWishlistIdRoute: typeof AppPrivateWishlistIdRoute
   AppPrivatePlaylistIndexRoute: typeof AppPrivatePlaylistIndexRoute
   AppPrivateWishlistIndexRoute: typeof AppPrivateWishlistIndexRoute
+  AppPrivatePlaylistCuratedIdRoute: typeof AppPrivatePlaylistCuratedIdRoute
 }
 
 const AppPrivateRouteChildren: AppPrivateRouteChildren = {
@@ -698,6 +719,7 @@ const AppPrivateRouteChildren: AppPrivateRouteChildren = {
   AppPrivateWishlistIdRoute: AppPrivateWishlistIdRoute,
   AppPrivatePlaylistIndexRoute: AppPrivatePlaylistIndexRoute,
   AppPrivateWishlistIndexRoute: AppPrivateWishlistIndexRoute,
+  AppPrivatePlaylistCuratedIdRoute: AppPrivatePlaylistCuratedIdRoute,
 }
 
 const AppPrivateRouteWithChildren = AppPrivateRoute._addFileChildren(
