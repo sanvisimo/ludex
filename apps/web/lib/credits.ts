@@ -165,7 +165,7 @@ export const licenseUrl = 'https://www.gnu.org/licenses/agpl-3.0.html';
  * nessun link. Si accende scrivendo qui l'indirizzo, dopo il chiarimento
  * fiscale che il piano chiede.
  */
-export const supportUrl: string | null = null;
+export const supportUrl: string | null = 'https://ko-fi.com/sanvisimo';
 
 /** Dove arrivano suggerimenti, idee e segnalazioni: le issue, in pubblico. */
 export const issuesUrl = `${repoUrl}/issues`;
