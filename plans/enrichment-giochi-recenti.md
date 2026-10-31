@@ -1,6 +1,6 @@
 # Enrichment dei giochi appena usciti
 
-**Stato: in corso dal 31/10/2026.**
+**Stato: chiuso il 31/10/2026.** Merge in `main` con la PR #101.
 
 ## Perché
 
