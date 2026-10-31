@@ -189,6 +189,93 @@ describe('findGamesNeedingSource, dipendenze fra fonti', () => {
   });
 });
 
+describe('findGamesNeedingSource, giochi appena usciti', () => {
+  // Il caso vero: un gioco letto nei giorni dell'uscita, quando le fonti non
+  // avevano ancora voto né durata. Con le soglie normali restava vuoto per mesi.
+  async function giocoConFonte(values: {
+    firstReleaseDate: Date | null;
+    status: 'ok' | 'not_found';
+    attemptedAt: Date;
+  }) {
+    const game = await createGame({
+      firstReleaseDate: values.firstReleaseDate,
+    });
+    // IGDB fresco: HLTB parte solo su un gioco che IGDB ha già arricchito.
+    await setSource({ gameId: game.id, status: 'ok', syncedAt: new Date() });
+    await setSource({
+      gameId: game.id,
+      source: 'hltb',
+      status: values.status,
+      syncedAt: values.status === 'ok' ? values.attemptedAt : null,
+      attemptedAt: values.attemptedAt,
+      reason: values.status === 'not_found' ? 'no_results' : null,
+    });
+    return game;
+  }
+
+  const casi = [
+    {
+      nome: 'uscito da 20 giorni, letto 8 giorni fa',
+      firstReleaseDate: ago.days(20),
+      status: 'ok' as const,
+      attemptedAt: ago.days(8),
+      atteso: true,
+    },
+    {
+      nome: 'uscito da 20 giorni, not_found 8 giorni fa',
+      firstReleaseDate: ago.days(20),
+      status: 'not_found' as const,
+      attemptedAt: ago.days(8),
+      atteso: true,
+    },
+    {
+      nome: 'non ancora uscito, letto 8 giorni fa',
+      firstReleaseDate: ago.days(-30),
+      status: 'ok' as const,
+      attemptedAt: ago.days(8),
+      atteso: true,
+    },
+    {
+      nome: 'uscito da 20 giorni, letto 3 giorni fa',
+      firstReleaseDate: ago.days(20),
+      status: 'ok' as const,
+      attemptedAt: ago.days(3),
+      atteso: false,
+    },
+    {
+      nome: 'uscito da 2 anni, letto 8 giorni fa',
+      firstReleaseDate: ago.days(730),
+      status: 'ok' as const,
+      attemptedAt: ago.days(8),
+      atteso: false,
+    },
+    {
+      nome: 'uscito da 2 anni, not_found 8 giorni fa',
+      firstReleaseDate: ago.days(730),
+      status: 'not_found' as const,
+      attemptedAt: ago.days(8),
+      atteso: false,
+    },
+    {
+      nome: 'senza data di uscita, letto 8 giorni fa',
+      firstReleaseDate: null,
+      status: 'ok' as const,
+      attemptedAt: ago.days(8),
+      atteso: false,
+    },
+  ];
+
+  for (const caso of casi) {
+    it(`${caso.atteso ? 'prende' : 'salta'} un gioco ${caso.nome}`, async () => {
+      const game = await giocoConFonte(caso);
+
+      await expect(findGamesNeedingSource('hltb')).resolves.toEqual(
+        caso.atteso ? [{ id: game.id }] : [],
+      );
+    });
+  }
+});
+
 describe('isSourceDue', () => {
   it('risponde con lo stesso predicato della spazzata', async () => {
     const igdbOk = await createGame();
