@@ -128,6 +128,14 @@ regole complete, le ragioni e le misure.
   Metacritic, dopo IGDB, si accodano **solo se dovuti**: accodarli sempre li
   rifaceva al ritmo di IGDB (30 giorni) invece che al loro.
 
+- **Un gioco appena uscito** (meno di 90 giorni, o non ancora uscito) fa
+  eccezione a tutte e due le regole: ogni fonte torna dovuta **7 giorni** dopo
+  l'ultimo tentativo, `ok` o `not_found` che sia. Letto nei giorni dell'uscita
+  non ha ancora voti né durate, e la scheda su una fonte può non esistere: con
+  le soglie normali resterebbe vuoto per mesi. Vedi `RECENT_RELEASE_DAYS` in
+  `services/enrichment.ts` e
+  [plans/enrichment-giochi-recenti.md](../../plans/enrichment-giochi-recenti.md).
+
 - A runtime si embedda **solo la query dell'utente** (stringa breve) per la
   similarity search.
 

@@ -82,6 +82,21 @@ export const ENRICHMENT_SOURCES = {
   { staleAfterDays: number; retryAfterHours: number; requires: string }
 >;
 
+/**
+ * Le soglie qui sopra valgono per un gioco che ha smesso di muoversi. Uno appena
+ * uscito no: i voti arrivano con le recensioni, le durate con le prime
+ * segnalazioni, e la scheda su una fonte può non esistere ancora. Letto nei
+ * giorni dell'uscita, con le soglie normali resterebbe fermo a quella foto per
+ * mesi — senza voto e senza durata proprio quando serve per decidere.
+ *
+ * Quindi, finché il gioco è uscito da meno di `RECENT_RELEASE_DAYS` (o deve
+ * ancora uscire), ogni fonte torna dovuta `RECENT_STALE_AFTER_DAYS` dopo l'ultimo
+ * tentativo, anche se era `not_found`: un gioco che esce è proprio il caso in
+ * cui un «non c'è» smette di essere vero. Uguale per tutte le fonti.
+ */
+const RECENT_RELEASE_DAYS = 90;
+const RECENT_STALE_AFTER_DAYS = 7;
+
 export const ENRICHMENT_SOURCE_NAMES = Object.keys(
   ENRICHMENT_SOURCES,
 ) as EnrichmentSource[];
@@ -291,6 +306,19 @@ function selectGamesDue(source: EnrichmentSource, extra?: SQL) {
               lt(
                 schema.gameSources.attemptedAt,
                 sql`now() - ${config.retryAfterHours} * interval '1 hour'`,
+              ),
+            ),
+          ),
+          // Appena uscito: vedi `RECENT_RELEASE_DAYS`. I `failed` restano
+          // sulla regola delle ore qui sopra.
+          and(
+            sql`${schema.games.firstReleaseDate} > now() - ${RECENT_RELEASE_DAYS} * interval '1 day'`,
+            inArray(schema.gameSources.status, ['ok', 'not_found']),
+            or(
+              isNull(schema.gameSources.attemptedAt),
+              lt(
+                schema.gameSources.attemptedAt,
+                sql`now() - ${RECENT_STALE_AFTER_DAYS} * interval '1 day'`,
               ),
             ),
           ),
