@@ -1,6 +1,6 @@
 # Le edizioni estese e il gioco principale
 
-**Stato: in corso** (02/11/2026), voce `gameVersions` della roadmap.
+**Stato: fatto** (02/11/2026), voce `gameVersions` della roadmap.
 
 ## La richiesta
 
@@ -65,17 +65,19 @@ se non è in `games`, con la regola degli altri giochi legati.
    - remake, remaster, edizione estesa, port: il padre per primo in **«Altre
      versioni»**, il nuovo titolo di «Remake e remaster». Così Catherine e Full
      Body si mostrano a vicenda.
-3. **I giochi già presenti.** `igdb:media` non serve: riprende solo i giochi senza
-   artwork. L'enrichment li aggiornerebbe entro 30 giorni. Un arnese
-   `igdb:related` riscrive i legami dei giochi già arricchiti, circa 26 richieste
-   a IGDB. **Si lancia sul server**, una volta (deciso il 02/11/2026): in sviluppo
-   non serve. Finché non gira, un gioco non riarricchito non ha la scheda del padre.
-4. **Contorno.** `docs/modello-dati.md`, `apps/web/CLAUDE.md`, la tabella degli
-   arnesi di `apps/api/CLAUDE.md`.
+3. **I giochi già presenti: nessun arnese.** L'enrichment normale riscrive già
+   tutti i legami, quindi arrivano da soli entro 30 giorni, o riarricchendo il
+   gioco a mano. Finché non succede, quel gioco non ha la scheda del padre. L'arnese
+   `igdb:related` proposto all'inizio costerebbe meno richieste, ma non vale il
+   codice per un lancio solo. Per non aspettare si retrodatano `synced_at` **e**
+   `attempted_at` e si lancia `backfill`: la sola `synced_at` salterebbe i giochi
+   tentati nelle ultime 24 ore.
+4. **Contorno. Fatto.** `docs/modello-dati.md`, `apps/web/CLAUDE.md`.
 
 ## Come si verifica
 
-Sul server, dopo il punto 3:
+In locale l'utente l'ha visto sui giochi riarricchiti. Da guardare sul mini PC, una
+volta arrivati i legami:
 
 - Iceborne mostra Monster Hunter: World in «Gioco principale».
 - Full Body mostra Catherine in «Altre versioni», e Catherine mostra Full Body.

@@ -1361,10 +1361,6 @@
         "title": "Giocato da quanti minuti, per libreria",
         "text": "Per ogni libreria che dà i tempi — Steam, PlayStation, Nintendo, Xbox, EA — scegli da quanti minuti un gioco conta come giocato: sopra, all'import passa a «giocato», sotto resta da giocare."
       },
-      "gameVersions": {
-        "title": "Edizioni estese e gioco principale",
-        "text": "Nella pagina del gioco le edizioni estese stanno insieme a remake e remaster, e un'espansione porta al suo gioco principale."
-      },
       "badgeLinks": {
         "title": "I badge della pagina del gioco",
         "p1": "Un clic su un genere, un tema, il tipo o un tuo tag porta ai giochi del tuo backlog che ce l'hanno, col filtro già acceso.",
@@ -1463,6 +1459,12 @@
       "categoryPages": {
         "title": "Le pagine categoria",
         "text": "Il catalogo di tutto Ludex con i filtri del backlog: generi, temi, tipo, durata, voto della critica. E da lì porteranno i badge della pagina del gioco, anche senza accesso."
+      },
+      "gameVersions": {
+        "title": "Edizioni estese e gioco principale",
+        "p1": "Nella pagina del gioco le edizioni estese stanno insieme a remake e remaster, nella fila «Altre versioni».",
+        "p2": "Un'espansione o un DLC mostrano la scheda del loro gioco principale, e un remaster quella dell'originale, anche se non è ancora in catalogo.",
+        "p3": "I giochi già in catalogo li ricevono al prossimo aggiornamento dei dati."
       },
       "itadPrice": {
         "title": "Il prezzo più basso, da IsThereAnyDeal",
