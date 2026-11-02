@@ -23,6 +23,23 @@ const immagini: GalleryItem[] = [
   alt: `Screenshot ${i + 1}`,
 }));
 
+const tanteImmagini: GalleryItem[] = Array.from({ length: 12 }, (_, i) => ({
+  kind: 'image',
+  src: tinta('#12a594', `Screenshot ${i + 1}`),
+  thumb: tinta('#12a594', `${i + 1}`),
+  alt: `Screenshot ${i + 1}`,
+}));
+
+// L'elemento che scorre davvero: dentro `ScrollView` c'è un contenitore largo
+// quanto tutte le miniature.
+function filaDi(miniatura: HTMLElement) {
+  let fila = miniatura.parentElement!;
+  while (getComputedStyle(fila).overflowX === 'visible') {
+    fila = fila.parentElement!;
+  }
+  return fila;
+}
+
 const labels = {
   previous: 'Precedente',
   next: 'Successiva',
@@ -73,6 +90,52 @@ export const Default: Story = {
     await expect(
       canvas.getByRole('button', { name: 'Elemento 3 di 4' }),
     ).toHaveAttribute('aria-pressed', 'true');
+  },
+};
+
+/** Con le frecce la miniatura scelta entra in vista, anche se la fila non ci sta. */
+export const ManyThumbnails: Story = {
+  args: { items: tanteImmagini },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const successiva = canvas.getByRole('button', { name: 'Successiva' });
+    const ultima = canvas.getByRole('button', { name: 'Elemento 12 di 12' });
+    const fila = filaDi(ultima);
+
+    const inVista = () =>
+      ultima.getBoundingClientRect().right <=
+      fila.getBoundingClientRect().right + 1;
+
+    await expect(inVista()).toBe(false);
+    for (let i = 0; i < 11; i++) await userEvent.click(successiva);
+    await expect(ultima).toHaveAttribute('aria-pressed', 'true');
+    await waitFor(() => expect(inVista()).toBe(true));
+  },
+};
+
+/** Col mouse la fila si trascina, e rilasciarla non sceglie la miniatura sotto. */
+export const DragThumbnails: Story = {
+  args: { items: tanteImmagini },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const prima = canvas.getByRole('button', { name: 'Elemento 1 di 12' });
+    const seconda = canvas.getByRole('button', { name: 'Elemento 2 di 12' });
+    const fila = filaDi(prima);
+    const { left, top, width, height } = seconda.getBoundingClientRect();
+    const clientX = left + width / 2;
+    const clientY = top + height / 2;
+
+    await userEvent.pointer([
+      { keys: '[MouseLeft>]', target: seconda, coords: { clientX, clientY } },
+      { target: seconda, coords: { clientX: clientX - 100, clientY } },
+      { keys: '[/MouseLeft]', target: seconda },
+    ]);
+    await expect(fila.scrollLeft).toBe(100);
+    await expect(prima).toHaveAttribute('aria-pressed', 'true');
+
+    // Il clic che segue è di nuovo un clic.
+    await userEvent.click(seconda);
+    await expect(seconda).toHaveAttribute('aria-pressed', 'true');
   },
 };
 
