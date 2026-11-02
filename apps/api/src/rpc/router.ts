@@ -53,6 +53,7 @@ import { exportAccount } from '../services/account-export';
 import { mergeGames, previewMerge } from '../services/admin-merge';
 import { listUsers } from '../services/admin-users';
 import { listHomeBands } from '../services/home';
+import { findGamePrice } from '../services/itad';
 import {
   createPlaylist,
   deletePlaylist,
@@ -234,6 +235,8 @@ export const router = os.router({
 
         return { game, entry };
       }),
+
+    price: os.games.price.handler(({ input }) => findGamePrice(input.gameId)),
 
     random: os.games.random
       .use(maybeAuthed)

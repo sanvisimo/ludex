@@ -13,6 +13,10 @@ import { Path, Rect, Svg } from 'react-native-svg';
  * sono arrivati coi link della pagina del gioco (`plans/link-pagina-gioco.md`):
  * i loro nomi sono quelli di `gameWebsiteTypeValues`.
  *
+ * IsThereAnyDeal è il logo del loro sito (`isthereanydeal.com`), che Simple
+ * Icons non ha: un razzo blu con la fiamma bianca, disegnato per il fondo nero.
+ * È l'unico a tenere i suoi colori (`layers`): in bianco non si riconosce.
+ *
  * Amazon è arrivato col 12g, per le schede delle librerie. Prima il commento
  * lo dava per introvabile, e la pagina del gioco ripiega ancora sul nome:
  * `STORE_BRAND` in `game-page.tsx` non lo elenca.
@@ -90,6 +94,32 @@ const BRANDS = {
     origin: 20,
     path: 'M50 29L50 122L71 122L71 103L79 103L79 122L100 122L100 29L79 29L79 84L71 84L71 29L50 29z',
   },
+  itad: {
+    title: 'IsThereAnyDeal',
+    color: '#000000',
+    box: 50.08,
+    layers: [
+      {
+        d: 'M21.58 47.55V37.24L11.27 26.93H.95L27.88 0Z',
+        fill: '#3690ce',
+      },
+      {
+        d: 'M27.88 0 1 26.93H11.27L21.58 37.24V47.55L48.51 20.62V0ZM37.1 14.22a3 3 0 1 1 3.17-2.86A3 3 0 0 1 37.1 14.22Z',
+        fill: '#3090ce',
+      },
+      { d: 'M17.9 37.51 11.05 30.66 0 48.56Z', fill: '#ffffff' },
+      {
+        d: 'M48.51 20.63 21.58 47.55V37.24Z',
+        fill: '#2f2e35',
+        opacity: 0.2,
+      },
+      {
+        d: 'M11.27 26.93H.95L27.88 0Z',
+        fill: '#ffffff',
+        opacity: 0.15,
+      },
+    ],
+  },
   xbox: {
     title: 'Xbox',
     color: '#107c10',
@@ -152,15 +182,22 @@ const INSET = (TILE - GLYPH) / 2;
 
 /**
  * Il marchio di un negozio o di una fonte: una tessera col suo colore e il
- * glifo bianco, come nello schizzo della pagina del gioco (12d).
+ * glifo bianco, come nello schizzo della pagina del gioco (12d). Fa eccezione
+ * IsThereAnyDeal, che su una tessera nera tiene i colori del logo.
  *
  * Il bordo chiaro e sottile serve alle tessere nere — Steam, EA, Metacritic —
  * che sul tema scuro altrimenti sparirebbero nel fondo; sul chiaro non si vede.
  */
 export function BrandIcon({ brand, size = 20, label }: BrandIconProps) {
-  const entry: { color: string; box: number; path: string; origin?: number } =
-    BRANDS[brand];
-  const { color, box, path, origin = 0 } = entry;
+  const entry: {
+    color: string;
+    box: number;
+    path?: string;
+    origin?: number;
+    layers?: readonly { d: string; fill: string; opacity?: number }[];
+  } = BRANDS[brand];
+  const { color, box, path = '', origin = 0 } = entry;
+  const layers = entry.layers ?? [{ d: path, fill: '#ffffff' }];
   const scale = GLYPH / box;
 
   return (
@@ -182,11 +219,15 @@ export function BrandIcon({ brand, size = 20, label }: BrandIconProps) {
         stroke="rgba(255,255,255,0.18)"
         strokeWidth={1}
       />
-      <Path
-        d={path}
-        fill="#ffffff"
-        transform={`translate(${INSET} ${INSET}) scale(${scale}) translate(${-origin} ${-origin})`}
-      />
+      {layers.map(({ d, fill, opacity }) => (
+        <Path
+          key={d}
+          d={d}
+          fill={fill}
+          opacity={opacity}
+          transform={`translate(${INSET} ${INSET}) scale(${scale}) translate(${-origin} ${-origin})`}
+        />
+      ))}
     </Svg>
   );
 }

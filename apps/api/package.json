@@ -37,6 +37,7 @@
     "nintendo:vgc-probe": "tsx src/scripts/nintendo-vgc-probe.ts",
     "xbox:probe": "tsx src/scripts/xbox-probe.ts",
     "csv:probe": "tsx src/scripts/csv-probe.ts",
+    "itad:probe": "tsx src/scripts/itad-probe.ts",
     "queues": "tsx src/queues-dashboard.ts"
   },
   "dependencies": {

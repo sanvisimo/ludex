@@ -525,6 +525,8 @@
     "durationAndCritics": "Durata e critica",
     "details": "Dettagli",
     "links": "Link",
+    "itadFree": "Gratis",
+    "itadHistoricalLow": "Minimo storico",
     "openOn": "Apri su {name}",
     "officialSite": "Sito ufficiale",
     "copies": "Copie",
@@ -1460,7 +1462,9 @@
       },
       "itadPrice": {
         "title": "Il prezzo più basso, da IsThereAnyDeal",
-        "text": "Nella pagina del gioco il link a IsThereAnyDeal e il prezzo più basso di adesso, con un segnale quando è anche il minimo storico. Per i giochi PC."
+        "p1": "Nella pagina del gioco una card di IsThereAnyDeal: il prezzo più basso di adesso e il negozio, con il link alla pagina del gioco sul loro sito.",
+        "p2": "Un segnale verde quando è anche il minimo storico.",
+        "p3": "Vale per i giochi PC con un id Steam o GOG, e i prezzi sono in euro."
       },
       "xbox": {
         "title": "La libreria Xbox",
@@ -1530,6 +1534,7 @@
       "hltb": "Quanto ci vuole per finire un gioco.",
       "opencritic": "Voti della critica.",
       "metacritic": "Voti della critica, anche per singola piattaforma.",
+      "itad": "Il prezzo più basso di adesso e il minimo storico, nella pagina del gioco.",
       "wikidata": "Identificativi che collegano lo stesso gioco fra una fonte e l'altra.",
       "steam": "Importazione della libreria.",
       "gog": "Importazione della libreria.",

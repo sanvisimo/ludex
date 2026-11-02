@@ -26,6 +26,7 @@ export const services: Credit[] = [
   { id: 'hltb', name: 'HowLongToBeat', url: 'https://howlongtobeat.com' },
   { id: 'opencritic', name: 'OpenCritic', url: 'https://opencritic.com' },
   { id: 'metacritic', name: 'Metacritic', url: 'https://www.metacritic.com' },
+  { id: 'itad', name: 'IsThereAnyDeal', url: 'https://isthereanydeal.com' },
   {
     id: 'wikidata',
     name: 'Wikidata',

@@ -512,6 +512,61 @@ export function DurationAndCritics({
   );
 }
 
+// --- il prezzo ---
+
+/**
+ * Il prezzo più basso di adesso su IsThereAnyDeal, col negozio, e un segnale se
+ * è anche il minimo storico. Tutta la card è il link; senza offerte, il solo
+ * nome.
+ *
+ * Il prezzo arriva a parte (`games.price`) perché la pagina non aspetti ITAD: la
+ * card compare quando c'è, e non c'è sui giochi che ITAD non conosce.
+ *
+ * Il nome sta sopra e il prezzo sotto, sempre: nella colonna larga 360 nome,
+ * prezzo e segnale su una riga sola non ci stanno, e andare a capo solo quando
+ * c'è il segnale faceva cambiare la card da un gioco all'altro.
+ */
+export function GamePriceCard({ game }: { game: GameDetail }) {
+  const t = useTranslations('game');
+  const format = useFormatter();
+  const { data: price } = useQuery(
+    api.games.price.queryOptions({ input: { gameId: game.id } }),
+  );
+  if (!price) return null;
+
+  const { current } = price;
+  const name = brandTitle('itad');
+
+  return (
+    <Panel>
+      <LinkRow href={price.url} title={t('openOn', { name })}>
+        <YStack flex={1} gap={8}>
+          <XStack items="center" gap={10}>
+            <BrandIcon brand="itad" size={20} />
+            <PanelTitle>{name}</PanelTitle>
+          </XStack>
+          {current && (
+            <XStack items="center" gap={6}>
+              <Strong fontSize={16}>
+                {current.amount === 0
+                  ? t('itadFree')
+                  : format.number(current.amount, {
+                      style: 'currency',
+                      currency: current.currency,
+                    })}
+              </Strong>
+              <Muted flex={1}>· {current.shop}</Muted>
+              {current.historicalLow && (
+                <Badge variant="success">{t('itadHistoricalLow')}</Badge>
+              )}
+            </XStack>
+          )}
+        </YStack>
+      </LinkRow>
+    </Panel>
+  );
+}
+
 // --- la colonna laterale: il tuo backlog ---
 
 /**
