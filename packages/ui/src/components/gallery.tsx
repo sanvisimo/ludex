@@ -1,10 +1,13 @@
-import { useState } from 'react';
-import { Image, ScrollView, XStack, YStack } from 'tamagui';
+import { useEffect, useRef, useState, type ElementRef } from 'react';
+import { Image, ScrollView, XStack, YStack, isWeb } from 'tamagui';
 
 import { ChevronLeft, ChevronRight } from '../icons';
 import { Button } from './button';
 import { Dialog, DialogContent, DialogTitle } from './dialog';
 import { YoutubeVideo, youtubeThumbnail } from './youtube-video';
+
+/** Sotto questi pixel il mouse ha cliccato una miniatura, non trascinato la fila. */
+const DRAG_THRESHOLD = 5;
 
 export type GalleryItem =
   | {
@@ -45,11 +48,95 @@ export type GalleryProps = {
  * quelle di `Pagination`: arrivati in fondo si sa di esserci arrivati.
  *
  * Le miniature scorrono di lato quando non ci stanno, ed è anche la forma che
- * la gallery ha su un telefono.
+ * la gallery ha su un telefono. Quella scelta si porta in vista da sola: su
+ * desktop la rotella non muove la fila e la barra è nascosta. Col mouse la fila
+ * si trascina, come col dito ma senza inerzia.
  */
 export function Gallery({ items, labels }: GalleryProps) {
   const [index, setIndex] = useState(0);
   const [enlarged, setEnlarged] = useState(false);
+  const scroller = useRef<ElementRef<typeof ScrollView>>(null);
+  const thumbs = useRef<HTMLElement | null>(null);
+  const previousIndex = useRef(index);
+
+  // Solo quando la scelta cambia, non al montaggio: la gallery può stare sotto
+  // la piega, e la pagina salterebbe da sola. `nearest` lascia ferma la fila se
+  // la miniatura è già visibile. Il `ref` sta sulla fila e non sulla miniatura
+  // scelta: un `ref` che passa da una all'altra, Tamagui lo lascia sulla prima.
+  useEffect(() => {
+    if (index === previousIndex.current) return;
+    previousIndex.current = index;
+    thumbs.current?.children?.[index]?.scrollIntoView?.({
+      inline: 'nearest',
+      block: 'nearest',
+      behavior: 'smooth',
+    });
+  }, [index]);
+
+  // Il trascinamento col mouse: il dito scorre già da solo, quindi solo qui.
+  const hasThumbs = items.length > 1;
+  useEffect(() => {
+    if (!isWeb || !hasThumbs) return;
+    const node = scroller.current?.getScrollableNode() as
+      | HTMLElement
+      | undefined;
+    if (!node) return;
+
+    const onPointerDown = (down: PointerEvent) => {
+      if (down.pointerType !== 'mouse' || down.button !== 0) return;
+      const startScroll = node.scrollLeft;
+      let dragging = false;
+
+      const onMove = (move: PointerEvent) => {
+        const distance = move.clientX - down.clientX;
+        if (!dragging && Math.abs(distance) < DRAG_THRESHOLD) return;
+        if (!dragging) {
+          dragging = true;
+          // Senza eventi sulle miniature il cursore è quello della fila, e il
+          // loro hover non lampeggia passandoci sopra.
+          node.style.cursor = 'grabbing';
+          if (thumbs.current) thumbs.current.style.pointerEvents = 'none';
+        }
+        node.scrollLeft = startScroll - distance;
+      };
+
+      const onEnd = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onEnd);
+        window.removeEventListener('pointercancel', onEnd);
+        if (!dragging) return;
+        node.style.cursor = '';
+        if (thumbs.current) thumbs.current.style.pointerEvents = '';
+        // Il clic che il browser genera al rilascio non deve scegliere niente.
+        // Arriva subito dopo: se non arriva, il prossimo vero non va perso.
+        const swallow = (click: MouseEvent) => {
+          click.stopPropagation();
+          click.preventDefault();
+        };
+        window.addEventListener('click', swallow, {
+          capture: true,
+          once: true,
+        });
+        setTimeout(
+          () => window.removeEventListener('click', swallow, { capture: true }),
+          0,
+        );
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onEnd);
+      window.addEventListener('pointercancel', onEnd);
+    };
+    // Le miniature sono `<img>`: il browser trascinerebbe l'immagine, non la fila.
+    const onDragStart = (event: DragEvent) => event.preventDefault();
+
+    node.addEventListener('pointerdown', onPointerDown);
+    node.addEventListener('dragstart', onDragStart);
+    return () => {
+      node.removeEventListener('pointerdown', onPointerDown);
+      node.removeEventListener('dragstart', onDragStart);
+    };
+  }, [hasThumbs]);
 
   if (items.length === 0) return null;
 
@@ -123,11 +210,12 @@ export function Gallery({ items, labels }: GalleryProps) {
       {total > 1 && (
         <XStack items="center" gap={8}>
           <ScrollView
+            ref={scroller}
             horizontal
             flex={1}
             showsHorizontalScrollIndicator={false}
           >
-            <XStack gap={8} py={2} px={2}>
+            <XStack ref={thumbs as never} gap={8} py={2} px={2}>
               {items.map((item, i) => (
                 <YStack
                   key={item.kind === 'video' ? item.videoId : item.src}
