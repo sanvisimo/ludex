@@ -14,6 +14,7 @@ import {
   EnrichmentSourceSchema,
   GameAdminDetailSchema,
   GameDetailSchema,
+  GamePriceSchema,
   GameSchema,
   GlobalHiddenImportSchema,
   GlobalHiddenKindSchema,
@@ -102,6 +103,13 @@ export const contract = {
         entry: BacklogEntrySchema.nullable(),
       }),
     ),
+
+    // Il prezzo più basso di adesso, per la riga di IsThereAnyDeal. Pubblica come
+    // la scheda, e a parte perché la pagina non aspetti ITAD per mostrarsi. `null`
+    // se la riga non c'è. Non fallisce se ITAD è giù.
+    price: oc
+      .input(z.object({ gameId: z.uuid() }))
+      .output(GamePriceSchema.nullable()),
 
     // Il dado (15c): un gioco a caso. Pubblica: da loggati pesca dal backlog
     // dentro `filter`, da anonimi dal catalogo (i tipi giocabili della home) e

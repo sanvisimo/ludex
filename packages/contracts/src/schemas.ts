@@ -195,6 +195,23 @@ export const RelatedGameSchema = z.object({
 export type RelatedGame = z.infer<typeof RelatedGameSchema>;
 
 // Scheda completa: quello che la lista non porta perché sarebbe peso inutile.
+/**
+ * Il prezzo di un gioco su IsThereAnyDeal (`plans/itad-prezzo.md`). `current`
+ * nullo: nessuna offerta adesso, o ITAD non ha risposto. Il link c'è comunque.
+ */
+export const GamePriceSchema = z.object({
+  url: z.string(),
+  current: z
+    .object({
+      amount: z.number(),
+      currency: z.string(),
+      shop: z.string(),
+      historicalLow: z.boolean(),
+    })
+    .nullable(),
+});
+export type GamePrice = z.infer<typeof GamePriceSchema>;
+
 export const GameDetailSchema = GameSchema.extend({
   summary: z.string().nullable(),
   coverWidth: z.number().int().nullable(),

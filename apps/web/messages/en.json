@@ -525,6 +525,8 @@
     "durationAndCritics": "Length and reviews",
     "details": "Details",
     "links": "Links",
+    "itadFree": "Free",
+    "itadHistoricalLow": "Historical low",
     "openOn": "Open on {name}",
     "officialSite": "Official website",
     "copies": "Copies",
@@ -1461,7 +1463,9 @@
       },
       "itadPrice": {
         "title": "The lowest price, from IsThereAnyDeal",
-        "text": "On the game page, a link to IsThereAnyDeal and today's lowest price, with a flag when it is also the all-time low. For PC games."
+        "p1": "On the game page, an IsThereAnyDeal card: today's lowest price and its store, with a link to the game's page on their site.",
+        "p2": "A green flag when it is also the historical low.",
+        "p3": "It covers PC games with a Steam or GOG id, and prices are in euros."
       },
       "xbox": {
         "title": "The Xbox library",
@@ -1531,6 +1535,7 @@
       "hltb": "How long a game takes to finish.",
       "opencritic": "Critic scores.",
       "metacritic": "Critic scores, also per platform.",
+      "itad": "The lowest price right now and the historical low, on the game page.",
       "wikidata": "Identifiers that tie the same game together across sources.",
       "steam": "Library import.",
       "gog": "Library import.",

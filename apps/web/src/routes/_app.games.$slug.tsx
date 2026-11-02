@@ -21,6 +21,7 @@ import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import {
   BacklogPanel,
   DurationAndCritics,
+  GamePriceCard,
   StoreLinks,
   GAME_PAGE_WIDTH,
   GameGallery,
@@ -194,6 +195,7 @@ function GamePage() {
       >
         <YStack width={360} shrink={0} gap={16} $max-lg={{ width: '100%' }}>
           <DurationAndCritics game={game} entry={entry} />
+          <GamePriceCard game={game} />
           {entry ? (
             <BacklogPanel
               // Mentre il voto si salva si mostra già quello scelto: senza,
