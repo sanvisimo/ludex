@@ -11,7 +11,7 @@ Body è un'edizione estesa: va mostrata insieme a remake e remaster.
 
 Dall'altra parte, la pagina di un'espansione
 ([Songs of the Past](http://localhost:8085/games/the-witcher-3-wild-hunt-songs-of-the-past))
-deve dire qual è il gioco principale.
+deve portare al gioco principale.
 
 ## Cosa dà IGDB
 
@@ -35,58 +35,49 @@ avrebbero 521, di cui 22 già possedute. Il volume lo fanno i giochi a pacchetti
 (American Truck Simulator e The Sims 4, 21 a testa e nessuna posseduta), cioè
 lunghe file di copertine attenuate che non aiutano a scegliere cosa giocare.
 
-## Il bug della riga sotto il titolo
+## Il padre: una scheda, non una frase
 
-La riga sotto il titolo diceva sempre «DLC di X», per qualunque tipo abbia un padre
-([game-page.tsx](../apps/web/components/game-page.tsx), `dlcOf`): Full Body
-era «DLC di Catherine». Sul catalogo di sviluppo erano 85 giochi con
-un'etichetta sbagliata o imprecisa, oltre ai 3 DLC veri.
+La riga sotto il titolo diceva sempre «DLC di X», per qualunque tipo abbia un
+padre: Full Body era «DLC di Catherine», e sul catalogo di sviluppo erano 85
+giochi con un'etichetta sbagliata o imprecisa. Il primo tentativo (`5af2db1`) le
+dava un testo per tipo; vista a schermo, l'utente l'ha scartata il 02/11/2026: il
+padre va mostrato **come scheda**, come i giochi simili. Il badge accanto al
+titolo dice già che cos'è il gioco.
+
+La scheda toglie anche un limite: la frase compariva solo col padre in catalogo,
+perché ne salvavamo solo l'id. Ora mancavano 55 edizioni estese su 72 e 62
+remaster su 84. Con nome e copertina in `game_related`, il padre si mostra anche
+se non è in `games`, con la regola degli altri giochi legati.
 
 ## Cosa si fa
 
-1. **Riga sotto il titolo. Fatto**, provato in Chromium il 02/11/2026 su
-   espansione, standalone, DLC, edizione estesa e remaster. Il testo dipende dal
-   tipo (`parentOf`, una `select` nei messaggi):
-   - `expansion`, `standalone_expansion`, `dlc`: «Gioco principale: X», ed è anche
-     il ramo `other`, che prende i tipi senza testo proprio (`bundle`) e i tipi
-     che non conosciamo;
-   - gli altri nominano il proprio tipo: «Edizione estesa di X», «Remaster di X»,
-     «Remake di X», «Port di X», «Episodio di X», «Stagione di X», «Pacchetto di
-     X», «Aggiornamento di X», «Mod di X», «Fork di X». Stagione, pacchetto e fork
-     oggi non hanno righe in catalogo: il testo c'è per quando arrivano.
-2. **Edizioni estese.** `expanded_games` nei campi IGDB e il valore `expanded` in
-   `relatedKindValues`, **prima di `similar`**: la pagina ordina seguendo l'enum.
-   **Fatto**: la migration 0064 scrive `BEFORE 'similar'`, e IGDB per Catherine
-   rende Full Body come `expanded`. I giochi in catalogo lo prendono col punto 4.
-3. **Titolo della fila.** «Remake e remaster» diventa «Altre versioni». Stesso
-   `RelatedRow`, nessuna struttura nuova, quindi niente wireframe.
-4. **I giochi già presenti.** `igdb:media` non serve: riprende solo i giochi senza
+1. **Dati. Fatto.** `expanded_games` e `parent_game` (con nome e copertina) nei
+   campi IGDB, `expanded` e `parent` in `relatedKindValues`. L'ordine conta,
+   perché la pagina ordina seguendo l'enum: `parent` prima di `remake`, `expanded`
+   prima di `similar` (migration 0064 e 0065, controllate). `parent_igdb_id` resta
+   su `games`.
+2. **Pagina. Fatto.** Via la frase e il campo `parent` da contratto e service.
+   Le file sono `splitRelated` di
+   [related-games.ts](../apps/web/lib/related-games.ts), con lo stesso
+   `RelatedRow`, quindi niente wireframe:
+   - espansione, standalone, DLC, episodio, ogni altro tipo: il padre in **«Gioco
+     principale»**;
+   - remake, remaster, edizione estesa, port: il padre per primo in **«Altre
+     versioni»**, il nuovo titolo di «Remake e remaster». Così Catherine e Full
+     Body si mostrano a vicenda.
+3. **I giochi già presenti.** `igdb:media` non serve: riprende solo i giochi senza
    artwork. L'enrichment li aggiornerebbe entro 30 giorni. Un arnese
    `igdb:related` riscrive i legami dei giochi già arricchiti, circa 26 richieste
-   a IGDB: una volta in sviluppo e una in produzione.
-5. **Contorno.** `docs/modello-dati.md`, `apps/web/CLAUDE.md`, la tabella degli
-   arnesi di `apps/api/CLAUDE.md`, test dell'enrichment e del service della
-   pagina.
-
-## Il limite
-
-La riga compare solo se il gioco principale è già in catalogo, perché del padre
-salviamo solo l'id IGDB e non il nome. Sul catalogo di sviluppo:
-
-| Tipo            | Senza riga | Con padre, in totale |
-| --------------- | ---------- | -------------------- |
-| Espansioni      | 1          | 9                    |
-| Standalone      | 9          | 29                   |
-| Edizioni estese | 55         | 72                   |
-| Remaster        | 62         | 84                   |
-
-Quando il gioco principale entra in catalogo, la riga appare da sola. Mostrare
-anche i padri mancanti vuol dire salvarne il nome e gestire il clic su un gioco
-non ancora in catalogo: è un lavoro a parte, che qui non si fa.
+   a IGDB. **Si lancia sul server**, una volta (deciso il 02/11/2026): in sviluppo
+   non serve. Finché non gira, un gioco non riarricchito non ha la scheda del padre.
+4. **Contorno.** `docs/modello-dati.md`, `apps/web/CLAUDE.md`, la tabella degli
+   arnesi di `apps/api/CLAUDE.md`.
 
 ## Come si verifica
 
-- Songs of the Past dice «Gioco principale: The Witcher 3: Wild Hunt».
-- Full Body dice «Edizione estesa di Catherine».
-- Catherine mostra Full Body in «Altre versioni».
+Sul server, dopo il punto 3:
+
+- Iceborne mostra Monster Hunter: World in «Gioco principale».
+- Full Body mostra Catherine in «Altre versioni», e Catherine mostra Full Body.
+- Un'edizione estesa col padre fuori catalogo mostra la scheda attenuata.
 - `pnpm --filter api test` e `pnpm check-types`.

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."related_kind" ADD VALUE 'parent' BEFORE 'remake';

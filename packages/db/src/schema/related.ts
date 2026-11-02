@@ -13,8 +13,8 @@ import { timestamps } from './timestamps';
 
 export const relatedKind = pgEnum('related_kind', relatedKindValues);
 
-// I giochi legati a questo secondo IGDB: remake, remaster, edizioni estese e
-// simili.
+// I giochi legati a questo secondo IGDB: il padre, remake, remaster, edizioni
+// estese e simili.
 //
 // Una tabella e non un array su `games`, perché il gioco legato **può non
 // essere in `games`**: la riga tiene il suo `igdbId` con nome e copertina, e

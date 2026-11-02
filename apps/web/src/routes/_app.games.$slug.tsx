@@ -34,6 +34,7 @@ import { useApiErrorMessage } from '@/lib/api-error';
 import { validateRandomSearch } from '@/lib/backlog-filter';
 import { useSetEntryHidden } from '@/lib/hide-entry';
 import { api, client } from '@/lib/orpc';
+import { splitRelated } from '@/lib/related-games';
 import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
 import { ReportError } from '@/components/report-error';
@@ -170,8 +171,10 @@ function GamePage() {
     );
   }
 
-  const remakes = game.related.filter((row) => row.kind !== 'similar');
-  const similar = game.related.filter((row) => row.kind === 'similar');
+  const { mainGame, versions, similar } = splitRelated(
+    game.gameType,
+    game.related,
+  );
 
   return (
     <Page maxW={GAME_PAGE_WIDTH} hero={<GameHero game={game} />}>
@@ -322,7 +325,8 @@ function GamePage() {
             </YStack>
           )}
 
-          <RelatedRow title={t('remakes')} games={remakes} />
+          <RelatedRow title={t('mainGame')} games={mainGame} />
+          <RelatedRow title={t('versions')} games={versions} />
           <RelatedRow title={t('similar')} games={similar} />
         </YStack>
       </XStack>

@@ -120,7 +120,7 @@ function LinkRow({
 /**
  * L'immagine grande in testa: l'artwork IGDB; se manca il primo screenshot;
  * se manca anche quello la copertina, sfocata. Sopra, in basso, copertina,
- * titolo, anno, autori, «DLC di…» e generi e temi come badge.
+ * titolo, anno, autori e generi e temi come badge.
  *
  * Il testo sta sempre su un fondo scuro — la sfumatura sopra l'immagine — e
  * per questo la hero è in tema scuro qualunque sia quello dell'app.
@@ -132,7 +132,6 @@ function LinkRow({
 export const GAME_PAGE_WIDTH = 1200;
 
 export function GameHero({ game }: { game: GameDetail }) {
-  const t = useTranslations('game');
   const year = game.firstReleaseDate?.getFullYear() ?? null;
   // Da loggati generi, temi e tipo portano a `/backlog` filtrato; da anonimi
   // restano semplici, perché `/backlog` è privato. E solo se sono fra le voci
@@ -240,23 +239,6 @@ export function GameHero({ game }: { game: GameDetail }) {
               <GameTypeBadge type={game.gameType} href={typeHref} />
             </XStack>
             {meta.length > 0 && <Muted>{meta.join(' · ')}</Muted>}
-            {game.parent && (
-              <Muted>
-                {t.rich('parentOf', {
-                  type: game.gameType ?? 'other',
-                  name: game.parent.name,
-                  link: (chunks) => (
-                    <Link
-                      to="/games/$slug"
-                      params={{ slug: game.parent!.slug }}
-                      style={{ color: 'inherit' }}
-                    >
-                      {chunks}
-                    </Link>
-                  ),
-                })}
-              </Muted>
-            )}
             {game.attributes.length > 0 && (
               <XStack flexWrap="wrap" gap={6}>
                 {game.attributes.map((attribute) =>

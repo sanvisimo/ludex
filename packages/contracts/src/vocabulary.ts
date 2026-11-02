@@ -328,11 +328,12 @@ export const attributeKindValues = [
   'player_perspective',
 ] as const;
 
-// Come un altro gioco è legato a questo, secondo IGDB: i suoi remake, i suoi
-// remaster, le sue edizioni estese, i giochi simili. Nella pagina del gioco
-// sono due file: tutti insieme, e i simili per conto loro. L'ordine conta,
-// perché la pagina ordina seguendo l'enum: i simili restano in fondo.
+// Come un altro gioco è legato a questo, secondo IGDB: il gioco da cui discende
+// (`parent`), i suoi remake, i suoi remaster, le sue edizioni estese, i giochi
+// simili. L'ordine conta, perché la pagina ordina seguendo l'enum: il padre
+// esce per primo e i simili restano in fondo.
 export const relatedKindValues = [
+  'parent',
   'remake',
   'remaster',
   'expanded',
