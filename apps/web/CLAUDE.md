@@ -355,7 +355,8 @@ si rilegge ogni 5 secondi; oltre, la pagina com'è (`isEnriching`). **Le file de
 giochi legati** sono tre, «Gioco principale», «Altre versioni» e «Giochi simili»,
 e dove va il padre lo decide il tipo (`splitRelated`, `lib/related-games.ts`):
 di un'espansione o un DLC è il gioco principale, di un remake, un remaster,
-un'edizione estesa o un port è la prima delle altre versioni. Si aprono con la
+un'edizione estesa o un port è la prima delle altre versioni. In «Altre versioni»
+ogni copertina dice che versione è, con un badge (`showKind`). Si aprono con la
 regola della ricerca: in catalogo sono un link, fuori
 catalogo da loggati un bottone che li crea (`useOpenIgdbHit`), da ospiti
 niente; attenuati se non sono tuoi. **I badge** — generi e temi, il tipo, le
