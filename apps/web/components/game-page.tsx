@@ -517,7 +517,7 @@ export function DurationAndCritics({
 /**
  * Il prezzo più basso di adesso su IsThereAnyDeal, col negozio, e un segnale se
  * è anche il minimo storico. Tutta la card è il link; senza offerte, il solo
- * nome.
+ * nome. Solo per i giochi che non hai: la pagina non la monta se sono nel backlog.
  *
  * Il prezzo arriva a parte (`games.price`) perché la pagina non aspetti ITAD: la
  * card compare quando c'è, e non c'è sui giochi che ITAD non conosce.

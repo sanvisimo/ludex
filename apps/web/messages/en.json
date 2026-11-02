@@ -1463,7 +1463,7 @@
       },
       "itadPrice": {
         "title": "The lowest price, from IsThereAnyDeal",
-        "p1": "On the game page, an IsThereAnyDeal card: today's lowest price and its store, with a link to the game's page on their site.",
+        "p1": "On the page of a game you don't own, an IsThereAnyDeal card: today's lowest price and its store, with a link to the game's page on their site.",
         "p2": "A green flag when it is also the historical low.",
         "p3": "It covers PC games with a Steam or GOG id, and prices are in euros."
       },

@@ -195,7 +195,8 @@ function GamePage() {
       >
         <YStack width={360} shrink={0} gap={16} $max-lg={{ width: '100%' }}>
           <DurationAndCritics game={game} entry={entry} />
-          <GamePriceCard game={game} />
+          {/* Il prezzo serve a chi il gioco non ce l'ha: nel backlog è già tuo. */}
+          {!entry && <GamePriceCard game={game} />}
           {entry ? (
             <BacklogPanel
               // Mentre il voto si salva si mostra già quello scelto: senza,
