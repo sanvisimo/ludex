@@ -242,28 +242,6 @@ describe('findGameDetailById: ciò che serve alla pagina del gioco (12d)', () =>
     ]);
   });
 
-  it('trova il gioco padre di un DLC, se è in games', async () => {
-    const padre = await createGame({ igdbId: 1877, name: 'The Witcher 3' });
-    const dlc = await createGame({ igdbId: 2000 });
-    const orfano = await createGame({ igdbId: 2001 });
-    await db
-      .update(schema.games)
-      .set({ parentIgdbId: 1877 })
-      .where(eq(schema.games.id, dlc.id));
-    await db
-      .update(schema.games)
-      .set({ parentIgdbId: 9999 })
-      .where(eq(schema.games.id, orfano.id));
-
-    expect((await findGameDetailById(dlc.id))?.parent).toEqual({
-      id: padre.id,
-      slug: padre.slug,
-      name: 'The Witcher 3',
-    });
-    // Di un padre che non abbiamo non sappiamo nemmeno il nome.
-    expect((await findGameDetailById(orfano.id))?.parent).toBeNull();
-  });
-
   it('compone i link delle fonti da ciò che hanno agganciato', async () => {
     const game = await createGame();
     await db

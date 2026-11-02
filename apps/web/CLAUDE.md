@@ -346,13 +346,17 @@ contenitore a tutta larghezza, la gallery, durata e critica col dialog
 (`StoreLinks`): in cima il sito ufficiale, poi i negozi (`game.storeLinks`, un
 link per negozio: il nostro da `storeGameUrl` in `@repo/contracts`, e dove manca
 quello di IGDB), poi itch, App Store e Google Play, e Wikipedia in fondo
-(`game.websites`); remake e simili. Le colonne si affiancano
+(`game.websites`); le file dei giochi legati. Le colonne si affiancano
 da `$lg`; sotto, la laterale viene **prima** nell'HTML — durata, critica e
 stato sono ciò che serve a decidere — e `row-reverse` la rimette a destra sul
 desktop. Un gioco appena nato (id IGDB, dati non ancora arrivati, creato da
 meno di 2 minuti) mostra lo skeleton con «Sto recuperando i dati da IGDB…» e
-si rilegge ogni 5 secondi; oltre, la pagina com'è (`isEnriching`). Remake e
-simili si aprono con la regola della ricerca: in catalogo sono un link, fuori
+si rilegge ogni 5 secondi; oltre, la pagina com'è (`isEnriching`). **Le file dei
+giochi legati** sono tre, «Gioco principale», «Altre versioni» e «Giochi simili»,
+e dove va il padre lo decide il tipo (`splitRelated`, `lib/related-games.ts`):
+di un'espansione o un DLC è il gioco principale, di un remake, un remaster,
+un'edizione estesa o un port è la prima delle altre versioni. Si aprono con la
+regola della ricerca: in catalogo sono un link, fuori
 catalogo da loggati un bottone che li crea (`useOpenIgdbHit`), da ospiti
 niente; attenuati se non sono tuoi. **I badge** — generi e temi, il tipo, le
 tue categorie e i tuoi tag — portano a `/backlog` con quel criterio acceso

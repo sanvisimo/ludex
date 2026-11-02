@@ -72,7 +72,8 @@ non c'è modo di accorgersene.
 
 Quindi `games` porta **`game_type`** — un insieme chiuso in `gameTypeValues`,
 tradotto dai numeri di IGDB in un punto solo (`gameTypeFromIgdb`) — e
-**`parent_igdb_id`**, il gioco a cui un DLC è attaccato. Tre cose da tenere
+**`parent_igdb_id`**, il gioco da cui la scheda discende: quello di un DLC,
+l'originale di un remaster. Tre cose da tenere
 insieme:
 
 - **è un dato, non una preferenza.** Che sia un DLC lo dice IGDB; che non lo si
@@ -122,8 +123,12 @@ chiamata di dettaglio e senza richieste in più:
   l'id di `external_ids` o la pagina salvata dall'import), e quello di IGDB
   riempie dove manca: è così che Epic, Nintendo e GOG senza pagina hanno un
   link. Piano in `plans/link-pagina-gioco.md`.
-- **in `game_related`** remake, remaster e giochi simili (`kind`), con
-  `igdb_id`, nome, copertina e posizione. Una tabella e non un array perché il
+- **in `game_related`** il padre, remake, remaster, edizioni estese e giochi
+  simili (`kind`), con `igdb_id`, nome, copertina e posizione. Il padre sta qui
+  oltre che in `parent_igdb_id`, che è solo un id: la pagina lo mostra come
+  scheda anche se non è in catalogo. L'ordine dell'enum è quello delle schede, e
+  con una voce nuova va tenuto: la pagina ordina su quello. Quali legami di IGDB
+  sono rimasti fuori, e perché, è in `plans/edizioni-estese.md`. Una tabella e non un array perché il
   gioco legato **può non essere in `games`**, e non ci si aggiunge: una decina
   di simili per gioco sono migliaia di righe che nessuno possiede, ciascuna col
   suo enrichment, e una riga di `games` non si cancella. Niente FK su

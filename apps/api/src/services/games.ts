@@ -96,7 +96,6 @@ export async function findGameDetailById(
       coverWidth: true,
       coverHeight: true,
       igdbSlug: true,
-      parentIgdbId: true,
       artworkImageIds: true,
       screenshotImageIds: true,
       videos: true,
@@ -134,29 +133,13 @@ export async function findGameDetailById(
 
   if (!game) return null;
 
-  const {
-    attributes,
-    sources,
-    scores,
-    igdbSlug,
-    parentIgdbId,
-    websites,
-    ...rest
-  } = game;
+  const { attributes, sources, scores, igdbSlug, websites, ...rest } = game;
   const externalId = (source: string) =>
     sources.find((row) => row.source === source)?.externalId ?? null;
   // OpenCritic spento (`SHOW_OPENCRITIC=0`): né voti né link escono da qui,
   // non solo dalla pagina. Le condizioni vietano anche di offrire i loro dati
   // tramite una nostra API.
   const showOpenCritic = openCriticVisible();
-
-  const parent =
-    parentIgdbId === null
-      ? null
-      : ((await db.query.games.findFirst({
-          columns: { id: true, slug: true, name: true },
-          where: eq(schema.games.igdbId, parentIgdbId),
-        })) ?? null);
 
   return {
     ...rest,
@@ -169,7 +152,6 @@ export async function findGameDetailById(
       sources.find((row) => row.source === 'igdb')?.syncedAt ?? null,
     hltbSyncedAt:
       sources.find((row) => row.source === 'hltb')?.syncedAt ?? null,
-    parent,
     related: await findRelatedGames(id, viewerId),
     links: sourceLinks({
       igdbSlug,
@@ -248,7 +230,8 @@ async function findStoreLinks(
 }
 
 /**
- * Remake, remaster e simili di un gioco, con ciò che serve a mostrarli: il
+ * Padre, remake, remaster, edizioni estese e simili di un gioco, con ciò che
+ * serve a mostrarli: il
  * nostro id se il gioco è in `games`, e se chi guarda ce l'ha nel backlog.
  *
  * Le due LEFT JOIN sono il motivo per cui `game_related` tiene l'`igdbId` e
@@ -277,7 +260,8 @@ async function findRelatedGames(gameId: string, viewerId: string | null) {
       ),
     )
     .where(eq(schema.gameRelated.gameId, gameId))
-    // L'ordine dell'enum è remake, remaster, simili: quello della pagina.
+    // L'ordine dell'enum è padre, remake, remaster, edizioni estese, simili:
+    // quello della pagina.
     .orderBy(schema.gameRelated.kind, schema.gameRelated.position);
 
   return rows.map((row) => ({ ...row, owned: row.status !== null }));

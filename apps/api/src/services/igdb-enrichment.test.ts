@@ -399,6 +399,18 @@ describe('enrichGameFromIgdb', () => {
       name: 'Castlevania Remake',
       coverImageId: 'c500',
     };
+    const padre = {
+      kind: 'parent' as const,
+      igdbId: 800,
+      name: 'Padre',
+      coverImageId: null,
+    };
+    const estesa = {
+      kind: 'expanded' as const,
+      igdbId: 700,
+      name: 'Estesa',
+      coverImageId: null,
+    };
     const simili = [
       {
         kind: 'similar' as const,
@@ -414,7 +426,7 @@ describe('enrichGameFromIgdb', () => {
       },
     ];
     mockedFetch.mockResolvedValue(
-      igdbMetadata({ related: [remake, ...simili] }),
+      igdbMetadata({ related: [remake, ...simili, estesa, padre] }),
     );
 
     await enrichGameFromIgdb(game.id);
@@ -432,9 +444,12 @@ describe('enrichGameFromIgdb', () => {
         .orderBy(schema.gameRelated.kind, schema.gameRelated.position);
 
     // La posizione si conta dentro il tipo: il remake è il primo dei remake,
-    // e i simili ripartono da zero.
+    // e i simili ripartono da zero. L'ordine è quello dell'enum: il padre esce
+    // per primo e i simili restano in fondo.
     expect(await righe()).toEqual([
+      { kind: 'parent', igdbId: 800, position: 0 },
       { kind: 'remake', igdbId: 500, position: 0 },
+      { kind: 'expanded', igdbId: 700, position: 0 },
       { kind: 'similar', igdbId: 601, position: 0 },
       { kind: 'similar', igdbId: 602, position: 1 },
     ]);

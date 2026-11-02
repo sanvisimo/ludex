@@ -328,10 +328,17 @@ export const attributeKindValues = [
   'player_perspective',
 ] as const;
 
-// Come un altro gioco è legato a questo, secondo IGDB: i suoi remake, i suoi
-// remaster, i giochi simili. Nella pagina del gioco sono tre file distinte, e
-// remake e remaster stanno insieme solo nel titolo della sezione.
-export const relatedKindValues = ['remake', 'remaster', 'similar'] as const;
+// Come un altro gioco è legato a questo, secondo IGDB: il gioco da cui discende
+// (`parent`), i suoi remake, i suoi remaster, le sue edizioni estese, i giochi
+// simili. L'ordine conta, perché la pagina ordina seguendo l'enum: il padre
+// esce per primo e i simili restano in fondo.
+export const relatedKindValues = [
+  'parent',
+  'remake',
+  'remaster',
+  'expanded',
+  'similar',
+] as const;
 
 // Tag e categorie personali dell'utente. Sono due tipi della stessa cosa — una
 // parola che l'utente attacca a un gioco suo — e per questo stanno in una

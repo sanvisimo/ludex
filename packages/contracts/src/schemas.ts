@@ -172,7 +172,7 @@ export const GameScoreSchema = z.object({
 
 export type GameScore = z.infer<typeof GameScoreSchema>;
 
-// Un gioco legato a questo — remake, remaster, simile — come lo mostra la
+// Un gioco legato a questo — padre, remake, remaster, simile — come lo mostra la
 // pagina del gioco. Può non essere in `games`: allora `gameId` è nullo, e di
 // lui ci sono solo nome e copertina.
 export const RelatedGameSchema = z.object({
@@ -236,12 +236,8 @@ export const GameDetailSchema = GameSchema.extend({
     .nullable(),
   developers: z.array(z.string()).nullable(),
   publishers: z.array(z.string()).nullable(),
-  // Il gioco a cui un DLC è attaccato, solo se è in `games`: di un padre che
-  // non abbiamo sappiamo l'id IGDB e nient'altro, nemmeno il nome.
-  parent: z
-    .object({ id: z.uuid(), slug: z.string(), name: z.string() })
-    .nullable(),
-  // Remake e remaster, poi i simili, ciascuno nell'ordine di IGDB.
+  // Il padre, poi remake, remaster ed edizioni estese, poi i simili, ciascuno
+  // nell'ordine di IGDB.
   related: z.array(RelatedGameSchema),
   // Se OpenCritic si mostra (`SHOW_OPENCRITIC`). Spento, voti e link di
   // OpenCritic qui non arrivano; serve al web per non offrirlo nemmeno fra le

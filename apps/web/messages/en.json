@@ -515,9 +515,9 @@
     "hiddenNotice": "Hidden from your list: still yours, it just doesn't show up.",
     "developers": "Developer",
     "publishers": "Publisher",
-    "dlcOf": "DLC for <link>{name}</link>",
     "description": "Description",
-    "remakes": "Remakes and remasters",
+    "mainGame": "Main game",
+    "versions": "Other versions",
     "similar": "Similar games",
     "relatedRemake": "Remake",
     "relatedRemaster": "Remaster",
@@ -1460,6 +1460,12 @@
       "categoryPages": {
         "title": "Category pages",
         "text": "The whole Ludex catalog with the backlog's filters: genres, themes, type, length, critic score. The game page badges will lead there too, even when signed out."
+      },
+      "gameVersions": {
+        "title": "Expanded editions and main game",
+        "p1": "On the game page, expanded editions sit alongside remakes and remasters, in the «Other versions» row.",
+        "p2": "An expansion or a DLC shows the card of its main game, and a remaster the card of the original, even when it is not in the catalog yet.",
+        "p3": "Games already in the catalog get them at their next data update."
       },
       "itadPrice": {
         "title": "The lowest price, from IsThereAnyDeal",

@@ -306,9 +306,10 @@ export async function findIgdbGameBySlug(
 
 const DETAIL_FIELDS = [
   'fields name, slug, summary, first_release_date, aggregated_rating, aggregated_rating_count,',
-  // Che cos'è la scheda, e — per DLC ed espansioni — a quale gioco è attaccata.
-  // Due campi su una chiamata che si fa comunque.
-  'game_type, parent_game,',
+  // Che cos'è la scheda, e da quale gioco discende, con nome e copertina: quel
+  // gioco può non essere in `games`, e la pagina lo mostra lo stesso. Campi su
+  // una chiamata che si fa comunque.
+  'game_type, parent_game.name, parent_game.cover.image_id,',
   // Su cosa è uscito (9b PSN): la prova che una copia PS5 non può essere
   // l'Harry Potter del 2001. Un campo su una chiamata che si fa comunque.
   'platforms,',
@@ -327,6 +328,7 @@ const DETAIL_FIELDS = [
   // di prima, IGDB lo dà per deprecato.
   'websites.url, websites.type.type,',
   'remakes.name, remakes.cover.image_id, remasters.name, remasters.cover.image_id,',
+  'expanded_games.name, expanded_games.cover.image_id,',
   'similar_games.name, similar_games.cover.image_id;',
 ].join(' ');
 
@@ -351,7 +353,7 @@ type IgdbGameDetail = {
   summary?: string;
   first_release_date?: number;
   game_type?: number;
-  parent_game?: number;
+  parent_game?: IgdbRelatedGame;
   platforms?: number[];
   aggregated_rating?: number;
   aggregated_rating_count?: number;
@@ -372,6 +374,7 @@ type IgdbGameDetail = {
   }[];
   remakes?: IgdbRelatedGame[];
   remasters?: IgdbRelatedGame[];
+  expanded_games?: IgdbRelatedGame[];
   similar_games?: IgdbRelatedGame[];
 };
 
@@ -429,7 +432,7 @@ export type IgdbGameMetadata = {
   publishers: string[];
   /** I link che la pagina mostra, uno per tipo: vedi `gameWebsiteTypeValues`. */
   websites: { type: GameWebsiteType; url: string }[];
-  /** Remake, remaster e simili, nell'ordine in cui IGDB li elenca. */
+  /** Padre, remake, remaster, edizioni estese e simili, nell'ordine di IGDB. */
   related: IgdbRelated[];
 };
 
@@ -573,7 +576,7 @@ function toMetadata(game: IgdbGameDetail): IgdbGameMetadata {
     coverWidth: game.cover?.width ?? null,
     coverHeight: game.cover?.height ?? null,
     gameType: gameTypeFromIgdb(game.game_type),
-    parentIgdbId: game.parent_game ?? null,
+    parentIgdbId: game.parent_game?.id ?? null,
     platformIgdbIds: game.platforms ?? [],
     aggregatedRating: game.aggregated_rating ?? null,
     aggregatedRatingCount: game.aggregated_rating_count ?? null,
@@ -603,8 +606,10 @@ function toMetadata(game: IgdbGameDetail): IgdbGameMetadata {
     publishers: companies(game.involved_companies, 'publisher'),
     websites: websites(game.websites),
     related: [
+      ...related('parent', game.parent_game ? [game.parent_game] : []),
       ...related('remake', game.remakes),
       ...related('remaster', game.remasters),
+      ...related('expanded', game.expanded_games),
       ...related('similar', game.similar_games),
     ],
   };
