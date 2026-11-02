@@ -1,9 +1,7 @@
 # Il prezzo più basso, da IsThereAnyDeal
 
-**Stato: da approvare** (25/10/2026), voce `itadPrice` della roadmap in «in
-arrivo». Branch `ccr-0d87f8d3-b0k3nh`.
-Fuori dall'ordine di lavoro di [ordine-sviluppo](../docs/ordine-sviluppo.md):
-quando farlo è da decidere.
+**Stato: in corso** (approvato il 02/11/2026), voce `itadPrice` della
+roadmap. Branch `feat/itad-prezzo`.
 
 ## La richiesta
 
