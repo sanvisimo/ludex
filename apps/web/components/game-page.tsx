@@ -242,7 +242,8 @@ export function GameHero({ game }: { game: GameDetail }) {
             {meta.length > 0 && <Muted>{meta.join(' · ')}</Muted>}
             {game.parent && (
               <Muted>
-                {t.rich('dlcOf', {
+                {t.rich('parentOf', {
+                  type: game.gameType ?? 'other',
                   name: game.parent.name,
                   link: (chunks) => (
                     <Link

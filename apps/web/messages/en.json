@@ -515,7 +515,7 @@
     "hiddenNotice": "Hidden from your list: still yours, it just doesn't show up.",
     "developers": "Developer",
     "publishers": "Publisher",
-    "dlcOf": "DLC for <link>{name}</link>",
+    "parentOf": "{type, select, expanded_game {Expanded edition of <link>{name}</link>} remaster {Remaster of <link>{name}</link>} remake {Remake of <link>{name}</link>} port {Port of <link>{name}</link>} episode {Episode of <link>{name}</link>} season {Season of <link>{name}</link>} pack {Pack for <link>{name}</link>} update {Update for <link>{name}</link>} mod {Mod for <link>{name}</link>} fork {Fork of <link>{name}</link>} other {Main game: <link>{name}</link>}}",
     "description": "Description",
     "remakes": "Remakes and remasters",
     "similar": "Similar games",

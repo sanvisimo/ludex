@@ -19,16 +19,16 @@ L'enrichment chiede solo `remakes`, `remasters` e `similar_games`
 ([igdb.ts](../apps/api/src/external/igdb.ts), `DETAIL_FIELDS`). Misurato il
 02/11/2026 sui 2525 giochi del catalogo di sviluppo:
 
-| Campo IGDB              | Giochi | Voci | Max | Deciso                                     |
-| ----------------------- | ------ | ---- | --- | ------------------------------------------ |
-| `expanded_games`        | 91     | 94   | 2   | **sì**, nella fila di remake e remaster    |
-| `ports`                 | 214    | 325  | 10  | no                                         |
-| `expansions`            | 177    | 475  | 21  | no: si va dall'espansione al gioco, sotto  |
-| `standalone_expansions` | 52     | 65   | 3   | no: come le espansioni                     |
-| `dlcs`                  | 533    | 2417 | 129 | no: livree e tratte di Train Sim World 5   |
-| `bundles`               | 978    | 2118 | –   | no                                         |
-| `forks`                 | 4      | 4    | –   | no                                         |
-| `version_parent`        | 81     | –    | –   | no: lo stesso gioco in un'altra edizione   |
+| Campo IGDB              | Giochi | Voci | Max | Deciso                                    |
+| ----------------------- | ------ | ---- | --- | ----------------------------------------- |
+| `expanded_games`        | 91     | 94   | 2   | **sì**, nella fila di remake e remaster   |
+| `ports`                 | 214    | 325  | 10  | no                                        |
+| `expansions`            | 177    | 475  | 21  | no: si va dall'espansione al gioco, sotto |
+| `standalone_expansions` | 52     | 65   | 3   | no: come le espansioni                    |
+| `dlcs`                  | 533    | 2417 | 129 | no: livree e tratte di Train Sim World 5  |
+| `bundles`               | 978    | 2118 | –   | no                                        |
+| `forks`                 | 4      | 4    | –   | no                                        |
+| `version_parent`        | 81     | –    | –   | no: lo stesso gioco in un'altra edizione  |
 
 Le espansioni sul gioco base si sono guardate sul backlog vero: 202 giochi ne
 avrebbero 521, di cui 22 già possedute. Il volume lo fanno i giochi a pacchetti
@@ -37,19 +37,23 @@ lunghe file di copertine attenuate che non aiutano a scegliere cosa giocare.
 
 ## Il bug della riga sotto il titolo
 
-La riga sotto il titolo dice sempre «DLC di X», per qualunque tipo abbia un padre
+La riga sotto il titolo diceva sempre «DLC di X», per qualunque tipo abbia un padre
 ([game-page.tsx](../apps/web/components/game-page.tsx), `dlcOf`): Full Body
-sarebbe «DLC di Catherine». Sul catalogo di sviluppo sono 85 giochi con
-un'etichetta sbagliata o imprecisa, oltre ai 3 DLC veri. Letto dal codice e dal
-database, non ancora visto a schermo.
+era «DLC di Catherine». Sul catalogo di sviluppo erano 85 giochi con
+un'etichetta sbagliata o imprecisa, oltre ai 3 DLC veri.
 
 ## Cosa si fa
 
-1. **Riga sotto il titolo.** Il testo dipende dal tipo:
-   - `expansion`, `standalone_expansion`, `dlc`: «Gioco principale: X»;
+1. **Riga sotto il titolo. Fatto**, provato in Chromium il 02/11/2026 su
+   espansione, standalone, DLC, edizione estesa e remaster. Il testo dipende dal
+   tipo (`parentOf`, una `select` nei messaggi):
+   - `expansion`, `standalone_expansion`, `dlc`: «Gioco principale: X», ed è anche
+     il ramo `other`, che prende i tipi senza testo proprio (`bundle`) e i tipi
+     che non conosciamo;
    - gli altri nominano il proprio tipo: «Edizione estesa di X», «Remaster di X»,
-     «Remake di X», «Port di X», «Episodio di X», «Aggiornamento di X», «Mod di
-     X».
+     «Remake di X», «Port di X», «Episodio di X», «Stagione di X», «Pacchetto di
+     X», «Aggiornamento di X», «Mod di X», «Fork di X». Stagione, pacchetto e fork
+     oggi non hanno righe in catalogo: il testo c'è per quando arrivano.
 2. **Edizioni estese.** `expanded_games` nei campi IGDB e il valore `expanded` in
    `relatedKindValues`, **prima di `similar`**: la pagina ordina seguendo l'enum.
    La migration la produce drizzle-kit; va controllato che scriva `BEFORE`.
