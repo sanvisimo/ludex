@@ -1361,6 +1361,10 @@
         "title": "Giocato da quanti minuti, per libreria",
         "text": "Per ogni libreria che dà i tempi — Steam, PlayStation, Nintendo, Xbox, EA — scegli da quanti minuti un gioco conta come giocato: sopra, all'import passa a «giocato», sotto resta da giocare."
       },
+      "gameVersions": {
+        "title": "Edizioni estese e gioco principale",
+        "text": "Nella pagina del gioco le edizioni estese stanno insieme a remake e remaster, e un'espansione porta al suo gioco principale."
+      },
       "badgeLinks": {
         "title": "I badge della pagina del gioco",
         "p1": "Un clic su un genere, un tema, il tipo o un tuo tag porta ai giochi del tuo backlog che ce l'hanno, col filtro già acceso.",

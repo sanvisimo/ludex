@@ -1362,6 +1362,10 @@
         "title": "Played from how many minutes, per library",
         "text": "For each library that reports play time — Steam, PlayStation, Nintendo, Xbox, EA — choose from how many minutes a game counts as played: above it, the import marks it «played», below it stays to play."
       },
+      "gameVersions": {
+        "title": "Expanded editions and main game",
+        "text": "On the game page, expanded editions sit alongside remakes and remasters, and an expansion links to its main game."
+      },
       "badgeLinks": {
         "title": "Badges on the game page",
         "p1": "Clicking a genre, a theme, the type or one of your tags takes you to the games in your backlog that have it, with the filter already on.",
