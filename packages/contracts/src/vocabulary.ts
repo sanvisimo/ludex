@@ -329,9 +329,15 @@ export const attributeKindValues = [
 ] as const;
 
 // Come un altro gioco è legato a questo, secondo IGDB: i suoi remake, i suoi
-// remaster, i giochi simili. Nella pagina del gioco sono tre file distinte, e
-// remake e remaster stanno insieme solo nel titolo della sezione.
-export const relatedKindValues = ['remake', 'remaster', 'similar'] as const;
+// remaster, le sue edizioni estese, i giochi simili. Nella pagina del gioco
+// sono due file: tutti insieme, e i simili per conto loro. L'ordine conta,
+// perché la pagina ordina seguendo l'enum: i simili restano in fondo.
+export const relatedKindValues = [
+  'remake',
+  'remaster',
+  'expanded',
+  'similar',
+] as const;
 
 // Tag e categorie personali dell'utente. Sono due tipi della stessa cosa — una
 // parola che l'utente attacca a un gioco suo — e per questo stanno in una

@@ -81,7 +81,7 @@ export async function mediaCoverage() {
       count(*) filter (where cardinality(g.developers) > 0)::int as sviluppo,
       count(*) filter (where exists (
         select 1 from game_related r
-        where r.game_id = g.id and r.kind in ('remake', 'remaster')
+        where r.game_id = g.id and r.kind in ('remake', 'remaster', 'expanded')
       ))::int as remake,
       count(*) filter (where exists (
         select 1 from game_related r

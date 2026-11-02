@@ -327,6 +327,7 @@ const DETAIL_FIELDS = [
   // di prima, IGDB lo dà per deprecato.
   'websites.url, websites.type.type,',
   'remakes.name, remakes.cover.image_id, remasters.name, remasters.cover.image_id,',
+  'expanded_games.name, expanded_games.cover.image_id,',
   'similar_games.name, similar_games.cover.image_id;',
 ].join(' ');
 
@@ -372,6 +373,7 @@ type IgdbGameDetail = {
   }[];
   remakes?: IgdbRelatedGame[];
   remasters?: IgdbRelatedGame[];
+  expanded_games?: IgdbRelatedGame[];
   similar_games?: IgdbRelatedGame[];
 };
 
@@ -429,7 +431,7 @@ export type IgdbGameMetadata = {
   publishers: string[];
   /** I link che la pagina mostra, uno per tipo: vedi `gameWebsiteTypeValues`. */
   websites: { type: GameWebsiteType; url: string }[];
-  /** Remake, remaster e simili, nell'ordine in cui IGDB li elenca. */
+  /** Remake, remaster, edizioni estese e simili, nell'ordine di IGDB. */
   related: IgdbRelated[];
 };
 
@@ -605,6 +607,7 @@ function toMetadata(game: IgdbGameDetail): IgdbGameMetadata {
     related: [
       ...related('remake', game.remakes),
       ...related('remaster', game.remasters),
+      ...related('expanded', game.expanded_games),
       ...related('similar', game.similar_games),
     ],
   };

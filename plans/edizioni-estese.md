@@ -56,7 +56,8 @@ un'etichetta sbagliata o imprecisa, oltre ai 3 DLC veri.
      oggi non hanno righe in catalogo: il testo c'è per quando arrivano.
 2. **Edizioni estese.** `expanded_games` nei campi IGDB e il valore `expanded` in
    `relatedKindValues`, **prima di `similar`**: la pagina ordina seguendo l'enum.
-   La migration la produce drizzle-kit; va controllato che scriva `BEFORE`.
+   **Fatto**: la migration 0064 scrive `BEFORE 'similar'`, e IGDB per Catherine
+   rende Full Body come `expanded`. I giochi in catalogo lo prendono col punto 4.
 3. **Titolo della fila.** «Remake e remaster» diventa «Altre versioni». Stesso
    `RelatedRow`, nessuna struttura nuova, quindi niente wireframe.
 4. **I giochi già presenti.** `igdb:media` non serve: riprende solo i giochi senza

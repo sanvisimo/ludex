@@ -236,12 +236,14 @@ export const GameDetailSchema = GameSchema.extend({
     .nullable(),
   developers: z.array(z.string()).nullable(),
   publishers: z.array(z.string()).nullable(),
-  // Il gioco a cui un DLC è attaccato, solo se è in `games`: di un padre che
+  // Il gioco da cui questa scheda discende (il gioco di un DLC, l'originale di
+  // un remaster), solo se è in `games`: di un padre che
   // non abbiamo sappiamo l'id IGDB e nient'altro, nemmeno il nome.
   parent: z
     .object({ id: z.uuid(), slug: z.string(), name: z.string() })
     .nullable(),
-  // Remake e remaster, poi i simili, ciascuno nell'ordine di IGDB.
+  // Remake, remaster ed edizioni estese, poi i simili, ciascuno nell'ordine di
+  // IGDB.
   related: z.array(RelatedGameSchema),
   // Se OpenCritic si mostra (`SHOW_OPENCRITIC`). Spento, voti e link di
   // OpenCritic qui non arrivano; serve al web per non offrirlo nemmeno fra le

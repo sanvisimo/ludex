@@ -248,7 +248,8 @@ async function findStoreLinks(
 }
 
 /**
- * Remake, remaster e simili di un gioco, con ciò che serve a mostrarli: il
+ * Remake, remaster, edizioni estese e simili di un gioco, con ciò che serve a
+ * mostrarli: il
  * nostro id se il gioco è in `games`, e se chi guarda ce l'ha nel backlog.
  *
  * Le due LEFT JOIN sono il motivo per cui `game_related` tiene l'`igdbId` e
@@ -277,7 +278,8 @@ async function findRelatedGames(gameId: string, viewerId: string | null) {
       ),
     )
     .where(eq(schema.gameRelated.gameId, gameId))
-    // L'ordine dell'enum è remake, remaster, simili: quello della pagina.
+    // L'ordine dell'enum è remake, remaster, edizioni estese, simili: quello
+    // della pagina.
     .orderBy(schema.gameRelated.kind, schema.gameRelated.position);
 
   return rows.map((row) => ({ ...row, owned: row.status !== null }));
