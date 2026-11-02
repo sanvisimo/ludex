@@ -73,6 +73,12 @@ se non è in `games`, con la regola degli altri giochi legati.
    `attempted_at` e si lancia `backfill`: la sola `synced_at` salterebbe i giochi
    tentati nelle ultime 24 ore.
 4. **Contorno. Fatto.** `docs/modello-dati.md`, `apps/web/CLAUDE.md`.
+5. **Il badge della versione.** Commento dell'utente, vista la pagina: in «Altre
+   versioni» non si capiva che versione fosse ciascuna, e chi guarda l'originale
+   deve accorgersi subito che possiede la Remaster. Sulla copertina, in basso a
+   sinistra (in alto c'è lo stato): «Originale» per il padre, «Estesa» («Edizione estesa» è 106 px su 96),
+   «Remaster», «Remake». Scartati una riga sotto il nome e una fila per tipo. Il
+   badge sta fuori dall'attenuazione delle schede che non si possiedono.
 
 ## Come si verifica
 

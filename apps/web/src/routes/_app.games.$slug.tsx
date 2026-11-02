@@ -327,7 +327,7 @@ function GamePage() {
           )}
 
           <RelatedRow title={t('mainGame')} games={mainGame} />
-          <RelatedRow title={t('versions')} games={versions} />
+          <RelatedRow title={t('versions')} games={versions} showKind />
           <RelatedRow title={t('similar')} games={similar} />
         </YStack>
       </XStack>

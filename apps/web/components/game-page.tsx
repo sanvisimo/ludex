@@ -787,15 +787,28 @@ const WEBSITE_ORDER = [
  * pagina; uno che non c'è ancora, da loggati, al clic diventa una riga di
  * `games` e si apre; da ospiti resta copertina e nome.
  * Fila e frecce sono `ScrollRow`, la stessa delle fasce della home.
+ *
+ * `showKind` scrive sulla copertina che versione è: «Edizione estesa» dall'
+ * originale, «Originale» dall'edizione estesa. Il badge sta fuori
+ * dall'attenuazione, perché un gioco che non hai è proprio quello di cui
+ * bisogna poterlo leggere.
  */
 export function RelatedRow({
   title,
   games,
+  showKind = false,
 }: {
   title: string;
   games: RelatedGame[];
+  showKind?: boolean;
 }) {
   const t = useTranslations('game');
+  const kindLabels: Partial<Record<RelatedGame['kind'], string>> = {
+    parent: t('relatedOriginal'),
+    remake: t('relatedRemake'),
+    remaster: t('relatedRemaster'),
+    expanded: t('relatedExpanded'),
+  };
   const statusLabels = useStatusLabels();
   const { data: session } = useSession();
   const openIgdb = useOpenIgdbHit();
@@ -808,39 +821,53 @@ export function RelatedRow({
       itemCount={games.length}
     >
       {games.map((game) => {
+        const opacity = game.owned ? 1 : 0.55;
+        const kindLabel = showKind ? kindLabels[game.kind] : undefined;
         const card = (
           <YStack
             width={104}
             gap={6}
-            opacity={game.owned ? 1 : 0.55}
             aria-label={
-              game.owned ? undefined : `${game.name}, ${t('notOwned')}`
+              game.owned
+                ? undefined
+                : [game.name, kindLabel, t('notOwned')]
+                    .filter(Boolean)
+                    .join(', ')
             }
           >
-            <YStack
-              position="relative"
-              overflow="hidden"
-              rounded={8}
-              borderWidth={game.owned ? 0 : 1}
-              borderStyle="dashed"
-              borderColor="$color8"
-            >
-              <GameCover
-                imageId={game.coverImageId}
-                name={game.name}
-                size="cover_big"
-                width={104}
-              />
-              {game.status && (
-                <CornerLabel icon={statusIcons[game.status]}>
-                  {statusLabels[game.status]}
-                </CornerLabel>
+            <YStack position="relative">
+              <YStack
+                position="relative"
+                overflow="hidden"
+                rounded={8}
+                opacity={opacity}
+                borderWidth={game.owned ? 0 : 1}
+                borderStyle="dashed"
+                borderColor="$color8"
+              >
+                <GameCover
+                  imageId={game.coverImageId}
+                  name={game.name}
+                  size="cover_big"
+                  width={104}
+                />
+                {game.status && (
+                  <CornerLabel icon={statusIcons[game.status]}>
+                    {statusLabels[game.status]}
+                  </CornerLabel>
+                )}
+              </YStack>
+              {kindLabel && (
+                <XStack position="absolute" b={4} l={4}>
+                  <Badge variant="secondary">{kindLabel}</Badge>
+                </XStack>
               )}
             </YStack>
             <Text
               fontSize={13}
               lineHeight={18}
               color="$color12"
+              opacity={opacity}
               numberOfLines={2}
               // Dentro il bottone il browser centrerebbe.
               text="left"
