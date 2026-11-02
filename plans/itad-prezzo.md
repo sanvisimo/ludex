@@ -85,6 +85,8 @@ catalogo di sviluppo (2523 giochi).
 6. **La card** (`GamePriceCard`): sua, sotto durata e critica, e tutta link alla
    pagina ITAD. Cambiata il 02/11/2026 vedendola in uso: era una riga della card
    «Links», che nella colonna da 360 andava a capo solo quando c'era il segnale.
+   Solo sui giochi che non sono nel backlog, per ospiti e wishlist compresi: un
+   gioco che hai già non ha bisogno di un prezzo (deciso dopo il merge).
 
    ```
    [icona] IsThereAnyDeal
