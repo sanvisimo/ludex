@@ -534,9 +534,10 @@ Warrior Classic Complete_, 1997 contro 2012).
 **Regola 2, le voci trovate per nome.** Una voce risolta per nome che finisce
 sul gioco di un'altra voce dello stesso import, sulla stessa piattaforma e sullo
 stesso supporto, va negli scarti con `same_product_as` verso l'altra, e l'utente
-la vede fra i «Possibili doppioni» come le voci in più di un prodotto Epic. Il
-caso è _Legend of Keepers: Prologue_, una demo che IGDB non ha: la ricerca col
-titolo accorciato trovava il gioco completo. **Solo per nome**: due id che IGDB
+la vede fra i «Possibili doppioni» come le voci in più di un prodotto Epic. È
+nata per _Legend of Keepers: Prologue_, che col titolo accorciato trovava il
+gioco completo e che oggi ferma già la regola dei Prologue (più sotto). **Solo
+per nome**: due id che IGDB
 dà per lo stesso gioco restano una copia con le ore sommate, come su Steam (447
 appid per 445 giochi) e per un appid proprio più uno della famiglia.
 `pickMergedEntries`.
@@ -553,16 +554,30 @@ importasse AitD 1, l'id c'è già. Quelli che la regola smentisce si cancellano
 collegamento confermato e sbagliato non lo tocca: si corregge con «Non è questo
 gioco».
 
-**Scollegare, quando un gioco giusto non c'è.** La regola 2 guarda solo le voci
-trovate per nome in quell'import: un Prologue fuso prima che ci fosse ha il suo
-collegamento scritto, e «Non è questo gioco» vuole un id IGDB, che per una demo
-non c'è. **«Scollega»**, dalla scheda admin del gioco, toglie la riga di
-`external_ids` e nient'altro (`unlinkExternalId`): al prossimo import la voce
-non è nota, il nome ritrova lo stesso gioco e la regola 2 la mette fra i
-«Possibili doppioni». Per questo regge **solo se un altro id dello stesso
-negozio punta allo stesso gioco**, e il servizio rifiuta l'id unico
-(`only_link`): lì le copie resterebbero sul gioco sbagliato, e il nome, senza
-un'altra voce accanto, ricollegherebbe lo stesso gioco. L'id unico si ripunta.
+**Scollegare, quando un gioco giusto non c'è.** Un collegamento scritto prima
+delle regole resta, e «Non è questo gioco» vuole un id IGDB, che per una demo non
+c'è. **«Scollega»**, dalla scheda admin del gioco, fa una di tre cose
+(`unlinkExternalId`), e il dialogo dice quale prima di farla (`previewUnlink`):
+
+- **un altro id dello stesso negozio punta allo stesso gioco**: toglie la riga di
+  `external_ids` e nient'altro, perché le copie non sanno da quale id sono nate.
+  Al prossimo import la voce non è nota: una demo o un Prologue va fra gli scarti
+  nascosti, qualunque altra voce che ritrova lo stesso gioco fra i «Possibili
+  doppioni» (regola 2);
+- **è l'unico id, e il titolo del negozio è di una demo o di un Prologue**
+  (_Citizens: Far Lands - Prologue_ su _Citizen_): toglie la riga, e le copie
+  tornano fra gli scarti di chi le ha, nascoste come `prerelease`. Le copie senza
+  account restano sul gioco, perché le ha aggiunte l'utente a mano. La riga di
+  backlog si toglie se resta vuota e senza voto, note, tag o uno stato diverso da
+  `backlog`; altrimenti resta senza quella copia, perché quei dati sono
+  dell'utente e uno scarto non saprebbe dove tenerli. Le segnalazioni su quella
+  copia si chiudono;
+- **è l'unico id di una voce qualunque**: si rifiuta (`only_link`). Il nome, senza
+  un'altra voce accanto, ricollegherebbe lo stesso gioco. Lì si ripunta.
+
+Il reimport non ricollega una demo per nome, ma **se IGDB conosce quell'id per
+id lo riporta sullo stesso gioco**, come fa con ogni demo che conosce: «Scollega»
+non è una smentita di IGDB, e una tabella di collegamenti rifiutati non c'è.
 
 ## Il gioco deve essere uscito sulla console della copia (9b PSN)
 
@@ -621,6 +636,16 @@ Una voce **non risolta per id** il cui nome contiene `demo`, `beta`,
 non va al passo 3: IGDB una demo quasi mai la conosce, e per nome troverebbe il
 gioco completo o uno omonimo. Va fra gli scarti **già nascosta** come
 `prerelease`. Una voce che IGDB conosce per id resta dove la mette.
+
+**Un Prologue è una demo** (decisione dell'utente, 04/11/2026, ribalta il 9a che
+li contava fra i giochi salvati dal titolo accorciato), con una differenza: si
+cerca per nome, perché alcuni hanno una scheda propria (_Alder's Blood: Prologue_,
+_Kingdom Hearts HD 2.8 Final Chapter Prologue_). Si collega solo a un candidato
+che si chiama Prologue anche lui (`isPrologueName`), altrimenti va fra gli scarti
+nascosto come `prerelease`. Il caso è _Citizens: Far Lands - Prologue_: cercato
+come «Citizens», prendeva _Citizen_ con 0,92. Misure nel
+[piano](../plans/prologue-come-demo.md). I collegamenti già scritti non cambiano:
+si correggono con «Scollega».
 
 Nasce nascosta **solo all'inserimento**, come quella nascosta per tutti da un
 admin: se l'utente la rimette fra i «da sistemare» il reimport non la

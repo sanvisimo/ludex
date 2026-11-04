@@ -66,6 +66,7 @@ import {
   SyncAllResultSchema,
   UnlinkedGameSchema,
   UnlinkImpactSchema,
+  UnlinkPreviewSchema,
   WishlistSortSchema,
   WishlistSchema,
   WishlistMembershipSchema,
@@ -1088,8 +1089,14 @@ export const contract = {
           z.object({ wholeRows: z.number().int(), copies: z.number().int() }),
         ),
 
-      // «Scollega»: toglie la riga e nient'altro. Si rifiuta se è l'unico id di
-      // quel negozio sul gioco: quello è ripuntare.
+      // «Scollega», anteprima: non scrive niente.
+      unlinkPreview: oc
+        .input(z.object({ linkId: z.uuid() }))
+        .output(UnlinkPreviewSchema),
+
+      // «Scollega»: toglie la riga. Sull'unico id di quel negozio solo se la
+      // voce è una demo o un Prologue, e le copie tornano fra gli scarti; su
+      // una voce qualunque si rifiuta, e quello è ripuntare.
       unlink: oc.input(z.object({ linkId: z.uuid() })).output(z.void()),
     },
 

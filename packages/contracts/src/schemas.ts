@@ -1325,6 +1325,28 @@ export const GameAdminDetailSchema = z.object({
 });
 
 // Cosa farebbe «Non è questo gioco», utente per utente.
+// L'anteprima di «Scollega». `link_only` c'è un altro id dello stesso negozio e
+// si toglie solo la riga; `to_unresolved` è l'unico id di una demo o di un
+// Prologue, e le copie tornano fra gli scarti; `refused` è l'unico id di una voce
+// qualunque, e si ripunta.
+export const UnlinkPreviewSchema = z.object({
+  kind: z.enum(['link_only', 'to_unresolved', 'refused']),
+  moves: z.array(
+    z.object({
+      userName: z.string(),
+      copies: z.array(
+        z.object({
+          platformSlug: z.string(),
+          medium: MediumSchema.nullable(),
+          account: z.string().nullable(),
+        }),
+      ),
+      // La riga di backlog resta: ha altre copie, o voto, note, tag o uno stato.
+      rowStays: z.boolean(),
+    }),
+  ),
+});
+
 export const RepointPreviewSchema = z.object({
   from: z.object({ id: z.uuid(), name: z.string() }),
   // `id` nullo: il gioco giusto non è ancora nel catalogo, lo crea la conferma.
@@ -1427,6 +1449,7 @@ export type ReportGroup = z.infer<typeof ReportGroupSchema>;
 export type PlatformMismatch = z.infer<typeof PlatformMismatchSchema>;
 export type GameAdminDetail = z.infer<typeof GameAdminDetailSchema>;
 export type RepointPreview = z.infer<typeof RepointPreviewSchema>;
+export type UnlinkPreview = z.infer<typeof UnlinkPreviewSchema>;
 export type MergeGame = z.infer<typeof MergeGameSchema>;
 export type LinkIgdbResult = z.infer<typeof LinkIgdbResultSchema>;
 export type MergePreview = z.infer<typeof MergePreviewSchema>;

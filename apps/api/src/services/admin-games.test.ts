@@ -15,6 +15,7 @@ import {
   linkGameToIgdb,
   listUnlinkedGames,
   previewRepoint,
+  previewUnlink,
   repointLink,
   unlinkExternalId,
 } from './admin-games';
@@ -300,15 +301,15 @@ describe('«Non è questo gioco»', () => {
 });
 
 describe('«Scollega»', () => {
-  // Il caso del mini PC: il Prologue, che IGDB non ha, fuso per nome con il
-  // gioco completo prima della regola 2, col collegamento scritto.
+  // Una voce che IGDB non ha, fusa per nome con il gioco completo prima della
+  // regola 2, col collegamento scritto.
   const gioco = {
     externalId: '1208434383',
     name: 'Legend of Keepers: Career of a Dungeon Manager',
   };
-  const prologue = {
+  const doppione = {
     externalId: '2020648154',
-    name: 'Legend of Keepers: Prologue',
+    name: 'Legend of Keepers: Supporter Edition',
   };
 
   const collegamentiGog = () =>
@@ -321,9 +322,10 @@ describe('«Scollega»', () => {
       .where(eq(schema.externalIds.source, 'gog'));
 
   it('toglie il collegamento, e il reimport mette la voce fra i possibili doppioni', async () => {
+    const adminId = await createUser();
     const lok = await createGame({ igdbId: 111965, name: 'Legend of Keepers' });
     await db.insert(schema.externalIds).values(
-      [gioco, prologue].map((voce) => ({
+      [gioco, doppione].map((voce) => ({
         gameId: lok.id,
         source: 'gog' as const,
         externalId: voce.externalId,
@@ -339,21 +341,26 @@ describe('«Scollega»', () => {
             {
               ...igdbHit(111965, 'Legend of Keepers'),
               gameType: null,
-              // Il Prologue lo trova il titolo tagliato, e la regola 3 lo
+              // Il doppione lo trova il titolo tagliato, e la regola 3 lo
               // accetta solo se il gioco è sul PC: Legend of Keepers lo è.
               platformIds: [6],
             },
           ]
         : [],
     );
-    await importLibrary(account, [gioco, prologue]);
+    await importLibrary(account, [gioco, doppione]);
 
     const linkId = (await collegamentiGog()).find(
-      (link) => link.externalId === prologue.externalId,
+      (link) => link.externalId === doppione.externalId,
     )!.id;
-    expect(await unlinkExternalId(linkId)).toEqual({ status: 'ok' });
+    expect(await previewUnlink(linkId)).toEqual({
+      status: 'ok',
+      kind: 'link_only',
+      moves: [],
+    });
+    expect(await unlinkExternalId(adminId, linkId)).toEqual({ status: 'ok' });
 
-    const report = await importLibrary(account, [gioco, prologue]);
+    const report = await importLibrary(account, [gioco, doppione]);
 
     expect(report).toMatchObject({ resolved: 1, unresolved: 1 });
     // Il collegamento non torna, e la copia del gioco resta dov'era.
@@ -372,14 +379,19 @@ describe('«Scollega»', () => {
         .from(schema.unresolvedImports)
         .where(eq(schema.unresolvedImports.userId, userId)),
     ).toEqual([
-      { externalId: prologue.externalId, sameProductAs: gioco.externalId },
+      { externalId: doppione.externalId, sameProductAs: gioco.externalId },
     ]);
   });
 
   it("rifiuta l'unico id del negozio sul gioco: si ripunta", async () => {
+    const adminId = await createUser();
     const { linkId } = await tokiSbagliato();
 
-    expect(await unlinkExternalId(linkId)).toEqual({ status: 'only_link' });
+    expect(await previewUnlink(linkId)).toMatchObject({ kind: 'refused' });
+
+    expect(await unlinkExternalId(adminId, linkId)).toEqual({
+      status: 'only_link',
+    });
     expect(
       await db
         .select({ id: schema.externalIds.id })
@@ -389,8 +401,154 @@ describe('«Scollega»', () => {
   });
 
   it('un collegamento che non esiste', async () => {
-    expect(await unlinkExternalId(crypto.randomUUID())).toEqual({
+    const adminId = await createUser();
+    expect(await unlinkExternalId(adminId, crypto.randomUUID())).toEqual({
       status: 'not_found',
+    });
+    expect(await previewUnlink(crypto.randomUUID())).toEqual({
+      status: 'not_found',
+    });
+  });
+
+  describe("l'id unico di una demo o di un Prologue", () => {
+    // Il caso vero: IGDB il Prologue non ce l'ha, e cercato come «Citizens» era
+    // finito su Citizen. Un gioco giusto per «Non è questo gioco» non c'è.
+    const citizens = {
+      externalId: '2182110',
+      name: 'Citizens: Far Lands - Prologue',
+    };
+
+    async function citizenSbagliato() {
+      const citizen = await createGame({ igdbId: 60169, name: 'Citizen' });
+      const [link] = await db
+        .insert(schema.externalIds)
+        .values({
+          gameId: citizen.id,
+          source: 'steam',
+          externalId: citizens.externalId,
+          storeTitle: citizens.name,
+        })
+        .returning({ id: schema.externalIds.id });
+      return { citizen, linkId: link!.id };
+    }
+
+    const scartiDi = (userId: string) =>
+      db
+        .select({
+          externalId: schema.unresolvedImports.externalId,
+          name: schema.unresolvedImports.name,
+          hiddenKind: schema.unresolvedImports.hiddenKind,
+        })
+        .from(schema.unresolvedImports)
+        .where(eq(schema.unresolvedImports.userId, userId));
+
+    it('toglie il collegamento, la copia torna fra gli scarti, e il reimport non ricollega', async () => {
+      const adminId = await createUser();
+      const { linkId } = await citizenSbagliato();
+      const userId = await createUser();
+      const account = await linkStoreAccount(userId, 'steam');
+      await importLibrary(account, [citizens]);
+      expect(await righeDi(userId)).toHaveLength(1);
+
+      expect(await previewUnlink(linkId)).toMatchObject({
+        status: 'ok',
+        kind: 'to_unresolved',
+        moves: [{ rowStays: false }],
+      });
+      expect(await unlinkExternalId(adminId, linkId)).toEqual({ status: 'ok' });
+
+      const attesi = [
+        {
+          externalId: citizens.externalId,
+          name: citizens.name,
+          hiddenKind: 'prerelease',
+        },
+      ];
+      expect(await righeDi(userId)).toEqual([]);
+      expect(await scartiDi(userId)).toEqual(attesi);
+      expect(await db.select().from(schema.externalIds)).toEqual([]);
+
+      // La stessa ricerca che l'aveva agganciato: stavolta non basta.
+      vi.mocked(searchIgdbGames).mockImplementation(async (name) =>
+        name === 'citizens'
+          ? [
+              {
+                ...igdbHit(60169, 'Citizen'),
+                gameType: null,
+                platformIds: [6],
+              },
+            ]
+          : [],
+      );
+      const report = await importLibrary(account, [citizens]);
+
+      expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
+      expect(await righeDi(userId)).toEqual([]);
+      expect(await scartiDi(userId)).toEqual(attesi);
+      expect(await db.select().from(schema.externalIds)).toEqual([]);
+    });
+
+    it('la riga col voto resta, senza quella copia', async () => {
+      const adminId = await createUser();
+      const { citizen, linkId } = await citizenSbagliato();
+      const userId = await createUser();
+      const account = await linkStoreAccount(userId, 'steam');
+      const backlogId = await riga(
+        userId,
+        citizen.id,
+        [{ store: 'steam', accountId: account.id }],
+        { rating: 4 },
+      );
+
+      expect(await previewUnlink(linkId)).toMatchObject({
+        moves: [{ rowStays: true }],
+      });
+      await unlinkExternalId(adminId, linkId);
+
+      expect(await righeDi(userId)).toHaveLength(1);
+      expect(await copieDi(backlogId)).toEqual([]);
+      expect(await scartiDi(userId)).toHaveLength(1);
+    });
+
+    it('la copia di un altro negozio tiene la riga, e quella senza account resta', async () => {
+      const adminId = await createUser();
+      const { citizen, linkId } = await citizenSbagliato();
+      const altro = await createUser();
+      const account = await linkStoreAccount(altro, 'steam');
+      const conAltraCopia = await riga(altro, citizen.id, [
+        { store: 'steam', accountId: account.id },
+        { store: 'nintendo', accountId: null },
+      ]);
+      const aMano = await createUser();
+      const senzaAccount = await riga(aMano, citizen.id, [
+        { store: 'steam', accountId: null },
+      ]);
+
+      await unlinkExternalId(adminId, linkId);
+
+      expect(await copieDi(conAltraCopia)).toEqual([{ store: 'nintendo' }]);
+      expect(await scartiDi(altro)).toHaveLength(1);
+      expect(await copieDi(senzaAccount)).toEqual([{ store: 'steam' }]);
+      expect(await scartiDi(aMano)).toEqual([]);
+    });
+
+    it('chiude le segnalazioni di quella copia', async () => {
+      const adminId = await createUser();
+      const { citizen, linkId } = await citizenSbagliato();
+      const userId = await createUser();
+      const account = await linkStoreAccount(userId, 'steam');
+      await riga(userId, citizen.id, [
+        { store: 'steam', accountId: account.id },
+      ]);
+      await createReports(userId, {
+        gameId: citizen.id,
+        targets: [{ store: 'steam' }],
+      });
+      expect(await openReportsForGame(userId, citizen.id)).toHaveLength(1);
+
+      await unlinkExternalId(adminId, linkId);
+
+      expect(await openReportsForGame(userId, citizen.id)).toEqual([]);
     });
   });
 });

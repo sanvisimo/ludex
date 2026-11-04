@@ -111,6 +111,11 @@ describe('le procedure admin.*', () => {
       router.admin.links.repoint,
       { linkId: gameId, igdbId: 1 },
     ],
+    [
+      'links.unlinkPreview',
+      router.admin.links.unlinkPreview,
+      { linkId: gameId },
+    ],
     ['links.unlink', router.admin.links.unlink, { linkId: gameId }],
     ['users.list', router.admin.users.list, {}],
     [

@@ -22,6 +22,7 @@ import {
 } from './backlog';
 import { reopenSourcesForNewExternalIds } from './enrichment';
 import { findGameByIgdbId, resolveGameFromIgdb, sourceLinks } from './games';
+import { isDemoLikeName } from './library-import';
 import { igdbPlatformNamer } from './platform-names';
 import { closeReports, listOpenReports } from './reports';
 
@@ -384,6 +385,8 @@ async function findLink(linkId: string) {
       gameId: schema.externalIds.gameId,
       source: schema.externalIds.source,
       externalId: schema.externalIds.externalId,
+      storeTitle: schema.externalIds.storeTitle,
+      storeImageUrl: schema.externalIds.storeImageUrl,
       gameName: schema.games.name,
     })
     .from(schema.externalIds)
@@ -565,22 +568,12 @@ export async function repointLink(
   return { status: 'ok' as const, wholeRows, copies };
 }
 
-/**
- * «Scollega»: toglie la riga di `external_ids`, e nient'altro. È per la voce
- * che IGDB non ha e che il nome ha fuso con un altro gioco, il Prologue di
- * _Legend of Keepers_: «Non è questo gioco» vuole un gioco giusto, e qui non
- * c'è. Al prossimo import la voce si ricerca per nome, ritrova lo stesso gioco
- * e la regola 2 la mette fra i «Possibili doppioni».
- *
- * Solo se un altro id dello stesso negozio punta allo stesso gioco: le copie
- * sono di quella voce, e restano. Con l'id unico le copie resterebbero sul
- * gioco sbagliato senza nessuno a reggerle, e la ricerca per nome, senza
- * un'altra voce accanto, ricollegherebbe lo stesso gioco: lì si ripunta.
- */
-export async function unlinkExternalId(linkId: string) {
-  const link = await findLink(linkId);
-  if (!link) return { status: 'not_found' as const };
-
+/** Un altro id dello stesso negozio sullo stesso gioco, se c'è. */
+async function otherIdSameStore(link: {
+  id: string;
+  gameId: string;
+  source: Store;
+}) {
   const [altro] = await db
     .select({ id: schema.externalIds.id })
     .from(schema.externalIds)
@@ -592,8 +585,214 @@ export async function unlinkExternalId(linkId: string) {
       ),
     )
     .limit(1);
-  if (!altro) return { status: 'only_link' as const };
+  return altro ?? null;
+}
 
-  await db.delete(schema.externalIds).where(eq(schema.externalIds.id, link.id));
+/**
+ * Cosa tocca «Scollega» sull'id unico di una demo, utente per utente: le copie
+ * di quel negozio che vengono da un account. Quelle senza account le ha
+ * aggiunte l'utente a mano, e uno scarto senza account non esiste: restano.
+ *
+ * La riga di backlog si toglie solo se senza quelle copie resta vuota e
+ * l'utente non ci ha scritto niente: voto, note, tag e stato sono suoi, e uno
+ * scarto non saprebbe dove tenerli.
+ */
+async function planUnlinkToUnresolved(gameId: string, store: Store) {
+  const righe = await db
+    .select({
+      backlogId: schema.backlog.id,
+      userId: schema.backlog.userId,
+      userName: schema.user.name,
+      status: schema.backlog.status,
+      rating: schema.backlog.rating,
+      notes: schema.backlog.notes,
+      hasTags: sql<boolean>`exists (
+        select 1 from ${schema.backlogTags}
+         where ${schema.backlogTags.backlogId} = ${schema.backlog.id}
+      )`,
+      copy: schema.ownerships,
+      label: schema.storeAccounts.label,
+      displayName: schema.storeAccounts.displayName,
+      externalAccountId: schema.storeAccounts.externalAccountId,
+    })
+    .from(schema.backlog)
+    .innerJoin(schema.user, eq(schema.user.id, schema.backlog.userId))
+    .innerJoin(
+      schema.ownerships,
+      eq(schema.ownerships.backlogId, schema.backlog.id),
+    )
+    .leftJoin(
+      schema.storeAccounts,
+      eq(schema.storeAccounts.id, schema.ownerships.storeAccountId),
+    )
+    .where(eq(schema.backlog.gameId, gameId))
+    .orderBy(asc(schema.user.name));
+
+  const perRiga = new Map<
+    string,
+    {
+      backlogId: string;
+      userId: string;
+      userName: string;
+      personal: boolean;
+      otherCopies: boolean;
+      copies: (typeof schema.ownerships.$inferSelect)[];
+      accounts: (string | null)[];
+    }
+  >();
+  for (const riga of righe) {
+    const voce = perRiga.get(riga.backlogId) ?? {
+      backlogId: riga.backlogId,
+      userId: riga.userId,
+      userName: riga.userName,
+      personal:
+        riga.status !== 'backlog' ||
+        riga.rating !== null ||
+        Boolean(riga.notes) ||
+        riga.hasTags,
+      otherCopies: false,
+      copies: [],
+      accounts: [],
+    };
+    if (riga.copy.store === store && riga.copy.storeAccountId !== null) {
+      voce.copies.push(riga.copy);
+      voce.accounts.push(
+        riga.externalAccountId
+          ? storeAccountName({
+              label: riga.label,
+              displayName: riga.displayName,
+              externalAccountId: riga.externalAccountId,
+            })
+          : null,
+      );
+    } else {
+      voce.otherCopies = true;
+    }
+    perRiga.set(riga.backlogId, voce);
+  }
+
+  return [...perRiga.values()]
+    .filter((voce) => voce.copies.length > 0)
+    .map(({ personal, otherCopies, ...voce }) => ({
+      ...voce,
+      rowStays: personal || otherCopies,
+    }));
+}
+
+/**
+ * L'anteprima di «Scollega»: non scrive niente, e dice quale dei tre casi è.
+ *
+ * - `link_only`: c'è un altro id dello stesso negozio, si toglie solo la riga;
+ * - `to_unresolved`: è l'unico id ma la voce è una demo o un Prologue, le copie
+ *   tornano fra gli scarti;
+ * - `refused`: è l'unico id di una voce qualunque, e si ripunta.
+ */
+export async function previewUnlink(linkId: string) {
+  const link = await findLink(linkId);
+  if (!link) return { status: 'not_found' as const };
+
+  if (await otherIdSameStore(link))
+    return { status: 'ok' as const, kind: 'link_only' as const, moves: [] };
+  if (!link.storeTitle || !isDemoLikeName(link.storeTitle))
+    return { status: 'ok' as const, kind: 'refused' as const, moves: [] };
+
+  const piano = await planUnlinkToUnresolved(link.gameId, link.source);
+  return {
+    status: 'ok' as const,
+    kind: 'to_unresolved' as const,
+    moves: piano.map((voce) => ({
+      userName: voce.userName,
+      copies: voce.copies.map((copy, index) => ({
+        platformSlug: copy.platformSlug,
+        medium: copy.medium,
+        account: voce.accounts[index] ?? null,
+      })),
+      rowStays: voce.rowStays,
+    })),
+  };
+}
+
+/**
+ * «Scollega». Tre casi, gli stessi dell'anteprima.
+ *
+ * **Con un altro id dello stesso negozio sul gioco** toglie la riga di
+ * `external_ids` e nient'altro: le copie non sanno da quale id sono nate, e
+ * restano. Al prossimo import la voce si ricerca per nome: una demo o un
+ * Prologue va fra gli scarti nascosti, qualunque altra voce che ritrova lo
+ * stesso gioco fra i «Possibili doppioni» (regola 2).
+ *
+ * **L'id unico di una demo o di un Prologue** è il caso di _Citizens: Far Lands
+ * - Prologue_ su _Citizen_: «Non è questo gioco» vuole un gioco giusto, e non
+ * c'è. Le copie tornano fra gli scarti di chi le ha, nascoste come `prerelease`,
+ * perché è lì che l'import le avrebbe messe. Il reimport non ricollega niente:
+ * vedi `isPrologueName` e `isPrereleaseName`. Se però IGDB conosce quell'id, lo
+ * riporta sullo stesso gioco, come fa con ogni demo che conosce.
+ *
+ * **L'id unico di una voce qualunque** si rifiuta: il nome ritroverebbe lo
+ * stesso gioco, senza un'altra voce accanto. Lì si ripunta.
+ */
+export async function unlinkExternalId(adminId: string, linkId: string) {
+  const link = await findLink(linkId);
+  if (!link) return { status: 'not_found' as const };
+
+  if (await otherIdSameStore(link)) {
+    await db
+      .delete(schema.externalIds)
+      .where(eq(schema.externalIds.id, link.id));
+    return { status: 'ok' as const };
+  }
+
+  const titolo = link.storeTitle;
+  if (!titolo || !isDemoLikeName(titolo))
+    return { status: 'only_link' as const };
+
+  const piano = await planUnlinkToUnresolved(link.gameId, link.source);
+  const now = new Date();
+  await db.transaction(async (tx) => {
+    for (const voce of piano) {
+      // Uno scarto per account e id: un prodotto Xbox su due console è due
+      // copie e una voce sola, come all'import.
+      const perAccount = new Map(
+        voce.copies.map((copy) => [copy.storeAccountId!, copy] as const),
+      );
+      await tx
+        .insert(schema.unresolvedImports)
+        .values(
+          [...perAccount].map(([storeAccountId, copy]) => ({
+            userId: voce.userId,
+            store: link.source,
+            storeAccountId,
+            externalId: link.externalId,
+            name: titolo,
+            platformSlug: copy.platformSlug,
+            playtimeMinutes: copy.playtimeMinutes,
+            lastPlayedAt: copy.lastPlayedAt,
+            acquiredAt: copy.acquiredAt,
+            imageUrl: link.storeImageUrl,
+            storePage: copy.storePage,
+            subscription: copy.subscription,
+            medium: copy.medium,
+            hiddenAt: now,
+            hiddenKind: 'prerelease' as const,
+          })),
+        )
+        .onConflictDoNothing();
+      await tx.delete(schema.ownerships).where(
+        inArray(
+          schema.ownerships.id,
+          voce.copies.map((copy) => copy.id),
+        ),
+      );
+      if (!voce.rowStays)
+        await tx
+          .delete(schema.backlog)
+          .where(eq(schema.backlog.id, voce.backlogId));
+    }
+    await tx
+      .delete(schema.externalIds)
+      .where(eq(schema.externalIds.id, link.id));
+  });
+
+  await closeReports(link.gameId, { store: link.source }, adminId);
   return { status: 'ok' as const };
 }

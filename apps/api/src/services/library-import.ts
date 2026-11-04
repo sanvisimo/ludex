@@ -452,6 +452,25 @@ const PRERELEASE_NAME = /\b(demo|beta|playtest|public test(ing)?)\b|体験版/i;
 export const isPrereleaseName = (name: string) => PRERELEASE_NAME.test(name);
 
 /**
+ * Un «Prologue»: è una demo anche lui, e finisce fra gli scarti come loro, ma
+ * si cerca lo stesso per nome. Alcuni una scheda IGDB propria ce l'hanno
+ * (_Alder's Blood: Prologue_, _Kingdom Hearts HD 2.8 Final Chapter Prologue_).
+ *
+ * Quindi si collega per nome **solo a un candidato che si chiama Prologue
+ * anche lui**: il titolo accorciato trova il gioco completo o uno omonimo.
+ * _Citizens: Far Lands - Prologue_, che IGDB non ha, cercato come «Citizens»
+ * era finito su _Citizen_. Se IGDB lo conosce per id resta dove lo mette, come
+ * una demo. Vedi `plans/prologue-come-demo.md`.
+ */
+const PROLOGUE_NAME = /\bprologue\b/i;
+
+export const isPrologueName = (name: string) => PROLOGUE_NAME.test(name);
+
+/** Una voce che, se non si risolve, va fra gli scarti già nascosta. */
+export const isDemoLikeName = (name: string) =>
+  isPrereleaseName(name) || isPrologueName(name);
+
+/**
  * Ciò che una voce dà alla riga di backlog **alla nascita**, nella forma di
  * `unresolved_imports.at_birth`: null se non dà niente, come le voci dei
  * negozi. Lo scarto lo conserva, e chi lo collega a mano lo applica come
@@ -561,7 +580,7 @@ async function recordUnresolved(
           // `hidden_at`, e chi la rimette fra i «da sistemare» resta libero.
           ...(perTutti.has(entry.externalId)
             ? { hiddenAt: now, hiddenKind: perTutti.get(entry.externalId)! }
-            : isPrereleaseName(entry.name)
+            : isDemoLikeName(entry.name)
               ? { hiddenAt: now, hiddenKind: 'prerelease' as const }
               : {}),
         })),
@@ -686,10 +705,10 @@ async function currentUnresolvedIds(storeAccountId: string) {
  *
  * Stessa strada di `findHltbCandidates`, e per lo stesso motivo: i cataloghi
  * scrivono lo stesso gioco in modi diversi, e la ricerca a titolo intero manca
- * il bersaglio quando il negozio aggiunge un pezzo che l'altro non ha. Su una
- * libreria GOG vera vale cinque giochi su 435 — i «Prologue», che GOG vende
- * come voce a sé e IGDB tiene sotto il titolo del gioco, e *Wargame
- * Construction Set III* che su GOG si porta dietro «+ Campaigns».
+ * il bersaglio quando il negozio aggiunge un pezzo che l'altro non ha: *Wargame
+ * Construction Set III*, che su GOG si porta dietro «+ Campaigns». I «Prologue»
+ * che questo ripiego agganciava al gioco completo erano demo, e non passano più:
+ * vedi `isPrologueName`.
  *
  * Testa e poi coda: la testa è il titolo privato del sottotitolo, la coda apre
  * molto di più ed è l'ultima spiaggia.
@@ -813,7 +832,10 @@ export async function resolveByName(
     fatte++;
 
     const entry = gruppo[0]!;
-    const { hits, searchedAs } = await searchWithFallback(entry.name);
+    const { hits: trovati, searchedAs } = await searchWithFallback(entry.name);
+    const hits = isPrologueName(entry.name)
+      ? trovati.filter((hit) => isPrologueName(hit.name))
+      : trovati;
     if (hits.length === 0) continue;
 
     const ranked = rankCandidates(
@@ -1094,10 +1116,11 @@ async function checkBundleLinks(
  *
  * Sulla stessa piattaforma e sullo stesso supporto la copia è una sola — il
  * vincolo unique di `ownerships` la fonde — e la seconda voce sparirebbe
- * **senza dirlo**: _Legend of Keepers: Prologue_, una demo che IGDB non ha,
- * trovava col titolo accorciato il gioco completo e ci si fondeva. Questa va
- * negli scarti con la principale accanto, come le voci in più di un prodotto
- * Epic, e l'utente la vede fra i «Possibili doppioni».
+ * **senza dirlo**: è nata per _Legend of Keepers: Prologue_, che col titolo
+ * accorciato trovava il gioco completo e ci si fondeva, e che oggi ferma già
+ * `isPrologueName`. Una voce così va negli scarti con la principale accanto,
+ * come le voci in più di un prodotto Epic, e l'utente la vede fra i «Possibili
+ * doppioni».
  *
  * **Solo le voci trovate per nome.** Due id che IGDB stesso dichiara lo stesso
  * gioco restano una copia, con le ore sommate: su Steam succede davvero (447

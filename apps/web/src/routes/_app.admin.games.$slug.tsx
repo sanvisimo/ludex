@@ -464,12 +464,6 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       />
       <UnlinkLinkDialog
         link={unlinking}
-        onlyLink={
-          !detail.links.some(
-            (other) =>
-              other.source === unlinking?.source && other.id !== unlinking.id,
-          )
-        }
         gameName={game.name}
         onOpenChange={(open) => {
           if (!open) setUnlinking(null);
