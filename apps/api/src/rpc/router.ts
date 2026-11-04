@@ -47,6 +47,7 @@ import {
   listUnlinkedGames,
   previewRepoint,
   repointLink,
+  previewUnlink,
   unlinkExternalId,
 } from '../services/admin-games';
 import { exportAccount } from '../services/account-export';
@@ -1430,18 +1431,31 @@ export const router = os.router({
           return { wholeRows: esito.wholeRows, copies: esito.copies };
         }),
 
-      unlink: os.admin.links.unlink
+      unlinkPreview: os.admin.links.unlinkPreview
         .use(authed)
         .use(admin)
         .handler(async ({ input }) => {
-          const esito = await unlinkExternalId(input.linkId);
+          const esito = await previewUnlink(input.linkId);
+          if (esito.status === 'not_found')
+            throw new ORPCError('NOT_FOUND', {
+              message: 'Collegamento inesistente',
+            });
+          return { kind: esito.kind, moves: esito.moves };
+        }),
+
+      unlink: os.admin.links.unlink
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => {
+          const esito = await unlinkExternalId(context.user.id, input.linkId);
           if (esito.status === 'not_found')
             throw new ORPCError('NOT_FOUND', {
               message: 'Collegamento inesistente',
             });
           if (esito.status === 'only_link')
             throw new ORPCError('CONFLICT', {
-              message: "È l'unico id di questo negozio sul gioco: va ripuntato",
+              message:
+                "È l'unico id di questo negozio sul gioco e non è una demo: va ripuntato",
             });
         }),
     },

@@ -167,18 +167,20 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
   });
 
   it('riprova col titolo accorciato quando quello intero non trova niente', async () => {
-    // Il caso vero: GOG vende «Legend of Keepers: Prologue» come voce a sé,
-    // IGDB lo tiene sotto il titolo del gioco. Cercando il titolo intero non
-    // esce niente, e senza il ripiego cinque giochi su 435 finivano negli
+    // Il negozio aggiunge un sottotitolo che IGDB non ha: cercando il titolo
+    // intero non esce niente, e senza il ripiego il gioco finirebbe negli
     // scarti pur essendo su IGDB.
     mockedSearch.mockImplementation(async (term: string) =>
-      term.toLowerCase().includes('prologue')
+      term.toLowerCase().includes('career')
         ? []
         : [hit({ igdbId: 77, name: 'Legend of Keepers' })],
     );
 
     const report = await importLibrary(account, [
-      { externalId: '2020648154', name: 'Legend of Keepers: Prologue' },
+      {
+        externalId: '1208434383',
+        name: 'Legend of Keepers: Career of a Dungeon Manager',
+      },
     ]);
 
     expect(report).toMatchObject({ resolved: 1, resolvedByName: 1 });
@@ -1770,9 +1772,9 @@ describe('importLibrary: due voci sullo stesso gioco (9a GOG)', () => {
     externalId: '1208434383',
     name: 'Legend of Keepers: Career of a Dungeon Manager',
   };
-  const prologue = {
+  const doppione = {
     externalId: '2020648154',
-    name: 'Legend of Keepers: Prologue',
+    name: 'Legend of Keepers: Supporter Edition',
     acquiredAt: new Date('2020-01-10Z'),
   };
   const legendOfKeepers = {
@@ -1794,7 +1796,7 @@ describe('importLibrary: due voci sullo stesso gioco (9a GOG)', () => {
   });
 
   it('la voce per nome va fra i possibili doppioni, senza collegamento', async () => {
-    const report = await importLibrary(account, [gioco, prologue]);
+    const report = await importLibrary(account, [gioco, doppione]);
 
     expect(report).toMatchObject({ total: 2, resolved: 1, unresolved: 1 });
     expect(await gamesOf(userId)).toEqual([
@@ -1802,10 +1804,10 @@ describe('importLibrary: due voci sullo stesso gioco (9a GOG)', () => {
     ]);
     expect(await unresolvedOf(userId)).toMatchObject([
       {
-        externalId: prologue.externalId,
-        name: prologue.name,
+        externalId: doppione.externalId,
+        name: doppione.name,
         sameProductAs: gioco.externalId,
-        acquiredAt: prologue.acquiredAt,
+        acquiredAt: doppione.acquiredAt,
       },
     ]);
     const collegamenti = await db
@@ -1815,15 +1817,15 @@ describe('importLibrary: due voci sullo stesso gioco (9a GOG)', () => {
   });
 
   it('nascosta, resta nascosta al reimport', async () => {
-    await importLibrary(account, [gioco, prologue]);
+    await importLibrary(account, [gioco, doppione]);
     const [scarto] = await unresolvedOf(userId);
     await setUnresolvedImportHidden(userId, scarto!.id, 'prerelease');
 
-    await importLibrary(account, [gioco, prologue]);
+    await importLibrary(account, [gioco, doppione]);
 
     const [dopo] = await unresolvedOf(userId);
     expect(dopo).toMatchObject({
-      externalId: prologue.externalId,
+      externalId: doppione.externalId,
       hiddenKind: 'prerelease',
       sameProductAs: gioco.externalId,
     });
@@ -1835,11 +1837,11 @@ describe('importLibrary: due voci sullo stesso gioco (9a GOG)', () => {
 
     await importLibrary(account, [
       { ...gioco, acquiredAt: new Date('2022-03-01Z') },
-      prologue,
+      doppione,
     ]);
 
     expect(await unresolvedOf(userId)).toMatchObject([
-      { externalId: gioco.externalId, sameProductAs: prologue.externalId },
+      { externalId: gioco.externalId, sameProductAs: doppione.externalId },
     ]);
   });
 
@@ -1848,11 +1850,11 @@ describe('importLibrary: due voci sullo stesso gioco (9a GOG)', () => {
     mockedById.mockResolvedValue(
       new Map([
         [gioco.externalId, legendOfKeepers],
-        [prologue.externalId, legendOfKeepers],
+        [doppione.externalId, legendOfKeepers],
       ]),
     );
 
-    const report = await importLibrary(account, [gioco, prologue]);
+    const report = await importLibrary(account, [gioco, doppione]);
 
     expect(report).toMatchObject({ resolved: 2, unresolved: 0 });
     expect(await unresolvedOf(userId)).toEqual([]);
@@ -1918,6 +1920,70 @@ describe('importLibrary: demo e beta non si cercano per nome (9f)', () => {
       hiddenKind: 'prerelease',
     });
     expect(scarto?.hiddenAt).not.toBeNull();
+  });
+
+  describe('un Prologue', () => {
+    // Il caso vero: IGDB non ha il Prologue, e cercato come «Citizens» il titolo
+    // accorciato trovava Citizen con 0,92.
+    const citizens = {
+      externalId: '2182110',
+      name: 'Citizens: Far Lands - Prologue',
+    };
+
+    it('non si collega al gioco che il titolo accorciato trova, e va fra gli scarti nascosto', async () => {
+      mockedSearch.mockImplementation(async (term: string) =>
+        term === 'citizens'
+          ? [
+              hit({ igdbId: 60169, name: 'Citizen' }),
+              hit({ igdbId: 171100, name: 'Citizens: Far Lands' }),
+            ]
+          : [],
+      );
+
+      const report = await importLibrary(account, [citizens]);
+
+      expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
+      expect(await gamesOf(userId)).toEqual([]);
+      const [scarto] = await unresolvedOf(userId);
+      expect(scarto).toMatchObject({
+        externalId: citizens.externalId,
+        hiddenKind: 'prerelease',
+      });
+      expect(scarto?.hiddenAt).not.toBeNull();
+    });
+
+    it('si collega a una scheda che si chiama Prologue anche lei', async () => {
+      mockedSearch.mockResolvedValue([
+        hit({ igdbId: 129232, name: "Alder's Blood: Prologue" }),
+        hit({ igdbId: 129000, name: "Alder's Blood" }),
+      ]);
+
+      const report = await importLibrary(account, [
+        { externalId: '2018305509', name: "Alder's Blood Prologue" },
+      ]);
+
+      expect(report).toMatchObject({ resolved: 1, unresolved: 0 });
+      expect(await gamesOf(userId)).toEqual([
+        expect.objectContaining({ igdbId: 129232 }),
+      ]);
+    });
+
+    it('se IGDB lo conosce per id resta dove lo mette', async () => {
+      mockedSource.mockReturnValue(1);
+      mockedById.mockResolvedValue(
+        new Map([
+          [
+            citizens.externalId,
+            { igdbId: 171100, name: 'Citizens: Far Lands', releaseYear: 2023 },
+          ],
+        ]),
+      );
+
+      const report = await importLibrary(account, [citizens]);
+
+      expect(mockedSearch).not.toHaveBeenCalled();
+      expect(report).toMatchObject({ resolved: 1, unresolved: 0 });
+    });
   });
 
   it('beta, playtest e prove pubbliche come la demo', async () => {
