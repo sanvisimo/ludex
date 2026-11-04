@@ -1,6 +1,7 @@
 # I Prologue si scartano come le demo
 
-**Stato: in corso** (dal 04/11/2026). Branch `fix/prologue-come-demo`.
+**Stato: fatto** (chiuso il 04/11/2026). Branch `fix/prologue-come-demo`,
+[PR #110](https://github.com/sanvisimo/ludex/pull/110).
 
 ## La richiesta
 
