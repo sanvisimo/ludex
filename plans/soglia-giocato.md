@@ -1,6 +1,6 @@
 # La soglia «conta come giocato», per account
 
-**Stato: in corso** (25/10/2026), voce `playedThreshold` della roadmap.
+**Stato: fatto** (chiuso il 04/11/2026), voce `playedThreshold` della roadmap.
 Branch `ccr-b9301df0-t20pf2`.
 
 ## La richiesta

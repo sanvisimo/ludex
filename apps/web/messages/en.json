@@ -1362,7 +1362,8 @@
       },
       "playedThreshold": {
         "title": "Played from how many minutes, per library",
-        "text": "For each library that reports play time — Steam, PlayStation, Nintendo, Xbox, EA — choose from how many minutes a game counts as played: above it, the import marks it «played», below it stays to play."
+        "p1": "For each library that reports play time — Steam, PlayStation, Nintendo, Xbox, EA — choose from how many minutes a game counts as played: above it, the import marks it «played», below it stays to play.",
+        "p2": "You choose it when you link the library or from the «Import settings» on its card, and from there it applies right away to the games still to play. Other statuses are left alone."
       },
       "badgeLinks": {
         "title": "Badges on the game page",
