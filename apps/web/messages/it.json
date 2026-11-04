@@ -1361,7 +1361,8 @@
       },
       "playedThreshold": {
         "title": "Giocato da quanti minuti, per libreria",
-        "text": "Per ogni libreria che dà i tempi — Steam, PlayStation, Nintendo, Xbox, EA — scegli da quanti minuti un gioco conta come giocato: sopra, all'import passa a «giocato», sotto resta da giocare."
+        "p1": "Per ogni libreria che dà i tempi — Steam, PlayStation, Nintendo, Xbox, EA — scegli da quanti minuti un gioco conta come giocato: sopra, all'import passa a «giocato», sotto resta da giocare.",
+        "p2": "Si sceglie quando colleghi la libreria o dalle «Impostazioni dell'import» della sua scheda, e da lì vale subito per i giochi ancora da giocare. Gli altri stati non si toccano."
       },
       "badgeLinks": {
         "title": "I badge della pagina del gioco",
