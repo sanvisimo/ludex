@@ -603,6 +603,11 @@ così» la toglie per gioco e piattaforma, per tutti i negozi
 apertura, con la stessa funzione della regola. Le copie aggiunte a mano non ci
 entrano: sono una dichiarazione dell'utente, non un collegamento.
 
+**Su Xbox si guarda il prodotto, non la copia.** Un prodotto ha un id solo e
+l'import ne ricava una copia per piattaforma: se IGDB ne conferma una, le altre
+non vanno in lista. La _Chicken Edition_ di _Naheulbeuk_ è su Xbox e su PC, e la
+sua scheda IGDB non ha Windows. Non vale per PSN, dove ogni console ha il suo id.
+
 ## Demo e beta non si cercano per nome (9f Steam)
 
 Il confronto Steam con Playnite del 15/10/2026 ha trovato _Castlevania:

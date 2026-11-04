@@ -417,11 +417,7 @@ function MissingList({
               <CellText muted>{t('missing.manual')}</CellText>
             ) : null}
           </XStack>
-          {row.error ? (
-            <CellText muted wrap>
-              {row.error}
-            </CellText>
-          ) : null}
+          {row.error ? <CellText muted>{row.error}</CellText> : null}
         </YStack>
       ),
     },

@@ -1754,6 +1754,7 @@
       "back": "Indietro",
       "users": "{count, plural, one {# utente} other {# utenti}}",
       "noIgdb": "senza id IGDB",
+      "igdbPlatforms": "IGDB lo dà su: {platforms}",
       "publicPage": "Apri la pagina pubblica",
       "links": "Collegamenti dai negozi",
       "store": "Negozio",

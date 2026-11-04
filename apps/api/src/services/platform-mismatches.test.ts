@@ -101,6 +101,60 @@ describe('listPlatformMismatches', () => {
     expect(await lista()).toEqual({ rows: [], total: 0 });
   });
 
+  it('su Xbox una copia confermata assolve le altre dello stesso prodotto', async () => {
+    // La Chicken Edition: su PC c'è, ma la sua scheda IGDB non ha Windows.
+    const chicken = await gioco('Chicken Edition', [169, 48, 167, 49, 130]);
+    await copia(userId, chicken.id, 'xbox_series', 'xbox');
+    await copia(userId, chicken.id, 'pc_windows', 'xbox');
+
+    expect(await lista()).toEqual({ rows: [], total: 0 });
+  });
+
+  it('un prodotto Xbox senza copie confermate resta in lista', async () => {
+    const hp = await gioco('Harry Potter', [29]);
+    await copia(userId, hp.id, 'xbox_series', 'xbox');
+    await copia(userId, hp.id, 'pc_windows', 'xbox');
+
+    expect((await lista()).rows).toMatchObject([
+      {
+        copies: [
+          { store: 'xbox', platformSlug: 'pc_windows' },
+          { store: 'xbox', platformSlug: 'xbox_series' },
+        ],
+      },
+    ]);
+  });
+
+  it('la conferma non passa fra negozi, utenti o id per console', async () => {
+    // Una copia Epic giusta non dice niente del prodotto Xbox.
+    const pc = await gioco('Solo PC', [6]);
+    await copia(userId, pc.id, 'pc_windows', 'epic');
+    await copia(userId, pc.id, 'xbox_series', 'xbox');
+    // La copia confermata di un altro utente non assolve la sua.
+    const altro = await createUser();
+    const one = await gioco('Solo One', [49]);
+    await copia(altro, one.id, 'xbox_one', 'xbox');
+    await copia(userId, one.id, 'pc_windows', 'xbox');
+    // Su PSN ogni console ha il suo id: la PS4 giusta non assolve la PS5.
+    const ps4 = await gioco('Solo PS4', [48]);
+    await copia(userId, ps4.id, 'sony_playstation4');
+    await copia(userId, ps4.id, 'sony_playstation5');
+
+    const { rows } = await lista();
+
+    expect(rows.map((row) => [row.name, row.copies])).toEqual(
+      expect.arrayContaining([
+        ['Solo PC', [expect.objectContaining({ platformSlug: 'xbox_series' })]],
+        ['Solo One', [expect.objectContaining({ platformSlug: 'pc_windows' })]],
+        [
+          'Solo PS4',
+          [expect.objectContaining({ platformSlug: 'sony_playstation5' })],
+        ],
+      ]),
+    );
+    expect(rows).toHaveLength(3);
+  });
+
   it('conta gli utenti, e mette prima chi ne ha di più', async () => {
     const altro = await createUser();
     const a = await gioco('A', [29]);

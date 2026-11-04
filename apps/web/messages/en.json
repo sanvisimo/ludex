@@ -1755,6 +1755,7 @@
       "back": "Back",
       "users": "{count, plural, one {# user} other {# users}}",
       "noIgdb": "no IGDB id",
+      "igdbPlatforms": "IGDB has it on: {platforms}",
       "publicPage": "Open the public page",
       "links": "Store links",
       "store": "Store",

@@ -21,6 +21,14 @@ import { igdbPlatformNamer } from './platform-names';
  * 3, e passarle a Postgres come tabella di valori evita di scriverle due volte.
  * Solo le copie dei negozi: quella aggiunta a mano è una dichiarazione
  * dell'utente, non un collegamento.
+ *
+ * **Su Xbox si guarda il prodotto, non la copia.** Un prodotto ha un id solo e
+ * l'import ne ricava una copia per piattaforma: se IGDB ne conferma una, il
+ * collegamento è giusto e alle altre manca solo il dato su IGDB. La _Chicken
+ * Edition_ di _Naheulbeuk_ è su Xbox e su PC, e la sua scheda IGDB non ha
+ * Windows. Solo Xbox: su PSN ogni console ha il suo id, e una copia PS4 giusta
+ * non dice niente di quella PS5. Il prezzo: un prodotto giocabile anche su PC,
+ * collegato per errore a un gioco solo PC, qui non si vede più.
  */
 export async function listPlatformMismatches(input: {
   dismissed: boolean;
@@ -63,6 +71,13 @@ export async function listPlatformMismatches(input: {
       where o.store is not null
         and cardinality(g.platform_igdb_ids) > 0
         and not (g.platform_igdb_ids && v.ids)
+        and not (o.store = 'xbox' and exists (
+          select 1 from ownerships sorella
+          join valide vs on vs.slug = sorella.platform_slug
+          where sorella.backlog_id = o.backlog_id
+            and sorella.store = 'xbox'
+            and g.platform_igdb_ids && vs.ids
+        ))
         and ${input.dismissed ? sql`` : sql`not`} exists (
           select 1 from platform_mismatch_dismissals d
           where d.game_id = b.game_id and d.platform_slug = o.platform_slug
