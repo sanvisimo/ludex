@@ -475,14 +475,14 @@ catalogo, sta nell'intestazione. I pezzi stanno in `components/admin/`. Cose
 che non si indovinano:
 
 - **In `@repo/ui` una tabella non c'è**: `AdminTable` fa righe di `XStack` coi
-  ruoli ARIA, come la vista compatta del backlog. Le colonne elastiche tagliano
-  (`overflow="hidden"`) e i blocchi di testo accanto a una copertina vogliono
-  `flex={1} minW={0}`, o il testo esce e finisce sopra la colonna accanto; le
-  colonne fisse no, perché tengono i bottoni e tagliarle nasconderebbe l'anello
-  del focus: la loro larghezza va data giusta. Dove il testo **è**
-  l'informazione — il motivo di un errore, uno slug — `CellText` ha `wrap` e la
-  colonna un `minWidth`: sotto la somma delle misure la tabella scorre di lato
-  (`AdminTable` la calcola, mai meno di 640) invece di spezzare i numeri.
+  ruoli ARIA, come la vista compatta del backlog. **`CellText` va sempre a capo,
+  mai tagliato** (`overflow-wrap: anywhere`): il testo di queste tabelle è
+  l'informazione. Le colonne elastiche hanno `overflow="hidden"` e i blocchi di
+  testo accanto a una copertina vogliono `flex={1} minW={0}`, o il testo esce e
+  finisce sopra la colonna accanto; le colonne fisse no, perché tengono i bottoni
+  e nasconderebbero l'anello del focus: la loro larghezza va data giusta. Le
+  colonne hanno un `minWidth`: sotto la somma delle misure la tabella scorre di
+  lato (`AdminTable` la calcola, mai meno di 640) invece di spezzare i numeri.
 - **Lo stato di una fonte è `StatusBadge`**, lo stesso verde/giallo/rosso nella
   scheda del gioco e nella lista dei dati mancanti. In «Found but empty» e
   «Fine as is» la lista **non ha bottoni**: non c'è niente da ritentare, e un id
@@ -503,7 +503,9 @@ che non si indovinano:
 - **«Piattaforme sbagliate»** (`/admin/platforms`, 9b,
   `platform-mismatches.tsx`) sono le copie su una piattaforma dove il gioco non
   è uscito, con «Va bene così» e i segnati da annullare; il numero nel menu è
-  come quello di scarti e segnalazioni. Copertina e titolo sono il link alla
+  come quello di scarti e segnalazioni. La scheda admin del gioco dice le stesse
+  due cose, le piattaforme delle copie e quelle di IGDB, così si capisce perché
+  è in lista. Copertina e titolo sono il link alla
   scheda admin, e «Apri» resta, un bottone pieno con icona (`ButtonLink`): è
   l'azione che conta. I nomi delle piattaforme li traduce il server, con una
   funzione sola (`igdbPlatformNamer`): la colonna «IGDB lo dà su», i risultati

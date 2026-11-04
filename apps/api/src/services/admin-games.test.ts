@@ -620,7 +620,7 @@ describe('la scheda admin di un gioco', () => {
     const detail = await gameAdminDetail(arcade.slug);
 
     expect(detail).toMatchObject({
-      game: { name: 'Toki', users: 1 },
+      game: { name: 'Toki', users: 1, igdbPlatforms: [] },
       // Nintendo un link non lo dà; Steam lo si ricava dall'appid.
       links: expect.arrayContaining([
         expect.objectContaining({

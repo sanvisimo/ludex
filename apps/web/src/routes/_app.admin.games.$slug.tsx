@@ -171,7 +171,12 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       minWidth: 130,
       render: (link) => (
         <CellText muted>
-          {t('game.copiesCount', { users: link.users, copies: link.copies })}
+          {[
+            t('game.copiesCount', { users: link.users, copies: link.copies }),
+            link.platforms.join(', '),
+          ]
+            .filter(Boolean)
+            .join(' · ')}
         </CellText>
       ),
     },
@@ -228,10 +233,10 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
         const label = `${id}${row.manual ? ` · ${t('missing.manual')}` : ''}`;
         return row.url ? (
           <ExternalLink href={row.url}>
-            <CellText wrap>{label} ↗</CellText>
+            <CellText>{label} ↗</CellText>
           </ExternalLink>
         ) : (
-          <CellText wrap>{label}</CellText>
+          <CellText>{label}</CellText>
         );
       },
     },
@@ -252,11 +257,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
               {t(`reason.${row.reason}`)}
             </Text>
           ) : null}
-          {row.error ? (
-            <CellText muted wrap>
-              {row.error}
-            </CellText>
-          ) : null}
+          {row.error ? <CellText muted>{row.error}</CellText> : null}
         </YStack>
       ),
     },
@@ -337,6 +338,13 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
               .filter(Boolean)
               .join(' · ')}
           </Text>
+          {game.igdbPlatforms.length > 0 ? (
+            <Text fontSize={13} color="$color11">
+              {t('game.igdbPlatforms', {
+                platforms: game.igdbPlatforms.join(', '),
+              })}
+            </Text>
+          ) : null}
           <Link to="/games/$slug" params={{ slug: game.slug }}>
             <Text fontSize={13} color="$color11" textDecorationLine="underline">
               {t('game.publicPage')} ↗

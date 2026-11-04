@@ -1283,6 +1283,9 @@ export const GameAdminDetailSchema = z.object({
     gameType: GameTypeSchema.nullable(),
     coverImageId: z.string().nullable(),
     users: z.number().int(),
+    // Le piattaforme che IGDB gli dà, coi nostri nomi: accanto a quelle delle
+    // copie dicono perché un gioco è fra le piattaforme sbagliate.
+    igdbPlatforms: z.array(z.string()),
   }),
   links: z.array(
     z.object({
