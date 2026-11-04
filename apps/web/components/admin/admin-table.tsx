@@ -114,9 +114,9 @@ function Cell<T>({
   role: 'cell' | 'columnheader';
   children: ReactNode;
 }) {
-  // Solo le colonne elastiche tagliano: le view di Tamagui non si restringono
-  // da sole, e un id Amazon lungo usciva dalla sua colonna e finiva sopra
-  // quella accanto. Le fisse no, perché tengono i bottoni, e tagliandole si
+  // Solo le colonne elastiche hanno `overflow`: le view di Tamagui non si
+  // restringono da sole, e un id Amazon lungo usciva dalla sua colonna e finiva
+  // sopra quella accanto. Le fisse no, perché tengono i bottoni, e si
   // perderebbe l'anello del focus: la loro larghezza va data giusta.
   return column.width !== undefined ? (
     <XStack role={role} width={column.width} shrink={0} items="center" gap={6}>
@@ -137,31 +137,25 @@ function Cell<T>({
 }
 
 /**
- * Il testo di una cella: una riga, tagliata se non ci sta. Accanto a una
- * copertina va dentro un blocco con `flex={1} minW={0}`, o il taglio non
- * scatta: il blocco resterebbe largo quanto il testo.
- *
- * Con `wrap` va invece a capo — in mezzo a una parola solo se la parola non ci
- * sta nemmeno da sola —: serve dove il testo **è** l'informazione, il motivo di
- * un errore o uno slug lungo, e tagliarlo lo renderebbe illeggibile. La riga si
- * alza quanto serve.
+ * Il testo di una cella: va a capo, mai tagliato, perché in queste tabelle il
+ * testo è l'informazione. Si spezza in mezzo a una parola solo se la parola non
+ * ci sta nemmeno da sola: `anywhere` e non `break-word`, che lascerebbe a un id
+ * lungo la larghezza minima dell'id intero, e la cella lo taglierebbe. Accanto a
+ * una copertina va dentro un blocco con `flex={1} minW={0}`.
  */
 export function CellText({
   children,
   muted = false,
-  wrap = false,
 }: {
   children: ReactNode;
   muted?: boolean;
-  wrap?: boolean;
 }) {
   return (
     <Text
       fontSize={13}
       lineHeight={18}
       color={muted ? '$color11' : '$color12'}
-      numberOfLines={wrap ? undefined : 1}
-      {...(wrap ? { style: { overflowWrap: 'break-word' } } : {})}
+      {...({ style: { overflowWrap: 'anywhere' } } as object)}
     >
       {children}
     </Text>

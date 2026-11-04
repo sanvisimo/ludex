@@ -22,6 +22,7 @@ import {
 } from './backlog';
 import { reopenSourcesForNewExternalIds } from './enrichment';
 import { findGameByIgdbId, resolveGameFromIgdb, sourceLinks } from './games';
+import { igdbPlatformNamer } from './platform-names';
 import { closeReports, listOpenReports } from './reports';
 
 // La sezione Giochi dell'admin (11a, passo 6): i giochi senza id IGDB, la
@@ -129,6 +130,7 @@ export async function gameAdminDetail(slug: string) {
       firstReleaseDate: schema.games.firstReleaseDate,
       gameType: schema.games.gameType,
       coverImageId: schema.games.coverImageId,
+      platformIgdbIds: schema.games.platformIgdbIds,
       users,
     })
     .from(schema.games)
@@ -216,8 +218,11 @@ export async function gameAdminDetail(slug: string) {
     metacriticSlug: idOf('metacritic'),
   });
 
+  const { platformIgdbIds, ...resto } = game;
+  const nomeIgdb = igdbPlatformNamer(await db.select().from(schema.platforms));
+
   return {
-    game,
+    game: { ...resto, igdbPlatforms: (platformIgdbIds ?? []).map(nomeIgdb) },
     links: links.map((link) => ({
       ...link,
       users: copiePer.get(link.source)?.users ?? 0,
