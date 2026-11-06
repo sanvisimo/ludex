@@ -1,5 +1,16 @@
 # Ludex — ambiente di test sul mini PC
 
+> **Dal 06/11/2026 Ludex non gira più qui** ma sul VPS di Leaseweb: vedi «Il
+> trasloco» in [plans/rilascio.md](../plans/rilascio.md). Il mini PC resta
+> come riserva per il mese di prova: stack fermo con `docker compose stop`,
+> dati intatti, cron del deploy spostato in `/root/ludex-deploy.cron.off`.
+> Per tornare indietro si segue la stessa sezione del piano.
+>
+> Corretto lo stesso giorno, leggendo il server: l'override si chiama
+> `compose.override.yml`, i dati stanno in `/opt/docker-db/ludex/{db,redis}`
+> (non in `/opt/docker/ludex/`), e `deploy.sh` in `/opt/docker/ludex/`, da
+> `/etc/cron.d/ludex-deploy`. Il resto descrive com'era fino al trasloco.
+
 Stato dell'ambiente di test di Ludex (`sanvisimo/ludex`) ospitato sul mini PC di casa.
 Ricostruito dalle sessioni di lavoro del 28–29 settembre 2026; i punti da ricontrollare sul server sono marcati **[da verificare]**.
 
@@ -13,15 +24,15 @@ In locale il `docker-compose.yml` del repo resta invariato: tutto ciò che è sp
 
 ```
 /opt/docker/ludex/
-├── app/                      ← clone del repo + docker-compose.override.yml
-├── db/                       ← Postgres (bind mount; .noaiobackup; datadir in db/data/)
-├── redis/                    ← Redis (bind mount; .noaiobackup)
+├── app/                      ← clone del repo + compose.override.yml
 ├── ludex.env                 ← variabili dell'app, 600, fuori dal clone
 ├── deploy.sh                 ← deploy automatico, 700 root:root
 └── .deploy/failed            ← ID dell'ultima immagine che non è partita
 ```
 
-Regola dell'infrastruttura: i database stanno su NVMe in `/opt/docker/`, mai su MergerFS.
+Postgres e Redis stanno in `/opt/docker-db/ludex/{db,redis}` (bind mount).
+
+Regola dell'infrastruttura: i database stanno su NVMe, mai su MergerFS.
 
 ## Servizi
 

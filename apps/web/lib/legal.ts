@@ -26,7 +26,7 @@ const controller = 'Simone Sanvito';
 
 const privacyIt: LegalDoc = {
   title: 'Informativa sulla privacy',
-  updated: 'Ultimo aggiornamento: 28 ottobre 2026',
+  updated: 'Ultimo aggiornamento: 6 novembre 2026',
   sections: [
     {
       heading: 'Chi siamo',
@@ -52,7 +52,7 @@ const privacyIt: LegalDoc = {
       blocks: [
         [
           "Per darti il servizio: l'account, la libreria e l'aggiornamento dai negozi che colleghi. La base è il contratto con te (art. 6.1.b GDPR).",
-          "Per la sicurezza: le sessioni e l'indirizzo IP servono a tenere sicuro l'accesso, a limitare i tentativi ripetuti di accesso e registrazione e a verificare che a compilare i moduli sia una persona (CAPTCHA); la sospensione di un account serve a fermare un abuso. La base è il nostro legittimo interesse (art. 6.1.f GDPR).",
+          "Per la sicurezza: le sessioni e l'indirizzo IP servono a tenere sicuro l'accesso, a limitare i tentativi ripetuti di accesso e registrazione e a verificare che a compilare i moduli sia una persona (CAPTCHA); la sospensione di un account serve a fermare un abuso; la copia notturna del database serve a non perdere i dati per un guasto. La base è il nostro legittimo interesse (art. 6.1.f GDPR).",
           "Per scriverti: l'indirizzo email serve a confermarlo alla registrazione, a recuperare la password e a confermarne il cambio. Ti scriviamo solo per questo, mai per pubblicità. La base è il contratto con te (art. 6.1.b GDPR).",
         ],
         'Non vendiamo i tuoi dati e non li usiamo per pubblicità.',
@@ -73,9 +73,9 @@ const privacyIt: LegalDoc = {
       heading: 'A chi arrivano i dati',
       blocks: [
         [
-          'Il fornitore di hosting su cui gira Ludex, che conserva i dati per nostro conto.',
+          'Leaseweb, il fornitore del server su cui gira Ludex, in un datacenter ad Amsterdam (Paesi Bassi): conserva i dati per nostro conto.',
           "Scaleway (Francia), che spedisce per nostro conto le email dell'account: riceve il tuo indirizzo e il testo dell'email.",
-          "Cloudflare, per il CAPTCHA (Turnstile) dei moduli di accesso, registrazione e recupero della password: riceve l'indirizzo IP e alcuni dati del browser mentre compili quei moduli. Ha sede negli Stati Uniti e aderisce al Data Privacy Framework UE–USA.",
+          "Cloudflare, da cui passa ogni collegamento a Ludex: riceve l'indirizzo IP, i dati del browser e le pagine richieste, per portarle al server e proteggerlo dagli attacchi. Fornisce anche il CAPTCHA (Turnstile) dei moduli di accesso, registrazione e recupero della password, e conserva i backup del database, in un archivio nell'Unione Europea e cifrati con una chiave che Cloudflare non ha. Ha sede negli Stati Uniti e aderisce al Data Privacy Framework UE–USA.",
           "I negozi che colleghi: ricevono le richieste con cui leggiamo la tua libreria (ad esempio Steam riceve il tuo SteamID). Alcuni hanno sede fuori dall'Unione Europea.",
           'I servizi da cui prendiamo i dati dei giochi (IGDB, HowLongToBeat, OpenCritic, Metacritic, Wikidata) ricevono solo titoli e identificativi di giochi, mai dati personali.',
         ],
@@ -90,8 +90,9 @@ const privacyIt: LegalDoc = {
           'Sessioni: fino alla scadenza.',
           "Credenziali di un negozio: si cancellano quando scolleghi quell'account.",
           "Segnalazioni: finché hai l'account, anche dopo che sono state risolte.",
+          'Backup: ogni notte una copia cifrata del database, tenuta 8 giorni.',
         ],
-        "Se chiudi l'account cancelliamo i tuoi dati: libreria, copie, tag, account dei negozi, segnalazioni. I dati dei giochi (titoli, copertine, durate) sono condivisi fra tutti gli utenti e non sono personali, quindi restano.",
+        "Se chiudi l'account cancelliamo i tuoi dati: libreria, copie, tag, account dei negozi, segnalazioni. Dai backup spariscono entro 8 giorni, quando scade l'ultima copia che li contiene. I dati dei giochi (titoli, copertine, durate) sono condivisi fra tutti gli utenti e non sono personali, quindi restano.",
         "Dalla pagina Profilo del tuo account puoi scaricare i tuoi dati in un file JSON e cancellare l'account. La cancellazione chiede la password, è immediata e non si può annullare. Il file non contiene le credenziali dei negozi né la password.",
       ],
     },
@@ -117,7 +118,7 @@ const privacyIt: LegalDoc = {
 
 const privacyEn: LegalDoc = {
   title: 'Privacy notice',
-  updated: 'Last updated: 28 October 2026',
+  updated: 'Last updated: 6 November 2026',
   sections: [
     {
       heading: 'Who we are',
@@ -143,7 +144,7 @@ const privacyEn: LegalDoc = {
       blocks: [
         [
           'To provide the service: the account, the library and the updates from the stores you link. The basis is the contract with you (art. 6.1.b GDPR).',
-          'For security: sessions and the IP address keep sign-in safe, limit repeated sign-in and sign-up attempts and check that a person is filling in the forms (CAPTCHA); suspending an account stops an abuse. The basis is our legitimate interest (art. 6.1.f GDPR).',
+          'For security: sessions and the IP address keep sign-in safe, limit repeated sign-in and sign-up attempts and check that a person is filling in the forms (CAPTCHA); suspending an account stops an abuse; the nightly copy of the database keeps the data from being lost to a failure. The basis is our legitimate interest (art. 6.1.f GDPR).',
           'To write to you: your email address is used to confirm it when you sign up, to recover your password and to confirm a change of address. We only write for this, never for advertising. The basis is the contract with you (art. 6.1.b GDPR).',
         ],
         'We do not sell your data and we do not use it for advertising.',
@@ -164,9 +165,9 @@ const privacyEn: LegalDoc = {
       heading: 'Who receives the data',
       blocks: [
         [
-          'The hosting provider Ludex runs on, which stores the data on our behalf.',
+          'Leaseweb, the provider of the server Ludex runs on, in a data centre in Amsterdam (Netherlands): it stores the data on our behalf.',
           'Scaleway (France), which sends the account emails on our behalf: it receives your address and the text of the email.',
-          'Cloudflare, for the CAPTCHA (Turnstile) on the sign-in, sign-up and password recovery forms: it receives your IP address and some browser data while you fill in those forms. It is based in the United States and participates in the EU–US Data Privacy Framework.',
+          'Cloudflare, which every connection to Ludex passes through: it receives your IP address, browser data and the pages you request, to carry them to the server and protect it from attacks. It also provides the CAPTCHA (Turnstile) on the sign-in, sign-up and password recovery forms, and stores the database backups, in a storage located in the European Union and encrypted with a key Cloudflare does not have. It is based in the United States and participates in the EU–US Data Privacy Framework.',
           'The stores you link: they receive the requests we use to read your library (for example Steam receives your SteamID). Some are based outside the European Union.',
           'The services we take game data from (IGDB, HowLongToBeat, OpenCritic, Metacritic, Wikidata) only receive game titles and identifiers, never personal data.',
         ],
@@ -181,8 +182,9 @@ const privacyEn: LegalDoc = {
           'Sessions: until they expire.',
           "A store's credentials: deleted when you unlink that account.",
           'Reports: as long as you have the account, even after they are resolved.',
+          'Backups: an encrypted copy of the database every night, kept for 8 days.',
         ],
-        'If you close the account we delete your data: library, copies, tags, store accounts, reports. Game data (titles, covers, durations) is shared among all users and is not personal, so it stays.',
+        'If you close the account we delete your data: library, copies, tags, store accounts, reports. They disappear from the backups within 8 days, when the last copy containing them expires. Game data (titles, covers, durations) is shared among all users and is not personal, so it stays.',
         'From the Profile page of your account you can download your data as a JSON file and delete the account. Deleting asks for your password, takes effect immediately and cannot be undone. The file contains neither store credentials nor your password.',
       ],
     },
