@@ -1,6 +1,7 @@
 # Il rilascio
 
-**Stato: in corso dal 28/10/2026, il codice** (sezione «Il codice» più sotto).
+**Stato: in corso dal 28/10/2026.** Il codice è fatto (sezione «Il codice» più
+sotto); dal 06/11/2026 il server: vedi «Il trasloco».
 Segnato il 18/10/2026, dopo il CSV (10) e Xbox (9e). Roadmap: `release` («Ludex aperto a
 tutti») in cima a «In arrivo», in
 [ordine di lavoro](../docs/ordine-sviluppo.md) prima degli abbonamenti.
@@ -33,9 +34,9 @@ Segnato dall'utente il 18/10/2026, aggiornato il 28/10.
       col bottone di Ko-fi (`supportUrl`). Da accendere solo dopo «Licenze e
       donazioni». Piano a parte in [offrimi-un-caffe.md](offrimi-un-caffe.md).
 - [ ] **I backup** fuori dal server: deciso il 28/10, vedi «I backup».
-- [ ] **Trovare dove metterlo**: deciso il 28/10, Leaseweb VPS 1 con Ubuntu
-      26.04. Vedi «Dove metterlo». **Si compra per ultimo.**
-- [ ] **Spostarlo dal mini PC**.
+- [x] **Trovare dove metterlo**: Leaseweb VPS 1 con Ubuntu 26.04, comprato e
+      consegnato il 06/11/2026. Vedi «Dove metterlo» e «Il trasloco».
+- [ ] **Spostarlo dal mini PC**: in corso, vedi «Il trasloco».
 - [ ] **Togliere Cloudflare Access**: l'app si apre senza One-time PIN.
 - [x] **Cambio password**: c'è già, dal lotto 12g (la scheda «Password» del
       profilo, `apps/web/components/change-password.tsx`).
@@ -57,6 +58,14 @@ per prima, perché poteva cambiare la scelta del server. Farla alla fine non
 complica niente: il trasloco è lo stesso con qualunque provider (compose,
 dump e ripristino, indirizzo nel tunnel), e se un negozio blocca si disdice
 dopo un mese e si passa al secondo della lista.
+
+**Cambiato il 06/11/2026: i punti 4 e 5 si scambiano**, il trasloco viene
+prima della prova degli import, con Access ancora acceso. `PUBLIC_API_URL`
+entra nell'immagine a build time: provare il VPS su un hostname temporaneo
+vorrebbe un'immagine a parte. Traslocando dietro Access la prova gira
+sull'app vera, e il mini PC resta pronto per tornare indietro. L'apertura
+(togliere Access) resta l'ultima cosa. I passi, uno per uno, in «Il
+trasloco».
 
 ## Dove metterlo
 
@@ -130,8 +139,9 @@ somiglianza col mini PC (Debian 13):
 - Docker lo elenca fra le versioni supportate, e lo prova prima di tutto su
   Ubuntu.
 
-Contro: circa 200 MB di RAM in più di Debian, soprattutto snapd, che si può
-togliere. Scartati Debian 12 (già nella fase LTS ridotta, fino a giugno
+Contro: circa 200 MB di RAM in più di Debian, soprattutto snapd. **Non si
+toglie** (06/11/2026): l'immagine di Leaseweb non l'aveva, ma il client di
+Livepatch esiste solo come snap e `pro attach` l'ha installato. Scartati Debian 12 (già nella fase LTS ridotta, fino a giugno
 2028), Alma 9 e Rocky 9 (SELinux blocca i bind mount di Postgres e Redis,
 firewalld si scontra con le regole di Docker).
 
@@ -155,6 +165,173 @@ direbbe niente su Leaseweb.
 La prova parla con gli account veri dell'utente: un negozio alla volta,
 concordato, e Steam solo se l'utente lo decide. Se un negozio blocca, si
 disdice e si passa a OVH.
+
+## Il trasloco
+
+Cominciato il 06/11/2026, il giorno della consegna del VPS
+(`85.17.188.29`, AMS-01). Un passo alla volta, ognuno approvato prima. I
+comandi da root li lancia l'utente: Claude prepara gli script, li copia sul
+server e verifica dopo, in sola lettura.
+
+### A. La macchina — fatta il 06/11/2026
+
+1. [x] **Accesso**: utente `sanvi` nel gruppo `sudo`, **con password**
+       (scelta dell'utente), e la chiave `id_ed25519` dell'utente, la stessa
+       su Windows e WSL. `/etc/ssh/sshd_config.d/00-ludex.conf`:
+       `PermitRootLogin no`, `PasswordAuthentication no`. Il nome comincia
+       con `00-` perché sshd tiene il **primo** valore che legge, e
+       `50-cloud-init.conf` di Leaseweb rimette `PasswordAuthentication yes`.
+       Per le emergenze resta la console «Connect» del pannello, con la
+       password di root.
+2. [x] **Aggiornamenti**: `unattended-upgrades`, che l'immagine non aveva
+       (solo sicurezza, nessun riavvio automatico); Ubuntu Pro personale con
+       ESM e Livepatch; Docker 29.9 e Compose 5.7 dal repository di Docker,
+       con i log dei container limitati a 10 MB × 3 (`/etc/docker/daemon.json`).
+       `sanvi` non è nel gruppo `docker`, che darebbe root senza password: si
+       usa `sudo docker`. Poi un `full-upgrade` col riavvio, a macchina ancora
+       vuota (kernel 7.0.0-43). All'aggiornamento di openssh si è tenuto lo
+       `sshd_config` locale, quello provato.
+3. [x] **Tunnel e porte**: tunnel `ludex-vps`, gestito dal pannello col
+       token (niente `cert.pem` sul server, che varrebbe per tutto
+       l'account), con la rotta `ssh-vps.sanvisimo.tech` → `ssh://localhost:22`,
+       senza Access: chi entra lo decide la chiave. `cloudflared` dal
+       repository di Cloudflare, aggiornato da `unattended-upgrades`
+       (`/etc/apt/apt.conf.d/51ludex-cloudflared`): è l'unico programma
+       esposto. **Il firewall è quello del pannello Leaseweb, non `ufw`**:
+       filtra prima della macchina, e Docker non può aprirci porte. Restano
+       solo due regole ICMP type 8 da `85.17.96.72` e `95.211.135.160`, per
+       il monitoraggio di Leaseweb, che controlla col ping; senza, segna il
+       server DOWN. La 22 è chiusa: si entra con
+       `ssh sanvi@ssh-vps.sanvisimo.tech`, con `cloudflared` sul client.
+
+Due cose imparate: la rotta del tunnel col Service URL sbagliato non crea
+il record DNS, che è stato aggiunto a mano (CNAME verso
+`<id del tunnel>.cfargotunnel.com`, proxied); e un record nuovo ha messo
+circa cinque minuti ad arrivare agli autoritativi. Per un nome nuovo si
+guarda prima `dig @adam.ns.cloudflare.com`: interrogare i resolver pubblici
+troppo presto ne memorizza il «non esiste» per 30 minuti.
+
+### B. Lo stack, vuoto — fatto il 06/11/2026
+
+4. [x] Lo stesso layout del mini PC in `/opt/docker/ludex/` (vedi
+       [minipc](../docs/minipc.md)): clone **via HTTPS e senza credenziali**,
+       perché repository e immagine sono pubblici. Una chiave GitHub
+       dell'account sul server, come sul mini PC, darebbe a chi lo buca il
+       push su tutti i repository, e quindi il deploy automatico del proprio
+       codice; se il repository diventa privato, una deploy key in sola
+       lettura. `db/` e `redis/` restano cartelle del server, come sul mini
+       PC, anche se le ragioni di là (NVMe, Borg) qui non ci sono: l'override
+       resta identico. Override e `deploy.sh` dal mini PC, adattati;
+       `ludex.env` e `telegram.env` li copia l'utente, senza passare da
+       Claude. Prova a database vuoto, solo su `127.0.0.1`; il cron di
+       `deploy.sh` ancora spento.
+
+   Com'è andata: sul mini PC l'override si chiama `compose.override.yml`,
+   i dati stanno in `/opt/docker-db/ludex/` e `deploy.sh` in
+   `/opt/docker/ludex/` (il suo commento e [minipc](../docs/minipc.md)
+   dicono altro: da correggere a trasloco finito). Sul VPS l'override è
+   lo stesso, coi dati in `/opt/docker/ludex/{db,redis}`; `deploy.sh`
+   spinge allo stesso monitor di Kuma, da `uptime.sanvisimo.tech`. Tolte
+   da `ludex.env` le variabili senza uso in produzione, fra cui
+   `PSN_TEST_NPSSO` (un cookie dell'account PSN dell'utente) e
+   `CHROMATIC_PROJECT_TOKEN`. **Mancano le variabili SMTP**, anche sul
+   mini PC: le email finiscono nel log dell'API. RAM misurata sul mini PC:
+   circa 780 MB per tutto lo stack a riposo; database di 36 MB.
+
+### C. Il trasloco, sotto Access — fatto il 06/11/2026
+
+5. [x] Sul mini PC si fermano il cron del deploy, `api` e `worker`; ultimo
+       dump, ripristinato sul VPS; `ludex.sanvisimo.tech` passa al tunnel
+       nuovo; il cron del deploy si accende sul VPS. **`STORE_TOKEN_KEY` e
+       `BETTER_AUTH_SECRET` restano quelli del mini PC**, o gli account dei
+       negozi diventano illeggibili.
+
+   Com'è andata: app ferma dalle 17:03 alle 17:09. Code vuote (le
+   attività periodiche le registra il worker all'avvio, Redis riparte da
+   zero), stessa immagine sui due lati (`76947b0`), quindi nessuna
+   migration in mezzo. Dump di 4,7 MB, ripristinato con `passo5.sh`, che
+   ha confrontato i conteggi di tutte le 27 tabelle con quelli del mini
+   PC: uguali. Il record DNS `ludex` punta al tunnel `ludex-vps`, con due
+   rotte, nell'ordine: `^/(api/auth|rpc)/` → `127.0.0.1:3005`, il resto →
+   `127.0.0.1:8095`. Access è legato al nome e non è cambiato. Il cron
+   è `/etc/cron.d/ludex-deploy`, come sul mini PC; `deploy.sh` provato a
+   mano, Kuma verde. Sul mini PC lo stack è fermo, dati intatti
+   (`docker compose stop`), e il cron sta in `/root/ludex-deploy.cron.off`.
+
+   **Per tornare indietro**: il record `ludex` di nuovo su
+   `d889d898-…cfargotunnel.com`, sul mini PC `docker compose start` e il
+   cron rimesso in `/etc/cron.d/`. Quanto scritto sul VPS nel frattempo
+   va riportato con un dump inverso. Il dump del trasloco resta nella
+   home di `sanvi` sui due server fino alla chiusura del lotto.
+
+**Le email, fatte il 06/11/2026** subito dopo il trasloco (prima, anche sul
+mini PC, finivano nel log dell'API). Scaleway TEM col sottodominio
+`ludex.sanvisimo.tech`, mittente `Ludex <noreply@ludex.sanvisimo.tech>`: la
+posta di `sanvisimo.tech` sta su Infomaniak (MX, SPF e DKIM sul dominio
+principale, non toccati), e un SPF solo per nome vorrebbe dire unire i due
+fornitori in una riga, dove un errore manda nello spam anche la posta
+personale. Sul sottodominio: SPF `include:_spf.tem.scaleway.com`, MX
+`blackhole.tem.scaleway.com`, DMARC `p=none`, il DKIM di Scaleway. La chiave è
+di un'applicazione IAM `ludex-smtp` col solo permesso di spedire via SMTP,
+limitata al progetto. In `ludex.env`: `smtp.tem.scaleway.com`, porta 587
+(STARTTLS, il default del mailer). Provato col recupero password.
+
+### D. Il contorno
+
+6. [x] Il backup notturno su R2 (vedi «I backup»), col ripristino provato.
+
+   Acceso il 06/11/2026: `/opt/docker/ludex/backup.sh` alle 01:10 UTC
+   (`/etc/cron.d/ludex-backup`). Dump, controllo con `pg_restore -l`
+   (almeno 20 tabelle con dati), `age` con la pubblica dell'utente (la
+   privata è sul suo PC), caricamento e controllo della dimensione su R2;
+   errore → Telegram, riuscito → monitor push «Ludex backup» di Kuma (25
+   ore). Bucket `ludex-backup` in giurisdizione EU, lifecycle a 8 giorni e
+   **blocco a 7**: il token sul server può scrivere e cancellare, e il
+   blocco impedisce a chi entrasse nel VPS di svuotare i backup recenti.
+   Token R2 «Object Read & Write» sul solo bucket. **`no_head = true` in
+   `rclone.conf`**: dopo il `PUT` rclone 1.60 rilegge l'oggetto con
+   `HEAD ?versionId=…`, che R2 non implementa (501), e dà per fallito un
+   caricamento riuscito. Il `PUT` porta già il `Content-Md5`, e
+   `backup.sh` controlla la dimensione con un elenco.
+
+   **Ripristino provato** lo stesso giorno: il backup scaricato da R2,
+   decifrato con la privata sul PC dell'utente, ripristinato in un
+   Postgres usa e getta. 27 tabelle, conteggi uguali a quelli del mini
+   PC salvo `session` (10 → 6: il recupero password chiude le altre
+   sessioni).
+
+7. [ ] Il monitoraggio: Kuma, che sta nella LAN di casa, controlla l'URL
+       pubblico; gli errori di deploy e backup vanno su Telegram. Il push a
+       Kuma di `deploy.sh` dal VPS non si raggiunge.
+
+### E. La prova degli import
+
+8. [ ] Vedi «La prova degli import». Steam escluso finché l'utente non
+       decide.
+
+### F. L'apertura
+
+9. [ ] Turnstile (prima le chiavi di prova, il widget sul server vero),
+       Scaleway TEM verificato, `ENABLE_OPENCRITIC=0` e `SHOW_OPENCRITIC=0`,
+       l'informativa (Leaseweb ad Amsterdam, R2).
+
+   Il 06/11/2026: **Scaleway** fatto (vedi «Le email»). **Turnstile**
+   fatto, direttamente con le chiavi vere: con Access ancora davanti il
+   rischio era solo nostro, e le chiavi di prova avrebbero voluto una
+   build in più. In quest'ordine, perché la segreta senza il widget
+   chiuderebbe fuori tutti: widget su Cloudflare (`ludex.sanvisimo.tech`,
+   Managed), `TURNSTILE_SITE_KEY` fra le **repository variables** di
+   GitHub, la CI rilanciata su `main` (il VPS l'ha installata da solo in
+   14 secondi, primo deploy automatico dal VPS), il widget visto, poi
+   `TURNSTILE_SECRET_KEY` in `ludex.env`; senza token l'API risponde
+   `400 MISSING_RESPONSE`. **OpenCritic resta acceso**: si spegne con
+   Ko-fi, che è spento (`supportUrl` a `null`). **L'informativa**: Leaseweb
+   per nome, Cloudflare per tutto il traffico e i backup, gli 8 giorni
+   dei backup dopo la cancellazione (branch `docs/informativa-vps`). Da
+   controllare ad Access tolto: se il proxy di Cloudflare mette un cookie
+   suo (`__cf_bm`), va nella sezione dei cookie.
+
+10. [ ] Via Cloudflare Access.
 
 ## Le email
 
