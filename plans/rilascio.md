@@ -304,10 +304,15 @@ limitata al progetto. In `ludex.env`: `smtp.tem.scaleway.com`, porta 587
        pubblico; gli errori di deploy e backup vanno su Telegram. Il push a
        Kuma di `deploy.sh` dal VPS non si raggiunge.
 
-### E. La prova degli import
+### E. La prova degli import — fatta il 06/11/2026
 
-8. [ ] Vedi «La prova degli import». Steam escluso finché l'utente non
+8. [x] Vedi «La prova degli import». Steam escluso finché l'utente non
        decide.
+
+       Fatta dall'utente dal VPS, Steam compreso: nessun negozio ha bloccato
+       né dato errori; solo Steam aveva giochi nuovi, e li ha importati.
+       **Si resta su Leaseweb**: dopo il primo mese si passa all'annuale
+       (vedi «Dove metterlo»).
 
 ### F. L'apertura
 
