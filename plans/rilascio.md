@@ -1,7 +1,9 @@
 # Il rilascio
 
-**Stato: in corso dal 28/10/2026.** Il codice è fatto (sezione «Il codice» più
-sotto); dal 06/11/2026 il server: vedi «Il trasloco».
+**Stato: in corso dal 28/10/2026; aperto a tutti dal 06/11/2026**, sul VPS e
+senza Access (vedi «Il trasloco»). Il lotto si chiude, e `release` passa a
+«fatto» in roadmap, quando l'utente lo dice: prima un giro degli import
+automatici dal VPS.
 Segnato il 18/10/2026, dopo il CSV (10) e Xbox (9e). Roadmap: `release` («Ludex aperto a
 tutti») in cima a «In arrivo», in
 [ordine di lavoro](../docs/ordine-sviluppo.md) prima degli abbonamenti.
@@ -33,11 +35,13 @@ Segnato dall'utente il 18/10/2026, aggiornato il 28/10.
 - [x] **«Offrimi un caffè»**: voce del footer e schede di roadmap e account,
       col bottone di Ko-fi (`supportUrl`). Da accendere solo dopo «Licenze e
       donazioni». Piano a parte in [offrimi-un-caffe.md](offrimi-un-caffe.md).
-- [ ] **I backup** fuori dal server: deciso il 28/10, vedi «I backup».
+- [x] **I backup** fuori dal server: deciso il 28/10, vedi «I backup»;
+      acceso il 06/11 (passo 6 del trasloco).
 - [x] **Trovare dove metterlo**: Leaseweb VPS 1 con Ubuntu 26.04, comprato e
       consegnato il 06/11/2026. Vedi «Dove metterlo» e «Il trasloco».
-- [ ] **Spostarlo dal mini PC**: in corso, vedi «Il trasloco».
-- [ ] **Togliere Cloudflare Access**: l'app si apre senza One-time PIN.
+- [x] **Spostarlo dal mini PC**: il 06/11/2026, vedi «Il trasloco».
+- [x] **Togliere Cloudflare Access**: l'app si apre senza One-time PIN, dal
+      06/11/2026.
 - [x] **Cambio password**: c'è già, dal lotto 12g (la scheda «Password» del
       profilo, `apps/web/components/change-password.tsx`).
 
@@ -300,9 +304,20 @@ limitata al progetto. In `ludex.env`: `smtp.tem.scaleway.com`, porta 587
    PC salvo `session` (10 → 6: il recupero password chiude le altre
    sessioni).
 
-7. [ ] Il monitoraggio: Kuma, che sta nella LAN di casa, controlla l'URL
+7. [x] Il monitoraggio: Kuma, che sta nella LAN di casa, controlla l'URL
        pubblico; gli errori di deploy e backup vanno su Telegram. Il push a
        Kuma di `deploy.sh` dal VPS non si raggiunge.
+
+   Com'è il 06/11/2026: dal VPS Kuma si raggiunge dal suo dominio pubblico,
+   `uptime.sanvisimo.tech`, senza Access. Tre monitor. **Il deploy**: push,
+   lo stesso del mini PC (`deploy.sh` spinge «ok» a ogni giro). **Il
+   backup**: push «Ludex backup» con heartbeat di 25 ore (90000 s: col
+   default di 60 s diventa rosso un minuto dopo il push). **Il sito**:
+   HTTP(s) - Keyword su `https://ludex.sanvisimo.tech/api/auth/ok` con
+   `"ok":true`. Un controllo HTTP semplice era verde anche con Access
+   davanti, perché Kuma segue i redirect fino alla pagina del PIN, che
+   risponde 200. In più il monitoraggio di Leaseweb, col ping (le due
+   regole ICMP del firewall del pannello).
 
 ### E. La prova degli import — fatta il 06/11/2026
 
@@ -316,7 +331,7 @@ limitata al progetto. In `ludex.env`: `smtp.tem.scaleway.com`, porta 587
 
 ### F. L'apertura
 
-9. [ ] Turnstile (prima le chiavi di prova, il widget sul server vero),
+9. [x] Turnstile (prima le chiavi di prova, il widget sul server vero),
        Scaleway TEM verificato, `ENABLE_OPENCRITIC=0` e `SHOW_OPENCRITIC=0`,
        l'informativa (Leaseweb ad Amsterdam, R2).
 
@@ -332,11 +347,22 @@ limitata al progetto. In `ludex.env`: `smtp.tem.scaleway.com`, porta 587
    `400 MISSING_RESPONSE`. **OpenCritic resta acceso**: si spegne con
    Ko-fi, che è spento (`supportUrl` a `null`). **L'informativa**: Leaseweb
    per nome, Cloudflare per tutto il traffico e i backup, gli 8 giorni
-   dei backup dopo la cancellazione (branch `docs/informativa-vps`). Da
-   controllare ad Access tolto: se il proxy di Cloudflare mette un cookie
-   suo (`__cf_bm`), va nella sezione dei cookie.
+   dei backup dopo la cancellazione (PR #111, online prima di togliere
+   Access). Ad Access tolto il proxy di Cloudflare non mette cookie suoi:
+   la sezione dei cookie resta com'è.
 
-10. [ ] Via Cloudflare Access.
+10. [x] Via Cloudflare Access, il 06/11/2026: l'applicazione di
+        `ludex.sanvisimo.tech` cancellata, non solo aperta, perché una policy
+        aperta si richiude per sbaglio. Verificato da fuori: home, `/login`,
+        `/privacy` e `/api/auth/ok` a 200 senza PIN; senza CAPTCHA l'accesso
+        risponde `400 MISSING_RESPONSE`; cinque accessi sbagliati di fila danno
+        `400 400 429 429 429`, quindi l'IP arriva vero dal tunnel
+        (`cf-connecting-ip`) e il limite è per visitatore.
+
+    **Per la prima mattina**: i tuoi account dei negozi sono stati portati a
+    `last_sync_at` di 8 giorni fa, così la spazzata delle 6 ore li ha
+    reimportati la notte stessa dal VPS. Va guardato `/account/libraries`:
+    nessuna scheda in errore, e «aggiornata X ore fa».
 
 ## Le email
 
