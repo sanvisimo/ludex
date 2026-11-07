@@ -78,7 +78,7 @@ messaggi (`admin.usage.limits`).
   un processo, ma IGDB lo chiamano server e worker: insieme fino a 8 richieste al
   secondo contro 4. E `igdb.ts` non gestisce il 429, che diventa un errore
   qualunque. Non corrompe dati; il contatore dei 429 ora lo rende visibile. Un
-  lotto suo.
+  lotto suo: [igdb-limite.md](igdb-limite.md), fatto il 07/11/2026.
 
 ## Verifica
 

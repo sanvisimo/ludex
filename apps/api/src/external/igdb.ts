@@ -7,6 +7,7 @@ import type {
 
 import { chunk } from '../lib/chunk';
 import { countedFetch } from '../lib/api-calls';
+import { reserveSlot } from '../lib/redis';
 
 // Client IGDB. Sta fuori da `services/` perché è l'accesso a un servizio
 // esterno, non logica di dominio: i servizi lo usano, non lo sono.
@@ -18,13 +19,30 @@ import { countedFetch } from '../lib/api-calls';
 const TOKEN_URL = 'https://id.twitch.tv/oauth2/token';
 const API_URL = 'https://api.igdb.com/v4';
 
-// IGDB consente 4 richieste al secondo. Le richieste vengono serializzate e
-// distanziate: allo step 2 ne parte una per ricerca, ma allo step 3 il worker
-// userà lo stesso client per l'enrichment in blocco.
-const MIN_INTERVAL_MS = 250;
+// IGDB consente 4 richieste al secondo **per chiave**, e la chiave la usano
+// più processi: il server (ricerca, `fromIgdb`, admin), il worker (enrichment,
+// import) e gli arnesi lanciati a mano. Per questo il turno sta in Redis
+// (`reserveSlot`), condiviso fra tutti; dentro un processo le richieste restano
+// comunque in fila, una aperta alla volta. Con Redis giù ciascuno distanzia da
+// sé, come prima del turno condiviso: insieme possono sforare, ma l'enrichment
+// non si ferma. Vedi plans/igdb-limite.md.
+//
+// 275 e non 250: il turno lo prenota Redis, ma la partenza la fa un timer del
+// processo, che a volte scatta qualche ms in ritardo. Con due processi un
+// ritardo dell'uno avvicina la partenza dell'altro (misurato: 239 ms), e con
+// 250 tondi capitava la quinta richiesta nello stesso secondo.
+const MIN_INTERVAL_MS = 275;
+const SLOT_KEY = 'igdb:next';
+
+// Dopo un 429 si spostano avanti **tutti** i turni, non solo quello respinto,
+// e la richiesta si riprova: il limite è al secondo, quindi un secondo basta.
+// Oltre i tentativi diventa un errore, e il job lo ritira BullMQ.
+const RATE_LIMIT_PAUSE_MS = 1000;
+const RATE_LIMIT_RETRIES = 2;
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
 let lastRequestAt = 0;
+let pausedUntil = 0;
 let queue: Promise<unknown> = Promise.resolve();
 
 function credentials() {
@@ -70,10 +88,14 @@ function getToken() {
   return fetchToken();
 }
 
-/** Serializza le chiamate e le distanzia, per non sforare il rate limit. */
+/** Serializza le chiamate e aspetta il turno, per non sforare il rate limit. */
 function schedule<T>(task: () => Promise<T>): Promise<T> {
   const run = queue.then(async () => {
-    const wait = MIN_INTERVAL_MS - (Date.now() - lastRequestAt);
+    const shared = await reserveSlot(SLOT_KEY, MIN_INTERVAL_MS);
+    const now = Date.now();
+    const wait =
+      shared ??
+      Math.max(MIN_INTERVAL_MS - (now - lastRequestAt), pausedUntil - now);
     if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
     lastRequestAt = Date.now();
     return task();
@@ -81,6 +103,12 @@ function schedule<T>(task: () => Promise<T>): Promise<T> {
   // La coda non deve fermarsi se una richiesta fallisce.
   queue = run.catch(() => undefined);
   return run;
+}
+
+/** Sposta avanti i turni di tutti dopo un 429, e quelli di questo processo. */
+async function pauseAfterRateLimit() {
+  pausedUntil = Date.now() + RATE_LIMIT_PAUSE_MS;
+  await reserveSlot(SLOT_KEY, 0, RATE_LIMIT_PAUSE_MS);
 }
 
 function send(endpoint: string, body: string, token: string) {
@@ -97,14 +125,27 @@ function send(endpoint: string, body: string, token: string) {
 }
 
 async function query<T>(endpoint: string, body: string): Promise<T> {
-  return schedule(async () => {
-    let response = await send(endpoint, body, await getToken());
+  for (let attempt = 0; ; attempt++) {
+    const response = await schedule(async () => {
+      let sent = await send(endpoint, body, await getToken());
+      // Token scaduto o revocato prima della sua scadenza dichiarata: si butta
+      // la cache e si riprova una volta sola.
+      if (sent.status === 401) {
+        cachedToken = null;
+        sent = await send(endpoint, body, await getToken());
+      }
+      // La pausa si scrive **dentro** il turno: fuori, la richiesta che segue
+      // in questo processo avrebbe già prenotato il suo, prima della pausa.
+      if (sent.status === 429) {
+        await sent.body?.cancel();
+        await pauseAfterRateLimit();
+      }
+      return sent;
+    });
 
-    // Token scaduto o revocato prima della sua scadenza dichiarata: si butta
-    // la cache e si riprova una volta sola.
-    if (response.status === 401) {
-      cachedToken = null;
-      response = await send(endpoint, body, await getToken());
+    if (response.status === 429) {
+      if (attempt < RATE_LIMIT_RETRIES) continue;
+      throw new Error(`IGDB ${endpoint}: 429, troppe richieste`);
     }
 
     if (!response.ok) {
@@ -114,7 +155,7 @@ async function query<T>(endpoint: string, body: string): Promise<T> {
     }
 
     return (await response.json()) as T;
-  });
+  }
 }
 
 type IgdbGame = {
