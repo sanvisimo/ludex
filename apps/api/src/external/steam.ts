@@ -8,6 +8,20 @@
 
 import { chunk } from '../lib/chunk';
 import { STEAM_LOGIN_USER_AGENT } from './steam-auth';
+import { countedFetch } from '../lib/api-calls';
+
+/**
+ * `fetch`, contato per l'admin (plans/admin-uso.md). La Web API e lo store
+ * hanno limiti diversi, quindi due contatori; le immagini non si contano.
+ */
+function steamFetch(url: string | URL, init?: RequestInit) {
+  const host = new URL(url).hostname;
+  if (host === 'api.steampowered.com')
+    return countedFetch('steam_api', url, init);
+  if (host === 'store.steampowered.com')
+    return countedFetch('steam_store', url, init);
+  return fetch(url, init);
+}
 
 const OWNED_GAMES_URL =
   'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/';
@@ -102,7 +116,7 @@ export async function fetchSteamLibrary(
   // I free-to-play giocati fanno parte della libreria a tutti gli effetti.
   url.searchParams.set('include_played_free_games', '1');
 
-  const response = await fetch(url);
+  const response = await steamFetch(url);
   // Col token un rifiuto è il credenziale che non vale più. Con la chiave resta
   // l'errore di sempre, qui sotto: non è colpa dell'utente.
   if (accessToken && (response.status === 401 || response.status === 403)) {
@@ -178,7 +192,7 @@ export async function fetchSteamWishlist(
   else url.searchParams.set('key', apiKey());
   url.searchParams.set('steamid', steamId);
 
-  const response = await fetch(url);
+  const response = await steamFetch(url);
   if (accessToken && (response.status === 401 || response.status === 403)) {
     throw new SteamUnauthorizedError('GetWishlist', response.status);
   }
@@ -240,7 +254,9 @@ export async function fetchSteamAppDetails(
   url.searchParams.set('filters', 'basic');
   url.searchParams.set('l', 'english');
 
-  const response = await fetch(url, { headers: { 'User-Agent': 'Ludex/0.1' } });
+  const response = await steamFetch(url, {
+    headers: { 'User-Agent': 'Ludex/0.1' },
+  });
   if (!response.ok) throw new Error(`Steam appdetails: ${response.status}`);
 
   const body = (await response.json()) as Record<
@@ -276,7 +292,7 @@ export async function fetchSteamPersonaName(
   url.searchParams.set('steamids', steamId);
 
   try {
-    const response = await fetch(url);
+    const response = await steamFetch(url);
     if (!response.ok) return null;
 
     const body = (await response.json()) as {
@@ -378,7 +394,7 @@ async function familyGet<T>(
     url.searchParams.set(name, value);
   }
 
-  const response = await fetch(url);
+  const response = await steamFetch(url);
   if (response.status === 401 || response.status === 403) {
     throw new SteamUnauthorizedError(what, response.status);
   }
@@ -512,7 +528,7 @@ export async function fetchSteamOwnedAppIds(
   accessToken: string,
 ): Promise<string[]> {
   const cookie = `steamLoginSecure=${encodeURIComponent(`${steamId}||${accessToken}`)}`;
-  const response = await fetch(USER_DATA_URL, {
+  const response = await steamFetch(USER_DATA_URL, {
     headers: { cookie, 'User-Agent': STEAM_LOGIN_USER_AGENT },
   });
   // Lo stato e mai il corpo né il cookie, che contiene il token.
@@ -580,7 +596,7 @@ export async function fetchSteamAppTypes(
     const url = new URL(GET_ITEMS_URL);
     url.searchParams.set('input_json', JSON.stringify(input));
 
-    const response = await fetch(url);
+    const response = await steamFetch(url);
     if (!response.ok) {
       throw new Error(
         `Steam GetItems: ${response.status} ${(await response.text()).slice(0, 200)}`,
@@ -646,7 +662,7 @@ export async function fetchSteamAppCovers(
     const url = new URL(GET_ITEMS_URL);
     url.searchParams.set('input_json', JSON.stringify(input));
 
-    const response = await fetch(url);
+    const response = await steamFetch(url);
     if (!response.ok) {
       throw new Error(
         `Steam GetItems: ${response.status} ${(await response.text()).slice(0, 200)}`,
@@ -687,7 +703,7 @@ async function resolveVanity(vanity: string) {
   url.searchParams.set('key', apiKey());
   url.searchParams.set('vanityurl', vanity);
 
-  const response = await fetch(url);
+  const response = await steamFetch(url);
   if (!response.ok) {
     throw new Error(
       `Steam ResolveVanityURL: ${response.status} ${await response.text()}`,
@@ -778,7 +794,9 @@ export async function fetchSteamMetacriticSlug(
   // appid per richiesta: con più di uno e un filtro, Steam risponde `null`.
   url.searchParams.set('filters', 'metacritic');
 
-  const response = await fetch(url, { headers: { 'User-Agent': 'Ludex/0.1' } });
+  const response = await steamFetch(url, {
+    headers: { 'User-Agent': 'Ludex/0.1' },
+  });
   if (!response.ok) return null;
 
   const body = (await response.json()) as AppDetailsResponse | null;

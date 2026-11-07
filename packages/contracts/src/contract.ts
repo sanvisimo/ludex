@@ -31,6 +31,7 @@ import {
   MissingBucketSchema,
   MissingListSchema,
   MissingSummarySchema,
+  AdminUsageSchema,
   MyCopySchema,
   NotesSchema,
   OpenReportSchema,
@@ -1103,6 +1104,11 @@ export const contract = {
       // voce è una demo o un Prologue, e le copie tornano fra gli scarti; su
       // una voce qualunque si rifiuta, e quello è ripuntare.
       unlink: oc.input(z.object({ linkId: z.uuid() })).output(z.void()),
+    },
+
+    usage: {
+      // La sezione Uso: utenti, giochi, code e fonti esterne.
+      get: oc.output(AdminUsageSchema),
     },
 
     users: {

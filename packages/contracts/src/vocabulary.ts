@@ -294,6 +294,22 @@ export const enrichmentSourceValues = [
   'metacritic',
 ] as const;
 
+// Le fonti esterne di cui contiamo le chiamate, al giorno (sezione Uso
+// dell'admin, plans/admin-uso.md). Steam è diviso in due perché ha due limiti:
+// la Web API (`api.steampowered.com`) ne dichiara uno per chiave, lo store
+// (`store.steampowered.com`) nessuno ma risponde 429. I negozi collegati per
+// utente (GOG, PSN, Xbox…) non ci sono: poche chiamate, e nessun limite noto.
+export const apiCallSourceValues = [
+  'igdb',
+  'hltb',
+  'metacritic',
+  'opencritic',
+  'wikidata',
+  'itad',
+  'steam_api',
+  'steam_store',
+] as const;
+
 // Perché una fonte è `not_found` (11a): il significato di ciascuno è sul tipo
 // Postgres, in `packages/db/src/schema/sources.ts`. Come `scoreSourceValues`,
 // l'ordine è quello del tipo e non si cambia.
@@ -444,6 +460,7 @@ export const isOneShotStore = (store: Store): store is OneShotStore =>
 export type StoreAccountStatus = (typeof storeAccountStatusValues)[number];
 export type ScoreSource = (typeof scoreSourceValues)[number];
 export type EnrichmentSource = (typeof enrichmentSourceValues)[number];
+export type ApiCallSource = (typeof apiCallSourceValues)[number];
 export type SourceReason = (typeof sourceReasonValues)[number];
 export type ManualSource = (typeof manualSourceValues)[number];
 export type MissingBucket = (typeof missingBucketValues)[number];

@@ -15,6 +15,8 @@
 // - **composer**: la scheda. Porta il voto complessivo e — la ragione per cui
 //   questa fonte esiste nello step 8 — **i voti per singola piattaforma**.
 
+import { countedFetch } from '../lib/api-calls';
+
 const BASE_URL = 'https://backend.metacritic.com';
 
 const DEFAULT_API_KEY = '1MOZgmNFxvmljaQR1b9LoEIYFMbFOEnE';
@@ -50,7 +52,8 @@ function acquire(): Promise<void> {
 async function get<T>(path: string): Promise<T | null> {
   await acquire();
   const separator = path.includes('?') ? '&' : '?';
-  const response = await fetch(
+  const response = await countedFetch(
+    'metacritic',
     `${BASE_URL}${path}${separator}apiKey=${apiKey()}`,
     { headers: { 'User-Agent': USER_AGENT } },
   );

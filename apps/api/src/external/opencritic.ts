@@ -15,6 +15,8 @@
 //
 // Il budget non va indovinato: **la risposta lo dichiara**, in ogni chiamata.
 
+import { countedFetch } from '../lib/api-calls';
+
 const HOST = 'opencritic-api.p.rapidapi.com';
 const BASE_URL = `https://${HOST}`;
 
@@ -125,7 +127,7 @@ export class OpenCriticQuotaError extends Error {
 
 async function request<T>(path: string): Promise<T | null> {
   return schedule(async () => {
-    const response = await fetch(`${BASE_URL}${path}`, {
+    const response = await countedFetch('opencritic', `${BASE_URL}${path}`, {
       headers: { 'X-RapidAPI-Key': apiKey(), 'X-RapidAPI-Host': HOST },
     });
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+  apiCallSourceValues,
   attributeKindValues,
   backlogSortValues,
   backlogStatusValues,
@@ -1142,6 +1143,88 @@ export const MissingSummarySchema = z.object({
   unresolvedImports: z.number().int(),
 });
 
+// La sezione Uso dell'admin (plans/admin-uso.md): utenti, giochi, code e
+// fonti esterne, letti da Postgres e Redis. Un oggetto solo, perché la pagina
+// li mostra tutti insieme.
+const DayCountSchema = z.object({
+  // `YYYY-MM-DD`, UTC: il giorno e non l'istante, così il grafico non lo
+  // sposta col fuso di chi guarda.
+  day: z.string(),
+  count: z.number().int(),
+});
+
+export const ApiCallSourceSchema = z.enum(apiCallSourceValues);
+
+export const AdminUsageSchema = z.object({
+  users: z.object({
+    total: z.number().int(),
+    new7: z.number().int(),
+    // Chi ha usato una sessione negli ultimi 7 o 30 giorni. Better Auth
+    // rinnova la data al più una volta al giorno, e un logout cancella la
+    // sessione: è un'approssimazione per difetto.
+    active7: z.number().int(),
+    active30: z.number().int(),
+    signups: z.array(DayCountSchema),
+  }),
+  libraries: z.array(
+    z.object({
+      store: StoreSchema,
+      accounts: z.number().int(),
+      imported: z.number().int(),
+      synced7: z.number().int(),
+      needsReauth: z.number().int(),
+    }),
+  ),
+  games: z.object({
+    total: z.number().int(),
+    new7: z.number().int(),
+    resolved: z.number().int(),
+    inLibraries: z.number().int(),
+    added: z.array(DayCountSchema),
+    top: z.array(
+      z.object({
+        id: z.uuid(),
+        name: z.string(),
+        slug: z.string(),
+        users: z.number().int(),
+      }),
+    ),
+  }),
+  // Nulli se Redis non risponde: «non lo sappiamo» non è zero.
+  queues: z
+    .array(
+      z.object({
+        name: z.string(),
+        waiting: z.number().int(),
+        active: z.number().int(),
+        delayed: z.number().int(),
+        failed: z.number().int(),
+        completed: z.number().int(),
+      }),
+    )
+    .nullable(),
+  apis: z
+    .array(
+      z.object({
+        source: ApiCallSourceSchema,
+        today: z.number().int(),
+        calls7: z.number().int(),
+        rejected7: z.number().int(),
+      }),
+    )
+    .nullable(),
+  // L'esito dell'enrichment per gioco, negli ultimi 7 giorni: l'ultimo
+  // tentativo di ciascun gioco, non ogni chiamata.
+  outcomes: z.array(
+    z.object({
+      source: EnrichmentSourceSchema,
+      ok: z.number().int(),
+      failed: z.number().int(),
+      notFound: z.number().int(),
+    }),
+  ),
+});
+
 export const MissingRowSchema = z.object({
   gameId: z.uuid(),
   name: z.string(),
@@ -1442,9 +1525,12 @@ export const AdminUserSchema = z.object({
   banExpires: z.date().nullable(),
   games: z.number().int(),
   accounts: z.number().int(),
+  // L'ultima sessione usata, al giorno: vedi `AdminUsageSchema`.
+  lastSeenAt: z.date().nullable(),
 });
 
 export type AdminUser = z.infer<typeof AdminUserSchema>;
+export type AdminUsage = z.infer<typeof AdminUsageSchema>;
 export type ReportTarget = z.infer<typeof ReportTargetSchema>;
 export type OpenReport = z.infer<typeof OpenReportSchema>;
 export type MyCopy = z.infer<typeof MyCopySchema>;

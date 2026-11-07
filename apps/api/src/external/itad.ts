@@ -12,6 +12,7 @@
 // pausa: si perde la prudenza, non il prezzo.
 
 import { cacheGet, cacheSet } from '../lib/redis';
+import { countedFetch } from '../lib/api-calls';
 
 const BASE_URL = 'https://api.isthereanydeal.com';
 
@@ -64,7 +65,7 @@ async function request<T>(path: string, body?: unknown): Promise<T> {
   }
 
   // La chiave nell'header e non in `?key=`, così non finisce nei log.
-  const response = await fetch(`${BASE_URL}${path}`, {
+  const response = await countedFetch('itad', `${BASE_URL}${path}`, {
     signal: AbortSignal.timeout(TIMEOUT_MS),
     ...(body === undefined
       ? { headers: { 'ITAD-API-Key': key } }

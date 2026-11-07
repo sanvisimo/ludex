@@ -1,4 +1,5 @@
 import { chunk } from '../lib/chunk';
+import { countedFetch } from '../lib/api-calls';
 
 // Wikidata come **anagrafe di identificativi**, non come fonte di dati.
 //
@@ -52,7 +53,7 @@ export async function fetchOpenCriticIdsBySlug(
       .join(' ');
     const query = `SELECT ?slug ?oc WHERE { VALUES ?slug { ${valori} } ?item wdt:P5794 ?slug ; wdt:P2864 ?oc }`;
 
-    const response = await fetch(ENDPOINT, {
+    const response = await countedFetch('wikidata', ENDPOINT, {
       method: 'POST',
       headers: {
         'User-Agent': USER_AGENT,

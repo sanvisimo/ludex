@@ -26,6 +26,7 @@
 //   sezione in fondo.
 
 import { cacheGet, cacheSet } from '../lib/redis';
+import { countedFetch } from '../lib/api-calls';
 
 const BASE_URL = 'https://howlongtobeat.com';
 
@@ -172,7 +173,9 @@ async function mint(url: string) {
   // distanziate.
   await acquire();
   return watch(
-    await fetch(`${url}/init?t=${Date.now()}`, { headers: baseHeaders() }),
+    await countedFetch('hltb', `${url}/init?t=${Date.now()}`, {
+      headers: baseHeaders(),
+    }),
   );
 }
 
@@ -209,7 +212,7 @@ async function send(
 ) {
   const { hpKey, hpVal } = current;
   const hp = hpKey && hpVal ? { hpKey, hpVal } : null;
-  const response = await fetch(url, {
+  const response = await countedFetch('hltb', url, {
     method: 'POST',
     headers: {
       ...baseHeaders(),
@@ -427,7 +430,7 @@ export async function fetchHltbGameDetail(
 ): Promise<HltbGameDetail | null> {
   await acquire();
   const response = watch(
-    await fetch(`${BASE_URL}/game/${Math.trunc(hltbId)}`, {
+    await countedFetch('hltb', `${BASE_URL}/game/${Math.trunc(hltbId)}`, {
       headers: baseHeaders(),
     }),
   );
@@ -577,7 +580,9 @@ export function hltbSearchCandidates(manifest: string): string[] {
 
 async function fetchBuildManifest(log: (message: string) => void) {
   await acquire();
-  const homepage = await fetch(`${BASE_URL}/`, { headers: baseHeaders() });
+  const homepage = await countedFetch('hltb', `${BASE_URL}/`, {
+    headers: baseHeaders(),
+  });
   if (!homepage.ok) {
     throw new Error(`homepage: ${homepage.status}`);
   }
@@ -594,7 +599,7 @@ async function fetchBuildManifest(log: (message: string) => void) {
   await acquire();
   // Gli header di `baseHeaders` non sono decorazione qui: il manifest risponde
   // **403** a chi non si dichiara, al contrario della homepage che passa.
-  const manifest = await fetch(url, { headers: baseHeaders() });
+  const manifest = await countedFetch('hltb', url, { headers: baseHeaders() });
   if (!manifest.ok) {
     throw new Error(`manifest: ${manifest.status}`);
   }

@@ -468,8 +468,8 @@ direzione col CSS. Cose che non si indovinano:
 **La sezione admin** (`/admin`, 11a) ha la cornice dell'account ma **fluida**
 (`maxW="100%"`: le sezioni sono tabelle), e rimanda via chi non ha `role = 'admin'`: è comodità, la sicurezza vera la fa il
 middleware `admin` sul server. Il link «Admin» sta nel menu dell'avatar, e
-«Apri nell'admin» sulla pagina di ogni gioco, solo per gli admin. Cinque
-sezioni, rotte figlie: `missing`, `unresolved`, `reported`, `platforms`, `users`, più la
+«Apri nell'admin» sulla pagina di ogni gioco, solo per gli admin. Sei
+sezioni, rotte figlie: `missing`, `unresolved`, `reported`, `platforms`, `users`, `usage`, più la
 scheda admin di un gioco, `/admin/games/$slug`. «Apri un gioco», la ricerca nel
 catalogo, sta nell'intestazione. I pezzi stanno in `components/admin/`. Cose
 che non si indovinano:
@@ -511,6 +511,10 @@ che non si indovinano:
   funzione sola (`igdbPlatformNamer`): la colonna «IGDB lo dà su», i risultati
   di `IgdbPicker` e le copie in testa a «Non è questo gioco» dicono le stesse
   parole.
+- **«Uso»** (`/admin/usage`, `plans/admin-uso.md`) legge e basta: utenti,
+  giochi, code e chiamate alle fonti esterne. I grafici sono **Recharts**, solo
+  qui e non in `@repo/ui` (`DayBars`, `components/admin/day-bars.tsx`), coi
+  colori dalle variabili del tema. I giorni sono UTC, come sul server.
 - **Le copertine dei risultati di HLTB e Metacritic** arrivano dalla loro
   ricerca; quelle di OpenCritic no, e costerebbero il budget.
 
