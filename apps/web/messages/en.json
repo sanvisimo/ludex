@@ -1368,7 +1368,8 @@
       },
       "librarySyncOnOpen": {
         "title": "Libraries update when you open Ludex",
-        "text": "Open Ludex and your libraries update by themselves, if they haven't in the last hour: the game you bought this morning is in your backlog tonight. While they work, the backlog shows how many are left."
+        "p1": "Open Ludex, or come back to it after a while, and your libraries update by themselves if they haven't in the last hour: the game you bought this morning is in your backlog tonight.",
+        "p2": "While they work, the backlog shows how many are left. A tap opens the list, with an icon for each library: updated, updating or queued."
       },
       "playedThreshold": {
         "title": "Played from how many minutes, per library",

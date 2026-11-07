@@ -1,7 +1,8 @@
 # Le librerie si aggiornano quando apri Ludex
 
-**Stato: scritto, da provare in uso.** Piano e wireframe approvati il
-07/11/2026. Branch `claude/library-sync-new-server-gvkq3n`.
+**Stato: fatto** (chiuso il 07/11/2026), voce `librarySyncOnOpen` della
+roadmap. Piano e wireframe approvati il 07/11/2026. Branch
+`claude/library-sync-new-server-gvkq3n`, PR #113 e #115.
 
 ## La richiesta
 
@@ -141,7 +142,8 @@ e «updating / updated» scritti in fila non si leggevano. Deciso con l'utente:
 Provato in locale con Playwright, desktop chiaro e iPhone scuro: un account in
 lavorazione (un worker finto che tiene il job), uno finito, tre in coda.
 
-## Da verificare in uso
+## Verificato in uso
 
-- Sul VPS: comprare un gioco, aprire Ludex dopo un'ora dall'ultimo
-  aggiornamento, vederlo comparire con il segnale.
+- [x] Sul VPS: comprare un gioco, aprire Ludex dopo un'ora dall'ultimo
+      aggiornamento, vederlo comparire con il segnale. Provato dall'utente il
+      07/11/2026: OK.

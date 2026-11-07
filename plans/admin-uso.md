@@ -1,5 +1,7 @@
 # Admin — Uso
 
+**Stato: fatto** (chiuso il 07/11/2026). PR #116.
+
 Una sezione dell'admin per vedere chi usa Ludex, cosa entra nel catalogo e come
 stanno code e fonti esterne. Lavoro interno: niente voce in roadmap, perché chi
 usa l'app non la vede. Deciso il 07/11/2026, il giorno dopo l'apertura al

@@ -1367,7 +1367,8 @@
       },
       "librarySyncOnOpen": {
         "title": "Le librerie si aggiornano quando apri Ludex",
-        "text": "Apri Ludex e le tue librerie si aggiornano da sole, se non lo hanno fatto nell'ultima ora: il gioco comprato stamattina è nel backlog stasera. Mentre lavorano, il backlog dice quante ne mancano."
+        "p1": "Apri Ludex, o ci torni dopo un po', e le tue librerie si aggiornano da sole se non lo hanno fatto nell'ultima ora: il gioco comprato stamattina è nel backlog stasera.",
+        "p2": "Mentre lavorano, il backlog dice quante ne mancano. Un tocco apre l'elenco, con un'icona per ogni libreria: aggiornata, in aggiornamento o in coda."
       },
       "playedThreshold": {
         "title": "Giocato da quanti minuti, per libreria",

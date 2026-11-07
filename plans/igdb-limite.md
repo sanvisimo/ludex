@@ -1,5 +1,7 @@
 # IGDB — il limite fra più processi
 
+**Stato: fatto** (chiuso il 07/11/2026). PR #117.
+
 IGDB consente **4 richieste al secondo per chiave**. La pausa di `igdb.ts` valeva
 dentro un processo, ma la chiave la usano il server (ricerca, `fromIgdb`,
 admin), il worker (enrichment, import) e gli arnesi lanciati a mano: insieme
@@ -45,5 +47,6 @@ richieste a testa lanciate tutte insieme.
 - `check-types` e `lint` di `api`. I test di `api` non toccano `igdb.ts` (lo
   stubbano con `vi.mock`), e qui non sono girati: manca pgvector.
 
-**Da vedere sul server**: la colonna dei 429 di IGDB in `/admin/usage` resta a
-zero con server e worker accesi insieme.
+- [x] **Sul server**: la colonna dei 429 di IGDB in `/admin/usage` resta a
+      zero con server e worker accesi insieme. Provato dall'utente il
+      07/11/2026: OK.
