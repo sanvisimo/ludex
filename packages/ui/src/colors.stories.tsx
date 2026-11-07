@@ -9,7 +9,7 @@ import { Text, Theme, useTheme, View, XStack, YStack } from './primitives';
  *
  * I colori **non sono di Tamagui**: sono le scale [Radix](https://www.radix-ui.com/colors)
  * scelte in `palettes.ts` — `slate` per la base, `teal` per l'accento, più
- * red/green/amber per gli stati. Radix dà ai dodici passi un significato
+ * red/green/amber/blue per gli stati. Radix dà ai dodici passi un significato
  * fisso, ed è la ragione per cui questa pagina conta più di una tavolozza:
  *
  * | passi | a cosa servono |
@@ -161,6 +161,9 @@ export const Scales: Story = {
       </Theme>
       <Theme name="amber">
         <Scale name="warning" prefix="color" />
+      </Theme>
+      <Theme name="blue">
+        <Scale name="info" prefix="color" />
       </Theme>
     </YStack>
   ),

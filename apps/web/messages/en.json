@@ -67,8 +67,9 @@
   "backlog": {
     "librarySync": {
       "label": "Updating libraries · {done} of {total}",
-      "running": "{name}: updating",
-      "done": "{name}: updated"
+      "done": "updated",
+      "running": "updating",
+      "queued": "queued"
     },
     "title": "My backlog",
     "count": "{count, plural, one {# game} other {# games}}",

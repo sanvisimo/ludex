@@ -32,6 +32,7 @@ import {
 import {
   enqueueImport,
   enqueueWishlistImport,
+  importPhase,
   isImportRunning,
   isWishlistImportRunning,
 } from '../queue/imports';
@@ -77,6 +78,7 @@ vi.mock('../external/ea', async (importOriginal) => ({
   fetchEaIdentity: vi.fn(),
 }));
 vi.mock('../queue/imports', () => ({
+  importPhase: vi.fn(),
   isImportRunning: vi.fn(),
   enqueueImport: vi.fn(),
   isWishlistImportRunning: vi.fn(),
@@ -428,9 +430,11 @@ describe('account di negozio', () => {
   it("dice se c'è un import in corso, leggendolo dalla coda", async () => {
     await seedAccount(userId);
     mockedRunning.mockResolvedValue(true);
+    vi.mocked(importPhase).mockResolvedValue('queued');
 
+    // In coda e non ancora in lavorazione: `/backlog` lo colora diversamente.
     await expect(listStoreAccounts(userId)).resolves.toMatchObject([
-      { syncing: true },
+      { syncing: true, syncPhase: 'queued' },
     ]);
   });
 

@@ -119,6 +119,28 @@ testata del wireframe è ricostruita dal codice di `_app._private.backlog.tsx`.
 - **Test**: `library-sync.test.ts` 22 (6 nuovi), web 68 (4 nuovi). Typecheck
   ed ESLint puliti su api, web e contracts.
 
+## I commenti dopo averlo visto sul telefono (07/11/2026)
+
+Sul VPS, con nove account: il tocco apriva insieme il suggerimento e la riga,
+e «updating / updated» scritti in fila non si leggevano. Deciso con l'utente:
+
+- **niente suggerimento**: il bottone apre e chiude l'elenco, uguale su
+  desktop e telefono;
+- **un'icona colorata per ogni libreria**, sempre, col nome accanto e senza lo
+  stato scritto: ✓ verde aggiornata, ⟳ blu in aggiornamento, orologio ambra in
+  coda. Il nome dello stato è l'etichetta dell'icona (`role="img"`);
+- **l'elenco sotto la riga**, una libreria per voce, che va a capo;
+- **«in coda» e «in aggiornamento» li distingue il server**: `syncPhase` su
+  `StoreAccount`, dallo stato del job di BullMQ (`importPhase` in
+  `queue/imports.ts`): attivo è `running`, il resto — in attesa, o un
+  tentativo fallito da riprovare — è `queued`;
+- **il blu entra nel design system** come quarto stato, «informazione»
+  (`palettes.ts`): il teal dell'accento accanto al verde si confondeva. I temi
+  passano da 48 a 56, le definizioni da 82 a 96 KB.
+
+Provato in locale con Playwright, desktop chiaro e iPhone scuro: un account in
+lavorazione (un worker finto che tiene il job), uno finito, tre in coda.
+
 ## Da verificare in uso
 
 - Sul VPS: comprare un gioco, aprire Ludex dopo un'ora dall'ultimo

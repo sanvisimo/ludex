@@ -1,6 +1,8 @@
 import {
   amber,
   amberDark,
+  blue,
+  blueDark,
   green,
   greenDark,
   red,
@@ -56,13 +58,17 @@ export const defaultAccent: Accent = 'teal';
  * su un dialogo distruttivo — e non come colore scritto a mano dentro un
  * componente.
  *
- * Tre e non dodici: Tamagui ne genererebbe uno per ogni scala Radix, e gli
- * altri nove sarebbero temi che nessuna schermata chiede mai.
+ * Quattro e non dodici: Tamagui ne genererebbe uno per ogni scala Radix, e gli
+ * altri otto sarebbero temi che nessuna schermata chiede mai.
  */
 export const states = {
   red: { light: red, dark: redDark },
   green: { light: green, dark: greenDark },
   amber: { light: amber, dark: amberDark },
+  // L'informazione: «sta succedendo», né riuscito né da guardare. Il blu e non
+  // il teal dell'accento, che accanto al verde del riuscito si confonde
+  // (deciso il 07/11/2026, per le librerie che si aggiornano in `/backlog`).
+  blue: { light: blue, dark: blueDark },
 } as const;
 
 /** Da scala Radix (`teal1`…`teal12`) alle chiavi che Tamagui vuole per l'accento. */
