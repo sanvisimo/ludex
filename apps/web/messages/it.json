@@ -1359,6 +1359,10 @@
         "title": "Ludex aperto a tutti",
         "text": "Un server stabile al posto di quello di prova, senza codice d'accesso all'ingresso: con la conferma dell'email, il recupero della password e il cambio dell'email."
       },
+      "librarySyncOnOpen": {
+        "title": "Le librerie si aggiornano quando apri Ludex",
+        "text": "Apri Ludex e le tue librerie si aggiornano da sole, se non lo hanno fatto nell'ultima ora: il gioco comprato stamattina è nel backlog stasera. Mentre lavorano, il backlog dice quante ne mancano."
+      },
       "playedThreshold": {
         "title": "Giocato da quanti minuti, per libreria",
         "p1": "Per ogni libreria che dà i tempi — Steam, PlayStation, Nintendo, Xbox, EA — scegli da quanti minuti un gioco conta come giocato: sopra, all'import passa a «giocato», sotto resta da giocare.",
