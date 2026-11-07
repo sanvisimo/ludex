@@ -3,12 +3,15 @@ import { eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createUser, linkStoreAccount } from '../../test/factories';
+import { claimOnce } from '../lib/redis';
 import { enqueueImport, enqueueWishlistImport } from '../queue/imports';
 import {
   enqueueDueImports,
   enqueueDueWishlistImports,
+  enqueueImportsOnOpen,
   findAccountsDueForImport,
   findAccountsDueForWishlist,
+  findAccountsDueOnOpen,
 } from './library-sync';
 import { updateUserSettings } from './user-settings';
 
@@ -16,12 +19,24 @@ vi.mock('../queue/imports', () => ({
   enqueueImport: vi.fn(),
   enqueueWishlistImport: vi.fn(),
 }));
+// La chiave dell'apertura, senza Redis: presa una volta, poi occupata.
+const claimed = vi.hoisted(() => new Set<string>());
+vi.mock('../lib/redis', () => ({
+  claimOnce: vi.fn(async (key: string) => {
+    if (claimed.has(key)) return false;
+    claimed.add(key);
+    return true;
+  }),
+}));
+const mockedClaim = vi.mocked(claimOnce);
 const mockedEnqueue = vi.mocked(enqueueImport);
 const mockedWishlistEnqueue = vi.mocked(enqueueWishlistImport);
 
 const NOW = new Date('2026-09-18T12:00:00Z');
 const daysAgo = (days: number) =>
   new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000);
+const minutesAgo = (minutes: number) =>
+  new Date(NOW.getTime() - minutes * 60 * 1000);
 
 async function account(
   userId: string,
@@ -122,6 +137,99 @@ describe('enqueueDueImports', () => {
     expect(mockedEnqueue).toHaveBeenCalledExactlyOnceWith('psn', {
       storeAccountId: id,
     });
+  });
+});
+
+describe('findAccountsDueOnOpen', () => {
+  let userId: string;
+  const dueOnOpen = async () =>
+    (await findAccountsDueOnOpen(userId, NOW)).map((row) => row.id).sort();
+
+  beforeEach(async () => {
+    userId = await createUser();
+  });
+
+  it("prende gli account dell'utente più vecchi di un'ora, su ogni negozio", async () => {
+    // Il caso della richiesta: Steam importato ieri sera, il gioco comprato a
+    // mezzanotte. Con la soglia della spazzata aspetterebbe una settimana.
+    const steam = await account(userId, 'steam', {
+      lastSyncAt: minutesAgo(61),
+    });
+    const gog = await account(userId, 'gog', { lastSyncAt: daysAgo(1) });
+    const mai = await account(userId, 'amazon');
+    await account(userId, 'psn', { lastSyncAt: minutesAgo(30) });
+
+    expect(await dueOnOpen()).toEqual([steam, gog, mai].sort());
+  });
+
+  it('non prende gli account di un altro utente', async () => {
+    const altro = await createUser();
+    await account(altro, 'steam', { lastSyncAt: daysAgo(1) });
+
+    expect(await dueOnOpen()).toEqual([]);
+  });
+
+  it('salta le stesse cose della spazzata', async () => {
+    const vecchio = { lastSyncAt: daysAgo(1) };
+    await account(userId, 'psn', { ...vecchio, status: 'needs_reauth' });
+    await account(userId, 'steam', { ...vecchio, status: 'unlinked' });
+    await account(userId, 'amazon', { ...vecchio, autoSync: false });
+    await account(userId, 'ea', vecchio);
+    await account(userId, 'gog', { ...vecchio, fromFile: true });
+    const acceso = await account(userId, 'gog', vecchio);
+    expect(await dueOnOpen()).toEqual([acceso]);
+
+    await updateUserSettings(userId, { autoSyncLibrary: false });
+    expect(await dueOnOpen()).toEqual([]);
+  });
+});
+
+describe('enqueueImportsOnOpen', () => {
+  beforeEach(() => {
+    mockedEnqueue.mockReset();
+    mockedClaim.mockClear();
+    claimed.clear();
+  });
+
+  it("accoda gli account dovuti, e per un'ora non riaccoda: nemmeno se l'import è fallito", async () => {
+    const userId = await createUser();
+    const id = await account(userId, 'steam', { lastSyncAt: daysAgo(1) });
+
+    await expect(enqueueImportsOnOpen(userId, NOW)).resolves.toBe(1);
+    expect(mockedEnqueue).toHaveBeenCalledExactlyOnceWith('steam', {
+      storeAccountId: id,
+    });
+
+    // `last_sync_at` è ancora vecchio, come dopo un negozio che non risponde:
+    // il ritorno sulla scheda non deve riaccodare.
+    mockedEnqueue.mockReset();
+    await expect(enqueueImportsOnOpen(userId, NOW)).resolves.toBe(0);
+    expect(mockedEnqueue).not.toHaveBeenCalled();
+  });
+
+  it("senza niente di dovuto non prende la chiave: l'ora non parte a vuoto", async () => {
+    const userId = await createUser();
+    const id = await account(userId, 'steam', { lastSyncAt: minutesAgo(10) });
+
+    await expect(enqueueImportsOnOpen(userId, NOW)).resolves.toBe(0);
+    expect(mockedClaim).not.toHaveBeenCalled();
+
+    // Un'ora dopo l'account è dovuto, e si accoda subito.
+    const later = new Date(NOW.getTime() + 60 * 60 * 1000);
+    await expect(enqueueImportsOnOpen(userId, later)).resolves.toBe(1);
+    expect(mockedEnqueue).toHaveBeenCalledExactlyOnceWith('steam', {
+      storeAccountId: id,
+    });
+  });
+
+  it('la chiave è per utente: un altro utente si accoda lo stesso', async () => {
+    const primo = await createUser();
+    const secondo = await createUser();
+    await account(primo, 'steam', { lastSyncAt: daysAgo(1) });
+    await account(secondo, 'gog', { lastSyncAt: daysAgo(1) });
+
+    await expect(enqueueImportsOnOpen(primo, NOW)).resolves.toBe(1);
+    await expect(enqueueImportsOnOpen(secondo, NOW)).resolves.toBe(1);
   });
 });
 

@@ -4,14 +4,24 @@ import {
   wishlistStoreValues,
 } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
-import { and, eq, isNull, lt, notInArray, or, sql } from '@repo/db/orm';
+import {
+  and,
+  eq,
+  isNull,
+  lt,
+  notInArray,
+  or,
+  sql,
+  type SQL,
+} from '@repo/db/orm';
 
+import { claimOnce } from '../lib/redis';
 import { enqueueImport, enqueueWishlistImport } from '../queue/imports';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Gli account che la spazzata deve reimportare adesso.
+ * Gli account che si possono reimportare in automatico, con una soglia data.
  *
  * Servono tutte e quattro le condizioni:
  *
@@ -20,17 +30,48 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * - **l'interruttore dell'account** acceso;
  * - **quello generale** acceso, e una riga di `user_settings` che non c'è vale
  *   acceso: è il default, e la tabella non ha una riga per ogni utente;
- * - **l'ultimo import più vecchio della soglia** del suo negozio, o mai fatto.
+ * - **l'ultimo import più vecchio della soglia** (`stale`), o mai fatto.
  *
  * E un negozio che si aggiorni: EA si importa una volta sola, ogni volta che
  * l'utente incolla un token nuovo (`oneShotStoreValues`). Va escluso a parte,
  * perché un import EA fallito lascia `last_sync_at` nullo, e il «mai fatto» lo
  * riprenderebbe a ogni giro.
  *
- * Le soglie diventano un confronto per negozio con una data calcolata qui,
- * invece di un intervallo calcolato in SQL: `last_sync_at` è un `timestamp`
- * senza fuso, e confrontarlo con `now()` del database vorrebbe dire fidarsi
- * che il fuso del server Postgres sia lo stesso con cui Drizzle scrive.
+ * Le soglie sono confronti con una data calcolata in JavaScript, invece di un
+ * intervallo calcolato in SQL: `last_sync_at` è un `timestamp` senza fuso, e
+ * confrontarlo con `now()` del database vorrebbe dire fidarsi che il fuso del
+ * server Postgres sia lo stesso con cui Drizzle scrive.
+ *
+ * Due chi la usano: la spazzata, con la soglia di ogni negozio, e l'apertura
+ * dell'app, per un utente solo e con un'ora.
+ */
+function selectAccountsDue(stale: SQL | undefined, userId?: string) {
+  const account = schema.storeAccounts;
+
+  return db
+    .select({ id: account.id, store: account.store })
+    .from(account)
+    .leftJoin(
+      schema.userSettings,
+      eq(schema.userSettings.userId, account.userId),
+    )
+    .where(
+      and(
+        userId === undefined ? undefined : eq(account.userId, userId),
+        eq(account.status, 'ok'),
+        eq(account.autoSync, true),
+        sql`coalesce(${schema.userSettings.autoSyncLibrary}, true)`,
+        notInArray(account.store, [...oneShotStoreValues]),
+        // L'import da CSV (10) non ha niente da cui riaggiornarsi.
+        eq(account.fromFile, false),
+        or(isNull(account.lastSyncAt), stale),
+      ),
+    );
+}
+
+/**
+ * Gli account che la spazzata deve reimportare adesso: le regole di
+ * `selectAccountsDue`, con la soglia del negozio (`AUTO_SYNC_EVERY_DAYS`).
  */
 export function findAccountsDueForImport(now = new Date()) {
   const account = schema.storeAccounts;
@@ -48,24 +89,66 @@ export function findAccountsDueForImport(now = new Date()) {
     ),
   );
 
-  return db
-    .select({ id: account.id, store: account.store })
-    .from(account)
-    .leftJoin(
-      schema.userSettings,
-      eq(schema.userSettings.userId, account.userId),
-    )
-    .where(
-      and(
-        eq(account.status, 'ok'),
-        eq(account.autoSync, true),
-        sql`coalesce(${schema.userSettings.autoSyncLibrary}, true)`,
-        notInArray(account.store, [...oneShotStoreValues]),
-        // L'import da CSV (10) non ha niente da cui riaggiornarsi.
-        eq(account.fromFile, false),
-        or(isNull(account.lastSyncAt), ...stale),
-      ),
-    );
+  return selectAccountsDue(or(...stale));
+}
+
+/**
+ * Dopo quanto un account si reimporta quando l'utente apre l'app.
+ *
+ * Un'ora: chi compra un gioco la mattina lo trova nel backlog la sera, e un
+ * import a libreria invariata costa una chiamata al negozio e un confronto col
+ * DB. Vale anche come tetto: l'apertura non accoda più di un giro all'ora per
+ * utente (`ON_OPEN_CLAIM_PREFIX`), nemmeno se l'import fallisce e
+ * `last_sync_at` resta vecchio.
+ */
+export const SYNC_ON_OPEN_AFTER_MS = 60 * 60 * 1000;
+
+/** Gli account di un utente da reimportare all'apertura dell'app. */
+export function findAccountsDueOnOpen(userId: string, now = new Date()) {
+  return selectAccountsDue(
+    lt(
+      schema.storeAccounts.lastSyncAt,
+      new Date(now.getTime() - SYNC_ON_OPEN_AFTER_MS),
+    ),
+    userId,
+  );
+}
+
+const ON_OPEN_CLAIM_PREFIX = 'library-sync:on-open:';
+
+/**
+ * L'utente ha aperto l'app: si accodano gli import dei suoi account più
+ * vecchi di un'ora.
+ *
+ * La spazzata delle sei ore resta per chi non apre l'app: tiene vivi i
+ * collegamenti (PSN muore in dieci giorni senza un rinnovo) e le librerie di
+ * chi non c'è. La freschezza, cioè il gioco comprato stamattina nel backlog di
+ * stasera, la dà questa.
+ *
+ * Il web la chiama a ogni apertura e ogni volta che la scheda torna in primo
+ * piano, quindi spesso. La soglia su `last_sync_at` non basta a fermarla: un
+ * negozio che non risponde lascia la data vecchia, e ogni ritorno sulla scheda
+ * riaccoderebbe un import destinato a fallire. Per questo una chiave in Redis,
+ * per utente, che dura quanto la soglia: un giro all'ora, su qualunque
+ * dispositivo.
+ *
+ * Un account già in coda non si accoda due volte: ci pensa la deduplicazione
+ * per account di `enqueueImport`. Restituisce quanti ne ha accodati.
+ */
+export async function enqueueImportsOnOpen(userId: string, now = new Date()) {
+  const due = await findAccountsDueOnOpen(userId, now);
+  if (due.length === 0) return 0;
+
+  const claimed = await claimOnce(
+    `${ON_OPEN_CLAIM_PREFIX}${userId}`,
+    SYNC_ON_OPEN_AFTER_MS / 1000,
+  );
+  if (!claimed) return 0;
+
+  for (const row of due) {
+    await enqueueImport(row.store, { storeAccountId: row.id });
+  }
+  return due.length;
 }
 
 /**

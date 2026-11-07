@@ -79,6 +79,23 @@ export async function cacheSet(key: string, value: string, ttlSeconds: number) {
 }
 
 /**
+ * Prende la chiave se è libera, con una scadenza: `true` a chi arriva primo,
+ * `false` a chi la trova già presa finché non scade.
+ *
+ * Con Redis giù risponde `false`: chi la usa per non ripetere un lavoro troppo
+ * spesso salta il giro, e il lavoro che voleva accodare finirebbe comunque in
+ * una coda che sta su quello stesso Redis.
+ */
+export async function claimOnce(key: string, ttlSeconds: number) {
+  try {
+    return (await redis().set(key, '1', 'EX', ttlSeconds, 'NX')) === 'OK';
+  } catch (error) {
+    console.log(`redis: presa di ${key} fallita: ${String(error)}`);
+    return false;
+  }
+}
+
+/**
  * Pubblica su un canale. Come la cache, un Redis giù non ferma chi pubblica:
  * un evento perso costa una pagina che si aggiorna al prossimo, non un job
  * fallito.

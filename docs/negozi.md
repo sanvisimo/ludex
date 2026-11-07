@@ -47,7 +47,19 @@ Le librerie si reimportano da sole: una spazzata sulla coda `imports`, ogni sei
 ore, accoda l'import degli account il cui `last_sync_at` è più vecchio della
 soglia del loro negozio — **tre giorni su PSN, sette sugli altri**
 (`AUTO_SYNC_EVERY_DAYS`). Su PSN è ciò che tiene vivo il collegamento, sugli
-altri è freschezza. Come la spazzata dell'enrichment, accoda e non importa.
+altri tiene aggiornato chi non apre l'app. Come la spazzata dell'enrichment,
+accoda e non importa.
+
+**La freschezza la dà l'apertura dell'app** (`plans/sync-all-apertura.md`):
+chi compra un gioco spesso lo vuole giocare subito. Il web chiama
+`accounts.syncOnOpen` all'apertura e ogni volta che la scheda torna in primo
+piano, e il server accoda gli account dell'utente con `last_sync_at` più
+vecchio di un'ora (`enqueueImportsOnOpen`), con le stesse regole della
+spazzata. Una chiave in Redis per utente, che dura un'ora, tiene l'apertura a
+un giro all'ora: senza, un negozio che non risponde lascia la data vecchia, e
+ogni ritorno sulla scheda riaccoderebbe un import destinato a fallire.
+Mentre gli account importano, `/backlog` lo dice nel sottotitolo
+(«Aggiorno le librerie · 1 di 3»).
 
 Due interruttori, e servono **tutti e due** accesi:
 

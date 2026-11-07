@@ -397,10 +397,12 @@ export const sortDirectionValues = ['asc', 'desc'] as const;
  * che rinnovi l'account muore da solo. Tre giorni lasciano spazio a due giri
  * andati male prima della scadenza.
  *
- * Gli altri a una settimana: una libreria cambia quando si compra qualcosa, e
- * un gioco comprato stamattina che compare fra qualche giorno non toglie niente
- * a «cosa gioco stasera». Anche qui c'è un credenziale da tenere vivo, ma GOG
- * in pratica non scade e Amazon non ruota. Epic **non è misurato**: la durata
+ * Gli altri a una settimana. **Non è la freschezza**: chi compra un gioco
+ * spesso lo vuole giocare subito, e il gioco comprato stamattina deve essere
+ * nel backlog stasera. Quella la dà l'apertura dell'app, che reimporta gli
+ * account più vecchi di un'ora (`enqueueImportsOnOpen` in `apps/api`). Questa
+ * soglia serve a chi non apre l'app: tiene vivi i collegamenti — GOG in
+ * pratica non scade e Amazon non ruota — e le librerie di chi non c'è. Epic **non è misurato**: la durata
  * del suo refresh token la dichiara la risposta, e da ora la si tiene nel
  * credenziale (`refreshExpiresAt`) — se venisse fuori sotto la settimana, è
  * questa la riga da cambiare.
