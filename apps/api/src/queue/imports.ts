@@ -156,6 +156,23 @@ export async function isImportRunning(storeAccountId: string) {
 }
 
 /**
+ * A che punto è l'import di un account che `isImportRunning` dà in corso: in
+ * lavorazione (`running`) o ancora da fare (`queued`), che comprende il
+ * tentativo fallito che BullMQ riproverà più tardi.
+ *
+ * Serve a `/backlog`, che li colora diversamente: con un worker solo e un
+ * import alla volta, «in coda» vuol dire che c'è da aspettare gli altri.
+ */
+export async function importPhase(storeAccountId: string) {
+  const jobId = await importsQueue.getDeduplicationJobId(
+    dedupKey(storeAccountId),
+  );
+  if (jobId === null) return null;
+  const state = await importsQueue.getJobState(jobId);
+  return state === 'active' ? ('running' as const) : ('queued' as const);
+}
+
+/**
  * La chiave dell'import della wishlist: **sua**, non quella della libreria. Le
  * due cose scrivono tabelle diverse e un utente può chiedere la wishlist mentre la
  * libreria si importa (o l'inverso): con la stessa chiave la seconda richiesta

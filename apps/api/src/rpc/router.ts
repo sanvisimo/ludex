@@ -158,6 +158,7 @@ import { SteamLibraryNotVisibleError } from '../external/steam';
 import { SteamWebTokenError } from '../external/steam-auth';
 import {
   enqueueImport,
+  importPhase,
   isImportRunning,
   isWishlistImportRunning,
 } from '../queue/imports';
@@ -343,7 +344,12 @@ export const router = os.router({
       // fargli premere un secondo bottone per avere i suoi giochi.
       await enqueueImport(account.store, { storeAccountId: account.id });
 
-      return { ...account, syncing: true, wishlistSyncing: false };
+      return {
+        ...account,
+        syncing: true,
+        syncPhase: 'queued' as const,
+        wishlistSyncing: false,
+      };
     }),
 
     steamLogin: {
@@ -392,7 +398,12 @@ export const router = os.router({
             throw error;
           });
           await enqueueImport('steam', { storeAccountId: account.id });
-          return { ...account, syncing: true, wishlistSyncing: false };
+          return {
+            ...account,
+            syncing: true,
+            syncPhase: 'queued' as const,
+            wishlistSyncing: false,
+          };
         }),
 
       status: os.accounts.steamLogin.status
@@ -502,9 +513,11 @@ export const router = os.router({
         );
         if (!account)
           throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+        const syncing = await isImportRunning(account.id);
         return {
           ...account,
-          syncing: await isImportRunning(account.id),
+          syncing,
+          syncPhase: syncing ? await importPhase(account.id) : null,
           wishlistSyncing: await isWishlistImportRunning(account.id),
         };
       }),
@@ -624,9 +637,11 @@ export const router = os.router({
         );
         if (!account)
           throw new ORPCError('NOT_FOUND', { message: 'Account inesistente' });
+        const syncing = await isImportRunning(account.id);
         return {
           ...account,
-          syncing: await isImportRunning(account.id),
+          syncing,
+          syncPhase: syncing ? await importPhase(account.id) : null,
           wishlistSyncing: await isWishlistImportRunning(account.id),
         };
       }),

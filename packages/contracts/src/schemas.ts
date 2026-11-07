@@ -413,6 +413,9 @@ export const StoreAccountSchema = z.object({
   // Import in corso adesso. Letto dalla coda e non dal DB: durante il primo
   // import `lastSyncAt` è ancora nullo e la pagina non avrebbe niente da dire.
   syncing: z.boolean(),
+  // A che punto è, se è in corso: in lavorazione o ancora in coda (anche un
+  // tentativo fallito che BullMQ riproverà). Nullo se non importa.
+  syncPhase: z.enum(['queued', 'running']).nullable(),
   // La wishlist del negozio (15e), a parte dalla libreria. Import in corso adesso
   // (dalla coda, come `syncing`), l'ultimo riuscito (nullo = mai importata) e, se
   // l'ultimo tentativo è fallito, perché.

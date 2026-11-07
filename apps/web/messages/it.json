@@ -67,8 +67,9 @@
   "backlog": {
     "librarySync": {
       "label": "Aggiorno le librerie · {done} di {total}",
-      "running": "{name}: in corso",
-      "done": "{name}: aggiornata"
+      "done": "aggiornata",
+      "running": "in aggiornamento",
+      "queued": "in coda"
     },
     "title": "Il mio backlog",
     "count": "{count, plural, one {# gioco} other {# giochi}}",

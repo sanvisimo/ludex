@@ -12,9 +12,10 @@ import { accents, defaultAccent, base, states, toAccent } from './palettes';
  * nominare.
  *
  * Due potature, entrambe misurate, che portano i temi da **390 a 48** e le loro
- * definizioni da **562 KB a 82 KB**:
+ * definizioni da **562 KB a 82 KB**. Col blu dell'informazione, il quarto
+ * stato (07/11/2026), sono **56 temi e 96 KB**:
  *
- * - `childrenThemes` ridotto ai tre colori di stato. Di serie Tamagui genera un
+ * - `childrenThemes` ridotto ai quattro colori di stato. Di serie Tamagui genera un
  *   tema per ognuna delle dodici scale Radix: `light_pink_surface2` e gli altri
  *   nove colori sono temi che nessuna schermata chiederà mai.
  * - `componentThemes: false`. Sono i temi per singolo componente

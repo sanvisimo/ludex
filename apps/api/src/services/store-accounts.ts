@@ -83,6 +83,7 @@ import { encryptCredentials, decryptCredentials } from '../lib/crypto';
 import {
   enqueueImport,
   enqueueWishlistImport,
+  importPhase,
   isImportRunning,
   isWishlistImportRunning,
 } from '../queue/imports';
@@ -242,14 +243,20 @@ export async function listStoreAccounts(userId: string) {
   );
 
   return Promise.all(
-    rows.map(async (row) => ({
-      ...row,
-      loginKind: steamLogins.get(row.id)?.kind ?? null,
-      loginExpiresAt: steamLogins.get(row.id)?.expiresAt ?? null,
-      xbox: xboxChoices.get(row.id) ?? null,
-      syncing: await isImportRunning(row.id),
-      wishlistSyncing: await isWishlistImportRunning(row.id),
-    })),
+    rows.map(async (row) => {
+      const syncing = await isImportRunning(row.id);
+      return {
+        ...row,
+        loginKind: steamLogins.get(row.id)?.kind ?? null,
+        loginExpiresAt: steamLogins.get(row.id)?.expiresAt ?? null,
+        xbox: xboxChoices.get(row.id) ?? null,
+        syncing,
+        // Chiesto solo a chi importa: agli altri non serve, e risparmia una
+        // lettura della coda per account.
+        syncPhase: syncing ? await importPhase(row.id) : null,
+        wishlistSyncing: await isWishlistImportRunning(row.id),
+      };
+    }),
   );
 }
 
