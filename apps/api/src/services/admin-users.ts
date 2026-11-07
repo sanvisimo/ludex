@@ -42,6 +42,13 @@ export async function listUsers(input: {
         accounts: sql<number>`(
           select count(*)::int from store_accounts a where a.user_id = "user".id
         )`,
+        // L'ultima sessione usata, al giorno: Better Auth ne rinnova la data al
+        // più una volta al giorno. Quelle aperte da un admin «come» l'utente
+        // non contano.
+        lastSeenAt: sql<Date | null>`(
+          select max(s.updated_at) from session s
+          where s.user_id = "user".id and s.impersonated_by is null
+        )`.mapWith(schema.session.updatedAt),
       })
       .from(schema.user)
       .where(where)

@@ -1,5 +1,12 @@
 import { NavItem, YStack } from '@repo/ui';
-import { Database, Flag, Inbox, MonitorX, Users } from '@repo/ui/icons';
+import {
+  ChartColumn,
+  Database,
+  Flag,
+  Inbox,
+  MonitorX,
+  Users,
+} from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useMatchRoute, useRouter } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
@@ -13,7 +20,8 @@ type AdminSection =
   | '/admin/unresolved'
   | '/admin/reported'
   | '/admin/platforms'
-  | '/admin/users';
+  | '/admin/users'
+  | '/admin/usage';
 
 /**
  * Il menu delle sezioni admin, con la stessa forma di quello dell'account:
@@ -80,6 +88,9 @@ export function AdminNav() {
       </SectionLink>
       <SectionLink to="/admin/users" icon={<Users size={16} />}>
         {t('users')}
+      </SectionLink>
+      <SectionLink to="/admin/usage" icon={<ChartColumn size={16} />}>
+        {t('usage')}
       </SectionLink>
     </YStack>
   );

@@ -36,6 +36,7 @@ import { Route as AppAdminMissingRouteImport } from './routes/_app.admin.missing
 import { Route as AppAdminPlatformsRouteImport } from './routes/_app.admin.platforms'
 import { Route as AppAdminReportedRouteImport } from './routes/_app.admin.reported'
 import { Route as AppAdminUnresolvedRouteImport } from './routes/_app.admin.unresolved'
+import { Route as AppAdminUsageRouteImport } from './routes/_app.admin.usage'
 import { Route as AppAdminUsersRouteImport } from './routes/_app.admin.users'
 import { Route as AppGamesSlugRouteImport } from './routes/_app.games.$slug'
 import { Route as AppSharedTokenRouteImport } from './routes/_app.shared.$token'
@@ -179,6 +180,11 @@ const AppAdminUnresolvedRoute = AppAdminUnresolvedRouteImport.update({
   path: '/unresolved',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminUsageRoute = AppAdminUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/admin/platforms': typeof AppAdminPlatformsRoute
   '/admin/reported': typeof AppAdminReportedRoute
   '/admin/unresolved': typeof AppAdminUnresolvedRoute
+  '/admin/usage': typeof AppAdminUsageRoute
   '/admin/users': typeof AppAdminUsersRoute
   '/games/$slug': typeof AppGamesSlugRoute
   '/shared/$token': typeof AppSharedTokenRoute
@@ -282,6 +289,7 @@ export interface FileRoutesByTo {
   '/admin/platforms': typeof AppAdminPlatformsRoute
   '/admin/reported': typeof AppAdminReportedRoute
   '/admin/unresolved': typeof AppAdminUnresolvedRoute
+  '/admin/usage': typeof AppAdminUsageRoute
   '/admin/users': typeof AppAdminUsersRoute
   '/games/$slug': typeof AppGamesSlugRoute
   '/shared/$token': typeof AppSharedTokenRoute
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   '/_app/admin/platforms': typeof AppAdminPlatformsRoute
   '/_app/admin/reported': typeof AppAdminReportedRoute
   '/_app/admin/unresolved': typeof AppAdminUnresolvedRoute
+  '/_app/admin/usage': typeof AppAdminUsageRoute
   '/_app/admin/users': typeof AppAdminUsersRoute
   '/_app/games/$slug': typeof AppGamesSlugRoute
   '/_app/shared/$token': typeof AppSharedTokenRoute
@@ -358,6 +367,7 @@ export interface FileRouteTypes {
     | '/admin/platforms'
     | '/admin/reported'
     | '/admin/unresolved'
+    | '/admin/usage'
     | '/admin/users'
     | '/games/$slug'
     | '/shared/$token'
@@ -391,6 +401,7 @@ export interface FileRouteTypes {
     | '/admin/platforms'
     | '/admin/reported'
     | '/admin/unresolved'
+    | '/admin/usage'
     | '/admin/users'
     | '/games/$slug'
     | '/shared/$token'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/_app/admin/platforms'
     | '/_app/admin/reported'
     | '/_app/admin/unresolved'
+    | '/_app/admin/usage'
     | '/_app/admin/users'
     | '/_app/games/$slug'
     | '/_app/shared/$token'
@@ -638,6 +650,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminUnresolvedRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/usage': {
+      id: '/_app/admin/usage'
+      path: '/usage'
+      fullPath: '/admin/usage'
+      preLoaderRoute: typeof AppAdminUsageRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/users': {
       id: '/_app/admin/users'
       path: '/users'
@@ -751,6 +770,7 @@ interface AppAdminRouteChildren {
   AppAdminPlatformsRoute: typeof AppAdminPlatformsRoute
   AppAdminReportedRoute: typeof AppAdminReportedRoute
   AppAdminUnresolvedRoute: typeof AppAdminUnresolvedRoute
+  AppAdminUsageRoute: typeof AppAdminUsageRoute
   AppAdminUsersRoute: typeof AppAdminUsersRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
   AppAdminGamesSlugRoute: typeof AppAdminGamesSlugRoute
@@ -761,6 +781,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminPlatformsRoute: AppAdminPlatformsRoute,
   AppAdminReportedRoute: AppAdminReportedRoute,
   AppAdminUnresolvedRoute: AppAdminUnresolvedRoute,
+  AppAdminUsageRoute: AppAdminUsageRoute,
   AppAdminUsersRoute: AppAdminUsersRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
   AppAdminGamesSlugRoute: AppAdminGamesSlugRoute,

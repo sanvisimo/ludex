@@ -118,6 +118,7 @@ describe('le procedure admin.*', () => {
     ],
     ['links.unlink', router.admin.links.unlink, { linkId: gameId }],
     ['users.list', router.admin.users.list, {}],
+    ['usage.get', router.admin.usage.get, undefined],
     [
       'users.setRole',
       router.admin.users.setRole,

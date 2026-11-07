@@ -11,6 +11,11 @@ regole complete, le ragioni e le misure.
 
 ## Fonti dati esterne
 
+Le chiamate passano da **`countedFetch`** (`src/lib/api-calls.ts`), che le
+conta in Redis per giorno e per fonte, 429 compresi: la sezione Uso dell'admin
+le mostra accanto ai limiti (`plans/admin-uso.md`). Un client nuovo verso una
+fonte con un limite va contato lì, con la sua voce in `apiCallSourceValues`.
+
 - **IGDB** — metadata primario. **Gratis per uso non commerciale**, sotto il
   Twitch Developer Services Agreement; salvare i dati in locale è permesso e
   anzi preferito (FAQ di IGDB). Chiede un percorso chiaro verso la fonte dove

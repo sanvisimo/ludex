@@ -40,7 +40,11 @@ export function logErrorsQuietly(connection: Redis, name: string) {
   });
 }
 
-function redis() {
+/**
+ * Il client, per chi ha bisogno di più di una chiave: i contatori delle
+ * chiamate (`api-calls.ts`). Chi lo usa gestisce da sé il Redis giù.
+ */
+export function redis() {
   if (client) return client;
 
   client = new Redis(redisUrl(), {

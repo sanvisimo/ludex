@@ -53,6 +53,7 @@ import {
 import { exportAccount } from '../services/account-export';
 import { mergeGames, previewMerge } from '../services/admin-merge';
 import { listUsers } from '../services/admin-users';
+import { adminUsage } from '../services/admin-usage';
 import { listHomeBands } from '../services/home';
 import { findGamePrice } from '../services/itad';
 import {
@@ -1542,6 +1543,13 @@ export const router = os.router({
           );
           return { externalId };
         }),
+    },
+
+    usage: {
+      get: os.admin.usage.get
+        .use(authed)
+        .use(admin)
+        .handler(() => adminUsage()),
     },
 
     users: {

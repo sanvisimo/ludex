@@ -6,6 +6,7 @@ import type {
 } from '@repo/contracts/vocabulary';
 
 import { chunk } from '../lib/chunk';
+import { countedFetch } from '../lib/api-calls';
 
 // Client IGDB. Sta fuori da `services/` perché è l'accesso a un servizio
 // esterno, non logica di dominio: i servizi lo usano, non lo sono.
@@ -84,7 +85,7 @@ function schedule<T>(task: () => Promise<T>): Promise<T> {
 
 function send(endpoint: string, body: string, token: string) {
   const { clientId } = credentials();
-  return fetch(`${API_URL}/${endpoint}`, {
+  return countedFetch('igdb', `${API_URL}/${endpoint}`, {
     method: 'POST',
     headers: {
       'Client-ID': clientId,

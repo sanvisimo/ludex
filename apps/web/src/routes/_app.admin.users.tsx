@@ -165,6 +165,16 @@ function UsersSection() {
       render: (user) => <CellText muted>{date(user.createdAt)}</CellText>,
     },
     {
+      key: 'lastSeen',
+      header: t('lastSeen'),
+      width: 110,
+      render: (user) => (
+        <CellText muted>
+          {user.lastSeenAt ? date(user.lastSeenAt) : t('never')}
+        </CellText>
+      ),
+    },
+    {
       key: 'games',
       header: t('games'),
       width: 56,
