@@ -152,6 +152,7 @@ import {
   setUnresolvedImportHidden,
 } from '../services/unresolved-imports';
 import { getUserSettings, updateUserSettings } from '../services/user-settings';
+import { enqueueImportsOnOpen } from '../services/library-sync';
 import { eventForUser, liveEvents } from '../lib/events';
 import { SteamLibraryNotVisibleError } from '../external/steam';
 import { SteamWebTokenError } from '../external/steam-auth';
@@ -606,6 +607,12 @@ export const router = os.router({
     syncAll: os.accounts.syncAll
       .use(authed)
       .handler(({ context }) => syncAllStoreAccounts(context.user.id)),
+
+    syncOnOpen: os.accounts.syncOnOpen
+      .use(authed)
+      .handler(async ({ context }) => ({
+        queued: await enqueueImportsOnOpen(context.user.id),
+      })),
 
     setAutoSync: os.accounts.setAutoSync
       .use(authed)

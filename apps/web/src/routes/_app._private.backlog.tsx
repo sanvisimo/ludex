@@ -35,6 +35,7 @@ import {
 import { PageSizeSelect } from '@/components/page-size-select';
 import { ButtonLink } from '@/src/components/button-link';
 import { SavePlaylistDialog } from '@/components/save-playlist-dialog';
+import { LibrarySyncSignal } from '@/components/library-sync-signal';
 import {
   type BacklogView,
   toQueryInput,
@@ -121,7 +122,18 @@ function BacklogPage() {
       title={inHidden ? t('hiddenViewTitle') : t('title')}
       // Uno spazio e non niente mentre carica: la riga del conteggio tiene il
       // suo posto, e il titolo non salta quando arriva.
-      subtitle={backlog.data ? t('count', { count: total }) : ' '}
+      subtitle={
+        backlog.data ? (
+          <>
+            {t('count', { count: total })}
+            {/* Le librerie che si aggiornano, quando succede: i giochi nuovi
+                compaiono da soli e il numero qui accanto cresce. */}
+            {!inHidden && <LibrarySyncSignal />}
+          </>
+        ) : (
+          ' '
+        )
+      }
       actions={
         <>
           {/* Il posto dove ripensarci. Senza, un gioco nascosto per sbaglio

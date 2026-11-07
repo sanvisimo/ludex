@@ -65,6 +65,11 @@
     "error": "La ricerca non ha risposto."
   },
   "backlog": {
+    "librarySync": {
+      "label": "Aggiorno le librerie · {done} di {total}",
+      "running": "{name}: in corso",
+      "done": "{name}: aggiornata"
+    },
     "title": "Il mio backlog",
     "count": "{count, plural, one {# gioco} other {# giochi}}",
     "error": "Non riesco a caricare il backlog.",

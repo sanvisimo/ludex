@@ -422,6 +422,11 @@ export const contract = {
     // solo: chi è da ricollegare o sta già importando si salta e si conta.
     syncAll: oc.output(SyncAllResultSchema),
 
+    // L'utente ha aperto l'app, o è tornato sulla scheda: si reimportano gli
+    // account più vecchi di un'ora, al più una volta all'ora. Si chiama spesso
+    // e quasi sempre non fa niente; dice quanti import ha accodato.
+    syncOnOpen: oc.output(z.object({ queued: z.number().int() })),
+
     // Accende o spegne l'aggiornamento automatico di un account. Esiste per le
     // librerie che non cambiano più: aggiornarle è solo lavoro buttato.
     setAutoSync: oc

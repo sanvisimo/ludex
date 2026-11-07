@@ -1,7 +1,7 @@
 # Le librerie si aggiornano quando apri Ludex
 
-**Stato: piano approvato il 07/11/2026, wireframe da approvare.** Branch
-`claude/library-sync-new-server-gvkq3n`.
+**Stato: scritto, da provare in uso.** Piano e wireframe approvati il
+07/11/2026. Branch `claude/library-sync-new-server-gvkq3n`.
 
 ## La richiesta
 
@@ -87,3 +87,39 @@ subito. I tre casi:
 Lo screenshot di partenza non c'è: la sessione in cui è nato il piano non aveva
 Docker, quindi niente stack. La
 testata del wireframe è ricostruita dal codice di `_app._private.backlog.tsx`.
+
+## Com'è andata (07/11/2026)
+
+- **Passi 1–3 e 5–6 fatti.** `enqueueImportsOnOpen` e `findAccountsDueOnOpen`
+  in `services/library-sync.ts`, con `selectAccountsDue` come predicato comune
+  a spazzata e apertura; `accounts.syncOnOpen` nel contratto e nel router;
+  `useSyncOnOpen` nel guscio (`apps/web/src/use-sync-on-open.ts`).
+- **Una cosa in più del piano, perché senza era rotto**: la soglia su
+  `last_sync_at` non ferma un negozio che non risponde, perché la data resta
+  vecchia e ogni ritorno sulla scheda riaccoderebbe l'import. Una chiave in
+  Redis per utente, di un'ora (`claimOnce` in `lib/redis.ts`), tiene
+  l'apertura a un giro all'ora su qualunque dispositivo. Si prende solo se c'è
+  qualcosa da accodare.
+- **Passo 4, il segnale** (`components/library-sync-signal.tsx`, il giro in
+  `lib/sync-batch.ts` coi suoi test). Rispetto al wireframe:
+  - al passaggio del mouse i negozi stanno nel `Tooltip`, **al clic o al
+    tocco nella stessa riga** («— GOG: in corso, …»), come il «Che cos'è?»
+    dell'aggiornamento automatico. Un popover sopra la pagina in `@repo/ui`
+    non c'è, e il `Tooltip` sul telefono non compare;
+  - su telefono il segnale segue il numero nella stessa riga e va a capo
+    dove finisce lo spazio, invece di andare sempre sotto;
+  - il nome dell'account compare solo se nel giro ci sono due account dello
+    stesso negozio.
+- **Provato** sull'app in locale con Playwright, desktop e iPhone 13: «0 di 3»
+  all'apertura, «1 di 3» quando Steam finisce, con il suggerimento e la riga
+  al tocco. Gli import erano finti (account senza negozio vero, worker
+  spento): la fine di Steam simulata togliendo la sua chiave di
+  deduplicazione e pubblicando l'evento. Il segnale che sparisce a giro chiuso
+  è provato solo dai test di `lib/sync-batch.ts`.
+- **Test**: `library-sync.test.ts` 22 (6 nuovi), web 68 (4 nuovi). Typecheck
+  ed ESLint puliti su api, web e contracts.
+
+## Da verificare in uso
+
+- Sul VPS: comprare un gioco, aprire Ludex dopo un'ora dall'ultimo
+  aggiornamento, vederlo comparire con il segnale.

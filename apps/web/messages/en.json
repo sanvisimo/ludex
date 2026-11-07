@@ -65,6 +65,11 @@
     "error": "The search didn't respond."
   },
   "backlog": {
+    "librarySync": {
+      "label": "Updating libraries · {done} of {total}",
+      "running": "{name}: updating",
+      "done": "{name}: updated"
+    },
     "title": "My backlog",
     "count": "{count, plural, one {# game} other {# games}}",
     "error": "I can't load the backlog.",
