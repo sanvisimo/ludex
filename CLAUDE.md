@@ -60,6 +60,7 @@ Questo file tiene solo ciò che serve sempre. Il resto:
 | i singoli negozi, token, aggiornamento automatico                 | [docs/negozi.md](docs/negozi.md)                   |
 | gli step, uno per uno, con cosa contengono                        | [docs/ordine-sviluppo.md](docs/ordine-sviluppo.md) |
 | le scelte tecniche scartate                                       | [docs/scelte-scartate.md](docs/scelte-scartate.md) |
+| i concorrenti e cosa li separa da Ludex                           | [docs/competitors.md](docs/competitors.md)         |
 
 ## Struttura del monorepo
 
