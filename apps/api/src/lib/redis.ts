@@ -99,6 +99,43 @@ export async function claimOnce(key: string, ttlSeconds: number) {
   }
 }
 
+// Il turno condiviso di una fonte con un limite al secondo (oggi IGDB): la
+// chiave tiene l'istante, in ms, da cui il prossimo può partire. Lo script è
+// atomico, quindi due processi che prenotano insieme prendono due turni
+// diversi, e l'ora la dà Redis: gli orologi dei processi non contano.
+//
+// ARGV[1] è quanto il turno occupa, ARGV[2] il ritardo minimo da adesso: 0
+// per prenotare, la pausa dopo un 429 per spostare avanti tutti. La chiave
+// scade poco dopo l'ultimo turno, così non resta in giro quando nessuno chiama.
+const RESERVE_SLOT = `
+local t = redis.call('TIME')
+local now = tonumber(t[1]) * 1000 + math.floor(tonumber(t[2]) / 1000)
+local start = math.max(now + tonumber(ARGV[2]), tonumber(redis.call('GET', KEYS[1]) or '0'))
+local after = start + tonumber(ARGV[1])
+redis.call('SET', KEYS[1], after, 'PX', after - now + 1000)
+return start - now
+`;
+
+/**
+ * Prenota il prossimo turno libero su `key`, lungo `intervalMs`, non prima di
+ * `notBeforeMs` da adesso, e risponde fra quanti ms parte. **Null con Redis
+ * giù**: chi chiama distanzia da sé, dentro il suo processo.
+ */
+export async function reserveSlot(
+  key: string,
+  intervalMs: number,
+  notBeforeMs = 0,
+): Promise<number | null> {
+  try {
+    return Number(
+      await redis().eval(RESERVE_SLOT, 1, key, intervalMs, notBeforeMs),
+    );
+  } catch (error) {
+    console.log(`redis: turno su ${key} non prenotato: ${String(error)}`);
+    return null;
+  }
+}
+
 /**
  * Pubblica su un canale. Come la cache, un Redis giù non ferma chi pubblica:
  * un evento perso costa una pagina che si aggiorna al prossimo, non un job

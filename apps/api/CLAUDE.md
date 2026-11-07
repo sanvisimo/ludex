@@ -22,6 +22,12 @@ fonte con un limite va contato lì, con la sua voce in `apiCallSourceValues`.
   si mostrano i dati. **Se Ludex si monetizza in qualunque forma** serve un
   accordo commerciale (`partner@igdb.com`), con attribuzione a IGDB.com visibile
   agli utenti. Letto il 01/10/2026.
+
+  **4 richieste al secondo per chiave**, e la chiave la usano server, worker e
+  arnesi: il turno sta in Redis (`reserveSlot` in `lib/redis.ts`), uno ogni
+  275 ms per tutti, e dopo un 429 si spostano avanti tutti di un secondo. Vedi
+  [plans/igdb-limite.md](../../plans/igdb-limite.md).
+
 - **STEAMGRIDDB** — copertine alternative, per sostituire quella di IGDB. Arriva
   allo **step 5**, con la modifica del gioco: non serve prima, perché prima non
   c'è nessun posto da cui scegliere.
