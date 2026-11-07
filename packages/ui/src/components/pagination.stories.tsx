@@ -43,6 +43,12 @@ export const Range: Story = {
     await expect(pageRange(3, 42)).toEqual([1, 2, 3, 4, null, 42]);
     await expect(pageRange(2, 3)).toEqual([1, 2, 3]);
     await expect(pageRange(1, 1)).toEqual([1]);
+    // Senza vicine, come su un telefono.
+    await expect(pageRange(20, 42, 0)).toEqual([1, null, 20, null, 42]);
+    await expect(pageRange(1, 42, 0)).toEqual([1, null, 42]);
+    await expect(pageRange(4, 42, 0)).toEqual([1, null, 4, null, 42]);
+    await expect(pageRange(3, 42, 0)).toEqual([1, 2, 3, null, 42]);
+    await expect(pageRange(2, 3, 0)).toEqual([1, 2, 3]);
   },
 };
 
@@ -112,7 +118,9 @@ export const GoToClamps: Story = {
   ...GoTo,
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    const field = canvas.getByLabelText('Vai a pagina');
+    // Per ruolo e non per etichetta: i campi nel DOM sono due, uno per serie,
+    // e il ruolo conta solo quello a vista.
+    const field = canvas.getByRole('textbox', { name: 'Vai a pagina' });
     await expect(field).toHaveAttribute('aria-current', 'page');
     await expect(field).toHaveValue('20');
 
@@ -151,5 +159,27 @@ export const ArrowNames: Story = {
       within(nav).getByRole('link', { name: 'Successiva' }),
     ).toHaveAttribute('href', '?page=21');
     await expect(within(nav).queryByText('Precedente')).toBeNull();
+  },
+};
+
+/**
+ * Su un telefono le pagine vicine spariscono e la riga sta tutta su una
+ * linea: `‹ 1 … 160 … 163 ›`, con la freccia avanti accanto alle altre e non
+ * a capo. Vale sotto i 640 px: `mobile1` è largo 320.
+ */
+export const Phone: Story = {
+  args: { page: 160, pageCount: 163, goToLabel: 'Vai a pagina', onGoTo: fn() },
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const nav = within(canvasElement).getByRole('navigation', {
+      name: 'Pagine',
+    });
+    await expect(within(nav).queryByRole('link', { name: '159' })).toBeNull();
+    await expect(within(nav).queryByRole('link', { name: '161' })).toBeNull();
+    const first = within(nav).getByRole('link', { name: '1' });
+    const next = within(nav).getByRole('link', { name: 'Successiva' });
+    await expect(next.getBoundingClientRect().top).toBe(
+      first.getBoundingClientRect().top,
+    );
   },
 };

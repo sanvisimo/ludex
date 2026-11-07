@@ -4,26 +4,31 @@ import { ChevronLeft, ChevronRight } from '../icons';
 import { Input } from './input';
 
 /**
- * Le pagine da mostrare: la prima, l'ultima, quella aperta con le due
- * vicine, e `null` dove ne mancano. Agli estremi (prima o ultima pagina) si
- * aggiunge la seconda dal lato opposto, così i due estremi si somigliano. Un
- * buco di una pagina sola si riempie con la pagina, perché «…» al posto di un
- * numero solo occupa lo stesso spazio e dice meno.
+ * Le pagine da mostrare: la prima, l'ultima, quella aperta con le
+ * `siblings` vicine per lato, e `null` dove ne mancano. Agli estremi (prima o
+ * ultima pagina) si aggiungono altrettante pagine dal lato opposto, così i due
+ * estremi si somigliano. Un buco di una pagina sola si riempie con la pagina,
+ * perché «…» al posto di un numero solo occupa lo stesso spazio e dice meno.
  *
- *     pageRange(1, 40)  → 1 2 … 39 40
- *     pageRange(20, 40) → 1 … 19 20 21 … 40
- *     pageRange(40, 40) → 1 2 … 39 40
+ *     pageRange(1, 40)     → 1 2 … 39 40
+ *     pageRange(20, 40)    → 1 … 19 20 21 … 40
+ *     pageRange(40, 40)    → 1 2 … 39 40
+ *     pageRange(20, 40, 0) → 1 … 20 … 40
  */
-export function pageRange(page: number, count: number): (number | null)[] {
+export function pageRange(
+  page: number,
+  count: number,
+  siblings = 1,
+): (number | null)[] {
+  const around = (from: number, to: number) =>
+    Array.from({ length: to - from + 1 }, (_, i) => from + i);
   const wanted = new Set(
     [
       1,
-      page - 1,
-      page,
-      page + 1,
+      ...around(page - siblings, page + siblings),
       count,
-      ...(page === 1 ? [count - 1] : []),
-      ...(page === count ? [2] : []),
+      ...(page === 1 ? around(count - siblings, count) : []),
+      ...(page === count ? around(1, 1 + siblings) : []),
     ].filter((n) => n >= 1 && n <= count),
   );
   const sorted = [...wanted].sort((a, b) => a - b);
@@ -125,6 +130,10 @@ export type PaginationProps = {
  * Con `goToLabel` e `onGoTo` c'è anche il campo «vai a pagina», per le
  * librerie dove la pagina che si cerca sta dietro l'ellissi.
  *
+ * Sotto `$sm` (640 px) le pagine vicine alla aperta spariscono
+ * (`‹ 1 … 10 … 163 ›`): con loro la riga non stava su un telefono. Per la
+ * pagina prima e dopo ci sono le frecce.
+ *
  * Con una pagina sola non disegna niente.
  */
 export function Pagination({
@@ -175,6 +184,35 @@ export function Pagination({
       </PageFrame>
     );
 
+  const pages = (range: (number | null)[]) =>
+    range.map((n, index) =>
+      n === null ? (
+        <PageFrame key={`gap-${index}`} aria-hidden>
+          <PageText>…</PageText>
+        </PageFrame>
+      ) : (
+        <Fragment key={n}>
+          {n === page && !!onGoTo ? (
+            <Input
+              aria-label={goToLabel}
+              aria-current="page"
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              onSubmitEditing={go}
+              inputMode="numeric"
+              enterKeyHint="go"
+              width={50}
+              text="center"
+            />
+          ) : (
+            link(n, <PageText current={n === page}>{n}</PageText>, {
+              'aria-current': n === page ? 'page' : undefined,
+            })
+          )}
+        </Fragment>
+      ),
+    );
+
   const go = () => {
     const value = Number.parseInt(text, 10);
     if (Number.isNaN(value)) {
@@ -206,33 +244,20 @@ export function Pagination({
         previousLabel,
         <ChevronLeft size={16} color="$color11" />,
       )}
-      {pageRange(page, pageCount).map((n, index) =>
-        n === null ? (
-          <PageFrame key={`gap-${index}`} aria-hidden>
-            <PageText>…</PageText>
-          </PageFrame>
-        ) : (
-          <Fragment key={n}>
-            {n === page && !!onGoTo ? (
-              <Input
-                aria-label={goToLabel}
-                aria-current="page"
-                value={text}
-                onChange={(event) => setText(event.target.value)}
-                onSubmitEditing={go}
-                inputMode="numeric"
-                enterKeyHint="go"
-                width={50}
-                text="center"
-              />
-            ) : (
-              link(n, <PageText current={n === page}>{n}</PageText>, {
-                'aria-current': n === page ? 'page' : undefined,
-              })
-            )}
-          </Fragment>
-        ),
-      )}
+      {/* Due serie, una sola a vista: con le pagine vicine la riga non sta
+          su un telefono, e la freccia avanti andava a capo. La scelta la fa
+          il CSS e non `useMedia`, così la pagina nasce già giusta dal server. */}
+      <XStack gap={4} items="center" $max-sm={{ display: 'none' }}>
+        {pages(pageRange(page, pageCount))}
+      </XStack>
+      <XStack
+        gap={4}
+        items="center"
+        display="none"
+        $max-sm={{ display: 'flex' }}
+      >
+        {pages(pageRange(page, pageCount, 0))}
+      </XStack>
       {edge(
         page + 1,
         page < pageCount,
