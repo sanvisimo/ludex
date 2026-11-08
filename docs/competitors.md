@@ -19,9 +19,9 @@ dalla sessione._
   Ogni gioco mostra il voto medio degli utenti di Grouvee.
 - **Come si paga**: gratis. Grouvee Gold toglie la pubblicità e dà accesso
   anticipato alle novità.
-- **Import**: Steam, dal profilo pubblico. Per PSN e gli altri negozi un
-  moderatore del forum dice che mancano API pubbliche: nessun import
-  confermato.
+- **Import**: Steam, dalla libreria pubblica del profilo (verificato sul sito
+  l'08/11/2026). Per PSN e gli altri negozi un moderatore del forum dice che
+  mancano API pubbliche: nessun import confermato.
 - **Dati**: passato da Giant Bomb a IGDB, con fusione delle vecchie schede non
   ancora completa al momento del post.
 - **Mobile**: incerto. La stessa directory lo dà presente e, fra i contro,
@@ -69,15 +69,14 @@ _Controllato il 07/11/2026, da fonti di terzi e da una copia archiviata del
 - **Cos'è**: un database di durate (storia, storia più extra, completista)
   raccolte dagli utenti, con un backlog personale accanto.
 - **Come si paga**: non ho trovato un piano a pagamento.
-- **Import**: Steam, secondo la home archiviata del 2022 e un post sul forum di
-  Steam. Una pagina di un concorrente dice di no: da verificare.
+- **Import**: Steam, dalla libreria pubblica del profilo (verificato sul sito
+  l'08/11/2026).
 - **Rispetto a Ludex**: per noi è una **fonte**, non un concorrente diretto
   (step 6, recupero HLTB). Ha la durata ma non la usa per proporti cosa
   giocare stasera; Ludex filtra per durata in SQL e ragiona sul resto.
 
 Fonti: [home archiviata, 2022](https://webcf.waybackmachine.org/web/20220430210854/https://howlongtobeat.com),
-[forum di Steam](https://steamcommunity.com/discussions/forum/10/3761103203684072086),
-[WListDB, confronto (di parte)](https://wlistdb.com/howlongtobeat-alternative).
+[forum di Steam](https://steamcommunity.com/discussions/forum/10/3761103203684072086).
 
 ## Playnite
 
