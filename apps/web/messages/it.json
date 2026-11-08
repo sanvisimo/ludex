@@ -1363,7 +1363,9 @@
       },
       "release": {
         "title": "Ludex aperto a tutti",
-        "text": "Un server stabile al posto di quello di prova, senza codice d'accesso all'ingresso: con la conferma dell'email, il recupero della password e il cambio dell'email."
+        "p1": "Un server stabile al posto di quello di prova, e nessun codice d'accesso all'ingresso: chiunque può registrarsi.",
+        "p2": "La conferma dell'email alla registrazione, il recupero della password e il cambio dell'email.",
+        "p3": "Accesso e registrazione protetti da un CAPTCHA e da un limite ai tentativi ripetuti."
       },
       "librarySyncOnOpen": {
         "title": "Le librerie si aggiornano quando apri Ludex",

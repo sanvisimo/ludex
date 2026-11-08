@@ -1,9 +1,9 @@
 # Il rilascio
 
-**Stato: in corso dal 28/10/2026; aperto a tutti dal 06/11/2026**, sul VPS e
-senza Access (vedi «Il trasloco»). Il lotto si chiude, e `release` passa a
-«fatto» in roadmap, quando l'utente lo dice: prima un giro degli import
-automatici dal VPS.
+**Stato: fatto l'08/11/2026**, quando l'utente ha chiuso il lotto: aperto a
+tutti dal 06/11/2026, sul VPS e senza Access (vedi «Il trasloco»), e `release`
+a «fatto» in roadmap. Restano aperti, fuori da questo lotto, IGDB e il fisco
+(«Licenze e donazioni») per accendere le donazioni.
 Segnato il 18/10/2026, dopo il CSV (10) e Xbox (9e). Roadmap: `release` («Ludex aperto a
 tutti») in cima a «In arrivo», in
 [ordine di lavoro](../docs/ordine-sviluppo.md) prima degli abbonamenti.
@@ -262,11 +262,12 @@ troppo presto ne memorizza il «non esiste» per 30 minuti.
    mano, Kuma verde. Sul mini PC lo stack è fermo, dati intatti
    (`docker compose stop`), e il cron sta in `/root/ludex-deploy.cron.off`.
 
-   **Per tornare indietro**: il record `ludex` di nuovo su
-   `d889d898-…cfargotunnel.com`, sul mini PC `docker compose start` e il
-   cron rimesso in `/etc/cron.d/`. Quanto scritto sul VPS nel frattempo
-   va riportato con un dump inverso. Il dump del trasloco resta nella
-   home di `sanvi` sui due server fino alla chiusura del lotto.
+   **Il ritorno al mini PC non c'è più**: l'08/11/2026, con gli import
+   provati dal VPS e due backup notturni riusciti, Ludex è stato tolto dal
+   mini PC (container, immagini, dati, dump). Se il VPS cade si riparte dal
+   backup su R2, con la chiave `age` privata e la copia di `ludex.env` che
+   l'utente tiene fuori dal server: su R2 c'è solo il database, e senza
+   `STORE_TOKEN_KEY` gli account dei negozi vanno ricollegati.
 
 **Le email, fatte il 06/11/2026** subito dopo il trasloco (prima, anche sul
 mini PC, finivano nel log dell'API). Scaleway TEM col sottodominio

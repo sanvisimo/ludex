@@ -1,10 +1,9 @@
 # Ludex — ambiente di test sul mini PC
 
 > **Dal 06/11/2026 Ludex non gira più qui** ma sul VPS di Leaseweb: vedi «Il
-> trasloco» in [plans/rilascio.md](../plans/rilascio.md). Il mini PC resta
-> come riserva per il mese di prova: stack fermo con `docker compose stop`,
-> dati intatti, cron del deploy spostato in `/root/ludex-deploy.cron.off`.
-> Per tornare indietro si segue la stessa sezione del piano.
+> trasloco» in [plans/rilascio.md](../plans/rilascio.md). **L'08/11/2026 Ludex
+> è stato tolto dal mini PC**: container, immagini, dati e dump. Non c'è più
+> una riserva a cui tornare; questo file resta come memoria di com'era.
 >
 > Corretto lo stesso giorno, leggendo il server: l'override si chiama
 > `compose.override.yml`, i dati stanno in `/opt/docker-db/ludex/{db,redis}`

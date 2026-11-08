@@ -1364,7 +1364,9 @@
       },
       "release": {
         "title": "Ludex open to everyone",
-        "text": "A stable server instead of the test one, with no access code at the door: with email confirmation, password recovery and email change."
+        "p1": "A stable server instead of the test one, and no access code at the door: anyone can sign up.",
+        "p2": "Email confirmation at sign-up, password recovery and email change.",
+        "p3": "Sign-in and sign-up protected by a CAPTCHA and a limit on repeated attempts."
       },
       "librarySyncOnOpen": {
         "title": "Libraries update when you open Ludex",
