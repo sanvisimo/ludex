@@ -114,6 +114,9 @@ misurano i contrasti di Button e Badge, come nel 12a.
    il pulsante blu col testo scuro; la bozza 13 prova un blu solo: Radix
    `indigo`, o il blu del simbolo stesso, tutti e due col testo bianco sul
    pulsante.
+4. **Le forme delle custodie** (bozza 14): le tre custodie con i segni dei
+   modelli delle console, senza loghi. Prima di sceglierla va pesato che
+   colore e forma insieme richiamano la confezione di ciascun marchio.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 
