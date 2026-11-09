@@ -121,7 +121,8 @@ misurano i contrasti di Button e Badge, come nel 12a.
    Xbox, senza la striscia nera: cornice colorata e lucida, fascia
    rettangolare in alto, in due spessori di cornice. Lì però la fascia si
    appiattiva nella cornice; la bozza 16 la stacca: tono più scuro, striscia
-   scura in diagonale, due righe chiare, o solo senza il riflesso sopra.
+   scura in diagonale, due righe chiare, o solo senza il riflesso sopra. La
+   bozza 17 assottiglia o toglie i bordi sopra e sotto.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 
