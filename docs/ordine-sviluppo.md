@@ -10,14 +10,11 @@ in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10, il 18/10, il 19/10,
 il 21/10 e il 22/10), e l'ordine è anche quello della
 [roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
-1. **Rilascio**: un server stabile al posto del mini PC e l'app aperta a
-   tutti, senza Cloudflare Access; con la verifica dell'email, il recupero
-   della password e login e registrazione da stabilizzare. Non ha un numero:
-   non è una feature ma il passaggio da ambiente di prova a servizio. Piano in
-   `plans/rilascio.md`. **Per prima la prova degli import da un VPS preso a
-   ore**, perché può cambiare la scelta di dove andare; poi server ed email,
-   il codice, il trasloco. La prova parla con gli account veri dell'utente:
-   un negozio alla volta, concordato, e Steam solo se l'utente lo decide.
+1. **Rilascio — fatto l'08/11/2026**: un server stabile al posto del mini PC
+   e l'app aperta a tutti, senza Cloudflare Access; con la verifica dell'email,
+   il recupero della password e login e registrazione da stabilizzare. Non ha
+   un numero: non è una feature ma il passaggio da ambiente di prova a
+   servizio. Piano in `plans/rilascio.md`.
 2. **13a e 13b — AI**: la base (provider, embedding, profilo, serie IGDB) e
    l'assistente in sola lettura. Analisi di fornitori e costi, fatta in
    anticipo (18–22/10/2026), in `plans/13-ai.md`.
