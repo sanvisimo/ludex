@@ -110,7 +110,10 @@ misurano i contrasti di Button e Badge, come nel 12a.
    colora il verbo, _pick_.
 3. **L'accento**: blu o neutro, sopra. La bozza 12 mette i due nomi con i due
    accenti in un pezzo d'interfaccia: barra, pulsante, voce attiva,
-   etichetta, link.
+   etichetta, link. Lì stonavano tre blu diversi (simbolo, nome, pulsante) e
+   il pulsante blu col testo scuro; la bozza 13 prova un blu solo: Radix
+   `indigo`, o il blu del simbolo stesso, tutti e due col testo bianco sul
+   pulsante.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 
