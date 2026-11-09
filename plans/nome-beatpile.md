@@ -122,7 +122,8 @@ misurano i contrasti di Button e Badge, come nel 12a.
    rettangolare in alto, in due spessori di cornice. Lì però la fascia si
    appiattiva nella cornice; la bozza 16 la stacca: tono più scuro, striscia
    scura in diagonale, due righe chiare, o solo senza il riflesso sopra. La
-   bozza 17 assottiglia o toglie i bordi sopra e sotto.
+   bozza 17 assottiglia o toglie i bordi sopra e sotto. Scelti i bordi
+   sottili (0,7); la bozza 18 porta il bordo destro da 2,2 a 1,5.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 
