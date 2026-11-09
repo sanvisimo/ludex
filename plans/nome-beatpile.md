@@ -95,7 +95,9 @@ che motivano il teal (`palettes.ts`, `button.tsx`, `logo.tsx`, la timeline di
 2. **Pilepick o Beatpile, fuoco o console.** Il 09/11 si è riaperta la prova
    con Pilepick, e con le custodie blu, rossa e verde (i colori di
    PlayStation, Nintendo e Xbox, dalle scale Radix): un simbolo a più colori
-   non è legato all'accento, che resterebbe il teal già misurato. Bozza 07.
+   non è legato all'accento, che resterebbe il teal già misurato. Bozza 07. Poi blu e verde più accesi e, visto
+   che il teal accanto ai tre colori stona, due accenti al suo posto: il blu
+   della custodia davanti o un accento neutro. Bozza 08.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 
