@@ -116,7 +116,10 @@ misurano i contrasti di Button e Badge, come nel 12a.
    pulsante.
 4. **Le forme delle custodie** (bozza 14): le tre custodie con i segni dei
    modelli delle console, senza loghi. Prima di sceglierla va pesato che
-   colore e forma insieme richiamano la confezione di ciascun marchio.
+   colore e forma insieme richiamano la confezione di ciascun marchio. La
+   bozza 15 tiene le copertine chiare e dà a tutte e tre la forma del modello
+   Xbox, senza la striscia nera: cornice colorata e lucida, fascia
+   rettangolare in alto, in due spessori di cornice.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 

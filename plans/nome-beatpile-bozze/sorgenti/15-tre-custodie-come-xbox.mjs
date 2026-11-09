@@ -1,0 +1,93 @@
+// Bozza 15: tutte e tre le custodie come il modello Xbox: cornice colorata
+// tutt'intorno, fascia rettangolare in alto dello stesso colore, copertina
+// chiara. Senza la striscia nera, che è solo di Xbox. Cornice più lucida.
+import { readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const here = dirname(fileURLToPath(import.meta.url));
+const font = readFileSync(join(here, 'space-grotesk-latin-700-normal.woff2')).toString('base64');
+
+const C = {
+  blue: '#0050e6', blueDeep: '#003ab0',
+  red: '#ee0a1f', redDeep: '#b8000f',
+  green: '#13a313', greenDeep: '#0b7a0b',
+  black: '#1c2024', paper: '#f7f8fa', grey: '#d9dce1', line: '#b9bec6',
+};
+let gid = 0;
+const gloss = (x, y, w, h) => {
+  const id = 'g' + gid++;
+  return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".45" stop-color="#fff" stop-opacity=".08"/><stop offset=".46" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="0.8" fill="url(#${id})"/>`;
+};
+// La scocca: il colore della plastica e la copertina rientrata, più spessa a
+// sinistra dove c'è la cerniera. Restituisce le misure della copertina.
+const shell = (x, y, w, h, plastic, edge) => {
+  const t = 1.1, sp = w * 0.14;
+  const box = { x: x + sp, y: y + t, w: +(w - sp - t).toFixed(2), h: h - 2 * t };
+  const svg = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.8" fill="${plastic}"${edge ? ` stroke="${edge}" stroke-width=".35"` : ''}/>`;
+  return { svg, box };
+};
+const rect = (b, fill, extra = '') => `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="0.8" fill="${fill}"${extra}/>`;
+
+// «bp» centrato nello spazio della copertina sotto la fascia (Space Grotesk
+// 700): a 11,4 l'inchiostro è largo 12,71, con 0,8 di spalla, 7,98 sopra la
+// linea di base e 2,28 sotto. Qui si scala per stare nello spazio rimasto.
+const letters = (b, top, fill) => {
+  const room = { y: top, h: b.y + b.h - top };
+  const s = Math.min(11.4, (b.w * 0.86) / 1.115, (room.h * 0.82) / 0.9);
+  const inkW = 1.115 * s, left = 0.07 * s, asc = 0.7 * s, desc = 0.2 * s;
+  const x = b.x + (b.w - inkW) / 2 - left;
+  const base = room.y + room.h / 2 + (asc - desc) / 2;
+  return `<text x="${x.toFixed(2)}" y="${base.toFixed(2)}" font-family="SG" font-weight="700" font-size="${s.toFixed(2)}" letter-spacing="${(-0.0526 * s).toFixed(2)}" fill="${fill}">bp</text>`;
+};
+
+
+// Un riflesso forte sulla plastica colorata: chiaro in alto a sinistra, che
+// sfuma, e una riga di luce lungo il bordo alto.
+const shine = (x, y, w, h, strength) => {
+  const id = 'h' + gid++;
+  return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0.8" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${strength}"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient></defs>
+  <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.8" fill="url(#${id})"/>
+  <path d="M${x + 1.6} ${y + 0.45} H${x + w - 1.6}" stroke="#fff" stroke-opacity=".7" stroke-width=".35" stroke-linecap="round"/>`;
+};
+// La custodia: cornice nel colore della console, più spessa a sinistra dove
+// c'è la cerniera, fascia rettangolare in alto, copertina chiara.
+const box3 = (x, y, w, h, rot, color, { frame = 1.5, txt = null, strength = 0.55 } = {}) => {
+  const sp = w * 0.15;
+  const b = { x: x + sp, y: y + frame, w: +(w - sp - frame).toFixed(2), h: +(h - 2 * frame).toFixed(2) };
+  const bh = +(b.h * 0.15).toFixed(2);
+  return `<g transform="rotate(${rot} ${x + w / 2} ${y + h / 2})">
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.8" fill="${color}"/>
+    <rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="0.5" fill="${C.paper}"/>
+    <rect x="${b.x}" y="${b.y}" width="${b.w}" height="${bh}" fill="${color}"/>
+    ${gloss(b.x, b.y + bh, b.w, b.h - bh)}
+    ${shine(x, y, w, h, strength)}
+    ${txt ? letters(b, b.y + bh, txt) : ''}</g>`;
+};
+const sym = (frame, strength) => `<svg viewBox="0 0 32 32" aria-hidden="true">
+  ${box3(14, 1, 15, 20.5, 8, C.green, { frame, strength })}${box3(9, 4, 16, 22, 3, C.red, { frame, strength })}${box3(3, 7.2, 18, 24, -3, C.blue, { frame, strength, txt: C.blue })}
+</svg>`;
+const sizes = [128, 64, 32, 16];
+const row = (l, s) => `<h3>${l}</h3><div class="pair">${['light', 'dark'].map((t) => `<div class="bg ${t}">${sizes.map((z) => `<div class="cell"><div style="width:${z}px;height:${z}px">${s}</div><span>${z}</span></div>`).join('')}</div>`).join('')}</div>
+<div class="pair">${['light', 'dark'].map((t) => `<div class="bar ${t}"><div style="width:24px;height:24px">${s}</div><span class="plain"><span style="color:${t === 'light' ? C.blue : '#7aa2ff'}">beat</span>pile</span></div>`).join('')}</div>`;
+
+writeFileSync(join(here, '..', '15-tre-custodie-come-xbox.html'), `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Beatpile, tre custodie come Xbox</title>
+<style>
+@font-face { font-family: SG; src: url(data:font/woff2;base64,${font}) format('woff2'); font-weight: 700; }
+body { margin:0; padding:24px 16px 48px; background:#fcfcfd; color:#1c2024; font:15px/1.5 Inter, system-ui, sans-serif; }
+main { max-width:960px; margin:0 auto; }
+h1 { font:700 26px SG, sans-serif; margin:0 0 4px; } h3 { font-size:14px; font-weight:600; margin:26px 0 8px; }
+p { margin:0 0 8px; color:#60646c; max-width:72ch; }
+.pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px; }
+@media (max-width:700px) { .pair { grid-template-columns:1fr; } }
+.bg { border-radius:12px; padding:16px; display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap; border:1px solid #e0e1e6; }
+.light { background:#fcfcfd; color:#1c2024; } .dark { background:#111113; color:#edeef0; border-color:#2b2d31; }
+.cell { display:flex; flex-direction:column; align-items:center; gap:6px; font-size:11px; }
+svg { width:100%; height:100%; display:block; overflow:visible; }
+.bar { display:flex; align-items:center; gap:8px; padding:12px 16px; border-radius:10px; border:1px solid #e0e1e6; }
+.plain { font:700 18px/24px SG, sans-serif; }
+</style></head><body><main>
+<h1>Beatpile, tre custodie con cornice e fascia</h1>
+<p>Tutte e tre come il modello Xbox: cornice colorata tutt'intorno, più spessa sulla cerniera a sinistra, fascia rettangolare in alto dello stesso colore, copertina chiara. Niente striscia nera, che è solo di Xbox. La plastica colorata ha un riflesso più forte e una riga di luce sul bordo alto. «bp» in blu sulla copertina chiara davanti (contrasto 6,0).</p>
+${row('Cornice sottile', sym(1.5, 0.55))}
+${row('Cornice più spessa, perché a 32 e 16 px resti il colore', sym(2.2, 0.55))}
+</main></body></html>`);
