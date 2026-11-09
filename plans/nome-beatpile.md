@@ -123,7 +123,9 @@ misurano i contrasti di Button e Badge, come nel 12a.
    appiattiva nella cornice; la bozza 16 la stacca: tono più scuro, striscia
    scura in diagonale, due righe chiare, o solo senza il riflesso sopra. La
    bozza 17 assottiglia o toglie i bordi sopra e sotto. Scelti i bordi
-   sottili (0,7); la bozza 18 porta il bordo destro da 2,2 a 1,5.
+   sottili (0,7); la bozza 18 porta il bordo destro da 2,2 a 1,5. La bozza
+   19 mette la favicon a 16 px in una scheda accanto a GitHub: a quella misura
+   «bp» non si legge, né nella 18 né nella 11.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 
