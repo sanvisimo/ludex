@@ -27,32 +27,40 @@ Verificato dall'utente: nessun prodotto, dominio o marchio «Beatpile» trovato.
 Tutte le bozze, in ordine, sono in [nome-beatpile-bozze/](nome-beatpile-bozze/):
 un PNG da guardare e l'HTML da cui viene.
 
-[nome-beatpile-simbolo.svg](nome-beatpile-simbolo.svg) è la bozza scelta:
+[nome-beatpile-simbolo.svg](nome-beatpile-simbolo.svg) è la bozza scelta
+(bozza 11):
 
 - **tre custodie di videogiochi**, una pila un po' storta (−3°, 3°, 8°);
-- i **colori del fuoco**: ambra davanti (`amber 9`, `#ffc53d`), arancio in
-  mezzo (`orange 9`, `#f76b15`), rosso dietro (`red 10`, `#ce2c31`);
-- il **bordo di plastica chiaro e lucido**: la scocca è il colore della
-  custodia schiarito (bianco al 45%), più spessa a sinistra dove c'è la
-  cerniera, con la copertina rientrata nel colore pieno;
-- **«bp» minuscolo** sulla custodia ambra, la **b rosso scuro** (`#a3171c`,
-  contrasto 4,9 sull'ambra) e la **p scura** (`slate 12`, 10,4).
+- i **colori delle tre console**, vicini ai marchi ma non uguali, saturi:
+  blu davanti (`#0050e6`, PlayStation è `#003791`), rosso in mezzo
+  (`#ee0a1f`, Nintendo `#e60012`), verde dietro (`#13a313`, Xbox `#107c10`,
+  valore non confermato). I valori dei marchi vengono da siti di palette, non
+  dalle linee guida ufficiali;
+- il **bordo di plastica chiaro**: la scocca è il colore della custodia
+  schiarito (bianco al 45%), più spessa a sinistra dove c'è la cerniera, con
+  la copertina rientrata nel colore pieno;
+- il **riflesso lucido** sulle copertine: uno sfumato chiaro in diagonale
+  dall'angolo in alto a sinistra;
+- **«bp» minuscolo, bianco**, centrato nella copertina blu sull'inchiostro
+  delle lettere (Space Grotesk 700, 11,4), con lo stesso margine ai due lati.
+  Contrasto 6,4.
 
-Come ci si è arrivati, in ordine: la tessera teal senza lettera (B) → la
-stessa nei colori del fuoco → «BP» con la B arancio e la p bianca, che
-sull'ambra non si leggono (1,9 e 1,6) → «bp» minuscolo, più leggibile a 32 px
-→ le tessere diventano custodie → storte, con il bordo di plastica, chiaro.
-Scartati per strada: la pila in fiamme con «BP» (a 16 px restava una macchia)
-e la tessera davanti scura.
+Come ci si è arrivati, in ordine: la tessera teal senza lettera → la stessa
+nei colori del fuoco → «BP» → «bp» minuscolo, più leggibile a 32 px → le
+tessere diventano custodie → storte, con il bordo di plastica chiaro → le
+custodie nei colori delle console (blu, rosso, verde), che slegano il simbolo
+dall'accento → colori più vicini ai marchi e lucidi → le lettere centrate
+nella copertina. Scartati per strada: la pila in fiamme con «BP» (a 16 px
+restava una macchia), la tessera davanti scura, i colori del fuoco e quelli
+Radix delle console (opachi accanto ai marchi).
 
 Cose che la bozza lascia aperte, da chiudere nella rifinitura:
 
-- **la p non cambia colore col tema.** Sta sulla custodia ambra, che è uguale
-  sui due fondi, e il simbolo resta a colori fissi come oggi: è anche favicon
-  e icona dell'app, che il tema non lo sanno;
+- **i colori del simbolo sono fissi**, come oggi: è anche favicon e icona
+  dell'app, che il tema non lo sanno;
 - **a 16 px le lettere non si leggono**: resta la sagoma, tre rettangoli
-  storti nei colori del fuoco. Va deciso se la favicon è questa o una
-  versione semplificata;
+  storti blu, rosso e verde. Va deciso se la favicon è questa o una versione
+  semplificata;
 - su fondo chiaro il bordo lucido quasi si perde;
 - le lettere sono testo in Space Grotesk: nel `Logo` e nei file della favicon
   e dell'icona vanno convertite in tracciati.
@@ -61,43 +69,43 @@ Cose che la bozza lascia aperte, da chiudere nella rifinitura:
 
 Due forme, perché il nome disegnato a 24 px non regge:
 
-- **disegnato**, per home, splash e crediti: «BEAT» nel fuoco e «PILE» fatto
-  di custodie impilate. Solo una prima bozza;
+- **disegnato**, per home, splash e crediti: nella prima bozza «BEAT» nel
+  fuoco e «PILE» fatto di custodie impilate. Col simbolo nei colori delle
+  console il fuoco non c'è più: va ridisegnato;
 - **in testo**, per la barra e dove il disegno non regge: «**beat**pile» in
-  Space Grotesk, _beat_ in arancio e _pile_ nel colore del testo, che cambia
-  col tema.
+  Space Grotesk, _beat_ nel colore dell'accento e _pile_ in quello del testo,
+  che cambiano col tema.
 
-## I colori — l'accento passa al fuoco
+## I colori — l'accento, da decidere
 
-Deciso di spostare l'accento dal teal verso i colori del simbolo. Prima del
-codice va misurato, come nel 12a:
+Con il fuoco l'accento sarebbe passato all'arancio; con i colori delle console
+il simbolo non è più legato all'accento. Il teal accanto ai tre colori però
+stona (09/11). Le due strade (bozza 08):
 
-- **i contrasti** di Button e Badge con l'arancio: con il teal il testo del
-  Button è scuro (6,16); sull'arancio Radix va verificato se tiene il testo
-  scuro o vuole quello chiaro;
-- **l'arancio contro i colori di stato**: `red` è il distruttivo e `amber`
-  l'avviso (`palettes.ts`). Un accento arancio fra i due rischia che "questo
-  si clicca" e "attenzione" si confondano;
-- **le copertine**: il teal era stato scelto perché il viola e il magenta
-  stanno dappertutto sulle copertine. Va guardato il backlog vero con
-  l'arancio.
+- **blu**, dalla scala Radix `blue`, che ha già i passi misurati per i due
+  temi: il blu del simbolo, fisso e scuro, come testo sul fondo scuro fa 2,4.
+  Sul pulsante il testo va scuro (5,0 sul `blue 9`; il bianco fa 3,3);
+- **neutro**: pulsanti neri sul chiaro e bianchi sullo scuro, il colore lo
+  porta solo il simbolo. È l'idea di `palettes.ts`: l'interfaccia sta
+  indietro, il colore lo mettono le copertine.
+
+Verde e rosso restano fuori: sono già «riuscito» e «distruttivo».
 
 Tocca `accents` e `defaultAccent` in `packages/ui/src/palettes.ts`, i commenti
 che motivano il teal (`palettes.ts`, `button.tsx`, `logo.tsx`, la timeline di
 `_app.roadmap.tsx`) e la voce «L'identità» di
-[packages/ui/CLAUDE.md](../packages/ui/CLAUDE.md).
+[packages/ui/CLAUDE.md](../packages/ui/CLAUDE.md). Prima del codice si
+misurano i contrasti di Button e Badge, come nel 12a.
 
 ## Da decidere prima del codice
 
 1. **Il dominio.** Quale si compra (`beatpile.gg`, `.com`, `.app`) e se il
    sito ci passa subito o resta per ora su un sottodominio di
    `sanvisimo.tech` (`beatpile.sanvisimo.tech`).
-2. **Pilepick o Beatpile, fuoco o console.** Il 09/11 si è riaperta la prova
-   con Pilepick, e con le custodie blu, rossa e verde (i colori di
-   PlayStation, Nintendo e Xbox, dalle scale Radix): un simbolo a più colori
-   non è legato all'accento, che resterebbe il teal già misurato. Bozza 07. Poi blu e verde più accesi e, visto
-   che il teal accanto ai tre colori stona, due accenti al suo posto: il blu
-   della custodia davanti o un accento neutro. Bozza 08.
+2. **Beatpile o Pilepick.** Il 09/11 si è riaperta la prova con Pilepick
+   (bozza 07): stesso simbolo, «pp» al posto di «bp», e nel nome in testo si
+   colora il verbo, _pick_.
+3. **L'accento**: blu o neutro, sopra.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 

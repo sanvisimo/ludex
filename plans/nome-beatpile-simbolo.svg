@@ -1,15 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="128" height="128">
   <g transform="rotate(8 21.5 11.25)">
-    <rect x="14" y="1" width="15" height="20.5" rx="1.8" fill="#ce2c31"/><rect x="14" y="1" width="15" height="20.5" rx="1.8" fill="#fff" fill-opacity=".45"/>
-    <rect x="16.1" y="2.1" width="11.8" height="18.3" rx="0.8" fill="#ce2c31"/>
-  </g>
-  <g transform="rotate(3 17 15)">
-    <rect x="9" y="4" width="16" height="22" rx="1.8" fill="#f76b15"/><rect x="9" y="4" width="16" height="22" rx="1.8" fill="#fff" fill-opacity=".45"/>
-    <rect x="11.24" y="5.1" width="12.66" height="19.8" rx="0.8" fill="#f76b15"/>
-  </g>
-  <g transform="rotate(-3 12 19.2)">
-    <rect x="3" y="7.2" width="18" height="24" rx="1.8" fill="#ffc53d"/><rect x="3" y="7.2" width="18" height="24" rx="1.8" fill="#fff" fill-opacity=".45"/>
-    <rect x="5.52" y="8.3" width="14.38" height="21.8" rx="0.8" fill="#ffc53d"/>
-  </g>
-  <g transform="rotate(-3 12.3 19.2)"><text x="13.47" y="23.8" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="12.6" letter-spacing="-0.7"><tspan fill="#a3171c">b</tspan><tspan fill="#1c2024">p</tspan></text></g>
+    <rect x="14" y="1" width="15" height="20.5" rx="1.8" fill="#13a313"/><rect x="14" y="1" width="15" height="20.5" rx="1.8" fill="#fff" fill-opacity=".45"/>
+    <rect x="16.1" y="2.1" width="11.80" height="18.3" rx="0.8" fill="#13a313"/>
+    <defs><linearGradient id="g0" x1="0" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".45" stop-color="#fff" stop-opacity=".08"/><stop offset=".46" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></linearGradient></defs><rect x="16.1" y="2.1" width="11.80" height="18.3" rx="0.8" fill="url(#g0)"/></g><g transform="rotate(3 17 15)">
+    <rect x="9" y="4" width="16" height="22" rx="1.8" fill="#ee0a1f"/><rect x="9" y="4" width="16" height="22" rx="1.8" fill="#fff" fill-opacity=".45"/>
+    <rect x="11.24" y="5.1" width="12.66" height="19.8" rx="0.8" fill="#ee0a1f"/>
+    <defs><linearGradient id="g1" x1="0" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".45" stop-color="#fff" stop-opacity=".08"/><stop offset=".46" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></linearGradient></defs><rect x="11.24" y="5.1" width="12.66" height="19.8" rx="0.8" fill="url(#g1)"/></g><g transform="rotate(-3 12 19.2)">
+    <rect x="3" y="7.2" width="18" height="24" rx="1.8" fill="#0050e6"/><rect x="3" y="7.2" width="18" height="24" rx="1.8" fill="#fff" fill-opacity=".45"/>
+    <rect x="5.52" y="8.3" width="14.38" height="21.8" rx="0.8" fill="#0050e6"/>
+    <defs><linearGradient id="g2" x1="0" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".45" stop-color="#fff" stop-opacity=".08"/><stop offset=".46" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></linearGradient></defs><rect x="5.52" y="8.3" width="14.38" height="21.8" rx="0.8" fill="url(#g2)"/><text x="5.56" y="22.05" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="11.4" letter-spacing="-0.6" fill="#fff">bp</text></g>
 </svg>
