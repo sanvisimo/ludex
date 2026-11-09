@@ -24,6 +24,9 @@ Verificato dall'utente: nessun prodotto, dominio o marchio «Beatpile» trovato.
 
 ## Il simbolo — deciso il 09/11/2026
 
+Tutte le bozze, in ordine, sono in [nome-beatpile-bozze/](nome-beatpile-bozze/):
+un PNG da guardare e l'HTML da cui viene.
+
 [nome-beatpile-simbolo.svg](nome-beatpile-simbolo.svg) è la bozza scelta:
 
 - **tre custodie di videogiochi**, una pila un po' storta (−3°, 3°, 8°);
@@ -54,7 +57,7 @@ Cose che la bozza lascia aperte, da chiudere nella rifinitura:
 - le lettere sono testo in Space Grotesk: nel `Logo` e nei file della favicon
   e dell'icona vanno convertite in tracciati.
 
-## Il nome scritto — da confermare
+## Il nome scritto — confermato il 09/11/2026
 
 Due forme, perché il nome disegnato a 24 px non regge:
 
@@ -89,7 +92,10 @@ che motivano il teal (`palettes.ts`, `button.tsx`, `logo.tsx`, la timeline di
 1. **Il dominio.** Quale si compra (`beatpile.gg`, `.com`, `.app`) e se il
    sito ci passa subito o resta per ora su un sottodominio di
    `sanvisimo.tech` (`beatpile.sanvisimo.tech`).
-2. **Il nome scritto**, sopra: le due forme vanno confermate.
+2. **Pilepick o Beatpile, fuoco o console.** Il 09/11 si è riaperta la prova
+   con Pilepick, e con le custodie blu, rossa e verde (i colori di
+   PlayStation, Nintendo e Xbox, dalle scale Radix): un simbolo a più colori
+   non è legato all'accento, che resterebbe il teal già misurato. Bozza 07.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 
