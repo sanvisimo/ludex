@@ -288,7 +288,7 @@ girano con cwd = cartella del package, quindi il path è sempre `../../.env`.
 
 Porte: web 8085, api 3005, dashboard delle code 3002, Postgres **5433** e Redis
 **6380** sull'host (la 5432 e la 6379 sono occupate da un altro progetto),
-Mailpit 1025 (SMTP) e **8025**, dove si leggono le email che l'app spedisce in
+Mailpit 1025 (SMTP) e **8035**, dove si leggono le email che l'app spedisce in
 sviluppo: verifica, recupero password, cambio email. Un
 `REDIS_URL` rimasto sulla 6379 non dà errore: si collega al Redis dell'altro
 progetto, e server e worker lavorano su una coda vuota.
