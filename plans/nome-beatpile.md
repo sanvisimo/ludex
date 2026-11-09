@@ -1,8 +1,8 @@
 # Il nome: da Ludex a Beatpile
 
-**Da approvare.** Il nome è deciso l'08/11/2026, il simbolo il 09/11;
-questo piano dice cosa cambia nel codice e cosa no. Il codice non è stato
-toccato.
+**Da approvare.** Il nome scelto l'08/11/2026 è Beatpile, ma il 09/11 è
+tornato in prova anche Pilepick; **il simbolo non è ancora scelto**. Questo
+piano dice cosa cambia nel codice e cosa no. Il codice non è stato toccato.
 
 ## Perché
 
@@ -22,7 +22,7 @@ scartate (Pilepick, Pilebeat, WhatPlayNext, What2play…) sono in
 
 Verificato dall'utente: nessun prodotto, dominio o marchio «Beatpile» trovato.
 
-## Il simbolo — deciso il 09/11/2026
+## Il simbolo — non ancora scelto
 
 Tutte le bozze, in ordine, sono in [nome-beatpile-bozze/](nome-beatpile-bozze/):
 un PNG da guardare e l'HTML da cui viene. In `sorgenti/` gli script che le
@@ -30,8 +30,10 @@ producono, uno per bozza, con il carattere: da quella cartella
 `node 12-nomi-e-accento.mjs` riscrive l'HTML, e `node png.cjs` (Playwright)
 rifà i PNG. Rigenerate dal repo, le bozze 01–11 escono identiche.
 
-[nome-beatpile-simbolo.svg](nome-beatpile-simbolo.svg) è la bozza scelta
-(bozza 11):
+Le direzioni in prova sono due: la bozza 11, qui sotto, e le custodie con
+cornice e fascia delle bozze 15–18 (in «Da decidere prima del codice», punto
+4). [nome-beatpile-simbolo.svg](nome-beatpile-simbolo.svg) è la bozza 11, non
+una scelta:
 
 - **tre custodie di videogiochi**, una pila un po' storta (−3°, 3°, 8°);
 - i **colori delle tre console**, vicini ai marchi ma non uguali, saturi:
@@ -57,7 +59,7 @@ nella copertina. Scartati per strada: la pila in fiamme con «BP» (a 16 px
 restava una macchia), la tessera davanti scura, i colori del fuoco e quelli
 Radix delle console (opachi accanto ai marchi).
 
-Cose che la bozza lascia aperte, da chiudere nella rifinitura:
+Cose che restano aperte, qualunque sia la scelta:
 
 - **i colori del simbolo sono fissi**, come oggi: è anche favicon e icona
   dell'app, che il tema non lo sanno;
@@ -122,7 +124,7 @@ misurano i contrasti di Button e Badge, come nel 12a.
    rettangolare in alto, in due spessori di cornice. Lì però la fascia si
    appiattiva nella cornice; la bozza 16 la stacca: tono più scuro, striscia
    scura in diagonale, due righe chiare, o solo senza il riflesso sopra. La
-   bozza 17 assottiglia o toglie i bordi sopra e sotto. Scelti i bordi
+   bozza 17 assottiglia o toglie i bordi sopra e sotto. Preferiti i bordi
    sottili (0,7); la bozza 18 porta il bordo destro da 2,2 a 1,5. La bozza
    19 mette la favicon a 16 px in una scheda accanto a GitHub: a quella misura
    «bp» non si legge, né nella 18 né nella 11.
@@ -170,7 +172,8 @@ Non lo vede chi usa l'app, e cambiarlo costa senza dare niente:
 
 ## Passi
 
-1. ~~Il simbolo: le bozze accanto al nome, scelta.~~ Fatto il 09/11.
+1. Il simbolo: la scelta fra la bozza 11 e le custodie con cornice e fascia
+   (15–18).
 2. L'accento: le misure qui sopra, poi `palettes.ts`;
    `pnpm --filter @repo/ui test`, e Chromatic per vedere tutto il resto.
 3. Nome e simbolo in `packages/ui` e negli asset, con le lettere in
