@@ -417,7 +417,7 @@ direzione col CSS. Cose che non si indovinano:
   si fa con una `POST /api/auth/sign-in/email` dal contesto del browser: il cookie
   è per host e non per porta, quindi vale anche sul web. Un utente nuovo entra
   solo dopo il link di verifica, che si legge da Mailpit
-  (`http://localhost:8025/api/v1/messages`).
+  (`http://localhost:8035/api/v1/messages`).
 - **Il cambio email** è un dialogo di `ProfileDetails`: due link, il primo
   all'indirizzo di adesso e il secondo a quello nuovo, tutti e due verso
   `/email-link`. Un indirizzo già di un altro account Better Auth lo accetta
