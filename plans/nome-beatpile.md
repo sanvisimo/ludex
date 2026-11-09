@@ -119,7 +119,9 @@ misurano i contrasti di Button e Badge, come nel 12a.
    colore e forma insieme richiamano la confezione di ciascun marchio. La
    bozza 15 tiene le copertine chiare e dà a tutte e tre la forma del modello
    Xbox, senza la striscia nera: cornice colorata e lucida, fascia
-   rettangolare in alto, in due spessori di cornice.
+   rettangolare in alto, in due spessori di cornice. Lì però la fascia si
+   appiattiva nella cornice; la bozza 16 la stacca: tono più scuro, striscia
+   scura in diagonale, due righe chiare, o solo senza il riflesso sopra.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 
