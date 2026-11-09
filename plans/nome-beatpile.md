@@ -25,7 +25,10 @@ Verificato dall'utente: nessun prodotto, dominio o marchio «Beatpile» trovato.
 ## Il simbolo — deciso il 09/11/2026
 
 Tutte le bozze, in ordine, sono in [nome-beatpile-bozze/](nome-beatpile-bozze/):
-un PNG da guardare e l'HTML da cui viene.
+un PNG da guardare e l'HTML da cui viene. In `sorgenti/` gli script che le
+producono, uno per bozza, con il carattere: da quella cartella
+`node 12-nomi-e-accento.mjs` riscrive l'HTML, e `node png.cjs` (Playwright)
+rifà i PNG. Rigenerate dal repo, le bozze 01–11 escono identiche.
 
 [nome-beatpile-simbolo.svg](nome-beatpile-simbolo.svg) è la bozza scelta
 (bozza 11):
@@ -105,7 +108,9 @@ misurano i contrasti di Button e Badge, come nel 12a.
 2. **Beatpile o Pilepick.** Il 09/11 si è riaperta la prova con Pilepick
    (bozza 07): stesso simbolo, «pp» al posto di «bp», e nel nome in testo si
    colora il verbo, _pick_.
-3. **L'accento**: blu o neutro, sopra.
+3. **L'accento**: blu o neutro, sopra. La bozza 12 mette i due nomi con i due
+   accenti in un pezzo d'interfaccia: barra, pulsante, voce attiva,
+   etichetta, link.
 
 ## Cosa cambia: ciò che vede chi usa l'app
 
