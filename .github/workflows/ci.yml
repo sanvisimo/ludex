@@ -112,7 +112,7 @@ jobs:
           context: .
           push: true
           build-args: |
-            PUBLIC_API_URL=https://ludex.sanvisimo.tech
+            PUBLIC_API_URL=https://pilecue.com
             PUBLIC_TURNSTILE_SITE_KEY=${{ vars.TURNSTILE_SITE_KEY }}
           tags: |
             ghcr.io/sanvisimo/ludex:main
