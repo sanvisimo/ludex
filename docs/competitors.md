@@ -96,6 +96,37 @@ _Controllato il 07/11/2026, dal repository GitHub._
 
 Fonti: [repository GitHub](https://github.com/JosefNemec/Playnite/).
 
+## GameCue
+
+_Controllato il 10/11/2026, dalla home del sito e da uno screenshot
+dell'utente con la sua libreria importata. Altre pagine (about, FAQ, prezzi)
+non sono linkate dalla home._
+
+- **Cos'è**: un tracker del backlog che promette la stessa cosa di Ludex
+  («Break Your Backlog», «What Should I Play Next?»). In cima alla pagina una
+  scheda «Suggested Next» con copertina, piattaforma e genere, una riga che
+  dice perché l'ha scelto, «I'll Play This» e un tasto per pescarne un altro.
+  Sotto, quattro numeri (totale, completati, quanti nell'anno, generi) e i
+  filtri per sistema, genere e stato.
+- **Come sceglie**: non dichiarato. Senza giochi completati la scheda dice
+  che pesca a caso; che dopo usi i completati (per genere?) è una deduzione.
+- **Chi lo fa e come si paga**: non dichiarato. Si presenta come «passion
+  project / work in progress», con un link per le richieste: sembra agli
+  inizi.
+- **Import**: Steam, più l'aggiunta a mano e «scan your shelf» (dal nome, i
+  giochi fisici fotografando lo scaffale; non verificato).
+- **Mobile**: nessuna app citata.
+- **Colori**: fondo blu-viola scuro, accento teal, sfumatura teal → viola.
+  Vicini ai nostri (teal su slate, niente viola: vedi
+  [plans/12-identita.md](../plans/12-identita.md)); non abbiamo cambiato.
+- **Rispetto a Ludex**: è il più vicino per promessa. Ma sceglie a caso o
+  dallo storico, senza tempo disponibile, piattaforma o mood, e importa solo
+  Steam: niente console, HLTB, voti della critica né abbonamenti. La scheda
+  «gioco proposto con il motivo» è la forma che può prendere la risposta del
+  13b.
+
+Fonti: [gamecue.app](https://gamecue.app).
+
 ## Le app "cosa gioco dopo"
 
 _Controllato l'08/11/2026, dai riassunti della ricerca web: le pagine di App
