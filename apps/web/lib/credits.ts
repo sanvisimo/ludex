@@ -180,4 +180,4 @@ export const issuesUrl = `${repoUrl}/issues`;
  * dati e la chiusura dell'account (informativa e condizioni). Suggerimenti e
  * segnalazioni stanno nelle issue, `issuesUrl`.
  */
-export const contactEmail = 'sanvi.simo@proton.me';
+export const contactEmail = 'info@pilecue.it';

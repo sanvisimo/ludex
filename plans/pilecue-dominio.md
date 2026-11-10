@@ -6,8 +6,13 @@ L'app passa da `ludex.sanvisimo.tech` a **`https://pilecue.com`**. Il vecchio
 nome, `pilecue.it` e `www.pilecue.com` rimandano lì con un 301 che conserva
 path e query, così i link `/shared/...` già condivisi restano validi.
 
-Le email dell'app partono da **`PileCue <noreply@pilecue.it>`**; la casella
-`info@pilecue.it` sta su Infomaniak. Scartati: `.gg` (non aggiunge niente a un
+Le email dell'app partono da **`PileCue <noreply@pilecue.com>`** (deciso lo
+stesso giorno, al posto di `noreply@pilecue.it`): stesso nome del sito, e un
+SPF solo di Scaleway, che non si mescola con la posta di Infomaniak. `noreply@`
+non è una casella, conta solo il dominio verificato. La casella vera è
+`info@pilecue.it`, su Infomaniak, ed è anche il contatto di informativa e
+condizioni (`contactEmail` in `apps/web/lib/credits.ts`, prima l'indirizzo
+personale). Scartati: `.gg` (non aggiunge niente a un
 link condiviso), `.app` (facoltativo, non preso), `pileque.com` (il refuso,
 già registrato da altri).
 
@@ -59,6 +64,13 @@ prepara la PR e verifica in sola lettura.
         Il 10/11: SPF unito e `_dmarc` a `p=none` rispondono. Era entrato anche
         l'MX `10 blackhole.tem.scaleway.com`, da togliere: è il ripiego quando
         Infomaniak non risponde, e la posta di `info@` finirebbe nel nulla.
+        Superato dalla scelta di `pilecue.com` (1c): l'include di Scaleway, il
+        suo DKIM e il dominio su TEM si possono togliere da `pilecue.it`.
+1c. [ ] **Scaleway TEM su `pilecue.com`**: il dominio nello stesso progetto;
+        nel DNS il DKIM di Scaleway, `v=spf1 include:_spf.tem.scaleway.com -all`,
+        `_dmarc` a `p=none` e l'MX `blackhole.tem.scaleway.com` (qui sì: su
+        `pilecue.com` non c'è posta). Si aspetta la verifica, **prima del
+        merge**.
 2. [x] **Turnstile**: `pilecue.com` fra gli hostname del widget. Saltarlo
        chiude fuori tutti al cambio.
 3. [x] **Tunnel `ludex-vps`**: hostname `pilecue.com` con le stesse due
@@ -70,10 +82,11 @@ prepara la PR e verifica in sola lettura.
    - PR con `PUBLIC_API_URL=https://pilecue.com` in `ci.yml`. Al merge
      `deploy.sh` installa l'immagine e, ricreando i container, rilegge
      `ludex.env`: bundle e server cambiano insieme.
-4b. [ ] `MAIL_FROM="PileCue <noreply@pilecue.it>"` in `ludex.env`, **solo dopo**
-        la verifica di 1b: un mittente non verificato fa rifiutare gli invii.
-        Verificato, quindi entra in `ludex.env` insieme alle due del passo 4:
-        la ricreazione dei container al deploy le legge tutte.
+4b. [ ] `MAIL_FROM="PileCue <noreply@pilecue.com>"` in `ludex.env`, **solo
+        dopo** la verifica di 1c: un mittente non verificato fa rifiutare gli
+        invii. Entra in `ludex.env` insieme alle due del passo 4: la
+        ricreazione dei container al deploy le legge tutte.
+4c. [ ] `contactEmail` a `info@pilecue.it`, nella stessa PR: esce col deploy.
 5. [ ] **Redirect Rules**, 301: `ludex.sanvisimo.tech/*`, `pilecue.it` e
        `www.pilecue.com` → `https://pilecue.com` + path + query. Ogni nome
        senza record vuole un `AAAA 100::` proxied; sull'apex del `.it` non
