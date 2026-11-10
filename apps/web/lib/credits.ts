@@ -42,7 +42,7 @@ export const services: Credit[] = [
   { id: 'nintendo', name: 'Nintendo', url: 'https://www.nintendo.com' },
 ];
 
-/** Il software su cui poggia Ludex. */
+/** Il software su cui poggia PileCue. */
 export const software: Credit[] = [
   { id: 'react', name: 'React', url: 'https://react.dev', license: 'MIT' },
   {

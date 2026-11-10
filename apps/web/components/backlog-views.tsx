@@ -401,7 +401,7 @@ function CompactView({
         py={8}
         gap={12}
         items="center"
-        bg="$color2"
+        bg="$surface"
         borderBottomWidth={1}
         borderColor="$borderColor"
       >

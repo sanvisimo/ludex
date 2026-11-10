@@ -1,4 +1,4 @@
-import { createTransport } from 'nodemailer';
+import { createTransport, type SendMailOptions } from 'nodemailer';
 
 // Chi spedisce le email: Scaleway TEM, via SMTP. Il fornitore sta tutto nelle
 // variabili, quindi cambiarlo vuol dire cambiare il `.env` e non il codice.
@@ -7,7 +7,7 @@ import { createTransport } from 'nodemailer';
 // sé. Senza `SMTP_HOST` non si spedisce niente: l'email finisce nel log
 // dell'API, link compreso, e da lì si apre a mano.
 const host = process.env.SMTP_HOST;
-const from = process.env.MAIL_FROM ?? 'Ludex <noreply@localhost>';
+const from = process.env.MAIL_FROM ?? 'PileCue <noreply@localhost>';
 
 const user = process.env.SMTP_USER;
 
@@ -24,7 +24,13 @@ const transport = host
     })
   : null;
 
-export type Mail = { to: string; subject: string; text: string; html: string };
+export type Mail = {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  attachments?: SendMailOptions['attachments'];
+};
 
 export async function sendMail(mail: Mail) {
   // Nei test ogni registrazione ne spedirebbe una, a Mailpit se il `.env` di

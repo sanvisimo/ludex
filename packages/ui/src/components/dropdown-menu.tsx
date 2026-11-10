@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactElement, ReactNode } from 'react';
-import { Menu } from 'tamagui';
+import { isWeb, Menu } from 'tamagui';
 import type { GetProps } from 'tamagui';
 
 import { Check } from '../icons';
@@ -45,6 +45,7 @@ type DropdownMenuContentProps = GetProps<typeof Menu.Content>;
 
 export function DropdownMenuContent({
   children,
+  onCloseAutoFocus,
   ...props
 }: DropdownMenuContentProps) {
   return (
@@ -62,6 +63,25 @@ export function DropdownMenuContent({
         enterStyle={{ opacity: 0, y: -4 }}
         exitStyle={{ opacity: 0, y: -4 }}
         {...props}
+        onCloseAutoFocus={(event) => {
+          onCloseAutoFocus?.(event);
+          if (!isWeb || event.defaultPrevented) return;
+          // Un dialogo aperto dalla voce del menu deve ricevere il focus
+          // dopo lo smontaggio del menu, invece di tornare al suo trigger.
+          const dialog = document.querySelector<HTMLElement>(
+            '[role="dialog"][data-state="open"]',
+          );
+          if (!dialog) return;
+          event.preventDefault();
+          requestAnimationFrame(() => {
+            if (dialog.isConnected && !dialog.contains(document.activeElement))
+              dialog
+                .querySelector<HTMLElement>(
+                  'input:not([disabled]), button:not([disabled]), [tabindex="0"]',
+                )
+                ?.focus();
+          });
+        }}
       >
         {children}
       </Menu.Content>

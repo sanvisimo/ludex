@@ -103,7 +103,7 @@ export function RandomGameDice() {
         disabled={pick.isPending}
         onPress={roll}
       >
-        <Dices size={16} color="$black1" />
+        <Dices size={16} color="$actionColor" />
       </Button>
     </Tooltip>
   );

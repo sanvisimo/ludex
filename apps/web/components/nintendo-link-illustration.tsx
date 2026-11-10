@@ -26,7 +26,7 @@ export function NintendoLinkIllustration() {
         <div className="flex items-center gap-3">
           <div className="size-9 rounded-full bg-muted" />
           <span className="text-sm text-muted-foreground">{t('name')}</span>
-          <span className="ml-auto rounded-full bg-destructive px-3 py-1 text-xs text-white">
+          <span className="ml-auto rounded-full bg-[var(--red3)] px-3 py-1 text-xs text-[var(--red12)]">
             {t('button')}
           </span>
         </div>

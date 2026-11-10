@@ -64,7 +64,7 @@ function RoadmapPage() {
 }
 
 /**
- * Una voce della timeline. Il colore è uno solo, il teal dell'accento: gli
+ * Una voce della timeline. Il colore è uno solo, il viola dell'accento: gli
  * stati si distinguono per **come è riempito** il pallino e l'etichetta — pieno
  * con la spunta, pieno con l'alone, col solo bordo, tratteggiato — e mai per la
  * tinta, o la pagina diventa un arcobaleno. Lo stato è scritto anche a parole,
@@ -162,7 +162,7 @@ function Dot({ status }: { status: RoadmapStatus }) {
   if (status === 'done') {
     return (
       <XStack {...common} bg="$accent9">
-        <Check size={12} color="$black1" />
+        <Check size={12} color="$actionColor" />
       </XStack>
     );
   }
@@ -215,7 +215,7 @@ function StatusBadge({ status }: { status: Exclude<RoadmapStatus, 'done'> }) {
 /**
  * Chiude la pagina con la strada per dire la propria: le issue di GitHub,
  * dove stanno anche le segnalazioni. Il riquadro è l'altro posto, con la linea,
- * dove compare il teal.
+ * dove compare il viola.
  */
 function Invitation() {
   const t = useTranslations('roadmap') as Translate;

@@ -215,7 +215,7 @@ export function EditEntryDialog({
               value={status}
               onValueChange={(next) => setStatus(next as BacklogStatus)}
             >
-              <SelectTrigger width="100%">
+              <SelectTrigger width="100%" aria-label={t('statusLabel')}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -331,7 +331,11 @@ export function EditEntryDialog({
                 value={store}
                 onValueChange={(next) => setStore(next as string)}
               >
-                <SelectTrigger width={160} shrink={0}>
+                <SelectTrigger
+                  width={160}
+                  shrink={0}
+                  aria-label={t('storeLabel')}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -348,7 +352,11 @@ export function EditEntryDialog({
                 value={medium}
                 onValueChange={(next) => setMedium(next as string)}
               >
-                <SelectTrigger width={160} shrink={0}>
+                <SelectTrigger
+                  width={160}
+                  shrink={0}
+                  aria-label={t('mediumLabel')}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -162,7 +162,7 @@ export function TagPicker({
               <label className="flex flex-1 items-center gap-2">
                 <input
                   type="checkbox"
-                  className="size-4"
+                  className="size-4 accent-primary"
                   checked={selected.has(row.name.toLowerCase())}
                   onChange={(event) => toggle(row.name, event.target.checked)}
                 />

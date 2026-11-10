@@ -866,8 +866,7 @@ export function RelatedRow({
             <Text
               fontSize={13}
               lineHeight={18}
-              color="$color12"
-              opacity={opacity}
+              color={game.owned ? '$color12' : '$color11'}
               numberOfLines={2}
               // Dentro il bottone il browser centrerebbe.
               text="left"

@@ -1,4 +1,4 @@
-import { Button as ButtonBase, styled } from 'tamagui';
+import { Button as ButtonBase, isWeb, styled, useThemeName } from 'tamagui';
 import type { GetProps } from 'tamagui';
 
 /**
@@ -19,12 +19,14 @@ import type { GetProps } from 'tamagui';
  * I nomi (`variant`, `size`, e i valori) restano quelli di prima, così le
  * schermate cambiano l'import e non la struttura.
  */
-export const Button = styled(ButtonBase, {
+const ButtonFrame = styled(ButtonBase, {
   name: 'Button',
 
   borderWidth: 1,
   borderColor: 'transparent',
   fontWeight: '500',
+  // Le nostre size (default, sm, icon…) non sono token tipografici Tamagui.
+  iconSize: '$true',
 
   // Il focus si vede **solo da tastiera**: `focusVisibleStyle` e non
   // `focusStyle`, o l'anello comparirebbe a ogni clic del mouse.
@@ -41,26 +43,26 @@ export const Button = styled(ButtonBase, {
 
   variants: {
     variant: {
-      /**
-       * Il primario: superficie piena.
-       *
-       * Testo **scuro** su teal, e non è un gusto — è misurato: `$accent9` con
-       * testo scuro dà 6.16 di contrasto, con testo chiaro 2.99, sotto la
-       * soglia WCAG di 4.5. Il teal sta fra i colori "bright" delle scale
-       * Radix, quelli il cui passo 9 vuole testo scuro sopra. Il giorno che
-       * l'accento cambia, questo va rimisurato: con un viola la risposta si
-       * inverte.
-       *
-       * Non usa `$accentBackground` perché quel token **non è simmetrico** fra
-       * i temi: nel chiaro è una tinta tenue, nello scuro una superficie piena.
-       * Va benissimo per un pannello, non per il bottone che deve pesare
-       * uguale in entrambi.
-       */
+      /** Coppie fondo/testo misurate in entrambi i temi, anche in pressione. */
       default: {
-        bg: '$accent9',
-        color: '$black1',
-        hoverStyle: { bg: '$accent10' },
-        pressStyle: { bg: '$accent8' },
+        bg: '$actionBackground',
+        color: '$actionColor',
+        hoverStyle: { bg: '$actionBackgroundHover' },
+        pressStyle: { bg: '$actionBackgroundPress' },
+      },
+      /** Filtri attivi: superficie tenue distinta dall'azione principale. */
+      selection: {
+        bg: '$selectionBackground',
+        color: '$selectionColor',
+        borderColor: '$selectionBorder',
+        hoverStyle: {
+          bg: '$selectionBackgroundHover',
+          borderColor: '$selectionBorderHover',
+        },
+        pressStyle: {
+          bg: '$selectionBackgroundPress',
+          borderColor: '$selectionBorderPress',
+        },
       },
       /**
        * Il bordo è `$color9` e non `$borderColor`, ed è una scelta **misurata**:
@@ -129,4 +131,14 @@ export const Button = styled(ButtonBase, {
   },
 });
 
-export type ButtonProps = GetProps<typeof Button>;
+// Il Button styleable di Tamagui 2.7.7 risolve le varianti native prima
+// del cambio di schema e può conservarne i colori. Passare il nome al frame
+// forza la risoluzione nel tema corrente senza rimontare o perdere stato.
+export const Button = isWeb
+  ? ButtonFrame
+  : ButtonFrame.styleable((props, ref) => {
+      const theme = useThemeName();
+      return <ButtonFrame {...props} ref={ref} theme={props.theme ?? theme} />;
+    });
+
+export type ButtonProps = GetProps<typeof ButtonFrame>;

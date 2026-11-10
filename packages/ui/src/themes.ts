@@ -1,6 +1,13 @@
 import { createV5Theme } from '@tamagui/config/v5';
 
-import { accents, defaultAccent, base, states, toAccent } from './palettes';
+import {
+  accents,
+  defaultAccent,
+  base,
+  states,
+  toAccent,
+  actionPress,
+} from './palettes';
 
 /**
  * **Livello 2 — i semantici.**
@@ -11,20 +18,13 @@ import { accents, defaultAccent, base, states, toAccent } from './palettes';
  * un solo componente — ed è l'unico che i componenti hanno il diritto di
  * nominare.
  *
- * Due potature, entrambe misurate, che portano i temi da **390 a 48** e le loro
- * definizioni da **562 KB a 82 KB**. Col blu dell'informazione, il quarto
- * stato (07/11/2026), sono **56 temi e 96 KB**:
- *
- * - `childrenThemes` ridotto ai quattro colori di stato. Di serie Tamagui genera un
- *   tema per ognuna delle dodici scale Radix: `light_pink_surface2` e gli altri
- *   nove colori sono temi che nessuna schermata chiederà mai.
- * - `componentThemes: false`. Sono i temi per singolo componente
- *   (`dark_Button`, `light_Input`…), che Tamagui stesso dichiara deprecati in
- *   favore degli stili sul componente: da soli erano due terzi del peso.
+ * Restano le due potature del tema originale: quattro sottotemi di stato e
+ * componentThemes disattivato. I ruoli surface/action/selection si aggiungono
+ * agli stessi temi, senza generare un secondo set per il vecchio accento.
  */
 const accent = accents[defaultAccent];
 
-export const themes = createV5Theme({
+const generatedThemes = createV5Theme({
   lightPalette: Object.values(base.light),
   darkPalette: Object.values(base.dark),
   accent: {
@@ -34,5 +34,69 @@ export const themes = createV5Theme({
   childrenThemes: states,
   componentThemes: false,
 });
+
+/** Livello semantico condiviso: vale anche dentro superfici e sottotemi.
+ * Le superfici seguono il tema locale; azioni e selezioni hanno l'identità
+ * di brand del relativo schema. Non si genera un secondo set di temi.
+ */
+function semanticRoles(
+  scheme: 'light' | 'dark',
+  theme: typeof generatedThemes.light,
+) {
+  const brand = toAccent(accent[scheme]);
+  return {
+    surface: theme.color3,
+    surfaceHover: theme.color4,
+    surfacePress: theme.color5,
+    surfaceSecondary: scheme === 'dark' ? theme.color6 : theme.color4,
+    actionBackground: brand.accent9,
+    actionBackgroundHover: brand.accent10,
+    actionBackgroundPress: actionPress[scheme],
+    actionColor: scheme === 'dark' ? base.dark.step2 : base.light.step2,
+    selectionBackground: brand.accent3,
+    selectionBackgroundHover: brand.accent4,
+    selectionBackgroundPress: brand.accent5,
+    selectionColor: brand.accent11,
+    selectionBorder: brand.accent8,
+    selectionBorderHover: brand.accent9,
+    selectionBorderPress: brand.accent9,
+    outlineColor: brand.accent9,
+  };
+}
+
+export const themes = Object.fromEntries(
+  Object.entries(generatedThemes).map(([name, theme]) => {
+    const scheme = name.startsWith('dark') ? 'dark' : 'light';
+    const palette = base[scheme];
+    // Il generatore arrotonda gli HEX in HSL. Nei temi base preserviamo i
+    // valori approvati e misurati; i sottotemi di stato restano generati.
+    const exact =
+      name === 'dark' || name === 'light'
+        ? {
+            ...Object.fromEntries(
+              Object.values(palette).map((value, i) => [
+                `color${i + 1}`,
+                value,
+              ]),
+            ),
+            ...toAccent(accent[scheme]),
+            background: palette.step2,
+            backgroundHover: scheme === 'dark' ? palette.step3 : palette.step1,
+            backgroundPress: scheme === 'dark' ? palette.step1 : palette.step3,
+            backgroundFocus: palette.step3,
+            backgroundActive: palette.step2,
+            color: palette.step12,
+            colorHover: palette.step12,
+            colorPress: palette.step12,
+            borderColor: palette.step4,
+          }
+        : {};
+    const local = { ...theme, ...exact };
+    return [name, { ...local, ...semanticRoles(scheme, local) }];
+  }),
+) as {
+  [Name in keyof typeof generatedThemes]: (typeof generatedThemes)[Name] &
+    ReturnType<typeof semanticRoles>;
+};
 
 export type Themes = typeof themes;

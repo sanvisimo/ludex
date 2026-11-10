@@ -18,7 +18,7 @@ export const Card = styled(YStack, {
   py: 16,
   rounded: 12,
   overflow: 'hidden',
-  bg: '$color2',
+  bg: '$surface',
   borderWidth: 1,
   borderColor: '$borderColor',
 
@@ -31,8 +31,8 @@ export const Card = styled(YStack, {
       true: {
         cursor: 'pointer',
         transition: 'quick',
-        hoverStyle: { bg: '$color3' },
-        pressStyle: { bg: '$color4' },
+        hoverStyle: { bg: '$surfaceHover' },
+        pressStyle: { bg: '$surfacePress' },
       },
     },
   } as const,

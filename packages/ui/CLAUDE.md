@@ -29,9 +29,15 @@ ci fa passare axe, con le violazioni che rompono il test. In CI Chromium va
 installato (`playwright install chromium`). **Chromatic** confronta i pixel fra
 una build e l'altra; il suo token sta in `.env` come `CHROMATIC_PROJECT_TOKEN`.
 
-L'**identità** è **Inter** per il testo, **Space Grotesk** per titoli e nome,
-l'accento **teal** e il simbolo di `Logo` (una tessera con la «L» e due
-copertine dietro). Le scelte e le misure sono nel piano,
+L'**identità pubblica è PileCue**: `Wordmark` ha lettere a tracciati pixel e
+una pila dalla e finale; `Logo` è la P davanti alla pila. Sorgente unica e
+asset sono documentati in [docs/brand/pilecue](../../docs/brand/pilecue/README.md).
+**Inter** resta per il testo, **Space Grotesk** per i titoli e l'accento UI
+è **viola**, con base Midnight Cue. Scale, ruoli e contrasti sono in
+[docs/brand/pilecue/color-map.md](../../docs/brand/pilecue/color-map.md).
+`surface` distingue le schede dalla pagina; `actionColor` è il testo dei
+primari nei due temi e `selection*` governa i filtri tenui. Il CSS transitorio
+usa alias delle medesime variabili Tamagui. Le scelte e le misure sono nel piano,
 [plans/12-identita.md](../../plans/12-identita.md); qui ciò che si rompe se non lo
 si sa:
 
@@ -44,7 +50,7 @@ si sa:
 - **il simbolo ha i colori fissi**, unica eccezione alla regola dei token: è
   un'immagine e non cambia col tema. Ne esistono copie — `favicon.svg`,
   `favicon.ico` e `apple-touch-icon.png` in `apps/web/public`, icona e splash
-  in `apps/mobile/assets` — e ridisegnarlo vuol dire rifarle tutte.
+  in `apps/mobile/assets` — e ridisegnarlo vuol dire rigenerarle con `pnpm --filter @repo/ui brand:generate`.
 - **`Wordmark` non è un link**: il link alla home è del router, e sul web è
   `HomeLink` in `app-shell.tsx`.
 
@@ -70,7 +76,7 @@ sull'acceso, scorrono senza barra dove non stanno. Il `ToggleGroup` è la scelta
 di **come guardarla**, una vista, in una cornice. Messo a fare i tab sembra una
 barra di bottoni.
 
-Sei componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il
+Otto componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il
 perché sta nel loro commento:
 
 - **`Tooltip` si apre da sé al focus da tastiera**: quello di Tamagui 2.7.7
@@ -88,6 +94,13 @@ perché sta nel loro commento:
   nomina in `aria-controls` ma non lo mette sul contenuto, e axe lo boccia.
 - **`ToggleGroup` rimette `aria-pressed`**: a scelta singola Tamagui lo toglie
   e non mette niente al suo posto.
+- **`DropdownMenu` cede il focus al dialogo aperto da una sua voce**:
+  dopo lo smontaggio del menu il focus entra nel nuovo pannello, invece di
+  tornare al trigger del menu. La storia `OpensDialog` verifica la regressione.
+- **`Button` propaga il nome del tema al frame su native**: il Button
+  styleable di Tamagui 2.7.7 può conservare i colori dello schema precedente
+  al cambio chiaro/scuro su Android. La correzione non rimonta il componente;
+  verificata sul Pixel 9a. Il percorso web resta quello styled originale.
 - **`Slider` non usa `disabledStyle`**, che su Tamagui 2.7.7 vale sempre, e
   centra il binario a mano. Calcola le maniglie misurando il binario, quindi
   **sul server non c'è**: chi lo monta in una pagina renderizzata dal server

@@ -526,7 +526,7 @@ software, icone, indirizzo del sorgente, email di contatto) sono in
 in `lib/legal.ts`. **La roadmap** è una timeline sola (`_app.roadmap.tsx`): prima il futuro, poi il
 fatto dal più recente. L'elenco è scritto a mano in `lib/roadmap.ts` — id, stato,
 aree, mese — con i testi in `roadmap.items.<id>` nei due file dei messaggi. Il
-colore è uno, il teal: gli stati si distinguono per come è riempito il pallino
+colore è uno, il viola: gli stati si distinguono per come è riempito il pallino
 e l'etichetta, mai per la tinta. **Segnalazioni e idee vanno alle issue di
 GitHub** (`issuesUrl` in `lib/credits.ts`); la mail (`contactEmail`) resta solo
 per informativa e condizioni, cioè per ciò che non può essere pubblico.
@@ -540,3 +540,14 @@ Dall'identità, la parte che è del web:
 
 - **`theme-color` sta nel `<head>` di `__root.tsx`** e non in `head()`: il
   router tiene una sola `meta` per `name`, e quella del tema chiaro spariva.
+
+**Identità PileCue**: il Wordmark e la palette vengono da `@repo/ui`; i residui
+Tailwind sono alias dei medesimi token in `src/globals.css`. Se dopo un cambio
+agli styled condivisi l’estrattore conserva gli stili precedenti nei consumer,
+riavviare il processo dev (il solo reload della pagina può non bastare).
+I risultati della verifica sono in [docs/brand/pilecue/verification.md](../../docs/brand/pilecue/verification.md).
+
+Il fallback 404 della radice usa `NotFoundPage`, con `AppShell`, `Page` e testi
+IT/EN: un indirizzo inesistente deve conservare identità, tema e un link al catalogo.
+Le tabelle admin hanno un punto di focus per scorrere con le frecce sul web stretto.
+L’audit web completo è in [web-audit](../../docs/brand/pilecue/web-audit/README.md).

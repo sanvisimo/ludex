@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Ludex",
+    "title": "PileCue",
     "description": "What should I play now"
   },
   "nav": {
@@ -36,7 +36,7 @@
   "catalog": {
     "title": "Catalogue",
     "goToBacklog": "Backlog",
-    "subtitle": "The catalogue Ludex knows so far.",
+    "subtitle": "The catalogue PileCue knows so far.",
     "error": "I can't load the catalogue.",
     "empty": "No games yet. The catalogue fills up as games get added."
   },
@@ -53,14 +53,14 @@
     "clear": "Clear",
     "open": "Search",
     "inBacklog": "In your backlog",
-    "inLudex": "In Ludex",
+    "inLudex": "In PileCue",
     "onIgdb": "On IGDB",
     "searching": "Searching…",
     "noResults": "No games found.",
     "allResults": "All results for “{query}”",
     "hint": "Type at least two letters of the title.",
     "count": "{count, plural, one {# game} other {# games}}",
-    "igdbSubtitle": "Games Ludex doesn't have yet: opening one adds it to the catalog.",
+    "igdbSubtitle": "Games PileCue doesn't have yet: opening one adds it to the catalog.",
     "openFailed": "Couldn't open the game.",
     "error": "The search didn't respond."
   },
@@ -193,7 +193,7 @@
       "useFilters": "Use these filters on my backlog",
       "signInToUse": "Sign in to use these filters",
       "droppedTags": "{count, plural, one {One of the sharer's tags isn't copied: tags are theirs.} other {# of the sharer's tags aren't copied: tags are theirs.}}",
-      "about": "A Ludex playlist!"
+      "about": "A PileCue playlist!"
     }
   },
   "curated": {
@@ -266,7 +266,7 @@
       "placeholder": "Search for a game",
       "hint": "Type at least two letters of the title.",
       "mine": "In your backlog",
-      "local": "On Ludex",
+      "local": "On PileCue",
       "igdb": "From IGDB",
       "add": "Add",
       "added": "Added · no. {position}",
@@ -501,7 +501,9 @@
     "duplicate": "This game is already in your backlog",
     "failed": "I couldn't add the game",
     "duplicateHidden": "You already have it, but it's hidden: you'll find it under “Hidden” in the backlog.",
-    "triggerForGame": "Add to backlog"
+    "triggerForGame": "Add to backlog",
+    "storeLabel": "Store",
+    "mediumLabel": "Medium"
   },
   "game": {
     "notFoundTitle": "Game not found",
@@ -631,7 +633,9 @@
     "removePlatform": "Remove {name}",
     "ownershipRemoved": "Platform removed",
     "removeOwnershipFailed": "I couldn't remove it",
-    "undo": "Undo"
+    "undo": "Undo",
+    "storeLabel": "Store",
+    "mediumLabel": "Medium"
   },
   "attributeKind": {
     "genre": "Genres",
@@ -641,7 +645,7 @@
   },
   "login": {
     "title": "Sign in",
-    "subtitle": "Welcome back to Ludex.",
+    "subtitle": "Welcome back to PileCue.",
     "email": "Email",
     "password": "Password",
     "submit": "Sign in",
@@ -653,7 +657,7 @@
   },
   "register": {
     "title": "Sign up",
-    "subtitle": "Create your Ludex account.",
+    "subtitle": "Create your PileCue account.",
     "name": "Name",
     "email": "Email",
     "password": "Password",
@@ -744,7 +748,7 @@
     "libraries": {
       "title": "Libraries",
       "emptyTitle": "No library linked",
-      "emptyDescription": "Link a store and Ludex imports its games: Steam, GOG, Epic, Amazon, PlayStation."
+      "emptyDescription": "Link a store and PileCue imports its games: Steam, GOG, Epic, Amazon, PlayStation."
     },
     "nav": {
       "label": "Account sections",
@@ -946,7 +950,7 @@
           "Paste what you copied here. It is good for about ten minutes."
         ],
         "wrong": "That doesn't look like the link address: did you click the button? I need the address that starts with “npf” and contains “session_token_code”.",
-        "note": "Ludex reads your digital library, including games you never launched, and the games you launched, cartridges included. A cartridge you never launched leaves no trace on Nintendo and has to be added by hand. You only do this once and the connection lasts about two years."
+        "note": "PileCue reads your digital library, including games you never launched, and the games you launched, cartridges included. A cartridge you never launched leaves no trace on Nintendo and has to be added by hand. You only do this once and the connection lasts about two years."
       },
       "ea": {
         "placeholder": "{\"access_token\":\"…\",\"expires_in\":\"…\"}",
@@ -984,7 +988,7 @@
       }
     },
     "duplicates": {
-      "description": "Some entries in your library lead to the same game as another one: the store puts them in the same product, or ludex recognises them as the same game. ludex imports one of them as the game. The others may be a second game, like Delores inside Thimbleweed Park, or a demo, a beta, a DLC or extra content: check the store and tell us what they are.",
+      "description": "Some entries in your library lead to the same game as another one: the store puts them in the same product, or PileCue recognises them as the same game. PileCue imports one of them as the game. The others may be a second game, like Delores inside Thimbleweed Park, or a demo, a beta, a DLC or extra content: check the store and tell us what they are.",
       "alsoInProduct": "{store} ({account}) · along with this one there are also:",
       "mainNotLinked": "{store} ({account}) · not linked yet: it’s among the “Unrecognised”. Along with this one there are also:",
       "searchOn": "Search on {store}",
@@ -1032,7 +1036,7 @@
       "tokenStep3": "3. Paste it here",
       "tokenPlaceholder": "{\"data\":{\"webapi_token\":\"…\"}}",
       "tokenSubmit": "Link Steam",
-      "tokenNoDevice": "Ludex opens no session on Steam: no new device shows up.",
+      "tokenNoDevice": "PileCue opens no session on Steam: no new device shows up.",
       "tokenLimit": "The token lasts 24 hours and doesn't renew. The family refreshes when you paste a new one; your own games keep syncing from the profile.",
       "tokenFormat": "I can't find the token: paste the whole text of the page.",
       "tokenWrongKind": "That isn't a Steam web token. Paste the text of the page linked above.",
@@ -1052,10 +1056,10 @@
       "or": "or",
       "profileTitle": "Public profile only",
       "profileHint": "Both the profile and the game details must be public.",
-      "privateProfile": "This Steam profile is private: Ludex can't read the library. Make the profile and the game details public, or sign in with Steam.",
+      "privateProfile": "This Steam profile is private: PileCue can't read the library. Make the profile and the game details public, or sign in with Steam.",
       "back": "Back",
       "title": "Sign in with Steam",
-      "description": "With a login Ludex reads your Steam family too, and it works with a private profile.",
+      "description": "With a login PileCue reads your Steam family too, and it works with a private profile.",
       "preparing": "Preparing the code…",
       "qrAlt": "QR code to scan with the Steam app",
       "waiting": "Waiting for the scan…",
@@ -1169,7 +1173,7 @@
     },
     "csvImport": {
       "title": "From a CSV file",
-      "description": "Games from stores Ludex can't link, like Ubisoft Connect and Battle.net, or from stores you'd rather not link: a Playnite export, for example.",
+      "description": "Games from stores PileCue can't link, like Ubisoft Connect and Battle.net, or from stores you'd rather not link: a Playnite export, for example.",
       "open": "Import from CSV",
       "lastImport": "Last import: {date} · tag “{tag}”",
       "syncing": "importing…",
@@ -1205,7 +1209,7 @@
       "launchbox": {
         "title": "LaunchBox",
         "steps": [
-          "Switch to the list view: you need at least the Title and Source columns, and with Application Path Ludex also gets the game's id.",
+          "Switch to the list view: you need at least the Title and Source columns, and with Application Path PileCue also gets the game's id.",
           "Select the games (Ctrl+A for all), copy them (Ctrl+C) and paste them into a text file.",
           "Save it, .txt is fine, and upload it here as it is."
         ]
@@ -1216,8 +1220,8 @@
       "fileLabel": "The CSV file",
       "notes": [
         "Games you already have from a linked store aren't duplicated.",
-        "Status and categories from the file only apply to games you don't have in Ludex yet.",
-        "Games Ludex doesn't recognise go to “Needs attention”."
+        "Status and categories from the file only apply to games you don't have in PileCue yet.",
+        "Games PileCue doesn't recognise go to “Needs attention”."
       ],
       "cancel": "Cancel",
       "submit": "Import",
@@ -1231,12 +1235,12 @@
       "report": {
         "title": "Import started",
         "description": "New games reach your backlog in a few minutes, with the tag “{tag}”.",
-        "nothing": "The file has no rows Ludex knows how to import.",
+        "nothing": "The file has no rows PileCue knows how to import.",
         "rows": "{count, plural, one {# row} other {# rows}}",
         "alreadyRunning": "an import is already running: upload the file again when it's done",
         "skippedTitle": "Skipped rows",
-        "noPlatform": "{count, plural, one {# console store row} other {# console store rows}} without a single platform Ludex knows: we can't tell which one you own it on",
-        "noStore": "{count, plural, one {# row} other {# rows}} without a store Ludex knows: {sources}",
+        "noPlatform": "{count, plural, one {# console store row} other {# console store rows}} without a single platform PileCue knows: we can't tell which one you own it on",
+        "noStore": "{count, plural, one {# row} other {# rows}} without a store PileCue knows: {sources}",
         "emptySource": "no source",
         "seeGames": "See the games in your backlog",
         "close": "Close",
@@ -1255,7 +1259,7 @@
         "search": "Search by name…",
         "selectAll": "Select the visible rows",
         "colFile": "In the file",
-        "colLudex": "In Ludex",
+        "colLudex": "In PileCue",
         "colStore": "Store · platform",
         "colStatus": "Status",
         "colOutcome": "Outcome",
@@ -1341,9 +1345,13 @@
       "button": "Open an issue"
     },
     "items": {
+      "pilecueBrand": {
+        "title": "The PileCue identity",
+        "text": "The new logo, icons and Midnight Cue palette are coming to the web and mobile app."
+      },
       "gogCollections": {
         "title": "GOG games sold as a collection",
-        "p1": "GOG sells some games as a collection but lists them one by one in your library, like Alone in the Dark 1, 2 and 3: in ludex each one gets its own card.",
+        "p1": "GOG sells some games as a collection but lists them one by one in your library, like Alone in the Dark 1, 2 and 3: in PileCue each one gets its own card.",
         "p2": "An entry that lands on the same game as another one, like a demo, shows up under “Possible duplicates” instead of disappearing."
       },
       "wrongPlatform": {
@@ -1363,14 +1371,14 @@
         "p3": "An entry from “Needs attention” that you link by hand stays as it was in the library: a Steam Family or PlayStation Plus copy doesn’t become a purchase, and a disc stays a disc."
       },
       "release": {
-        "title": "Ludex open to everyone",
+        "title": "PileCue open to everyone",
         "p1": "A stable server instead of the test one, and no access code at the door: anyone can sign up.",
         "p2": "Email confirmation at sign-up, password recovery and email change.",
         "p3": "Sign-in and sign-up protected by a CAPTCHA and a limit on repeated attempts."
       },
       "librarySyncOnOpen": {
-        "title": "Libraries update when you open Ludex",
-        "p1": "Open Ludex, or come back to it after a while, and your libraries update by themselves if they haven't in the last hour: the game you bought this morning is in your backlog tonight.",
+        "title": "Libraries update when you open PileCue",
+        "p1": "Open PileCue, or come back to it after a while, and your libraries update by themselves if they haven't in the last hour: the game you bought this morning is in your backlog tonight.",
         "p2": "While they work, the backlog shows how many are left. A tap opens the list, with an icon for each library: updated, updating or queued."
       },
       "playedThreshold": {
@@ -1426,7 +1434,7 @@
       "storeWishlists": {
         "title": "Store wishlists",
         "p1": "From the card of a Steam, GOG or PlayStation account you import its wishlist into a list of its own. It updates along with the library when automatic updates are on, and you can delete it whenever you like.",
-        "p2": "A game you already have in your backlog stays in the list, with its status. What Ludex doesn't recognise you link to a game by hand, or set aside if it isn't a game.",
+        "p2": "A game you already have in your backlog stays in the list, with its status. What PileCue doesn't recognise you link to a game by hand, or set aside if it isn't a game.",
         "p3": "If an import fails, the card and the lists page say why, and you get a notice when it finishes."
       },
       "linksFix": {
@@ -1457,7 +1465,7 @@
       },
       "ai": {
         "title": "What to play now, with AI",
-        "text": "Tell Ludex how much time you have, what you play on and what you feel like, and it suggests something from your backlog."
+        "text": "Tell PileCue how much time you have, what you play on and what you feel like, and it suggests something from your backlog."
       },
       "mobile": {
         "title": "The phone app",
@@ -1475,7 +1483,7 @@
       },
       "categoryPages": {
         "title": "Category pages",
-        "text": "The whole Ludex catalog with the backlog's filters: genres, themes, type, length, critic score. The game page badges will lead there too, even when signed out."
+        "text": "The whole PileCue catalog with the backlog's filters: genres, themes, type, length, critic score. The game page badges will lead there too, even when signed out."
       },
       "gameVersions": {
         "title": "Expanded editions and main game",
@@ -1543,16 +1551,16 @@
   },
   "credits": {
     "title": "Credits and licences",
-    "subtitle": "Who makes Ludex possible: the data, the software and the icons.",
+    "subtitle": "Who makes PileCue possible: the data, the software and the icons.",
     "about": {
-      "text": "Ludex is free software, born to keep your backlog always at hand and manage it the way you like. Suggestions and new ideas are welcome. With love  ♥",
+      "text": "PileCue is free software, born to keep your backlog always at hand and manage it the way you like. Suggestions and new ideas are welcome. With love  ♥",
       "source": "Source code",
       "contact": "Suggestions and ideas",
       "issues": "GitHub issues"
     },
     "services": {
       "title": "Services and data sources",
-      "intro": "Ludex makes nothing up: game data and libraries come from these services. We are not affiliated with any of them, and names and trademarks belong to their respective owners.",
+      "intro": "PileCue makes nothing up: game data and libraries come from these services. We are not affiliated with any of them, and names and trademarks belong to their respective owners.",
       "igdb": "Game data provided by IGDB.com: titles, covers, genres, platforms, similar games.",
       "hltb": "How long a game takes to finish.",
       "opencritic": "Critic scores.",
@@ -1568,7 +1576,7 @@
     },
     "software": {
       "title": "Open source software",
-      "intro": "Ludex is built on free software. These are the main parts, each with its own licence.",
+      "intro": "PileCue is built on free software. These are the main parts, each with its own licence.",
       "react": "The interface, on the web and on the phone.",
       "tanstack": "The web app: routing, server rendering and data.",
       "vite": "The web build tool.",
@@ -1699,7 +1707,7 @@
       "searchFailed": "The search failed.",
       "noResults": "No results.",
       "choose": "Choose",
-      "inCatalog": "in Ludex"
+      "inCatalog": "in PileCue"
     },
     "unresolved": {
       "title": "Unresolved imports",
@@ -2034,9 +2042,14 @@
     "toLogin": "Sign in"
   },
   "support": {
-    "title": "Enjoying Ludex?",
-    "text": "Ludex is free and ad-free. If you'd like to support its development, you can buy me a coffee.",
+    "title": "Enjoying PileCue?",
+    "text": "PileCue is free and ad-free. If you'd like to support its development, you can buy me a coffee.",
     "short": "You can support its development with a donation.",
     "buttonAlt": "Support me on Ko-fi"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This address does not exist or is no longer available.",
+    "back": "Back to the catalog"
   }
 }

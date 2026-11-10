@@ -202,7 +202,7 @@ function Footer() {
 
 function FooterText({ children }: { children: ReactNode }) {
   return (
-    <Text fontSize={12} lineHeight={16} color="$color10">
+    <Text fontSize={12} lineHeight={16} color="$color11">
       {children}
     </Text>
   );

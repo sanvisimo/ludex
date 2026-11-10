@@ -16,7 +16,7 @@ export type CheckboxProps = Omit<CheckboxBaseProps, 'children' | 'size'>;
  *
  * Gli stessi colori dello Switch, per la stessa ragione: il bordo spento è
  * `$color9`, l'unico grigio sopra il 3:1 in entrambi i temi, e acceso è
- * l'accento, con la spunta scura sopra come il testo del bottone primario.
+ * l'accento, con la spunta nel colore semantico del testo primario.
  *
  * L'etichetta va **accanto**, con `<Label htmlFor>` che punta all'`id`.
  */
@@ -48,7 +48,7 @@ export function Checkbox(props: CheckboxProps) {
       {...props}
     >
       <CheckboxBase.Indicator>
-        <Check size={12} strokeWidth={3} color="$black1" />
+        <Check size={12} strokeWidth={3} color="$actionColor" />
       </CheckboxBase.Indicator>
     </CheckboxBase>
   );

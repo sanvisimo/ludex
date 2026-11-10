@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
-import { expect, within } from 'storybook/test';
+import { expect, waitFor, within } from 'storybook/test';
 
 import { Theme, XStack, YStack } from '../primitives';
 import { Logo, Wordmark } from './logo';
@@ -12,14 +12,16 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Simbolo e nome, come in cima alla barra. */
+/** Marchio esteso, come in cima alla barra. */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Ludex')).toBeInTheDocument();
-    // Il simbolo è decorativo: il nome accanto basta.
+    await expect(
+      canvas.getByRole('img', { name: 'PileCue' }),
+    ).toBeInTheDocument();
+    // Il wordmark a tracciati espone un unico nome accessibile.
     const svg = canvasElement.querySelector('svg');
-    await expect(svg).toHaveAttribute('aria-hidden', 'true');
+    await expect(svg).toHaveAttribute('aria-label', 'PileCue');
   },
 };
 
@@ -36,7 +38,7 @@ export const Sizes: Story = {
   ),
 };
 
-/** Chiaro e scuro: il simbolo non cambia, il nome sì. */
+/** Chiaro e scuro: il simbolo non cambia, Pile segue il tema. */
 export const Themes: Story = {
   render: () => (
     <XStack gap="$4">
@@ -50,4 +52,37 @@ export const Themes: Story = {
       ))}
     </XStack>
   ),
+};
+
+/** Il CSS può risolvere il tema di sistema prima del contesto React (SSR). */
+export const SystemThemeBeforeHydration: Story = {
+  render: () => (
+    <Theme name="light">
+      <YStack
+        className="t_dark"
+        bg="$background"
+        p="$4"
+        data-testid="system-theme-logo"
+      >
+        <Wordmark />
+      </YStack>
+    </Theme>
+  ),
+  play: async ({ canvasElement }) => {
+    const wrapper = within(canvasElement).getByTestId('system-theme-logo');
+    // Prima lettera P: il contesto React resta chiaro durante tutta la prova.
+    const letter = wrapper.querySelector('path:nth-last-child(7)')!;
+    wrapper.style.setProperty('--color12', '#F5F6FF');
+    await waitFor(() =>
+      expect(getComputedStyle(letter).fill).toBe('rgb(245, 246, 255)'),
+    );
+    wrapper.style.setProperty('--color12', '#101426');
+    await waitFor(() =>
+      expect(getComputedStyle(letter).fill).toBe('rgb(16, 20, 38)'),
+    );
+    wrapper.style.setProperty('--color12', '#F5F6FF');
+    await waitFor(() =>
+      expect(getComputedStyle(letter).fill).toBe('rgb(245, 246, 255)'),
+    );
+  },
 };
