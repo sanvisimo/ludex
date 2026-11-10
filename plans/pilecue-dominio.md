@@ -37,73 +37,78 @@ nome.
 ## I passi
 
 I pannelli li tocca l'utente; i comandi sul server li lancia l'utente. Claude
-prepara la PR e verifica in sola lettura.
+prepara la PR e verifica in sola lettura. **Fatti tutti il 10/11/2026.**
 
 1. [x] **DNS su Cloudflare** per `pilecue.com` e `pilecue.it`. Sul `.it` prima
-       la zona di Infomaniak corretta dalla sua diagnosi (DKIM
-       `20261110._domainkey`, `autoconfig`, `autodiscover`, MX, SPF), poi gli
-       stessi record copiati su Cloudflare, quelli della posta con la nuvola
-       grigia, poi i nameserver. Registro verificato il 10/11 alle 16:08:
-       `adam`/`sunny.ns.cloudflare.com` su entrambi, DNSSEC spento. Il `.it`
-       non risolveva ancora: la zona del registro era di prima della
-       registrazione.
-   - [ ] Record della posta di `pilecue.it` verificati da fuori, a dominio
-         pubblicato. Il 10/11: NS Cloudflare, MX `mta-gw.infomaniak.ch`,
-         SPF `include:spf.infomaniak.ch -all` e DKIM rispondono; mancano
-         `autoconfig` e `autodiscover`, e `_dmarc` (arriva con 1b).
-3b. [x] Tolte da `ludex-vps` le rotte su `pilecue.it`: col tunnel davanti
-        serviva l'app anche lì (200). Il record Tunnel nel DNS resta, come
-        record proxied per il redirect del passo 5.
-   - [ ] WHOIS del `.it`: titolare come persona fisica, senza consenso alla
-         pubblicazione (oggi è un'organizzazione, con l'indirizzo in chiaro).
-1b. [x] **Scaleway TEM** (dominio verificato il 10/11): dominio `pilecue.it` nello stesso progetto. Nel DNS
-        il DKIM di Scaleway, **un solo** SPF con i due include
-        (`v=spf1 include:<Infomaniak> include:_spf.tem.scaleway.com ~all`) e
-        **un solo** `_dmarc` (`p=none`). Niente MX blackhole: ci sono gli MX
-        veri. Si aspetta la verifica.
-        Il 10/11: SPF unito e `_dmarc` a `p=none` rispondono. Era entrato anche
-        l'MX `10 blackhole.tem.scaleway.com`, da togliere: è il ripiego quando
-        Infomaniak non risponde, e la posta di `info@` finirebbe nel nulla.
-        Superato dalla scelta di `pilecue.com` (1c): l'include di Scaleway, il
-        suo DKIM e il dominio su TEM si possono togliere da `pilecue.it`.
-1c. [ ] **Scaleway TEM su `pilecue.com`**: il dominio nello stesso progetto;
-        nel DNS il DKIM di Scaleway, `v=spf1 include:_spf.tem.scaleway.com -all`,
-        `_dmarc` a `p=none` e l'MX `blackhole.tem.scaleway.com` (qui sì: su
-        `pilecue.com` non c'è posta). Si aspetta la verifica, **prima del
-        merge**.
-2. [x] **Turnstile**: `pilecue.com` fra gli hostname del widget. Saltarlo
-       chiude fuori tutti al cambio.
-3. [x] **Tunnel `ludex-vps`**: hostname `pilecue.com` con le stesse due
-       rotte, in quest'ordine: `^/(api/auth|rpc)/` → `127.0.0.1:3005`, il
-       resto → `127.0.0.1:8095`. Il vecchio nome resta finché c'è il redirect.
-4. [ ] **Il cambio**, insieme:
-   - in `ludex.env` `BETTER_AUTH_URL` e `WEB_URL` a `https://pilecue.com`,
-     senza riavviare;
-   - PR con `PUBLIC_API_URL=https://pilecue.com` in `ci.yml`. Al merge
-     `deploy.sh` installa l'immagine e, ricreando i container, rilegge
-     `ludex.env`: bundle e server cambiano insieme.
-4b. [ ] `MAIL_FROM="PileCue <noreply@pilecue.com>"` in `ludex.env`, **solo
-        dopo** la verifica di 1c: un mittente non verificato fa rifiutare gli
-        invii. Entra in `ludex.env` insieme alle due del passo 4: la
-        ricreazione dei container al deploy le legge tutte.
-4c. [ ] `contactEmail` a `info@pilecue.it`, nella stessa PR: esce col deploy.
-5. [ ] **Redirect Rules**, 301: `ludex.sanvisimo.tech/*`, `pilecue.it` e
-       `www.pilecue.com` → `https://pilecue.com` + path + query. Ogni nome
-       senza record vuole un `AAAA 100::` proxied; sull'apex del `.it` non
-       tocca la posta.
-6. [ ] **Kuma**: il monitor del sito su `https://pilecue.com/api/auth/ok`.
-7. [ ] **Documentazione**: i riferimenti in [rilascio](rilascio.md) e in
-       [.env.example](../.env.example), compreso il default di `MAIL_FROM`.
+       la zona di Infomaniak corretta dalla sua diagnosi, poi gli stessi
+       record copiati su Cloudflare, quelli della posta con la nuvola grigia,
+       poi i nameserver (`adam`/`sunny.ns.cloudflare.com`, DNSSEC spento). Il
+       `.it` appena registrato non risolve finché il registro non ripubblica
+       la sua zona, e un resolver interrogato prima ricorda il «non esiste».
+       Sul `.it` restano: MX `5 mta-gw.infomaniak.ch`, SPF, DKIM
+       `20261110._domainkey` di Infomaniak, `_dmarc` a `p=none`,
+       `autoconfig` e `autodiscover` → `infomaniak.com`.
+2. [x] **Scaleway TEM su `pilecue.com`**, il mittente: DKIM di Scaleway,
+       `v=spf1 include:_spf.tem.scaleway.com -all`, MX
+       `blackhole.tem.scaleway.com` (su `pilecue.com` non c'è posta) e
+       `_dmarc` a **`p=reject`**: più stretto del `p=none` proposto, e giusto
+       per un dominio che spedisce solo da Scaleway, con DKIM. Prima si era
+       provato `pilecue.it`: l'MX blackhole proposto da Scaleway era finito
+       accanto a quello di Infomaniak, come ripiego che avrebbe buttato la
+       posta di `info@`. Tolto.
+3. [x] **Turnstile**: `pilecue.com` fra gli hostname del widget.
+4. [x] **Tunnel `ludex-vps`**: hostname `pilecue.com` con le stesse due rotte,
+       in quest'ordine: `^/(api/auth|rpc)/` → `http://127.0.0.1:3005`, il
+       resto → `http://127.0.0.1:8095`. Il primo tentativo dava 502: c'era
+       scritto `127.0.01`. Le rotte su `pilecue.it` sono state tolte, perché
+       servivano l'app anche lì; togliendole Cloudflare ha cancellato anche
+       il record Tunnel nel DNS.
+5. [x] **Il cambio**: in `ludex.env` `BETTER_AUTH_URL` e `WEB_URL` a
+       `https://pilecue.com` e `MAIL_FROM="PileCue <noreply@pilecue.com>"`,
+       senza riavviare; poi il merge di #124 (`PUBLIC_API_URL` in `ci.yml` e
+       `contactEmail` a `info@pilecue.it`). `deploy.sh` ha ricreato i
+       container con l'immagine nuova e il nuovo `ludex.env`. Verificato: il
+       bundle chiama `https://pilecue.com`, l'API risponde
+       `access-control-allow-origin: https://pilecue.com`.
+6. [x] **Redirect Rules**, 301 con la query: `ludex.sanvisimo.tech` e
+       `pilecue.it` → `concat("https://pilecue.com", http.request.uri.path)`;
+       `www.pilecue.com` col modello di Cloudflare `https://www.*` →
+       `https://${1}`. `pilecue.it` e `www.pilecue.com` hanno un
+       `AAAA 100::` proxied, che non porta da nessuna parte: serve solo a far
+       passare la richiesta da Cloudflare. **Always Use HTTPS** acceso su
+       `pilecue.com`, o `http://` serviva l'app in chiaro e `http://www.`
+       sfuggiva alla regola (522). Il redirect da `ludex.sanvisimo.tech`
+       scatta prima del tunnel. L'avviso «may not be proxying» sulla regola
+       `www` si ignora: nasce dal modello, che non nomina un hostname.
+7. [x] **Kuma**: il monitor del sito, HTTP(s) - Keyword `"ok":true`, su
+       `https://pilecue.com/api/auth/ok`.
+8. [x] **Documentazione**: il default di `MAIL_FROM` in
+       [.env.example](../.env.example) e una nota in [rilascio](rilascio.md),
+       che resta il racconto di com'era.
 
 ### Le prove
 
-- Home, `/login`, `/api/auth/ok` su `pilecue.com`; il vecchio nome rimanda con
-  path e query.
-- Un recupero password: l'email arriva in posta in arrivo, il link porta a
-  `pilecue.com`, SPF, DKIM e DMARC a `pass`.
-- Una mail da `info@pilecue.it`, stessi tre controlli.
+- [x] Home, `/login`, `/api/auth/ok` su `pilecue.com`; i tre nomi vecchi
+      rimandano con path e query, anche da `http://`.
+- [ ] Un accesso dal browser, che prova anche Turnstile.
+- [ ] Un recupero password: l'email arriva in posta in arrivo, il link porta a
+      `pilecue.com`, SPF, DKIM e DMARC a `pass`.
+- [ ] Una mail da `info@pilecue.it`, stessi tre controlli.
 
-### Dopo
+Favicon e `apple-touch-icon.png` del marchio nuovo (#125) si vedono tardi:
+Cloudflare e il browser le tengono 4 ore (`max-age=14400`). Si svuota con un
+purge dei tre indirizzi su Cloudflare.
 
-Il dominio `ludex.sanvisimo.tech` su Scaleway e i suoi record si possono
-togliere, senza fretta.
+### Da fare, sui pannelli
+
+- [ ] WHOIS del `.it`: titolare come persona fisica, senza consenso alla
+      pubblicazione (oggi è un'organizzazione, con l'indirizzo in chiaro).
+- [ ] `pilecue.it` via da Scaleway; dal suo DNS il DKIM di Scaleway
+      (`3df29148-…._domainkey`) e `include:_spf.tem.scaleway.com` dall'SPF,
+      che torna `v=spf1 include:spf.infomaniak.ch -all`.
+- [ ] `ludex.sanvisimo.tech` via da Scaleway, coi suoi record (SPF, MX,
+      DMARC, DKIM del sottodominio).
+- [ ] Le due rotte di `ludex.sanvisimo.tech` dal tunnel: il record Tunnel nel
+      DNS va tenuto, o sostituito con un `AAAA 100::` proxied, perché il
+      redirect ha bisogno di un record con il proxy.
+- [ ] `ludex.sanvisimo.tech` fra gli hostname di Turnstile.
