@@ -26,8 +26,16 @@ il 21/10 e il 22/10), e l'ordine è anche quello della
 6. **Dopo**, secondari rispetto a «cosa gioco adesso»: la 15f B (playlist
    pubbliche) e il catalogo con i filtri (parte B di
    `plans/pagine-categoria.md`). Restano idee, fuori dall'ordine, Meta Quest
-   (9g, fermo: manca chi ha un visore) e le piattaforme dell'utente
-   (`plans/piattaforme-dell-utente.md`).
+   (9g, fermo: manca chi ha un visore), le piattaforme dell'utente
+   (`plans/piattaforme-dell-utente.md`) e i numeri che aprono un filtro.
+
+**Idea: i numeri che aprono un filtro** (10/11/2026, vista su GameCue, in
+[competitors](competitors.md)). Non statistiche da tracker (totale, completati,
+quanti nell'anno), che guardano indietro, ma pochi conteggi in `/backlog` che
+portano a un filtro già impostato: «18 giochi sotto le 5 ore», «7 negli
+abbonamenti che scadono», «42 da giocare su Switch». Sono conteggi SQL sui
+filtri che esistono, senza AI. Se entra nell'ordine, prima proposta e
+wireframe.
 
 **La 15f A è anticipata il 28/10/2026**, su decisione dell'utente: comincia prima
 del rilascio e di 13a e 13b, perché non dipende da nessuno dei due, ed è **fatta
