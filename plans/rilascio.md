@@ -4,6 +4,13 @@
 tutti dal 06/11/2026, sul VPS e senza Access (vedi «Il trasloco»), e `release`
 a «fatto» in roadmap. Restano aperti, fuori da questo lotto, IGDB e il fisco
 («Licenze e donazioni») per accendere le donazioni.
+
+> **Dal 10/11/2026 l'app sta su `https://pilecue.com`** e manda le email da
+> `noreply@pilecue.com`: vedi [pilecue-dominio](pilecue-dominio.md).
+> `ludex.sanvisimo.tech` rimanda lì con un 301. Questo file resta il racconto
+> di com'era: dove dice `ludex.sanvisimo.tech` (tunnel, Turnstile, Kuma,
+> mittente), oggi vale `pilecue.com`.
+
 Segnato il 18/10/2026, dopo il CSV (10) e Xbox (9e). Roadmap: `release` («Ludex aperto a
 tutti») in cima a «In arrivo», in
 [ordine di lavoro](../docs/ordine-sviluppo.md) prima degli abbonamenti.
