@@ -134,13 +134,13 @@ export function BacklogToolbar({
         {backlogStatusValues.map((status) => {
           const active = filter.status.includes(status);
           const Icon = statusIcons[status];
-          const color = active ? '$black1' : '$color12';
+          const color = active ? '$selectionColor' : '$color12';
           return (
             <Button
               key={status}
               type="button"
               size="sm"
-              variant={active ? 'default' : 'outline'}
+              variant={active ? 'selection' : 'outline'}
               aria-pressed={active}
               aria-label={statusLabels[status]}
               onClick={() =>

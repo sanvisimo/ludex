@@ -7,10 +7,9 @@ import { Text, Theme, useTheme, View, XStack, YStack } from './primitives';
 /**
  * La pagina dei token.
  *
- * I colori **non sono di Tamagui**: sono le scale [Radix](https://www.radix-ui.com/colors)
- * scelte in `palettes.ts` — `slate` per la base, `teal` per l'accento, più
- * red/green/amber/blue per gli stati. Radix dà ai dodici passi un significato
- * fisso, ed è la ragione per cui questa pagina conta più di una tavolozza:
+ * Base e accento sono le scale originali Midnight Cue in `palettes.ts`;
+ * red/green/amber/blue restano scale Radix. I contrasti sono calcolati dalle
+ * scale realmente montate, non copiati dalla documentazione della libreria.
  *
  * | passi | a cosa servono |
  * | --- | --- |
@@ -35,6 +34,13 @@ type Story = StoryObj<typeof meta>;
 const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
 
 function toRgb(color: string): [number, number, number] {
+  if (/^#[0-9a-f]{6}$/i.test(color)) {
+    return [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16) / 255) as [
+      number,
+      number,
+      number,
+    ];
+  }
   const m = color.match(/hsla?\(([-\d.]+),\s*([\d.]+)%,\s*([\d.]+)%/);
   if (!m) return [0, 0, 0];
   const h = Number(m[1]) / 360;

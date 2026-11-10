@@ -1,0 +1,18 @@
+{
+  "device": "Pixel 9a",
+  "client": "Expo Go 57.0.9",
+  "sdk": 57,
+  "transition": "dark → light → dark",
+  "themes": {
+    "dark": {
+      "background": "#101426",
+      "card": "#1a1e2b",
+      "button": "#8b7cff"
+    },
+    "light": {
+      "background": "#f5f6ff",
+      "card": "#edeff7",
+      "button": "#6654c9"
+    }
+  }
+}

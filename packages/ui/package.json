@@ -11,12 +11,14 @@
     "./icons": "./src/icons.ts"
   },
   "scripts": {
+    "brand:generate": "node scripts/generate-brand-assets.mjs",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
     "dev": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "vitest run",
-    "chromatic": "dotenv -e ../../.env -- chromatic"
+    "chromatic": "dotenv -e ../../.env -- chromatic",
+    "brand:email": "node scripts/generate-email-brand.mjs"
   },
   "dependencies": {
     "@tamagui/colors": "^2.7.0",

@@ -7,75 +7,102 @@ import {
   greenDark,
   red,
   redDark,
-  slate,
-  slateDark,
-  teal,
-  tealDark,
 } from '@tamagui/colors';
 
-/**
- * **Livello 1 — i primitivi.**
- *
- * Le scale grezze, e nient'altro: qui non c'è nessuna intenzione, solo colori.
- * Nessun componente le importa mai — a farlo sarebbe un componente che sa di
- * essere verde invece di sapere di essere "riuscito", e al primo cambio di tema
- * resterebbe verde. Il livello 2 (i temi) le traduce in `$background`,
- * `$color`, `$borderColor`; il livello 3 sta nei `styled()` dei componenti.
- *
- * Sono le scale Radix, che arrivano con Tamagui: dodici passi pensati perché il
- * 9 sia il colore pieno, l'11 il testo leggibile su fondo chiaro e il 12 quello
- * su fondo scuro. Inventarne di nuove vorrebbe dire rifare a mano quel lavoro
- * sul contrasto.
+/** Primitivi Midnight Cue approvati. I componenti usano soltanto i semantici.
+ * Scale originali a 12 passi: docs/brand/pilecue/color-map.md contiene le
+ * combinazioni misurate, non le garanzie delle scale Radix che sostituiscono.
  */
+type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+const scale = (colors: readonly string[]): Record<`step${Step}`, string> => {
+  if (colors.length !== 12)
+    throw new Error('Una scala deve avere dodici passi');
+  return Object.fromEntries(
+    colors.map((color, index) => [`step${index + 1}`, color]),
+  ) as Record<`step${Step}`, string>;
+};
+const navyDark = scale([
+  '#0D1020',
+  '#101426',
+  '#1A1E2B',
+  '#232737',
+  '#2B3041',
+  '#343A4E',
+  '#424A61',
+  '#59637E',
+  '#6C7794',
+  '#8C96AF',
+  '#B9BED2',
+  '#F5F6FF',
+]);
+const navyLight = scale([
+  '#FDFDFF',
+  '#F5F6FF',
+  '#EDEFF7',
+  '#E3E6F0',
+  '#D8DDEB',
+  '#C9D0E1',
+  '#B6BFD3',
+  '#9BA8C2',
+  '#7A87A2',
+  '#68758F',
+  '#525E78',
+  '#101426',
+]);
+const violetDark = scale([
+  '#141127',
+  '#1B1731',
+  '#29243F',
+  '#352D55',
+  '#42366C',
+  '#514384',
+  '#66589F',
+  '#8172C1',
+  '#8B7CFF',
+  '#9C90FF',
+  '#B8AEFF',
+  '#E5E1FF',
+]);
+const violetLight = scale([
+  '#FDFCFF',
+  '#F7F5FF',
+  '#EFEBFF',
+  '#E4DDFF',
+  '#D7CDFF',
+  '#C4B5FA',
+  '#AA98EE',
+  '#8D78DD',
+  '#6654C9',
+  '#5945B8',
+  '#5541AD',
+  '#2E215B',
+]);
 
-/** La base: grigio-blu freddo. È la cornice, e deve stare indietro — in Ludex
- *  il colore forte lo mettono le copertine, non l'interfaccia. */
-export const base = { light: slate, dark: slateDark };
-
-/**
- * L'accento, cioè "questo è un comando".
- *
- * È una **mappa** e non una costante perché la scelta del tema potrà passare
- * all'utente: aggiungere un accento sarà una voce qui più la riga che genera i
- * suoi temi. Oggi ne esiste uno solo, e non è pigrizia — ogni accento in più è
- * un set completo di temi (48 temi, ~82 KB di definizioni), e quel peso si
- * spende quando c'è un'interfaccia che lo fa scegliere, non prima.
- *
- * Teal e non viola: il viola e il magenta sono dappertutto sulle copertine, e
- * un accento che si confonde con le immagini smette di dire "questo si clicca".
- */
+export const base = { light: navyLight, dark: navyDark };
 export const accents = {
-  teal: { light: teal, dark: tealDark },
+  violet: { light: violetLight, dark: violetDark },
 } as const;
-
 export type Accent = keyof typeof accents;
+export const defaultAccent: Accent = 'violet';
 
-export const defaultAccent: Accent = 'teal';
+// La pressione del primario non usa il passo 8, riservato ai bordi selezionati.
+export const actionPress = { dark: '#8072EC', light: '#5C49BB' };
 
-/**
- * I colori di stato, che restano gli stessi qualunque accento si scelga: sono
- * significato, non decorazione. Si usano come sotto-tema — `<Theme name="red">`
- * su un dialogo distruttivo — e non come colore scritto a mano dentro un
- * componente.
- *
- * Quattro e non dodici: Tamagui ne genererebbe uno per ogni scala Radix, e gli
- * altri otto sarebbero temi che nessuna schermata chiede mai.
- */
+/** Stati Radix indipendenti dall'identità del marchio. */
 export const states = {
   red: { light: red, dark: redDark },
   green: { light: green, dark: greenDark },
   amber: { light: amber, dark: amberDark },
-  // L'informazione: «sta succedendo», né riuscito né da guardare. Il blu e non
-  // il teal dell'accento, che accanto al verde del riuscito si confonde
-  // (deciso il 07/11/2026, per le librerie che si aggiornano in `/backlog`).
   blue: { light: blue, dark: blueDark },
 } as const;
 
-/** Da scala Radix (`teal1`…`teal12`) alle chiavi che Tamagui vuole per l'accento. */
 export function toAccent(
-  scala: Record<string, string>,
-): Record<string, string> {
+  scale: Record<string, string>,
+): Record<`accent${Step}`, string> {
+  const values = Object.values(scale);
+  if (values.length !== 12)
+    throw new Error('Un accento deve avere dodici passi');
   return Object.fromEntries(
-    Object.values(scala).map((valore, i) => [`accent${i + 1}`, valore]),
-  );
+    values.map((value, index) => [`accent${index + 1}`, value]),
+  ) as Record<`accent${Step}`, string>;
 }

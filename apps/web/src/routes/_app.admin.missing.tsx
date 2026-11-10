@@ -498,7 +498,7 @@ function MissingList({
               })
             }
           >
-            <SelectTrigger width={220}>
+            <SelectTrigger width={220} aria-label={t('missing.reasonAll')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

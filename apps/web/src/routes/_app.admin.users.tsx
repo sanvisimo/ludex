@@ -360,7 +360,7 @@ function BanDialog({
           <YStack gap={6}>
             <Label>{t('banExpires')}</Label>
             <Select items={options} value={days} onValueChange={setDays}>
-              <SelectTrigger width="100%">
+              <SelectTrigger width="100%" aria-label={t('banExpires')}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

@@ -67,7 +67,7 @@ export function DialogContent({
       />
       <DialogBase.Content
         key="content"
-        width="100%"
+        width={isWeb ? ('calc(100vw - 32px)' as never) : '100%'}
         maxW={720}
         maxH={isWeb ? ('calc(100dvh - 32px)' as never) : '90%'}
         mx={16}

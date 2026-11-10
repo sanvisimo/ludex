@@ -1,10 +1,15 @@
+import { fileURLToPath } from 'node:url';
+
+import { emailColors as color, emailLogo } from './email-brand';
 import type { Mail } from './mailer';
 
 // Le email dell'account, in italiano e in inglese. Ognuna esce in HTML e in
 // testo semplice, con la stessa struttura (`plans/rilascio-testi.md`): il
 // saluto, cosa è successo, il bottone col link scritto anche per esteso,
-// quanto vale, cosa fare se la richiesta non è tua. Niente immagini: nessun
-// «mostra immagini» e nessun pixel di tracciamento, e il logo è il nome.
+// quanto vale, cosa fare se la richiesta non è tua. L'unica immagine è il
+// logo, allegato alla mail (CID) e non caricato da un indirizzo: nessun
+// «mostra immagini» e nessun pixel di tracciamento. Colori e PNG li genera
+// `pnpm --filter @repo/ui brand:email` in `email-brand.ts` e `assets/`.
 
 type Locale = 'it' | 'en';
 
@@ -53,7 +58,7 @@ const texts: Record<Locale, Texts> = {
     verify: () => ({
       subject: 'Conferma il tuo indirizzo email',
       intro: [
-        'per attivare il tuo account Ludex conferma il tuo indirizzo email.',
+        'per attivare il tuo account PileCue conferma il tuo indirizzo email.',
       ],
       button: "Conferma l'indirizzo",
       outro: [
@@ -64,7 +69,7 @@ const texts: Record<Locale, Texts> = {
     newAddress: () => ({
       subject: 'Conferma il nuovo indirizzo email',
       intro: [
-        'è stato richiesto di associare questo indirizzo al tuo account Ludex.',
+        'è stato richiesto di associare questo indirizzo al tuo account PileCue.',
       ],
       button: 'Conferma il nuovo indirizzo',
       outro: [
@@ -75,7 +80,7 @@ const texts: Record<Locale, Texts> = {
     changeEmail: (newEmail) => ({
       subject: "Richiesta di cambio dell'indirizzo email",
       intro: [
-        `è stato richiesto di cambiare l'indirizzo email del tuo account Ludex in ${newEmail}.`,
+        `è stato richiesto di cambiare l'indirizzo email del tuo account PileCue in ${newEmail}.`,
       ],
       button: 'Conferma il cambio',
       outro: [
@@ -86,7 +91,7 @@ const texts: Record<Locale, Texts> = {
     addressTaken: (newEmail) => ({
       subject: 'Indirizzo email già in uso',
       intro: [
-        `hai chiesto di cambiare l'indirizzo email del tuo account Ludex in ${newEmail}, ma questo indirizzo è già associato a un altro account.`,
+        `hai chiesto di cambiare l'indirizzo email del tuo account PileCue in ${newEmail}, ma questo indirizzo è già associato a un altro account.`,
         'Il tuo indirizzo non è cambiato.',
       ],
       outro: [
@@ -96,7 +101,7 @@ const texts: Record<Locale, Texts> = {
     reset: () => ({
       subject: 'Reimpostazione della password',
       intro: [
-        'abbiamo ricevuto una richiesta di reimpostazione della password del tuo account Ludex.',
+        'abbiamo ricevuto una richiesta di reimpostazione della password del tuo account PileCue.',
       ],
       button: 'Imposta una nuova password',
       outro: [
@@ -105,9 +110,9 @@ const texts: Record<Locale, Texts> = {
       ],
     }),
     existing: () => ({
-      subject: 'Hai già un account Ludex',
+      subject: 'Hai già un account PileCue',
       intro: [
-        'è stata richiesta una registrazione con questo indirizzo, che è già associato a un account Ludex.',
+        'è stata richiesta una registrazione con questo indirizzo, che è già associato a un account PileCue.',
         'Per accedere usa la tua password; se non la ricordi, puoi impostarne una nuova.',
       ],
       button: 'Recupera la password',
@@ -122,7 +127,7 @@ const texts: Record<Locale, Texts> = {
       "If the button doesn't work, copy this address into your browser:",
     verify: () => ({
       subject: 'Confirm your email address',
-      intro: ['To activate your Ludex account, confirm your email address.'],
+      intro: ['To activate your PileCue account, confirm your email address.'],
       button: 'Confirm address',
       outro: [
         'The link is valid for one hour.',
@@ -131,7 +136,9 @@ const texts: Record<Locale, Texts> = {
     }),
     newAddress: () => ({
       subject: 'Confirm your new email address',
-      intro: ['A request was made to link this address to your Ludex account.'],
+      intro: [
+        'A request was made to link this address to your PileCue account.',
+      ],
       button: 'Confirm new address',
       outro: [
         "Once confirmed, you'll sign in with this address. The link is valid for one hour.",
@@ -141,7 +148,7 @@ const texts: Record<Locale, Texts> = {
     changeEmail: (newEmail) => ({
       subject: 'Email address change request',
       intro: [
-        `A request was made to change the email address of your Ludex account to ${newEmail}.`,
+        `A request was made to change the email address of your PileCue account to ${newEmail}.`,
       ],
       button: 'Confirm the change',
       outro: [
@@ -152,7 +159,7 @@ const texts: Record<Locale, Texts> = {
     addressTaken: (newEmail) => ({
       subject: 'Email address already in use',
       intro: [
-        `You asked to change the email address of your Ludex account to ${newEmail}, but that address already belongs to another account.`,
+        `You asked to change the email address of your PileCue account to ${newEmail}, but that address already belongs to another account.`,
         "Your address hasn't changed.",
       ],
       outro: [
@@ -162,7 +169,7 @@ const texts: Record<Locale, Texts> = {
     reset: () => ({
       subject: 'Password reset',
       intro: [
-        'We received a request to reset the password of your Ludex account.',
+        'We received a request to reset the password of your PileCue account.',
       ],
       button: 'Set a new password',
       outro: [
@@ -171,9 +178,9 @@ const texts: Record<Locale, Texts> = {
       ],
     }),
     existing: () => ({
-      subject: 'You already have a Ludex account',
+      subject: 'You already have a PileCue account',
       intro: [
-        'Someone tried to sign up with this address, which already belongs to a Ludex account.',
+        'Someone tried to sign up with this address, which already belongs to a PileCue account.',
         "To sign in, use your password; if you don't remember it, you can set a new one.",
       ],
       button: 'Recover your password',
@@ -197,16 +204,14 @@ function escape(value: string) {
     .replaceAll("'", '&#39;');
 }
 
-// I colori dell'app, scritti a mano: un client di posta non legge il tema.
-// Il bottone è il teal 9 di Radix col testo scuro, come nell'app.
-const color = {
-  page: '#f8f9fa',
-  card: '#ffffff',
-  border: '#e6e8eb',
-  text: '#11181c',
-  muted: '#687076',
-  accent: '#12a594',
-  onAccent: '#0d3d38',
+// Il wordmark su fondo bianco, 4x della misura a cui si mostra: nitido anche
+// sugli schermi ad alta densità.
+const logo = {
+  filename: 'pilecue.png',
+  path: fileURLToPath(
+    new URL('../assets/pilecue-wordmark.png', import.meta.url),
+  ),
+  cid: 'pilecue-logo',
 };
 
 function compose(
@@ -225,7 +230,7 @@ function compose(
     ...content.intro.flatMap((p) => [p, '']),
     ...(content.button && url ? [`${content.button}: ${url}`, ''] : []),
     ...content.outro.flatMap((p) => [p, '']),
-    `Ludex · ${host}`,
+    `PileCue · ${host}`,
     '',
   ].join('\n');
 
@@ -251,8 +256,8 @@ function compose(
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${color.page}"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${color.card};border:1px solid ${color.border};border-radius:12px">
 <tr><td style="padding:32px">
-<p style="margin:0 0 24px;font-size:20px;font-weight:700;color:${color.accent}">Ludex</p>
-<h1 style="margin:0 0 24px;font-size:22px;line-height:1.3;color:${color.text}">${escape(content.subject)}</h1>
+<img src="cid:${logo.cid}" width="${emailLogo.width}" height="${emailLogo.height}" alt="PileCue" style="display:block;margin:0 0 24px;border:0;background:${color.header};color:${color.text};font-size:24px;font-weight:700;line-height:${emailLogo.height}px">
+<h1 style="margin:0 0 24px;font-size:22px;line-height:1.3;color:${color.accent}">${escape(content.subject)}</h1>
 ${p(escape(t.greeting(name)))}
 ${content.intro.map((body) => p(escape(body))).join('\n')}
 ${button}
@@ -260,13 +265,19 @@ ${content.outro.map((body) => p(escape(body), 'muted')).join('\n')}
 ${fallback}
 </td></tr>
 </table>
-<p style="margin:16px 0 0;font-size:13px;color:${color.muted}"><a href="${escape(webUrl)}" style="color:${color.muted}">Ludex · ${escape(host)}</a></p>
+<p style="margin:16px 0 0;font-size:13px;color:${color.muted}"><a href="${escape(webUrl)}" style="color:${color.muted}">PileCue · ${escape(host)}</a></p>
 </td></tr></table>
 </body>
 </html>
 `;
 
-  return { to, subject: content.subject, text, html };
+  return {
+    to,
+    subject: content.subject,
+    text,
+    html,
+    attachments: [logo],
+  };
 }
 
 /** La conferma dell'indirizzo alla registrazione. */

@@ -50,6 +50,13 @@ export function AdminTable<T>({
     <YStack
       role="table"
       aria-label={label}
+      tabIndex={0}
+      focusVisibleStyle={{
+        outlineColor: '$outlineColor',
+        outlineStyle: 'solid',
+        outlineWidth: 2,
+        outlineOffset: 2,
+      }}
       rounded={12}
       borderWidth={1}
       borderColor="$borderColor"

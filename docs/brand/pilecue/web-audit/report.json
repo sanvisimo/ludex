@@ -1,0 +1,4764 @@
+{
+  "date": "2026-11-10",
+  "scope": "Web; mobile rinviato su richiesta dell’utente. Chromium, temi chiaro/scuro, viewport 1440×1000 e 390×844.",
+  "counts": {
+    "pageConfigurations": 140,
+    "publicAndAuthenticated": 112,
+    "adminReadOnly": 28,
+    "dialogConfigurations": 60,
+    "additionalChecks": 52,
+    "finalSmokeChecks": 7
+  },
+  "result": "Nessun pageerror, overflow di pagina o violazione axe WCAG A/AA nei casi verificati dopo le correzioni. Focus ed Escape verificati nei dialoghi.",
+  "fixture": "Unico account QA locale; ruolo admin temporaneo solo su questa fixture e poi ripristinato. Nessuna azione admin sui dati esistenti.",
+  "cleanup": "Account QA, backlog, playlist, wishlist, sessioni e messaggi Mailpit eliminati tramite API. Ruolo admin della fixture ripristinato prima della cancellazione.",
+  "limits": [
+    "Accessi e import reali dai negozi esterni non eseguiti; verificati gli otto moduli e la sola anteprima CSV.",
+    "Le azioni di cancellazione riguardano soltanto le fixture QA.",
+    "Verifica Chromium, non certificazione di ogni browser o tecnologia assistiva."
+  ],
+  "checks": {
+    "uiTests": 154,
+    "webTests": 68,
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed"
+  },
+  "pages": [
+    {
+      "kind": "guest",
+      "name": "catalogo",
+      "url": "/",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Catalogo"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Catalogo\nIl catalogo che PileCue conosce finora.\nUltimi aggiunti\n87\nMonster Train 2\n2025\n5.7 h\nFlotsam\n2025\n19 h\n74\nWRC Generations\n2022\n15 h\n72\nA New Beginning"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "ricerca",
+      "url": "/search?q=Monster",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Cerca"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Cerca\nIn PileCue\n14 giochi\n57\nMonster Harvest\n2021\n12 h\n88\nMonster Hunter Rise\n2021\n23 h\n86\nMonster Hunter Rise + Sunbreak\n2022\n86\nMonster Hunter Stories 3: Twi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "gioco",
+      "url": "/games/monster-train-2",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Monster Train 2"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Monster Train 2\n2025 · Shiny Shoe · Big Fan Games\nStrategy\nTurn-based strategy (TBS)\nIndie\nCard & Board Game\nAction\nFantasy\nSingle player\nSide view\nQuanto dura\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "roadmap",
+      "url": "/roadmap",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Roadmap"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Roadmap\nCosa c'è, cosa sta arrivando e cosa è ancora solo un'idea.\nIn corso\nLibreria\nMobile\nIl marchio PileCue\nIl nuovo logo, le icone e la palette Midnight Cue"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "crediti",
+      "url": "/credits",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Crediti e licenze",
+          "Servizi e fonti dati",
+          "Icone",
+          "Software open source"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Crediti e licenze\nChi rende possibile PileCue: i dati, il software e le icone.\nPileCue è software libero, nato per avere il proprio backlog sempre a portata di "
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "privacy",
+      "url": "/privacy",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Informativa sulla privacy"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Informativa sulla privacy\nUltimo aggiornamento: 10 novembre 2026\nChi siamo\nIl titolare del trattamento è Simone Sanvito, persona fisica, che gestisce PileCue se"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "termini",
+      "url": "/terms",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Condizioni d'uso"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Condizioni d'uso\nUltimo aggiornamento: 10 novembre 2026\nCos'è PileCue\nPileCue è un gestore della libreria di giochi, gratuito e senza scopo di lucro. È software"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "email-confermata",
+      "url": "/email-link?step=signup",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Indirizzo email confermato\nIl tuo account è attivo.\nAccedi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "email-scaduta",
+      "url": "/email-link?error=TOKEN_EXPIRED",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Link non valido\nIl link è scaduto o è già stato utilizzato. Accedi con email e password per riceverne uno nuovo.\nAccedi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "accesso",
+      "url": "/login",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Accedi\nBentornato su PileCue.\nEmail\nPassword\nPassword dimenticata?\nAccedi\n\nNon hai un account? Registrati"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "registrazione",
+      "url": "/register",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Registrati\nCrea il tuo account PileCue.\nNome\nEmail\nPassword\n\nAlmeno 8 caratteri.\n\nCrea account\n\nRegistrandoti accetti le condizioni d'uso e dichiari di aver let"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "recupero",
+      "url": "/forgot-password",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Recupero della password\nInserisci l'indirizzo email del tuo account: riceverai un link per impostare una nuova password.\nEmail\nInvia il link\n\nTorna all'accesso"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "reset",
+      "url": "/reset-password",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Imposta una nuova password\nIl link è scaduto o è già stato utilizzato.\n\nRichiedi un nuovo link"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "condivisa",
+      "url": "/shared/MDX77ZJLlsNqdOMCmYt_mg",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Da giocare"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "QA · Da giocare\n5 giochi\nAccedi per usare questi filtri\n73\nMafia: The Old Country\n2025\n12 h\n87\nShinobi: Art of Vengeance\n2025\n10 h\n85\nSpace Haven\n2026\n15 h\nFlot"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "condivisa-curata",
+      "url": "/shared/IvVzy2D9lWxuIVp9ieux3Q",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Scelte a mano"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "QA · Scelte a mano\n5 giochi\n87\n1\nMonster Train 2\n2025\n5.7 h\n2\nFlotsam\n2025\n19 h\n74\n3\nWRC Generations\n2022\n15 h\n72\n4\nA New Beginning: Final Cut\n2012\n9.9 h\n69\n5\nD"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "non-trovata",
+      "url": "/pagina-qa-inesistente",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 404,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Pagina non trovata"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Pagina non trovata\nQuesto indirizzo non esiste o non è più disponibile.\nTorna al catalogo"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "catalogo",
+      "url": "/",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Catalogo"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Catalogo\nIl catalogo che PileCue conosce finora.\nUltimi aggiunti\n87\nMonster Train 2\n2025\n5.7 h\nFlotsam\n2025\n19 h\n74\nWRC Generations\n2022\n15 h\n72\nA New Beginning"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "ricerca",
+      "url": "/search?q=Monster",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Cerca"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Cerca\nIn PileCue\n14 giochi\n57\nMonster Harvest\n2021\n12 h\n88\nMonster Hunter Rise\n2021\n23 h\n86\nMonster Hunter Rise + Sunbreak\n2022\n86\nMonster Hunter Stories 3: Twi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "gioco",
+      "url": "/games/monster-train-2",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Monster Train 2"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Monster Train 2\n2025 · Shiny Shoe · Big Fan Games\nStrategy\nTurn-based strategy (TBS)\nIndie\nCard & Board Game\nAction\nFantasy\nSingle player\nSide view\nQuanto dura\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "roadmap",
+      "url": "/roadmap",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Roadmap"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Roadmap\nCosa c'è, cosa sta arrivando e cosa è ancora solo un'idea.\nIn corso\nLibreria\nMobile\nIl marchio PileCue\nIl nuovo logo, le icone e la palette Midnight Cue"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "crediti",
+      "url": "/credits",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Crediti e licenze",
+          "Servizi e fonti dati",
+          "Icone",
+          "Software open source"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Crediti e licenze\nChi rende possibile PileCue: i dati, il software e le icone.\nPileCue è software libero, nato per avere il proprio backlog sempre a portata di "
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "privacy",
+      "url": "/privacy",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Informativa sulla privacy"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Informativa sulla privacy\nUltimo aggiornamento: 10 novembre 2026\nChi siamo\nIl titolare del trattamento è Simone Sanvito, persona fisica, che gestisce PileCue se"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "termini",
+      "url": "/terms",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Condizioni d'uso"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Condizioni d'uso\nUltimo aggiornamento: 10 novembre 2026\nCos'è PileCue\nPileCue è un gestore della libreria di giochi, gratuito e senza scopo di lucro. È software"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "email-confermata",
+      "url": "/email-link?step=signup",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Indirizzo email confermato\nIl tuo account è attivo.\nAccedi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "email-scaduta",
+      "url": "/email-link?error=TOKEN_EXPIRED",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Link non valido\nIl link è scaduto o è già stato utilizzato. Accedi con email e password per riceverne uno nuovo.\nAccedi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "accesso",
+      "url": "/login",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Accedi\nBentornato su PileCue.\nEmail\nPassword\nPassword dimenticata?\nAccedi\n\nNon hai un account? Registrati"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "registrazione",
+      "url": "/register",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Registrati\nCrea il tuo account PileCue.\nNome\nEmail\nPassword\n\nAlmeno 8 caratteri.\n\nCrea account\n\nRegistrandoti accetti le condizioni d'uso e dichiari di aver let"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "recupero",
+      "url": "/forgot-password",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Recupero della password\nInserisci l'indirizzo email del tuo account: riceverai un link per impostare una nuova password.\nEmail\nInvia il link\n\nTorna all'accesso"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "reset",
+      "url": "/reset-password",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Imposta una nuova password\nIl link è scaduto o è già stato utilizzato.\n\nRichiedi un nuovo link"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "condivisa",
+      "url": "/shared/MDX77ZJLlsNqdOMCmYt_mg",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Da giocare"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "QA · Da giocare\n5 giochi\nAccedi per usare questi filtri\n73\nMafia: The Old Country\n2025\n12 h\n87\nShinobi: Art of Vengeance\n2025\n10 h\n85\nSpace Haven\n2026\n15 h\nFlot"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "condivisa-curata",
+      "url": "/shared/IvVzy2D9lWxuIVp9ieux3Q",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Scelte a mano"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "QA · Scelte a mano\n5 giochi\n87\n1\nMonster Train 2\n2025\n5.7 h\n2\nFlotsam\n2025\n19 h\n74\n3\nWRC Generations\n2022\n15 h\n72\n4\nA New Beginning: Final Cut\n2012\n9.9 h\n69\n5\nD"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "non-trovata",
+      "url": "/pagina-qa-inesistente",
+      "scheme": "dark",
+      "width": 390,
+      "status": 404,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Pagina non trovata"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Pagina non trovata\nQuesto indirizzo non esiste o non è più disponibile.\nTorna al catalogo"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "catalogo",
+      "url": "/",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Catalogo"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Catalogo\nIl catalogo che PileCue conosce finora.\nUltimi aggiunti\n87\nMonster Train 2\n2025\n5.7 h\nFlotsam\n2025\n19 h\n74\nWRC Generations\n2022\n15 h\n72\nA New Beginning"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "ricerca",
+      "url": "/search?q=Monster",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Cerca"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Cerca\nIn PileCue\n14 giochi\n57\nMonster Harvest\n2021\n12 h\n88\nMonster Hunter Rise\n2021\n23 h\n86\nMonster Hunter Rise + Sunbreak\n2022\n86\nMonster Hunter Stories 3: Twi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "gioco",
+      "url": "/games/monster-train-2",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Monster Train 2"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Monster Train 2\n2025 · Shiny Shoe · Big Fan Games\nStrategy\nTurn-based strategy (TBS)\nIndie\nCard & Board Game\nAction\nFantasy\nSingle player\nSide view\nQuanto dura\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "roadmap",
+      "url": "/roadmap",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Roadmap"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Roadmap\nCosa c'è, cosa sta arrivando e cosa è ancora solo un'idea.\nIn corso\nLibreria\nMobile\nIl marchio PileCue\nIl nuovo logo, le icone e la palette Midnight Cue"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "crediti",
+      "url": "/credits",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Crediti e licenze",
+          "Servizi e fonti dati",
+          "Icone",
+          "Software open source"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Crediti e licenze\nChi rende possibile PileCue: i dati, il software e le icone.\nPileCue è software libero, nato per avere il proprio backlog sempre a portata di "
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "privacy",
+      "url": "/privacy",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Informativa sulla privacy"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Informativa sulla privacy\nUltimo aggiornamento: 10 novembre 2026\nChi siamo\nIl titolare del trattamento è Simone Sanvito, persona fisica, che gestisce PileCue se"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "termini",
+      "url": "/terms",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Condizioni d'uso"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Condizioni d'uso\nUltimo aggiornamento: 10 novembre 2026\nCos'è PileCue\nPileCue è un gestore della libreria di giochi, gratuito e senza scopo di lucro. È software"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "email-confermata",
+      "url": "/email-link?step=signup",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Indirizzo email confermato\nIl tuo account è attivo.\nAccedi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "email-scaduta",
+      "url": "/email-link?error=TOKEN_EXPIRED",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Link non valido\nIl link è scaduto o è già stato utilizzato. Accedi con email e password per riceverne uno nuovo.\nAccedi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "accesso",
+      "url": "/login",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Accedi\nBentornato su PileCue.\nEmail\nPassword\nPassword dimenticata?\nAccedi\n\nNon hai un account? Registrati"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "registrazione",
+      "url": "/register",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Registrati\nCrea il tuo account PileCue.\nNome\nEmail\nPassword\n\nAlmeno 8 caratteri.\n\nCrea account\n\nRegistrandoti accetti le condizioni d'uso e dichiari di aver let"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "recupero",
+      "url": "/forgot-password",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Recupero della password\nInserisci l'indirizzo email del tuo account: riceverai un link per impostare una nuova password.\nEmail\nInvia il link\n\nTorna all'accesso"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "reset",
+      "url": "/reset-password",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Imposta una nuova password\nIl link è scaduto o è già stato utilizzato.\n\nRichiedi un nuovo link"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "condivisa",
+      "url": "/shared/MDX77ZJLlsNqdOMCmYt_mg",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Da giocare"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "QA · Da giocare\n5 giochi\nAccedi per usare questi filtri\n73\nMafia: The Old Country\n2025\n12 h\n87\nShinobi: Art of Vengeance\n2025\n10 h\n85\nSpace Haven\n2026\n15 h\nFlot"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "condivisa-curata",
+      "url": "/shared/IvVzy2D9lWxuIVp9ieux3Q",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Scelte a mano"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "QA · Scelte a mano\n5 giochi\n87\n1\nMonster Train 2\n2025\n5.7 h\n2\nFlotsam\n2025\n19 h\n74\n3\nWRC Generations\n2022\n15 h\n72\n4\nA New Beginning: Final Cut\n2012\n9.9 h\n69\n5\nD"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "non-trovata",
+      "url": "/pagina-qa-inesistente",
+      "scheme": "light",
+      "width": 1440,
+      "status": 404,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Pagina non trovata"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Pagina non trovata\nQuesto indirizzo non esiste o non è più disponibile.\nTorna al catalogo"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "catalogo",
+      "url": "/",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Catalogo"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Catalogo\nIl catalogo che PileCue conosce finora.\nUltimi aggiunti\n87\nMonster Train 2\n2025\n5.7 h\nFlotsam\n2025\n19 h\n74\nWRC Generations\n2022\n15 h\n72\nA New Beginning"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "ricerca",
+      "url": "/search?q=Monster",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Cerca"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Cerca\nIn PileCue\n14 giochi\n57\nMonster Harvest\n2021\n12 h\n88\nMonster Hunter Rise\n2021\n23 h\n86\nMonster Hunter Rise + Sunbreak\n2022\n86\nMonster Hunter Stories 3: Twi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "gioco",
+      "url": "/games/monster-train-2",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Monster Train 2"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Monster Train 2\n2025 · Shiny Shoe · Big Fan Games\nStrategy\nTurn-based strategy (TBS)\nIndie\nCard & Board Game\nAction\nFantasy\nSingle player\nSide view\nQuanto dura\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "roadmap",
+      "url": "/roadmap",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Roadmap"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Roadmap\nCosa c'è, cosa sta arrivando e cosa è ancora solo un'idea.\nIn corso\nLibreria\nMobile\nIl marchio PileCue\nIl nuovo logo, le icone e la palette Midnight Cue"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "crediti",
+      "url": "/credits",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Crediti e licenze",
+          "Servizi e fonti dati",
+          "Icone",
+          "Software open source"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Crediti e licenze\nChi rende possibile PileCue: i dati, il software e le icone.\nPileCue è software libero, nato per avere il proprio backlog sempre a portata di "
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "privacy",
+      "url": "/privacy",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Informativa sulla privacy"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Informativa sulla privacy\nUltimo aggiornamento: 10 novembre 2026\nChi siamo\nIl titolare del trattamento è Simone Sanvito, persona fisica, che gestisce PileCue se"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "termini",
+      "url": "/terms",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Condizioni d'uso"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Condizioni d'uso\nUltimo aggiornamento: 10 novembre 2026\nCos'è PileCue\nPileCue è un gestore della libreria di giochi, gratuito e senza scopo di lucro. È software"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "email-confermata",
+      "url": "/email-link?step=signup",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Indirizzo email confermato\nIl tuo account è attivo.\nAccedi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "email-scaduta",
+      "url": "/email-link?error=TOKEN_EXPIRED",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Link non valido\nIl link è scaduto o è già stato utilizzato. Accedi con email e password per riceverne uno nuovo.\nAccedi"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "accesso",
+      "url": "/login",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Accedi\nBentornato su PileCue.\nEmail\nPassword\nPassword dimenticata?\nAccedi\n\nNon hai un account? Registrati"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "registrazione",
+      "url": "/register",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Registrati\nCrea il tuo account PileCue.\nNome\nEmail\nPassword\n\nAlmeno 8 caratteri.\n\nCrea account\n\nRegistrandoti accetti le condizioni d'uso e dichiari di aver let"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "recupero",
+      "url": "/forgot-password",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Recupero della password\nInserisci l'indirizzo email del tuo account: riceverai un link per impostare una nuova password.\nEmail\nInvia il link\n\nTorna all'accesso"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "reset",
+      "url": "/reset-password",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Imposta una nuova password\nIl link è scaduto o è già stato utilizzato.\n\nRichiedi un nuovo link"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "condivisa",
+      "url": "/shared/MDX77ZJLlsNqdOMCmYt_mg",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Da giocare"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "QA · Da giocare\n5 giochi\nAccedi per usare questi filtri\n73\nMafia: The Old Country\n2025\n12 h\n87\nShinobi: Art of Vengeance\n2025\n10 h\n85\nSpace Haven\n2026\n15 h\nFlot"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "condivisa-curata",
+      "url": "/shared/IvVzy2D9lWxuIVp9ieux3Q",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Scelte a mano"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "QA · Scelte a mano\n5 giochi\n87\n1\nMonster Train 2\n2025\n5.7 h\n2\nFlotsam\n2025\n19 h\n74\n3\nWRC Generations\n2022\n15 h\n72\n4\nA New Beginning: Final Cut\n2012\n9.9 h\n69\n5\nD"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "guest",
+      "name": "non-trovata",
+      "url": "/pagina-qa-inesistente",
+      "scheme": "light",
+      "width": 390,
+      "status": 404,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Pagina non trovata"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Pagina non trovata\nQuesto indirizzo non esiste o non è più disponibile.\nTorna al catalogo"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "auth",
+      "name": "backlog",
+      "url": "/backlog",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Il mio backlog"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Il mio backlog\n11 giochi\nNascosti (1)\nAggiungi gioco\nFiltri\nDa giocare\nIn corso\nFinito\nCompletato\nAbbandonato\nNon mi interessa\nMafia: The Old Country\n2025\n12 h "
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "auth",
+      "name": "playlist",
+      "url": "/playlist",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Playlist"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\n2 playlist\nNuova playlist\nScelte a mano\nQA · Scelte a mano\n5 giochi\nDa giocare\n87\n1\nMonster Train 2\n2025\n5.7 h\nIn corso\n2\nFlotsam\n2025\n19 h\nFinito\n74\n3"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist-filtri",
+      "url": "/playlist/89d28a6f-d128-4c9c-bb63-cb49a6d7a878",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Da giocare"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\nQA · Da giocare\n5 giochi\nModifica filtri\nData di aggiunta\nDa giocare, In corso\nMafia: The Old Country\n2025\n12 h di storia\n73\nShinobi: Art of Vengeance\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist-curata",
+      "url": "/playlist/curated/7fe50463-3c22-415c-8c65-dbb57e641bfa",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Scelte a mano"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\nQA · Scelte a mano\n5 giochi\nCondividi\nAggiungi giochi\nDa giocare\n87\n1\nMonster Train 2\n2025\n5.7 h\nIn corso\n2\nFlotsam\n2025\n19 h\nFinito\n74\n3\nWRC Generatio"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "wishlist",
+      "url": "/wishlist",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Wishlist"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Wishlist\n1 lista\nNuova lista\nQA · Prossimi giochi\n6 giochi\n71\nSyberia: Remastered\n2025\n8.2 h\nNekopara Vol. 1\n2014\n4.6 h\nNekopara Love Project Vol. 1\n2025\n63\nSqu"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "wishlist-lista",
+      "url": "/wishlist/609b7b51-3c04-489e-9d64-1f50a8a01267",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Prossimi giochi"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Wishlist\nQA · Prossimi giochi\n6 giochi\nData di aggiunta\n71\nSyberia: Remastered\n2025\n8.2 h\nCe l'ho\nTogli\nNekopara Vol. 1\n2014\n4.6 h\nCe l'ho\nTogli\nNekopara Love P"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "profilo",
+      "url": "/account/profile",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nDati personali\nNome\nPileCue QA Web\nModifica\nEmail\npilecue-web-qa-1794326402052@example.invalid\nCambia\nPassword\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "librerie",
+      "url": "/account/libraries",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nLibrerie\nNessuna libreria collegata\nCollega un negozio e PileCue ne importa i giochi: Steam, GOG, Epic, Amazon,"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "da-sistemare",
+      "url": "/account/needs-attention",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\nNegozio: tutti\nNessuna voce con questi filtri."
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "nascosti",
+      "url": "/account/hidden",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nNegozio: tutti\nApp\nDLC\nContenuto extra\nDemo o prova\nNon interessato\n1\nNon compaiono nel backlog né fra i filtri"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "gioco-mio",
+      "url": "/games/monster-train-2",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Monster Train 2"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Monster Train 2\n2025 · Shiny Shoe · Big Fan Games\nStrategy\nTurn-based strategy (TBS)\nIndie\nCard & Board Game\nAction\nFantasy\nSingle player\nSide view\nQuanto dura\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": []
+    },
+    {
+      "kind": "auth",
+      "name": "gioco-non-mio",
+      "url": "/games/pool-of-radiance-ruins-of-myth-drannor",
+      "scheme": "dark",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Pool of Radiance: Ruins of Myth Drannor"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Pool of Radiance: Ruins of Myth Drannor\nRemaster\n2026 · Stormfront Studios · SNEG\nRole-playing (RPG)\nFantasy\nSingle player\nQuanto dura\nDurate non ancora recuper"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "backlog",
+      "url": "/backlog",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Il mio backlog"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Il mio backlog\n11 giochi\nNascosti (1)\nAggiungi gioco\nFiltri\nMafia: The Old Country\n2025\n12 h di storia\n73\nDysmantle\n2021\n33 h di storia\n83\nSqueakross: Home Sque"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist",
+      "url": "/playlist",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Playlist"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\n2 playlist\nNuova playlist\nScelte a mano\nQA · Scelte a mano\n5 giochi\nDa giocare\n87\n1\nMonster Train 2\n2025\n5.7 h\nIn corso\n2\nFlotsam\n2025\n19 h\nFinito\n74\n3"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist-filtri",
+      "url": "/playlist/89d28a6f-d128-4c9c-bb63-cb49a6d7a878",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Da giocare"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\nQA · Da giocare\n5 giochi\nModifica filtri\nData di aggiunta\nDa giocare, In corso\nMafia: The Old Country\n2025\n12 h di storia\n73\nShinobi: Art of Vengeance\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist-curata",
+      "url": "/playlist/curated/7fe50463-3c22-415c-8c65-dbb57e641bfa",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Scelte a mano"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\nQA · Scelte a mano\n5 giochi\nAggiungi giochi\nDa giocare\n87\n1\nMonster Train 2\n2025\n5.7 h\nIn corso\n2\nFlotsam\n2025\n19 h\nFinito\n74\n3\nWRC Generations\n2022\n15"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "wishlist",
+      "url": "/wishlist",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Wishlist"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Wishlist\n1 lista\nNuova lista\nQA · Prossimi giochi\n6 giochi\n71\nSyberia: Remastered\n2025\n8.2 h\nNekopara Vol. 1\n2014\n4.6 h\nNekopara Love Project Vol. 1\n2025\n63\nSqu"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "wishlist-lista",
+      "url": "/wishlist/609b7b51-3c04-489e-9d64-1f50a8a01267",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Prossimi giochi"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Wishlist\nQA · Prossimi giochi\n6 giochi\nData di aggiunta\n71\nSyberia: Remastered\n2025\n8.2 h\nCe l'ho\nTogli\nNekopara Vol. 1\n2014\n4.6 h\nCe l'ho\nTogli\nNekopara Love P"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "profilo",
+      "url": "/account/profile",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nDati personali\nNome\nPileCue QA Web\nModifica\nEmail\npilecue-web-qa-1794326402052@example.invalid\nCambia\nPassword\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "librerie",
+      "url": "/account/libraries",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nLibrerie\nNessuna libreria collegata\nCollega un negozio e PileCue ne importa i giochi: Steam, GOG, Epic, Amazon,"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "da-sistemare",
+      "url": "/account/needs-attention",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nNiente da sistemare\nOgni voce delle tue librerie è stata riconosciuta o nascosta."
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "nascosti",
+      "url": "/account/hidden",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nNegozio: tutti\nApp\nDLC\nContenuto extra\nDemo o prova\nNon interessato\n1\nNon compaiono nel backlog né fra i filtri"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "gioco-mio",
+      "url": "/games/monster-train-2",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Monster Train 2"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Monster Train 2\n2025 · Shiny Shoe · Big Fan Games\nStrategy\nTurn-based strategy (TBS)\nIndie\nCard & Board Game\nAction\nFantasy\nSingle player\nSide view\nQuanto dura\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "gioco-non-mio",
+      "url": "/games/pool-of-radiance-ruins-of-myth-drannor",
+      "scheme": "dark",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Pool of Radiance: Ruins of Myth Drannor"
+        ],
+        "theme": "t_dark",
+        "body": "rgb(16, 20, 38)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Pool of Radiance: Ruins of Myth Drannor\nRemaster\n2026 · Stormfront Studios · SNEG\nRole-playing (RPG)\nFantasy\nSingle player\nQuanto dura\nDurate non ancora recuper"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "backlog",
+      "url": "/backlog",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Il mio backlog"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Il mio backlog\n11 giochi\nNascosti (1)\nAggiungi gioco\nFiltri\nDa giocare\nIn corso\nFinito\nCompletato\nAbbandonato\nNon mi interessa\nMafia: The Old Country\n2025\n12 h "
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist",
+      "url": "/playlist",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Playlist"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\n2 playlist\nNuova playlist\nScelte a mano\nQA · Scelte a mano\n5 giochi\nDa giocare\n87\n1\nMonster Train 2\n2025\n5.7 h\nIn corso\n2\nFlotsam\n2025\n19 h\nFinito\n74\n3"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist-filtri",
+      "url": "/playlist/89d28a6f-d128-4c9c-bb63-cb49a6d7a878",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Da giocare"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\nQA · Da giocare\n5 giochi\nModifica filtri\nData di aggiunta\nDa giocare, In corso\nMafia: The Old Country\n2025\n12 h di storia\n73\nShinobi: Art of Vengeance\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist-curata",
+      "url": "/playlist/curated/7fe50463-3c22-415c-8c65-dbb57e641bfa",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Scelte a mano"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\nQA · Scelte a mano\n5 giochi\nCondividi\nAggiungi giochi\nDa giocare\n87\n1\nMonster Train 2\n2025\n5.7 h\nIn corso\n2\nFlotsam\n2025\n19 h\nFinito\n74\n3\nWRC Generatio"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "wishlist",
+      "url": "/wishlist",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Wishlist"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Wishlist\n1 lista\nNuova lista\nQA · Prossimi giochi\n6 giochi\n71\nSyberia: Remastered\n2025\n8.2 h\nNekopara Vol. 1\n2014\n4.6 h\nNekopara Love Project Vol. 1\n2025\n63\nSqu"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "wishlist-lista",
+      "url": "/wishlist/609b7b51-3c04-489e-9d64-1f50a8a01267",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Prossimi giochi"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Wishlist\nQA · Prossimi giochi\n6 giochi\nData di aggiunta\n71\nSyberia: Remastered\n2025\n8.2 h\nCe l'ho\nTogli\nNekopara Vol. 1\n2014\n4.6 h\nCe l'ho\nTogli\nNekopara Love P"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "profilo",
+      "url": "/account/profile",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nDati personali\nNome\nPileCue QA Web\nModifica\nEmail\npilecue-web-qa-1794326402052@example.invalid\nCambia\nPassword\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "librerie",
+      "url": "/account/libraries",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nLibrerie\nNessuna libreria collegata\nCollega un negozio e PileCue ne importa i giochi: Steam, GOG, Epic, Amazon,"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "da-sistemare",
+      "url": "/account/needs-attention",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\nNegozio: tutti\nNessuna voce con questi filtri."
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "nascosti",
+      "url": "/account/hidden",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nNegozio: tutti\nApp\nDLC\nContenuto extra\nDemo o prova\nNon interessato\n1\nNon compaiono nel backlog né fra i filtri"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "gioco-mio",
+      "url": "/games/monster-train-2",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Monster Train 2"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Monster Train 2\n2025 · Shiny Shoe · Big Fan Games\nStrategy\nTurn-based strategy (TBS)\nIndie\nCard & Board Game\nAction\nFantasy\nSingle player\nSide view\nQuanto dura\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "gioco-non-mio",
+      "url": "/games/pool-of-radiance-ruins-of-myth-drannor",
+      "scheme": "light",
+      "width": 1440,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Pool of Radiance: Ruins of Myth Drannor"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Pool of Radiance: Ruins of Myth Drannor\nRemaster\n2026 · Stormfront Studios · SNEG\nRole-playing (RPG)\nFantasy\nSingle player\nQuanto dura\nDurate non ancora recuper"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "backlog",
+      "url": "/backlog",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Il mio backlog"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Il mio backlog\n11 giochi\nNascosti (1)\nAggiungi gioco\nFiltri\nMafia: The Old Country\n2025\n12 h di storia\n73\nDysmantle\n2021\n33 h di storia\n83\nSqueakross: Home Sque"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist",
+      "url": "/playlist",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Playlist"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\n2 playlist\nNuova playlist\nScelte a mano\nQA · Scelte a mano\n5 giochi\nDa giocare\n87\n1\nMonster Train 2\n2025\n5.7 h\nIn corso\n2\nFlotsam\n2025\n19 h\nFinito\n74\n3"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist-filtri",
+      "url": "/playlist/89d28a6f-d128-4c9c-bb63-cb49a6d7a878",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Da giocare"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\nQA · Da giocare\n5 giochi\nModifica filtri\nData di aggiunta\nDa giocare, In corso\nMafia: The Old Country\n2025\n12 h di storia\n73\nShinobi: Art of Vengeance\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "playlist-curata",
+      "url": "/playlist/curated/7fe50463-3c22-415c-8c65-dbb57e641bfa",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Scelte a mano"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Playlist\nQA · Scelte a mano\n5 giochi\nAggiungi giochi\nDa giocare\n87\n1\nMonster Train 2\n2025\n5.7 h\nIn corso\n2\nFlotsam\n2025\n19 h\nFinito\n74\n3\nWRC Generations\n2022\n15"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "wishlist",
+      "url": "/wishlist",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Wishlist"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Wishlist\n1 lista\nNuova lista\nQA · Prossimi giochi\n6 giochi\n71\nSyberia: Remastered\n2025\n8.2 h\nNekopara Vol. 1\n2014\n4.6 h\nNekopara Love Project Vol. 1\n2025\n63\nSqu"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "wishlist-lista",
+      "url": "/wishlist/609b7b51-3c04-489e-9d64-1f50a8a01267",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "QA · Prossimi giochi"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Wishlist\nQA · Prossimi giochi\n6 giochi\nData di aggiunta\n71\nSyberia: Remastered\n2025\n8.2 h\nCe l'ho\nTogli\nNekopara Vol. 1\n2014\n4.6 h\nCe l'ho\nTogli\nNekopara Love P"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "profilo",
+      "url": "/account/profile",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nDati personali\nNome\nPileCue QA Web\nModifica\nEmail\npilecue-web-qa-1794326402052@example.invalid\nCambia\nPassword\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "librerie",
+      "url": "/account/libraries",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nLibrerie\nNessuna libreria collegata\nCollega un negozio e PileCue ne importa i giochi: Steam, GOG, Epic, Amazon,"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "da-sistemare",
+      "url": "/account/needs-attention",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\nNegozio: tutti\nNessuna voce con questi filtri."
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "nascosti",
+      "url": "/account/hidden",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Account"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Account\nProfilo\nLibrerie\nDa sistemare\nNascosti\n1\nNegozio: tutti\nApp\nDLC\nContenuto extra\nDemo o prova\nNon interessato\n1\nNon compaiono nel backlog né fra i filtri"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "gioco-mio",
+      "url": "/games/monster-train-2",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Monster Train 2"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Monster Train 2\n2025 · Shiny Shoe · Big Fan Games\nStrategy\nTurn-based strategy (TBS)\nIndie\nCard & Board Game\nAction\nFantasy\nSingle player\nSide view\nQuanto dura\n"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    {
+      "kind": "auth",
+      "name": "gioco-non-mio",
+      "url": "/games/pool-of-radiance-ruins-of-myth-drannor",
+      "scheme": "light",
+      "width": 390,
+      "status": 200,
+      "layout": {
+        "title": "PileCue",
+        "h1": [
+          "Pool of Radiance: Ruins of Myth Drannor"
+        ],
+        "theme": "t_light",
+        "body": "rgb(245, 246, 255)",
+        "overflow": 0,
+        "oldBrand": false,
+        "mainText": "Pool of Radiance: Ruins of Myth Drannor\nRemaster\n2026 · Stormfront Studios · SNEG\nRole-playing (RPG)\nFantasy\nSingle player\nQuanto dura\nDurate non ancora recuper"
+      },
+      "violations": [],
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "http://localhost:3005/rpc/events/subscribe",
+          "error": "net::ERR_ABORTED"
+        }
+      ]
+    }
+  ],
+  "admin": [
+    {
+      "path": "/admin/missing",
+      "scheme": "dark",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Dati mancanti"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/unresolved",
+      "scheme": "dark",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Scarti d'import"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/reported",
+      "scheme": "dark",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Segnalati"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/platforms",
+      "scheme": "dark",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Copie su una piattaforma dove il gioco non è uscito (6)"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/users",
+      "scheme": "dark",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Utenti"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/usage",
+      "scheme": "dark",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Uso"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/games/monster-train-2",
+      "scheme": "dark",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Monster Train 2"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/missing",
+      "scheme": "dark",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Dati mancanti"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/unresolved",
+      "scheme": "dark",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Scarti d'import"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/reported",
+      "scheme": "dark",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Segnalati"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/platforms",
+      "scheme": "dark",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Copie su una piattaforma dove il gioco non è uscito (6)"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/users",
+      "scheme": "dark",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Utenti"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/usage",
+      "scheme": "dark",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Uso"
+        ]
+      },
+      "violations": [],
+      "errors": [],
+      "keyboardScroll": true
+    },
+    {
+      "path": "/admin/games/monster-train-2",
+      "scheme": "dark",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Monster Train 2"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/missing",
+      "scheme": "light",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Dati mancanti"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/unresolved",
+      "scheme": "light",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Scarti d'import"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/reported",
+      "scheme": "light",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Segnalati"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/platforms",
+      "scheme": "light",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Copie su una piattaforma dove il gioco non è uscito (6)"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/users",
+      "scheme": "light",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Utenti"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/usage",
+      "scheme": "light",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Uso"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/games/monster-train-2",
+      "scheme": "light",
+      "width": 1440,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Monster Train 2"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/missing",
+      "scheme": "light",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Dati mancanti"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/unresolved",
+      "scheme": "light",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Scarti d'import"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/reported",
+      "scheme": "light",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Segnalati"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/platforms",
+      "scheme": "light",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Copie su una piattaforma dove il gioco non è uscito (6)"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/users",
+      "scheme": "light",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Utenti"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    },
+    {
+      "path": "/admin/usage",
+      "scheme": "light",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Uso"
+        ]
+      },
+      "violations": [],
+      "errors": [],
+      "keyboardScroll": true
+    },
+    {
+      "path": "/admin/games/monster-train-2",
+      "scheme": "light",
+      "width": 390,
+      "layout": {
+        "overflow": 0,
+        "headings": [
+          "Admin",
+          "Monster Train 2"
+        ]
+      },
+      "violations": [],
+      "errors": []
+    }
+  ],
+  "dialogs": [
+    {
+      "name": "gioco-modifica",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Modifica\n\nMonster Train 2\n\nStato\nDa giocare\nVoto\n4 su 5\nNote\nCategorie\nAggiungi\nDa provare",
+        "left": 360,
+        "right": 1080,
+        "top": 118.5,
+        "bottom": 881.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-rimuovi",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Rimuovere il gioco?\n\nMonster Train 2\n\nSe ne va il possesso che hai, su tutte le piattaform",
+        "left": 360,
+        "right": 1080,
+        "top": 391.5,
+        "bottom": 608.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-aggiungi",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Aggiungi un gioco\n\nPool of Radiance: Ruins of Myth Drannor\n\nDove ce l'hai\nNessuno store\nNo",
+        "left": 360,
+        "right": 1080,
+        "top": 321,
+        "bottom": 679,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-dettagli",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Durata e critica\nQuanto dura\nStoria principale\n5.7 h\n38 segnalazioni\nStoria + extra\n37 h\n4",
+        "left": 360,
+        "right": 1080,
+        "top": 317,
+        "bottom": 683,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-nuova",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Nuova playlist\nNome\nI giochi li aggiungi dopo: da una ricerca nella playlist o dalla sched",
+        "left": 360,
+        "right": 1080,
+        "top": 392.5,
+        "bottom": 607.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-rinomina",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Rinomina la playlist\nNome\nAnnulla\nRinomina",
+        "left": 360,
+        "right": 1080,
+        "top": 405.5,
+        "bottom": 594.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-condividi",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Condividi «QA · Scelte a mano»\n\nChiunque abbia il link vede i giochi di questa playlist, a",
+        "left": 360,
+        "right": 1080,
+        "top": 358.5,
+        "bottom": 641.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-aggiungi",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Aggiungi a «QA · Scelte a mano»\nScrivi almeno due lettere del titolo.\nFatto",
+        "left": 360,
+        "right": 1080,
+        "top": 399.5,
+        "bottom": 600.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "wishlist-nuova",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Nuova lista\nNome\nAnnulla\nCrea",
+        "left": 360,
+        "right": 1080,
+        "top": 405.5,
+        "bottom": 594.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "wishlist-rinomina",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Rinomina la lista\nNome\nAnnulla\nRinomina",
+        "left": 360,
+        "right": 1080,
+        "top": 405.5,
+        "bottom": 594.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-email",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Cambia email\n\nPer sicurezza il cambio va confermato due volte: dall'indirizzo attuale e da",
+        "left": 360,
+        "right": 1080,
+        "top": 381.5,
+        "bottom": 618.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-password",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Cambia password\n\nScrivi la password di adesso e quella nuova.\n\nPassword attuale\nNuova pass",
+        "left": 360,
+        "right": 1080,
+        "top": 292.5,
+        "bottom": 707.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-elimina",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Cancellare l'account?\n\nLibreria, voti, note, tag e account collegati se ne vanno, e non si",
+        "left": 360,
+        "right": 1080,
+        "top": 391.5,
+        "bottom": 608.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "librerie-aggiungi",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Aggiungi libreria\n\nPuoi collegare più account dello stesso negozio: ognuno importa la sua ",
+        "left": 360,
+        "right": 1080,
+        "top": 45.5,
+        "bottom": 954.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "csv-apri",
+      "scheme": "dark",
+      "width": 1440,
+      "dialog": {
+        "text": "Importa da un file CSV\n\nUna riga per gioco. I giochi nuovi entrano nel backlog col tag «Im",
+        "left": 360,
+        "right": 1080,
+        "top": 50,
+        "bottom": 950,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-modifica",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Modifica\n\nMonster Train 2\n\nStato\nDa giocare\nVoto\n4 su 5\nNote\nCategorie\nAggiungi\nDa provare",
+        "left": 16,
+        "right": 374,
+        "top": 87.296875,
+        "bottom": 756.6875,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-rimuovi",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Rimuovere il gioco?\n\nMonster Train 2\n\nSe ne va il possesso che hai, su tutte le piattaform",
+        "left": 16,
+        "right": 374,
+        "top": 270.5,
+        "bottom": 573.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-aggiungi",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Aggiungi un gioco\n\nPool of Radiance: Ruins of Myth Drannor\n\nDove ce l'hai\nNessuno store\nNo",
+        "left": 16,
+        "right": 374,
+        "top": 191.5,
+        "bottom": 652.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-dettagli",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Durata e critica\nQuanto dura\nStoria principale\n5.7 h\n38 segnalazioni\nStoria + extra\n37 h\n4",
+        "left": 16,
+        "right": 374,
+        "top": 219,
+        "bottom": 625,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-nuova",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Nuova playlist\nNome\nI giochi li aggiungi dopo: da una ricerca nella playlist o dalla sched",
+        "left": 16,
+        "right": 374,
+        "top": 285.5,
+        "bottom": 558.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-rinomina",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Rinomina la playlist\nNome\nAnnulla\nRinomina",
+        "left": 16,
+        "right": 374,
+        "top": 307.5,
+        "bottom": 536.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-condividi",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Condividi «QA · Scelte a mano»\n\nChiunque abbia il link vede i giochi di questa playlist, a",
+        "left": 16,
+        "right": 374,
+        "top": 231.5,
+        "bottom": 612.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-aggiungi",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Aggiungi a «QA · Scelte a mano»\nScrivi almeno due lettere del titolo.\nFatto",
+        "left": 16,
+        "right": 374,
+        "top": 321.5,
+        "bottom": 522.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "wishlist-nuova",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Nuova lista\nNome\nAnnulla\nCrea",
+        "left": 16,
+        "right": 374,
+        "top": 307.5,
+        "bottom": 536.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "wishlist-rinomina",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Rinomina la lista\nNome\nAnnulla\nRinomina",
+        "left": 16,
+        "right": 374,
+        "top": 307.5,
+        "bottom": 536.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-email",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Cambia email\n\nPer sicurezza il cambio va confermato due volte: dall'indirizzo attuale e da",
+        "left": 16,
+        "right": 374,
+        "top": 273.5,
+        "bottom": 570.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-password",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Cambia password\n\nScrivi la password di adesso e quella nuova.\n\nPassword attuale\nNuova pass",
+        "left": 16,
+        "right": 374,
+        "top": 194.5,
+        "bottom": 649.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-elimina",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Cancellare l'account?\n\nLibreria, voti, note, tag e account collegati se ne vanno, e non si",
+        "left": 16,
+        "right": 374,
+        "top": 283.5,
+        "bottom": 560.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "librerie-aggiungi",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Aggiungi libreria\n\nPuoi collegare più account dello stesso negozio: ognuno importa la sua ",
+        "left": 16,
+        "right": 374,
+        "top": 16,
+        "bottom": 828,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "csv-apri",
+      "scheme": "dark",
+      "width": 390,
+      "dialog": {
+        "text": "Importa da un file CSV\n\nUna riga per gioco. I giochi nuovi entrano nel backlog col tag «Im",
+        "left": 16,
+        "right": 374,
+        "top": 42.203125,
+        "bottom": 801.796875,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-modifica",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Modifica\n\nMonster Train 2\n\nStato\nDa giocare\nVoto\n4 su 5\nNote\nCategorie\nAggiungi\nDa provare",
+        "left": 360,
+        "right": 1080,
+        "top": 118.5,
+        "bottom": 881.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-rimuovi",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Rimuovere il gioco?\n\nMonster Train 2\n\nSe ne va il possesso che hai, su tutte le piattaform",
+        "left": 360,
+        "right": 1080,
+        "top": 391.5,
+        "bottom": 608.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-aggiungi",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Aggiungi un gioco\n\nPool of Radiance: Ruins of Myth Drannor\n\nDove ce l'hai\nNessuno store\nNo",
+        "left": 360,
+        "right": 1080,
+        "top": 321,
+        "bottom": 679,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-dettagli",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Durata e critica\nQuanto dura\nStoria principale\n5.7 h\n38 segnalazioni\nStoria + extra\n37 h\n4",
+        "left": 360,
+        "right": 1080,
+        "top": 317,
+        "bottom": 683,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-nuova",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Nuova playlist\nNome\nI giochi li aggiungi dopo: da una ricerca nella playlist o dalla sched",
+        "left": 360,
+        "right": 1080,
+        "top": 392.5,
+        "bottom": 607.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-rinomina",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Rinomina la playlist\nNome\nAnnulla\nRinomina",
+        "left": 360,
+        "right": 1080,
+        "top": 405.5,
+        "bottom": 594.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-condividi",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Condividi «QA · Scelte a mano»\n\nChiunque abbia il link vede i giochi di questa playlist, a",
+        "left": 360,
+        "right": 1080,
+        "top": 358.5,
+        "bottom": 641.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-aggiungi",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Aggiungi a «QA · Scelte a mano»\nScrivi almeno due lettere del titolo.\nFatto",
+        "left": 360,
+        "right": 1080,
+        "top": 399.5,
+        "bottom": 600.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "wishlist-nuova",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Nuova lista\nNome\nAnnulla\nCrea",
+        "left": 360,
+        "right": 1080,
+        "top": 405.5,
+        "bottom": 594.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "wishlist-rinomina",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Rinomina la lista\nNome\nAnnulla\nRinomina",
+        "left": 360,
+        "right": 1080,
+        "top": 405.5,
+        "bottom": 594.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-email",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Cambia email\n\nPer sicurezza il cambio va confermato due volte: dall'indirizzo attuale e da",
+        "left": 360,
+        "right": 1080,
+        "top": 381.5,
+        "bottom": 618.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-password",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Cambia password\n\nScrivi la password di adesso e quella nuova.\n\nPassword attuale\nNuova pass",
+        "left": 360,
+        "right": 1080,
+        "top": 292.5,
+        "bottom": 707.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-elimina",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Cancellare l'account?\n\nLibreria, voti, note, tag e account collegati se ne vanno, e non si",
+        "left": 360,
+        "right": 1080,
+        "top": 391.5,
+        "bottom": 608.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "librerie-aggiungi",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Aggiungi libreria\n\nPuoi collegare più account dello stesso negozio: ognuno importa la sua ",
+        "left": 360,
+        "right": 1080,
+        "top": 45.5,
+        "bottom": 954.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "csv-apri",
+      "scheme": "light",
+      "width": 1440,
+      "dialog": {
+        "text": "Importa da un file CSV\n\nUna riga per gioco. I giochi nuovi entrano nel backlog col tag «Im",
+        "left": 360,
+        "right": 1080,
+        "top": 50,
+        "bottom": 950,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-modifica",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Modifica\n\nMonster Train 2\n\nStato\nDa giocare\nVoto\n4 su 5\nNote\nCategorie\nAggiungi\nDa provare",
+        "left": 16,
+        "right": 374,
+        "top": 87.296875,
+        "bottom": 756.6875,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-rimuovi",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Rimuovere il gioco?\n\nMonster Train 2\n\nSe ne va il possesso che hai, su tutte le piattaform",
+        "left": 16,
+        "right": 374,
+        "top": 270.5,
+        "bottom": 573.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-aggiungi",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Aggiungi un gioco\n\nPool of Radiance: Ruins of Myth Drannor\n\nDove ce l'hai\nNessuno store\nNo",
+        "left": 16,
+        "right": 374,
+        "top": 191.5,
+        "bottom": 652.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "gioco-dettagli",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Durata e critica\nQuanto dura\nStoria principale\n5.7 h\n38 segnalazioni\nStoria + extra\n37 h\n4",
+        "left": 16,
+        "right": 374,
+        "top": 219,
+        "bottom": 625,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-nuova",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Nuova playlist\nNome\nI giochi li aggiungi dopo: da una ricerca nella playlist o dalla sched",
+        "left": 16,
+        "right": 374,
+        "top": 285.5,
+        "bottom": 558.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-rinomina",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Rinomina la playlist\nNome\nAnnulla\nRinomina",
+        "left": 16,
+        "right": 374,
+        "top": 307.5,
+        "bottom": 536.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-condividi",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Condividi «QA · Scelte a mano»\n\nChiunque abbia il link vede i giochi di questa playlist, a",
+        "left": 16,
+        "right": 374,
+        "top": 231.5,
+        "bottom": 612.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "playlist-aggiungi",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Aggiungi a «QA · Scelte a mano»\nScrivi almeno due lettere del titolo.\nFatto",
+        "left": 16,
+        "right": 374,
+        "top": 321.5,
+        "bottom": 522.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "wishlist-nuova",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Nuova lista\nNome\nAnnulla\nCrea",
+        "left": 16,
+        "right": 374,
+        "top": 307.5,
+        "bottom": 536.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "wishlist-rinomina",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Rinomina la lista\nNome\nAnnulla\nRinomina",
+        "left": 16,
+        "right": 374,
+        "top": 307.5,
+        "bottom": 536.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-email",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Cambia email\n\nPer sicurezza il cambio va confermato due volte: dall'indirizzo attuale e da",
+        "left": 16,
+        "right": 374,
+        "top": 273.5,
+        "bottom": 570.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-password",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Cambia password\n\nScrivi la password di adesso e quella nuova.\n\nPassword attuale\nNuova pass",
+        "left": 16,
+        "right": 374,
+        "top": 194.5,
+        "bottom": 649.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "profilo-elimina",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Cancellare l'account?\n\nLibreria, voti, note, tag e account collegati se ne vanno, e non si",
+        "left": 16,
+        "right": 374,
+        "top": 283.5,
+        "bottom": 560.5,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "librerie-aggiungi",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Aggiungi libreria\n\nPuoi collegare più account dello stesso negozio: ognuno importa la sua ",
+        "left": 16,
+        "right": 374,
+        "top": 16,
+        "bottom": 828,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    },
+    {
+      "name": "csv-apri",
+      "scheme": "light",
+      "width": 390,
+      "dialog": {
+        "text": "Importa da un file CSV\n\nUna riga per gioco. I giochi nuovi entrano nel backlog col tag «Im",
+        "left": 16,
+        "right": 374,
+        "top": 42.203125,
+        "bottom": 801.796875,
+        "overflow": 0,
+        "focusInside": true
+      },
+      "violations": [],
+      "focusTrapped": true,
+      "escapeClosed": true,
+      "errors": []
+    }
+  ],
+  "functional": [
+    {
+      "name": "libreria-steam-dark-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 45.5,
+        "bottom": 954.5,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-gog-dark-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 243.5,
+        "bottom": 756.5,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-epic-dark-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 243.5,
+        "bottom": 756.5,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-amazon-dark-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 232,
+        "bottom": 768,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-psn-dark-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 203.5,
+        "bottom": 796.5,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-nintendo-dark-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 128.5,
+        "bottom": 871.5,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-ea-dark-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 188,
+        "bottom": 812,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-xbox-dark-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 136,
+        "bottom": 864,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "filtri-dark-1440",
+      "ok": true,
+      "focusInside": true
+    },
+    {
+      "name": "libreria-steam-dark-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 16,
+        "bottom": 828,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-gog-dark-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 124.5,
+        "bottom": 719.5,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-epic-dark-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 124.5,
+        "bottom": 719.5,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-amazon-dark-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 101.5,
+        "bottom": 742.5,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-psn-dark-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 67,
+        "bottom": 777,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-nintendo-dark-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 16,
+        "bottom": 828,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-ea-dark-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 51,
+        "bottom": 793,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-xbox-dark-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 16,
+        "bottom": 828,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "filtri-dark-390",
+      "ok": true,
+      "focusInside": true
+    },
+    {
+      "name": "libreria-steam-light-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 45.5,
+        "bottom": 954.5,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-gog-light-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 243.5,
+        "bottom": 756.5,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-epic-light-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 243.5,
+        "bottom": 756.5,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-amazon-light-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 232,
+        "bottom": 768,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-psn-light-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 203.5,
+        "bottom": 796.5,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-nintendo-light-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 128.5,
+        "bottom": 871.5,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-ea-light-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 188,
+        "bottom": 812,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-xbox-light-1440",
+      "ok": true,
+      "layout": {
+        "left": 360,
+        "right": 1080,
+        "top": 136,
+        "bottom": 864,
+        "overflow": 0,
+        "viewport": 1440
+      },
+      "violations": []
+    },
+    {
+      "name": "filtri-light-1440",
+      "ok": true,
+      "focusInside": true
+    },
+    {
+      "name": "libreria-steam-light-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 16,
+        "bottom": 828,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-gog-light-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 124.5,
+        "bottom": 719.5,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-epic-light-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 124.5,
+        "bottom": 719.5,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-amazon-light-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 101.5,
+        "bottom": 742.5,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-psn-light-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 67,
+        "bottom": 777,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-nintendo-light-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 16,
+        "bottom": 828,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-ea-light-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 51,
+        "bottom": 793,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "libreria-xbox-light-390",
+      "ok": true,
+      "layout": {
+        "left": 0,
+        "right": 390,
+        "top": 16,
+        "bottom": 828,
+        "overflow": 0,
+        "viewport": 390
+      },
+      "violations": []
+    },
+    {
+      "name": "filtri-light-390",
+      "ok": true,
+      "focusInside": true
+    },
+    {
+      "name": "csv-anteprima",
+      "ok": true,
+      "overflow": 0,
+      "committed": false
+    },
+    {
+      "name": "modifica-gioco-salvataggio",
+      "ok": true,
+      "persisted": true
+    },
+    {
+      "name": "playlist-creazione-rinomina-eliminazione",
+      "ok": true,
+      "persisted": true
+    },
+    {
+      "name": "profilo-nome",
+      "ok": true,
+      "persisted": true
+    },
+    {
+      "name": "profilo-email-validazione",
+      "ok": true,
+      "blockedInvalid": true
+    },
+    {
+      "name": "profilo-password-validazione",
+      "ok": true,
+      "blockedInvalid": true
+    },
+    {
+      "name": "esportazione-dati-QA",
+      "ok": true,
+      "validJson": true,
+      "sections": [
+        "exportedAt",
+        "profile",
+        "settings",
+        "storeAccounts",
+        "library",
+        "unresolvedImports",
+        "playlists",
+        "wishlists",
+        "curatedPlaylists",
+        "storeWishlists",
+        "reports"
+      ]
+    },
+    {
+      "name": "tema-lingua-1440",
+      "ok": true,
+      "themeAndLocaleChanged": true
+    },
+    {
+      "name": "tema-lingua-390",
+      "ok": true,
+      "themeAndLocaleChanged": true
+    },
+    {
+      "name": "guardia-ospite-/backlog",
+      "ok": true,
+      "redirectToLogin": true
+    },
+    {
+      "name": "guardia-ospite-/playlist",
+      "ok": true,
+      "redirectToLogin": true
+    },
+    {
+      "name": "guardia-ospite-/wishlist",
+      "ok": true,
+      "redirectToLogin": true
+    },
+    {
+      "name": "guardia-ospite-/account/profile",
+      "ok": true,
+      "redirectToLogin": true
+    },
+    {
+      "name": "guardia-ospite-/admin/users",
+      "ok": true,
+      "redirectToLogin": true
+    },
+    {
+      "name": "guardia-admin-utente",
+      "ok": true,
+      "denied": true
+    },
+    {
+      "name": "pageErrors",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "finalSmoke": {
+    "checks": [
+      {
+        "name": "dialogo-e-checkbox-dark-1440",
+        "ok": true,
+        "rect": {
+          "x": 360,
+          "y": 118.5,
+          "width": 720,
+          "height": 763
+        },
+        "accent": "rgb(139, 124, 255)"
+      },
+      {
+        "name": "dialogo-e-checkbox-dark-390",
+        "ok": true,
+        "rect": {
+          "x": 16,
+          "y": 87.296875,
+          "width": 358,
+          "height": 669.390625
+        },
+        "accent": "rgb(139, 124, 255)"
+      },
+      {
+        "name": "dialogo-e-checkbox-light-1440",
+        "ok": true,
+        "rect": {
+          "x": 360,
+          "y": 118.5,
+          "width": 720,
+          "height": 763
+        },
+        "accent": "rgb(102, 84, 201)"
+      },
+      {
+        "name": "dialogo-e-checkbox-light-390",
+        "ok": true,
+        "rect": {
+          "x": 16,
+          "y": 87.296875,
+          "width": 358,
+          "height": 669.390625
+        },
+        "accent": "rgb(102, 84, 201)"
+      },
+      {
+        "name": "tooltip-link-tastiera",
+        "ok": true,
+        "keyboardTooltip": true
+      },
+      {
+        "name": "inglese-moduli-e-404",
+        "ok": true,
+        "translated": true
+      },
+      {
+        "name": "accesso-browser-reale",
+        "ok": true,
+        "realUiLogin": true
+      }
+    ],
+    "errors": [],
+    "warnings": [
+      "Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  }
+}

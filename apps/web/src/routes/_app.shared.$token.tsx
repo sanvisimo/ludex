@@ -10,6 +10,7 @@ import { ListFilter } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
+import { Children } from 'react';
 
 import {
   GRID_TEMPLATE,
@@ -263,7 +264,11 @@ function Cards({ children }: { children: React.ReactNode }) {
         listStyle: 'none',
       }}
     >
-      {children}
+      {Children.map(children, (child) => (
+        <YStack render="li" minW={0}>
+          {child}
+        </YStack>
+      ))}
     </YStack>
   );
 }

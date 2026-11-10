@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Ludex",
+    "name": "PileCue",
     "slug": "ludex",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
@@ -11,10 +11,10 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 160,
           "resizeMode": "contain",
-          "backgroundColor": "#f9f9fb",
+          "backgroundColor": "#101426",
           "dark": {
             "image": "./assets/splash-icon.png",
-            "backgroundColor": "#18191b"
+            "backgroundColor": "#101426"
           }
         }
       ]

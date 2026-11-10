@@ -70,11 +70,12 @@ export function ToggleGroupItem({
   'aria-label'?: string;
 }) {
   const selected = useContext(Selected);
+  const active = value === selected;
   return (
     <ToggleGroupBase.Item
       value={value}
       aria-label={ariaLabel}
-      aria-pressed={value === selected}
+      aria-pressed={active}
       unstyled
       height={26}
       minW={26}
@@ -84,12 +85,22 @@ export function ToggleGroupItem({
       flexDirection="row"
       items="center"
       justify="center"
-      bg="transparent"
-      borderWidth={0}
+      bg={active ? '$selectionBackground' : 'transparent'}
+      borderWidth={1}
+      borderColor={active ? '$selectionBorder' : 'transparent'}
       cursor="pointer"
-      hoverStyle={{ bg: '$color4' }}
-      pressStyle={{ bg: '$color5' }}
-      activeStyle={{ bg: '$color6' }}
+      hoverStyle={{
+        bg: active ? '$selectionBackgroundHover' : '$color4',
+        borderColor: active ? '$selectionBorderHover' : 'transparent',
+      }}
+      pressStyle={{
+        bg: active ? '$selectionBackgroundPress' : '$color5',
+        borderColor: active ? '$selectionBorderPress' : 'transparent',
+      }}
+      activeStyle={{
+        bg: '$selectionBackground',
+        borderColor: '$selectionBorder',
+      }}
       focusVisibleStyle={{
         outlineColor: '$outlineColor',
         outlineStyle: 'solid',

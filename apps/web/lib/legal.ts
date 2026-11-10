@@ -6,11 +6,11 @@ import { contactEmail, licenseUrl, repoUrl } from '@/lib/credits';
  *
  * Stanno qui e non in `messages/*.json` perché sono prosa lunga che si rilegge
  * come un documento solo: a chiavi sparse non si vedrebbe se l'italiano e
- * l'inglese dicono la stessa cosa. **Sono scritti sui dati che Ludex raccoglie
+ * l'inglese dicono la stessa cosa. **Sono scritti sui dati che PileCue raccoglie
  * davvero** (schema in `packages/db`, cookie in `apps/web/src`): se cambia
  * uno dei due, cambia anche il testo, e `updated` con lui.
  *
- * Non sono una consulenza legale: li ha scritti chi sviluppa Ludex, e vanno
+ * Non sono una consulenza legale: li ha scritti chi sviluppa PileCue, e vanno
  * riletti da qualcuno competente prima di aprire il servizio al pubblico.
  */
 export type LegalDoc = {
@@ -26,12 +26,12 @@ const controller = 'Simone Sanvito';
 
 const privacyIt: LegalDoc = {
   title: 'Informativa sulla privacy',
-  updated: 'Ultimo aggiornamento: 6 novembre 2026',
+  updated: 'Ultimo aggiornamento: 10 novembre 2026',
   sections: [
     {
       heading: 'Chi siamo',
       blocks: [
-        `Il titolare del trattamento è ${controller}, persona fisica, che gestisce Ludex senza scopo di lucro. Per qualunque cosa scrivi a ${contactEmail}.`,
+        `Il titolare del trattamento è ${controller}, persona fisica, che gestisce PileCue senza scopo di lucro. Per qualunque cosa scrivi a ${contactEmail}.`,
       ],
     },
     {
@@ -42,7 +42,7 @@ const privacyIt: LegalDoc = {
           "Sessione: quando accedi registriamo l'indirizzo IP e il browser (user agent) della sessione, finché la sessione dura.",
           'Libreria: i giochi del tuo backlog con stato, voto, note e tag, le copie che possiedi (piattaforma, negozio, supporto), le ore giocate e le tue preferenze.',
           "Account dei negozi: se ne colleghi uno, l'identificativo e il nome dell'account sul negozio e, dove serve, le credenziali (token) per leggere la tua libreria. I token sono conservati cifrati. Su Steam non ne conserviamo: basta il profilo pubblico.",
-          'Segnalazioni: se segnali un errore su un gioco, cosa hai segnalato, il gioco che suggerisci e la nota che scrivi. Le legge chi amministra Ludex, per correggere il gioco per tutti.',
+          'Segnalazioni: se segnali un errore su un gioco, cosa hai segnalato, il gioco che suggerisci e la nota che scrivi. Le legge chi amministra PileCue, per correggere il gioco per tutti.',
         ],
         'Non raccogliamo dati di pagamento, posizione, né usiamo strumenti di statistica o pubblicità.',
       ],
@@ -73,9 +73,9 @@ const privacyIt: LegalDoc = {
       heading: 'A chi arrivano i dati',
       blocks: [
         [
-          'Leaseweb, il fornitore del server su cui gira Ludex, in un datacenter ad Amsterdam (Paesi Bassi): conserva i dati per nostro conto.',
+          'Leaseweb, il fornitore del server su cui gira PileCue, in un datacenter ad Amsterdam (Paesi Bassi): conserva i dati per nostro conto.',
           "Scaleway (Francia), che spedisce per nostro conto le email dell'account: riceve il tuo indirizzo e il testo dell'email.",
-          "Cloudflare, da cui passa ogni collegamento a Ludex: riceve l'indirizzo IP, i dati del browser e le pagine richieste, per portarle al server e proteggerlo dagli attacchi. Fornisce anche il CAPTCHA (Turnstile) dei moduli di accesso, registrazione e recupero della password, e conserva i backup del database, in un archivio nell'Unione Europea e cifrati con una chiave che Cloudflare non ha. Ha sede negli Stati Uniti e aderisce al Data Privacy Framework UE–USA.",
+          "Cloudflare, da cui passa ogni collegamento a PileCue: riceve l'indirizzo IP, i dati del browser e le pagine richieste, per portarle al server e proteggerlo dagli attacchi. Fornisce anche il CAPTCHA (Turnstile) dei moduli di accesso, registrazione e recupero della password, e conserva i backup del database, in un archivio nell'Unione Europea e cifrati con una chiave che Cloudflare non ha. Ha sede negli Stati Uniti e aderisce al Data Privacy Framework UE–USA.",
           "I negozi che colleghi: ricevono le richieste con cui leggiamo la tua libreria (ad esempio Steam riceve il tuo SteamID). Alcuni hanno sede fuori dall'Unione Europea.",
           'I servizi da cui prendiamo i dati dei giochi (IGDB, HowLongToBeat, OpenCritic, Metacritic, Wikidata) ricevono solo titoli e identificativi di giochi, mai dati personali.',
         ],
@@ -105,7 +105,7 @@ const privacyIt: LegalDoc = {
     },
     {
       heading: 'Età',
-      blocks: ['Ludex non è pensato per chi ha meno di 16 anni.'],
+      blocks: ['PileCue non è pensato per chi ha meno di 16 anni.'],
     },
     {
       heading: 'Modifiche',
@@ -118,12 +118,12 @@ const privacyIt: LegalDoc = {
 
 const privacyEn: LegalDoc = {
   title: 'Privacy notice',
-  updated: 'Last updated: 6 November 2026',
+  updated: 'Last updated: 10 November 2026',
   sections: [
     {
       heading: 'Who we are',
       blocks: [
-        `The data controller is ${controller}, an individual, who runs Ludex on a non-profit basis. For anything, write to ${contactEmail}.`,
+        `The data controller is ${controller}, an individual, who runs PileCue on a non-profit basis. For anything, write to ${contactEmail}.`,
       ],
     },
     {
@@ -134,7 +134,7 @@ const privacyEn: LegalDoc = {
           'Session: when you sign in we record the IP address and the browser (user agent) of the session, for as long as the session lasts.',
           'Library: the games in your backlog with status, rating, notes and tags, the copies you own (platform, store, medium), hours played and your preferences.',
           'Store accounts: if you link one, the identifier and name of your account on that store and, where needed, the credentials (tokens) to read your library. Tokens are stored encrypted. For Steam we store none: a public profile is enough.',
-          'Reports: if you report a mistake on a game, what you reported, the game you suggest and the note you write. Whoever runs Ludex reads them, to fix the game for everyone.',
+          'Reports: if you report a mistake on a game, what you reported, the game you suggest and the note you write. Whoever runs PileCue reads them, to fix the game for everyone.',
         ],
         'We do not collect payment data or location, and we use no analytics or advertising tools.',
       ],
@@ -165,9 +165,9 @@ const privacyEn: LegalDoc = {
       heading: 'Who receives the data',
       blocks: [
         [
-          'Leaseweb, the provider of the server Ludex runs on, in a data centre in Amsterdam (Netherlands): it stores the data on our behalf.',
+          'Leaseweb, the provider of the server PileCue runs on, in a data centre in Amsterdam (Netherlands): it stores the data on our behalf.',
           'Scaleway (France), which sends the account emails on our behalf: it receives your address and the text of the email.',
-          'Cloudflare, which every connection to Ludex passes through: it receives your IP address, browser data and the pages you request, to carry them to the server and protect it from attacks. It also provides the CAPTCHA (Turnstile) on the sign-in, sign-up and password recovery forms, and stores the database backups, in a storage located in the European Union and encrypted with a key Cloudflare does not have. It is based in the United States and participates in the EU–US Data Privacy Framework.',
+          'Cloudflare, which every connection to PileCue passes through: it receives your IP address, browser data and the pages you request, to carry them to the server and protect it from attacks. It also provides the CAPTCHA (Turnstile) on the sign-in, sign-up and password recovery forms, and stores the database backups, in a storage located in the European Union and encrypted with a key Cloudflare does not have. It is based in the United States and participates in the EU–US Data Privacy Framework.',
           'The stores you link: they receive the requests we use to read your library (for example Steam receives your SteamID). Some are based outside the European Union.',
           'The services we take game data from (IGDB, HowLongToBeat, OpenCritic, Metacritic, Wikidata) only receive game titles and identifiers, never personal data.',
         ],
@@ -197,7 +197,7 @@ const privacyEn: LegalDoc = {
     },
     {
       heading: 'Age',
-      blocks: ['Ludex is not meant for anyone under 16.'],
+      blocks: ['PileCue is not meant for anyone under 16.'],
     },
     {
       heading: 'Changes',
@@ -210,12 +210,12 @@ const privacyEn: LegalDoc = {
 
 const termsIt: LegalDoc = {
   title: "Condizioni d'uso",
-  updated: 'Ultimo aggiornamento: 28 ottobre 2026',
+  updated: 'Ultimo aggiornamento: 10 novembre 2026',
   sections: [
     {
-      heading: "Cos'è Ludex",
+      heading: "Cos'è PileCue",
       blocks: [
-        `Ludex è un gestore della libreria di giochi, gratuito e senza scopo di lucro. È software libero, sotto licenza AGPL-3.0: il sorgente è su ${repoUrl} e la licenza su ${licenseUrl}.`,
+        `PileCue è un gestore della libreria di giochi, gratuito e senza scopo di lucro. È software libero, sotto licenza AGPL-3.0: il sorgente è su ${repoUrl} e la licenza su ${licenseUrl}.`,
       ],
     },
     {
@@ -241,8 +241,8 @@ const termsIt: LegalDoc = {
     {
       heading: 'I negozi che colleghi',
       blocks: [
-        'Colleghi un negozio per far leggere a Ludex la tua libreria: ci autorizzi a farlo per tuo conto, e il negozio resta tuo.',
-        'Non siamo affiliati a nessun negozio. Alcuni non offrono un accesso ufficiale ai servizi di terzi: collegarli può non essere in linea con le loro condizioni, ed è una scelta e un rischio tuoi. Ludex non risponde di sospensioni o limitazioni che un negozio decida sul tuo account, né del collegamento che smette di funzionare quando un negozio cambia le sue regole.',
+        'Colleghi un negozio per far leggere a PileCue la tua libreria: ci autorizzi a farlo per tuo conto, e il negozio resta tuo.',
+        'Non siamo affiliati a nessun negozio. Alcuni non offrono un accesso ufficiale ai servizi di terzi: collegarli può non essere in linea con le loro condizioni, ed è una scelta e un rischio tuoi. PileCue non risponde di sospensioni o limitazioni che un negozio decida sul tuo account, né del collegamento che smette di funzionare quando un negozio cambia le sue regole.',
       ],
     },
     {
@@ -280,12 +280,12 @@ const termsIt: LegalDoc = {
 
 const termsEn: LegalDoc = {
   title: 'Terms of use',
-  updated: 'Last updated: 28 October 2026',
+  updated: 'Last updated: 10 November 2026',
   sections: [
     {
-      heading: 'What Ludex is',
+      heading: 'What PileCue is',
       blocks: [
-        `Ludex is a game library manager, free and non-profit. It is free software under the AGPL-3.0 licence: the source is at ${repoUrl} and the licence at ${licenseUrl}.`,
+        `PileCue is a game library manager, free and non-profit. It is free software under the AGPL-3.0 licence: the source is at ${repoUrl} and the licence at ${licenseUrl}.`,
       ],
     },
     {
@@ -311,8 +311,8 @@ const termsEn: LegalDoc = {
     {
       heading: 'The stores you link',
       blocks: [
-        'You link a store so Ludex can read your library: you authorise us to do that on your behalf, and the store stays yours.',
-        'We are not affiliated with any store. Some do not offer official access to third-party services: linking them may not be in line with their terms, and that is your choice and your risk. Ludex is not responsible for suspensions or limits a store puts on your account, or for a link that stops working when a store changes its rules.',
+        'You link a store so PileCue can read your library: you authorise us to do that on your behalf, and the store stays yours.',
+        'We are not affiliated with any store. Some do not offer official access to third-party services: linking them may not be in line with their terms, and that is your choice and your risk. PileCue is not responsible for suspensions or limits a store puts on your account, or for a link that stops working when a store changes its rules.',
       ],
     },
     {

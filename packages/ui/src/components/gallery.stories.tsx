@@ -102,14 +102,23 @@ export const ManyThumbnails: Story = {
     const ultima = canvas.getByRole('button', { name: 'Elemento 12 di 12' });
     const fila = filaDi(ultima);
 
-    const inVista = () =>
-      ultima.getBoundingClientRect().right <=
-      fila.getBoundingClientRect().right + 1;
+    const inVista = (item: HTMLElement) => {
+      const viewport = fila.getBoundingClientRect();
+      const left = viewport.left + fila.clientLeft;
+      const box = item.getBoundingClientRect();
+      return box.left >= left - 1 && box.right <= left + fila.clientWidth + 1;
+    };
 
-    await expect(inVista()).toBe(false);
+    await expect(inVista(ultima)).toBe(false);
     for (let i = 0; i < 11; i++) await userEvent.click(successiva);
     await expect(ultima).toHaveAttribute('aria-pressed', 'true');
-    await waitFor(() => expect(inVista()).toBe(true));
+    await waitFor(() => expect(inVista(ultima)).toBe(true));
+
+    const precedente = canvas.getByRole('button', { name: 'Precedente' });
+    const prima = canvas.getByRole('button', { name: 'Elemento 1 di 12' });
+    for (let i = 0; i < 11; i++) await userEvent.click(precedente);
+    await expect(prima).toHaveAttribute('aria-pressed', 'true');
+    await waitFor(() => expect(inVista(prima)).toBe(true));
   },
 };
 

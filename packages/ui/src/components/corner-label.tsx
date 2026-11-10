@@ -4,7 +4,7 @@ import type { ColorTokens, GetProps } from 'tamagui';
 
 /**
  * Il fondo e il testo sono la coppia del Badge `default` e del Button
- * primario: `$accent9` con `$black1`, già misurata. Su una copertina, che
+ * primario: `$accent9` con `$actionColor`, già misurata. Su una copertina, che
  * ha i suoi colori, serve un fondo pieno e che si distingua dai badge grigi
  * del resto della pagina.
  */
@@ -29,7 +29,7 @@ const CornerLabelFrame = styled(XStack, {
 const CornerLabelText = styled(Text, {
   name: 'CornerLabelText',
 
-  color: '$black1',
+  color: '$actionColor',
   fontSize: 11,
   lineHeight: 16,
   fontWeight: '600',
@@ -60,7 +60,7 @@ export function CornerLabel({
 }: CornerLabelProps) {
   return (
     <CornerLabelFrame {...props}>
-      {Icon && <Icon size={12} color="$black1" />}
+      {Icon && <Icon size={12} color="$actionColor" />}
       <CornerLabelText numberOfLines={1}>{children}</CornerLabelText>
     </CornerLabelFrame>
   );

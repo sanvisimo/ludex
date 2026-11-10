@@ -5,7 +5,7 @@ import {
   type KeyboardEvent,
   type ReactElement,
 } from 'react';
-import { Paragraph, Tooltip as TooltipBase } from 'tamagui';
+import { isWeb, Paragraph, Tooltip as TooltipBase } from 'tamagui';
 
 export type TooltipProps = {
   /** Il testo del suggerimento. */
@@ -70,7 +70,9 @@ export function Tooltip({
       placement={placement}
       delay={{ open: 400, close: 0 }}
     >
-      <TooltipBase.Trigger asChild>{trigger}</TooltipBase.Trigger>
+      <TooltipBase.Trigger asChild={isWeb ? 'web' : true}>
+        {trigger}
+      </TooltipBase.Trigger>
       <TooltipBase.Content
         px={8}
         py={4}

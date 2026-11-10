@@ -63,7 +63,7 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 /**
@@ -115,6 +115,7 @@ export function App() {
     <SafeAreaProvider>
       <TamaguiProvider config={config} defaultTheme={dark ? 'dark' : 'light'}>
         <YStack flex={1} bg="$background">
+          <StatusBar barStyle={dark ? 'light-content' : 'dark-content'} />
           <ScrollView contentContainerStyle={{ p: 16, pt: 64 }}>
             <YStack gap={24}>
               <Wordmark />

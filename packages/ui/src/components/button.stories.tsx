@@ -15,7 +15,14 @@ const meta = {
   argTypes: {
     variant: {
       control: 'inline-radio',
-      options: ['default', 'outline', 'secondary', 'ghost', 'destructive'],
+      options: [
+        'default',
+        'selection',
+        'outline',
+        'secondary',
+        'ghost',
+        'destructive',
+      ],
     },
     size: {
       control: 'inline-radio',
@@ -35,7 +42,7 @@ export const Default: Story = {
 };
 
 /**
- * Le cinque varianti una accanto all'altra: è l'unico modo di accorgersi che
+ * Le sei varianti una accanto all'altra: è l'unico modo di accorgersi che
  * due si somigliano troppo, che è un difetto che guardandole una per volta non
  * si vede mai.
  */
@@ -44,6 +51,9 @@ export const Variants: Story = {
     <XStack gap="$3" items="center" flexWrap="wrap">
       <Button>Default</Button>
       <Button variant="outline">Outline</Button>
+      <Button variant="selection" aria-pressed>
+        Selezionato
+      </Button>
       <Button variant="secondary">Secondary</Button>
       <Button variant="ghost">Ghost</Button>
       <Button variant="destructive">Destructive</Button>
@@ -109,6 +119,9 @@ export const Themes: Story = {
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
             <Button>Add</Button>
+            <Button variant="selection" aria-pressed>
+              Selezionato
+            </Button>
             <Button variant="outline">Outline</Button>
           </YStack>
         </Theme>
@@ -138,4 +151,10 @@ export const DisabledNotRespond: Story = {
     await userEvent.click(canvas.getByText('Add Game'));
     await expect(args.onPress).not.toHaveBeenCalled();
   },
+};
+
+/** Il filtro selezionato conserva semantica e contrasto senza tinta piena. */
+export const Selection: Story = {
+  args: { variant: 'selection', children: 'Da giocare' },
+  render: (args) => <Button {...args} aria-pressed />,
 };

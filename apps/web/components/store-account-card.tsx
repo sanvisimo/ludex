@@ -521,7 +521,7 @@ export function StoreAccountCard({
         <XStack items="center" gap={8}>
           {relinkStore ? (
             <Button onClick={() => setRelinking(true)}>
-              <Link2 size={16} color="$black1" />
+              <Link2 size={16} color="$actionColor" />
               {t('reconnect')}
             </Button>
           ) : reimportStore ? (

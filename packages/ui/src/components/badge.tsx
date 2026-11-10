@@ -31,7 +31,7 @@ const BadgeContext = createStyledContext<{
  * perché a 12 px l'11 non arriva al 4.5:1 sul tema chiaro.
  *
  * Per le altre tre i colori sono quelli del Button, e non per pigrizia: sono le
- * stesse coppie fondo/testo già misurate lì (`$accent9` con testo scuro,
+ * stesse coppie fondo/testo già misurate lì (`$accent9` con `$actionColor`,
  * `$color9` per un bordo che si veda in entrambi i temi).
  */
 const BadgeFrame = styled(XStack, {
@@ -73,7 +73,7 @@ const BadgeText = styled(Text, {
 
   variants: {
     variant: {
-      default: { color: '$black1' },
+      default: { color: '$actionColor' },
       secondary: { color: '$color12' },
       outline: { color: '$color12' },
       // Il passo 12 e non l'11: a 12 px `$green11` su `$green3` nel tema chiaro

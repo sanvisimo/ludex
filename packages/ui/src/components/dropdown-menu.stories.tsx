@@ -5,6 +5,9 @@ import { expect, fn, screen, userEvent, waitFor, within } from 'storybook/test';
 import { EyeOff, Library, SunMoon, Trash2, User } from '../icons';
 import { XStack } from '../primitives';
 import { Button } from './button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
+import { Input } from './input';
+import { Label } from './label';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -191,5 +194,55 @@ export const ChooseRadio: Story = {
     await expect(
       await screen.findByRole('menuitemradio', { name: 'Scuro' }),
     ).toHaveAttribute('aria-checked', 'true');
+  },
+};
+
+/** Il menu deve cedere il focus al dialogo aperto dalla sua voce. */
+export const OpensDialog: Story = {
+  render: function Render() {
+    const [open, setOpen] = useState(false);
+    return (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<Button variant="ghost">Azioni</Button>}
+          />
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => setOpen(true)}>
+              Rinomina
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent closeLabel="Chiudi">
+            <DialogHeader>
+              <DialogTitle>Rinomina la lista</DialogTitle>
+            </DialogHeader>
+            <Label htmlFor="nome-lista">Nome</Label>
+            <Input id="nome-lista" defaultValue="La mia lista" autoFocus />
+            <Button onPress={() => setOpen(false)}>Salva</Button>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button', { name: 'Azioni' }));
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Rinomina' }),
+    );
+    const input = await screen.findByRole('textbox', { name: 'Nome' });
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    // Lascia finire anche il ripristino del focus del menu dopo lo smontaggio.
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+    await expect(input).toHaveFocus();
+    await userEvent.tab();
+    const dialog = screen.getByRole('dialog', { name: 'Rinomina la lista' });
+    await expect(dialog.contains(document.activeElement)).toBe(true);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   },
 };

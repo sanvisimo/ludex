@@ -8,6 +8,8 @@ import { YoutubeVideo, youtubeThumbnail } from './youtube-video';
 
 /** Sotto questi pixel il mouse ha cliccato una miniatura, non trascinato la fila. */
 const DRAG_THRESHOLD = 5;
+const THUMB_WIDTH = 96;
+const THUMB_GAP = 8;
 
 export type GalleryItem =
   | {
@@ -59,18 +61,42 @@ export function Gallery({ items, labels }: GalleryProps) {
   const thumbs = useRef<HTMLElement | null>(null);
   const previousIndex = useRef(index);
 
-  // Solo quando la scelta cambia, non al montaggio: la gallery può stare sotto
-  // la piega, e la pagina salterebbe da sola. `nearest` lascia ferma la fila se
-  // la miniatura è già visibile. Il `ref` sta sulla fila e non sulla miniatura
-  // scelta: un `ref` che passa da una all'altra, Tamagui lo lascia sulla prima.
+  // Solo quando cambia la scelta, mai al montaggio o scorrendo la pagina.
+  // scrollIntoView può fermarsi prima del bordo esterno della miniatura e
+  // muovere anche gli antenati. Misuriamo invece il viewport dello scroller:
+  // basta il minimo spostamento orizzontale per mostrare entrambi i bordi.
   useEffect(() => {
     if (index === previousIndex.current) return;
     previousIndex.current = index;
-    thumbs.current?.children?.[index]?.scrollIntoView?.({
-      inline: 'nearest',
-      block: 'nearest',
-      behavior: 'smooth',
-    });
+    if (!isWeb) {
+      scroller.current?.scrollTo({
+        x: index * (THUMB_WIDTH + THUMB_GAP),
+        animated: true,
+      });
+      return;
+    }
+    const node = scroller.current?.getScrollableNode() as
+      | HTMLElement
+      | undefined;
+    const selected = thumbs.current?.children[index] as HTMLElement | undefined;
+    if (!node || !selected) return;
+    const viewport = node.getBoundingClientRect();
+    const item = selected.getBoundingClientRect();
+    const left = viewport.left + node.clientLeft;
+    const right = left + node.clientWidth;
+    const delta =
+      item.left < left
+        ? item.left - left
+        : item.right > right
+          ? item.right - right
+          : 0;
+    if (delta !== 0) {
+      scroller.current?.scrollTo({
+        x: node.scrollLeft + delta,
+        animated: !window.matchMedia('(prefers-reduced-motion: reduce)')
+          .matches,
+      });
+    }
   }, [index]);
 
   // Il trascinamento col mouse: il dito scorre già da solo, quindi solo qui.
@@ -215,7 +241,7 @@ export function Gallery({ items, labels }: GalleryProps) {
             flex={1}
             showsHorizontalScrollIndicator={false}
           >
-            <XStack ref={thumbs as never} gap={8} py={2} px={2}>
+            <XStack ref={thumbs as never} gap={THUMB_GAP} py={2} px={2}>
               {items.map((item, i) => (
                 <YStack
                   key={item.kind === 'video' ? item.videoId : item.src}
@@ -223,7 +249,7 @@ export function Gallery({ items, labels }: GalleryProps) {
                   aria-label={labels.item(i + 1, total)}
                   aria-pressed={i === index}
                   onPress={() => setIndex(i)}
-                  width={96}
+                  width={THUMB_WIDTH}
                   aspectRatio={16 / 9}
                   shrink={0}
                   overflow="hidden"

@@ -358,7 +358,7 @@ function OpenList({
             })
           }
         >
-          <SelectTrigger width={180}>
+          <SelectTrigger width={180} aria-label={t('allStores')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

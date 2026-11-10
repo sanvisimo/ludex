@@ -201,7 +201,7 @@ export function AddGameDialog({
         render={
           trigger ?? (
             <Button>
-              <Plus size={16} color="$black1" />
+              <Plus size={16} color="$actionColor" />
               {game ? t('triggerForGame') : t('trigger')}
             </Button>
           )
@@ -354,7 +354,11 @@ export function AddGameDialog({
                         )
                       }
                     >
-                      <SelectTrigger width={160} shrink={0}>
+                      <SelectTrigger
+                        width={160}
+                        shrink={0}
+                        aria-label={t('storeLabel')}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -379,7 +383,11 @@ export function AddGameDialog({
                         )
                       }
                     >
-                      <SelectTrigger width={160} shrink={0}>
+                      <SelectTrigger
+                        width={160}
+                        shrink={0}
+                        aria-label={t('mediumLabel')}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -432,7 +440,7 @@ export function AddGameDialog({
               value={status}
               onValueChange={(next) => setStatus(next as BacklogStatus)}
             >
-              <SelectTrigger width="100%">
+              <SelectTrigger width="100%" aria-label={t('statusLabel')}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

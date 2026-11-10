@@ -8,6 +8,7 @@ import { IntlProvider } from 'use-intl';
 
 import { Providers } from '@/components/providers';
 import { getI18n } from '@/src/i18n';
+import { NotFoundPage } from '@/src/components/not-found-page';
 
 import inter from '@fontsource-variable/inter/index.css?url';
 import spaceGrotesk from '@fontsource-variable/space-grotesk/index.css?url';
@@ -43,6 +44,7 @@ export const Route = createRootRoute({
     ],
   }),
   shellComponent: RootDocument,
+  notFoundComponent: NotFoundPage,
   component: () => <Outlet />,
 });
 
@@ -64,12 +66,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             legge prima di qualunque nostro script. */}
         <meta
           name="theme-color"
-          content="#f9f9fb"
+          content="#F5F6FF"
           media="(prefers-color-scheme: light)"
         />
         <meta
           name="theme-color"
-          content="#18191b"
+          content="#101426"
           media="(prefers-color-scheme: dark)"
         />
       </head>

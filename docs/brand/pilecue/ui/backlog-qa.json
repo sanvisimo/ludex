@@ -1,0 +1,78 @@
+{
+  "fixture": "Account QA temporaneo, 14 giochi del catalogo pubblico",
+  "checks": [
+    {
+      "emailBrand": true,
+      "senderBrand": true
+    },
+    "Login e dati da API reali: 14 giochi, cinque stati",
+    {
+      "scheme": "dark",
+      "size": "desktop",
+      "theme": "t_dark",
+      "body": "rgb(16, 20, 38)",
+      "card": "rgb(26, 30, 43)",
+      "selection": {
+        "bg": "rgb(41, 36, 63)",
+        "text": "rgb(184, 174, 255)",
+        "border": "rgb(129, 114, 193)"
+      },
+      "overflow": false
+    },
+    {
+      "scheme": "dark",
+      "size": "mobile",
+      "theme": "t_dark",
+      "body": "rgb(16, 20, 38)",
+      "card": "rgb(26, 30, 43)",
+      "selection": {
+        "bg": "rgb(41, 36, 63)",
+        "text": "rgb(184, 174, 255)",
+        "border": "rgb(129, 114, 193)"
+      },
+      "overflow": false
+    },
+    {
+      "scheme": "light",
+      "size": "desktop",
+      "theme": "t_light",
+      "body": "rgb(245, 246, 255)",
+      "card": "rgb(237, 239, 247)",
+      "selection": {
+        "bg": "rgb(239, 235, 255)",
+        "text": "rgb(85, 65, 173)",
+        "border": "rgb(141, 120, 221)"
+      },
+      "overflow": false
+    },
+    {
+      "scheme": "light",
+      "size": "mobile",
+      "theme": "t_light",
+      "body": "rgb(245, 246, 255)",
+      "card": "rgb(237, 239, 247)",
+      "selection": {
+        "bg": "rgb(239, 235, 255)",
+        "text": "rgb(85, 65, 173)",
+        "border": "rgb(141, 120, 221)"
+      },
+      "overflow": false
+    },
+    "Vista list, dark, 1366px: nessun overflow",
+    "Vista compact, dark, 1366px: nessun overflow",
+    "Vista list, dark, 390px: nessun overflow",
+    "Vista compact, dark, 390px: nessun overflow",
+    "Vista list, light, 1366px: nessun overflow",
+    "Vista compact, light, 1366px: nessun overflow",
+    "Vista list, light, 390px: nessun overflow",
+    "Vista compact, light, 390px: nessun overflow",
+    "Filtro di stato disattivato e riattivato"
+  ],
+  "screenshots": [
+    "backlog-desktop-dark.png",
+    "backlog-mobile-dark.png",
+    "backlog-desktop-light.png",
+    "backlog-mobile-light.png"
+  ],
+  "pageErrors": []
+}
