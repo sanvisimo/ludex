@@ -2,132 +2,166 @@ import type { HiddenKind, UnresolvedImport } from '@repo/contracts';
 import { hiddenKindValues } from '@repo/contracts';
 import { EmptyState, Skeleton, Tabs, TabsTab, Text, YStack } from '@repo/ui';
 import { EyeOff } from '@repo/ui/icons';
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'use-intl';
-
 import {
   AccountFilters,
   readAccountFilter,
   type AccountFilter,
 } from '@/components/account-filters';
-import { HiddenList, useHiddenItems } from '@/components/hidden-list';
+import {
+  AccountListError,
+  AccountListFooter,
+  AccountSectionHeader,
+  ACCOUNT_PAGE_SIZE,
+  readAccountPage,
+  readAccountPageSize,
+} from '@/components/account-section';
+import { HiddenList } from '@/components/hidden-list';
 import { ResolveImportDialog } from '@/components/resolve-import-dialog';
 import { HIDDEN_KIND_ICON } from '@/lib/hidden-kind-icons';
-
-const isHiddenKind = (value: unknown): value is HiddenKind =>
-  (hiddenKindValues as readonly unknown[]).includes(value);
+import { api } from '@/lib/orpc';
 
 export const Route = createFileRoute('/_app/account/hidden')({
-  // Il tab sta nell'indirizzo, come i filtri del backlog: «indietro» torna al
-  // tab di prima e un link riapre quello giusto. Un valore che non è un tipo
-  // si ignora.
   validateSearch: (
     search: Record<string, unknown>,
-  ): { kind?: HiddenKind } & AccountFilter => ({
+  ): { kind?: HiddenKind; page?: number; size?: number } & AccountFilter => ({
     ...readAccountFilter(search),
-    kind: isHiddenKind(search.kind) ? search.kind : undefined,
+    page: readAccountPage(search.page),
+    size: readAccountPageSize(search.size),
+    kind: hiddenKindValues.includes(search.kind as HiddenKind)
+      ? (search.kind as HiddenKind)
+      : undefined,
   }),
   component: HiddenSection,
 });
-
-/**
- * Ciò che hai tolto dalla vista, a tab per tipo: app, DLC, contenuto extra,
- * versione di prova e «non interessato».
- *
- * Senza un tab nell'indirizzo si apre il primo che ha qualcosa dentro: arrivare
- * su un elenco vuoto, con quattro tab con un numero accanto, sarebbe un giro a
- * vuoto.
- */
 function HiddenSection() {
   const t = useTranslations('account.hiddenTab');
   const tUnresolved = useTranslations('account.unresolved');
   const tEmpty = useTranslations('account.hiddenEmpty');
   const tEntries = useTranslations('account.hiddenEntries');
   const tFilters = useTranslations('account.filters');
-  const { kind: pickedKind, q, store } = Route.useSearch();
+  const tReview = useTranslations('account.review');
+  const search = Route.useSearch();
+  const { kind, q, store, page = 1, size = ACCOUNT_PAGE_SIZE } = search;
   const navigate = Route.useNavigate();
-  const filter = useMemo(() => ({ q, store }), [q, store]);
-  const filtered = q !== undefined || store !== undefined;
   const [resolving, setResolving] = useState<UnresolvedImport | null>(null);
-
-  const { isPending, counts, byKind, gamesTotal, gamesShown } =
-    useHiddenItems(filter);
-
-  const total = hiddenKindValues.reduce(
-    (sum, kind) => sum + (counts[kind] ?? 0),
-    0,
+  const query = useQuery(
+    api.imports.hiddenPage.queryOptions({
+      input: { kind, q, store, page, limit: size },
+      // Su un altro tab le voci di prima non c'entrano.
+      placeholderData: (previous) =>
+        kind === undefined || previous?.kind === kind ? previous : undefined,
+    }),
   );
-  const active: HiddenKind =
-    pickedKind ??
-    hiddenKindValues.find((kind) => (counts[kind] ?? 0) > 0) ??
-    'app';
-
+  const data = query.data;
+  useEffect(() => {
+    // Con i dati di prima `data.page` è la pagina vecchia: riporterebbe lì l'URL.
+    if (data && !query.isPlaceholderData && data.page !== page)
+      void navigate({
+        search: (prev) => ({
+          ...prev,
+          page: data.page === 1 ? undefined : data.page,
+        }),
+        replace: true,
+      });
+  }, [data, query.isPlaceholderData, page, navigate]);
+  const active = data?.kind ?? kind ?? 'app';
+  const count = data
+    ? Object.values(data.counts).reduce((sum, n) => sum + n, 0)
+    : undefined;
   return (
     <>
-      {isPending ? (
-        <YStack gap={12}>
-          <Skeleton height={32} width="100%" rounded={8} />
-          <Skeleton height={96} width="100%" rounded={12} />
-        </YStack>
-      ) : total === 0 && !filtered ? (
-        <EmptyState
-          icon={<EyeOff size={24} color="$color11" />}
-          title={tEmpty('title')}
-          description={tEmpty('description')}
-        />
-      ) : (
-        <YStack gap={16}>
-          <AccountFilters
-            filter={filter}
-            onChange={(next) =>
-              void navigate({
-                search: (prev) => ({ ...prev, ...next }),
-                replace: true,
-              })
-            }
-          />
-          {total === 0 ? <EmptyState title={tFilters('noMatch')} /> : null}
-          {/* Scorre in orizzontale sul telefono, dove cinque tab col numero non
-              stanno: senza barra, e il tab acceso si porta da sé in vista. */}
-          <Tabs
-            label={t('label')}
-            value={active}
-            onValueChange={(value) =>
-              void navigate({
-                // Cambiare tab tiene i filtri.
-                search: (prev) => ({ ...prev, kind: value as HiddenKind }),
-              })
-            }
+      <AccountSectionHeader
+        title={tReview('hiddenTitle')}
+        description={tReview('hiddenDescription')}
+        count={count}
+      />
+      <AccountFilters
+        filter={{ q, store }}
+        onChange={(next) =>
+          void navigate({
+            search: (prev) => ({ ...prev, ...next, page: undefined }),
+            replace: true,
+          })
+        }
+      />
+      <Tabs
+        label={t('label')}
+        value={active}
+        onValueChange={(value) =>
+          void navigate({
+            search: (prev) => ({
+              ...prev,
+              kind: value as HiddenKind,
+              page: undefined,
+            }),
+          })
+        }
+      >
+        {hiddenKindValues.map((value) => (
+          <TabsTab
+            key={value}
+            value={value}
+            count={data?.counts[value]}
+            icon={HIDDEN_KIND_ICON[value]}
           >
-            {hiddenKindValues.map((kind) => (
-              <TabsTab
-                key={kind}
-                value={kind}
-                count={counts[kind]}
-                icon={HIDDEN_KIND_ICON[kind]}
-              >
-                {t(`tabs.${kind}`)}
-              </TabsTab>
-            ))}
-          </Tabs>
-
-          <Text fontSize={14} lineHeight={20} color="$color11">
-            {active === 'unwanted'
-              ? `${tEntries('description')} ${t('unwantedHint')}`
-              : tUnresolved('hiddenHint')}
-          </Text>
-
-          <HiddenList
-            items={byKind(active)}
-            gamesTotal={gamesTotal}
-            gamesShown={gamesShown}
-            showGamesLink={active === 'unwanted'}
-            onResolve={setResolving}
-          />
-        </YStack>
+            {t(`tabs.${value}`)}
+          </TabsTab>
+        ))}
+      </Tabs>
+      {query.isPending ? (
+        <Skeleton height={160} width="100%" rounded={12} />
+      ) : query.isError ? (
+        <AccountListError retry={() => void query.refetch()} />
+      ) : (
+        data && (
+          <YStack gap={20}>
+            <Text fontSize={14} lineHeight={21} color="$color11">
+              {active === 'unwanted'
+                ? `${tEntries('description')} ${t('unwantedHint')}`
+                : tUnresolved('hiddenHint')}
+            </Text>
+            {data.total === 0 ? (
+              <EmptyState
+                icon={<EyeOff size={24} color="$color11" />}
+                title={q || store ? tFilters('noMatch') : tEmpty('title')}
+                description={q || store ? undefined : tEmpty('description')}
+              />
+            ) : (
+              <HiddenList items={data.items} onResolve={setResolving} />
+            )}
+            <AccountListFooter
+              pageSize={size}
+              onPageSizeChange={(next) =>
+                void navigate({
+                  search: (prev) => ({
+                    ...prev,
+                    size: next === ACCOUNT_PAGE_SIZE ? undefined : next,
+                    page: undefined,
+                  }),
+                  replace: true,
+                })
+              }
+              page={data.page}
+              total={data.total}
+              path="/account/hidden"
+              search={search}
+              onPage={(next) =>
+                void navigate({
+                  search: (prev) => ({
+                    ...prev,
+                    kind: active,
+                    page: next === 1 ? undefined : next,
+                  }),
+                })
+              }
+            />
+          </YStack>
+        )
       )}
-
       <ResolveImportDialog
         entry={resolving}
         onOpenChange={(open) => {

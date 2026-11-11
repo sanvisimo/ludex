@@ -1,35 +1,51 @@
 import { XStack, YStack } from '@repo/ui';
 import type { ReactNode } from 'react';
 
-/**
- * La cornice di una riga di lista con la copertina a sinistra: gli scarti
- * d'import e i giochi nascosti stanno nelle stesse liste, e devono sembrare la
- * stessa riga.
- *
- * `cover` è già della sua misura; la colonna a destra prende il resto e può
- * restringersi (`minW={0}`), o un nome lungo spinge i bottoni fuori dalla riga.
- */
+export const ROW_COVER_WIDTH = 44;
+const ROW_GAP = 12;
+
 export function RowFrame({
   cover,
   children,
+  actions,
 }: {
   cover: ReactNode;
   children: ReactNode;
+  actions?: ReactNode;
 }) {
   return (
     <XStack
       render="li"
-      gap={12}
-      p={8}
+      gap={ROW_GAP}
+      p={12}
       rounded={12}
       borderWidth={1}
       borderColor="$borderColor"
-      items="flex-start"
+      bg="$surface"
+      items="center"
+      flexWrap="wrap"
     >
       {cover}
-      <YStack gap={6} flex={1} minW={0}>
+      <YStack gap={6} grow={1} shrink={1} flexBasis={0} minW={0}>
         {children}
       </YStack>
+      {actions && (
+        <XStack
+          gap={8}
+          flexWrap="wrap"
+          items="center"
+          justify="flex-end"
+          maxW="50%"
+          $max-lg={{
+            width: '100%',
+            maxW: '100%',
+            justify: 'flex-start',
+            pl: ROW_COVER_WIDTH + ROW_GAP,
+          }}
+        >
+          {actions}
+        </XStack>
+      )}
     </XStack>
   );
 }

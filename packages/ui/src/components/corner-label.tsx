@@ -3,16 +3,14 @@ import { Text, XStack, styled } from 'tamagui';
 import type { ColorTokens, GetProps } from 'tamagui';
 
 /**
- * Il fondo e il testo sono la coppia del Badge `default` e del Button
- * primario: `$accent9` con `$actionColor`, già misurata. Su una copertina, che
- * ha i suoi colori, serve un fondo pieno e che si distingua dai badge grigi
- * del resto della pagina.
+ * In angolo usa la coppia del primario; la variante `floating` usa un fondo
+ * opaco neutro, bordo e testo di selezione. I due trattamenti restano leggibili
+ * sui colori della copertina e seguono il tema dell’app.
  */
 const CornerLabelFrame = styled(XStack, {
   name: 'CornerLabel',
 
-  // Attaccata all'angolo, non appoggiata: il raggio esterno è quello della
-  // copertina che la contiene (6), e solo l'angolo interno è arrotondato.
+  // Attaccata all'angolo: il raggio esterno è quello della copertina (6).
   position: 'absolute',
   t: 0,
   l: 0,
@@ -24,6 +22,36 @@ const CornerLabelFrame = styled(XStack, {
   bg: '$accent9',
   borderTopLeftRadius: 6,
   borderBottomRightRadius: 6,
+
+  variants: {
+    floating: {
+      true: {
+        t: 8,
+        l: 8,
+        height: 26,
+        px: 8,
+        gap: 5,
+        rounded: 7,
+        borderTopLeftRadius: 7,
+        borderBottomRightRadius: 7,
+        bg: '$background',
+        borderWidth: 1,
+        borderColor: '$selectionBorder',
+      },
+    },
+    compact: {
+      true: {
+        t: 4,
+        l: 4,
+        height: 22,
+        px: 5,
+        gap: 3,
+        rounded: 6,
+        borderTopLeftRadius: 6,
+        borderBottomRightRadius: 6,
+      },
+    },
+  } as const,
 });
 
 const CornerLabelText = styled(Text, {
@@ -34,6 +62,23 @@ const CornerLabelText = styled(Text, {
   lineHeight: 16,
   fontWeight: '600',
   whiteSpace: 'nowrap',
+  minW: 0,
+  shrink: 1,
+
+  variants: {
+    floating: {
+      true: {
+        color: '$selectionColor',
+        fontSize: 12,
+        fontWeight: '500',
+      },
+    },
+    compact: {
+      true: {
+        fontSize: 11,
+      },
+    },
+  } as const,
 });
 
 export type CornerLabelProps = Omit<
@@ -46,22 +91,29 @@ export type CornerLabelProps = Omit<
 };
 
 /**
- * L'etichetta in un angolo di una copertina: «Da giocare», «In corso».
- *
- * Si posiziona da sé in alto a sinistra rispetto al contenitore più vicino,
- * che quindi deve essere `position: relative` e avere `overflow: hidden` o
- * lo stesso raggio, altrimenti l'angolo sporge. Il testo si accorcia con
- * l'ellissi se la copertina è stretta.
+ * Il contenitore deve essere relativo, con `overflow: hidden` o lo stesso
+ * raggio, o l'angolo sporge; maxW riserva lo spazio dai suoi bordi.
  */
 export function CornerLabel({
   children,
   icon: Icon,
+  floating = false,
+  compact = false,
   ...props
 }: CornerLabelProps) {
   return (
-    <CornerLabelFrame {...props}>
-      {Icon && <Icon size={12} color="$actionColor" />}
-      <CornerLabelText numberOfLines={1}>{children}</CornerLabelText>
+    <CornerLabelFrame floating={floating} compact={compact} {...props}>
+      {Icon && (
+        <XStack shrink={0} aria-hidden>
+          <Icon
+            size={floating && !compact ? 14 : 12}
+            color={floating ? '$selectionColor' : '$actionColor'}
+          />
+        </XStack>
+      )}
+      <CornerLabelText floating={floating} compact={compact} numberOfLines={1}>
+        {children}
+      </CornerLabelText>
     </CornerLabelFrame>
   );
 }

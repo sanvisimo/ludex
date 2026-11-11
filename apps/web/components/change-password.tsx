@@ -27,13 +27,12 @@ import { useAuthErrorMessage } from '@/lib/auth-error';
 // solo a non mandare una richiesta che il server rifiuterebbe.
 const MIN_LENGTH = 8;
 
-/** La scheda «Password»: il bottone che apre il dialogo per cambiarla. */
-export function ChangePassword() {
+export function ChangePassword({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations('account.password');
   const [open, setOpen] = useState(false);
 
   return (
-    <Card>
+    <Card borderWidth={embedded ? 0 : 1} rounded={embedded ? 0 : 12}>
       <CardHeaderRow
         title={t('title')}
         description={t('description')}

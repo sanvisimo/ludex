@@ -80,7 +80,11 @@ export function ProfileDetails() {
               <Text fontSize={13} lineHeight={18} color="$color11">
                 {t('name')}
               </Text>
-              <Text fontWeight="500" color="$color12">
+              <Text
+                fontWeight="500"
+                color="$color12"
+                style={{ overflowWrap: 'anywhere' }}
+              >
                 {session.user.name}
               </Text>
             </YStack>
@@ -131,7 +135,9 @@ export function ProfileDetails() {
             <Text fontSize={13} lineHeight={18} color="$color11">
               {t('email')}
             </Text>
-            <Text color="$color12">{session.user.email}</Text>
+            <Text color="$color12" style={{ overflowWrap: 'anywhere' }}>
+              {session.user.email}
+            </Text>
           </YStack>
           <Button variant="outline" onClick={() => setEmailOpen(true)}>
             {t('changeEmail')}

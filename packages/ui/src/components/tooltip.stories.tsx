@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test';
 
 import { Languages } from '../icons';
-import { XStack } from '../primitives';
+import { Text, XStack, YStack } from '../primitives';
+import { BrandIcon } from './brand-icon';
 import { Button } from './button';
 import { Tooltip } from './tooltip';
 
@@ -72,5 +73,34 @@ export const LongContent: Story = {
     await waitFor(() =>
       expect(screen.getByText(/Edizione completa/)).toBeVisible(),
     );
+  },
+};
+
+/** Un contenuto composto: icone ed etichette, come l'elenco dei negozi. */
+export const RichContent: Story = {
+  args: {
+    content: (
+      <YStack gap={6} py={2}>
+        {(['steam', 'gog', 'epic'] as const).map((brand) => (
+          <XStack key={brand} items="center" gap={8}>
+            <BrandIcon brand={brand} size={16} />
+            <Text fontSize={12} lineHeight={16} color="$color1">
+              {brand.toUpperCase()}
+            </Text>
+          </XStack>
+        ))}
+      </YStack>
+    ),
+    children: (
+      <Button variant="ghost" size="icon" aria-label="Altri 3 negozi">
+        +3
+      </Button>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    await userEvent.hover(
+      within(canvasElement).getByRole('button', { name: 'Altri 3 negozi' }),
+    );
+    await waitFor(() => expect(screen.getByText('GOG')).toBeVisible());
   },
 };

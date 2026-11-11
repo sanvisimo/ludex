@@ -6,6 +6,9 @@
   "nav": {
     "home": "Home",
     "backlog": "Il mio backlog",
+    "backlogLink": "Backlog",
+    "settings": "Settings",
+    "libraries": "Librerie collegate",
     "signOut": "Esci",
     "signIn": "Accedi",
     "menu": "Menu",
@@ -34,9 +37,9 @@
     "en": "English"
   },
   "catalog": {
-    "title": "Catalogo",
+    "title": "Scopri cosa giocare.",
     "goToBacklog": "Backlog",
-    "subtitle": "Il catalogo che PileCue conosce finora.",
+    "subtitle": "Esplora il catalogo e trova la tua prossima avventura.",
     "error": "Non riesco a caricare il catalogo.",
     "empty": "Ancora nessun gioco. Il catalogo si riempie man mano che vengono aggiunti."
   },
@@ -97,6 +100,7 @@
     "actionsFor": "Azioni per {name}",
     "columnTitle": "Titolo",
     "columnPlatforms": "Piattaforme",
+    "columnStores": "Store",
     "columnDuration": "Durata",
     "columnRating": "Voto",
     "columnStatus": "Stato",
@@ -107,6 +111,7 @@
     "playedLabel": "Giocate: {duration}",
     "columnPlayed": "Giocate",
     "random": "Gioco a caso",
+    "chooseForMe": "Scegli per me",
     "randomEmpty": "Non ci sono giochi da pescare in questo filtro.",
     "randomOnlyOne": "È l'unico gioco del filtro: non ce n'è un altro da pescare.",
     "randomFailed": "Non sono riuscito a pescare un gioco"
@@ -418,6 +423,8 @@
     }
   },
   "filters": {
+    "showResults": "{count, plural, one {Mostra # gioco} other {Mostra # giochi}}",
+    "updatingResults": "Aggiorno i risultati…",
     "searchPlaceholder": "Cerca un titolo",
     "sortLabel": "Ordina per",
     "sortAddedAt": "Data di aggiunta",
@@ -427,6 +434,9 @@
     "sortRating": "Voto mio",
     "sortCriticRating": "Voto critica",
     "sortLastPlayed": "Ultima partita",
+    "sortPlaytime": "Ore giocate",
+    "sortStatus": "Stato",
+    "sortColumn": "Ordina per {column}",
     "ascending": "Crescente",
     "descending": "Decrescente",
     "reset": "Azzera i filtri ({count})",
@@ -513,6 +523,9 @@
     "notEnriched": "Metadati non ancora recuperati. Arrivano a breve.",
     "enriching": "Sto recuperando i dati da IGDB…",
     "inBacklog": "Nel tuo backlog",
+    "yourRating": "Il tuo voto",
+    "yourCollection": "La tua raccolta",
+    "copyCount": "{count, plural, one {# copia} other {# copie}}",
     "notInBacklog": "Non ce l'hai",
     "statusLine": "Stato: <value>{status}</value>",
     "goToBacklog": "Vai al backlog",
@@ -540,6 +553,7 @@
     "openOn": "Apri su {name}",
     "officialSite": "Sito ufficiale",
     "copies": "Copie",
+    "moreStores": "{count, plural, one {Un altro negozio} other {Altri # negozi}}",
     "played": "{duration} giocate",
     "lastPlayed": "ultima partita {date}",
     "acquired": "preso il {date}",
@@ -743,6 +757,25 @@
     "TOO_MANY_REQUESTS": "Troppi tentativi ravvicinati. Attendi qualche secondo e riprova."
   },
   "account": {
+    "review": {
+      "attentionTitle": "Da sistemare",
+      "attentionDescription": "Associa le voci non riconosciute e controlla i possibili doppioni.",
+      "hiddenTitle": "Nascosti",
+      "hiddenDescription": "Ritrova i giochi e le voci di importazione che hai tolto dalla vista.",
+      "groupRange": "{from}–{to} di {total} gruppi",
+      "range": "{from}–{to} di {total}",
+      "loadFailed": "Non è stato possibile caricare la lista.",
+      "retry": "Riprova",
+      "restoreImport": "Riporta da sistemare",
+      "restoreGame": "Mostra nel backlog",
+      "importItem": "Voce d’importazione",
+      "gameItem": "Gioco del backlog",
+      "librariesDescription": "Gestisci gli account collegati e lo stato delle importazioni.",
+      "profileTitle": "Profilo",
+      "profileDescription": "Dati personali, accessi e gestione del tuo account.",
+      "security": "Sicurezza",
+      "dataManagement": "Gestione dati"
+    },
     "title": "Account",
     "libraries": {
       "title": "Librerie",
@@ -971,7 +1004,7 @@
       "hiddenOn": "nascosta {date}",
       "addedOn": "aggiunta {date}",
       "openOn": "Apri su {store}",
-      "resolve": "Collega",
+      "resolve": "Associa gioco",
       "resolveTitle": "Collega al gioco giusto",
       "lastPlayedOn": "ultima partita {date}",
       "externalId": "Id sul negozio",
@@ -1347,6 +1380,16 @@
       "pilecueBrand": {
         "title": "Il marchio PileCue",
         "text": "Il nuovo logo, le icone e la palette Midnight Cue arrivano sul web e nell’app mobile."
+      },
+      "accountDesign": {
+        "title": "Account e librerie più chiari",
+        "text": "Profilo organizzato, card delle librerie più leggibili e paginazione nelle liste da sistemare e nascoste."
+      },
+      "webDesign": {
+        "title": "Home e raccolta più leggibili",
+        "p1": "Card più ampie nella home e preferenze di tema e lingua raccolte nel menu Settings.",
+        "p2": "Card e viste coerenti fra backlog, playlist e wishlist, con ordinamento dagli header nelle tabelle del backlog e delle playlist a filtro.",
+        "p3": "Pagina del gioco più compatta, con stato e voto subito accessibili, durata e critica distinte e dettagli delle copie più leggibili."
       },
       "gogCollections": {
         "title": "I giochi di GOG venduti in raccolta",

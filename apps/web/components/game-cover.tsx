@@ -26,18 +26,21 @@ export function GameCover({
   size = 'cover_small',
   width,
   fill = false,
+  rounded,
 }: {
   imageId: string | null;
   name: string;
   size?: CoverSize;
   width?: number;
   fill?: boolean;
+  /** Le card con copertina a filo gestiscono gli angoli sul contenitore. */
+  rounded?: number;
 }) {
   const t = useTranslations('game');
   const natural = DIMENSIONS[size];
   const shown = fill ? '100%' : (width ?? natural.width);
   const aspectRatio = `${natural.width} / ${natural.height}`;
-  const radius = typeof shown === 'number' && shown < 48 ? 4 : 6;
+  const radius = rounded ?? (typeof shown === 'number' && shown < 48 ? 4 : 6);
 
   if (!imageId) {
     return (

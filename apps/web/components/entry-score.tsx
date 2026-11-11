@@ -16,13 +16,26 @@ import { RatingValue } from '@/components/rating-value';
 export function EntryScore({
   rating,
   game,
+  badge = false,
 }: {
   rating: number | null;
   game: Pick<Game, 'criticScore' | 'criticScoreSource'>;
+  badge?: boolean;
 }) {
-  if (rating !== null) return <RatingValue value={rating} />;
+  if (rating !== null)
+    return badge ? (
+      <XStack bg="$color4" rounded={6} px={6} py={2} minH={24}>
+        <RatingValue value={rating} />
+      </XStack>
+    ) : (
+      <RatingValue value={rating} />
+    );
   return (
-    <CriticValue score={game.criticScore} source={game.criticScoreSource} />
+    <CriticValue
+      score={game.criticScore}
+      source={game.criticScoreSource}
+      badge={badge}
+    />
   );
 }
 
@@ -44,10 +57,13 @@ export function CriticValue({
   score,
   source,
   compact = false,
+  badge = false,
 }: {
   score: Game['criticScore'];
   source: Game['criticScoreSource'];
   compact?: boolean;
+  /** Fondo distinto dai metadati testuali delle card. */
+  badge?: boolean;
 }) {
   const t = useTranslations('critic');
   if (score === null || source === null) return null;
@@ -61,6 +77,11 @@ export function CriticValue({
       role="img"
       items="center"
       gap={4}
+      bg={badge ? '$color4' : 'transparent'}
+      rounded={badge ? 6 : 0}
+      px={badge ? 6 : 0}
+      py={badge ? 2 : 0}
+      minH={badge ? 24 : undefined}
       aria-label={label}
       // `title` Tamagui lo passa al DOM ma non lo dichiara nei tipi.
       {...({ title: label } as object)}
@@ -70,10 +91,10 @@ export function CriticValue({
         color={compact ? '$color12' : '$color11'}
       />
       <Text
-        fontSize={compact ? 11 : 14}
+        fontSize={compact ? 11 : badge ? 13 : 14}
         lineHeight={compact ? 16 : 20}
-        fontWeight={compact ? '600' : undefined}
-        color={compact ? '$color12' : '$color11'}
+        fontWeight={compact || badge ? '600' : undefined}
+        color={compact || badge ? '$color12' : '$color11'}
         aria-hidden
       >
         {value}

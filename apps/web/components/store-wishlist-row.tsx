@@ -51,7 +51,7 @@ export function StoreWishlistRow({
   if (!list) return null;
 
   return (
-    <YStack gap={2}>
+    <XStack gap={2} items="center" justify="space-between">
       <XStack items="center" gap={6} flexWrap="wrap">
         <Link
           to="/wishlist/$id"
@@ -70,6 +70,6 @@ export function StoreWishlistRow({
           })}
         </Text>
       )}
-    </YStack>
+    </XStack>
   );
 }

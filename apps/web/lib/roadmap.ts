@@ -1,14 +1,6 @@
 /**
- * La pagina `/roadmap`: cosa c'è, cosa arriva, cosa è solo un'idea.
- *
- * Come `lib/credits.ts`, qui stanno solo le cose che non si traducono: l'id, lo
- * stato, le aree e il mese. Il testo sta nei messaggi, `roadmap.items.<id>`:
- * `title`, e `text` per ciò che non è ancora fatto oppure `p1…pN` (tanti quanti
- * `points`) per ciò che lo è.
- *
- * **Lo scrive una persona**, non si ricava da `docs/ordine-sviluppo.md`: quello
- * è il diario di chi sviluppa, con gli step e i perché, e questa è la pagina di
- * chi usa l'app. Una voce nuova si aggiunge qui e nei due file dei messaggi.
+ * La roadmap è curata manualmente, non derivata dal diario di sviluppo:
+ * comunica agli utenti le funzionalità, senza esporre gli step interni.
  */
 export type RoadmapStatus = 'doing' | 'next' | 'idea' | 'done';
 
@@ -40,12 +32,20 @@ export type RoadmapEntry = {
  * facendo adesso, e una voce passa a «fatto» quando l'utente dice che è pronta.
  */
 export const roadmap: RoadmapEntry[] = [
+  { id: 'accountDesign', status: 'doing', areas: ['account', 'import'] },
   { id: 'pilecueBrand', status: 'doing', areas: ['library', 'mobile'] },
   { id: 'ai', status: 'next', areas: ['ai'] },
   { id: 'mobile', status: 'next', areas: ['mobile'] },
   { id: 'publicPlaylists', status: 'next', areas: ['playlists'] },
   { id: 'categoryPages', status: 'next', areas: ['game', 'library'] },
   { id: 'metaquest', status: 'idea', areas: ['import'] },
+  {
+    id: 'webDesign',
+    status: 'done',
+    areas: ['library', 'game', 'playlists', 'account'],
+    month: '2026-11',
+    points: 3,
+  },
   {
     id: 'release',
     status: 'done',

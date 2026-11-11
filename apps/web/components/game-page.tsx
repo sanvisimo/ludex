@@ -8,7 +8,6 @@ import type {
 import { storePageUrl } from '@repo/contracts';
 import {
   Badge,
-  type Brand,
   BrandIcon,
   brandTitle,
   Button,
@@ -17,14 +16,13 @@ import {
   DialogContent,
   DialogTitle,
   Gallery,
-  PlatformIcon,
   Text,
   Theme,
   XStack,
   YStack,
   type GalleryItem,
 } from '@repo/ui';
-import { Globe, Info } from '@repo/ui/icons';
+import { ArrowDown, ArrowUpRight, Gamepad2, Globe, Info } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
@@ -38,6 +36,7 @@ import { EntryTags } from '@/components/entry-tags';
 import { GameCover } from '@/components/game-cover';
 import { useOpenIgdbHit } from '@/components/game-search';
 import { GameTypeBadge } from '@/components/game-type-badge';
+import { PlayedTime } from '@/components/played-time';
 import { HltbTimes } from '@/components/hltb-times';
 import { RatingStars } from '@/components/rating-stars';
 import { ScrollRow } from '@/components/scroll-row';
@@ -45,19 +44,15 @@ import { statusIcons } from '@/components/status-icon';
 import { useBacklogHref } from '@/lib/backlog-filter';
 import { useDuration } from '@/lib/duration';
 import { igdbImageUrl } from '@/lib/igdb-image';
-import { platformIconUrl } from '@/lib/platform-icons';
 import { STORE_BRAND } from '@/lib/store-brand';
 import { useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 import { useSession } from '@/src/use-session';
 
 /**
- * I pezzi della pagina del gioco (12d). La struttura è quella approvata sul
- * wireframe in `plans/12d-pagina-gioco.excalidraw`: la hero, e sotto due
- * colonne — la principale con gallery, descrizione e giochi legati, la
- * laterale con durata e critica sopra e il tuo backlog sotto. Su un telefono
- * una colonna sola, con la laterale **prima**: stato, durata e critica sono
- * ciò che serve a decidere.
+ * Pagina del gioco: hero compatta, fascia personale e due colonne desktop.
+ * Su mobile: durata/critica, gallery/descrizione, copie/link e giochi legati.
+ * Revisione approvata in `plans/revisione-web.md`.
  */
 
 /**
@@ -70,40 +65,41 @@ function LinkRow({
   title,
   children,
   items = 'center',
+  tile = false,
 }: {
   href: string | null;
   /** Il suggerimento al passaggio, es. «Apri su GOG». */
   title: string;
   children: ReactNode;
   items?: 'center' | 'flex-start';
+  /** Superficie cliccabile per copie e destinazioni esterne. */
+  tile?: boolean;
 }) {
-  if (!href) {
-    return (
-      <XStack items={items} gap={10}>
-        {children}
-      </XStack>
-    );
-  }
   return (
     <XStack
-      render="a"
-      // Come in `NavItem`: gli attributi del link arrivano all'`<a>`, ma i
-      // tipi della view non li conoscono.
-      {...({
-        href,
-        target: '_blank',
-        rel: 'noopener noreferrer',
-        title,
-        style: { textDecoration: 'none', color: 'inherit' },
-      } as object)}
+      render={href ? 'a' : 'div'}
+      {...(href
+        ? ({
+            href,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            title,
+            style: { textDecoration: 'none', color: 'inherit' },
+          } as object)
+        : {})}
       items={items}
-      gap={10}
-      mx={-6}
-      px={6}
-      py={2}
-      rounded={6}
-      cursor="pointer"
-      hoverStyle={{ bg: '$color4' }}
+      gap={tile ? 8 : 10}
+      minW={0}
+      minH={tile ? 48 : undefined}
+      mx={tile || !href ? 0 : -6}
+      px={tile ? 10 : href ? 6 : 0}
+      py={tile ? 10 : href ? 2 : 0}
+      rounded={tile ? 10 : 6}
+      bg={tile ? '$color3' : 'transparent'}
+      borderWidth={tile ? 1 : 0}
+      borderColor="$borderColor"
+      cursor={href ? 'pointer' : undefined}
+      hoverStyle={href ? { bg: '$color4' } : undefined}
       focusVisibleStyle={{
         outlineColor: '$outlineColor',
         outlineStyle: 'solid',
@@ -111,11 +107,14 @@ function LinkRow({
       }}
     >
       {children}
+      {tile && href && (
+        <XStack shrink={0} pt={items === 'flex-start' ? 2 : 0}>
+          <ArrowUpRight size={13} color="$color11" aria-hidden />
+        </XStack>
+      )}
     </XStack>
   );
 }
-
-// --- la hero ---
 
 /**
  * L'immagine grande in testa: l'artwork IGDB; se manca il primo screenshot;
@@ -171,7 +170,7 @@ export function GameHero({ game }: { game: GameDetail }) {
         position="relative"
         overflow="hidden"
         bg="$color2"
-        minH={500}
+        minH={320}
         justify="flex-end"
         $max-md={{ minH: 240 }}
       >
@@ -265,8 +264,6 @@ export function GameHero({ game }: { game: GameDetail }) {
   );
 }
 
-// --- la gallery ---
-
 export function GameGallery({ game }: { game: GameDetail }) {
   const t = useTranslations('game');
 
@@ -306,17 +303,37 @@ export function GameGallery({ game }: { game: GameDetail }) {
   );
 }
 
-// --- la colonna laterale: durata e critica ---
-
-function Panel({ children }: { children: ReactNode }) {
+function Panel({
+  children,
+  id,
+  label,
+}: {
+  children: ReactNode;
+  id?: string;
+  label?: string;
+}) {
   return (
     <YStack
+      render={label ? 'section' : 'div'}
+      id={id}
+      aria-label={label}
+      tabIndex={id ? -1 : undefined}
+      style={id ? { scrollMarginTop: 96 } : undefined}
       gap={12}
       p={16}
       rounded={12}
       borderWidth={1}
       borderColor="$borderColor"
       bg="$color2"
+      focusVisibleStyle={
+        id
+          ? {
+              outlineColor: '$outlineColor',
+              outlineStyle: 'solid',
+              outlineWidth: 2,
+            }
+          : undefined
+      }
     >
       {children}
     </YStack>
@@ -420,70 +437,93 @@ export function DurationAndCritics({
 
   return (
     <Panel>
-      <LinkRow
-        href={game.links.hltb}
-        title={t('openOn', { name: 'HowLongToBeat' })}
+      <YStack gap={12}>
+        <LinkRow
+          href={game.links.hltb}
+          title={t('openOn', { name: 'HowLongToBeat' })}
+        >
+          <BrandIcon brand="hltb" size={20} />
+          <PanelTitle>{tHltb('title')}</PanelTitle>
+        </LinkRow>
+        {times.length === 0 ? (
+          <Muted>
+            {game.hltbSyncedAt === null
+              ? tHltb('notFetched')
+              : tHltb('noTimes')}
+          </Muted>
+        ) : (
+          <XStack gap={8} flexWrap="wrap">
+            {times.map(([key, minutes]) => (
+              <YStack
+                key={key}
+                grow={1}
+                minW={96}
+                p={10}
+                rounded={8}
+                bg={key === 'main' ? '$selectionBackground' : '$color3'}
+                gap={4}
+              >
+                <Muted fontSize={12} lineHeight={16}>
+                  {tHltb(key)}
+                </Muted>
+                <Strong fontSize={22} lineHeight={28}>
+                  {duration(minutes!)}
+                </Strong>
+              </YStack>
+            ))}
+          </XStack>
+        )}
+      </YStack>
+
+      <YStack
+        gap={10}
+        pt={16}
+        mt={4}
+        borderTopWidth={1}
+        borderColor="$borderColor"
       >
-        <BrandIcon brand="hltb" size={20} />
-        <PanelTitle>{tHltb('title')}</PanelTitle>
-      </LinkRow>
-      {times.length === 0 ? (
-        <Muted>
-          {game.hltbSyncedAt === null ? tHltb('notFetched') : tHltb('noTimes')}
-        </Muted>
-      ) : (
-        // Vanno a capo intere invece di stringersi: a 375 px «Completionist»
-        // si spezzava a metà parola.
-        <XStack gap={8} flexWrap="wrap">
-          {times.map(([key, minutes]) => (
-            <YStack
-              key={key}
-              grow={1}
-              minW={96}
-              p={8}
-              rounded={8}
-              bg="$color3"
-              gap={2}
-            >
-              <Muted fontSize={12} lineHeight={16}>
-                {tHltb(key)}
-              </Muted>
-              <Strong fontSize={16}>{duration(minutes!)}</Strong>
-            </YStack>
-          ))}
-        </XStack>
-      )}
-
-      <PanelTitle>{tCritic('title')}</PanelTitle>
-      {scores.length === 0 ? (
-        <Muted>{tCritic('none')}</Muted>
-      ) : (
-        <YStack gap={6}>
-          {scores.map(({ source, score, link }) => (
-            <LinkRow
-              key={source}
-              href={link}
-              title={t('openOn', { name: tCritic(source) })}
-            >
-              <BrandIcon brand={source} size={20} />
-              <Muted flex={1}>{tCritic(source)}</Muted>
-              {score ? (
-                <>
-                  {score.tier && <Muted fontSize={13}>{score.tier}</Muted>}
-                  <Strong>{Math.round(score.score)}</Strong>
-                </>
-              ) : (
-                <Muted fontSize={13}>{tCritic('noScore')}</Muted>
-              )}
-            </LinkRow>
-          ))}
-        </YStack>
-      )}
-
-      <Button variant="outline" onPress={() => setOpen(true)}>
-        <Info size={16} color="$color12" />
-        {t('details')}
-      </Button>
+        <PanelTitle>{tCritic('title')}</PanelTitle>
+        {scores.length === 0 ? (
+          <Muted>{tCritic('none')}</Muted>
+        ) : (
+          <YStack gap={8}>
+            {scores.map(({ source, score, link }) => (
+              <LinkRow
+                key={source}
+                href={link}
+                title={t('openOn', { name: tCritic(source) })}
+              >
+                <BrandIcon brand={source} size={20} />
+                <YStack grow={1} shrink={1} minW={0} gap={2}>
+                  <Strong fontWeight="500">{tCritic(source)}</Strong>
+                  {score?.tier && <Muted fontSize={12}>{score.tier}</Muted>}
+                </YStack>
+                {score ? (
+                  <XStack
+                    bg="$color4"
+                    rounded={8}
+                    px={10}
+                    py={6}
+                    gap={3}
+                    items="baseline"
+                  >
+                    <Strong fontSize={20} lineHeight={24}>
+                      {Math.round(score.score)}
+                    </Strong>
+                    <Muted fontSize={11}>/100</Muted>
+                  </XStack>
+                ) : (
+                  <Muted fontSize={13}>{tCritic('noScore')}</Muted>
+                )}
+              </LinkRow>
+            ))}
+          </YStack>
+        )}
+        <Button variant="outline" onPress={() => setOpen(true)}>
+          <Info size={16} color="$color12" />
+          {t('details')}
+        </Button>
+      </YStack>
       <Dialog modal open={open} onOpenChange={setOpen}>
         <DialogContent closeLabel={t('close')}>
           <DialogTitle>{t('durationAndCritics')}</DialogTitle>
@@ -494,8 +534,6 @@ export function DurationAndCritics({
     </Panel>
   );
 }
-
-// --- il prezzo ---
 
 /**
  * Il prezzo più basso di adesso su IsThereAnyDeal, col negozio, e un segnale se
@@ -550,32 +588,82 @@ export function GamePriceCard({ game }: { game: GameDetail }) {
   );
 }
 
-// --- la colonna laterale: il tuo backlog ---
+/** Stato e voto al volo, separati dai dettagli delle singole copie. */
+export function GamePersonalBar({
+  entry,
+  onStatus,
+  onRating,
+}: {
+  entry: BacklogEntry;
+  onStatus: (entry: BacklogEntry, status: BacklogStatus) => void;
+  onRating: (entry: BacklogEntry, rating: number | null) => void;
+}) {
+  const t = useTranslations('game');
+  const statusLabels = useStatusLabels();
+  return (
+    <YStack
+      render="section"
+      aria-label={t('inBacklog')}
+      gap={12}
+      px={20}
+      py={16}
+      rounded={12}
+      bg="$surface"
+      borderWidth={1}
+      borderColor="$borderColor"
+      $max-sm={{ px: 12 }}
+    >
+      <div className="game-personal-fields">
+        <YStack gap={6} minW={0}>
+          <Muted fontSize={12}>{t('inBacklog')}</Muted>
+          <XStack items="center" gap={8} minH={32}>
+            <StatusButton entry={entry} onStatus={onStatus} />
+            <Strong shrink={1}>{statusLabels[entry.status]}</Strong>
+          </XStack>
+        </YStack>
+        <YStack className="game-personal-rating" gap={6} minW={0}>
+          <Muted fontSize={12}>{t('yourRating')}</Muted>
+          <XStack minH={32} items="center">
+            <RatingStars
+              size="sm"
+              value={entry.rating}
+              onChange={(rating) => onRating(entry, rating)}
+            />
+          </XStack>
+        </YStack>
+        <YStack className="game-personal-collection" gap={6} minW={0}>
+          <Muted fontSize={12}>{t('yourCollection')}</Muted>
+          <XStack flexWrap="wrap" items="center" minH={32} gap={12}>
+            <Button
+              variant="ghost"
+              size="sm"
+              render="a"
+              role="link"
+              {...({ href: '#game-copies' } as object)}
+              px={0}
+              gap={4}
+            >
+              {t('copyCount', { count: entry.ownerships.length })}
+              <ArrowDown size={13} color="$color11" aria-hidden />
+            </Button>
+            <PlayedTime ownerships={entry.ownerships} />
+          </XStack>
+        </YStack>
+      </div>
+      {entry.hiddenAt && <Muted>{t('hiddenNotice')}</Muted>}
+    </YStack>
+  );
+}
 
-/**
- * Stato, voto, copie, note e tag. Il voto si dà da qui, al volo: le cinque
- * stelle ci sono sempre, vuote se non hai votato. Ogni copia ha l'icona del negozio, che
- * porta alla pagina del gioco su quel negozio quando sappiamo dov'è: quella
- * della copia (`storePageUrl`), e senza quella la riga dello stesso negozio
- * nella card «Links» (`storeLinks`, dove arriva anche il link di IGDB: è il
- * caso di Epic, che la pagina non la manda mai). Poi ciò che solo quella copia
- * sa: ore giocate, ultima partita, quando l'hai presa.
- */
+/** Copie con i loro dati, note e tag; stato e voto sono nella fascia personale. */
 export function BacklogPanel({
   entry,
   storeLinks,
-  onStatus,
-  onRating,
   actions,
-  hiddenNotice,
 }: {
   entry: BacklogEntry;
   storeLinks: GameDetail['storeLinks'];
-  onStatus: (entry: BacklogEntry, status: BacklogStatus) => void;
-  /** Il voto al volo, senza aprire «Modifica»; `null` lo toglie. */
-  onRating: (entry: BacklogEntry, rating: number | null) => void;
   actions: ReactNode;
-  hiddenNotice: ReactNode;
 }) {
   const t = useTranslations('game');
   const tSubscription = useTranslations('subscription');
@@ -590,22 +678,12 @@ export function BacklogPanel({
   const nameBySlug = new Map((platforms ?? []).map((p) => [p.slug, p.name]));
 
   return (
-    <Panel>
+    <Panel id="game-copies" label={t('copies')}>
       <XStack items="center" justify="space-between" gap={8}>
-        <PanelTitle>{t('inBacklog')}</PanelTitle>
-        <XStack items="center" gap={8}>
-          <RatingStars
-            size="sm"
-            value={entry.rating}
-            onChange={(rating) => onRating(entry, rating)}
-          />
-          <StatusButton entry={entry} onStatus={onStatus} />
-        </XStack>
+        <PanelTitle>{t('copies')}</PanelTitle>
+        <Badge variant="secondary">{entry.ownerships.length}</Badge>
       </XStack>
-      {hiddenNotice}
-
       <YStack gap={8}>
-        <Muted fontSize={13}>{t('copies')}</Muted>
         {entry.ownerships.map((ownership) => {
           const brand = ownership.store
             ? STORE_BRAND[ownership.store]
@@ -613,24 +691,31 @@ export function BacklogPanel({
           const storeName = ownership.store
             ? storeLabels[ownership.store]
             : null;
+          const platformName =
+            nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug;
           const url =
             storePageUrl(ownership.store, ownership.storePage) ??
             storeLinks.find((link) => link.store === ownership.store)?.url ??
             null;
-          const icon = brand ? <BrandIcon brand={brand} size={24} /> : null;
-          const platformName =
-            nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug;
-          const platformIcon = platformIconUrl(ownership.platformSlug);
-
-          const facts = [
-            ownership.playtimeMinutes
-              ? t('played', { duration: duration(ownership.playtimeMinutes) })
-              : null,
+          const account = [
+            ...new Set(
+              [
+                ownership.storeAccount?.label,
+                ownership.storeAccount?.displayName,
+              ].filter(Boolean),
+            ),
+          ];
+          const label = [
+            ...account,
+            ownership.subscription && tSubscription(ownership.subscription),
+            ownership.subscriptionEndedAt && t('subscriptionEnded'),
+            ownership.medium === 'physical' && tMedium('physical'),
+          ]
+            .filter(Boolean)
+            .join(' · ');
+          const dates = [
             ownership.lastPlayedAt
               ? t('lastPlayed', {
-                  // Una data e non «3 mesi fa»: il tempo relativo dipende
-                  // dall'ora di chi lo calcola, e server e browser
-                  // scriverebbero due testi diversi.
                   date: format.dateTime(ownership.lastPlayedAt, {
                     dateStyle: 'medium',
                   }),
@@ -643,42 +728,59 @@ export function BacklogPanel({
                   }),
                 })
               : null,
-          ].filter(Boolean);
-
-          const label = [
-            // Con l'icona il nome si toglie: resta nel suo
-            // `aria-label` e al passaggio del mouse.
-            !platformIcon && platformName,
-            // Senza icona il negozio si scrive: è il caso di Amazon.
-            !brand && storeName,
-            ownership.storeAccount?.label,
-            ownership.storeAccount?.displayName,
-            ownership.subscription && tSubscription(ownership.subscription),
-            // L'abbonamento è finito e la copia resta per i tuoi dati sopra
-            // (step 14): stasera non la avvii, e la scheda lo dice.
-            ownership.subscriptionEndedAt && t('subscriptionEnded'),
-            ownership.medium === 'physical' && tMedium('physical'),
           ]
             .filter(Boolean)
             .join(' · ');
-
           return (
             <LinkRow
               key={ownership.id}
               href={url}
-              title={t('openOn', { name: storeName ?? '' })}
+              title={t('openOn', { name: storeName ?? platformName })}
               items="flex-start"
+              tile
             >
-              <XStack gap={6} pt={2} shrink={0}>
-                {icon}
-                {platformIcon && (
-                  <PlatformIcon src={platformIcon} label={platformName} />
+              <XStack shrink={0} pt={2}>
+                {brand ? (
+                  <BrandIcon brand={brand} size={24} />
+                ) : (
+                  <Gamepad2 size={24} color="$color11" aria-hidden />
                 )}
               </XStack>
-              <YStack flex={1} minW={0}>
-                {label && <Strong fontWeight="500">{label}</Strong>}
-                {facts.length > 0 && (
-                  <Muted fontSize={13}>{facts.join(' · ')}</Muted>
+              <YStack grow={1} shrink={1} minW={0} gap={4}>
+                <Text
+                  fontSize={13}
+                  lineHeight={18}
+                  color="$color12"
+                  style={{ overflowWrap: 'anywhere' }}
+                >
+                  {storeName && (
+                    <Text fontWeight="600">
+                      {storeName}
+                      {' · '}
+                    </Text>
+                  )}
+                  {platformName}
+                </Text>
+                {label && (
+                  <Muted
+                    fontSize={12}
+                    lineHeight={18}
+                    style={{ overflowWrap: 'anywhere' }}
+                  >
+                    {label}
+                  </Muted>
+                )}
+                {!!ownership.playtimeMinutes && (
+                  <Strong fontSize={12} lineHeight={18}>
+                    {t('played', {
+                      duration: duration(ownership.playtimeMinutes),
+                    })}
+                  </Strong>
+                )}
+                {dates && (
+                  <Muted fontSize={12} lineHeight={18}>
+                    {dates}
+                  </Muted>
                 )}
               </YStack>
             </LinkRow>
@@ -686,28 +788,37 @@ export function BacklogPanel({
         })}
       </YStack>
 
-      {entry.notes && (
-        <YStack gap={4}>
-          <Muted fontSize={13}>{t('notes')}</Muted>
-          <Text
-            fontSize={14}
-            lineHeight={20}
-            color="$color12"
-            style={{ whiteSpace: 'pre-line' }}
-          >
-            {entry.notes}
-          </Text>
+      {(entry.notes || entry.tags.length > 0) && (
+        <YStack gap={10} pt={12} borderTopWidth={1} borderColor="$borderColor">
+          {entry.notes && (
+            <YStack gap={4}>
+              <Muted fontSize={13}>{t('notes')}</Muted>
+              <Text
+                fontSize={14}
+                lineHeight={20}
+                color="$color12"
+                style={{ whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}
+              >
+                {entry.notes}
+              </Text>
+            </YStack>
+          )}
+          <EntryTags tags={entry.tags} linked />
         </YStack>
       )}
-      <EntryTags tags={entry.tags} linked />
-      <XStack flexWrap="wrap" gap={8}>
+      <XStack
+        flexWrap="wrap"
+        gap={8}
+        pt={12}
+        mt={4}
+        borderTopWidth={1}
+        borderColor="$borderColor"
+      >
         {actions}
       </XStack>
     </Panel>
   );
 }
-
-// --- la colonna laterale: dove si compra ---
 
 /**
  * Dove andare per saperne di più o per comprarlo, ognuno con la sua icona e il
@@ -724,75 +835,121 @@ export function StoreLinks({ game }: { game: GameDetail }) {
   const storeLabels = useStoreLabels();
 
   const official = game.websites.find((site) => site.type === 'official');
-  const others = WEBSITE_ORDER.flatMap((type) => {
-    const site = game.websites.find((row) => row.type === type);
-    return site ? [{ type, url: site.url }] : [];
-  });
-  if (!official && game.storeLinks.length === 0 && others.length === 0) {
+  const otherStores = (['itch', 'app_store', 'google_play'] as const).flatMap(
+    (type) => {
+      const site = game.websites.find((row) => row.type === type);
+      return site ? [{ type, url: site.url }] : [];
+    },
+  );
+  const wikipedia = game.websites.find((site) => site.type === 'wikipedia');
+  if (
+    !official &&
+    game.storeLinks.length === 0 &&
+    otherStores.length === 0 &&
+    !wikipedia
+  )
     return null;
-  }
 
   return (
-    <Panel>
+    <Panel label={t('links')}>
       <PanelTitle>{t('links')}</PanelTitle>
-      <YStack gap={6}>
-        {official && (
-          <LinkRow href={official.url} title={t('officialSite')}>
-            <Globe size={20} color="$color11" />
-            <Muted flex={1}>{t('officialSite')}</Muted>
-          </LinkRow>
-        )}
-        {game.storeLinks.map(({ store, url }) => {
-          const brand = STORE_BRAND[store];
-          return (
-            <LinkRow
-              key={store}
-              href={url}
-              title={t('openOn', { name: storeLabels[store] })}
-            >
-              {brand && <BrandIcon brand={brand} size={20} />}
-              <Muted flex={1}>{storeLabels[store]}</Muted>
-            </LinkRow>
-          );
-        })}
-        {others.map(({ type, url }) => (
-          <LinkRow
-            key={type}
-            href={url}
-            title={t('openOn', { name: brandTitle(type) })}
+      {official && (
+        <LinkRow href={official.url} title={t('officialSite')} tile>
+          <Globe size={20} color="$color11" aria-hidden />
+          <Text
+            grow={1}
+            shrink={1}
+            minW={0}
+            fontSize={13}
+            fontWeight="500"
+            color="$color12"
           >
-            <BrandIcon brand={type} size={20} />
-            <Muted flex={1}>{brandTitle(type)}</Muted>
+            {t('officialSite')}
+          </Text>
+        </LinkRow>
+      )}
+      {(game.storeLinks.length > 0 || otherStores.length > 0) && (
+        <div className="game-store-links">
+          {game.storeLinks.map(({ store, url }) => {
+            const brand = STORE_BRAND[store];
+            return (
+              <LinkRow
+                key={store}
+                href={url}
+                title={t('openOn', { name: storeLabels[store] })}
+                tile
+              >
+                {brand && (
+                  <XStack shrink={0}>
+                    <BrandIcon brand={brand} size={20} />
+                  </XStack>
+                )}
+                <Text
+                  grow={1}
+                  shrink={1}
+                  minW={0}
+                  fontSize={13}
+                  lineHeight={18}
+                  fontWeight="500"
+                  color="$color12"
+                  style={{ overflowWrap: 'anywhere' }}
+                >
+                  {storeLabels[store].replace(/ (store|eshop)/i, '')}
+                </Text>
+              </LinkRow>
+            );
+          })}
+          {otherStores.map(({ type, url }) => (
+            <LinkRow
+              key={type}
+              href={url}
+              title={t('openOn', { name: brandTitle(type) })}
+              tile
+            >
+              <XStack shrink={0}>
+                <BrandIcon brand={type} size={20} />
+              </XStack>
+              <Text
+                grow={1}
+                shrink={1}
+                minW={0}
+                fontSize={13}
+                lineHeight={18}
+                fontWeight="500"
+                color="$color12"
+              >
+                {brandTitle(type)}
+              </Text>
+            </LinkRow>
+          ))}
+        </div>
+      )}
+      {wikipedia && (
+        <YStack pt={12} borderTopWidth={1} borderColor="$borderColor">
+          <LinkRow
+            href={wikipedia.url}
+            title={t('openOn', { name: brandTitle('wikipedia') })}
+            tile
+          >
+            <BrandIcon brand="wikipedia" size={20} />
+            <Text
+              grow={1}
+              shrink={1}
+              minW={0}
+              fontSize={13}
+              fontWeight="500"
+              color="$color12"
+            >
+              {brandTitle('wikipedia')}
+            </Text>
           </LinkRow>
-        ))}
-      </YStack>
+        </YStack>
+      )}
     </Panel>
   );
 }
 
-/** I link di IGDB che non sono negozi nostri né il sito ufficiale, in ordine. */
-const WEBSITE_ORDER = [
-  'itch',
-  'app_store',
-  'google_play',
-  'wikipedia',
-] as const satisfies readonly Brand[];
-
-// --- remake e simili ---
-
-/**
- * Una fila di giochi legati che scorre di lato. Quelli che non hai sono
- * attenuati e col bordo tratteggiato, come nel wireframe. Si aprono con la
- * regola della ricerca (12f): un gioco già in catalogo è un link alla sua
- * pagina; uno che non c'è ancora, da loggati, al clic diventa una riga di
- * `games` e si apre; da ospiti resta copertina e nome.
- * Fila e frecce sono `ScrollRow`, la stessa delle fasce della home.
- *
- * `showKind` scrive sulla copertina che versione è: «Edizione estesa» dall'
- * originale, «Originale» dall'edizione estesa. Il badge sta fuori
- * dall'attenuazione, perché un gioco che non hai è proprio quello di cui
- * bisogna poterlo leggere.
- */
+/** I giochi fuori catalogo si creano solo al clic, prima di aprirne la scheda. */
 export function RelatedRow({
   title,
   games,
@@ -852,7 +1009,13 @@ export function RelatedRow({
                   width={104}
                 />
                 {game.status && (
-                  <CornerLabel icon={statusIcons[game.status]}>
+                  <CornerLabel
+                    floating
+                    compact
+                    maxW={96}
+                    icon={statusIcons[game.status]}
+                    {...({ title: statusLabels[game.status] } as object)}
+                  >
                     {statusLabels[game.status]}
                   </CornerLabel>
                 )}

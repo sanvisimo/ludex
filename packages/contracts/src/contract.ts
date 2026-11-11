@@ -3,6 +3,9 @@ import { z } from 'zod';
 
 import {
   AccountExportSchema,
+  AccountListQuerySchema,
+  ReviewPageSchema,
+  HiddenPageSchema,
   AdminRoleSchema,
   AdminUserSchema,
   BacklogEntrySchema,
@@ -74,7 +77,6 @@ import {
   WishlistGamesSchema,
   WishlistUnresolvedSchema,
   UnresolvedGroupListSchema,
-  UnresolvedImportSchema,
   UserSettingsSchema,
   UserTagInputSchema,
   UserTagSchema,
@@ -450,9 +452,23 @@ export const contract = {
   },
 
   imports: {
-    // Le voci che l'import non ha saputo legare a un gioco.
-    unresolved: oc.output(z.array(UnresolvedImportSchema)),
-
+    reviewPage: oc
+      .input(
+        AccountListQuerySchema.extend({
+          tab: z.enum(['unrecognised', 'duplicates']).optional(),
+        }),
+      )
+      .output(ReviewPageSchema),
+    hiddenPage: oc
+      .input(
+        AccountListQuerySchema.extend({
+          kind: HiddenKindSchema.optional(),
+        }),
+      )
+      .output(HiddenPageSchema),
+    counts: oc.output(
+      z.object({ toFix: z.number().int(), hidden: z.number().int() }),
+    ),
     // L'utente sceglie il gioco giusto su IGDB: la voce diventa un gioco nel
     // backlog, col possesso del negozio da cui veniva, e sparisce dalla lista.
     resolve: oc

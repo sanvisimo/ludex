@@ -6,13 +6,15 @@ import { useTranslations } from 'use-intl';
 
 import { GameSearchBox } from '@/components/game-search';
 import { RandomGameDice } from '@/components/random-game-dice';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { supportUrl } from '@/lib/credits';
 import { BackToTop } from '@/src/components/back-to-top';
 import { ButtonLink } from '@/src/components/button-link';
-import { LocaleSwitcher } from '@/src/components/locale-switcher';
 import { takeLinkClick } from '@/src/link-click';
-import { GuestSheet, UserMenu } from '@/src/components/user-menu';
+import {
+  GuestSheet,
+  SettingsDropdown,
+  UserMenu,
+} from '@/src/components/user-menu';
 import { useSession } from '@/src/use-session';
 
 /** L'altezza della barra: sul telefono la pagina le lascia questo spazio sotto. */
@@ -22,10 +24,9 @@ const BAR_HEIGHT = 56;
  * Il guscio: la cornice di tutte le pagine tranne accesso e registrazione.
  *
  * Una barra sola, a ogni larghezza: il nome a sinistra, che porta al
- * catalogo, o al backlog da collegati, la ricerca in mezzo, e a destra chi è
- * collegato, col menu che porta a home, backlog e account. Sul desktop sta in alto, sul telefono in basso, dove arriva il
- * pollice e da dove si aprono i menu. Resta sempre visibile: ha lo stesso
- * fondo della pagina, senza bordo, e il contenuto ci passa sotto.
+ * catalogo, il link Backlog sul desktop, la ricerca in mezzo, Settings e menu
+ * account a destra. Sul telefono sta in basso, dove arriva il pollice e da
+ * dove si aprono i menu; le preferenze restano nel foglio dell’account.
  *
  * Le due posizioni le sceglie **il CSS**, non JavaScript: leggere la
  * larghezza darebbe un primo render sbagliato da correggere all'idratazione.
@@ -40,15 +41,29 @@ export function AppShell({ children }: { children: ReactNode }) {
         position="sticky"
         t={0}
         z={10}
-        height={BAR_HEIGHT}
+        height={72}
         items="center"
         justify="space-between"
-        gap={8}
-        px={12}
+        gap={16}
+        px={24}
         bg="$background"
-        $max-md={{ position: 'fixed', t: 'auto', b: 0, l: 0, r: 0 }}
+        borderBottomWidth={1}
+        borderColor="$borderColor"
+        $max-md={{
+          position: 'fixed',
+          t: 'auto',
+          b: 0,
+          l: 0,
+          r: 0,
+          height: BAR_HEIGHT,
+          px: 12,
+          gap: 8,
+          borderBottomWidth: 0,
+          borderTopWidth: 1,
+        }}
       >
         <HomeLink />
+        <MainNavigation />
         <BarSearch />
         <Account />
       </XStack>
@@ -76,19 +91,37 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 /**
- * Simbolo e nome. Da anonimo riportano al catalogo; da collegato al backlog,
- * che è la pagina di chi usa l'app, e il catalogo è la voce «Home» del menu.
- * Finché la sessione non si sa resta `/`, come il primo render del server.
+ * Il logo porta sempre al catalogo; il backlog ha il suo link nella barra.
  */
 export function HomeLink() {
-  const { data: session } = useSession();
+  const t = useTranslations('nav');
 
   return (
-    <Link to={session ? '/backlog' : '/'} className="no-underline">
+    <Link to="/" className="no-underline" aria-label={t('home')}>
       <XStack px={8} py={2}>
         <Wordmark />
       </XStack>
     </Link>
+  );
+}
+
+function MainNavigation() {
+  const t = useTranslations('nav');
+  const { data: session } = useSession();
+  const inBacklog = useRouterState({
+    select: (state) => state.location.pathname === '/backlog',
+  });
+  if (!session) return null;
+  return (
+    <XStack render="nav" aria-label={t('menu')} $max-md={{ display: 'none' }}>
+      <ButtonLink
+        href="/backlog"
+        variant={inBacklog ? 'selection' : 'ghost'}
+        {...({ 'aria-current': inBacklog ? 'page' : undefined } as object)}
+      >
+        {t('backlogLink')}
+      </ButtonLink>
+    </XStack>
   );
 }
 
@@ -136,9 +169,8 @@ function BarSearch() {
 
 /**
  * A destra nella barra: l'avatar di chi è collegato, o accesso e
- * registrazione. Tema e lingua da anonimo stanno qui; da collegato sono nel
- * menu dell'avatar. Sotto `$md` da anonimo tutto questo in barra non ci sta,
- * e va in un foglio come quello dell'avatar.
+ * registrazione. Sul desktop Settings raccoglie tema e lingua per tutti;
+ * sotto `$md` sono nel foglio dell’account o in quello degli ospiti.
  */
 function Account() {
   const t = useTranslations('nav');
@@ -148,17 +180,21 @@ function Account() {
   if (isPending) return null;
   if (session)
     return (
-      <UserMenu
-        name={session.user.name}
-        isAdmin={session.user.role === 'admin'}
-      />
+      <XStack items="center" gap={8}>
+        <XStack $max-md={{ display: 'none' }}>
+          <SettingsDropdown />
+        </XStack>
+        <UserMenu
+          name={session.user.name}
+          isAdmin={session.user.role === 'admin'}
+        />
+      </XStack>
     );
 
   return (
     <>
       <XStack items="center" gap={4} $max-md={{ display: 'none' }}>
-        <ThemeToggle />
-        <LocaleSwitcher />
+        <SettingsDropdown />
         <ButtonLink href="/login" variant="ghost">
           {t('signIn')}
         </ButtonLink>

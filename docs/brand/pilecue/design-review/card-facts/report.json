@@ -1,0 +1,114 @@
+{
+  "results": [
+    {
+      "name": "facts dark 1440 grid",
+      "passed": true
+    },
+    {
+      "name": "facts dark 1440 rows",
+      "passed": true
+    },
+    {
+      "name": "facts dark 1440 compact",
+      "passed": true
+    },
+    {
+      "name": "facts dark 390 grid",
+      "passed": true
+    },
+    {
+      "name": "facts dark 390 rows",
+      "passed": true
+    },
+    {
+      "name": "facts dark 390 compact",
+      "passed": true
+    },
+    {
+      "name": "facts dark 320 grid",
+      "passed": true
+    },
+    {
+      "name": "facts dark 320 rows",
+      "passed": true
+    },
+    {
+      "name": "facts dark 320 compact",
+      "passed": true
+    },
+    {
+      "name": "floating labels dark",
+      "passed": true,
+      "count": 17
+    },
+    {
+      "name": "axe dark",
+      "passed": true,
+      "violations": []
+    },
+    {
+      "name": "facts light 1440 grid",
+      "passed": true
+    },
+    {
+      "name": "facts light 1440 rows",
+      "passed": true
+    },
+    {
+      "name": "facts light 1440 compact",
+      "passed": true
+    },
+    {
+      "name": "facts light 390 grid",
+      "passed": true
+    },
+    {
+      "name": "facts light 390 rows",
+      "passed": true
+    },
+    {
+      "name": "facts light 390 compact",
+      "passed": true
+    },
+    {
+      "name": "facts light 320 grid",
+      "passed": true
+    },
+    {
+      "name": "facts light 320 rows",
+      "passed": true
+    },
+    {
+      "name": "facts light 320 compact",
+      "passed": true
+    },
+    {
+      "name": "floating labels light",
+      "passed": true,
+      "count": 17
+    },
+    {
+      "name": "axe light",
+      "passed": true,
+      "violations": []
+    },
+    {
+      "name": "Voto personale: scala su cinque e priorità conservate",
+      "passed": true
+    },
+    {
+      "name": "Dati mancanti: niente durata o voto vuoti",
+      "passed": true
+    },
+    {
+      "name": "Etichette flottanti entro la copertina a 390 px",
+      "passed": true
+    },
+    {
+      "name": "Etichette flottanti entro la copertina a 320 px",
+      "passed": true
+    }
+  ],
+  "pageErrors": [],
+  "qaDataRemoved": true
+}

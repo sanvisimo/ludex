@@ -19,11 +19,12 @@ import {
 } from '@repo/ui';
 import {
   Heart,
-  House,
+  ChevronDown,
   Library,
   ListFilter,
   LogOut,
   Shield,
+  Settings2,
   User,
 } from '@repo/ui/icons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -39,8 +40,8 @@ import { takeLinkClick } from '@/src/link-click';
 
 /**
  * Chi è collegato, a destra nella barra: l'avatar, e nel menu le sue pagine —
- * home, backlog e account — e le tre cose che sono sue e non di una pagina: tema,
- * lingua, uscita.
+ * playlist, wishlist, account e uscita. Sul desktop le preferenze hanno un
+ * dropdown Settings separato; sul telefono sono nello stesso foglio.
  *
  * Due forme, scelte dal CSS come la posizione della barra: da `$md` un menu a
  * tendina, sotto un foglio dal basso largo quanto lo schermo, che sul
@@ -114,12 +115,7 @@ function useSignOut() {
 
 function UserDropdown({ name, isAdmin }: { name: string; isAdmin: boolean }) {
   const t = useTranslations('nav');
-  const tTheme = useTranslations('theme');
-  const tLocale = useTranslations('locale');
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
-  const locale = useLocale();
-  const { change } = useChangeLocale();
   const signOutAndLeave = useSignOut();
 
   return (
@@ -134,18 +130,6 @@ function UserDropdown({ name, isAdmin }: { name: string; isAdmin: boolean }) {
         >
           {name}
         </DropdownMenuLabel>
-        <DropdownMenuItem
-          icon={<House size={16} />}
-          onClick={() => void router.navigate({ to: '/' })}
-        >
-          {t('home')}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          icon={<Library size={16} />}
-          onClick={() => void router.navigate({ to: '/backlog' })}
-        >
-          {t('backlog')}
-        </DropdownMenuItem>
         <DropdownMenuItem
           icon={<ListFilter size={16} />}
           onClick={() => void router.navigate({ to: '/playlist' })}
@@ -164,6 +148,12 @@ function UserDropdown({ name, isAdmin }: { name: string; isAdmin: boolean }) {
         >
           {t('account')}
         </DropdownMenuItem>
+        <DropdownMenuItem
+          icon={<Library size={16} />}
+          onClick={() => void router.navigate({ to: '/account/libraries' })}
+        >
+          {t('libraries')}
+        </DropdownMenuItem>
         {isAdmin ? (
           <DropdownMenuItem
             icon={<Shield size={16} />}
@@ -172,42 +162,6 @@ function UserDropdown({ name, isAdmin }: { name: string; isAdmin: boolean }) {
             {t('admin')}
           </DropdownMenuItem>
         ) : null}
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel>{tTheme('label')}</DropdownMenuLabel>
-        {/* `theme`, non `resolvedTheme`: si sceglie la preferenza, e
-            «sistema» deve restare selezionabile come tale. */}
-        <YStack px={6} py={4}>
-          <ToggleGroup
-            value={theme ?? 'system'}
-            onValueChange={setTheme}
-            label={tTheme('label')}
-          >
-            <ToggleGroupItem value="light">
-              <OptionText>{tTheme('light')}</OptionText>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="dark">
-              <OptionText>{tTheme('dark')}</OptionText>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="system">
-              <OptionText>{tTheme('system')}</OptionText>
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </YStack>
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel>{tLocale('label')}</DropdownMenuLabel>
-        <YStack px={6} py={4}>
-          <ToggleGroup
-            value={locale}
-            onValueChange={change}
-            label={tLocale('label')}
-          >
-            {locales.map((value) => (
-              <ToggleGroupItem key={value} value={value}>
-                <OptionText>{tLocale(value)}</OptionText>
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </YStack>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           icon={<LogOut size={16} />}
@@ -249,9 +203,6 @@ function UserSheet({ name, isAdmin }: { name: string; isAdmin: boolean }) {
           </Text>
         </XStack>
         <YStack render="nav" aria-label={name} gap={4}>
-          <SheetLink to="/" icon={<House size={16} />} onNavigate={close}>
-            {t('home')}
-          </SheetLink>
           <SheetLink
             to="/backlog"
             icon={<Library size={16} />}
@@ -275,6 +226,13 @@ function UserSheet({ name, isAdmin }: { name: string; isAdmin: boolean }) {
           </SheetLink>
           <SheetLink to="/account" icon={<User size={16} />} onNavigate={close}>
             {t('account')}
+          </SheetLink>
+          <SheetLink
+            to="/account/libraries"
+            icon={<Library size={16} />}
+            onNavigate={close}
+          >
+            {t('libraries')}
           </SheetLink>
           {isAdmin ? (
             <SheetLink
@@ -351,6 +309,27 @@ export function GuestSheet() {
  * anonimo. Il contenuto del foglio si monta solo all'apertura, quindi
  * l'`undefined` di `theme` sul server non arriva mai al markup iniziale.
  */
+export function SettingsDropdown() {
+  const t = useTranslations('nav');
+  return (
+    <DropdownMenu align="end">
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" aria-label={t('settings')}>
+            <Settings2 size={16} color="$color12" />
+            {t('settings')}
+            <ChevronDown size={14} color="$color11" />
+          </Button>
+        }
+      />
+      <DropdownMenuContent width={320} maxW="calc(100vw - 32px)">
+        <DropdownMenuLabel>{t('settings')}</DropdownMenuLabel>
+        <SheetSettings />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function SheetSettings() {
   const tTheme = useTranslations('theme');
   const tLocale = useTranslations('locale');
@@ -423,7 +402,14 @@ function SheetLink({
   onNavigate,
   children,
 }: {
-  to: '/' | '/backlog' | '/playlist' | '/wishlist' | '/account' | '/admin';
+  to:
+    | '/'
+    | '/backlog'
+    | '/playlist'
+    | '/wishlist'
+    | '/account'
+    | '/account/libraries'
+    | '/admin';
   icon: ReactNode;
   onNavigate: () => void;
   children: string;

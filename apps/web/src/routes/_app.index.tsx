@@ -4,7 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
 
-import { CARD_WIDTH, HomeBandRow } from '@/components/home-band';
+import {
+  CARD_WIDTH,
+  SMALL_CARD_WIDTH,
+  HomeBandRow,
+} from '@/components/home-band';
 import { api } from '@/lib/orpc';
 import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
@@ -27,6 +31,7 @@ function HomePage() {
       title={t('title')}
       subtitle={t('subtitle')}
       maxW={1280}
+      largeTitle
       actions={
         session && (
           <ButtonLink href="/backlog" variant="outline">
@@ -41,18 +46,24 @@ function HomePage() {
           {t('error')}
         </Text>
       ) : isPending ? (
-        <YStack gap={24}>
+        <YStack gap={32}>
           {Array.from({ length: 3 }).map((_, band) => (
             <YStack key={band} gap={8}>
               <Skeleton height={24} width={160} rounded={6} />
               <XStack gap={12} overflow="hidden">
                 {Array.from({ length: 8 }).map((_, card) => (
-                  <Skeleton
+                  <YStack
                     key={card}
                     width={CARD_WIDTH}
-                    height={(CARD_WIDTH * 374) / 264}
-                    rounded={6}
-                  />
+                    $max-sm={{ width: SMALL_CARD_WIDTH }}
+                  >
+                    <Skeleton
+                      width="100%"
+                      height={(CARD_WIDTH * 374) / 264}
+                      rounded={12}
+                    />
+                    <Skeleton height={64} width="100%" rounded={6} />
+                  </YStack>
                 ))}
               </XStack>
             </YStack>
@@ -65,7 +76,7 @@ function HomePage() {
           </CardContent>
         </Card>
       ) : (
-        <YStack gap={24}>
+        <YStack gap={32}>
           {data.map((band) => (
             <HomeBandRow
               key={

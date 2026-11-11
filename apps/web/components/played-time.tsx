@@ -13,8 +13,11 @@ import { latestPlaytime } from '@/lib/playtime';
  */
 export function PlayedTime({
   ownerships,
+  labelled = false,
 }: {
   ownerships: Pick<Ownership, 'playtimeMinutes' | 'lastPlayedAt'>[];
+  /** Una riga secondaria esplicita, sotto i metadati delle card. */
+  labelled?: boolean;
 }) {
   const t = useTranslations('backlog');
   const duration = useDuration();
@@ -30,9 +33,16 @@ export function PlayedTime({
       role="img"
       aria-label={t('playedLabel', { duration: duration(minutes) })}
     >
-      <Clock size={14} color="$color11" aria-hidden />
-      <Text fontSize={14} lineHeight={20} color="$color11">
-        {duration(minutes)}
+      <Clock size={labelled ? 12 : 14} color="$color11" aria-hidden />
+      <Text
+        fontSize={labelled ? 12 : 14}
+        lineHeight={20}
+        color="$color11"
+        aria-hidden
+      >
+        {labelled
+          ? t('playedLabel', { duration: duration(minutes) })
+          : duration(minutes)}
       </Text>
     </XStack>
   );

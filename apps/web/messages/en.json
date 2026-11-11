@@ -6,6 +6,9 @@
   "nav": {
     "home": "Home",
     "backlog": "My backlog",
+    "backlogLink": "Backlog",
+    "settings": "Settings",
+    "libraries": "Connected libraries",
     "signOut": "Sign out",
     "signIn": "Sign in",
     "menu": "Menu",
@@ -34,9 +37,9 @@
     "en": "English"
   },
   "catalog": {
-    "title": "Catalogue",
+    "title": "Find your next game.",
     "goToBacklog": "Backlog",
-    "subtitle": "The catalogue PileCue knows so far.",
+    "subtitle": "Explore the catalogue and discover your next adventure.",
     "error": "I can't load the catalogue.",
     "empty": "No games yet. The catalogue fills up as games get added."
   },
@@ -97,6 +100,7 @@
     "actionsFor": "Actions for {name}",
     "columnTitle": "Title",
     "columnPlatforms": "Platforms",
+    "columnStores": "Stores",
     "columnDuration": "Length",
     "columnRating": "Rating",
     "columnStatus": "Status",
@@ -107,6 +111,7 @@
     "playedLabel": "Played: {duration}",
     "columnPlayed": "Played",
     "random": "Random game",
+    "chooseForMe": "Pick for me",
     "randomEmpty": "There are no games to pick from in this filter.",
     "randomOnlyOne": "It's the only game in this filter: there's no other one to pick.",
     "randomFailed": "I couldn't pick a game"
@@ -418,6 +423,8 @@
     }
   },
   "filters": {
+    "showResults": "{count, plural, one {Show # game} other {Show # games}}",
+    "updatingResults": "Updating results…",
     "searchPlaceholder": "Search a title",
     "sortLabel": "Sort by",
     "sortAddedAt": "Date added",
@@ -427,6 +434,9 @@
     "sortRating": "My rating",
     "sortCriticRating": "Critic rating",
     "sortLastPlayed": "Last played",
+    "sortPlaytime": "Playtime",
+    "sortStatus": "Status",
+    "sortColumn": "Sort by {column}",
     "ascending": "Ascending",
     "descending": "Descending",
     "reset": "Clear filters ({count})",
@@ -513,6 +523,9 @@
     "notEnriched": "Metadata not fetched yet. Coming shortly.",
     "enriching": "Fetching the data from IGDB…",
     "inBacklog": "In your backlog",
+    "yourRating": "Your rating",
+    "yourCollection": "Your library",
+    "copyCount": "{count, plural, one {# copy} other {# copies}}",
     "notInBacklog": "You don't own it",
     "statusLine": "Status: <value>{status}</value>",
     "goToBacklog": "Go to the backlog",
@@ -540,6 +553,7 @@
     "openOn": "Open on {name}",
     "officialSite": "Official website",
     "copies": "Copies",
+    "moreStores": "{count, plural, one {One more store} other {# more stores}}",
     "played": "{duration} played",
     "lastPlayed": "last played {date}",
     "acquired": "added {date}",
@@ -744,6 +758,25 @@
     "TOO_MANY_REQUESTS": "Too many attempts in a short time. Wait a few seconds and try again."
   },
   "account": {
+    "review": {
+      "attentionTitle": "Needs attention",
+      "attentionDescription": "Match unrecognised entries and review possible duplicates.",
+      "hiddenTitle": "Hidden",
+      "hiddenDescription": "Find the games and imported entries you have hidden from view.",
+      "groupRange": "{from}–{to} of {total} groups",
+      "range": "{from}–{to} of {total}",
+      "loadFailed": "The list could not be loaded.",
+      "retry": "Try again",
+      "restoreImport": "Return to needs attention",
+      "restoreGame": "Show in backlog",
+      "importItem": "Imported entry",
+      "gameItem": "Backlog game",
+      "librariesDescription": "Manage connected accounts and the status of your imports.",
+      "profileTitle": "Profile",
+      "profileDescription": "Personal details, sign-ins and account management.",
+      "security": "Security",
+      "dataManagement": "Data management"
+    },
     "title": "Account",
     "libraries": {
       "title": "Libraries",
@@ -972,7 +1005,7 @@
       "hiddenOn": "hidden {date}",
       "addedOn": "added {date}",
       "openOn": "Open on {store}",
-      "resolve": "Link",
+      "resolve": "Match game",
       "resolveTitle": "Link to the right game",
       "lastPlayedOn": "last played {date}",
       "externalId": "Store id",
@@ -1348,6 +1381,16 @@
       "pilecueBrand": {
         "title": "The PileCue identity",
         "text": "The new logo, icons and Midnight Cue palette are coming to the web and mobile app."
+      },
+      "accountDesign": {
+        "title": "Clearer account and libraries",
+        "text": "An organised profile, clearer library cards and pagination for entries needing attention and hidden items."
+      },
+      "webDesign": {
+        "title": "A clearer home and library",
+        "p1": "Larger home cards and theme and language preferences grouped in the Settings menu.",
+        "p2": "Consistent cards and views across the backlog, playlists and wishlist, with sortable headers in backlog and filter-playlist tables.",
+        "p3": "A more compact game page, with status and rating close at hand, distinct length and review summaries, and clearer copy details."
       },
       "gogCollections": {
         "title": "GOG games sold as a collection",

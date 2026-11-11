@@ -45,7 +45,7 @@ export function ResolveImportDialog({
     onSuccess: async (created) => {
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: api.imports.unresolved.key(),
+          queryKey: api.imports.key(),
         }),
         queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),
       ]);

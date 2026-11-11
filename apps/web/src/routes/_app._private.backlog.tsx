@@ -2,7 +2,6 @@ import {
   Button,
   Drawer,
   EmptyState,
-  Pagination,
   Skeleton,
   Text,
   ToggleGroup,
@@ -17,6 +16,7 @@ import {
   Library,
   List,
   Rows3,
+  Plus,
   SearchX,
 } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
@@ -32,7 +32,8 @@ import {
   useGridColumns,
   useReanchorPage,
 } from '@/components/grid-columns';
-import { PageSizeSelect } from '@/components/page-size-select';
+import { ListPagination } from '@/components/list-pagination';
+import { RandomGameDice } from '@/components/random-game-dice';
 import { ButtonLink } from '@/src/components/button-link';
 import { SavePlaylistDialog } from '@/components/save-playlist-dialog';
 import { LibrarySyncSignal } from '@/components/library-sync-signal';
@@ -45,7 +46,6 @@ import {
 import { api } from '@/lib/orpc';
 import { pageSizeOptions, pageStep, snapPageSize } from '@/lib/page-size';
 import { Page } from '@/src/components/page';
-import { takeLinkClick } from '@/src/link-click';
 
 export const Route = createFileRoute('/_app/_private/backlog')({
   validateSearch: validateBacklogSearch,
@@ -54,6 +54,7 @@ export const Route = createFileRoute('/_app/_private/backlog')({
 
 function BacklogPage() {
   const t = useTranslations('backlog');
+  const tAdd = useTranslations('addGame');
   const tFilters = useTranslations('filters');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
@@ -119,6 +120,7 @@ function BacklogPage() {
       // Più larga delle altre: la griglia e la compatta vivono di colonne, e
       // su uno schermo largo le righe non devono stare in un corridoio.
       maxW={1280}
+      largeTitle
       title={inHidden ? t('hiddenViewTitle') : t('title')}
       // Uno spazio e non niente mentre carica: la riga del conteggio tiene il
       // suo posto, e il titolo non salta quando arriva.
@@ -156,7 +158,19 @@ function BacklogPage() {
               </Button>
             )
           )}
-          <AddGameDialog />
+          <AddGameDialog
+            trigger={
+              <Button variant="outline" aria-label={tAdd('trigger')}>
+                <Plus size={16} color="$color12" />
+                <XStack display="none" $sm={{ display: 'flex' }} aria-hidden>
+                  <Text fontSize={14} color="$color12">
+                    {tAdd('trigger')}
+                  </Text>
+                </XStack>
+              </Button>
+            }
+          />
+          <RandomGameDice labelled />
         </>
       }
     >
@@ -241,40 +255,33 @@ function BacklogPage() {
           )
         ) : (
           <>
-            <ManagedEntries view={filter.view} entries={entries} />
+            <ManagedEntries
+              view={filter.view}
+              entries={entries}
+              sorting={{
+                sort: filter.sort,
+                direction: filter.direction,
+                onChange: (sort, direction) => {
+                  void setFilter({ sort, direction });
+                },
+              }}
+            />
 
-            {/* Quanti per pagina a sinistra, le pagine e «vai a» a destra; su
-                un telefono vanno a capo. La scelta c'è anche con una pagina
-                sola, se i giochi sono più di 15: chi ha scelto 120 su 50
-                giochi deve poter tornare indietro. */}
-            <XStack
-              flexWrap="wrap"
-              items="center"
-              justify="center"
-              $sm={{ justify: 'space-between' }}
-              gap={16}
-            >
-              {total > pageSizeOptions(step)[0]! && (
-                <PageSizeSelect
-                  value={size}
-                  options={pageSizeOptions(step)}
-                  onChange={(size) => void setFilter({ size })}
-                />
-              )}
-              <Pagination
-                page={filter.page}
-                pageCount={pageCount}
-                href={pageHref}
-                onNavigate={(page, event) => {
-                  if (takeLinkClick(event)) void goToPage(page);
-                }}
-                label={t('pages')}
-                previousLabel={t('previousPage')}
-                nextLabel={t('nextPage')}
-                goToLabel={t('goToPage')}
-                onGoTo={(page) => void goToPage(page)}
-              />
-            </XStack>
+            <ListPagination
+              page={filter.page}
+              pageCount={pageCount}
+              href={pageHref}
+              onPageChange={(next) => void goToPage(next)}
+              pageSize={
+                total > pageSizeOptions(step)[0]!
+                  ? {
+                      value: size,
+                      options: pageSizeOptions(step),
+                      onChange: (next) => void setFilter({ size: next }),
+                    }
+                  : undefined
+              }
+            />
           </>
         )}
       </YStack>
@@ -286,6 +293,9 @@ function BacklogPage() {
         closeLabel={tFilters('closePanel')}
       >
         <FilterPanel
+          resultCount={total}
+          isLoading={backlog.isFetching || backlog.isPlaceholderData}
+          onShow={() => setFiltersOpen(false)}
           // Il drawer si chiude prima di aprire il dialogo: due overlay uno
           // sull'altro si contendono il fuoco, e il dialogo non vive dentro il
           // drawer (smontato alla chiusura).

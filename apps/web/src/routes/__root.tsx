@@ -35,8 +35,17 @@ export const Route = createRootRoute({
       // Il simbolo: l'SVG per i browser che lo leggono, l'`.ico` (16, 32 e
       // 48) per gli altri, e per iOS un PNG su fondo pieno, che lì le icone
       // trasparenti diventano nere.
-      { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
-      { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+      {
+        rel: 'icon',
+        href: '/favicon.ico?v=20261111',
+        sizes: '16x16 32x32 48x48',
+      },
+      {
+        rel: 'icon',
+        href: '/favicon.svg?v=20261111',
+        type: 'image/svg+xml',
+        sizes: 'any',
+      },
       { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
       { rel: 'stylesheet', href: inter },
       { rel: 'stylesheet', href: spaceGrotesk },

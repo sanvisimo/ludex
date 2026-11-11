@@ -85,6 +85,8 @@ export function sortLabels(t: ReturnType<typeof useTranslations<'filters'>>) {
     rating: t('sortRating'),
     criticRating: t('sortCriticRating'),
     lastPlayed: t('sortLastPlayed'),
+    playtime: t('sortPlaytime'),
+    status: t('sortStatus'),
   } satisfies Record<BacklogSort, string>;
 }
 

@@ -4,18 +4,18 @@ import {
   storeCoverUrl,
   storePageUrl,
 } from '@repo/contracts';
-import { BrandIcon, Text, XStack, YStack } from '@repo/ui';
+import { Badge, BrandIcon, Text, XStack, YStack } from '@repo/ui';
 import { useState, type ReactNode } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
-import { RowFrame } from '@/components/row-frame';
+import { ROW_COVER_WIDTH, RowFrame } from '@/components/row-frame';
 import { useStoreLabels } from '@/lib/labels';
 import { STORE_BRAND } from '@/lib/store-brand';
 
 // La copertina verticale, nella proporzione di quelle di GOG, Epic e Steam. Le
 // icone quadrate di PSN e Amazon vengono ritagliate (`cover`).
-const COVER_WIDTH = 90;
-const COVER_HEIGHT = 128;
+const COVER_WIDTH = ROW_COVER_WIDTH;
+const COVER_HEIGHT = 64;
 
 /**
  * La copertina di una voce d'import, della misura che serve a chi la mostra: 44
@@ -122,10 +122,11 @@ export function UnresolvedCover({
 export function UnresolvedRow({
   entry,
   children,
+  badge,
 }: {
   entry: UnresolvedImport;
-  /** I bottoni, a destra dei fatti della riga. */
   children: ReactNode;
+  badge?: string;
 }) {
   const t = useTranslations('account.unresolved');
   const format = useFormatter();
@@ -159,6 +160,7 @@ export function UnresolvedRow({
 
   return (
     <RowFrame
+      actions={children}
       cover={
         <UnresolvedCover
           entry={entry}
@@ -177,6 +179,12 @@ export function UnresolvedRow({
       >
         {entry.name}
       </Text>
+
+      {badge && (
+        <Badge variant="secondary" self="flex-start">
+          {badge}
+        </Badge>
+      )}
 
       {/* L'icona sta accanto al testo anche quando questo va a capo: su un
           telefono il testo è lungo, e con la riga che va a capo l'icona
@@ -214,10 +222,6 @@ export function UnresolvedRow({
         <Text fontSize={13} lineHeight={18} color="$color11" flex={1} minW={0}>
           {facts.join(' · ')}
         </Text>
-      </XStack>
-
-      <XStack gap={8} flexWrap="wrap" items="center">
-        {children}
       </XStack>
     </RowFrame>
   );

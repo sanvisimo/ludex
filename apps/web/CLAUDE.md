@@ -32,6 +32,16 @@ alla pagina di prima. Una pagina oltre la fine torna alla prima e non
 all'ultima: con `count(*) over()` e nessuna riga restituita il server risponde
 `total: 0`, e l'ultima non la sa.
 
+**La vista compatta del backlog usa TanStack Table v8**, in
+`components/backlog-views.tsx`, condivisa con le playlist a filtro.
+Colonne, celle e header derivano dalle stesse definizioni, con layout Tamagui
+e visibilità responsive via CSS. Ordinamento controllato dall'URL,
+`manualSorting` e `manualPagination`: il server ordina l'intero risultato prima
+di paginarlo, mai solo le righe caricate. Le playlist mostrano l'ordine salvato
+salvo override nell'URL; cliccare un header non riscrive la playlist.
+«Voto» distingue voto personale e critica nel menu, senza mescolare le scale.
+`AdminTable` resta indipendente e non fa parte di questa integrazione.
+
 **Test del web**: `pnpm --filter web test`. Vitest in Node, solo la logica pura di
 `lib/` (conversioni dei filtri, numeri per pagina, ore giocate): niente DOM e
 nessun componente, che si provano a occhio. Non carica `vite.config.ts`, quindi
@@ -148,10 +158,13 @@ si indovinano:
 
 **Il pannello dei filtri** (`FilterPanel`, nel drawer di `/backlog`) ha in cima,
 solo sotto `$sm`, la stessa ricerca della barra, che lì il drawer copre; poi
-l'ordinamento, poi «Mai giocato» come spunta semplice fuori dalle sezioni, poi una
+l'ordinamento, solo sotto `$md` perché sul desktop è nella toolbar, poi
+«Mai giocato» come spunta semplice fuori dalle sezioni, poi una
 sezione per criterio: stato, piattaforme, store, abbonamenti, tipo, attributi,
 tag, durata, il mio voto, **voto critica**, uscita. Lo stato ha le stesse sei
-spunte dei bottoni in barra, sulla stessa selezione.
+spunte dei bottoni in barra, sulla stessa selezione. In fondo «Mostra N giochi»
+chiude il drawer; durante la richiesta è disabilitato e dice che sta aggiornando.
+La ricerca e i filtri si applicano subito: questo bottone chiude, non applica.
 
 **Gli slider hanno anche i campi numerici** (`RangeFilter`, `NumberField`):
 «Da» e «A», o «Minimo» per il voto critica. Il campo si applica **uscendo o con
@@ -165,7 +178,9 @@ pannello smonta ciò che ha dentro quando si chiude, e il clic chiude il pannell
 prima di aprirlo.
 
 **Il dado** (`RandomGameDice`, 15c e la sua estensione) sta nel guscio, fisso in
-basso a destra, e apre la scheda di un gioco a caso (`games.random`, pubblica). Su
+basso a destra; nel backlog è invece il bottone «Scegli per me» nell’intestazione
+(`labelled`), accanto ad «Aggiungi gioco», senza un secondo dado flottante.
+Apre la scheda di un gioco a caso (`games.random`, pubblica). Su
 `/backlog` pesca dal filtro della pagina, sulla scheda di un gioco pescato dà il
 successivo dello stesso giro, altrove pesca da tutto il backlog; da anonimi dal
 catalogo. Nella vista dei nascosti non c'è. Il giro sta nell'URL della scheda,
@@ -178,7 +193,8 @@ partenza, e ripartirebbe con un seme nuovo. Con nessun candidato il server rende
 
 **Le ore giocate nel backlog** sono un tempo solo con l'orologio, quello della
 copia giocata più di recente (`latestPlaytime` in `lib/playtime.ts`, mostrato da
-`PlayedTime`): nella riga dei fatti di griglia e righe, e in una colonna della
+`PlayedTime`): in una riga secondaria etichettata nei fatti di griglia e righe,
+separata dalla durata HLTB, e in una colonna della
 compatta da `$md`. Le altre copie, con le date, sono nella scheda del gioco.
 
 **Le liste a mano** (`/wishlist` e `/wishlist/$id`, step 15b) sono come le
@@ -289,13 +305,14 @@ non si indovinano:
 - **gli URL di ritorno sono assoluti** (`window.location.origin`): li apre
   l'API, che sta su un'altra origine, e li controlla con `trustedOrigins`.
 
-`AppShell` è **una barra sola** e un footer, senza barra
-laterale né menu a scomparsa: a sinistra il nome, che porta al catalogo, o al
-backlog da loggati; a destra l'avatar, col menu di home, backlog, account, tema, lingua e uscita, o da
-anonimo tema, lingua, «Accedi» e «Registrati», che sotto `$md` in barra non
-ci stanno e vanno in un foglio aperto da un'icona (`GuestSheet`). La barra resta sempre
-visibile, col fondo della pagina e senza bordo: **in alto da `$md`, in basso
-sotto**, dove arriva il pollice e i menu le si aprono sopra. La posizione la
+`AppShell` è **una barra sola** e un footer, senza barra laterale. Il logo porta
+sempre alla home. Da `$md` il link Backlog è esplicito per chi è collegato;
+Settings raccoglie tema e lingua per utenti e ospiti (`SettingsDropdown`).
+L’avatar mantiene playlist, wishlist, account, librerie collegate, admin se
+previsto e uscita. Da anonimi ci sono «Accedi» e «Registrati». Sotto `$md`
+navigazione e preferenze restano nel foglio dell’avatar o in `GuestSheet`.
+La barra resta visibile, con un separatore: **in alto da `$md` (72 px), in basso
+sotto (56 px)**, dove arriva il pollice e i menu le si aprono sopra. La posizione la
 sceglie il CSS, non JavaScript, come ogni forma del guscio: leggere la
 larghezza darebbe un primo render sbagliato da correggere all'idratazione. Sul
 telefono la pagina le lascia sotto la sua altezza (`BAR_HEIGHT`). `BackToTop` è la freccia che riporta in
@@ -310,7 +327,7 @@ usa:
 - **`takeLinkClick`**: la regola dei modificatori (nuova scheda, tasto
   centrale) per ogni `<a href>` che naviga nell'app, `ButtonLink` compreso.
 
-**La home** (`/`, 12e) è il catalogo a fasce, **uguale per tutti**: da
+**La home** (`/`, 12e, rivista in `plans/revisione-web.md`) è il catalogo a fasce, **uguale per tutti**: da
 loggati cambia solo l'etichetta dello stato sulle card dei giochi tuoi, e i
 tuoi nascosti ci sono. Le fasce le sceglie il server (`games.home`,
 `apps/api/src/services/home.ts`), comprese la rotazione del giorno e i tre
@@ -321,6 +338,17 @@ dei giochi legati nella pagina del gioco; nella home le frecce ci sono solo
 da `$md` (`arrowsFromMd`). Il voto sulle card, qui come nel backlog, è
 `criticScore`, che **non è mai OpenCritic** (vedi
 [apps/api/CLAUDE.md](../api/CLAUDE.md)).
+
+Le `HomeCard` condivise con ricerca e liste hanno copertina a filo, superficie
+`surface`, titolo con due righe riservate e metadati sotto; il voto è nella
+riga dei metadati su una base distinta, con l’anno più discreto e una clessidra
+per HLTB. Lo stato resta sulla copertina (`CornerLabel floating`, opaco e
+staccato di 8 px dal bordo) e cuore/ranking conservano i
+loro comandi. Le fasce usano 200 px, 160 sotto `$sm`; con `fill` la card segue
+la cella. Nel backlog la griglia usa un minimo di 176 px, che si riduce alla
+metà del contenitore sui telefoni: la sonda e la griglia hanno sempre lo stesso
+`GRID_TEMPLATE` e gap. Le card non hanno una scritta «Stato»: in fondo ci sono
+solo il pulsante con l’icona e il menu ⋮, con i rispettivi nomi accessibili.
 
 **La ricerca globale** (12f) cerca nel catalogo intero, non nel backlog, in
 tre blocchi: **«Nel tuo backlog»**, solo da loggati (`games.find` con
@@ -340,23 +368,33 @@ chiedere: IGDB regge quattro richieste al secondo per tutto il server.
 
 **La pagina del gioco** (`/games/$slug`, lo slug di `games`, vedi
 [modello-dati](../../docs/modello-dati.md)) ha i suoi pezzi in
-`apps/web/components/game-page.tsx`: la hero, che `Page` mette sopra il suo
-contenitore a tutta larghezza, la gallery, durata e critica col dialog
-«Dettagli», il blocco del backlog (una fonte senza voto resta fra i voti, con «nessun voto» e il nome come link), la card «Links»
+`apps/web/components/game-page.tsx`: la hero compatta (320 px desktop, minimo
+240 su mobile), che `Page` mette sopra il contenitore a tutta larghezza,
+la fascia personale con stato, voto al volo, numero di copie e ore giocate, la gallery,
+durata e critica col dialog «Dettagli», il pannello copie/note/tag (una fonte
+senza voto resta fra i voti, con «nessun voto» e il nome come link), la card «Links»
 (`StoreLinks`): in cima il sito ufficiale, poi i negozi (`game.storeLinks`, un
 link per negozio: il nostro da `storeGameUrl` in `@repo/contracts`, e dove manca
 quello di IGDB), poi itch, App Store e Google Play, e Wikipedia in fondo
-(`game.websites`); le file dei giochi legati. Le colonne si affiancano
-da `$lg`; sotto, la laterale viene **prima** nell'HTML — durata, critica e
-stato sono ciò che serve a decidere — e `row-reverse` la rimette a destra sul
-desktop. Un gioco appena nato (id IGDB, dati non ancora arrivati, creato da
+(`game.websites`); le file dei giochi legati. Il layout web è in
+`components/game-page.css`: da `lg` (1024 px) due colonne, sul telefono un solo
+DOM nell'ordine durata/critica → gallery/descrizione → copie/link → correlati,
+dopo la fascia personale. Nessun controllo duplicato per le due larghezze.
+Nella fascia il conteggio porta a `#game-copies`, con focus sulla sezione e
+spazio per l'header. I possessi completi sono solo nel pannello Copie: nome
+del negozio e piattaforma espliciti, account/abbonamento e dati per copia,
+note/tag e azioni separati. I link hanno superfici cliccabili: sito ufficiale
+in testa, negozi a due colonne (una sotto 360 px), Wikipedia in fondo.
+Un gioco appena nato (id IGDB, dati non ancora arrivati, creato da
 meno di 2 minuti) mostra lo skeleton con «Sto recuperando i dati da IGDB…» e
 si rilegge ogni 5 secondi; oltre, la pagina com'è (`isEnriching`). **Le file dei
 giochi legati** sono tre, «Gioco principale», «Altre versioni» e «Giochi simili»,
 e dove va il padre lo decide il tipo (`splitRelated`, `lib/related-games.ts`):
 di un'espansione o un DLC è il gioco principale, di un remake, un remaster,
 un'edizione estesa o un port è la prima delle altre versioni. In «Altre versioni»
-ogni copertina dice che versione è, con un badge (`showKind`). Si aprono con la
+ogni copertina dice che versione è, con un badge (`showKind`). Lo stato usa
+`CornerLabel floating compact`, con ellissi e testo completo al passaggio,
+per le copertine da 104 px. Si aprono con la
 regola della ricerca: in catalogo sono un link, fuori
 catalogo da loggati un bottone che li crea (`useOpenIgdbHit`), da ospiti
 niente; attenuati se non sono tuoi. **I badge** — generi e temi, il tipo, le
@@ -374,8 +412,10 @@ direzione col CSS. Cose che non si indovinano:
 
 - **I numeri nel menu** (`useAccountCounts`) contano le voci da sistemare e i
   nascosti — questi ultimi sono **voci d'import più giochi nascosti dal backlog**,
-  perché la sezione li mostra insieme. Zero non si scrive.
-- **Il profilo** usa Better Auth dal client (`updateUser`, `changePassword`,
+  perché la sezione li mostra insieme. La query dedicata `imports.counts` non
+  carica gli elenchi: i doppioni contano per prodotto. Zero non si scrive.
+- **Il profilo** raggruppa dati personali, sicurezza (password e sessioni) e
+  gestione dati; l’eliminazione resta separata in fondo. Usa Better Auth dal client (`updateUser`, `changePassword`,
   `listSessions`, `revokeSession`, `revokeOtherSessions`), non oRPC: le chiavi
   di query sono a mano (`['auth', 'sessions']`). L'ora delle sessioni è quella
   dell'**accesso**, perché Better Auth aggiorna la sessione al più una volta al
@@ -383,8 +423,9 @@ direzione col CSS. Cose che non si indovinano:
   (`accountData.export`, senza token), e «Cancella» chiama `authClient.deleteUser`
   **con la password**: il server la pretende, e rifiuta l'ultimo admin
   (`LAST_ADMIN`). Step 16, fatto.
-- **Le librerie** sono una griglia `repeat(auto-fill, minmax(240px, 1fr))`, una
-  scheda per **account** (due account Amazon sono due schede). La scheda ha **sei
+- **Le librerie** sono una griglia `repeat(auto-fill, minmax(min(100%, 300px), 1fr))`, una
+  scheda per **account** (due account Amazon sono due schede), due colonne
+  nel contenuto desktop e una sul telefono. La scheda ha **sei
   posti fissi** — intestazione, login Steam, stato, wishlist, gesti, nota — su sei
   righe della griglia con `subgrid`: ogni posto è alto quanto il più alto della sua
   riga di schede, quindi stato, wishlist e ↻ stanno alla stessa altezza anche dove
@@ -400,15 +441,23 @@ direzione col CSS. Cose che non si indovinano:
   ritirati), poi cade sul riquadro con l'icona del negozio (`UnresolvedCover`), e
   l'icona accanto al nome è il link alla pagina dove un link c'è. Le righe già in
   tabella la prendono al prossimo import.
-- **Da sistemare** ha due tab nell'URL (`?tab=duplicates`) **solo se ci sono
-  possibili doppioni** (9a): «Non riconosciute» e «Possibili doppioni», le voci
-  che Epic mette nello stesso prodotto di un gioco già importato
-  (`UnresolvedImport.sameProduct`), una scheda per prodotto in
-  `possible-duplicates.tsx`. Il titolo col totale sta sopra i tab.
-- **Nascosti** è a tab nell'URL (`?kind=dlc`), e senza `?kind` si apre il primo tab
-  che ha qualcosa. «Non interessato» è l'unico con due mucchi, e li unisce per data
-  di nascondimento; i giochi si portano al massimo 100 (`GAMES_LIMIT`), e il
-  numero del tab è il totale vero.
+- **Da sistemare** ha due tab nell'URL (`?tab=duplicates`): «Non riconosciute»
+  e «Possibili doppioni». `imports.reviewPage` filtra e pagina sul server:
+  10 voci o prodotti iniziali per pagina, mai un gruppo spezzato. Una ricerca che trova
+  una voce di un prodotto ne include l'intero gruppo non nascosto.
+- **Nascosti** usa `imports.hiddenPage`: filtra, unisce giochi e voci di import,
+  ordina per data e id e poi pagina. Nessun limite complessivo di 100 giochi.
+  `?kind=dlc` sceglie il tab; senza `kind` si apre il primo con risultati.
+  I giochi tornano al backlog, gli import ritornano fra i «da sistemare».
+- **Le pagine delle due liste** sono nell'URL (`page`); cambiando tab, ricerca
+  o negozio si torna a pagina 1. Il server corregge una pagina oltre l'ultima
+  (anche dopo mutazioni), e la rotta aggiorna l'URL con `replace`. Conteggi
+  filtrati indipendenti dal limite e ordine stabile in caso di nomi/date uguali.
+  `AccountSectionHeader` e `AccountListFooter` sono condivisi dalle sezioni.
+  Il footer usa `ListPagination`, comune anche a backlog, playlist, wishlist
+  e liste condivise; compone pagine, selettore e riepilogo. Nell’account `size`
+  offre 10/25/50/100 ed è conservato nell’URL, con reset alla prima pagina
+  quando cambia. Le griglie mantengono i propri multipli e limiti.
 - **Una barra di scorrimento non si ottiene con `overflow: scroll`**: su Windows
   disegna sempre i nastri grigi, anche quando non servono. Per una riga che scorre
   c'è `Tabs`, o `overflowX: 'auto'` con `scrollbarWidth: 'none'`.

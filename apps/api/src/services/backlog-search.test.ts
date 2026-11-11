@@ -1,5 +1,5 @@
 import type { BacklogQueryInput } from '@repo/contracts';
-import { BacklogQuerySchema } from '@repo/contracts';
+import { BacklogQuerySchema, backlogStatusValues } from '@repo/contracts';
 import { db, schema } from '@repo/db';
 import { and, eq } from '@repo/db/orm';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -651,6 +651,58 @@ describe('ordinamento e paginazione', () => {
 
   beforeEach(async () => {
     userId = await createUser();
+  });
+
+  it('ordina le ore della copia mostrata, con assenti e zero in fondo', async () => {
+    const recente = await aggiungi(userId, { name: 'Recente' });
+    const dieci = await aggiungi(userId, { name: 'Dieci ore' });
+    const senzaDate = await aggiungi(userId, { name: 'Senza date' });
+    const zero = await aggiungi(userId, { name: 'Zero' });
+    await aggiungi(userId, { name: 'Ignoto' });
+    for (const [id, minutes, date] of [
+      [recente, 6_000, new Date('2020-01-01Z')],
+      [dieci, 600, new Date('2026-01-01Z')],
+      [senzaDate, 30, null],
+      [zero, 0, null],
+    ] as const) {
+      await db
+        .update(schema.ownerships)
+        .set({ playtimeMinutes: minutes, lastPlayedAt: date })
+        .where(eq(schema.ownerships.backlogId, id));
+    }
+    await db.insert(schema.ownerships).values([
+      {
+        backlogId: recente,
+        platformSlug: 'pc_linux',
+        playtimeMinutes: 120,
+        lastPlayedAt: new Date('2026-01-01Z'),
+      },
+      { backlogId: senzaDate, platformSlug: 'pc_linux', playtimeMinutes: 900 },
+    ]);
+    const asc = await nomi(userId, { sort: 'playtime', direction: 'asc' });
+    const desc = await nomi(userId, { sort: 'playtime', direction: 'desc' });
+    expect(asc.slice(0, 3)).toEqual(['Recente', 'Dieci ore', 'Senza date']);
+    expect(desc.slice(0, 3)).toEqual(['Senza date', 'Dieci ore', 'Recente']);
+    expect(new Set(asc.slice(3))).toEqual(new Set(['Zero', 'Ignoto']));
+    expect(new Set(desc.slice(3))).toEqual(new Set(['Zero', 'Ignoto']));
+  });
+
+  it('ordina lo stato secondo il ciclo del backlog', async () => {
+    for (const status of [...backlogStatusValues].reverse()) {
+      const game = await createGame({ name: status });
+      await addToBacklog({
+        userId,
+        gameId: game.id,
+        status,
+        ownerships: [{ platformSlug: 'pc_windows' }],
+      });
+    }
+    expect(await nomi(userId, { sort: 'status', direction: 'asc' })).toEqual(
+      backlogStatusValues,
+    );
+    expect(await nomi(userId, { sort: 'status', direction: 'desc' })).toEqual(
+      [...backlogStatusValues].reverse(),
+    );
   });
 
   it('i NULL vanno in fondo, in entrambe le direzioni', async () => {

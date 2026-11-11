@@ -25,6 +25,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       // non aperte restano segnate come vecchie.
       mutationCache: new MutationCache({
         onSuccess: () => {
+          void client.invalidateQueries({ queryKey: api.imports.key() });
           void client.invalidateQueries({ queryKey: api.playlists.get.key() });
           // Le liste a mano: un gioco che entra nel backlog esce dalle liste, e
           // lo fa da qualunque mutazione lo aggiunga.

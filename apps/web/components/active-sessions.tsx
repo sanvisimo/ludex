@@ -29,7 +29,7 @@ const SESSIONS_KEY = ['auth', 'sessions'] as const;
  * dell'ultima attività: Better Auth aggiorna la sessione al più una volta al
  * giorno, e un «attivo 5 minuti fa» sarebbe spesso falso.
  */
-export function ActiveSessions() {
+export function ActiveSessions({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations('account.sessions');
   const authErrorMessage = useAuthErrorMessage();
   const format = useFormatter();
@@ -89,7 +89,7 @@ export function ActiveSessions() {
   const hasOthers = rows.some((row) => row.id !== current?.session.id);
 
   return (
-    <Card>
+    <Card borderWidth={embedded ? 0 : 1} rounded={embedded ? 0 : 12}>
       <CardHeaderRow
         title={t('title')}
         description={t('description')}
@@ -134,6 +134,7 @@ export function ActiveSessions() {
                   rounded={8}
                   borderWidth={1}
                   borderColor="$borderColor"
+                  bg={isCurrent ? '$selectionBackground' : '$surface'}
                 >
                   <YStack gap={2} shrink={1}>
                     <XStack items="center" gap={8} flexWrap="wrap">

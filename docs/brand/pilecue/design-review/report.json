@@ -1,0 +1,285 @@
+{
+  "cases": [
+    {
+      "name": "Header: logo home, Backlog, Settings e account",
+      "passed": true
+    },
+    {
+      "name": "Settings: cambio tema e lingua reali",
+      "passed": true
+    },
+    {
+      "name": "Menu account: destinazioni e librerie",
+      "passed": true
+    },
+    {
+      "name": "Stato card: icona, menu e salvataggio",
+      "passed": true,
+      "originalStatus": "Abbandonato"
+    },
+    {
+      "name": "Menu card → dialogo Modifica e focus",
+      "passed": true
+    },
+    {
+      "name": "Menu card → playlist e focus",
+      "passed": true
+    },
+    {
+      "name": "Filtri: applicazione URL, risultati e chiusura drawer",
+      "passed": true
+    },
+    {
+      "name": "Paginazione e cambio vista mantengono il gioco",
+      "passed": true
+    },
+    {
+      "name": "Backlog grid dark 1440",
+      "passed": true,
+      "width": 1440,
+      "document": 1440
+    },
+    {
+      "name": "Backlog rows dark 1440",
+      "passed": true,
+      "width": 1440,
+      "document": 1440
+    },
+    {
+      "name": "Backlog compact dark 1440",
+      "passed": true,
+      "width": 1440,
+      "document": 1440
+    },
+    {
+      "name": "Backlog grid dark 768",
+      "passed": true,
+      "width": 768,
+      "document": 768
+    },
+    {
+      "name": "Backlog rows dark 768",
+      "passed": true,
+      "width": 768,
+      "document": 768
+    },
+    {
+      "name": "Backlog compact dark 768",
+      "passed": true,
+      "width": 768,
+      "document": 768
+    },
+    {
+      "name": "Backlog grid dark 390",
+      "passed": true,
+      "width": 390,
+      "document": 390
+    },
+    {
+      "name": "Backlog rows dark 390",
+      "passed": true,
+      "width": 390,
+      "document": 390
+    },
+    {
+      "name": "Backlog compact dark 390",
+      "passed": true,
+      "width": 390,
+      "document": 390
+    },
+    {
+      "name": "Backlog grid dark 320",
+      "passed": true,
+      "width": 320,
+      "document": 320
+    },
+    {
+      "name": "Backlog rows dark 320",
+      "passed": true,
+      "width": 320,
+      "document": 320
+    },
+    {
+      "name": "Backlog compact dark 320",
+      "passed": true,
+      "width": 320,
+      "document": 320
+    },
+    {
+      "name": "Backlog grid light 1440",
+      "passed": true,
+      "width": 1440,
+      "document": 1440
+    },
+    {
+      "name": "Backlog rows light 1440",
+      "passed": true,
+      "width": 1440,
+      "document": 1440
+    },
+    {
+      "name": "Backlog compact light 1440",
+      "passed": true,
+      "width": 1440,
+      "document": 1440
+    },
+    {
+      "name": "Backlog grid light 768",
+      "passed": true,
+      "width": 768,
+      "document": 768
+    },
+    {
+      "name": "Backlog rows light 768",
+      "passed": true,
+      "width": 768,
+      "document": 768
+    },
+    {
+      "name": "Backlog compact light 768",
+      "passed": true,
+      "width": 768,
+      "document": 768
+    },
+    {
+      "name": "Backlog grid light 390",
+      "passed": true,
+      "width": 390,
+      "document": 390
+    },
+    {
+      "name": "Backlog rows light 390",
+      "passed": true,
+      "width": 390,
+      "document": 390
+    },
+    {
+      "name": "Backlog compact light 390",
+      "passed": true,
+      "width": 390,
+      "document": 390
+    },
+    {
+      "name": "Backlog grid light 320",
+      "passed": true,
+      "width": 320,
+      "document": 320
+    },
+    {
+      "name": "Backlog rows light 320",
+      "passed": true,
+      "width": 320,
+      "document": 320
+    },
+    {
+      "name": "Backlog compact light 320",
+      "passed": true,
+      "width": 320,
+      "document": 320
+    },
+    {
+      "name": "Home guest dark 1440",
+      "passed": true,
+      "width": 1440,
+      "document": 1440
+    },
+    {
+      "name": "Home guest dark 390",
+      "passed": true,
+      "width": 390,
+      "document": 390
+    },
+    {
+      "name": "Home guest dark 320",
+      "passed": true,
+      "width": 320,
+      "document": 320
+    },
+    {
+      "name": "Home guest light 1440",
+      "passed": true,
+      "width": 1440,
+      "document": 1440
+    },
+    {
+      "name": "Home guest light 390",
+      "passed": true,
+      "width": 390,
+      "document": 390
+    },
+    {
+      "name": "Home guest light 320",
+      "passed": true,
+      "width": 320,
+      "document": 320
+    },
+    {
+      "name": "Accessibilità backlog popolato",
+      "passed": true,
+      "violations": []
+    },
+    {
+      "name": "CTA backlog: scelta casuale unica e aggiunta disponibile",
+      "passed": true
+    },
+    {
+      "name": "Scegli per me rispetta la ricerca del backlog",
+      "passed": true
+    },
+    {
+      "name": "CTA e griglia finali dark 1440",
+      "passed": true,
+      "theme": "dark",
+      "width": 1440
+    },
+    {
+      "name": "CTA e griglia finali dark 768",
+      "passed": true,
+      "theme": "dark",
+      "width": 768
+    },
+    {
+      "name": "CTA e griglia finali dark 390",
+      "passed": true,
+      "theme": "dark",
+      "width": 390
+    },
+    {
+      "name": "CTA e griglia finali dark 320",
+      "passed": true,
+      "theme": "dark",
+      "width": 320
+    },
+    {
+      "name": "CTA e griglia finali light 1440",
+      "passed": true,
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "name": "CTA e griglia finali light 768",
+      "passed": true,
+      "theme": "light",
+      "width": 768
+    },
+    {
+      "name": "CTA e griglia finali light 390",
+      "passed": true,
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "name": "CTA e griglia finali light 320",
+      "passed": true,
+      "theme": "light",
+      "width": 320
+    },
+    {
+      "name": "Accessibilità finale con CTA e icone",
+      "passed": true,
+      "violations": []
+    }
+  ],
+  "pageErrors": [],
+  "qaDataRemoved": true
+}

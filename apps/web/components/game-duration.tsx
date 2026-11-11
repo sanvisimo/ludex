@@ -1,5 +1,6 @@
 import type { Game } from '@repo/contracts';
-import { Text } from '@repo/ui';
+import { Text, XStack } from '@repo/ui';
+import { Hourglass } from '@repo/ui/icons';
 import { useTranslations } from 'use-intl';
 
 import { useDuration } from '@/lib/duration';
@@ -25,10 +26,13 @@ import { useDuration } from '@/lib/duration';
 export function GameDuration({
   game,
   short = false,
+  variant = 'plain',
 }: {
   game: Pick<Game, 'hltbMainMinutes' | 'hltbHasSolo' | 'hltbHasCoop'>;
   /** Solo il numero, senza «di storia»: la colonna della vista compatta. */
   short?: boolean;
+  /** Nelle card distingue la durata stimata dal tempo giocato. */
+  variant?: 'plain' | 'card';
 }) {
   const t = useTranslations('hltb');
   const duration = useDuration();
@@ -39,11 +43,33 @@ export function GameDuration({
   )
     return null;
 
+  const formatted = duration(game.hltbMainMinutes);
+  if (variant === 'card') {
+    const label = `HowLongToBeat · ${t('cardMain', { duration: formatted })}`;
+    return (
+      <XStack
+        role="img"
+        aria-label={label}
+        {...({ title: label } as object)}
+        items="center"
+        gap={4}
+      >
+        <Hourglass size={12} color="$selectionColor" aria-hidden />
+        <Text
+          fontSize={13}
+          lineHeight={20}
+          fontWeight="500"
+          color="$color12"
+          aria-hidden
+        >
+          {short ? formatted : t('cardMain', { duration: formatted })}
+        </Text>
+      </XStack>
+    );
+  }
   return (
     <Text fontSize={14} lineHeight={20} color="$color11">
-      {short
-        ? duration(game.hltbMainMinutes)
-        : t('cardMain', { duration: duration(game.hltbMainMinutes) })}
+      {short ? formatted : t('cardMain', { duration: formatted })}
     </Text>
   );
 }

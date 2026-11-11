@@ -54,3 +54,10 @@ Colori e PNG si rigenerano con `pnpm --filter @repo/ui brand:email`.
 
 - [x] Palette e logo nelle email.
 - [ ] Prova con l'SMTP di produzione su Gmail e Outlook.
+
+## Favicon a 16 px (11/11/2026)
+
+Assottigliato il gambo della P da 4 a 3 px e ripristinato il piedino in basso
+a sinistra, con una sporgenza di 1 px nelle ultime due righe. Il foro resta
+3×3 px. Rigenerati SVG, PNG 16 e ICO dalla sorgente condivisa; verificati
+i pixel in Chromium e la corrispondenza del livello 16 px nel contenitore ICO.
