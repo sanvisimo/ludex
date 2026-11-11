@@ -14,41 +14,11 @@ type AccountSection =
   | '/account/needs-attention'
   | '/account/hidden';
 
-/**
- * I numeri accanto alle voci: quante cose aspettano in «da sistemare», e
- * quante ne hai tolte dalla vista.
- *
- * Nascosti conta **due mucchi insieme**, le voci d'import e i giochi nascosti
- * dal backlog, perché la sezione li mostra insieme. Prima che arrivino i dati
- * il numero è `undefined` e la voce resta senza: uno zero lampeggiante direbbe
- * «non c'è niente» a chi ha ventisei voci da guardare.
- */
 export function useAccountCounts() {
-  const unresolved = useQuery(api.imports.unresolved.queryOptions());
-  // Una riga sola: serve il totale, non l'elenco.
-  const hiddenGames = useQuery(
-    api.backlog.list.queryOptions({ input: { hidden: true, limit: 1 } }),
-  );
-
-  const rows = unresolved.data;
-  const toFix = rows?.filter((entry) => entry.hiddenKind === null).length;
-  const hiddenEntries = rows?.filter((entry) => entry.hiddenKind !== null);
-  const hidden =
-    hiddenEntries && hiddenGames.data
-      ? hiddenEntries.length + hiddenGames.data.total
-      : undefined;
-
-  return { toFix, hidden };
+  const { data } = useQuery(api.imports.counts.queryOptions());
+  return { toFix: data?.toFix, hidden: data?.hidden };
 }
 
-/**
- * Il menu delle sezioni dell'account: una colonna a sinistra da `$md`, una riga
- * che scorre sotto, dove una colonna mangerebbe lo schermo.
- *
- * Una struttura sola e le due forme le sceglie il CSS, su un `YStack` — non su
- * `NavItem`, che è di `@repo/ui` e una media query lì si risolve a runtime —
- * come fa il guscio. Le voci sono link veri e la navigazione la fa il router.
- */
 export function AccountNav() {
   const t = useTranslations('account.nav');
   const { toFix, hidden } = useAccountCounts();

@@ -588,6 +588,37 @@ export const UnresolvedImportSchema = z.object({
     .nullable(),
 });
 
+export const AccountListQuerySchema = z.object({
+  q: z.string().trim().max(200).optional(),
+  store: StoreSchema.optional(),
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(10),
+});
+export const ReviewCountsSchema = z.object({
+  unrecognised: z.number().int(),
+  duplicates: z.number().int(),
+});
+export const ReviewPageSchema = z.object({
+  entries: z.array(UnresolvedImportSchema),
+  counts: ReviewCountsSchema,
+  total: z.number().int(),
+  page: z.number().int(),
+  tab: z.enum(['unrecognised', 'duplicates']),
+});
+export const HiddenItemSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('import'), entry: UnresolvedImportSchema }),
+  z.object({ type: z.literal('game'), entry: BacklogEntrySchema }),
+]);
+export const HiddenPageSchema = z.object({
+  items: z.array(HiddenItemSchema),
+  counts: z.record(HiddenKindSchema, z.number().int()),
+  total: z.number().int(),
+  page: z.number().int(),
+  kind: HiddenKindSchema,
+});
+export type AccountListQuery = z.infer<typeof AccountListQuerySchema>;
+export type HiddenItem = z.infer<typeof HiddenItemSchema>;
+
 // --- Filtraggio (step 7) ---
 
 /**

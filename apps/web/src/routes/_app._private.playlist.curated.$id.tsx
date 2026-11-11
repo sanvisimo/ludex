@@ -32,7 +32,6 @@ import {
   EmptyState,
   Input,
   Label,
-  Pagination,
   Skeleton,
   Text,
   toast,
@@ -75,7 +74,7 @@ import {
 } from '@/components/grid-columns';
 import { CARD_WIDTH, HomeCard } from '@/components/home-band';
 import { SearchInput } from '@/components/list-controls';
-import { PageSizeSelect } from '@/components/page-size-select';
+import { ListPagination } from '@/components/list-pagination';
 import { ShareForm } from '@/components/share-playlist-dialog';
 import { hasErrorCode, useApiErrorMessage } from '@/lib/api-error';
 import {
@@ -91,7 +90,6 @@ import {
 } from '@/lib/page-size';
 import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
-import { takeLinkClick } from '@/src/link-click';
 
 export const Route = createFileRoute('/_app/_private/playlist/curated/$id')({
   // La pagina, quanti per pagina e la ricerca: tutto nell'URL, come le liste.
@@ -313,39 +311,24 @@ function CuratedPlaylistPage() {
                 listCount={listCount}
                 draggable={!searching}
               />
-              <XStack
-                flexWrap="wrap"
-                items="center"
-                justify="center"
-                $sm={{ justify: 'space-between' }}
-                gap={16}
-              >
-                {total > (sizeOptions[0] ?? 0) && (
-                  <PageSizeSelect
-                    value={size}
-                    options={sizeOptions}
-                    onChange={(next) =>
-                      // Cambiare quanti per pagina riporta alla prima.
-                      void navigate({
-                        search: () => paging({ size: next, page: 1 }),
-                      })
-                    }
-                  />
-                )}
-                <Pagination
-                  page={page}
-                  pageCount={pageCount}
-                  href={pageHref}
-                  onNavigate={(next, event) => {
-                    if (takeLinkClick(event)) goToPage(next);
-                  }}
-                  label={tBacklog('pages')}
-                  previousLabel={tBacklog('previousPage')}
-                  nextLabel={tBacklog('nextPage')}
-                  goToLabel={tBacklog('goToPage')}
-                  onGoTo={goToPage}
-                />
-              </XStack>
+              <ListPagination
+                page={page}
+                pageCount={pageCount}
+                href={pageHref}
+                onPageChange={(next) => void goToPage(next)}
+                pageSize={
+                  total > (sizeOptions[0] ?? 0)
+                    ? {
+                        value: size,
+                        options: sizeOptions,
+                        onChange: (next) =>
+                          void navigate({
+                            search: () => paging({ size: next, page: 1 }),
+                          }),
+                      }
+                    : undefined
+                }
+              />
             </>
           )
         )}

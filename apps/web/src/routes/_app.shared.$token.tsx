@@ -1,11 +1,4 @@
-import {
-  EmptyState,
-  Pagination,
-  Skeleton,
-  Text,
-  XStack,
-  YStack,
-} from '@repo/ui';
+import { EmptyState, Skeleton, Text, YStack } from '@repo/ui';
 import { ListFilter } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
@@ -19,7 +12,7 @@ import {
   useReanchorPage,
 } from '@/components/grid-columns';
 import { CARD_WIDTH, HomeCard } from '@/components/home-band';
-import { PageSizeSelect } from '@/components/page-size-select';
+import { ListPagination } from '@/components/list-pagination';
 import { hasErrorCode } from '@/lib/api-error';
 import { playlistSearch, validatePagingSearch } from '@/lib/backlog-filter';
 import { api } from '@/lib/orpc';
@@ -31,7 +24,6 @@ import {
 } from '@/lib/page-size';
 import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
-import { takeLinkClick } from '@/src/link-click';
 import { useSession } from '@/src/use-session';
 
 export const Route = createFileRoute('/_app/shared/$token')({
@@ -200,44 +192,25 @@ function SharedPlaylistPage() {
                   />
                 ))}
               </Cards>
-              {/* Quanti per pagina a sinistra, le pagine a destra; sul telefono
-                  vanno a capo. La scelta c'è anche con una pagina sola, se i
-                  giochi sono più della prima voce: chi ha scelto tanti deve
-                  poter tornare indietro. */}
-              <XStack
-                flexWrap="wrap"
-                items="center"
-                justify="center"
-                $sm={{ justify: 'space-between' }}
-                gap={16}
-              >
-                {total > (sizeOptions[0] ?? 0) && (
-                  <PageSizeSelect
-                    value={size}
-                    options={sizeOptions}
-                    onChange={(next) =>
-                      // Cambiare quanti per pagina riporta alla prima.
-                      void navigate({
-                        search: () =>
-                          validatePagingSearch({ size: next, page: 1 }),
-                      })
-                    }
-                  />
-                )}
-                <Pagination
-                  page={page}
-                  pageCount={pageCount}
-                  href={pageHref}
-                  onNavigate={(next, event) => {
-                    if (takeLinkClick(event)) goToPage(next);
-                  }}
-                  label={tBacklog('pages')}
-                  previousLabel={tBacklog('previousPage')}
-                  nextLabel={tBacklog('nextPage')}
-                  goToLabel={tBacklog('goToPage')}
-                  onGoTo={goToPage}
-                />
-              </XStack>
+              <ListPagination
+                page={page}
+                pageCount={pageCount}
+                href={pageHref}
+                onPageChange={(next) => void goToPage(next)}
+                pageSize={
+                  total > (sizeOptions[0] ?? 0)
+                    ? {
+                        value: size,
+                        options: sizeOptions,
+                        onChange: (next) =>
+                          void navigate({
+                            search: () =>
+                              validatePagingSearch({ size: next, page: 1 }),
+                          }),
+                      }
+                    : undefined
+                }
+              />
             </>
           )
         )}

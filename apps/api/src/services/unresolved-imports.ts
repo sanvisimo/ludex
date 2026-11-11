@@ -18,20 +18,9 @@ import {
   tagNewEntries,
 } from './library-import';
 
-/**
- * Le voci di libreria che l'import non ha saputo legare a un gioco, nascoste
- * comprese.
- *
- * Tutte in una lista sola: sono decine e non migliaia, e la pagina le separa
- * da sé. Due procedure vorrebbero dire due richieste per la stessa schermata.
- */
-export async function listUnresolvedImports(userId: string) {
-  // Le tre colonne del nome si portano su e si compongono in JS, invece di un
-  // `coalesce` in SQL: la precedenza `label → display_name → external_account_id`
-  // sta scritta in `storeAccountName` dentro packages/contracts, ed è l'unico
-  // posto dove deve stare. Un coalesce a due termini è la stessa regola scritta
-  // male una seconda volta, e infatti rendeva null il nome di un account senza
-  // etichetta di cui il negozio non ci ha detto come si chiama.
+export async function listUnresolvedImports(userId: string, ids?: string[]) {
+  if (ids?.length === 0) return [];
+  // Il nome dell'account lo compone storeAccountName in JS: un coalesce in SQL lo sbagliava.
   const rows = await db
     .select({
       id: schema.unresolvedImports.id,
@@ -51,13 +40,17 @@ export async function listUnresolvedImports(userId: string) {
       sameProductAs: schema.unresolvedImports.sameProductAs,
     })
     .from(schema.unresolvedImports)
-    // La FK è NOT NULL, quindi la riga dell'account c'è sempre: la JOIN è
-    // sinistra solo per non far sparire uno scarto se quel vincolo cambiasse.
+    // La FK è NOT NULL: sinistra solo per non perdere uno scarto se il vincolo cambiasse.
     .leftJoin(
       schema.storeAccounts,
       eq(schema.unresolvedImports.storeAccountId, schema.storeAccounts.id),
     )
-    .where(eq(schema.unresolvedImports.userId, userId))
+    .where(
+      and(
+        eq(schema.unresolvedImports.userId, userId),
+        ids ? inArray(schema.unresolvedImports.id, ids) : undefined,
+      ),
+    )
     .orderBy(asc(schema.unresolvedImports.name));
 
   const principali = await sameProductMains(userId, rows);
@@ -88,16 +81,7 @@ export async function listUnresolvedImports(userId: string) {
   );
 }
 
-/**
- * Le voci principali dei prodotti da cui vengono le voci in più (9a): il loro
- * gioco in ludex se sono collegate, altrimenti la riga fra gli scarti
- * dell'utente, dove finisce una voce principale che la ricerca non ha
- * riconosciuto («Map Pack» per Tropico 5, a un import da zero).
- *
- * Il collegamento è di tutti e vince: è la stessa precedenza dell'import, che
- * guarda prima `external_ids`. Il nome è quello del gioco, la copertina quella
- * che il negozio dà all'id.
- */
+// Il gioco collegato vince sullo scarto, come all'import che guarda prima `external_ids`.
 async function sameProductMains(
   userId: string,
   rows: { store: Store; sameProductAs: string | null }[],
@@ -165,8 +149,7 @@ async function sameProductMains(
 
 function findOwn(userId: string, id: string) {
   return db.query.unresolvedImports.findFirst({
-    // Sempre in AND con lo userId: senza, un id indovinato toccherebbe la riga
-    // di un altro.
+    // Sempre con lo userId: senza, un id indovinato toccherebbe la riga di un altro.
     where: and(
       eq(schema.unresolvedImports.id, id),
       eq(schema.unresolvedImports.userId, userId),
@@ -174,34 +157,18 @@ function findOwn(userId: string, id: string) {
   });
 }
 
-/**
- * L'utente indica il gioco giusto: la voce entra nel backlog e sparisce dagli scarti.
- *
- * Scrive anche la mappatura in `external_ids`, ed è la parte che conta più della
- * riga di backlog: da lì in avanti quell'appid è risolto **per tutti**, e il
- * prossimo import — suo o di un altro utente — non ripasserà da qui.
- */
+// Scrive `external_ids`: da qui l'id del negozio è risolto per tutti, non solo per chi collega.
 export async function resolveUnresolvedImport(
   userId: string,
   id: string,
   igdbId: number,
-  // Solo «Collega per tutti» (11a): uno scarto che l'utente aveva nascosto
-  // entra nel backlog nascosto, come all'import. Quando lo collega lui stesso,
-  // anche dal tab dei nascosti, vuol dire che lo vuole vedere.
+  // Solo «Collega per tutti» (11a): chi collega da sé lo vuole vedere, anche se era nascosto.
   { keepHidden = false }: { keepHidden?: boolean } = {},
 ) {
   const pending = await findOwn(userId, id);
   if (!pending) return { status: 'not_found' as const };
 
-  // La piattaforma della riga se il negozio l'ha detta, quella del negozio
-  // altrimenti — la stessa precedenza dell'import, e per la stessa ragione:
-  // indovinare vorrebbe dire scrivere dati sbagliati in silenzio in una tabella
-  // su cui si filtra.
-  //
-  // «PSN è PS4 o PS5?» era la domanda lasciata qui in sospeso, e il 9b ha
-  // risposto: **lo dice la riga**, e da allora lo scarto se la porta dietro. Su
-  // un negozio PC resta nulla e decide `platformFor`, che continua ad alzare per
-  // i negozi che non hanno né l'una né l'altra.
+  // Prima la piattaforma della riga, come all'import: indovinare scriverebbe dati sbagliati.
   const platformSlug = pending.platformSlug ?? platformFor(pending.store);
 
   const game = await resolveGameFromIgdb(igdbId);
@@ -223,11 +190,10 @@ export async function resolveUnresolvedImport(
       gameId: schema.externalIds.gameId,
       source: schema.externalIds.source,
     });
-  // Collegare a mano un appid Steam è lo stesso evento di quando lo porta IGDB.
+  // Un appid collegato a mano è lo stesso evento di quando lo porta IGDB.
   await reopenSourcesForNewExternalIds(inserted);
 
-  // Stato, categorie e tag del CSV (10) alla nascita, come all'import: se il
-  // gioco c'era già, la riga resta com'è.
+  // Stato e tag del CSV (10) solo alla nascita: un gioco che c'era già resta com'è.
   const birth = pending.atBirth;
   const { byGameId, created } = await ensureBacklogEntries(
     userId,
@@ -250,24 +216,18 @@ export async function resolveUnresolvedImport(
       backlogId,
       platformSlug,
       store: pending.store,
-      // Lo scarto sa da quale account veniva, e il possesso che ne nasce deve
-      // saperlo quanto un possesso importato: risolvere a mano non è un
-      // inserimento manuale, è un import finito a mano.
+      // Risolvere a mano è un import finito a mano: la copia sa da che account viene.
       storeAccountId: pending.storeAccountId,
       playtimeMinutes: pending.playtimeMinutes,
       lastPlayedAt: pending.lastPlayedAt,
       acquiredAt: pending.acquiredAt,
-      // Come l'avrebbe scritta l'import: una copia della famiglia Steam o del
-      // Plus resta tale, e un disco resta un disco. Senza, diventava un acquisto
-      // senza supporto, e il reimport le metteva accanto la copia giusta.
-      // `digital` sugli scarti nati prima delle colonne, come fa l'import.
+      // Senza, diventava un acquisto senza supporto e il reimport le affiancava quella giusta.
       subscription: pending.subscription,
       medium: pending.medium ?? 'digital',
       storePage: pending.storePage,
     },
   ]);
-  // Come dopo un import: senza, il gioco resterebbe aggiunto oggi, il giorno
-  // in cui lo si è collegato, invece che quando è entrato nella libreria.
+  // Senza, il gioco risulterebbe aggiunto il giorno del collegamento.
   await advanceAddedAt([backlogId]);
 
   await db
@@ -278,18 +238,7 @@ export async function resolveUnresolvedImport(
   return { status: 'ok' as const, entry };
 }
 
-/**
- * Nasconde una voce dicendo perché, o la rimette fra i «da sistemare».
- *
- * Prima qui c'era `dismiss`, che **cancellava** la riga: il prossimo import la
- * riportava, perché nella libreria la voce c'è ancora, e l'utente si ritrovava
- * Netflix fra gli scarti a ogni giro. Un campo sulla riga invece sopravvive da
- * sé — l'upsert di `recordUnresolved` non lo tocca — senza che l'import debba
- * sapere che esiste.
- *
- * Cambiare il tipo di una voce già nascosta non ne sposta la data: è la stessa
- * decisione corretta, non una nuova.
- */
+// Nasconde e non cancella: `dismiss` cancellava, e il prossimo import riportava la voce.
 export async function setUnresolvedImportHidden(
   userId: string,
   id: string,
@@ -301,6 +250,7 @@ export async function setUnresolvedImportHidden(
       kind
         ? {
             hiddenKind: kind,
+            // Cambiare il tipo è la stessa decisione corretta: la data non si sposta.
             hiddenAt: sql`coalesce(${schema.unresolvedImports.hiddenAt}, now())`,
           }
         : { hiddenKind: null, hiddenAt: null },

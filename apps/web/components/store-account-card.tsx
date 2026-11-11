@@ -541,7 +541,7 @@ export function StoreAccountCard({
             <Tooltip content={t('sync')}>
               <Button
                 variant="outline"
-                size="icon"
+                size="sm"
                 aria-label={t('sync')}
                 onClick={() => sync.mutate()}
                 disabled={busy || syncing || sync.isPending}
@@ -551,6 +551,7 @@ export function StoreAccountCard({
                 <Spinner spinning={syncing}>
                   <RefreshCw size={16} color="$color12" />
                 </Spinner>
+                {t('sync')}
               </Button>
             </Tooltip>
           )}

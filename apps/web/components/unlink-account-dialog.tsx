@@ -61,7 +61,7 @@ export function UnlinkAccountDialog({
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: api.accounts.list.key() }),
         queryClient.invalidateQueries({
-          queryKey: api.imports.unresolved.key(),
+          queryKey: api.imports.key(),
         }),
         // Con `purge` il backlog è cambiato sotto i piedi.
         queryClient.invalidateQueries({ queryKey: api.backlog.list.key() }),

@@ -98,7 +98,7 @@ export function useHideUnresolved(fallback: string) {
     mutationFn: ({ ids, kind }: { ids: string[]; kind: HiddenKind | null }) =>
       Promise.all(ids.map((id) => client.imports.setHidden({ id, kind }))),
     onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: api.imports.unresolved.key() }),
+      queryClient.invalidateQueries({ queryKey: api.imports.key() }),
     onError: (error) => toast.error(errorMessage(error, { fallback })),
   });
 }

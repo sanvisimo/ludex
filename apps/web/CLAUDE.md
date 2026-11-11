@@ -392,7 +392,9 @@ giochi legati** sono tre, «Gioco principale», «Altre versioni» e «Giochi si
 e dove va il padre lo decide il tipo (`splitRelated`, `lib/related-games.ts`):
 di un'espansione o un DLC è il gioco principale, di un remake, un remaster,
 un'edizione estesa o un port è la prima delle altre versioni. In «Altre versioni»
-ogni copertina dice che versione è, con un badge (`showKind`). Si aprono con la
+ogni copertina dice che versione è, con un badge (`showKind`). Lo stato usa
+`CornerLabel floating compact`, con ellissi e testo completo al passaggio,
+per le copertine da 104 px. Si aprono con la
 regola della ricerca: in catalogo sono un link, fuori
 catalogo da loggati un bottone che li crea (`useOpenIgdbHit`), da ospiti
 niente; attenuati se non sono tuoi. **I badge** — generi e temi, il tipo, le
@@ -410,8 +412,10 @@ direzione col CSS. Cose che non si indovinano:
 
 - **I numeri nel menu** (`useAccountCounts`) contano le voci da sistemare e i
   nascosti — questi ultimi sono **voci d'import più giochi nascosti dal backlog**,
-  perché la sezione li mostra insieme. Zero non si scrive.
-- **Il profilo** usa Better Auth dal client (`updateUser`, `changePassword`,
+  perché la sezione li mostra insieme. La query dedicata `imports.counts` non
+  carica gli elenchi: i doppioni contano per prodotto. Zero non si scrive.
+- **Il profilo** raggruppa dati personali, sicurezza (password e sessioni) e
+  gestione dati; l’eliminazione resta separata in fondo. Usa Better Auth dal client (`updateUser`, `changePassword`,
   `listSessions`, `revokeSession`, `revokeOtherSessions`), non oRPC: le chiavi
   di query sono a mano (`['auth', 'sessions']`). L'ora delle sessioni è quella
   dell'**accesso**, perché Better Auth aggiorna la sessione al più una volta al
@@ -419,8 +423,9 @@ direzione col CSS. Cose che non si indovinano:
   (`accountData.export`, senza token), e «Cancella» chiama `authClient.deleteUser`
   **con la password**: il server la pretende, e rifiuta l'ultimo admin
   (`LAST_ADMIN`). Step 16, fatto.
-- **Le librerie** sono una griglia `repeat(auto-fill, minmax(240px, 1fr))`, una
-  scheda per **account** (due account Amazon sono due schede). La scheda ha **sei
+- **Le librerie** sono una griglia `repeat(auto-fill, minmax(min(100%, 300px), 1fr))`, una
+  scheda per **account** (due account Amazon sono due schede), due colonne
+  nel contenuto desktop e una sul telefono. La scheda ha **sei
   posti fissi** — intestazione, login Steam, stato, wishlist, gesti, nota — su sei
   righe della griglia con `subgrid`: ogni posto è alto quanto il più alto della sua
   riga di schede, quindi stato, wishlist e ↻ stanno alla stessa altezza anche dove
@@ -436,15 +441,23 @@ direzione col CSS. Cose che non si indovinano:
   ritirati), poi cade sul riquadro con l'icona del negozio (`UnresolvedCover`), e
   l'icona accanto al nome è il link alla pagina dove un link c'è. Le righe già in
   tabella la prendono al prossimo import.
-- **Da sistemare** ha due tab nell'URL (`?tab=duplicates`) **solo se ci sono
-  possibili doppioni** (9a): «Non riconosciute» e «Possibili doppioni», le voci
-  che Epic mette nello stesso prodotto di un gioco già importato
-  (`UnresolvedImport.sameProduct`), una scheda per prodotto in
-  `possible-duplicates.tsx`. Il titolo col totale sta sopra i tab.
-- **Nascosti** è a tab nell'URL (`?kind=dlc`), e senza `?kind` si apre il primo tab
-  che ha qualcosa. «Non interessato» è l'unico con due mucchi, e li unisce per data
-  di nascondimento; i giochi si portano al massimo 100 (`GAMES_LIMIT`), e il
-  numero del tab è il totale vero.
+- **Da sistemare** ha due tab nell'URL (`?tab=duplicates`): «Non riconosciute»
+  e «Possibili doppioni». `imports.reviewPage` filtra e pagina sul server:
+  10 voci o prodotti iniziali per pagina, mai un gruppo spezzato. Una ricerca che trova
+  una voce di un prodotto ne include l'intero gruppo non nascosto.
+- **Nascosti** usa `imports.hiddenPage`: filtra, unisce giochi e voci di import,
+  ordina per data e id e poi pagina. Nessun limite complessivo di 100 giochi.
+  `?kind=dlc` sceglie il tab; senza `kind` si apre il primo con risultati.
+  I giochi tornano al backlog, gli import ritornano fra i «da sistemare».
+- **Le pagine delle due liste** sono nell'URL (`page`); cambiando tab, ricerca
+  o negozio si torna a pagina 1. Il server corregge una pagina oltre l'ultima
+  (anche dopo mutazioni), e la rotta aggiorna l'URL con `replace`. Conteggi
+  filtrati indipendenti dal limite e ordine stabile in caso di nomi/date uguali.
+  `AccountSectionHeader` e `AccountListFooter` sono condivisi dalle sezioni.
+  Il footer usa `ListPagination`, comune anche a backlog, playlist, wishlist
+  e liste condivise; compone pagine, selettore e riepilogo. Nell’account `size`
+  offre 10/25/50/100 ed è conservato nell’URL, con reset alla prima pagina
+  quando cambia. Le griglie mantengono i propri multipli e limiti.
 - **Una barra di scorrimento non si ottiene con `overflow: scroll`**: su Windows
   disegna sempre i nastri grigi, anche quando non servono. Per una riga che scorre
   c'è `Tabs`, o `overflowX: 'auto'` con `scrollbarWidth: 'none'`.

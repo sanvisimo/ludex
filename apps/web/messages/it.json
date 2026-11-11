@@ -755,6 +755,25 @@
     "TOO_MANY_REQUESTS": "Troppi tentativi ravvicinati. Attendi qualche secondo e riprova."
   },
   "account": {
+    "review": {
+      "attentionTitle": "Da sistemare",
+      "attentionDescription": "Associa le voci non riconosciute e controlla i possibili doppioni.",
+      "hiddenTitle": "Nascosti",
+      "hiddenDescription": "Ritrova i giochi e le voci di importazione che hai tolto dalla vista.",
+      "groupRange": "{from}–{to} di {total} gruppi",
+      "range": "{from}–{to} di {total}",
+      "loadFailed": "Non è stato possibile caricare la lista.",
+      "retry": "Riprova",
+      "restoreImport": "Riporta da sistemare",
+      "restoreGame": "Mostra nel backlog",
+      "importItem": "Voce d’importazione",
+      "gameItem": "Gioco del backlog",
+      "librariesDescription": "Gestisci gli account collegati e lo stato delle importazioni.",
+      "profileTitle": "Profilo",
+      "profileDescription": "Dati personali, accessi e gestione del tuo account.",
+      "security": "Sicurezza",
+      "dataManagement": "Gestione dati"
+    },
     "title": "Account",
     "libraries": {
       "title": "Librerie",
@@ -983,7 +1002,7 @@
       "hiddenOn": "nascosta {date}",
       "addedOn": "aggiunta {date}",
       "openOn": "Apri su {store}",
-      "resolve": "Collega",
+      "resolve": "Associa gioco",
       "resolveTitle": "Collega al gioco giusto",
       "lastPlayedOn": "ultima partita {date}",
       "externalId": "Id sul negozio",
@@ -1360,9 +1379,15 @@
         "title": "Il marchio PileCue",
         "text": "Il nuovo logo, le icone e la palette Midnight Cue arrivano sul web e nell’app mobile."
       },
+      "accountDesign": {
+        "title": "Account e librerie più chiari",
+        "text": "Profilo organizzato, card delle librerie più leggibili e paginazione nelle liste da sistemare e nascoste."
+      },
       "webDesign": {
-        "title": "Home e backlog più leggibili",
-        "text": "Card più ampie, comandi di stato a portata di mano, filtri più chiari e preferenze raccolte nel menu Settings."
+        "title": "Home e raccolta più leggibili",
+        "p1": "Card più ampie nella home e preferenze di tema e lingua raccolte nel menu Settings.",
+        "p2": "Card e viste coerenti fra backlog, playlist e wishlist, con ordinamento dagli header nelle tabelle del backlog e delle playlist a filtro.",
+        "p3": "Pagina del gioco più compatta, con stato e voto subito accessibili, durata e critica distinte e dettagli delle copie più leggibili."
       },
       "gogCollections": {
         "title": "I giochi di GOG venduti in raccolta",

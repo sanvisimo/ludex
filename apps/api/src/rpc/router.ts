@@ -1,3 +1,8 @@
+import {
+  accountListCounts,
+  reviewPage,
+  hiddenPage,
+} from '../services/account-lists';
 import { ORPCError } from '@orpc/server';
 import { auth } from '@repo/auth';
 import { isOneShotStore } from '@repo/contracts/vocabulary';
@@ -148,7 +153,6 @@ import {
   updateXboxSettings,
 } from '../services/store-accounts';
 import {
-  listUnresolvedImports,
   resolveUnresolvedImport,
   setUnresolvedImportHidden,
 } from '../services/unresolved-imports';
@@ -667,9 +671,15 @@ export const router = os.router({
   },
 
   imports: {
-    unresolved: os.imports.unresolved
+    reviewPage: os.imports.reviewPage
       .use(authed)
-      .handler(({ context }) => listUnresolvedImports(context.user.id)),
+      .handler(({ context, input }) => reviewPage(context.user.id, input)),
+    hiddenPage: os.imports.hiddenPage
+      .use(authed)
+      .handler(({ context, input }) => hiddenPage(context.user.id, input)),
+    counts: os.imports.counts
+      .use(authed)
+      .handler(({ context }) => accountListCounts(context.user.id)),
 
     resolve: os.imports.resolve
       .use(authed)

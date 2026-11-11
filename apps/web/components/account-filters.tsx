@@ -29,17 +29,6 @@ export function readAccountFilter(
   };
 }
 
-/** Una voce d'import passa i filtri? Il nome si confronta senza maiuscole. */
-export function matchesAccountFilter(
-  entry: { name: string; store: Store },
-  filter: AccountFilter,
-) {
-  if (filter.store && entry.store !== filter.store) return false;
-  if (filter.q && !entry.name.toLowerCase().includes(filter.q.toLowerCase()))
-    return false;
-  return true;
-}
-
 /**
  * Ricerca per nome e negozio, gli stessi filtri degli scarti dell'admin. La
  * ricerca aspetta che si smetta di scrivere: chi la usa la scrive

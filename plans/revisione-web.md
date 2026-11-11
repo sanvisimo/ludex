@@ -1,8 +1,9 @@
 # Revisione web — header, home e backlog
 
 Design approvato in chat l’11/11/2026 dopo due anteprime navigabili.
-Branch: `codex/web-design-review`. Lotto in corso, da chiudere dopo la revisione
-dell’utente sulla pagina reale.
+Branch: `codex/web-design-review`. Lotto chiuso dall’utente l’11/11/2026:
+home, backlog, playlist, pagina del gioco e wishlist approvati.
+Le sezioni dell’account sono il prossimo ambito da valutare.
 
 ## Decisioni
 
@@ -33,7 +34,7 @@ dell’utente sulla pagina reale.
 
 Riscontri e screenshot in
 [design-review](../docs/brand/pilecue/design-review/README.md).
-Implementazione pronta per la revisione dell’utente: il lotto non è ancora chiuso.
+Revisione in uso completata e lotto approvato dall’utente l’11/11/2026.
 
 Le modifiche al marchio e alle favicon già presenti all’apertura del branch
 restano separate da questo intervento.
@@ -116,3 +117,14 @@ Perimetro approvato dopo la revisione della pagina attuale desktop e mobile:
   riepilogo non duplicato, collegamento al dettaglio e focus da tastiera,
   destinazioni esterne, due temi e mobile a 390/320 px. Nessun overflow o
   errore JavaScript; rimossi i dati QA al termine.
+
+### Etichette dei giochi collegati
+
+- Variante `floating compact` di CornerLabel per le copertine da 104 px:
+  fondo neutro, bordo e testo di selezione, margine ridotto e icona compatta.
+  Stato in alto e tipo di versione in basso; testo lungo con ellissi e titolo
+  completo al passaggio del mouse.
+- [x] Sei storie CornerLabel, inclusi testo lungo e due temi; tipi e lint
+  UI/web. Pagina BioShock con stati QA brevi/lunghi nei due temi e a 390 px:
+  etichette contenute nella copertina, nessun overflow o errore JavaScript.
+  Dati QA rimossi al termine.

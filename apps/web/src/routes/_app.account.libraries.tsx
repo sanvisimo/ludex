@@ -1,19 +1,12 @@
 import type { StoreAccount } from '@repo/contracts';
-import {
-  Button,
-  EmptyState,
-  Skeleton,
-  Text,
-  XStack,
-  YStack,
-  toast,
-} from '@repo/ui';
+import { Button, EmptyState, Skeleton, YStack, toast } from '@repo/ui';
 import { Library } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslations } from 'use-intl';
 
+import { AccountSectionHeader } from '@/components/account-section';
 import { AddStoreAccount } from '@/components/add-store-account';
 import { AutoSyncSettings } from '@/components/auto-sync-settings';
 import { CsvImportPanel } from '@/components/csv-import';
@@ -29,6 +22,7 @@ export const Route = createFileRoute('/_app/account/libraries')({
 
 function LibrariesSection() {
   const t = useTranslations('account');
+  const tReview = useTranslations('account.review');
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
 
@@ -70,30 +64,25 @@ function LibrariesSection() {
 
   return (
     <>
-      <XStack items="center" justify="space-between" gap={12} flexWrap="wrap">
-        <Text
-          render="h2"
-          fontFamily="$heading"
-          fontSize={18}
-          lineHeight={24}
-          fontWeight="600"
-          color="$color12"
-        >
-          {t('libraries.title')}
-        </Text>
-        {/* Con un account solo farebbe la stessa cosa del bottone sulla sua
-            scheda. Spento mentre qualcosa importa: la coda deduplica per
-            account, ma un bottone che non fa niente è peggio di uno spento. */}
-        {rows.length >= 2 && (
-          <Button
-            variant="outline"
-            onClick={() => syncAll.mutate()}
-            disabled={syncing || syncAll.isPending}
-          >
-            {t('store.syncAll')}
-          </Button>
-        )}
-      </XStack>
+      <AccountSectionHeader
+        title={t('libraries.title')}
+        description={tReview('librariesDescription')}
+        count={accounts.data?.length}
+        actions={
+          <>
+            {rows.length >= 2 && (
+              <Button
+                variant="outline"
+                onClick={() => syncAll.mutate()}
+                disabled={syncing || syncAll.isPending}
+              >
+                {t('store.syncAll')}
+              </Button>
+            )}
+            <AddStoreAccount variant="default" />
+          </>
+        }
+      />
 
       {loading ? (
         <YStack gap={16}>
@@ -106,9 +95,7 @@ function LibrariesSection() {
             icon={<Library size={24} color="$color11" />}
             title={t('libraries.emptyTitle')}
             description={t('libraries.emptyDescription')}
-            action={<AddStoreAccount variant="default" />}
           />
-          {/* Anche senza librerie: un CSV non è una libreria (10). */}
           <CsvImportPanel />
         </>
       ) : (
@@ -117,21 +104,13 @@ function LibrariesSection() {
             <AutoSyncSettings
               settings={settings.data}
               hasPsn={rows.some((row) => row.store === 'psn')}
-            >
-              <AddStoreAccount />
-            </AutoSyncSettings>
+            />
           )}
-
-          {/* Tante colonne quante ne stanno, da 240 px l'una: tre nel desktop
-              largo, due in uno stretto, una sul telefono. Una griglia vera e
-              non una fila che va a capo: l'ultima riga non allarga le schede
-              che ha. Ogni scheda prende `CARD_SLOTS` righe e le divide fra i
-              suoi posti (`subgrid`): lo spazio di 16 vale fra le schede, dentro
-              lo decide la scheda. */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+              gridTemplateColumns:
+                'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
               gap: 16,
             }}
           >
@@ -149,9 +128,6 @@ function LibrariesSection() {
               />
             ))}
           </div>
-
-          {/* L'import da CSV (10): un riquadro sotto le schede, non una
-              scheda, perché un file non è una libreria. */}
           <CsvImportPanel />
         </>
       )}
