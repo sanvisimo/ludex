@@ -368,16 +368,24 @@ chiedere: IGDB regge quattro richieste al secondo per tutto il server.
 
 **La pagina del gioco** (`/games/$slug`, lo slug di `games`, vedi
 [modello-dati](../../docs/modello-dati.md)) ha i suoi pezzi in
-`apps/web/components/game-page.tsx`: la hero, che `Page` mette sopra il suo
-contenitore a tutta larghezza, la gallery, durata e critica col dialog
-«Dettagli», il blocco del backlog (una fonte senza voto resta fra i voti, con «nessun voto» e il nome come link), la card «Links»
+`apps/web/components/game-page.tsx`: la hero compatta (320 px desktop, minimo
+240 su mobile), che `Page` mette sopra il contenitore a tutta larghezza,
+la fascia personale con stato, voto al volo, numero di copie e ore giocate, la gallery,
+durata e critica col dialog «Dettagli», il pannello copie/note/tag (una fonte
+senza voto resta fra i voti, con «nessun voto» e il nome come link), la card «Links»
 (`StoreLinks`): in cima il sito ufficiale, poi i negozi (`game.storeLinks`, un
 link per negozio: il nostro da `storeGameUrl` in `@repo/contracts`, e dove manca
 quello di IGDB), poi itch, App Store e Google Play, e Wikipedia in fondo
-(`game.websites`); le file dei giochi legati. Le colonne si affiancano
-da `$lg`; sotto, la laterale viene **prima** nell'HTML — durata, critica e
-stato sono ciò che serve a decidere — e `row-reverse` la rimette a destra sul
-desktop. Un gioco appena nato (id IGDB, dati non ancora arrivati, creato da
+(`game.websites`); le file dei giochi legati. Il layout web è in
+`components/game-page.css`: da `lg` (1024 px) due colonne, sul telefono un solo
+DOM nell'ordine durata/critica → gallery/descrizione → copie/link → correlati,
+dopo la fascia personale. Nessun controllo duplicato per le due larghezze.
+Nella fascia il conteggio porta a `#game-copies`, con focus sulla sezione e
+spazio per l'header. I possessi completi sono solo nel pannello Copie: nome
+del negozio e piattaforma espliciti, account/abbonamento e dati per copia,
+note/tag e azioni separati. I link hanno superfici cliccabili: sito ufficiale
+in testa, negozi a due colonne (una sotto 360 px), Wikipedia in fondo.
+Un gioco appena nato (id IGDB, dati non ancora arrivati, creato da
 meno di 2 minuti) mostra lo skeleton con «Sto recuperando i dati da IGDB…» e
 si rilegge ogni 5 secondi; oltre, la pagina com'è (`isEnriching`). **Le file dei
 giochi legati** sono tre, «Gioco principale», «Altre versioni» e «Giochi simili»,

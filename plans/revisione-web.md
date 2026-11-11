@@ -20,7 +20,7 @@ dell’utente sulla pagina reale.
 - Filtri nel drawer, stati rapidi sopra la ricerca, ordinamento visibile
   nella barra desktop e nel drawer su telefono; chip rimovibili e URL invariati.
 - La pagina gioco si approfondisce in seguito: nessuna revisione della sua
-  struttura in questo intervento.
+  struttura nel primo intervento; seguito approvato l'11/11, descritto sotto.
 
 ## Verifiche
 
@@ -74,3 +74,45 @@ Confronti su FIFA 17, Avengers e Monster Train 2 in
   degli header, inversione, menu voti, tastiera, reset pagina e layout a 390 px.
   Playlist QA con ordine salvato visibile, override e reload coerenti, query
   salvata invariata; nessun errore JavaScript. Dati QA rimossi al termine.
+
+## Pagina dettaglio (11/11/2026)
+
+Perimetro approvato dopo la revisione della pagina attuale desktop e mobile:
+
+- Hero desktop da 500 a 320 px; mobile con altezza minima adattabile al titolo.
+- Fascia sotto la hero con stato a icona ed etichetta, voto modificabile,
+  riepilogo possessi e ore giocate. Le copie, note e tag restano nel pannello
+  dedicato, con modifica, nascondi e rimuovi.
+- Durata HLTB distinta dalla critica, tempi più evidenti e voti con badge
+  numerici su 100, conservando fonti e link.
+- Ordine mobile: fascia personale, durata/critica, gallery/descrizione,
+  copie/link, giochi correlati. Desktop a due colonne, senza duplicare DOM o
+  controlli. Gallery, dialog dettagli e giochi correlati conservati.
+- Verifiche mirate: tipi, lint, build; browser desktop/mobile con titolo lungo,
+  visitatore e gioco posseduto, cambio stato/voto e dialoghi esistenti.
+- [x] Typecheck, lint e build web client/server.
+- [x] Chromium a 1440, 768 e 390 px: fascia personale unica, ordine dei
+  contenuti, cambio stato e voto persistiti, dialog dettagli/modifica/rimozione,
+  nascondi/mostra e avviso del gioco nascosto. Nessun overflow o pageerror.
+  Utente e possessi QA rimossi al termine; nessun dato reale modificato.
+
+### Fascia, copie e link: rifinitura approvata
+
+- Fascia con stato a sinistra, voto centrale e riepilogo copie/ore a destra;
+  su mobile il riepilogo va sotto. Il numero di copie è un collegamento al
+  pannello dedicato, senza ripetere i badge dei possessi.
+- Copie con conteggio nel titolo, superfici distinte e nomi espliciti di
+  negozio/piattaforma; account, abbonamento, tempi e date secondari. Note,
+  tag e azioni separati dai possessi. Senza URL la copia resta informativa.
+- Link con sito ufficiale a tutta larghezza, negozi in due colonne e
+  Wikipedia separata in fondo. Su schermi molto stretti i negozi passano a
+  una colonna. Un solo negozio occupa tutta la riga; con più negozi le celle
+  restano a metà larghezza, anche sull'ultima riga dispari, senza dare più peso
+  a una destinazione. Conservati URL, icone, apertura esterna e focus visibile.
+- Ritocco direttamente sui componenti reali, come concordato: nessun nuovo
+  mockup parallelo. Verifica mirata con cinque copie e una sola copia.
+- [x] Tipi/lint web e build client/server. Chromium con cinque copie di
+  Dredge e una copia fisica senza tempi/URL: distribuzione della fascia,
+  riepilogo non duplicato, collegamento al dettaglio e focus da tastiera,
+  destinazioni esterne, due temi e mobile a 390/320 px. Nessun overflow o
+  errore JavaScript; rimossi i dati QA al termine.

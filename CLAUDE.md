@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+@AGENTS.md
+
 ## Cos'è questo progetto
 
 Game library manager multi-piattaforma. **Non è un tracker**: il cuore è un motore

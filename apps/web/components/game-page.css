@@ -1,0 +1,65 @@
+/* Solo struttura web: colori, spazi dei pannelli e controlli restano Tamagui. */
+.game-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'facts' 'content' 'collection' 'related';
+  gap: 24px;
+  align-items: start;
+}
+.game-detail-facts {
+  grid-area: facts;
+}
+.game-detail-content {
+  grid-area: content;
+}
+.game-detail-collection {
+  grid-area: collection;
+}
+.game-detail-related {
+  grid-area: related;
+}
+
+/* Lo stesso breakpoint lg di @repo/ui (config Tamagui v5). */
+@media (min-width: 1024px) {
+  .game-detail-layout {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-areas: 'content facts' 'content collection' 'related collection';
+    grid-template-rows: auto auto 1fr;
+  }
+}
+
+.game-personal-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: center;
+}
+.game-personal-collection {
+  grid-column: 1 / -1;
+}
+.game-store-links {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+.game-store-links > :only-child {
+  grid-column: 1 / -1;
+}
+@media (min-width: 360px) {
+  .game-store-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 640px) {
+  .game-personal-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .game-personal-rating {
+    justify-self: center;
+  }
+  .game-personal-collection {
+    grid-column: auto;
+    justify-self: end;
+  }
+}

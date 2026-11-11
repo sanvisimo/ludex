@@ -26,6 +26,7 @@ import {
   GAME_PAGE_WIDTH,
   GameGallery,
   GameHero,
+  GamePersonalBar,
   RelatedRow,
 } from '@/components/game-page';
 import { RemoveEntryDialog } from '@/components/remove-entry-dialog';
@@ -39,6 +40,8 @@ import { ButtonLink } from '@/src/components/button-link';
 import { Page } from '@/src/components/page';
 import { ReportError } from '@/components/report-error';
 import { useSession } from '@/src/use-session';
+
+import '@/components/game-page.css';
 
 /**
  * Quanto si aspetta l'enrichment di un gioco appena nato prima di arrendersi
@@ -73,13 +76,13 @@ export const Route = createFileRoute('/_app/games/$slug')({
 });
 
 /**
- * La hero mentre si aspetta: alta quanto quella vera di `GameHero`, 500 da
+ * La hero mentre si aspetta: alta quanto quella vera di `GameHero`, 320 da
  * `$md` e 240 sotto. La media query sta sullo `YStack` e non sullo
  * `Skeleton`: su un componente di `@repo/ui` l'idratazione non torna.
  */
 function HeroSkeleton() {
   return (
-    <YStack width="100%" height={500} $max-md={{ height: 240 }}>
+    <YStack width="100%" height={320} $max-md={{ height: 240 }}>
       <Skeleton height="100%" width="100%" rounded={0} />
     </YStack>
   );
@@ -123,7 +126,7 @@ function GamePage() {
       toast.error(errorMessage(error, { fallback: tBacklog('statusFailed') })),
   });
 
-  // Il voto al volo dal pannello: solo il voto, gli altri campi assenti non si
+  // Il voto al volo dalla fascia personale: gli altri campi assenti non si
   // toccano (vedi `backlog.update` nel contratto).
   const setRating = useMutation({
     mutationFn: (input: { id: string; rating: number | null }) =>
@@ -186,41 +189,62 @@ function GamePage() {
         </Muted>
       )}
 
-      {/* La laterale sta **prima** nell'HTML, ed è l'ordine del telefono:
-          durata, critica e stato sono ciò che serve a decidere. Da `$lg` le
-          due colonne si affiancano, e `row-reverse` porta la principale a
-          sinistra. */}
-      <XStack
-        gap={24}
-        items="flex-start"
-        flexDirection="row-reverse"
-        $max-lg={{ flexDirection: 'column', items: 'stretch' }}
-      >
-        <YStack width={360} shrink={0} gap={16} $max-lg={{ width: '100%' }}>
+      {entry ? (
+        <GamePersonalBar
+          entry={
+            setRating.isPending
+              ? { ...entry, rating: setRating.variables.rating }
+              : entry
+          }
+          onStatus={(row, status) => setStatus.mutate({ id: row.id, status })}
+          onRating={(row, rating) => setRating.mutate({ id: row.id, rating })}
+        />
+      ) : session.data ? (
+        <XStack flexWrap="wrap" items="center" gap={8}>
+          <AddGameDialog game={game} />
+          <WishlistControl game={game} />
+        </XStack>
+      ) : null}
+
+      {/* Un solo DOM nell'ordine mobile; la griglia dispone le due colonne desktop. */}
+      <div className="game-detail-layout">
+        <YStack className="game-detail-facts" minW={0}>
           <DurationAndCritics game={game} entry={entry} />
+        </YStack>
+        <YStack className="game-detail-content" minW={0} gap={24}>
+          <GameGallery game={game} />
+
+          {game.summary && (
+            <YStack gap={8} render="section">
+              <Text
+                render="h2"
+                fontFamily="$heading"
+                fontSize={16}
+                lineHeight={22}
+                fontWeight="600"
+                color="$color12"
+                m={0}
+              >
+                {t('description')}
+              </Text>
+              <Text
+                fontSize={15}
+                lineHeight={24}
+                color="$color12"
+                style={{ whiteSpace: 'pre-line' }}
+              >
+                {game.summary}
+              </Text>
+            </YStack>
+          )}
+        </YStack>
+        <YStack className="game-detail-collection" minW={0} gap={16}>
           {/* Il prezzo serve a chi il gioco non ce l'ha: nel backlog è già tuo. */}
           {!entry && <GamePriceCard game={game} />}
           {entry ? (
             <BacklogPanel
-              // Mentre il voto si salva si mostra già quello scelto: senza,
-              // le stelle tornerebbero indietro fino alla rilettura.
-              entry={
-                setRating.isPending
-                  ? { ...entry, rating: setRating.variables.rating }
-                  : entry
-              }
+              entry={entry}
               storeLinks={game.storeLinks}
-              onStatus={(row, status) =>
-                setStatus.mutate({ id: row.id, status })
-              }
-              onRating={(row, rating) =>
-                setRating.mutate({ id: row.id, rating })
-              }
-              hiddenNotice={
-                // Ci si arriva da una ricerca o da un link: senza, il gioco
-                // sembrerebbe in lista e in lista non si trova.
-                entry.hiddenAt && <Muted>{t('hiddenNotice')}</Muted>
-              }
               actions={
                 <>
                   <Button variant="outline" onPress={() => setEditing(true)}>
@@ -256,22 +280,9 @@ function GamePage() {
                 </>
               }
             />
-          ) : (
-            session.data && (
-              // Il gioco non è tuo: o lo metti da parte in una lista, o ce l'hai.
-              <XStack gap={8} items="center" flexWrap="wrap">
-                <AddGameDialog game={game} />
-                <WishlistControl game={game} />
-              </XStack>
-            )
-          )}
-          {/* Le playlist scelte a mano (15f) tengono anche i giochi che hai: una
-              riga sua, uguale nei due casi, sotto i bottoni di sopra. */}
+          ) : null}
           {session.data && <CuratedPlaylistControl game={game} />}
           <StoreLinks game={game} />
-          {/* In fondo alla colonna: sotto il pannello del backlog se il gioco
-              è tuo, sotto durata e critica se no. Solo da loggati: la
-              segnalazione è di qualcuno. */}
           {session.data ? (
             <XStack gap={8} items="center" flexWrap="wrap">
               <ReportError game={game} entry={entry} />
@@ -290,47 +301,14 @@ function GamePage() {
             </XStack>
           ) : null}
         </YStack>
-
-        {/* Sotto `$lg` le colonne sono impilate, e la base 0 di `flex`
-            darebbe a questa un'altezza zero: il contenuto ne uscirebbe e
-            coprirebbe ciò che viene dopo. */}
-        <YStack
-          flex={1}
-          minW={0}
-          gap={24}
-          $max-lg={{ width: '100%', flexBasis: 'auto' }}
-        >
-          <GameGallery game={game} />
-
-          {game.summary && (
-            <YStack gap={8} render="section">
-              <Text
-                render="h2"
-                fontFamily="$heading"
-                fontSize={16}
-                lineHeight={22}
-                fontWeight="600"
-                color="$color12"
-                m={0}
-              >
-                {t('description')}
-              </Text>
-              <Text
-                fontSize={15}
-                lineHeight={24}
-                color="$color12"
-                style={{ whiteSpace: 'pre-line' }}
-              >
-                {game.summary}
-              </Text>
-            </YStack>
-          )}
-
-          <RelatedRow title={t('mainGame')} games={mainGame} />
-          <RelatedRow title={t('versions')} games={versions} showKind />
-          <RelatedRow title={t('similar')} games={similar} />
-        </YStack>
-      </XStack>
+        {(!!mainGame.length || !!versions.length || !!similar.length) && (
+          <YStack className="game-detail-related" minW={0} gap={24}>
+            <RelatedRow title={t('mainGame')} games={mainGame} />
+            <RelatedRow title={t('versions')} games={versions} showKind />
+            <RelatedRow title={t('similar')} games={similar} />
+          </YStack>
+        )}
+      </div>
 
       {entry && (
         <XStack>
