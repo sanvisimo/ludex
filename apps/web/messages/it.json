@@ -1379,11 +1379,15 @@
     "items": {
       "pilecueBrand": {
         "title": "Il marchio PileCue",
-        "text": "Il nuovo logo, le icone e la palette Midnight Cue arrivano sul web e nell’app mobile."
+        "p1": "Nuovo nome e logo PileCue, con favicon e icone leggibili anche a 16 px.",
+        "p2": "La palette Midnight Cue su tutta l’app, nel tema chiaro e in quello scuro.",
+        "p3": "Le email dell’account con il nuovo marchio, senza immagini caricate dall’esterno."
       },
       "accountDesign": {
         "title": "Account e librerie più chiari",
-        "text": "Profilo organizzato, card delle librerie più leggibili e paginazione nelle liste da sistemare e nascoste."
+        "p1": "Il profilo è diviso in dati personali, sicurezza e gestione dei dati, e l’eliminazione dell’account sta da sola in fondo.",
+        "p2": "Le card delle librerie sono più ampie: collegamento, sincronizzazione e wishlist sono separati, e c’è un pulsante Aggiorna.",
+        "p3": "Le liste da sistemare e dei nascosti sono paginate, con 10, 25, 50 o 100 voci per pagina. Lo stesso selettore c’è anche in backlog, playlist e wishlist."
       },
       "webDesign": {
         "title": "Home e raccolta più leggibili",

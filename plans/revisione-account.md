@@ -39,7 +39,7 @@ restano quelle esistenti; la revisione riguarda presentazione e lettura delle li
   nel backlog e modifica del nome. Nessun overflow o errore JavaScript.
   Dati QA rimossi al termine; nessuna importazione avviata.
 
-Pronto per la revisione in uso dell'utente; lotto e voce roadmap ancora in corso.
+Lotto e voce roadmap chiusi l'11/11/2026.
 
 ## Paginazione comune e dimensione modificabile
 
