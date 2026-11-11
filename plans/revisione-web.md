@@ -128,3 +128,29 @@ Perimetro approvato dopo la revisione della pagina attuale desktop e mobile:
   UI/web. Pagina BioShock con stati QA brevi/lunghi nei due temi e a 390 px:
   etichette contenute nella copertina, nessun overflow o errore JavaScript.
   Dati QA rimossi al termine.
+
+### Negozi a icone su card e righe (11/11/2026)
+
+- Card: titolo di nuovo su due righe riservate (`minH` 40), così anno, durata
+  e voto restano allineati fra le card della stessa fila.
+- Footer della card: al massimo due elementi, allineati a sinistra fra stato e
+  menu. Con tre o più negozi il primo logo e un «+N» (non «…», che accanto al
+  ⋮ del menu si confondeva). Misura: a 176 px di card restano 84 px fra stato
+  e menu, cioè due pulsanti da 32, non tre.
+- «+N»: tooltip con icona e nome di ogni negozio. Il dialogo resta solo per
+  chi non ha il mouse (`(hover: none)` letto alla pressione): titolo «Copie»,
+  per ogni negozio icona e nome e sotto le copie. Toccando un logo qualsiasi o
+  «+N» si apre lo stesso dialogo, con tutte le copie del gioco.
+- `Tooltip` di `@repo/ui` accetta anche un contenuto composto (storia
+  `RichContent`).
+- Card: il badge del tipo passa sulla copertina, in basso a sinistra come nei
+  giochi collegati; sotto il titolo i fatti stanno alla stessa altezza in tutta
+  la fila.
+- Vista a righe: voto accanto a durata; negozi a destra sotto stato e menu,
+  anche qui al massimo due (68 px, quanto stato e menu: con quattro icone su un
+  telefono al titolo restavano 80 px). La lista dei nascosti resta coi badge.
+  Il titolo sta in un `YStack shrink={1} minW={0}`, come nella compatta: senza,
+  sul telefono non andava a capo e passava sotto i bottoni.
+- [x] Tipi e lint web/UI.
+- [ ] Prova sulla pagina dell'utente: card con e senza badge del tipo, Dredge
+  con «+3», righe, dialogo al tocco.

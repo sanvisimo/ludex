@@ -61,18 +61,6 @@ import { api } from '@/lib/orpc';
 import { latestPlaytime } from '@/lib/playtime';
 import { sortLabels } from '@/components/list-controls';
 
-/**
- * Le tre viste del backlog: righe, griglia e compatta.
- *
- * Mostrano i campi che `BacklogEntry` porta già: quali informazioni stanno
- * sulla card, sulla riga e sulla scheda lo decide il 12d, insieme ai dati IGDB
- * che ancora mancano.
- *
- * In tutte e tre lo stato si cambia a vista, perché è il gesto più
- * frequente: un bottone con l'icona dello stato, come su Trakt, che apre la
- * scelta. Modifica, nascondi e rimuovi stanno in un menu accanto.
- */
-
 export type EntryHandlers = {
   onStatus: (entry: BacklogEntry, status: BacklogStatus) => void;
   onEdit: (entry: BacklogEntry) => void;
@@ -103,16 +91,6 @@ export function BacklogEntries({
   return <RowsView entries={entries} {...handlers} />;
 }
 
-/**
- * Lo stato alla Trakt: un bottone quadrato con l'icona dello stato, che premuto
- * apre la scelta. Prende il posto della tendina larga 176, che su un telefono
- * si mangiava mezza riga.
- *
- * Il nome del bottone dice anche lo stato attuale («Stato di Vane: Da
- * giocare»): a vista c'è solo l'icona, e senza il lettore di schermo non
- * saprebbe cosa c'è scritto sopra. Nel menu ogni voce ha icona ed etichetta,
- * ed è lì che le icone si imparano.
- */
 export function StatusButton({
   entry,
   onStatus,
@@ -169,7 +147,6 @@ export function StatusButton({
   );
 }
 
-/** Modifica, nascondi, rimuovi: dietro un bottone solo, uguale in ogni vista. */
 function EntryActions({
   entry,
   onEdit,
@@ -227,7 +204,6 @@ function EntryActions({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      {/* Le playlist scelte a mano (15f): il menu non ha sottomenu. */}
       <CuratedPlaylistsDialog
         game={entry.game}
         open={choosing}
@@ -237,14 +213,16 @@ function EntryActions({
   );
 }
 
-/**
- * Anno e durata stimata a sinistra, voto distinto a destra. Il tempo giocato
- * ha una riga propria, per non confonderlo con HLTB o stringere tutti i fatti.
- * Il voto è il tuo, o quello della critica se non hai votato.
- */
-function Facts({ entry }: { entry: BacklogEntry }) {
+function Facts({
+  entry,
+  inlineScore,
+  ...props
+}: { entry: BacklogEntry; inlineScore?: boolean } & ComponentProps<
+  typeof YStack
+>) {
+  const score = <EntryScore rating={entry.rating} game={entry.game} badge />;
   return (
-    <YStack gap={6} mt="auto">
+    <YStack gap={6} {...props}>
       <XStack items="center" justify="space-between" gap={8}>
         <XStack flexWrap="wrap" items="center" gap={8} flex={1} minW={0}>
           {entry.game.firstReleaseDate && (
@@ -253,19 +231,15 @@ function Facts({ entry }: { entry: BacklogEntry }) {
             </Text>
           )}
           <GameDuration game={entry.game} short variant="card" />
+          {inlineScore && score}
         </XStack>
-        <EntryScore rating={entry.rating} game={entry.game} badge />
+        {!inlineScore && score}
       </XStack>
       <PlayedTime ownerships={entry.ownerships} labelled />
     </YStack>
   );
 }
 
-/**
- * Le righe: la vista di prima, più bassa. Le azioni in fondo diventano stato
- * e menu, e su una finestra stretta vanno a capo sotto la copertina invece di
- * uscire dallo schermo.
- */
 function RowsView({
   entries,
   ...handlers
@@ -274,8 +248,7 @@ function RowsView({
     <YStack render="ul" gap={8} p={0} m={0}>
       {entries.map((entry) => (
         <YStack render="li" key={entry.id} style={{ listStyle: 'none' }}>
-          {/* `py={0}`: la Card ha già il suo respiro verticale, e sommato al
-              nostro lasciava una fascia vuota in fondo a ogni riga. */}
+          {/* La spaziatura è sul contenuto: il padding della Card la raddoppierebbe. */}
           <Card py={0}>
             <XStack p={8} gap={8} $md={{ gap: 12, p: 12 }} items="flex-start">
               <Link
@@ -290,33 +263,34 @@ function RowsView({
                 />
               </Link>
               <YStack flex={1} minW={0} gap={8}>
-                <XStack
-                  flexWrap="wrap"
-                  items="flex-start"
-                  justify="space-between"
-                  gap={8}
-                >
+                <XStack justify="space-between" items="flex-start" gap={8}>
                   <YStack gap={4} flex={1} minW={0}>
-                    <XStack justify="space-between" gap={8}>
-                      <XStack flex={1} minW={0} items="center" gap={8}>
+                    <XStack minW={0} items="center" gap={8}>
+                      <YStack shrink={1} minW={0}>
                         <GameTitleLink game={entry.game} lines={2} />
-                        <GameTypeBadge
-                          type={entry.game.gameType}
-                          $max-sm={{ display: 'none' }}
-                        />
-                      </XStack>
-                      <XStack items="center" gap={4}>
-                        <StatusButton
-                          entry={entry}
-                          onStatus={handlers.onStatus}
-                        />
-                        <EntryActions entry={entry} {...handlers} />
-                      </XStack>
+                      </YStack>
+                      <GameTypeBadge
+                        type={entry.game.gameType}
+                        $max-sm={{ display: 'none' }}
+                      />
                     </XStack>
-                    <Facts entry={entry} />
+                    <Facts entry={entry} inlineScore />
+                  </YStack>
+                  <YStack items="flex-end" gap={4} shrink={0}>
+                    <XStack items="center" gap={4}>
+                      <StatusButton
+                        entry={entry}
+                        onStatus={handlers.onStatus}
+                      />
+                      <EntryActions entry={entry} {...handlers} />
+                    </XStack>
+                    <OwnershipBadges
+                      ownerships={entry.ownerships}
+                      storesOnly
+                      max={2}
+                    />
                   </YStack>
                 </XStack>
-                <OwnershipBadges ownerships={entry.ownerships} compact />
                 <EntryTags tags={entry.tags} />
               </YStack>
             </XStack>
@@ -327,11 +301,6 @@ function RowsView({
   );
 }
 
-/**
- * La griglia: la copertina prima di tutto, sotto titolo, anno e durata, e lo
- * stato. Le colonne le decide lo spazio (`auto-fill`), non una media query:
- * la lista sta dentro la pagina, e la finestra non dice quanto è larga.
- */
 function GridView({
   entries,
   ...handlers
@@ -349,41 +318,57 @@ function GridView({
     >
       {entries.map((entry) => (
         <YStack render="li" key={entry.id} style={{ listStyle: 'none' }}>
-          {/* `grow` e non `flex`: `flex: 1` in colonna ha base 0, e da lì
-              Chrome calcolava l'altezza della riga della griglia — le schede
-              uscivano alte una manciata di pixel, con la copertina tagliata. */}
+          {/* `flex: 1` azzera la base e fa collassare l'altezza della riga in Chrome. */}
           <Card py={0} gap={0} grow={1}>
-            <Link
-              to="/games/$slug"
-              params={{ slug: entry.game.slug }}
-              style={{ color: 'inherit', textDecoration: 'none' }}
-            >
-              <GameCover
-                imageId={entry.game.coverImageId}
-                name={entry.game.name}
-                size="cover_big"
-                fill
-                rounded={0}
+            <YStack position="relative">
+              <Link
+                to="/games/$slug"
+                params={{ slug: entry.game.slug }}
+                style={{ color: 'inherit', textDecoration: 'none' }}
+              >
+                <GameCover
+                  imageId={entry.game.coverImageId}
+                  name={entry.game.name}
+                  size="cover_big"
+                  fill
+                  rounded={0}
+                />
+              </Link>
+              <GameTypeBadge
+                type={entry.game.gameType}
+                position="absolute"
+                b={8}
+                l={8}
+                maxW="calc(100% - 16px)"
+                overflow="hidden"
               />
-            </Link>
-            <YStack p={12} gap={10} grow={1}>
-              <YStack gap={4} grow={1}>
-                <YStack minH={40}>
-                  <GameTitleLink game={entry.game} lines={2} />
-                </YStack>
-                <GameTypeBadge type={entry.game.gameType} />
+            </YStack>
+            <YStack p={12} gap={8} grow={1}>
+              <YStack minH={40}>
+                <GameTitleLink game={entry.game} lines={2} />
               </YStack>
               <Facts entry={entry} />
               <XStack
-                items="center"
-                justify="space-between"
-                gap={4}
+                items="flex-start"
+                gap={2}
+                mt="auto"
                 borderTopWidth={1}
                 borderColor="$borderColor"
                 pt={8}
               >
-                <StatusButton entry={entry} onStatus={handlers.onStatus} />
-                <EntryActions entry={entry} {...handlers} />
+                <XStack shrink={0}>
+                  <StatusButton entry={entry} onStatus={handlers.onStatus} />
+                </XStack>
+                <YStack flex={1} minW={0} items="flex-start">
+                  <OwnershipBadges
+                    ownerships={entry.ownerships}
+                    storesOnly
+                    max={2}
+                  />
+                </YStack>
+                <XStack shrink={0}>
+                  <EntryActions entry={entry} {...handlers} />
+                </XStack>
               </XStack>
             </YStack>
           </Card>
@@ -393,14 +378,12 @@ function GridView({
   );
 }
 
-/** Gli stili responsive appartengono alla colonna, per header e celle insieme. */
 type CompactColumnMeta = {
   layout: ComponentProps<typeof XStack>;
   headerInset?: number;
 };
 type CompactColumnDef = ColumnDef<BacklogEntry> & { meta: CompactColumnMeta };
 
-/** Ciò che cambia a ogni render: le celle lo leggono da qui, non dalla chiusura. */
 type CompactTableMeta = EntryHandlers & { sorting?: EntrySorting };
 
 function tableMeta(table: Table<BacklogEntry>) {
@@ -489,11 +472,6 @@ function SortHeader({
   );
 }
 
-/**
- * Tabella condivisa da backlog e playlist a filtro. TanStack gestisce colonne
- * e header; URL e server restano la fonte di ordinamento e paginazione.
- * Le colonne secondarie si nascondono via CSS, anche durante l'SSR.
- */
 function CompactView({
   entries,
   sorting,
@@ -538,14 +516,19 @@ function CompactView({
                 width={32}
               />
             </Link>
-            <XStack flex={1} minW={0} items="center" gap={8}>
-              <YStack shrink={1} minW={0}>
-                <GameTitleLink game={entry.game} lines={1} />
-              </YStack>
-              <XStack display="none" $sm={{ display: 'flex' }}>
-                <GameTypeBadge type={entry.game.gameType} />
+            <YStack flex={1} minW={0} gap={4}>
+              <XStack minW={0} items="center" gap={8}>
+                <YStack shrink={1} minW={0}>
+                  <GameTitleLink game={entry.game} lines={1} />
+                </YStack>
+                <XStack display="none" $sm={{ display: 'flex' }}>
+                  <GameTypeBadge type={entry.game.gameType} />
+                </XStack>
               </XStack>
-            </XStack>
+              <YStack $md={{ display: 'none' }}>
+                <OwnershipBadges ownerships={entry.ownerships} storesOnly />
+              </YStack>
+            </YStack>
           </>
         ),
       },
@@ -573,6 +556,24 @@ function CompactView({
               ),
             ].join(', ')}
           </Text>
+        ),
+      },
+      {
+        id: 'stores',
+        enableSorting: false,
+        meta: {
+          layout: {
+            flex: 1,
+            minW: 0,
+            display: 'none',
+            $md: { display: 'flex' },
+          },
+        },
+        header: ({ column }) => (
+          <SortHeader label={t('columnStores')} column={column} />
+        ),
+        cell: ({ row: { original: entry } }) => (
+          <OwnershipBadges ownerships={entry.ownerships} storesOnly />
         ),
       },
       {
@@ -617,8 +618,6 @@ function CompactView({
             sorting={tableMeta(table).sorting}
           />
         ),
-        // Il valore visibile mantiene la precedenza personale → critica.
-        // Il menu sceglie esplicitamente quale scala ordinare sul server.
         cell: ({ row: { original: entry } }) => (
           <EntryScore rating={entry.rating} game={entry.game} />
         ),
@@ -653,7 +652,6 @@ function CompactView({
     [t, nameBySlug],
   );
 
-  // I due ordinamenti dei voti condividono un solo header visibile.
   const sortingState: SortingState = sorting
     ? [
         {

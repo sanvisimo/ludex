@@ -4,12 +4,16 @@ import {
   type FocusEvent,
   type KeyboardEvent,
   type ReactElement,
+  type ReactNode,
 } from 'react';
 import { isWeb, Paragraph, Tooltip as TooltipBase } from 'tamagui';
 
 export type TooltipProps = {
-  /** Il testo del suggerimento. */
-  content: string;
+  /**
+   * Il testo del suggerimento, o un contenuto composto: in quel caso il colore
+   * del testo lo sceglie chi lo passa (`$color1`, sul fondo `$color12`).
+   */
+  content: ReactNode;
   /** Il bottone a cui si attacca: uno solo, e deve poter prendere il focus. */
   children: ReactElement<{
     onFocus?: (event: FocusEvent<HTMLElement>) => void;
@@ -84,9 +88,13 @@ export function Tooltip({
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       >
-        <Paragraph fontSize={12} lineHeight={16} color="$color1">
-          {content}
-        </Paragraph>
+        {typeof content === 'string' ? (
+          <Paragraph fontSize={12} lineHeight={16} color="$color1">
+            {content}
+          </Paragraph>
+        ) : (
+          content
+        )}
       </TooltipBase.Content>
     </TooltipBase>
   );
