@@ -72,3 +72,32 @@ export const Themes: Story = {
     </XStack>
   ),
 };
+
+/** Le card del catalogo: etichetta più leggibile, staccata dall’artwork. */
+export const Floating: Story = {
+  render: () => (
+    <XStack gap="$4" flexWrap="wrap">
+      {(['dark', 'light'] as const).map((name) => (
+        <Theme key={name} name={name}>
+          <YStack p="$3" bg="$background" rounded="$4">
+            <Cover>
+              <CornerLabel floating maxW={88} icon={Play}>
+                In corso
+              </CornerLabel>
+            </Cover>
+          </YStack>
+        </Theme>
+      ))}
+    </XStack>
+  ),
+};
+
+export const FloatingLongLabel: Story = {
+  render: () => (
+    <Cover>
+      <CornerLabel floating maxW={88} icon={Bookmark}>
+        Non mi interessa
+      </CornerLabel>
+    </Cover>
+  ),
+};

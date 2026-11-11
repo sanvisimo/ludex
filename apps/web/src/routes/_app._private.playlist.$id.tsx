@@ -299,7 +299,22 @@ function PlaylistPage() {
           />
         ) : (
           <>
-            <ManagedEntries view={view} entries={entries} />
+            <ManagedEntries
+              view={view}
+              entries={entries}
+              sorting={{
+                sort,
+                direction,
+                onChange: (nextSort, nextDirection) =>
+                  refine({
+                    sort: nextSort === data?.query.sort ? undefined : nextSort,
+                    direction:
+                      nextDirection === data?.query.direction
+                        ? undefined
+                        : nextDirection,
+                  }),
+              }}
+            />
 
             <XStack
               flexWrap="wrap"

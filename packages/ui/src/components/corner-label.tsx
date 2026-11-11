@@ -3,10 +3,9 @@ import { Text, XStack, styled } from 'tamagui';
 import type { ColorTokens, GetProps } from 'tamagui';
 
 /**
- * Il fondo e il testo sono la coppia del Badge `default` e del Button
- * primario: `$accent9` con `$actionColor`, già misurata. Su una copertina, che
- * ha i suoi colori, serve un fondo pieno e che si distingua dai badge grigi
- * del resto della pagina.
+ * In angolo usa la coppia del primario; la variante `floating` usa un fondo
+ * opaco neutro, bordo e testo di selezione. I due trattamenti restano leggibili
+ * sui colori della copertina e seguono il tema dell’app.
  */
 const CornerLabelFrame = styled(XStack, {
   name: 'CornerLabel',
@@ -24,6 +23,24 @@ const CornerLabelFrame = styled(XStack, {
   bg: '$accent9',
   borderTopLeftRadius: 6,
   borderBottomRightRadius: 6,
+
+  variants: {
+    floating: {
+      true: {
+        t: 8,
+        l: 8,
+        height: 26,
+        px: 8,
+        gap: 5,
+        rounded: 7,
+        borderTopLeftRadius: 7,
+        borderBottomRightRadius: 7,
+        bg: '$background',
+        borderWidth: 1,
+        borderColor: '$selectionBorder',
+      },
+    },
+  } as const,
 });
 
 const CornerLabelText = styled(Text, {
@@ -34,6 +51,16 @@ const CornerLabelText = styled(Text, {
   lineHeight: 16,
   fontWeight: '600',
   whiteSpace: 'nowrap',
+
+  variants: {
+    floating: {
+      true: {
+        color: '$selectionColor',
+        fontSize: 12,
+        fontWeight: '500',
+      },
+    },
+  } as const,
 });
 
 export type CornerLabelProps = Omit<
@@ -51,17 +78,26 @@ export type CornerLabelProps = Omit<
  * Si posiziona da sé in alto a sinistra rispetto al contenitore più vicino,
  * che quindi deve essere `position: relative` e avere `overflow: hidden` o
  * lo stesso raggio, altrimenti l'angolo sporge. Il testo si accorcia con
- * l'ellissi se la copertina è stretta.
+ * l'ellissi se la copertina è stretta. `floating` la stacca di 8 px dal bordo
+ * e aumenta testo e icona; chi la usa limita `maxW` allo spazio disponibile.
  */
 export function CornerLabel({
   children,
   icon: Icon,
+  floating = false,
   ...props
 }: CornerLabelProps) {
   return (
-    <CornerLabelFrame {...props}>
-      {Icon && <Icon size={12} color="$actionColor" />}
-      <CornerLabelText numberOfLines={1}>{children}</CornerLabelText>
+    <CornerLabelFrame floating={floating} {...props}>
+      {Icon && (
+        <Icon
+          size={floating ? 14 : 12}
+          color={floating ? '$selectionColor' : '$actionColor'}
+        />
+      )}
+      <CornerLabelText floating={floating} numberOfLines={1}>
+        {children}
+      </CornerLabelText>
     </CornerLabelFrame>
   );
 }

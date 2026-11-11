@@ -37,3 +37,40 @@ Implementazione pronta per la revisione dell’utente: il lotto non è ancora ch
 
 Le modifiche al marchio e alle favicon già presenti all’apertura del branch
 restano separate da questo intervento.
+
+## Ritocchi a stato e fatti delle card (11/11/2026)
+
+Richiesta dopo la prova in uso, conservando la miglioria dell’utente che separa
+anno/durata dal voto e dispone stato e menu ai due estremi del footer.
+
+- Etichetta di stato nella home più leggibile e staccata dall’angolo della
+  copertina; la variante originale resta disponibile sui giochi correlati.
+- Anno discreto, clessidra per la durata HLTB, base distinta per il voto.
+- Tempo effettivamente giocato su una riga secondaria esplicita nel backlog;
+  nella tabella compatta conserva la sua colonna. Il voto personale mantiene
+  la precedenza su quello della critica, con icona e scala distinti.
+- [x] 26 controlli su card popolate, due temi, etichette lunghe, voto personale
+      e dati mancanti; nessun pageerror o overflow. Axe senza violazioni sulle card.
+- [x] Tipi e lint web/UI, cinque storie CornerLabel, 68 test web e build.
+
+Confronti su FIFA 17, Avengers e Monster Train 2 in
+[card-facts](../docs/brand/pilecue/design-review/card-facts/README.md).
+
+## Ordinamento dagli header della tabella
+
+- Titolo, durata, ore giocate e stato alternano crescente/decrescente.
+- «Voto» offre voto personale e critica, con direzione esplicita: le due scale
+  restano distinte. Piattaforme resta un campo multiplo non ordinabile.
+- URL, toolbar, paginazione e tabella condividono lo stesso ordinamento server;
+  il componente vale anche per le playlist a filtro, senza modificare i filtri salvati.
+- Verifiche limitate al flusso di ordinamento: tipi/lint, test SQL mirati e
+  prova browser degli header, tastiera e reset della pagina.
+- TanStack Table v8 adottato nella sola vista compatta del backlog, condivisa
+  con le playlist a filtro. `AdminTable` è fuori dal perimetro concordato.
+  Definizioni di colonna uniche per header, celle e layout responsive Tamagui;
+  stato di ordinamento controllato da URL e query salvata, senza ordinamento
+  o paginazione locali dei risultati già paginati dal server.
+- [x] Migrazione: typecheck e lint web, build client/server; prova Chromium
+  degli header, inversione, menu voti, tastiera, reset pagina e layout a 390 px.
+  Playlist QA con ordine salvato visibile, override e reload coerenti, query
+  salvata invariata; nessun errore JavaScript. Dati QA rimossi al termine.

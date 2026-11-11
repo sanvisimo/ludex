@@ -401,6 +401,8 @@ export const backlogSortValues = [
   'rating',
   'criticRating',
   'lastPlayed',
+  'playtime',
+  'status',
 ] as const;
 
 export const sortDirectionValues = ['asc', 'desc'] as const;

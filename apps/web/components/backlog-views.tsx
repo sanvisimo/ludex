@@ -1,4 +1,9 @@
-import type { BacklogEntry, BacklogStatus } from '@repo/contracts';
+import type {
+  BacklogEntry,
+  BacklogStatus,
+  BacklogSort,
+  SortDirection,
+} from '@repo/contracts';
 import { backlogStatusValues } from '@repo/contracts';
 import {
   Button,
@@ -21,10 +26,22 @@ import {
   ListOrdered,
   Pencil,
   Trash2,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  type Column,
+  type ColumnDef,
+  type SortingState,
+  type Table,
+} from '@tanstack/react-table';
+import { useMemo, useState, type ComponentProps } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { CuratedPlaylistsDialog } from '@/components/curated-playlist-control';
@@ -41,6 +58,8 @@ import { statusIcons } from '@/components/status-icon';
 import type { BacklogView } from '@/lib/backlog-filter';
 import { useStatusLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
+import { latestPlaytime } from '@/lib/playtime';
+import { sortLabels } from '@/components/list-controls';
 
 /**
  * Le tre viste del backlog: righe, griglia e compatta.
@@ -62,14 +81,25 @@ export type EntryHandlers = {
   hidingDisabled?: boolean;
 };
 
+export type EntrySorting = {
+  sort: BacklogSort;
+  direction: SortDirection;
+  onChange: (sort: BacklogSort, direction: SortDirection) => void;
+};
+
 export function BacklogEntries({
   view,
   entries,
+  sorting,
   ...handlers
-}: { view: BacklogView; entries: BacklogEntry[] } & EntryHandlers) {
+}: {
+  view: BacklogView;
+  entries: BacklogEntry[];
+  sorting?: EntrySorting;
+} & EntryHandlers) {
   if (view === 'grid') return <GridView entries={entries} {...handlers} />;
   if (view === 'compact')
-    return <CompactView entries={entries} {...handlers} />;
+    return <CompactView entries={entries} sorting={sorting} {...handlers} />;
   return <RowsView entries={entries} {...handlers} />;
 }
 
@@ -208,27 +238,26 @@ function EntryActions({
 }
 
 /**
- * Anno, durata, ore giocate e voto, in fila: le cose che si leggono a colpo
- * d'occhio. Il voto è il tuo, o quello della critica se non hai votato.
+ * Anno e durata stimata a sinistra, voto distinto a destra. Il tempo giocato
+ * ha una riga propria, per non confonderlo con HLTB o stringere tutti i fatti.
+ * Il voto è il tuo, o quello della critica se non hai votato.
  */
-function Facts({
-  entry,
-  compact = false,
-}: {
-  entry: BacklogEntry;
-  compact?: boolean;
-}) {
+function Facts({ entry }: { entry: BacklogEntry }) {
   return (
-    <XStack flexWrap="wrap" items="center" columnGap={12} rowGap={2}>
-      {entry.game.firstReleaseDate && (
-        <Text fontSize={14} lineHeight={20} color="$color11">
-          {entry.game.firstReleaseDate.getFullYear()}
-        </Text>
-      )}
-      <GameDuration game={entry.game} short={compact} />
-      <PlayedTime ownerships={entry.ownerships} />
-      <EntryScore rating={entry.rating} game={entry.game} />
-    </XStack>
+    <YStack gap={6} mt="auto">
+      <XStack items="center" justify="space-between" gap={8}>
+        <XStack flexWrap="wrap" items="center" gap={8} flex={1} minW={0}>
+          {entry.game.firstReleaseDate && (
+            <Text fontSize={12} lineHeight={20} color="$color11">
+              {entry.game.firstReleaseDate.getFullYear()}
+            </Text>
+          )}
+          <GameDuration game={entry.game} short variant="card" />
+        </XStack>
+        <EntryScore rating={entry.rating} game={entry.game} badge />
+      </XStack>
+      <PlayedTime ownerships={entry.ownerships} labelled />
+    </YStack>
   );
 }
 
@@ -344,10 +373,10 @@ function GridView({
                 </YStack>
                 <GameTypeBadge type={entry.game.gameType} />
               </YStack>
-              <Facts entry={entry} compact />
+              <Facts entry={entry} />
               <XStack
                 items="center"
-                justify="flex-end"
+                justify="space-between"
                 gap={4}
                 borderTopWidth={1}
                 borderColor="$borderColor"
@@ -364,32 +393,306 @@ function GridView({
   );
 }
 
+/** Gli stili responsive appartengono alla colonna, per header e celle insieme. */
+type CompactColumnMeta = {
+  layout: ComponentProps<typeof XStack>;
+  headerInset?: number;
+};
+type CompactColumnDef = ColumnDef<BacklogEntry> & { meta: CompactColumnMeta };
+
+/** Ciò che cambia a ogni render: le celle lo leggono da qui, non dalla chiusura. */
+type CompactTableMeta = EntryHandlers & { sorting?: EntrySorting };
+
+function tableMeta(table: Table<BacklogEntry>) {
+  return table.options.meta as CompactTableMeta;
+}
+
+function columnLayout(column: Column<BacklogEntry>, header = false) {
+  const meta = column.columnDef.meta as CompactColumnMeta;
+  return { ...meta.layout, ...(header && { pl: meta.headerInset }) };
+}
+
+function SortHeader({
+  label,
+  column,
+  sorting,
+}: {
+  label: string;
+  column: Column<BacklogEntry>;
+  sorting?: EntrySorting;
+}) {
+  const t = useTranslations('filters');
+  if (!column.getCanSort())
+    return (
+      <Text fontSize={12} fontWeight="500" color="$color11">
+        {label}
+      </Text>
+    );
+  const direction = column.getIsSorted();
+  const Icon =
+    direction === 'asc'
+      ? ArrowUp
+      : direction === 'desc'
+        ? ArrowDown
+        : ArrowUpDown;
+  const ratingMenu = column.id === 'rating' && sorting;
+  const button = (
+    <Button
+      variant="ghost"
+      size="sm"
+      px={0}
+      gap={4}
+      maxW="100%"
+      aria-label={t('sortColumn', { column: label })}
+      onPress={ratingMenu ? undefined : () => column.toggleSorting()}
+    >
+      <Text
+        fontSize={12}
+        fontWeight="500"
+        color={direction ? '$selectionColor' : '$color11'}
+        numberOfLines={1}
+      >
+        {label}
+      </Text>
+      <Icon size={12} color={direction ? '$selectionColor' : '$color11'} />
+    </Button>
+  );
+  if (!ratingMenu) return button;
+  const labels = sortLabels(t);
+  return (
+    <DropdownMenu align="end">
+      <DropdownMenuTrigger render={button} />
+      <DropdownMenuContent width={240}>
+        <DropdownMenuRadioGroup
+          value={direction ? `${sorting.sort}:${sorting.direction}` : ''}
+          onValueChange={(value) => {
+            const [sort, nextDirection] = value.split(':');
+            sorting.onChange(
+              sort as BacklogSort,
+              nextDirection as SortDirection,
+            );
+          }}
+        >
+          {(['rating', 'criticRating'] as const).flatMap((key) =>
+            (['asc', 'desc'] as const).map((nextDirection) => (
+              <DropdownMenuRadioItem
+                key={`${key}:${nextDirection}`}
+                value={`${key}:${nextDirection}`}
+              >
+                {`${labels[key]} · ${t(nextDirection === 'asc' ? 'ascending' : 'descending')}`}
+              </DropdownMenuRadioItem>
+            )),
+          )}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 /**
- * La compatta: una riga per gioco, a colonne, per scorrere tanta libreria in
- * poco spazio. È una tabella per chi usa un lettore di schermo (`role`), e
- * invece di scorrere di lato perde colonne: le piattaforme sotto `$lg`, il
- * voto e ore giocate sotto `$md`, la durata sotto `$sm`.
- * Per questo le piattaforme non hanno una larghezza fissa ma dividono col
- * titolo lo spazio che resta, uno a due, e si troncano.
- *
- * Le colonne sono fisse; il voto conserva la precedenza personale → critica.
+ * Tabella condivisa da backlog e playlist a filtro. TanStack gestisce colonne
+ * e header; URL e server restano la fonte di ordinamento e paginazione.
+ * Le colonne secondarie si nascondono via CSS, anche durante l'SSR.
  */
 function CompactView({
   entries,
-  ...handlers
-}: { entries: BacklogEntry[] } & EntryHandlers) {
+  sorting,
+  onStatus,
+  onEdit,
+  onToggleHidden,
+  onRemove,
+  hidingDisabled,
+}: { entries: BacklogEntry[]; sorting?: EntrySorting } & EntryHandlers) {
   const t = useTranslations('backlog');
   const { data: platforms } = useQuery({
     ...api.platforms.list.queryOptions(),
     staleTime: Infinity,
   });
-  const nameBySlug = new Map((platforms ?? []).map((p) => [p.slug, p.name]));
-
-  const header = (label: string) => (
-    <Text fontSize={12} fontWeight="500" color="$color11">
-      {label}
-    </Text>
+  const nameBySlug = useMemo(
+    () => new Map((platforms ?? []).map((p) => [p.slug, p.name])),
+    [platforms],
   );
+  const columns = useMemo<CompactColumnDef[]>(
+    () => [
+      {
+        id: 'name',
+        accessorFn: (entry) => entry.game.name,
+        sortDescFirst: false,
+        meta: {
+          layout: { flex: 2, minW: 0, gap: 12, items: 'center' },
+          headerInset: 44,
+        },
+        header: ({ column }) => (
+          <SortHeader label={t('columnTitle')} column={column} />
+        ),
+        cell: ({ row: { original: entry } }) => (
+          <>
+            <Link
+              to="/games/$slug"
+              params={{ slug: entry.game.slug }}
+              style={{ color: 'inherit', textDecoration: 'none' }}
+            >
+              <GameCover
+                imageId={entry.game.coverImageId}
+                name={entry.game.name}
+                width={32}
+              />
+            </Link>
+            <XStack flex={1} minW={0} items="center" gap={8}>
+              <YStack shrink={1} minW={0}>
+                <GameTitleLink game={entry.game} lines={1} />
+              </YStack>
+              <XStack display="none" $sm={{ display: 'flex' }}>
+                <GameTypeBadge type={entry.game.gameType} />
+              </XStack>
+            </XStack>
+          </>
+        ),
+      },
+      {
+        id: 'platforms',
+        enableSorting: false,
+        meta: {
+          layout: {
+            flex: 1,
+            minW: 0,
+            display: 'none',
+            $lg: { display: 'flex' },
+          },
+        },
+        header: ({ column }) => (
+          <SortHeader label={t('columnPlatforms')} column={column} />
+        ),
+        cell: ({ row: { original: entry } }) => (
+          <Text fontSize={13} color="$color11" numberOfLines={1}>
+            {[
+              ...new Set(
+                entry.ownerships.map(
+                  (o) => nameBySlug.get(o.platformSlug) ?? o.platformSlug,
+                ),
+              ),
+            ].join(', ')}
+          </Text>
+        ),
+      },
+      {
+        id: 'duration',
+        accessorFn: (entry) => entry.game.hltbMainMinutes,
+        sortDescFirst: false,
+        meta: {
+          layout: { width: 72, display: 'none', $sm: { display: 'flex' } },
+        },
+        header: ({ column }) => (
+          <SortHeader label={t('columnDuration')} column={column} />
+        ),
+        cell: ({ row: { original: entry } }) => (
+          <GameDuration game={entry.game} short />
+        ),
+      },
+      {
+        id: 'playtime',
+        accessorFn: (entry) => latestPlaytime(entry.ownerships),
+        sortDescFirst: true,
+        meta: {
+          layout: { width: 72, display: 'none', $md: { display: 'flex' } },
+        },
+        header: ({ column }) => (
+          <SortHeader label={t('columnPlayed')} column={column} />
+        ),
+        cell: ({ row: { original: entry } }) => (
+          <PlayedTime ownerships={entry.ownerships} />
+        ),
+      },
+      {
+        id: 'rating',
+        accessorFn: (entry) => entry.rating,
+        sortDescFirst: true,
+        meta: {
+          layout: { width: 56, display: 'none', $md: { display: 'flex' } },
+        },
+        header: ({ column, table }) => (
+          <SortHeader
+            label={t('columnRating')}
+            column={column}
+            sorting={tableMeta(table).sorting}
+          />
+        ),
+        // Il valore visibile mantiene la precedenza personale → critica.
+        // Il menu sceglie esplicitamente quale scala ordinare sul server.
+        cell: ({ row: { original: entry } }) => (
+          <EntryScore rating={entry.rating} game={entry.game} />
+        ),
+      },
+      {
+        accessorKey: 'status',
+        sortDescFirst: false,
+        meta: { layout: { width: 72, items: 'center', gap: 4 } },
+        header: ({ column }) => (
+          <SortHeader label={t('columnStatus')} column={column} />
+        ),
+        cell: ({ row: { original: entry }, table }) => {
+          const meta = tableMeta(table);
+          return (
+            <>
+              <StatusButton entry={entry} onStatus={meta.onStatus} />
+              <EntryActions
+                entry={entry}
+                onEdit={meta.onEdit}
+                onToggleHidden={meta.onToggleHidden}
+                onRemove={meta.onRemove}
+                hidingDisabled={meta.hidingDisabled}
+              />
+            </>
+          );
+        },
+      },
+    ],
+    // Solo dipendenze stabili: `flexRender` monta header e celle come
+    // componenti, e colonne nuove a ogni render rimonterebbero ogni cella,
+    // perdendo il focus. Handler e ordinamento passano da `meta`.
+    [t, nameBySlug],
+  );
+
+  // I due ordinamenti dei voti condividono un solo header visibile.
+  const sortingState: SortingState = sorting
+    ? [
+        {
+          id: sorting.sort === 'criticRating' ? 'rating' : sorting.sort,
+          desc: sorting.direction === 'desc',
+        },
+      ]
+    : [];
+  const table = useReactTable({
+    data: entries,
+    columns,
+    getRowId: (entry) => entry.id,
+    getCoreRowModel: getCoreRowModel(),
+    manualSorting: true,
+    manualPagination: true,
+    enableSorting: !!sorting,
+    enableMultiSort: false,
+    enableSortingRemoval: false,
+    state: { sorting: sortingState },
+    meta: {
+      sorting,
+      onStatus,
+      onEdit,
+      onToggleHidden,
+      onRemove,
+      hidingDisabled,
+    } satisfies CompactTableMeta,
+    onSortingChange: (updater) => {
+      if (!sorting) return;
+      const [next] =
+        typeof updater === 'function' ? updater(sortingState) : updater;
+      if (!next) return;
+      const sort =
+        next.id === 'rating' && sorting.sort === 'criticRating'
+          ? 'criticRating'
+          : (next.id as BacklogSort);
+      sorting.onChange(sort, next.desc ? 'desc' : 'asc');
+    },
+  });
 
   return (
     <YStack
@@ -400,142 +703,63 @@ function CompactView({
       borderColor="$borderColor"
       overflow="hidden"
     >
-      <XStack
-        role="row"
-        px={12}
-        py={8}
-        gap={12}
-        items="center"
-        bg="$surface"
-        borderBottomWidth={1}
-        borderColor="$borderColor"
-      >
-        <XStack role="columnheader" flex={2} minW={0} pl={44}>
-          {header(t('columnTitle'))}
-        </XStack>
+      {table.getHeaderGroups().map((group) => (
         <XStack
-          role="columnheader"
-          flex={1}
-          minW={0}
-          display="none"
-          $lg={{ display: 'flex' }}
+          key={group.id}
+          role="row"
+          px={12}
+          py={8}
+          gap={12}
+          items="center"
+          bg="$surface"
+          borderBottomWidth={1}
+          borderColor="$borderColor"
         >
-          {header(t('columnPlatforms'))}
-        </XStack>
-        <XStack
-          role="columnheader"
-          width={72}
-          display="none"
-          $sm={{ display: 'flex' }}
-        >
-          {header(t('columnDuration'))}
-        </XStack>
-        <XStack
-          role="columnheader"
-          width={72}
-          display="none"
-          $md={{ display: 'flex' }}
-        >
-          {header(t('columnPlayed'))}
-        </XStack>
-        <XStack
-          role="columnheader"
-          width={56}
-          display="none"
-          $md={{ display: 'flex' }}
-        >
-          {header(t('columnRating'))}
-        </XStack>
-        <XStack role="columnheader" width={72}>
-          {header(t('columnStatus'))}
-        </XStack>
-      </XStack>
-
-      {entries.map((entry, index) => {
-        const platformNames = [
-          ...new Set(
-            entry.ownerships.map(
-              (o) => nameBySlug.get(o.platformSlug) ?? o.platformSlug,
-            ),
-          ),
-        ].join(', ');
-        return (
-          <XStack
-            role="row"
-            key={entry.id}
-            px={12}
-            py={6}
-            gap={12}
-            items="center"
-            borderTopWidth={index === 0 ? 0 : 1}
-            borderColor="$borderColor"
-            hoverStyle={{ bg: '$color2' }}
-          >
-            <XStack role="cell" flex={2} minW={0} gap={12} items="center">
-              <Link
-                to="/games/$slug"
-                params={{ slug: entry.game.slug }}
-                style={{ color: 'inherit', textDecoration: 'none' }}
+          {group.headers.map((header) => {
+            const direction = header.column.getIsSorted();
+            return (
+              <XStack
+                key={header.id}
+                role="columnheader"
+                {...columnLayout(header.column, true)}
+                aria-sort={
+                  header.column.getCanSort()
+                    ? direction === 'asc'
+                      ? 'ascending'
+                      : direction === 'desc'
+                        ? 'descending'
+                        : 'none'
+                    : undefined
+                }
               >
-                <GameCover
-                  imageId={entry.game.coverImageId}
-                  name={entry.game.name}
-                  width={32}
-                />
-              </Link>
-              <XStack flex={1} minW={0} items="center" gap={8}>
-                <YStack shrink={1} minW={0}>
-                  <GameTitleLink game={entry.game} lines={1} />
-                </YStack>
-                {/* Sotto `$sm` il badge non si restringe e il titolo sì:
-                    di «Ratchet & Clank» restava solo «Remake». */}
-                <XStack display="none" $sm={{ display: 'flex' }}>
-                  <GameTypeBadge type={entry.game.gameType} />
-                </XStack>
+                {flexRender(
+                  header.column.columnDef.header,
+                  header.getContext(),
+                )}
               </XStack>
+            );
+          })}
+        </XStack>
+      ))}
+      {table.getRowModel().rows.map((row, index) => (
+        <XStack
+          role="row"
+          key={row.id}
+          px={12}
+          py={6}
+          gap={12}
+          items="center"
+          borderTopWidth={index === 0 ? 0 : 1}
+          borderColor="$borderColor"
+          hoverStyle={{ bg: '$color2' }}
+        >
+          {row.getVisibleCells().map((cell) => (
+            <XStack role="cell" key={cell.id} {...columnLayout(cell.column)}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
             </XStack>
-            <XStack
-              role="cell"
-              flex={1}
-              minW={0}
-              display="none"
-              $lg={{ display: 'flex' }}
-            >
-              <Text fontSize={13} color="$color11" numberOfLines={1}>
-                {platformNames}
-              </Text>
-            </XStack>
-            <XStack
-              role="cell"
-              width={72}
-              display="none"
-              $sm={{ display: 'flex' }}
-            >
-              <GameDuration game={entry.game} short />
-            </XStack>
-            <XStack
-              role="cell"
-              width={72}
-              display="none"
-              $md={{ display: 'flex' }}
-            >
-              <PlayedTime ownerships={entry.ownerships} />
-            </XStack>
-            <XStack
-              role="cell"
-              width={56}
-              display="none"
-              $md={{ display: 'flex' }}
-            >
-              <EntryScore rating={entry.rating} game={entry.game} />
-            </XStack>
-            <XStack role="cell" width={72} items="center" gap={4}>
-              <StatusButton entry={entry} onStatus={handlers.onStatus} />
-              <EntryActions entry={entry} {...handlers} />
-            </XStack>
-          </XStack>
-        );
-      })}
+          ))}
+        </XStack>
+      ))}
     </YStack>
   );
 }

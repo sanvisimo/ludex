@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslations } from 'use-intl';
 
-import { BacklogEntries } from '@/components/backlog-views';
+import { BacklogEntries, type EntrySorting } from '@/components/backlog-views';
 import { EditEntryDialog } from '@/components/edit-entry-dialog';
 import { RemoveEntryDialog } from '@/components/remove-entry-dialog';
 import { useApiErrorMessage } from '@/lib/api-error';
@@ -24,9 +24,11 @@ import { api, client } from '@/lib/orpc';
 export function ManagedEntries({
   view,
   entries,
+  sorting,
 }: {
   view: BacklogView;
   entries: BacklogEntry[];
+  sorting?: EntrySorting;
 }) {
   const t = useTranslations('backlog');
   const errorMessage = useApiErrorMessage();
@@ -57,6 +59,7 @@ export function ManagedEntries({
       <BacklogEntries
         view={view}
         entries={entries}
+        sorting={sorting}
         onStatus={(entry, status) => setStatus.mutate({ id: entry.id, status })}
         onEdit={setEditing}
         onToggleHidden={(entry) =>

@@ -368,6 +368,16 @@ function sortExpression(sort: BacklogQuery['sort']): SQL {
       return sql`${schema.games.criticScore}`;
     case 'lastPlayed':
       return sql`(select max(${schema.ownerships.lastPlayedAt}) from ${schema.ownerships} where ${schema.ownerships.backlogId} = ${schema.backlog.id})`;
+    case 'playtime':
+      // Stessa copia di latestPlaytime sul web: la più recente con ore,
+      // poi quella con più ore a parità di data. Zero equivale a dato assente.
+      return sql`(select ${schema.ownerships.playtimeMinutes} from ${schema.ownerships}
+        where ${schema.ownerships.backlogId} = ${schema.backlog.id}
+          and ${schema.ownerships.playtimeMinutes} > 0
+        order by ${schema.ownerships.lastPlayedAt} desc nulls last,
+          ${schema.ownerships.playtimeMinutes} desc limit 1)`;
+    case 'status':
+      return sql`${schema.backlog.status}`;
     case 'addedAt':
       return sql`${schema.backlog.addedAt}`;
   }

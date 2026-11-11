@@ -32,6 +32,16 @@ alla pagina di prima. Una pagina oltre la fine torna alla prima e non
 all'ultima: con `count(*) over()` e nessuna riga restituita il server risponde
 `total: 0`, e l'ultima non la sa.
 
+**La vista compatta del backlog usa TanStack Table v8**, in
+`components/backlog-views.tsx`, condivisa con le playlist a filtro.
+Colonne, celle e header derivano dalle stesse definizioni, con layout Tamagui
+e visibilità responsive via CSS. Ordinamento controllato dall'URL,
+`manualSorting` e `manualPagination`: il server ordina l'intero risultato prima
+di paginarlo, mai solo le righe caricate. Le playlist mostrano l'ordine salvato
+salvo override nell'URL; cliccare un header non riscrive la playlist.
+«Voto» distingue voto personale e critica nel menu, senza mescolare le scale.
+`AdminTable` resta indipendente e non fa parte di questa integrazione.
+
 **Test del web**: `pnpm --filter web test`. Vitest in Node, solo la logica pura di
 `lib/` (conversioni dei filtri, numeri per pagina, ore giocate): niente DOM e
 nessun componente, che si provano a occhio. Non carica `vite.config.ts`, quindi
@@ -183,7 +193,8 @@ partenza, e ripartirebbe con un seme nuovo. Con nessun candidato il server rende
 
 **Le ore giocate nel backlog** sono un tempo solo con l'orologio, quello della
 copia giocata più di recente (`latestPlaytime` in `lib/playtime.ts`, mostrato da
-`PlayedTime`): nella riga dei fatti di griglia e righe, e in una colonna della
+`PlayedTime`): in una riga secondaria etichettata nei fatti di griglia e righe,
+separata dalla durata HLTB, e in una colonna della
 compatta da `$md`. Le altre copie, con le date, sono nella scheda del gioco.
 
 **Le liste a mano** (`/wishlist` e `/wishlist/$id`, step 15b) sono come le
@@ -330,7 +341,9 @@ da `$md` (`arrowsFromMd`). Il voto sulle card, qui come nel backlog, è
 
 Le `HomeCard` condivise con ricerca e liste hanno copertina a filo, superficie
 `surface`, titolo con due righe riservate e metadati sotto; il voto è nella
-riga dei metadati, lo stato resta sulla copertina e cuore/ranking conservano i
+riga dei metadati su una base distinta, con l’anno più discreto e una clessidra
+per HLTB. Lo stato resta sulla copertina (`CornerLabel floating`, opaco e
+staccato di 8 px dal bordo) e cuore/ranking conservano i
 loro comandi. Le fasce usano 200 px, 160 sotto `$sm`; con `fill` la card segue
 la cella. Nel backlog la griglia usa un minimo di 176 px, che si riduce alla
 metà del contenitore sui telefoni: la sonda e la griglia hanno sempre lo stesso

@@ -257,7 +257,17 @@ function BacklogPage() {
           )
         ) : (
           <>
-            <ManagedEntries view={filter.view} entries={entries} />
+            <ManagedEntries
+              view={filter.view}
+              entries={entries}
+              sorting={{
+                sort: filter.sort,
+                direction: filter.direction,
+                onChange: (sort, direction) => {
+                  void setFilter({ sort, direction });
+                },
+              }}
+            />
 
             {/* Quanti per pagina a sinistra, le pagine e «vai a» a destra; su
                 un telefono vanno a capo. La scelta c'è anche con una pagina

@@ -89,8 +89,9 @@ export function HomeCard({
           />
           {game.status && (
             <CornerLabel
+              floating
               icon={statusIcons[game.status]}
-              maxW={'calc(100% - 8px)' as never}
+              maxW={'calc(100% - 16px)' as never}
             >
               {statusLabels[game.status]}
             </CornerLabel>
@@ -103,18 +104,19 @@ export function HomeCard({
         <YStack minH={40}>
           <GameTitleLink game={game} lines={2} />
         </YStack>
-        <XStack items="flex-start" justify="space-between" gap={8} mt="auto">
+        <XStack items="center" justify="space-between" gap={8} mt="auto">
           <XStack flexWrap="wrap" items="center" gap={8} flex={1} minW={0}>
             {game.firstReleaseDate && (
-              <Text fontSize={14} lineHeight={20} color="$color11">
+              <Text fontSize={12} lineHeight={20} color="$color11">
                 {game.firstReleaseDate.getFullYear()}
               </Text>
             )}
-            <GameDuration game={game} short />
+            <GameDuration game={game} short variant="card" />
           </XStack>
           <CriticValue
             score={game.criticScore}
             source={game.criticScoreSource}
+            badge
           />
         </XStack>
       </YStack>
