@@ -10,8 +10,7 @@ import type { ColorTokens, GetProps } from 'tamagui';
 const CornerLabelFrame = styled(XStack, {
   name: 'CornerLabel',
 
-  // Attaccata all'angolo, non appoggiata: il raggio esterno è quello della
-  // copertina che la contiene (6), e solo l'angolo interno è arrotondato.
+  // Attaccata all'angolo: il raggio esterno è quello della copertina (6).
   position: 'absolute',
   t: 0,
   l: 0,
@@ -40,6 +39,18 @@ const CornerLabelFrame = styled(XStack, {
         borderColor: '$selectionBorder',
       },
     },
+    compact: {
+      true: {
+        t: 4,
+        l: 4,
+        height: 22,
+        px: 5,
+        gap: 3,
+        rounded: 6,
+        borderTopLeftRadius: 6,
+        borderBottomRightRadius: 6,
+      },
+    },
   } as const,
 });
 
@@ -51,6 +62,8 @@ const CornerLabelText = styled(Text, {
   lineHeight: 16,
   fontWeight: '600',
   whiteSpace: 'nowrap',
+  minW: 0,
+  shrink: 1,
 
   variants: {
     floating: {
@@ -58,6 +71,11 @@ const CornerLabelText = styled(Text, {
         color: '$selectionColor',
         fontSize: 12,
         fontWeight: '500',
+      },
+    },
+    compact: {
+      true: {
+        fontSize: 11,
       },
     },
   } as const,
@@ -73,29 +91,27 @@ export type CornerLabelProps = Omit<
 };
 
 /**
- * L'etichetta in un angolo di una copertina: «Da giocare», «In corso».
- *
- * Si posiziona da sé in alto a sinistra rispetto al contenitore più vicino,
- * che quindi deve essere `position: relative` e avere `overflow: hidden` o
- * lo stesso raggio, altrimenti l'angolo sporge. Il testo si accorcia con
- * l'ellissi se la copertina è stretta. `floating` la stacca di 8 px dal bordo
- * e aumenta testo e icona; chi la usa limita `maxW` allo spazio disponibile.
+ * Il contenitore deve essere relativo, con `overflow: hidden` o lo stesso
+ * raggio, o l'angolo sporge; maxW riserva lo spazio dai suoi bordi.
  */
 export function CornerLabel({
   children,
   icon: Icon,
   floating = false,
+  compact = false,
   ...props
 }: CornerLabelProps) {
   return (
-    <CornerLabelFrame floating={floating} {...props}>
+    <CornerLabelFrame floating={floating} compact={compact} {...props}>
       {Icon && (
-        <Icon
-          size={floating ? 14 : 12}
-          color={floating ? '$selectionColor' : '$actionColor'}
-        />
+        <XStack shrink={0} aria-hidden>
+          <Icon
+            size={floating && !compact ? 14 : 12}
+            color={floating ? '$selectionColor' : '$actionColor'}
+          />
+        </XStack>
       )}
-      <CornerLabelText floating={floating} numberOfLines={1}>
+      <CornerLabelText floating={floating} compact={compact} numberOfLines={1}>
         {children}
       </CornerLabelText>
     </CornerLabelFrame>

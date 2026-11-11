@@ -116,8 +116,6 @@ function LinkRow({
   );
 }
 
-// --- la hero ---
-
 /**
  * L'immagine grande in testa: l'artwork IGDB; se manca il primo screenshot;
  * se manca anche quello la copertina, sfocata. Sopra, in basso, copertina,
@@ -266,8 +264,6 @@ export function GameHero({ game }: { game: GameDetail }) {
   );
 }
 
-// --- la gallery ---
-
 export function GameGallery({ game }: { game: GameDetail }) {
   const t = useTranslations('game');
 
@@ -306,8 +302,6 @@ export function GameGallery({ game }: { game: GameDetail }) {
     />
   );
 }
-
-// --- la colonna laterale: durata e critica ---
 
 function Panel({
   children,
@@ -540,8 +534,6 @@ export function DurationAndCritics({
     </Panel>
   );
 }
-
-// --- il prezzo ---
 
 /**
  * Il prezzo più basso di adesso su IsThereAnyDeal, col negozio, e un segnale se
@@ -828,8 +820,6 @@ export function BacklogPanel({
   );
 }
 
-// --- la colonna laterale: dove si compra ---
-
 /**
  * Dove andare per saperne di più o per comprarlo, ognuno con la sua icona e il
  * nome, tutta la riga è il link. Sta sotto il tuo backlog, come durata e
@@ -959,21 +949,7 @@ export function StoreLinks({ game }: { game: GameDetail }) {
   );
 }
 
-// --- remake e simili ---
-
-/**
- * Una fila di giochi legati che scorre di lato. Quelli che non hai sono
- * attenuati e col bordo tratteggiato, come nel wireframe. Si aprono con la
- * regola della ricerca (12f): un gioco già in catalogo è un link alla sua
- * pagina; uno che non c'è ancora, da loggati, al clic diventa una riga di
- * `games` e si apre; da ospiti resta copertina e nome.
- * Fila e frecce sono `ScrollRow`, la stessa delle fasce della home.
- *
- * `showKind` scrive sulla copertina che versione è: «Edizione estesa» dall'
- * originale, «Originale» dall'edizione estesa. Il badge sta fuori
- * dall'attenuazione, perché un gioco che non hai è proprio quello di cui
- * bisogna poterlo leggere.
- */
+/** I giochi fuori catalogo si creano solo al clic, prima di aprirne la scheda. */
 export function RelatedRow({
   title,
   games,
@@ -1033,7 +1009,13 @@ export function RelatedRow({
                   width={104}
                 />
                 {game.status && (
-                  <CornerLabel icon={statusIcons[game.status]}>
+                  <CornerLabel
+                    floating
+                    compact
+                    maxW={96}
+                    icon={statusIcons[game.status]}
+                    {...({ title: statusLabels[game.status] } as object)}
+                  >
                     {statusLabels[game.status]}
                   </CornerLabel>
                 )}
