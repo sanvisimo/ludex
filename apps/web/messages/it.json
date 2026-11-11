@@ -6,6 +6,9 @@
   "nav": {
     "home": "Home",
     "backlog": "Il mio backlog",
+    "backlogLink": "Backlog",
+    "settings": "Settings",
+    "libraries": "Librerie collegate",
     "signOut": "Esci",
     "signIn": "Accedi",
     "menu": "Menu",
@@ -34,9 +37,9 @@
     "en": "English"
   },
   "catalog": {
-    "title": "Catalogo",
+    "title": "Scopri cosa giocare.",
     "goToBacklog": "Backlog",
-    "subtitle": "Il catalogo che PileCue conosce finora.",
+    "subtitle": "Esplora il catalogo e trova la tua prossima avventura.",
     "error": "Non riesco a caricare il catalogo.",
     "empty": "Ancora nessun gioco. Il catalogo si riempie man mano che vengono aggiunti."
   },
@@ -107,6 +110,7 @@
     "playedLabel": "Giocate: {duration}",
     "columnPlayed": "Giocate",
     "random": "Gioco a caso",
+    "chooseForMe": "Scegli per me",
     "randomEmpty": "Non ci sono giochi da pescare in questo filtro.",
     "randomOnlyOne": "È l'unico gioco del filtro: non ce n'è un altro da pescare.",
     "randomFailed": "Non sono riuscito a pescare un gioco"
@@ -418,6 +422,8 @@
     }
   },
   "filters": {
+    "showResults": "{count, plural, one {Mostra # gioco} other {Mostra # giochi}}",
+    "updatingResults": "Aggiorno i risultati…",
     "searchPlaceholder": "Cerca un titolo",
     "sortLabel": "Ordina per",
     "sortAddedAt": "Data di aggiunta",
@@ -1347,6 +1353,10 @@
       "pilecueBrand": {
         "title": "Il marchio PileCue",
         "text": "Il nuovo logo, le icone e la palette Midnight Cue arrivano sul web e nell’app mobile."
+      },
+      "webDesign": {
+        "title": "Home e backlog più leggibili",
+        "text": "Card più ampie, comandi di stato a portata di mano, filtri più chiari e preferenze raccolte nel menu Settings."
       },
       "gogCollections": {
         "title": "I giochi di GOG venduti in raccolta",

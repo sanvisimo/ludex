@@ -6,6 +6,9 @@
   "nav": {
     "home": "Home",
     "backlog": "My backlog",
+    "backlogLink": "Backlog",
+    "settings": "Settings",
+    "libraries": "Connected libraries",
     "signOut": "Sign out",
     "signIn": "Sign in",
     "menu": "Menu",
@@ -34,9 +37,9 @@
     "en": "English"
   },
   "catalog": {
-    "title": "Catalogue",
+    "title": "Find your next game.",
     "goToBacklog": "Backlog",
-    "subtitle": "The catalogue PileCue knows so far.",
+    "subtitle": "Explore the catalogue and discover your next adventure.",
     "error": "I can't load the catalogue.",
     "empty": "No games yet. The catalogue fills up as games get added."
   },
@@ -107,6 +110,7 @@
     "playedLabel": "Played: {duration}",
     "columnPlayed": "Played",
     "random": "Random game",
+    "chooseForMe": "Pick for me",
     "randomEmpty": "There are no games to pick from in this filter.",
     "randomOnlyOne": "It's the only game in this filter: there's no other one to pick.",
     "randomFailed": "I couldn't pick a game"
@@ -418,6 +422,8 @@
     }
   },
   "filters": {
+    "showResults": "{count, plural, one {Show # game} other {Show # games}}",
+    "updatingResults": "Updating results…",
     "searchPlaceholder": "Search a title",
     "sortLabel": "Sort by",
     "sortAddedAt": "Date added",
@@ -1348,6 +1354,10 @@
       "pilecueBrand": {
         "title": "The PileCue identity",
         "text": "The new logo, icons and Midnight Cue palette are coming to the web and mobile app."
+      },
+      "webDesign": {
+        "title": "A clearer home and backlog",
+        "text": "Larger cards, accessible status controls, clearer filters and preferences grouped in the Settings menu."
       },
       "gogCollections": {
         "title": "GOG games sold as a collection",

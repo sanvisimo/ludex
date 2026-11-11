@@ -211,7 +211,13 @@ function EntryActions({
  * Anno, durata, ore giocate e voto, in fila: le cose che si leggono a colpo
  * d'occhio. Il voto è il tuo, o quello della critica se non hai votato.
  */
-function Facts({ entry }: { entry: BacklogEntry }) {
+function Facts({
+  entry,
+  compact = false,
+}: {
+  entry: BacklogEntry;
+  compact?: boolean;
+}) {
   return (
     <XStack flexWrap="wrap" items="center" columnGap={12} rowGap={2}>
       {entry.game.firstReleaseDate && (
@@ -219,7 +225,7 @@ function Facts({ entry }: { entry: BacklogEntry }) {
           {entry.game.firstReleaseDate.getFullYear()}
         </Text>
       )}
-      <GameDuration game={entry.game} />
+      <GameDuration game={entry.game} short={compact} />
       <PlayedTime ownerships={entry.ownerships} />
       <EntryScore rating={entry.rating} game={entry.game} />
     </XStack>
@@ -261,10 +267,10 @@ function RowsView({
                   justify="space-between"
                   gap={8}
                 >
-                  <YStack gap={4} flex={1} minW={200}>
+                  <YStack gap={4} flex={1} minW={0}>
                     <XStack justify="space-between" gap={8}>
                       <XStack flex={1} minW={0} items="center" gap={8}>
-                        <GameTitleLink game={entry.game} lines={1} />
+                        <GameTitleLink game={entry.game} lines={2} />
                         <GameTypeBadge
                           type={entry.game.gameType}
                           $max-sm={{ display: 'none' }}
@@ -317,37 +323,38 @@ function GridView({
           {/* `grow` e non `flex`: `flex: 1` in colonna ha base 0, e da lì
               Chrome calcolava l'altezza della riga della griglia — le schede
               uscivano alte una manciata di pixel, con la copertina tagliata. */}
-          <Card py={0} grow={1}>
-            <YStack p={8} gap={8} grow={1}>
-              <Link
-                to="/games/$slug"
-                params={{ slug: entry.game.slug }}
-                style={{ color: 'inherit', textDecoration: 'none' }}
-              >
-                <GameCover
-                  imageId={entry.game.coverImageId}
-                  name={entry.game.name}
-                  size="cover_big"
-                  fill
-                />
-              </Link>
-              <YStack gap={2} grow={1}>
-                <XStack items="flex-start" gap={4}>
-                  <YStack flex={1} minW={0}>
-                    <GameTitleLink game={entry.game} lines={2} />
-                  </YStack>
-                  <EntryActions entry={entry} {...handlers} />
-                </XStack>
+          <Card py={0} gap={0} grow={1}>
+            <Link
+              to="/games/$slug"
+              params={{ slug: entry.game.slug }}
+              style={{ color: 'inherit', textDecoration: 'none' }}
+            >
+              <GameCover
+                imageId={entry.game.coverImageId}
+                name={entry.game.name}
+                size="cover_big"
+                fill
+                rounded={0}
+              />
+            </Link>
+            <YStack p={12} gap={10} grow={1}>
+              <YStack gap={4} grow={1}>
+                <YStack minH={40}>
+                  <GameTitleLink game={entry.game} lines={2} />
+                </YStack>
                 <GameTypeBadge type={entry.game.gameType} />
               </YStack>
-              {/* Lo stato in fondo, accanto ad anno e durata, e non vicino al
-                  titolo: su una scheda da 152 px due bottoni lassù gli
-                  lasciavano 60 px. */}
-              <XStack items="center" justify="space-between" gap={4}>
-                <YStack flex={1} minW={0}>
-                  <Facts entry={entry} />
-                </YStack>
+              <Facts entry={entry} compact />
+              <XStack
+                items="center"
+                justify="flex-end"
+                gap={4}
+                borderTopWidth={1}
+                borderColor="$borderColor"
+                pt={8}
+              >
                 <StatusButton entry={entry} onStatus={handlers.onStatus} />
+                <EntryActions entry={entry} {...handlers} />
               </XStack>
             </YStack>
           </Card>
@@ -361,13 +368,11 @@ function GridView({
  * La compatta: una riga per gioco, a colonne, per scorrere tanta libreria in
  * poco spazio. È una tabella per chi usa un lettore di schermo (`role`), e
  * invece di scorrere di lato perde colonne: le piattaforme sotto `$lg`, il
- * voto e ore giocate sotto `$md`, la durata sotto `$sm`. Le soglie sono quelle della
- * finestra, e la finestra non è la lista: da `$md` il guscio se ne prende 240.
+ * voto e ore giocate sotto `$md`, la durata sotto `$sm`.
  * Per questo le piattaforme non hanno una larghezza fissa ma dividono col
  * titolo lo spazio che resta, uno a due, e si troncano.
  *
- * Colonne fisse: sceglierle è un di più che nessuno ha chiesto. Il voto della
- * critica non c'è perché `BacklogEntry` non lo porta.
+ * Le colonne sono fisse; il voto conserva la precedenza personale → critica.
  */
 function CompactView({
   entries,

@@ -40,6 +40,7 @@ export type RoadmapEntry = {
  * facendo adesso, e una voce passa a «fatto» quando l'utente dice che è pronta.
  */
 export const roadmap: RoadmapEntry[] = [
+  { id: 'webDesign', status: 'doing', areas: ['library', 'account'] },
   { id: 'pilecueBrand', status: 'doing', areas: ['library', 'mobile'] },
   { id: 'ai', status: 'next', areas: ['ai'] },
   { id: 'mobile', status: 'next', areas: ['mobile'] },

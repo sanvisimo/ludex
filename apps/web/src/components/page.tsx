@@ -19,6 +19,7 @@ export function Page({
   actions,
   maxW = 896,
   hero,
+  largeTitle = false,
   children,
 }: {
   /** Una riga sopra il titolo: il link per tornare alla pagina di prima. */
@@ -30,6 +31,8 @@ export function Page({
   /** In pixel, o `100%` per una pagina fluida come l'admin. */
   maxW?: number | '100%';
   hero?: ReactNode;
+  /** Titolo più ampio per le pagine di scoperta e raccolta. */
+  largeTitle?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -49,8 +52,8 @@ export function Page({
               <Text
                 render="h1"
                 fontFamily="$heading"
-                fontSize={24}
-                lineHeight={32}
+                fontSize={largeTitle ? 32 : 24}
+                lineHeight={largeTitle ? 40 : 32}
                 fontWeight="700"
                 color="$color12"
               >

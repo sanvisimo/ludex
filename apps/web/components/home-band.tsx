@@ -17,12 +17,13 @@ import { useStatusLabels } from '@/lib/labels';
  * `plans/12e-home.excalidraw`: fasce di card che scorrono di lato.
  */
 
-/** Larga uguale ovunque: sul telefono ne stanno due e mezza, e la mezza dice che la fila continua. */
-export const CARD_WIDTH = 136;
+/** Le fasce privilegiano la copertina; sotto `$sm` ne restano visibili due. */
+export const CARD_WIDTH = 200;
+export const SMALL_CARD_WIDTH = 160;
 
 /**
  * Una card: la copertina con lo stato in alto a sinistra — solo se il gioco
- * è tuo — e il voto in alto a destra; sotto il titolo, e anno e durata.
+ * è tuo; sotto il titolo su due righe, anno, durata e voto della critica.
  * Copertina e titolo sono il link alla pagina del gioco.
  *
  * Larga `CARD_WIDTH` nelle fasce; con `fill` riempie la cella di una griglia,
@@ -58,10 +59,17 @@ export function HomeCard({
   } as const;
 
   return (
-    <YStack width={fill ? '100%' : CARD_WIDTH} gap={6}>
+    <YStack
+      width={fill ? '100%' : CARD_WIDTH}
+      $max-sm={{ width: fill ? '100%' : SMALL_CARD_WIDTH }}
+      bg="$surface"
+      rounded={12}
+      overflow="hidden"
+      grow={1}
+    >
       {/* La copertina e il titolo sono due link alla stessa scheda: il cuore è un
           bottone, e un bottone non sta dentro un link. */}
-      <YStack position="relative" overflow="hidden" rounded={6}>
+      <YStack position="relative" overflow="hidden">
         <Link
           to="/games/$slug"
           params={{ slug: game.slug }}
@@ -76,52 +84,40 @@ export function HomeCard({
             name={game.name}
             size="cover_big"
             width={CARD_WIDTH}
-            fill={fill}
+            fill
+            rounded={0}
           />
           {game.status && (
             <CornerLabel
               icon={statusIcons[game.status]}
-              // Lo spazio per il voto a destra, che è largo al più così.
-              maxW={fill ? ('calc(100% - 44px)' as never) : CARD_WIDTH - 44}
+              maxW={'calc(100% - 8px)' as never}
             >
               {statusLabels[game.status]}
             </CornerLabel>
-          )}
-          {game.criticScore !== null && (
-            // Il fondo della pagina e non l'accento: su una copertina deve
-            // distinguersi dallo stato, e il numero si legge su qualunque
-            // immagine. Stessa misura e stessi raggi di `CornerLabel`,
-            // specchiati.
-            <XStack
-              position="absolute"
-              t={0}
-              r={0}
-              height={20}
-              px={6}
-              items="center"
-              bg="$background"
-              borderBottomLeftRadius={6}
-            >
-              <CriticValue
-                score={game.criticScore}
-                source={game.criticScoreSource}
-                compact
-              />
-            </XStack>
           )}
         </Link>
         {rank !== undefined && <RankLabel rank={rank} />}
         {showWishlist && <WishlistHeart game={game} />}
       </YStack>
-      <GameTitleLink game={game} lines={2} />
-      <XStack flexWrap="wrap" items="center" columnGap={8}>
-        {game.firstReleaseDate && (
-          <Text fontSize={14} lineHeight={20} color="$color11">
-            {game.firstReleaseDate.getFullYear()}
-          </Text>
-        )}
-        <GameDuration game={game} short />
-      </XStack>
+      <YStack p={12} gap={8} grow={1}>
+        <YStack minH={40}>
+          <GameTitleLink game={game} lines={2} />
+        </YStack>
+        <XStack items="flex-start" justify="space-between" gap={8} mt="auto">
+          <XStack flexWrap="wrap" items="center" gap={8} flex={1} minW={0}>
+            {game.firstReleaseDate && (
+              <Text fontSize={14} lineHeight={20} color="$color11">
+                {game.firstReleaseDate.getFullYear()}
+              </Text>
+            )}
+            <GameDuration game={game} short />
+          </XStack>
+          <CriticValue
+            score={game.criticScore}
+            source={game.criticScoreSource}
+          />
+        </XStack>
+      </YStack>
     </YStack>
   );
 }

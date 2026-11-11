@@ -17,6 +17,7 @@ import {
   Library,
   List,
   Rows3,
+  Plus,
   SearchX,
 } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
@@ -33,6 +34,7 @@ import {
   useReanchorPage,
 } from '@/components/grid-columns';
 import { PageSizeSelect } from '@/components/page-size-select';
+import { RandomGameDice } from '@/components/random-game-dice';
 import { ButtonLink } from '@/src/components/button-link';
 import { SavePlaylistDialog } from '@/components/save-playlist-dialog';
 import { LibrarySyncSignal } from '@/components/library-sync-signal';
@@ -54,6 +56,7 @@ export const Route = createFileRoute('/_app/_private/backlog')({
 
 function BacklogPage() {
   const t = useTranslations('backlog');
+  const tAdd = useTranslations('addGame');
   const tFilters = useTranslations('filters');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
@@ -119,6 +122,7 @@ function BacklogPage() {
       // Più larga delle altre: la griglia e la compatta vivono di colonne, e
       // su uno schermo largo le righe non devono stare in un corridoio.
       maxW={1280}
+      largeTitle
       title={inHidden ? t('hiddenViewTitle') : t('title')}
       // Uno spazio e non niente mentre carica: la riga del conteggio tiene il
       // suo posto, e il titolo non salta quando arriva.
@@ -156,7 +160,19 @@ function BacklogPage() {
               </Button>
             )
           )}
-          <AddGameDialog />
+          <AddGameDialog
+            trigger={
+              <Button variant="outline" aria-label={tAdd('trigger')}>
+                <Plus size={16} color="$color12" />
+                <XStack display="none" $sm={{ display: 'flex' }} aria-hidden>
+                  <Text fontSize={14} color="$color12">
+                    {tAdd('trigger')}
+                  </Text>
+                </XStack>
+              </Button>
+            }
+          />
+          <RandomGameDice labelled />
         </>
       }
     >
@@ -286,6 +302,9 @@ function BacklogPage() {
         closeLabel={tFilters('closePanel')}
       >
         <FilterPanel
+          resultCount={total}
+          isLoading={backlog.isFetching || backlog.isPlaceholderData}
+          onShow={() => setFiltersOpen(false)}
           // Il drawer si chiude prima di aprire il dialogo: due overlay uno
           // sull'altro si contendono il fuoco, e il dialogo non vive dentro il
           // drawer (smontato alla chiusura).

@@ -43,11 +43,16 @@ type Draw = {
  * scheda di prima carica ancora deve proseguire il suo giro, e le rotte
  * montate sarebbero ancora quelle della pagina da cui si è partiti.
  */
-export function RandomGameDice() {
+export function RandomGameDice({
+  labelled = false,
+}: { labelled?: boolean } = {}) {
   const t = useTranslations('backlog');
   const router = useRouter();
   const errorMessage = useApiErrorMessage();
   const { data: session, isPending } = useSession();
+  const inBacklog = useRouterState({
+    select: (state) => state.location.pathname === '/backlog',
+  });
   const inHidden = useRouterState({
     select: (state) =>
       state.location.pathname === '/backlog' &&
@@ -79,6 +84,8 @@ export function RandomGameDice() {
   // Finché la sessione non si sa, non si sa nemmeno da dove pescare.
   if (isPending) return null;
   if (inHidden) return null;
+  // Nel backlog il comando è nell’intestazione, con un’etichetta esplicita.
+  if (inBacklog && !labelled) return null;
 
   const roll = () => {
     const { pathname, search: raw } = router.state.location;
@@ -95,16 +102,22 @@ export function RandomGameDice() {
     });
   };
 
-  return (
+  const button = (
+    <Button
+      size={labelled ? undefined : 'icon'}
+      aria-label={labelled ? t('chooseForMe') : t('random')}
+      disabled={pick.isPending}
+      onPress={roll}
+    >
+      <Dices size={16} color="$actionColor" />
+      {labelled && t('chooseForMe')}
+    </Button>
+  );
+  return labelled ? (
+    button
+  ) : (
     <Tooltip content={t('random')} placement="left">
-      <Button
-        size="icon"
-        aria-label={t('random')}
-        disabled={pick.isPending}
-        onPress={roll}
-      >
-        <Dices size={16} color="$actionColor" />
-      </Button>
+      {button}
     </Tooltip>
   );
 }

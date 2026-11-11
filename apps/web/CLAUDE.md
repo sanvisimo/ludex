@@ -148,10 +148,13 @@ si indovinano:
 
 **Il pannello dei filtri** (`FilterPanel`, nel drawer di `/backlog`) ha in cima,
 solo sotto `$sm`, la stessa ricerca della barra, che lì il drawer copre; poi
-l'ordinamento, poi «Mai giocato» come spunta semplice fuori dalle sezioni, poi una
+l'ordinamento, solo sotto `$md` perché sul desktop è nella toolbar, poi
+«Mai giocato» come spunta semplice fuori dalle sezioni, poi una
 sezione per criterio: stato, piattaforme, store, abbonamenti, tipo, attributi,
 tag, durata, il mio voto, **voto critica**, uscita. Lo stato ha le stesse sei
-spunte dei bottoni in barra, sulla stessa selezione.
+spunte dei bottoni in barra, sulla stessa selezione. In fondo «Mostra N giochi»
+chiude il drawer; durante la richiesta è disabilitato e dice che sta aggiornando.
+La ricerca e i filtri si applicano subito: questo bottone chiude, non applica.
 
 **Gli slider hanno anche i campi numerici** (`RangeFilter`, `NumberField`):
 «Da» e «A», o «Minimo» per il voto critica. Il campo si applica **uscendo o con
@@ -165,7 +168,9 @@ pannello smonta ciò che ha dentro quando si chiude, e il clic chiude il pannell
 prima di aprirlo.
 
 **Il dado** (`RandomGameDice`, 15c e la sua estensione) sta nel guscio, fisso in
-basso a destra, e apre la scheda di un gioco a caso (`games.random`, pubblica). Su
+basso a destra; nel backlog è invece il bottone «Scegli per me» nell’intestazione
+(`labelled`), accanto ad «Aggiungi gioco», senza un secondo dado flottante.
+Apre la scheda di un gioco a caso (`games.random`, pubblica). Su
 `/backlog` pesca dal filtro della pagina, sulla scheda di un gioco pescato dà il
 successivo dello stesso giro, altrove pesca da tutto il backlog; da anonimi dal
 catalogo. Nella vista dei nascosti non c'è. Il giro sta nell'URL della scheda,
@@ -289,13 +294,14 @@ non si indovinano:
 - **gli URL di ritorno sono assoluti** (`window.location.origin`): li apre
   l'API, che sta su un'altra origine, e li controlla con `trustedOrigins`.
 
-`AppShell` è **una barra sola** e un footer, senza barra
-laterale né menu a scomparsa: a sinistra il nome, che porta al catalogo, o al
-backlog da loggati; a destra l'avatar, col menu di home, backlog, account, tema, lingua e uscita, o da
-anonimo tema, lingua, «Accedi» e «Registrati», che sotto `$md` in barra non
-ci stanno e vanno in un foglio aperto da un'icona (`GuestSheet`). La barra resta sempre
-visibile, col fondo della pagina e senza bordo: **in alto da `$md`, in basso
-sotto**, dove arriva il pollice e i menu le si aprono sopra. La posizione la
+`AppShell` è **una barra sola** e un footer, senza barra laterale. Il logo porta
+sempre alla home. Da `$md` il link Backlog è esplicito per chi è collegato;
+Settings raccoglie tema e lingua per utenti e ospiti (`SettingsDropdown`).
+L’avatar mantiene playlist, wishlist, account, librerie collegate, admin se
+previsto e uscita. Da anonimi ci sono «Accedi» e «Registrati». Sotto `$md`
+navigazione e preferenze restano nel foglio dell’avatar o in `GuestSheet`.
+La barra resta visibile, con un separatore: **in alto da `$md` (72 px), in basso
+sotto (56 px)**, dove arriva il pollice e i menu le si aprono sopra. La posizione la
 sceglie il CSS, non JavaScript, come ogni forma del guscio: leggere la
 larghezza darebbe un primo render sbagliato da correggere all'idratazione. Sul
 telefono la pagina le lascia sotto la sua altezza (`BAR_HEIGHT`). `BackToTop` è la freccia che riporta in
@@ -310,7 +316,7 @@ usa:
 - **`takeLinkClick`**: la regola dei modificatori (nuova scheda, tasto
   centrale) per ogni `<a href>` che naviga nell'app, `ButtonLink` compreso.
 
-**La home** (`/`, 12e) è il catalogo a fasce, **uguale per tutti**: da
+**La home** (`/`, 12e, rivista in `plans/revisione-web.md`) è il catalogo a fasce, **uguale per tutti**: da
 loggati cambia solo l'etichetta dello stato sulle card dei giochi tuoi, e i
 tuoi nascosti ci sono. Le fasce le sceglie il server (`games.home`,
 `apps/api/src/services/home.ts`), comprese la rotazione del giorno e i tre
@@ -321,6 +327,15 @@ dei giochi legati nella pagina del gioco; nella home le frecce ci sono solo
 da `$md` (`arrowsFromMd`). Il voto sulle card, qui come nel backlog, è
 `criticScore`, che **non è mai OpenCritic** (vedi
 [apps/api/CLAUDE.md](../api/CLAUDE.md)).
+
+Le `HomeCard` condivise con ricerca e liste hanno copertina a filo, superficie
+`surface`, titolo con due righe riservate e metadati sotto; il voto è nella
+riga dei metadati, lo stato resta sulla copertina e cuore/ranking conservano i
+loro comandi. Le fasce usano 200 px, 160 sotto `$sm`; con `fill` la card segue
+la cella. Nel backlog la griglia usa un minimo di 176 px, che si riduce alla
+metà del contenitore sui telefoni: la sonda e la griglia hanno sempre lo stesso
+`GRID_TEMPLATE` e gap. Le card non hanno una scritta «Stato»: in fondo ci sono
+solo il pulsante con l’icona e il menu ⋮, con i rispettivi nomi accessibili.
 
 **La ricerca globale** (12f) cerca nel catalogo intero, non nel backlog, in
 tre blocchi: **«Nel tuo backlog»**, solo da loggati (`games.find` con

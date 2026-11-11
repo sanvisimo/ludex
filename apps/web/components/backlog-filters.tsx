@@ -70,9 +70,8 @@ const RELEASED_MIN = 1970;
 const RELEASED_MAX = new Date().getFullYear();
 
 /**
- * La barra: ricerca, il bottone che apre il pannello, la vista, e sotto lo
- * stato e i filtri accesi a chip. L'ordinamento sta nel pannello (ritocchi
- * del 12c): su un telefono la barra con lui andava su tre righe.
+ * Gli stati rapidi precedono la barra di ricerca, filtri, ordine e vista.
+ * Sotto `$md` l’ordine resta nel drawer per lasciare spazio alla ricerca.
  *
  * I chip ci sono perché il pannello, chiuso, non dice niente: prima l'unico
  * segno di un filtro acceso era il numero su «azzera».
@@ -94,42 +93,8 @@ export function BacklogToolbar({
 
   return (
     <YStack gap={12}>
-      {/* Da `$sm` una riga sola: la ricerca prende lo spazio che resta, fino
-          a 320. Sotto, su un telefono, la ricerca ha una riga sua e i bottoni
-          vanno sotto: sulla stessa riga le restava la larghezza di «Search». */}
-      <XStack items="center" flexWrap="wrap" gap={8}>
-        {/* La base, non la larghezza: con `flex={1}` la base è 0 e vince su
-            `width`, e la ricerca resterebbe sulla riga dei bottoni. */}
-        <YStack
-          grow={1}
-          shrink={1}
-          minW={0}
-          flexBasis="100%"
-          $sm={{ flexBasis: 0, maxW: 320 }}
-        >
-          <SearchInput
-            value={filter.q}
-            onChange={(q) => void setFilter({ q: q || null })}
-          />
-        </YStack>
-        <Button variant="outline" onClick={onOpenFilters}>
-          <SlidersHorizontal size={16} color="$color12" />
-          {t('filtersButton', { count: activeCount })}
-        </Button>
-        {/* Salvare i filtri in una playlist ha senso con almeno un filtro
-            acceso: senza, la playlist sarebbe il backlog intero. */}
-        {activeCount > 0 && <SavePlaylistButton onOpen={onSave} />}
-        {view && <XStack ml="auto">{view}</XStack>}
-      </XStack>
-
-      {/* Lo stato è l'unico criterio a valore singolo per riga: le spunte sono
-          in OR fra loro, non in AND come tutto il resto del pannello.
-          Togliere l'ultima rimette il default — tutti tranne "non mi
-          interessa" — invece di lasciare una selezione vuota, che non
-          mostrerebbe niente e sembrerebbe un guasto. */}
-      {/* Le stesse icone del bottone di stato. Da `$sm` icona ed etichetta,
-          sotto solo l'icona: sei etichette su un telefono andavano su due
-          righe. Il nome del bottone è l'etichetta in tutti e due i casi. */}
+      {/* Gli stati si combinano in OR; l’ultima deselezione ripristina il
+          default. Le icone sono le stesse dei pulsanti sulle card. */}
       <XStack flexWrap="wrap" gap={4}>
         {backlogStatusValues.map((status) => {
           const active = filter.status.includes(status);
@@ -140,7 +105,7 @@ export function BacklogToolbar({
               key={status}
               type="button"
               size="sm"
-              variant={active ? 'selection' : 'outline'}
+              variant={active ? 'selection' : 'ghost'}
               aria-pressed={active}
               aria-label={statusLabels[status]}
               onClick={() =>
@@ -159,6 +124,36 @@ export function BacklogToolbar({
           );
         })}
       </XStack>
+      {/* Da `$sm` una riga sola: la ricerca prende lo spazio che resta, fino
+          a 320. Sotto, su un telefono, la ricerca ha una riga sua e i bottoni
+          vanno sotto: sulla stessa riga le restava la larghezza di «Search». */}
+      <XStack items="center" flexWrap="wrap" gap={8}>
+        {/* La base, non la larghezza: con `flex={1}` la base è 0 e vince su
+            `width`, e la ricerca resterebbe sulla riga dei bottoni. */}
+        <YStack
+          grow={1}
+          shrink={1}
+          minW={0}
+          flexBasis="100%"
+          $sm={{ flexBasis: 160 }}
+        >
+          <SearchInput
+            value={filter.q}
+            onChange={(q) => void setFilter({ q: q || null })}
+          />
+        </YStack>
+        <Button variant="outline" onClick={onOpenFilters}>
+          <SlidersHorizontal size={16} color="$color12" />
+          {t('filtersButton', { count: activeCount })}
+        </Button>
+        <YStack width={224} display="none" $md={{ display: 'flex' }}>
+          <SortControl labelled={false} />
+        </YStack>
+        {/* Salvare i filtri in una playlist ha senso con almeno un filtro
+            acceso: senza, la playlist sarebbe il backlog intero. */}
+        {activeCount > 0 && <SavePlaylistButton onOpen={onSave} />}
+        {view && <XStack ml="auto">{view}</XStack>}
+      </XStack>
 
       <ActiveChips />
     </YStack>
@@ -169,16 +164,18 @@ export function BacklogToolbar({
  * L'ordinamento, in cima al pannello: criterio e direzione. Non è un filtro,
  * quindi sta fuori dalle sezioni e non conta fra i filtri accesi.
  */
-function SortControl() {
+function SortControl({ labelled = true }: { labelled?: boolean }) {
   const t = useTranslations('filters');
   const { filter, setFilter } = useBacklogFilter();
   const id = useId();
 
   return (
     <YStack gap={8}>
-      <Label htmlFor={id} color="$color11">
-        {t('sortLabel')}
-      </Label>
+      {labelled && (
+        <Label htmlFor={id} color="$color11">
+          {t('sortLabel')}
+        </Label>
+      )}
       <SortSelect
         id={id}
         sort={filter.sort}
@@ -416,7 +413,17 @@ export function PlaylistChips({ query }: { query: PlaylistQuery }) {
  * Gli id delle spunte portano un prefisso suo (`useId`): è montato solo a
  * drawer aperto, ma due pannelli in pagina non devono scontrarsi.
  */
-export function FilterPanel({ onSave }: { onSave: () => void }) {
+export function FilterPanel({
+  onSave,
+  onShow,
+  resultCount,
+  isLoading,
+}: {
+  onSave: () => void;
+  onShow: () => void;
+  resultCount: number;
+  isLoading: boolean;
+}) {
   const t = useTranslations('filters');
   const storeLabels = useStoreLabels();
   const subscriptionLabels = useSubscriptionLabels();
@@ -803,7 +810,9 @@ export function FilterPanel({ onSave }: { onSave: () => void }) {
           onChange={(q) => void setFilter({ q: q || null })}
         />
       </YStack>
-      <SortControl />
+      <YStack $md={{ display: 'none' }}>
+        <SortControl />
+      </YStack>
       {/* Un sì o un no, non un elenco: fuori dalle sezioni. */}
       <XStack gap={8} items="center">
         <Checkbox
@@ -841,6 +850,11 @@ export function FilterPanel({ onSave }: { onSave: () => void }) {
           <SavePlaylistButton onOpen={onSave} labelled />
         </XStack>
       )}
+      <Button onPress={onShow} disabled={isLoading}>
+        {isLoading
+          ? t('updatingResults')
+          : t('showResults', { count: resultCount })}
+      </Button>
     </YStack>
   );
 }

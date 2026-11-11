@@ -7,7 +7,9 @@ import { reanchorPage } from '@/lib/page-size';
  * per quella che le conta: se divergono, il numero per pagina non corrisponde
  * più a quello che si vede.
  */
-export const GRID_TEMPLATE = 'repeat(auto-fill, minmax(152px, 1fr))';
+// Due colonne anche sul telefono: il minimo si adatta alla metà del contenitore.
+export const GRID_TEMPLATE =
+  'repeat(auto-fill, minmax(min(176px, calc((100% - 12px) / 2)), 1fr))';
 
 /**
  * Quante colonne ha la griglia, **misurate** dal browser e non ricalcolate: la
