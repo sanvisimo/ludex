@@ -15,7 +15,7 @@ Il cambio dei token UI è ancora separato da questo lotto.
 - [x] Preparare asset statici e generatore per web, favicon ed Expo.
 - [x] Aggiornare nome pubblico della pagina web e dell'app mobile.
 - [x] Verificare build, typecheck, storie e resa su fondi chiaro/scuro.
-- [ ] Revisione del risultato da parte dell'utente.
+- [x] Revisione del risultato da parte dell'utente (lotto chiuso l'11/11/2026).
 
 Nessuna modifica a package name, slug Expo, URL/API, database, palette o font UI.
 

@@ -1380,11 +1380,15 @@
     "items": {
       "pilecueBrand": {
         "title": "The PileCue identity",
-        "text": "The new logo, icons and Midnight Cue palette are coming to the web and mobile app."
+        "p1": "A new name and the PileCue logo, with a favicon and icons that stay readable down to 16 px.",
+        "p2": "The Midnight Cue palette across the whole app, in both light and dark themes.",
+        "p3": "Account emails with the new identity, without images loaded from outside."
       },
       "accountDesign": {
         "title": "Clearer account and libraries",
-        "text": "An organised profile, clearer library cards and pagination for entries needing attention and hidden items."
+        "p1": "The profile is split into personal details, security and data management, with account deletion set apart at the bottom.",
+        "p2": "Larger library cards: linking, syncing and wishlist are kept apart, and there is an Update button.",
+        "p3": "The needs-attention and hidden lists are paginated, with 10, 25, 50 or 100 entries per page. The same selector is also in the backlog, playlists and wishlist."
       },
       "webDesign": {
         "title": "A clearer home and library",
