@@ -81,7 +81,8 @@ export const iconShapes: BrandShape[] = [
   { d: p, fill: brandColors.white, transform: 'translate(20 12) scale(.88)' },
 ];
 
-// Disegno dedicato a 16 px: P con foro 3×3 e due soli dorsi, niente faccette.
+// Disegno dedicato a 16 px: gambo e foro da 3 px, piedino di 1 px a sinistra.
+// Due soli dorsi, niente faccette; coordinate intere per bordi netti.
 export const faviconShapes: BrandShape[] = [
   {
     d: 'M3 0H13Q16 0 16 3V13Q16 16 13 16H3Q0 16 0 13V3Q0 0 3 0Z',
@@ -89,5 +90,8 @@ export const faviconShapes: BrandShape[] = [
   },
   { d: 'M8 10H14V12H8Z', fill: brandColors.aqua },
   { d: 'M8 13H14V15H8Z', fill: brandColors.violet },
-  { d: 'M3 2H9V3H11V8H10V9H6V14H2V4H3ZM6 4V7H9V4Z', fill: brandColors.white },
+  {
+    d: 'M4 2H9V3H11V8H10V9H6V14H2V12H3V4H4ZM6 4V7H9V4Z',
+    fill: brandColors.white,
+  },
 ];
