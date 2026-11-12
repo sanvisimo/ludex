@@ -1378,6 +1378,12 @@
       "button": "Apri una issue"
     },
     "items": {
+      "dialogDesign": {
+        "title": "Dialoghi più leggibili",
+        "p1": "Dialoghi con dimensioni dedicate, titoli più leggibili, chiusura sempre raggiungibile e azioni visibili nei moduli lunghi.",
+        "p2": "Durata e critica affiancate su desktop, con accenti per le durate, voti colorati su 100 e icone delle piattaforme.",
+        "p3": "Copie raggruppate per negozio, con piattaforma, account e abbonamento distinti."
+      },
       "pilecueBrand": {
         "title": "Il marchio PileCue",
         "p1": "Nuovo nome e logo PileCue, con favicon e icone leggibili anche a 16 px.",

@@ -24,19 +24,6 @@ import { StoreLinkForm } from '@/components/store-link-form';
 import { XboxLink } from '@/components/xbox-link';
 import { useStoreLabels } from '@/lib/labels';
 
-/**
- * Aggiunge un account, di un negozio qualunque fra quelli collegabili: il
- * bottone «Aggiungi libreria» e il dialogo che apre.
- *
- * Prima `/account` disegnava una scheda fissa per negozio, presa da
- * `linkableStoreValues`: quella lista non sparisce, cambia mestiere — da elenco
- * delle schede a elenco di questa tendina. È il cambio che serviva perché gli
- * account per negozio possono essere più d'uno, e una scheda per negozio non
- * poteva rappresentarli.
- *
- * `variant` perché il bottone sta in due posti: sulla riga sopra le schede e,
- * quando non c'è ancora nessuna libreria, nello stato vuoto.
- */
 export function AddStoreAccount({
   variant = 'outline',
 }: {
@@ -59,7 +46,7 @@ export function AddStoreAccount({
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent size="wide">
           <DialogHeader>
             <DialogTitle>{t('title')}</DialogTitle>
             <DialogDescription>{t('description')}</DialogDescription>
@@ -93,10 +80,8 @@ export function AddStoreAccount({
               per GOG non deve restare nel campo quando si passa ad Amazon. Da
               collegato il dialogo si chiude: la scheda nuova è nella griglia. */}
           {store === 'steam' ? (
-            // Steam ha due modi, il login col QR e il solo profilo: un corpo suo.
             <SteamLink key={store} onLinked={() => setOpen(false)} />
           ) : store === 'xbox' ? (
-            // Xbox: le piattaforme, poi un codice da confermare (9e).
             <XboxLink key={store} onLinked={() => setOpen(false)} />
           ) : (
             <StoreLinkForm

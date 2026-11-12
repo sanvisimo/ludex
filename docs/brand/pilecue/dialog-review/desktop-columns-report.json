@@ -1,0 +1,329 @@
+{
+  "passed": 14,
+  "fixture": true,
+  "results": [
+    {
+      "theme": "dark",
+      "viewport": 1440,
+      "manyPlatforms": false,
+      "width": 960,
+      "height": 826,
+      "left": 240,
+      "right": 1200,
+      "top": 87,
+      "bottom": 913,
+      "scrollHeight": 824,
+      "clientHeight": 824,
+      "overflow": false,
+      "duration": {
+        "top": 194,
+        "left": 297
+      },
+      "critic": {
+        "top": 192,
+        "left": 634
+      },
+      "axe": true
+    },
+    {
+      "theme": "dark",
+      "viewport": 1024,
+      "manyPlatforms": false,
+      "width": 960,
+      "height": 826,
+      "left": 32,
+      "right": 992,
+      "top": 87,
+      "bottom": 913,
+      "scrollHeight": 824,
+      "clientHeight": 824,
+      "overflow": false,
+      "duration": {
+        "top": 194,
+        "left": 89
+      },
+      "critic": {
+        "top": 192,
+        "left": 426
+      },
+      "axe": true
+    },
+    {
+      "theme": "dark",
+      "viewport": 1023,
+      "manyPlatforms": false,
+      "width": 560,
+      "height": 968,
+      "left": 231.5,
+      "right": 791.5,
+      "top": 16,
+      "bottom": 984,
+      "scrollHeight": 1286,
+      "clientHeight": 966,
+      "overflow": false,
+      "duration": {
+        "top": 123,
+        "left": 288.5
+      },
+      "critic": {
+        "top": 583,
+        "left": 256.5
+      },
+      "axe": true
+    },
+    {
+      "theme": "dark",
+      "viewport": 768,
+      "manyPlatforms": false,
+      "width": 560,
+      "height": 968,
+      "left": 104,
+      "right": 664,
+      "top": 16,
+      "bottom": 984,
+      "scrollHeight": 1286,
+      "clientHeight": 966,
+      "overflow": false,
+      "duration": {
+        "top": 123,
+        "left": 161
+      },
+      "critic": {
+        "top": 583,
+        "left": 129
+      },
+      "axe": true
+    },
+    {
+      "theme": "dark",
+      "viewport": 390,
+      "manyPlatforms": false,
+      "width": 358,
+      "height": 812,
+      "left": 16,
+      "right": 374,
+      "top": 16,
+      "bottom": 828,
+      "scrollHeight": 1254,
+      "clientHeight": 810,
+      "overflow": false,
+      "duration": {
+        "top": 115,
+        "left": 69
+      },
+      "critic": {
+        "top": 575,
+        "left": 37
+      },
+      "axe": true
+    },
+    {
+      "theme": "dark",
+      "viewport": 320,
+      "manyPlatforms": false,
+      "width": 288,
+      "height": 812,
+      "left": 16,
+      "right": 304,
+      "top": 16,
+      "bottom": 828,
+      "scrollHeight": 1328,
+      "clientHeight": 810,
+      "overflow": false,
+      "duration": {
+        "top": 115,
+        "left": 69
+      },
+      "critic": {
+        "top": 575,
+        "left": 37
+      },
+      "axe": true
+    },
+    {
+      "theme": "dark",
+      "viewport": 1440,
+      "manyPlatforms": true,
+      "width": 960,
+      "height": 968,
+      "left": 240,
+      "right": 1200,
+      "top": 16,
+      "bottom": 984,
+      "scrollHeight": 1504,
+      "clientHeight": 966,
+      "overflow": false,
+      "duration": {
+        "top": 123,
+        "left": 297
+      },
+      "critic": {
+        "top": 121,
+        "left": 634
+      },
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "viewport": 1440,
+      "manyPlatforms": false,
+      "width": 960,
+      "height": 826,
+      "left": 240,
+      "right": 1200,
+      "top": 87,
+      "bottom": 913,
+      "scrollHeight": 824,
+      "clientHeight": 824,
+      "overflow": false,
+      "duration": {
+        "top": 194,
+        "left": 297
+      },
+      "critic": {
+        "top": 192,
+        "left": 634
+      },
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "viewport": 1024,
+      "manyPlatforms": false,
+      "width": 960,
+      "height": 826,
+      "left": 32,
+      "right": 992,
+      "top": 87,
+      "bottom": 913,
+      "scrollHeight": 824,
+      "clientHeight": 824,
+      "overflow": false,
+      "duration": {
+        "top": 194,
+        "left": 89
+      },
+      "critic": {
+        "top": 192,
+        "left": 426
+      },
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "viewport": 1023,
+      "manyPlatforms": false,
+      "width": 560,
+      "height": 968,
+      "left": 231.5,
+      "right": 791.5,
+      "top": 16,
+      "bottom": 984,
+      "scrollHeight": 1286,
+      "clientHeight": 966,
+      "overflow": false,
+      "duration": {
+        "top": 123,
+        "left": 288.5
+      },
+      "critic": {
+        "top": 583,
+        "left": 256.5
+      },
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "viewport": 768,
+      "manyPlatforms": false,
+      "width": 560,
+      "height": 968,
+      "left": 104,
+      "right": 664,
+      "top": 16,
+      "bottom": 984,
+      "scrollHeight": 1286,
+      "clientHeight": 966,
+      "overflow": false,
+      "duration": {
+        "top": 123,
+        "left": 161
+      },
+      "critic": {
+        "top": 583,
+        "left": 129
+      },
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "viewport": 390,
+      "manyPlatforms": false,
+      "width": 358,
+      "height": 812,
+      "left": 16,
+      "right": 374,
+      "top": 16,
+      "bottom": 828,
+      "scrollHeight": 1254,
+      "clientHeight": 810,
+      "overflow": false,
+      "duration": {
+        "top": 115,
+        "left": 69
+      },
+      "critic": {
+        "top": 575,
+        "left": 37
+      },
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "viewport": 320,
+      "manyPlatforms": false,
+      "width": 288,
+      "height": 812,
+      "left": 16,
+      "right": 304,
+      "top": 16,
+      "bottom": 828,
+      "scrollHeight": 1328,
+      "clientHeight": 810,
+      "overflow": false,
+      "duration": {
+        "top": 115,
+        "left": 69
+      },
+      "critic": {
+        "top": 575,
+        "left": 37
+      },
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "viewport": 1440,
+      "manyPlatforms": true,
+      "width": 960,
+      "height": 968,
+      "left": 240,
+      "right": 1200,
+      "top": 16,
+      "bottom": 984,
+      "scrollHeight": 1504,
+      "clientHeight": 966,
+      "overflow": false,
+      "duration": {
+        "top": 123,
+        "left": 297
+      },
+      "critic": {
+        "top": 121,
+        "left": 634
+      },
+      "axe": true
+    }
+  ],
+  "errors": []
+}

@@ -1379,6 +1379,12 @@
       "button": "Open an issue"
     },
     "items": {
+      "dialogDesign": {
+        "title": "Clearer dialogs",
+        "p1": "Dialogs with tailored sizes, clearer headings, an accessible close button and visible actions in long forms.",
+        "p2": "Duration and critic scores sit side by side on desktop, with duration accents, colored scores out of 100 and platform icons.",
+        "p3": "Copies are grouped by store, with platform, account and subscription shown separately."
+      },
       "pilecueBrand": {
         "title": "The PileCue identity",
         "p1": "A new name and the PileCue logo, with a favicon and icons that stay readable down to 16 px.",

@@ -1,62 +1,53 @@
-import type { ReactElement } from 'react';
+import { useRef, type ReactElement } from 'react';
 import { Dialog as DialogBase, XStack, YStack, isWeb, styled } from 'tamagui';
 import type { GetProps } from 'tamagui';
 
 import { X } from '../icons';
 import { Button } from './button';
 
-/**
- * La finestra modale: aggiungi gioco, modifica, rimuovi, scollega, risolvi
- * uno scarto.
- *
- * Sotto c'è il Dialog di Tamagui, che fa la parte difficile e invisibile:
- * focus intrappolato dentro, Esc per chiudere, `aria-labelledby` dal titolo,
- * lo scorrimento della pagina bloccato. Qui si decide l'aspetto e si tengono i
- * nomi di prima: `Dialog`, `DialogTrigger`, `DialogContent`, `DialogHeader`,
- * `DialogFooter`, `DialogTitle`, `DialogDescription`, `DialogClose`.
- */
 export { Dialog } from 'tamagui';
 
-/**
- * Il bottone che apre. `render` è la prop di Base UI che le schermate già
- * usano (`render={<Button>…</Button>}`); qui diventa l'`asChild` di Tamagui,
- * così quella riga resta com'è.
- */
 export function DialogTrigger({ render }: { render: ReactElement }) {
   return <DialogBase.Trigger asChild>{render}</DialogBase.Trigger>;
 }
 
-/** Chiude la finestra; come il trigger, avvolge il bottone che gli si passa. */
 export function DialogClose({ render }: { render: ReactElement }) {
   return <DialogBase.Close asChild>{render}</DialogBase.Close>;
 }
 
-type DialogContentProps = GetProps<typeof DialogBase.Content> & {
-  /** La x in alto a destra. C'è di serie, come prima. */
+type DialogContentProps = Omit<GetProps<typeof DialogBase.Content>, 'size'> & {
   showCloseButton?: boolean;
-  /** L'etichetta della x per i lettori di schermo: il testo lo decide l'app. */
   closeLabel?: string;
+  size?: 'compact' | 'default' | 'wide';
 };
 
-/**
- * Il pannello, con il suo velo e il suo portale. La larghezza massima è 720
- * per tutte le finestre: una sola misura, abbastanza larga da non mandare a
- * capo le righe dei moduli. Sotto quella misura il pannello prende lo schermo,
- * meno i margini. `maxW` resta per l'eccezione (la galleria delle immagini).
- *
- * **Mai più alto dello schermo**: oltre, il pannello scorre dentro di sé. Il
- * contenuto lungo su un telefono — i modi di collegare Steam — sbordava sopra e
- * sotto, e la tendina in cima e la ✕ restavano fuori. `dvh` e non `vh`: sul
- * telefono la barra del browser che compare e scompare la conta solo `dvh`.
- */
+const widths = { compact: 440, default: 560, wide: 720 };
+
 export function DialogContent({
   children,
   showCloseButton = true,
   closeLabel = 'Close',
+  size = 'default',
   ...props
 }: DialogContentProps) {
+  const returnFocusTo = useRef<HTMLElement | null>(null);
+  // Il portale può spostare il focus prima di onOpenAutoFocus.
+  if (isWeb && typeof document !== 'undefined') {
+    const focused = document.activeElement as HTMLElement | null;
+    if (
+      focused &&
+      focused !== document.body &&
+      !focused.closest('[role="dialog"], dialog')
+    ) {
+      returnFocusTo.current = focused;
+    }
+  }
+
+  // Il frame Tamagui impone width:auto sul web: l'inline evita il gutter laterale.
   return (
-    <DialogBase.Portal>
+    <DialogBase.Portal
+      {...(isWeb ? { style: { width: '100vw' as never } } : {})}
+    >
       <DialogBase.Overlay
         key="overlay"
         bg="$shadow6"
@@ -68,37 +59,68 @@ export function DialogContent({
       <DialogBase.Content
         key="content"
         width={isWeb ? ('calc(100vw - 32px)' as never) : '100%'}
-        maxW={720}
+        maxW={widths[size]}
+        // dvh include la barra mobile del browser quando è visibile.
         maxH={isWeb ? ('calc(100dvh - 32px)' as never) : '90%'}
         mx={16}
-        p={16}
-        gap={16}
-        rounded={12}
+        p={0}
+        rounded={20}
         bg="$color2"
         borderWidth={1}
         borderColor="$borderColor"
+        shadowColor="$shadow6"
+        shadowRadius={32}
+        shadowOffset={{ width: 0, height: 16 }}
+        overflow="hidden"
         transition="quick"
         opacity={1}
         scale={1}
-        enterStyle={{ opacity: 0, scale: 0.95 }}
-        exitStyle={{ opacity: 0, scale: 0.95 }}
-        // `auto` e non `scroll`: la barra solo quando serve. Come nelle
-        // schermate, dallo `style`, che Tamagui non tipizza per `overflowY`.
-        {...({ style: { overflowY: 'auto' } } as object)}
+        enterStyle={{ opacity: 0, scale: 0.98 }}
+        exitStyle={{ opacity: 0, scale: 0.98 }}
         {...props}
+        onCloseAutoFocus={(event) => {
+          props.onCloseAutoFocus?.(event);
+          // Le dialog controllate non hanno necessariamente un Dialog.Trigger.
+          if (!event.defaultPrevented && returnFocusTo.current?.isConnected) {
+            event.preventDefault();
+            returnFocusTo.current.focus();
+          }
+        }}
       >
-        {children}
+        <YStack
+          p={24}
+          gap={24}
+          minH={0}
+          shrink={1}
+          $max-sm={{ p: 20, gap: 20 }}
+          {...(isWeb
+            ? {
+                maxH: 'inherit' as const,
+                style: {
+                  overflowY: 'auto',
+                  overscrollBehavior: 'contain',
+                  scrollPaddingBlock: '56px 128px',
+                },
+              }
+            : {})}
+        >
+          {children}
+        </YStack>
         {showCloseButton && (
           <DialogBase.Close asChild>
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon"
               position="absolute"
-              t={8}
-              r={8}
+              t={16}
+              r={16}
+              rounded={999}
+              bg="$color2"
+              style={{ zIndex: 3 }}
               aria-label={closeLabel}
+              $max-sm={{ t: 12, r: 12 }}
             >
-              <X size={16} />
+              <X size={18} />
             </Button>
           </DialogBase.Close>
         )}
@@ -109,51 +131,49 @@ export function DialogContent({
 
 export const DialogHeader = styled(YStack, {
   name: 'DialogHeader',
-
-  gap: 8,
-  // Lo spazio per la x, o un titolo lungo ci finirebbe sotto.
-  pr: 24,
+  gap: 6,
 });
 
-/**
- * La fascia dei bottoni, attaccata al fondo del pannello: esce dal suo
- * padding (`mx`, `mb` negativi) per arrivare ai bordi. Su schermi stretti i
- * bottoni vanno in colonna, e il primario — che si scrive per ultimo — resta
- * in alto, sotto il pollice.
- */
 export const DialogFooter = styled(XStack, {
   name: 'DialogFooter',
-
-  mx: -16,
-  mb: -16,
-  p: 16,
-  gap: 8,
+  mx: -24,
+  mb: -24,
+  mt: 4,
+  px: 24,
+  py: 20,
+  gap: 10,
   justify: 'flex-end',
   borderTopWidth: 1,
   borderColor: '$borderColor',
-  bg: '$color3',
-
+  bg: '$color2',
+  style: { zIndex: 2 },
+  ...(isWeb ? { position: 'sticky' as never, b: -24 } : {}),
   '$max-sm': {
     flexDirection: 'column-reverse',
+    mx: -20,
+    mb: -20,
+    p: 20,
+    ...(isWeb ? { b: -20 } : {}),
   },
 });
 
 export const DialogTitle = styled(DialogBase.Title, {
   name: 'DialogTitle',
-
   fontFamily: '$heading',
-  fontSize: 16,
-  lineHeight: 20,
-  fontWeight: '500',
+  pr: 40,
+  fontSize: 20,
+  lineHeight: 28,
+  fontWeight: '600',
   color: '$color12',
+  m: 0,
 });
 
 export const DialogDescription = styled(DialogBase.Description, {
   name: 'DialogDescription',
-
   fontSize: 14,
-  lineHeight: 20,
+  lineHeight: 22,
   color: '$color11',
+  m: 0,
 });
 
 export type DialogProps = GetProps<typeof DialogBase>;

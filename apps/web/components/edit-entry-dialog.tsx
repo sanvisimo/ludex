@@ -63,16 +63,8 @@ function namesOf(entry: BacklogEntry | null, kind: UserTagKind) {
     .map((tag) => tag.name);
 }
 
-/**
- * La schermata di modifica dello step 5: campi personali e possessi.
- *
- * Stanno insieme perché sono la stessa domanda — "com'è per me questo gioco" —
- * e perché separarle avrebbe voluto dire due dialog per due click.
- *
- * Il salvataggio è **uno solo**: le piattaforme aggiunte restano in sospeso
- * finché non si salva, invece di scrivere a ogni click. Chi apre il dialog e
- * cambia idea deve poterlo chiudere senza aver combinato niente.
- */
+// Le copie aggiunte restano in sospeso fino al salvataggio, così chiudere
+// il modulo senza salvare non modifica i possessi.
 export function EditEntryDialog({
   entry,
   onOpenChange,
@@ -201,7 +193,7 @@ export function EditEntryDialog({
 
   return (
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent size="wide">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{entry?.game.name ?? ''}</DialogDescription>

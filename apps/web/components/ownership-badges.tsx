@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  PlatformIcon,
   Text,
   Tooltip,
   XStack,
@@ -30,6 +31,7 @@ import { useTranslations } from 'use-intl';
 
 import { useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
+import { platformIconUrl } from '@/lib/platform-icons';
 import { STORE_BRAND } from '@/lib/store-brand';
 
 export type DisplayedOwnership = {
@@ -49,7 +51,14 @@ type StoreGroup = {
   key: string;
   store?: Store | null;
   label: string;
-  details: string[];
+  details: {
+    key: string;
+    label: string;
+    platform: string;
+    platformSlug: string;
+    account?: string | null;
+    extra: string[];
+  }[];
 };
 
 function StoreGroupIcon({
@@ -106,7 +115,7 @@ function StoreTrigger({
       </Tooltip>
       <DialogContent
         id={dialogId}
-        maxW={400}
+        size="compact"
         closeLabel={t('close')}
         onCloseAutoFocus={(event) => {
           event.preventDefault();
@@ -116,32 +125,72 @@ function StoreTrigger({
         <DialogHeader>
           <DialogTitle>{t('copies')}</DialogTitle>
         </DialogHeader>
-        <YStack gap={16}>
+        <YStack gap={14}>
           {groups.map((group) => (
-            <YStack key={group.key} gap={6}>
-              <XStack items="center" gap={8}>
-                <StoreGroupIcon store={group.store} size={20} />
+            <YStack key={group.key} gap={12} p={14} rounded={14} bg="$color3">
+              <XStack items="center" gap={10}>
+                <StoreGroupIcon store={group.store} size={28} />
                 <Text
-                  fontSize={14}
-                  lineHeight={20}
+                  fontSize={15}
+                  lineHeight={22}
                   fontWeight="600"
                   color="$color12"
+                  flex={1}
                 >
                   {group.label}
                 </Text>
               </XStack>
-              <YStack gap={4}>
-                {group.details.map((detail) => (
-                  <Text
-                    key={detail}
-                    fontSize={13}
-                    lineHeight={20}
-                    color="$color11"
-                    style={{ overflowWrap: 'anywhere' }}
-                  >
-                    {detail}
-                  </Text>
-                ))}
+              <YStack gap={0}>
+                {group.details.map((detail, index) => {
+                  const icon = platformIconUrl(detail.platformSlug);
+                  return (
+                    <XStack
+                      key={detail.key}
+                      gap={10}
+                      py={10}
+                      items="flex-start"
+                      borderTopWidth={index === 0 ? 0 : 1}
+                      borderColor="$borderColor"
+                    >
+                      {icon && (
+                        <PlatformIcon
+                          src={icon}
+                          label={detail.platform}
+                          size={28}
+                        />
+                      )}
+                      <YStack flex={1} minW={0} gap={3}>
+                        <Text
+                          fontSize={14}
+                          lineHeight={20}
+                          fontWeight="500"
+                          color="$color12"
+                        >
+                          {detail.platform}
+                        </Text>
+                        {detail.account && (
+                          <Text
+                            fontSize={13}
+                            lineHeight={20}
+                            color="$color11"
+                            style={{ overflowWrap: 'anywhere' }}
+                          >
+                            {detail.account}
+                          </Text>
+                        )}
+                        {detail.extra.length > 0 && (
+                          <XStack flexWrap="wrap" gap={4} pt={3}>
+                            {detail.extra.map((extra) => (
+                              <Badge key={extra} variant="secondary">
+                                {extra}
+                              </Badge>
+                            ))}
+                          </XStack>
+                        )}
+                      </YStack>
+                    </XStack>
+                  );
+                })}
               </YStack>
             </YStack>
           ))}
@@ -163,7 +212,7 @@ function OwnershipStore({
   return (
     <StoreTrigger
       label={group.label}
-      tooltip={group.details.join('\n')}
+      tooltip={group.details.map((detail) => detail.label).join('\n')}
       groups={groups}
       iconOnly={!!brand}
     >
@@ -229,7 +278,6 @@ export function OwnershipBadges({
   onRemove?: (ownership: DisplayedOwnership) => void;
   compact?: boolean;
   storesOnly?: boolean;
-  /** Quante icone al massimo, contando il «+N» che riassume le altre. */
   max?: number;
 }) {
   const t = useTranslations('editEntry');
@@ -264,7 +312,9 @@ export function OwnershipBadges({
   if (storesOnly) {
     const groups = new Map<
       string,
-      Omit<StoreGroup, 'details'> & { details: Set<string> }
+      Omit<StoreGroup, 'details'> & {
+        details: Map<string, StoreGroup['details'][number]>;
+      }
     >();
     for (const ownership of ownerships) {
       const key = ownership.store ?? `platform:${ownership.platformSlug}`;
@@ -274,20 +324,29 @@ export function OwnershipBadges({
         label: ownership.store
           ? storeLabels[ownership.store]
           : (nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug),
-        details: new Set<string>(),
+        details: new Map(),
       };
       const account = ownership.storeAccount;
-      group.details.add(
-        labelFor(
-          ownership,
-          account?.label || account?.displayName || account?.externalAccountId,
-        ),
-      );
+      const accountLabel =
+        account?.label || account?.displayName || account?.externalAccountId;
+      const label = labelFor(ownership, accountLabel);
+      group.details.set(label, {
+        key: label,
+        label,
+        platform:
+          nameBySlug.get(ownership.platformSlug) ?? ownership.platformSlug,
+        platformSlug: ownership.platformSlug,
+        account: accountLabel,
+        extra: [
+          ownership.subscription ? tSubscription(ownership.subscription) : null,
+          ownership.medium === 'physical' ? tMedium('physical') : null,
+        ].filter((value): value is string => value !== null),
+      });
       groups.set(key, group);
     }
     const all: StoreGroup[] = [...groups.values()].map((group) => ({
       ...group,
-      details: [...group.details],
+      details: [...group.details.values()],
     }));
     const overflow = max !== undefined && all.length > max;
     const shown = overflow ? all.slice(0, max - 1) : all;
