@@ -1511,6 +1511,10 @@
         "title": "Switch 2 games from Nintendo",
         "text": "The Nintendo import recognizes Switch 2 games, Nintendo Switch 2 Editions included: they used to be skipped. Just refresh your library."
       },
+      "notifications": {
+        "title": "Notifications in PileCue",
+        "text": "A notice inside PileCue when a fix affects you: for example an import that now finds games it used to miss, with a prompt to refresh your library."
+      },
       "metaquest": {
         "title": "The Meta Quest library",
         "text": "The feasibility study is done: to go further we need someone with a headset to try the import"

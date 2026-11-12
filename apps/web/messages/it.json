@@ -1510,6 +1510,10 @@
         "title": "Giochi Switch 2 da Nintendo",
         "text": "L'import Nintendo riconosce i giochi Switch 2, comprese le Nintendo Switch 2 Edition: prima venivano saltati. Basta aggiornare la libreria."
       },
+      "notifications": {
+        "title": "Notifiche in PileCue",
+        "text": "Un avviso dentro PileCue quando una correzione ti riguarda: per esempio un import che ora trova giochi che prima mancavano, con l'invito ad aggiornare la libreria."
+      },
       "metaquest": {
         "title": "La libreria Meta Quest",
         "text": "Lo studio di fattibilità è fatto: per andare avanti serve qualcuno con un visore che provi l'import"

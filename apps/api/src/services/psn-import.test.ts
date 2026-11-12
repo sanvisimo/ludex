@@ -166,6 +166,20 @@ describe('buildPsnEntries', () => {
     expect(dischi).toBe(0);
     expect(scartate).toEqual(['Horizon Forbidden West [ps3_game]']);
   });
+
+  it('rende i codici sconosciuti con un titolo d’esempio, per l’avviso', () => {
+    const { sconosciuti } = buildPsnEntries(
+      [],
+      [
+        giocato({ titleId: 'NPEB01234_00', category: 'ps3_game' }),
+        giocato({ titleId: 'NPEB05678_00', category: 'ps3_game', name: 'B' }),
+      ],
+    );
+
+    expect(sconosciuti).toEqual(
+      new Map([['ps3_game', 'Horizon Forbidden West']]),
+    );
+  });
 });
 
 describe('buildPsnEntries, immagini', () => {

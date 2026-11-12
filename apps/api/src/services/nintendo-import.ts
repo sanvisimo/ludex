@@ -15,6 +15,7 @@ import {
   requireReauth,
   type StoreAccountRow,
 } from './store-accounts';
+import { warnUnknownPlatforms } from './unknown-platforms';
 
 /**
  * Import della libreria Nintendo.
@@ -106,6 +107,8 @@ export function buildNintendoEntries(
 ): {
   entries: LibraryEntry[];
   scartate: string[];
+  /** Codice sconosciuto → un titolo d'esempio, per l'avviso all'admin. */
+  sconosciuti: Map<string, string>;
   digitali: number;
   fisici: number;
   soloContenuti: number;
@@ -113,6 +116,12 @@ export function buildNintendoEntries(
 } {
   const entries: LibraryEntry[] = [];
   const scartate: string[] = [];
+  const sconosciuti = new Map<string, string>();
+  const salta = (name: string, platform: string | null) => {
+    const codice = platform ?? 'senza piattaforma';
+    scartate.push(`${name} [${codice}]`);
+    if (!sconosciuti.has(codice)) sconosciuti.set(codice, name);
+  };
   const giocati = new Map(
     history.map((title) => [title.titleId.toLowerCase(), title]),
   );
@@ -129,7 +138,7 @@ export function buildNintendoEntries(
     }
     const platformSlug = toPlatformSlug(card.platform);
     if (!platformSlug) {
-      scartate.push(`${card.name} [${card.platform ?? 'senza piattaforma'}]`);
+      salta(card.name, card.platform);
       continue;
     }
     // Un gioco che sta sull'account di un altro e si può usare in prestito: non
@@ -160,7 +169,7 @@ export function buildNintendoEntries(
 
     const platformSlug = toPlatformSlug(title.platform);
     if (!platformSlug) {
-      scartate.push(`${title.name} [${title.platform ?? 'senza piattaforma'}]`);
+      salta(title.name, title.platform);
       continue;
     }
     if (vgc) fisici += 1;
@@ -177,6 +186,7 @@ export function buildNintendoEntries(
   return {
     entries,
     scartate,
+    sconosciuti,
     digitali: digitali.size,
     fisici,
     soloContenuti,
@@ -212,8 +222,15 @@ export async function importNintendoLibrary(
     throw error;
   }
 
-  const { entries, scartate, digitali, fisici, soloContenuti, nonTue } =
-    buildNintendoEntries(history, vgc);
+  const {
+    entries,
+    scartate,
+    sconosciuti,
+    digitali,
+    fisici,
+    soloContenuti,
+    nonTue,
+  } = buildNintendoEntries(history, vgc);
 
   if (vgc) {
     console.log(
@@ -230,6 +247,7 @@ export async function importNintendoLibrary(
       `[import] nintendo: ${scartate.length} voci saltate, piattaforma sconosciuta: ${scartate.slice(0, 10).join(', ')}`,
     );
   }
+  await warnUnknownPlatforms('nintendo', sconosciuti);
 
   return importLibrary(account, entries);
 }

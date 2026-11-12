@@ -18,6 +18,7 @@ import {
   requireReauth,
   type StoreAccountRow,
 } from './store-accounts';
+import { warnUnknownPlatforms } from './unknown-platforms';
 
 vi.mock('../external/nintendo', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../external/nintendo')>()),
@@ -33,6 +34,7 @@ vi.mock('./store-accounts', async (importOriginal) => ({
   nintendoCredentials: vi.fn(),
   requireReauth: vi.fn(),
 }));
+vi.mock('./unknown-platforms', () => ({ warnUnknownPlatforms: vi.fn() }));
 
 // La parte pura prova cosa diventa un possesso, e non c'è Nintendo da stubbare.
 // L'orchestrazione sta sotto, con le due fonti e l'import stubbati al confine del
@@ -220,6 +222,24 @@ describe('buildNintendoEntries', () => {
     expect(scartate).toEqual(['Dalle carte [ZZZ]', 'Dallo storico [CTR]']);
   });
 
+  it('rende i codici sconosciuti con un titolo d’esempio, per l’avviso', () => {
+    const { sconosciuti } = buildNintendoEntries(
+      [
+        giocato({ titleId: '0100000000000001', name: 'Uno', platform: 'CTR' }),
+        giocato({ titleId: '0100000000000002', name: 'Due', platform: 'CTR' }),
+        giocato({ titleId: '0100000000000003', name: 'Tre', platform: null }),
+      ],
+      [],
+    );
+
+    expect(sconosciuti).toEqual(
+      new Map([
+        ['CTR', 'Uno'],
+        ['senza piattaforma', 'Tre'],
+      ]),
+    );
+  });
+
   it('la Switch 2 delle Virtual Game Cards è OUNCE', () => {
     const { entries } = buildNintendoEntries(
       [],
@@ -307,6 +327,19 @@ describe('importNintendoLibrary', () => {
     const [, entries] = vi.mocked(importLibrary).mock.calls[0]!;
     expect(entries).toHaveLength(1);
     expect(entries[0]).toMatchObject({ externalId: MK8, medium: 'digital' });
+  });
+
+  it('passa i codici sconosciuti all’avviso dell’admin', async () => {
+    vi.mocked(fetchNintendoPlayHistory).mockResolvedValue([
+      giocato({ titleId: '0100000000000001', name: 'Uno', platform: 'CTR' }),
+    ]);
+
+    await importNintendoLibrary(account);
+
+    expect(warnUnknownPlatforms).toHaveBeenCalledWith(
+      'nintendo',
+      new Map([['CTR', 'Uno']]),
+    );
   });
 
   it('senza paese salta le Virtual Game Cards e importa lo storico, senza dichiarare il supporto', async () => {

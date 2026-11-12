@@ -40,6 +40,7 @@ export const roadmap: RoadmapEntry[] = [
   { id: 'addToBacklog', status: 'next', areas: ['game', 'library'] },
   { id: 'playtime', status: 'next', areas: ['game'] },
   { id: 'metaquest', status: 'idea', areas: ['import'] },
+  { id: 'notifications', status: 'idea', areas: ['account', 'import'] },
   {
     id: 'dialogDesign',
     status: 'done',
