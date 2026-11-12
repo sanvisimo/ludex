@@ -32,6 +32,7 @@ import { useFormatter, useTranslations } from 'use-intl';
 
 import { BadgeLink } from '@/components/badge-link';
 import { StatusButton } from '@/components/backlog-views';
+import { CriticScoreBadge } from '@/components/critic-score-badge';
 import { CriticScores } from '@/components/critic-scores';
 import { Muted, Strong } from '@/components/detail-text';
 import { EntryTags } from '@/components/entry-tags';
@@ -425,24 +426,38 @@ export function DurationAndCritics({
           </Muted>
         ) : (
           <XStack gap={8} flexWrap="wrap">
-            {times.map(([key, minutes]) => (
-              <YStack
-                key={key}
-                grow={1}
-                minW={96}
-                p={10}
-                rounded={8}
-                bg={key === 'main' ? '$selectionBackground' : '$color3'}
-                gap={4}
-              >
-                <Muted fontSize={12} lineHeight={16}>
-                  {tHltb(key)}
-                </Muted>
-                <Strong fontSize={22} lineHeight={28}>
-                  {duration(minutes!)}
-                </Strong>
-              </YStack>
-            ))}
+            {times.map(([key, minutes]) => {
+              const blue = key === 'main';
+              return (
+                <Theme key={key} name={blue ? 'blue' : undefined}>
+                  <YStack
+                    grow={1}
+                    minW={96}
+                    p={10}
+                    rounded={8}
+                    bg={blue ? '$color3' : '$selectionBackground'}
+                    borderLeftWidth={3}
+                    borderColor={blue ? '$color9' : '$selectionBorder'}
+                    gap={4}
+                  >
+                    <Muted
+                      fontSize={12}
+                      lineHeight={16}
+                      color={blue ? '$color12' : '$color11'}
+                    >
+                      {tHltb(key)}
+                    </Muted>
+                    <Strong
+                      fontSize={22}
+                      lineHeight={28}
+                      color={blue ? '$color12' : '$selectionColor'}
+                    >
+                      {duration(minutes!)}
+                    </Strong>
+                  </YStack>
+                </Theme>
+              );
+            })}
           </XStack>
         )}
       </YStack>
@@ -471,19 +486,7 @@ export function DurationAndCritics({
                   {score?.tier && <Muted fontSize={12}>{score.tier}</Muted>}
                 </YStack>
                 {score ? (
-                  <XStack
-                    bg="$color4"
-                    rounded={8}
-                    px={10}
-                    py={6}
-                    gap={3}
-                    items="baseline"
-                  >
-                    <Strong fontSize={20} lineHeight={24}>
-                      {Math.round(score.score)}
-                    </Strong>
-                    <Muted fontSize={11}>/100</Muted>
-                  </XStack>
+                  <CriticScoreBadge score={score.score} compact />
                 ) : (
                   <Muted fontSize={13}>{tCritic('noScore')}</Muted>
                 )}
