@@ -1506,6 +1506,10 @@
         "p2": "EA non permette un collegamento che duri: per aggiornare la libreria usi «Importa di nuovo» sulla scheda dell'account.",
         "p3": "Ogni copia EA porta alla sua pagina sul catalogo di EA, e la pagina del gioco al sito di EA."
       },
+      "nintendoSwitch2": {
+        "title": "Giochi Switch 2 da Nintendo",
+        "text": "L'import Nintendo riconosce i giochi Switch 2, comprese le Nintendo Switch 2 Edition: prima venivano saltati. Basta aggiornare la libreria."
+      },
       "metaquest": {
         "title": "La libreria Meta Quest",
         "text": "Lo studio di fattibilità è fatto: per andare avanti serve qualcuno con un visore che provi l'import"
