@@ -1009,13 +1009,13 @@ lo ha confermato). Si saltano, come i DLC di Epic che collassano sul gioco. Se i
 | storico                          | `app-api.znej.nintendo.com/api/v2.0/users/me/play_histories`, una richiesta, 37 titoli; `platform` **`HAC`**, `deviceType` assente                                                                                                                                             |
 | Virtual Game Cards, i campi      | `apparentPlatform` **`NX`** su 19 su 19; `applicationId` 16 esadecimali minuscoli; `ownerNaId` = `userNaId` = il `sub` dell'`id_token` (`3247fa748f1dd367`)                                                                                                                    |
 | identità su IGDB                 | nessun id: **per nome**. Sullo storico, 28 su 37; i 9 irrisolti sono app Switch Online e Classics, due demo, _HentaiUni_: nessun gioco vero                                                                                                                                    |
-| Switch 2                         | `OUNCE` per le Virtual Game Cards **viene dal codice di Playnite, non è misurato**; il codice dello **storico** non si conosce. L'account di prova non ha giochi Switch 2                                                                                                      |
+| Switch 2                         | **`BEE`**, misurato il 12/11/2026 su un import vero (_TOTK – Nintendo Switch 2 Edition_), con ogni probabilità dello storico (il log non distingue la fonte); `OUNCE` per le Virtual Game Cards **viene dal codice di Playnite, non è misurato**                               |
 
 **Decisioni** (le ragioni sono nel piano):
 
 - una **copia digitale** solo se la voce ha `hasReleasedApplication`; `medium: digital`.
   Un titolo solo nello storico è `medium: physical`;
-- la piattaforma: `HAC` e `NX` → `nintendo_switch`, `OUNCE` → `nintendo_switch2`. Un
+- la piattaforma: `HAC` e `NX` → `nintendo_switch`, `BEE` e `OUNCE` → `nintendo_switch2`. Un
   codice sconosciuto **non ripiega su Switch 1**, per la stessa ragione di PSN: si salta
   con un log;
 - l'id esterno è l'`applicationId` / `titleId` **in minuscolo da tutte e due le parti**:
