@@ -22,7 +22,7 @@ sezioni qui sotto. Il codice è fatto fra il 28 e il 30/10: vedi «Il codice»,
 ## Perché
 
 Oggi Ludex è un ambiente di prova sul mini PC di casa, dietro Cloudflare
-Access con il One-time PIN ([minipc](../docs/minipc.md)): entra solo chi è
+Access con il One-time PIN: entra solo chi è
 nella lista. Il rilascio lo porta su un server stabile e lo apre a tutti,
 e aprirlo vuol dire che login e registrazione devono reggere da soli, senza
 il cancello davanti.
@@ -224,8 +224,8 @@ troppo presto ne memorizza il «non esiste» per 30 minuti.
 
 ### B. Lo stack, vuoto — fatto il 06/11/2026
 
-4. [x] Lo stesso layout del mini PC in `/opt/docker/ludex/` (vedi
-       [minipc](../docs/minipc.md)): clone **via HTTPS e senza credenziali**,
+4. [x] Lo stesso layout del mini PC in `/opt/docker/ludex/` (com'è
+       oggi: [vps](../docs/vps.md)): clone **via HTTPS e senza credenziali**,
        perché repository e immagine sono pubblici. Una chiave GitHub
        dell'account sul server, come sul mini PC, darebbe a chi lo buca il
        push su tutti i repository, e quindi il deploy automatico del proprio
@@ -239,8 +239,9 @@ troppo presto ne memorizza il «non esiste» per 30 minuti.
 
    Com'è andata: sul mini PC l'override si chiama `compose.override.yml`,
    i dati stanno in `/opt/docker-db/ludex/` e `deploy.sh` in
-   `/opt/docker/ludex/` (il suo commento e [minipc](../docs/minipc.md)
-   dicono altro: da correggere a trasloco finito). Sul VPS l'override è
+   `/opt/docker/ludex/` (il suo commento e il vecchio `docs/minipc.md`
+   dicevano altro; `docs/minipc.md` è diventato [vps](../docs/vps.md) il
+   12/11/2026). Sul VPS l'override è
    lo stesso, coi dati in `/opt/docker/ludex/{db,redis}`; `deploy.sh`
    spinge allo stesso monitor di Kuma, da `uptime.sanvisimo.tech`. Tolte
    da `ludex.env` le variabili senza uso in produzione, fra cui
@@ -326,6 +327,16 @@ limitata al progetto. In `ludex.env`: `smtp.tem.scaleway.com`, porta 587
    davanti, perché Kuma segue i redirect fino alla pagina del PIN, che
    risponde 200. In più il monitoraggio di Leaseweb, col ping (le due
    regole ICMP del firewall del pannello).
+
+**I log nel journal, il 12/11/2026.** I log dei container stavano nei file
+di Docker (10 MB × 3) e sparivano a ogni deploy, che ricrea i container: il
+log di un import era leggibile solo fino al merge successivo. Ora `api` e
+`worker` hanno il driver `journald` nell'override, coi tag fissi `ludex-api` e
+`ludex-worker`; il journal tiene 30 giorni e al massimo 1 GB
+(`/etc/systemd/journald.conf.d/ludex.conf`). `sanvi` è nel gruppo
+`systemd-journal`, che dà la lettura del journal e nessun potere sui
+container: Claude legge i log da SSH senza `sudo`. Come si leggono:
+[vps](../docs/vps.md), «Log».
 
 ### E. La prova degli import — fatta il 06/11/2026
 
