@@ -1057,7 +1057,7 @@
     "steamLogin": {
       "chooseLogin": "Pick how to sign in: they cost Steam different things.",
       "qrAuto": "Renews itself, you never think about it again",
-      "qrDevice": "Creates a new device (\"Galaxy S25\") in your Steam Guard list",
+      "qrDevice": "Creates a new device (\"Chrome on Linux\") in your Steam Guard list",
       "tokenButton": "Token from your browser",
       "tokenNoDeviceShort": "Creates no device on Steam",
       "tokenDaily": "Lasts 24 hours: paste it again to refresh the family",
@@ -1099,6 +1099,7 @@
       "step1": "1. Open the Steam app on your phone",
       "step2": "2. Tap Steam Guard, then “Sign in with a QR code”",
       "step3": "3. Scan the code and confirm",
+      "unusualHint": "Steam may flag an unusual sign-in from Amsterdam: that's the PileCue server. Choose «Through my web browser», then «Other», then «Sign in to Steam».",
       "validFor": "The code is valid for 5 minutes.",
       "newCode": "Generate a new QR code",
       "scanned": "Confirm in the Steam app",

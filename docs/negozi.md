@@ -873,6 +873,18 @@ negozi. Non c'è un interruttore che li tenga chiusi agli altri utenti: la decis
 la dicitura, e il rischio di molti utenti da un solo indirizzo resta non misurato. Se
 un blocco arriva, va scritto qui e il login si spegne.
 
+**12/11/2026: dal VPS il QR è un «accesso insolito».** Il server sta ad Amsterdam
+(Leaseweb), il telefono in Italia: chi inquadra il QR vede nell'app Steam
+«Unusual sign in attempt — Additional security is required», con due domande
+anti-truffa («dove stai accedendo?», «cosa stai cercando di fare?»), e poi una
+mail «Nuovo accesso a Steam» con posizione Amsterdam. Con «Through my web
+browser», poi «Other», poi «Sign in to Steam» il login passa (provato su
+`sanvitest`). È lo schema del phishing col QR, un telefono che approva un
+accesso da un altro paese: sul mini PC non succedeva, perché server e telefono
+uscivano dallo stesso indirizzo. Il pannello del QR lo dice prima
+(`steamLogin.unusualHint`). Il token dal browser non passa di qui. Se dopo
+quell'approvazione arriva un blocco non è ancora noto.
+
 ## Steam: i gratuiti che `GetOwnedGames` non dà (9f, 15/10/2026)
 
 Dal confronto con l'export di Playnite del 14/10/2026: **50 giochi propri su
