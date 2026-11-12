@@ -20,6 +20,7 @@ import {
   storeAccessToken,
 } from './store-accounts';
 import { pruneUnlistedSubscriptionCopies } from './subscription-copies';
+import { warnUnknownPlatforms } from './unknown-platforms';
 
 /**
  * Import della libreria PSN.
@@ -66,7 +67,13 @@ type Ore = { playtimeMinutes: number | null; lastPlayedAt: Date | null };
 export function buildPsnEntries(
   library: PsnLibraryEntry[],
   giocati: PsnPlayedTitle[],
-): { entries: LibraryEntry[]; scartate: string[]; dischi: number } {
+): {
+  entries: LibraryEntry[];
+  scartate: string[];
+  /** Codice sconosciuto → un titolo d'esempio, per l'avviso all'admin. */
+  sconosciuti: Map<string, string>;
+  dischi: number;
+} {
   // La chiave è il `titleId`, che l'elenco degli acquisti non dichiara come
   // campo suo: sta dentro l'`entitlementId`, e da lì lo estrae il client. È
   // l'aggancio esatto che evita un match per titolo fra due liste della stessa
@@ -81,6 +88,7 @@ export function buildPsnEntries(
 
   const entries: LibraryEntry[] = [];
   const scartate: string[] = [];
+  const sconosciuti = new Map<string, string>();
   const acquistati = new Set<string>();
 
   for (const raw of library) {
@@ -94,6 +102,8 @@ export function buildPsnEntries(
     const externalId = raw.titleId ?? raw.entitlementId;
     if (!platformSlug || !externalId) {
       scartate.push(`${raw.name} [${raw.platform}]`);
+      if (!platformSlug && !sconosciuti.has(raw.platform))
+        sconosciuti.set(raw.platform, raw.name);
       continue;
     }
     acquistati.add(externalId.toUpperCase());
@@ -131,7 +141,9 @@ export function buildPsnEntries(
 
     const platformSlug = toPlayedPlatformSlug(title.category, title.titleId);
     if (!platformSlug) {
-      scartate.push(`${title.name} [${title.category ?? 'senza categoria'}]`);
+      const codice = title.category ?? 'senza categoria';
+      scartate.push(`${title.name} [${codice}]`);
+      if (!sconosciuti.has(codice)) sconosciuti.set(codice, title.name);
       continue;
     }
 
@@ -154,7 +166,7 @@ export function buildPsnEntries(
     });
   }
 
-  return { entries, scartate, dischi };
+  return { entries, scartate, sconosciuti, dischi };
 }
 
 export async function importPsnLibrary(
@@ -183,13 +195,17 @@ export async function importPsnLibrary(
     throw error;
   }
 
-  const { entries, scartate, dischi } = buildPsnEntries(library, giocati);
+  const { entries, scartate, sconosciuti, dischi } = buildPsnEntries(
+    library,
+    giocati,
+  );
 
   if (scartate.length > 0) {
     console.log(
       `[import] psn: ${scartate.length} voci saltate, piattaforma sconosciuta: ${scartate.slice(0, 10).join(', ')}`,
     );
   }
+  await warnUnknownPlatforms('psn', sconosciuti);
   if (dischi > 0) {
     console.log(`[import] psn: ${dischi} dischi dall'elenco dei giocati`);
   }
