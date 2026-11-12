@@ -1539,6 +1539,14 @@
         "title": "Category pages",
         "text": "The whole PileCue catalog with the backlog's filters: genres, themes, type, length, critic score. The game page badges will lead there too, even when signed out."
       },
+      "addToBacklog": {
+        "title": "Add to backlog from the game page",
+        "text": "On a game you don't own, next to “Add to playlist” there will also be a button to put it in your backlog."
+      },
+      "playtime": {
+        "title": "Playtime tracking",
+        "text": "How long you've played each game, recorded in PileCue."
+      },
       "gameVersions": {
         "title": "Expanded editions and main game",
         "p1": "On the game page, expanded editions sit alongside remakes and remasters, in the «Other versions» row.",

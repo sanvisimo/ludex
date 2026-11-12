@@ -36,6 +36,8 @@ export const roadmap: RoadmapEntry[] = [
   { id: 'mobile', status: 'next', areas: ['mobile'] },
   { id: 'publicPlaylists', status: 'next', areas: ['playlists'] },
   { id: 'categoryPages', status: 'next', areas: ['game', 'library'] },
+  { id: 'addToBacklog', status: 'next', areas: ['game', 'library'] },
+  { id: 'playtime', status: 'next', areas: ['game'] },
   { id: 'metaquest', status: 'idea', areas: ['import'] },
   {
     id: 'dialogDesign',
