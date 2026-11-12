@@ -193,6 +193,9 @@ export function SteamQrPanel({
         <Text fontSize={14}>{t('step2')}</Text>
         <Text fontSize={14}>{t('step3')}</Text>
       </YStack>
+      <Text fontSize={12} color="$color11" self="stretch">
+        {t('unusualHint')}
+      </Text>
       <Text fontSize={12} color="$color11">
         {t('validFor')}
       </Text>
