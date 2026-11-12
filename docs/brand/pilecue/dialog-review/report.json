@@ -1,0 +1,215 @@
+{
+  "passed": 36,
+  "fixture": true,
+  "results": [
+    {
+      "theme": "dark",
+      "width": 1440,
+      "case": "detail",
+      "axe": true,
+      "platforms": 3
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "case": "Modulo lungo"
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "case": "Rinomina"
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "case": "copies",
+      "axe": true
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "case": "detail",
+      "axe": true,
+      "platforms": 3
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "case": "Modulo lungo"
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "case": "Rinomina"
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "case": "copies",
+      "axe": true
+    },
+    {
+      "theme": "dark",
+      "width": 390,
+      "case": "detail",
+      "axe": true,
+      "platforms": 3
+    },
+    {
+      "theme": "dark",
+      "width": 390,
+      "case": "Modulo lungo"
+    },
+    {
+      "theme": "dark",
+      "width": 390,
+      "case": "Rinomina"
+    },
+    {
+      "theme": "dark",
+      "width": 390,
+      "case": "copies",
+      "axe": true
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "case": "detail",
+      "axe": true,
+      "platforms": 3
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "case": "Modulo lungo"
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "case": "Rinomina"
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "case": "copies",
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "case": "detail",
+      "axe": true,
+      "platforms": 3
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "case": "Modulo lungo"
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "case": "Rinomina"
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "case": "copies",
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "case": "detail",
+      "axe": true,
+      "platforms": 3
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "case": "Modulo lungo"
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "case": "Rinomina"
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "case": "copies",
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "width": 390,
+      "case": "detail",
+      "axe": true,
+      "platforms": 3
+    },
+    {
+      "theme": "light",
+      "width": 390,
+      "case": "Modulo lungo"
+    },
+    {
+      "theme": "light",
+      "width": 390,
+      "case": "Rinomina"
+    },
+    {
+      "theme": "light",
+      "width": 390,
+      "case": "copies",
+      "axe": true
+    },
+    {
+      "theme": "light",
+      "width": 320,
+      "case": "detail",
+      "axe": true,
+      "platforms": 3
+    },
+    {
+      "theme": "light",
+      "width": 320,
+      "case": "Modulo lungo"
+    },
+    {
+      "theme": "light",
+      "width": 320,
+      "case": "Rinomina"
+    },
+    {
+      "theme": "light",
+      "width": 320,
+      "case": "copies",
+      "axe": true
+    },
+    {
+      "variant": "empty",
+      "locale": "en",
+      "case": "detail",
+      "axe": true
+    },
+    {
+      "variant": "pending",
+      "locale": "en",
+      "case": "detail",
+      "axe": true
+    },
+    {
+      "variant": "endless",
+      "locale": "en",
+      "case": "detail",
+      "axe": true
+    },
+    {
+      "variant": "unresolved",
+      "locale": "en",
+      "case": "detail",
+      "axe": true
+    }
+  ],
+  "errors": []
+}

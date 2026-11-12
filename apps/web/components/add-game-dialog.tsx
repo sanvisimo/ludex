@@ -65,10 +65,6 @@ const emptyRow = (): OwnershipRow => ({
   medium: NO_MEDIUM,
 });
 
-/**
- * Con `game` il gioco è già scelto — la pagina del gioco — e il dialogo chiede
- * solo stato e copie: niente titolo da scrivere, niente ricerca su IGDB.
- */
 export function AddGameDialog({
   game,
   trigger,
@@ -208,7 +204,7 @@ export function AddGameDialog({
         }
       />
 
-      <DialogContent>
+      <DialogContent size="wide">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>

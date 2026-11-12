@@ -14,6 +14,8 @@ import {
   CornerLabel,
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogHeader,
   DialogTitle,
   Gallery,
   Text,
@@ -49,17 +51,6 @@ import { useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 import { useSession } from '@/src/use-session';
 
-/**
- * Pagina del gioco: hero compatta, fascia personale e due colonne desktop.
- * Su mobile: durata/critica, gallery/descrizione, copie/link e giochi legati.
- * Revisione approvata in `plans/revisione-web.md`.
- */
-
-/**
- * Una riga che, se c'è dove portare, è tutta un link che esce dall'app:
- * icona e testo insieme, non la sola icona. Senza `href` è la stessa riga,
- * ferma.
- */
 function LinkRow({
   href,
   title,
@@ -68,11 +59,9 @@ function LinkRow({
   tile = false,
 }: {
   href: string | null;
-  /** Il suggerimento al passaggio, es. «Apri su GOG». */
   title: string;
   children: ReactNode;
   items?: 'center' | 'flex-start';
-  /** Superficie cliccabile per copie e destinazioni esterne. */
   tile?: boolean;
 }) {
   return (
@@ -116,18 +105,6 @@ function LinkRow({
   );
 }
 
-/**
- * L'immagine grande in testa: l'artwork IGDB; se manca il primo screenshot;
- * se manca anche quello la copertina, sfocata. Sopra, in basso, copertina,
- * titolo, anno, autori e generi e temi come badge.
- *
- * Il testo sta sempre su un fondo scuro — la sfumatura sopra l'immagine — e
- * per questo la hero è in tema scuro qualunque sia quello dell'app.
- *
- * L'immagine va da un bordo all'altro della finestra (`Page` la mette fuori
- * dal suo respiro); il testo sopra resta allineato alla colonna della pagina,
- * larga `GAME_PAGE_WIDTH`.
- */
 export const GAME_PAGE_WIDTH = 1200;
 
 export function GameHero({ game }: { game: GameDetail }) {
@@ -379,11 +356,6 @@ function metacriticFor(
   );
 }
 
-/**
- * Il riepilogo al posto del box d'acquisto: tre tempi di HLTB, un voto per
- * fonte, e «Dettagli» per tutto il resto. Ogni fonte ha la sua icona, che
- * porta alla pagina del gioco su quella fonte.
- */
 export function DurationAndCritics({
   game,
   entry,
@@ -525,28 +497,37 @@ export function DurationAndCritics({
         </Button>
       </YStack>
       <Dialog modal open={open} onOpenChange={setOpen}>
-        <DialogContent closeLabel={t('close')}>
-          <DialogTitle>{t('durationAndCritics')}</DialogTitle>
-          <HltbTimes game={game} />
-          <CriticScores game={game} />
+        <DialogContent closeLabel={t('close')} $lg={{ maxW: 960 }}>
+          <DialogHeader>
+            <DialogTitle>{t('durationAndCritics')}</DialogTitle>
+            <DialogDescription>{game.name}</DialogDescription>
+          </DialogHeader>
+          <YStack gap={24} $lg={{ flexDirection: 'row', items: 'flex-start' }}>
+            <YStack minW={0} $lg={{ width: 320, shrink: 0 }}>
+              <HltbTimes game={game} />
+            </YStack>
+            <YStack
+              minW={0}
+              pt={24}
+              borderTopWidth={1}
+              borderColor="$borderColor"
+              $lg={{
+                flex: 1,
+                pt: 0,
+                pl: 24,
+                borderTopWidth: 0,
+                borderLeftWidth: 1,
+              }}
+            >
+              <CriticScores game={game} />
+            </YStack>
+          </YStack>
         </DialogContent>
       </Dialog>
     </Panel>
   );
 }
 
-/**
- * Il prezzo più basso di adesso su IsThereAnyDeal, col negozio, e un segnale se
- * è anche il minimo storico. Tutta la card è il link; senza offerte, il solo
- * nome. Solo per i giochi che non hai: la pagina non la monta se sono nel backlog.
- *
- * Il prezzo arriva a parte (`games.price`) perché la pagina non aspetti ITAD: la
- * card compare quando c'è, e non c'è sui giochi che ITAD non conosce.
- *
- * Il nome sta sopra e il prezzo sotto, sempre: nella colonna larga 360 nome,
- * prezzo e segnale su una riga sola non ci stanno, e andare a capo solo quando
- * c'è il segnale faceva cambiare la card da un gioco all'altro.
- */
 export function GamePriceCard({ game }: { game: GameDetail }) {
   const t = useTranslations('game');
   const format = useFormatter();
@@ -588,7 +569,6 @@ export function GamePriceCard({ game }: { game: GameDetail }) {
   );
 }
 
-/** Stato e voto al volo, separati dai dettagli delle singole copie. */
 export function GamePersonalBar({
   entry,
   onStatus,
@@ -655,7 +635,6 @@ export function GamePersonalBar({
   );
 }
 
-/** Copie con i loro dati, note e tag; stato e voto sono nella fascia personale. */
 export function BacklogPanel({
   entry,
   storeLinks,
@@ -820,16 +799,6 @@ export function BacklogPanel({
   );
 }
 
-/**
- * Dove andare per saperne di più o per comprarlo, ognuno con la sua icona e il
- * nome, tutta la riga è il link. Sta sotto il tuo backlog, come durata e
- * critica sopra: sono gli stessi link che escono dall'app, e dicono dove
- * andare.
- *
- * In cima il sito ufficiale, poi i negozi (`storeLinks`, nostri o di IGDB dove
- * mancano), poi i negozi che non sono nostri, e Wikipedia in fondo. Senza
- * nessun link non c'è la card.
- */
 export function StoreLinks({ game }: { game: GameDetail }) {
   const t = useTranslations('game');
   const storeLabels = useStoreLabels();
@@ -949,7 +918,6 @@ export function StoreLinks({ game }: { game: GameDetail }) {
   );
 }
 
-/** I giochi fuori catalogo si creano solo al clic, prima di aprirne la scheda. */
 export function RelatedRow({
   title,
   games,

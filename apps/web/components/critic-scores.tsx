@@ -1,77 +1,35 @@
 import type { GameDetail, GameScore } from '@repo/contracts';
 import { useQuery } from '@tanstack/react-query';
-import { BrandIcon, XStack, YStack } from '@repo/ui';
+import { BrandIcon, PlatformIcon, XStack, YStack } from '@repo/ui';
 import { useTranslations } from 'use-intl';
 
+import { CriticScoreBadge } from '@/components/critic-score-badge';
 import { DetailTitle, Muted, Strong } from '@/components/detail-text';
 import { api } from '@/lib/orpc';
+import { platformIconUrl } from '@/lib/platform-icons';
 import { ExternalLink } from '@/src/components/external-link';
 
-/**
- * I voti della critica, fonte per fonte e per piattaforma: la sezione del
- * dialog «Dettagli» della pagina del gioco (12d).
- *
- * Si mostrano **tutti**, con la fonte scritta accanto, e non solo quello che ha
- * vinto la precedenza: OpenCritic e Metacritic non stanno sulla stessa scala —
- * il primo pesa i critici di punta e tende a stare qualche punto sotto — e un
- * numero solo, senza dire di chi è, li farebbe sembrare confrontabili.
- *
- * I voti per piattaforma stanno sotto e in piccolo, ma ci stanno: è la ragione
- * per cui questa tabella esiste. Su Mafia il voto pubblicato è 66, che è il
- * port Xbox, mentre il PC vale 88 — e chi guarda la scheda deve poterlo vedere,
- * non doverlo indovinare.
- */
+const SOURCES: GameScore['source'][] = ['opencritic', 'metacritic', 'igdb'];
 
-/** L'ordine in cui si leggono, che è quello della precedenza lato server. */
-const ORDINE: GameScore['source'][] = ['opencritic', 'metacritic', 'igdb'];
-
-function Complessivo({
-  voto,
-  href,
-}: {
-  voto: GameScore;
-  /** La pagina del gioco sulla fonte, se la conosciamo. */
-  href: string | null;
-}) {
+function ScoreDetails({ score }: { score: GameScore }) {
   const t = useTranslations('critic');
-
-  const dettagli = [
-    voto.reviewCount !== null
-      ? t('reviews', { count: voto.reviewCount })
+  const details = [
+    score.reviewCount !== null
+      ? t('reviews', { count: score.reviewCount })
       : null,
-    // `tier` e `sentiment` sono i due modi in cui le fonti dicono a parole ciò
-    // che il numero dice a cifre. Sono vocabolari loro e non si traducono: che
-    // sia scritto "Mighty" è parte dell'informazione.
-    voto.tier,
-    voto.sentiment,
-    voto.percentRecommended !== null
-      ? t('recommended', { percent: Math.round(voto.percentRecommended) })
+    // Tier e sentiment sono le classificazioni originali delle fonti.
+    score.tier,
+    score.sentiment,
+    score.percentRecommended !== null
+      ? t('recommended', { percent: Math.round(score.percentRecommended) })
       : null,
   ].filter(Boolean);
 
-  return (
-    <XStack flexWrap="wrap" items="center" columnGap={8}>
-      {/* L'icona dentro il `dt`: in un `dl` le righe portano solo `dt` e `dd`. */}
-      <XStack render="dt" items="center" gap={8}>
-        <BrandIcon brand={voto.source} size={16} />
-        {/* Il nome della fonte è il link alla sua pagina del gioco: OpenCritic
-            lo chiede accanto al voto, e per le altre è lo stesso gesto. */}
-        <Muted>
-          {href ? (
-            <ExternalLink href={href}>{t(voto.source)}</ExternalLink>
-          ) : (
-            t(voto.source)
-          )}
-        </Muted>
-      </XStack>
-      <Strong render="dd">{Math.round(voto.score)}</Strong>
-      {dettagli.length > 0 && (
-        <Muted render="dd" fontSize={13}>
-          {dettagli.join(' · ')}
-        </Muted>
-      )}
-    </XStack>
-  );
+  return details.length > 0 ? (
+    <Muted fontSize={12} lineHeight={18}>
+      {details.join(' · ')}
+    </Muted>
+  ) : null;
 }
 
 export function CriticScores({ game }: { game: GameDetail }) {
@@ -81,76 +39,105 @@ export function CriticScores({ game }: { game: GameDetail }) {
     staleTime: Infinity,
   });
 
-  // Come per le durate: su un gioco non collegato a IGDB non c'è niente in
-  // arrivo, e annunciare voti che non verranno sarebbe una bugia.
+  // L'arricchimento non parte finché il gioco non è collegato a IGDB.
   if (game.igdbId === null) return null;
-
-  const complessivi = ORDINE.map((source) =>
-    game.scores.find(
-      (voto) => voto.source === source && voto.platformSlug === null,
-    ),
-  ).filter((voto): voto is GameScore => voto !== undefined);
-
-  const perPiattaforma = game.scores
-    .filter((voto) => voto.platformSlug !== null)
-    .sort((a, b) => b.score - a.score);
 
   const nameBySlug = new Map((platforms ?? []).map((p) => [p.slug, p.name]));
 
   return (
-    <YStack gap={12}>
+    <YStack gap={14}>
       <DetailTitle>{t('title')}</DetailTitle>
-      {complessivi.length === 0 ? (
-        <Muted>{t('none')}</Muted>
-      ) : (
-        <YStack render="dl" gap={4} m={0}>
-          {complessivi.map((voto) => (
-            <Complessivo
-              key={voto.source}
-              voto={voto}
-              href={game.links[voto.source]}
-            />
-          ))}
-        </YStack>
-      )}
+      {game.scores.length === 0 && <Muted>{t('none')}</Muted>}
+      {SOURCES.map((source) => {
+        const scores = game.scores.filter((score) => score.source === source);
+        if (scores.length === 0) return null;
+        const overall = scores.find((score) => score.platformSlug === null);
+        const byPlatform = scores
+          .filter((score) => score.platformSlug !== null)
+          .sort((a, b) => b.score - a.score);
+        const href = game.links[source];
 
-      {perPiattaforma.length > 0 && (
-        <YStack gap={4}>
-          <Muted fontSize={13}>{t('byPlatform')}</Muted>
-          <YStack render="dl" gap={4} m={0}>
-            {perPiattaforma.map((voto) => (
-              <XStack
-                key={`${voto.source}-${voto.platformSlug}`}
-                flexWrap="wrap"
-                items="baseline"
-                columnGap={8}
-              >
-                <Muted render="dt" fontSize={13}>
-                  {nameBySlug.get(voto.platformSlug!) ?? voto.platformSlug}
-                </Muted>
-                <Strong render="dd" fontSize={13}>
-                  {Math.round(voto.score)}
+        return (
+          <YStack
+            key={source}
+            p={16}
+            gap={16}
+            rounded={16}
+            bg="$color3"
+            borderWidth={1}
+            borderColor="$borderColor"
+            $max-sm={{ p: 12 }}
+          >
+            <XStack items="center" gap={12}>
+              <BrandIcon brand={source} size={32} />
+              <YStack flex={1} minW={0} gap={4}>
+                <Strong>
+                  {/* OpenCritic richiede il nome come link vicino al voto. */}
+                  {href ? (
+                    <ExternalLink href={href} strong>
+                      {t(source)}
+                    </ExternalLink>
+                  ) : (
+                    t(source)
+                  )}
                 </Strong>
-                {/* Positive, miste e negative: le dà solo Metacritic. */}
-                {voto.positiveCount !== null && (
-                  <Muted render="dd" fontSize={13}>
-                    {t('split', {
-                      positive: voto.positiveCount,
-                      mixed: voto.neutralCount ?? 0,
-                      negative: voto.negativeCount ?? 0,
-                    })}
-                  </Muted>
-                )}
-                {voto.positiveCount === null && voto.reviewCount !== null && (
-                  <Muted render="dd" fontSize={13}>
-                    {t('reviews', { count: voto.reviewCount })}
-                  </Muted>
-                )}
-              </XStack>
-            ))}
+                {overall && <ScoreDetails score={overall} />}
+              </YStack>
+              {overall && <CriticScoreBadge score={overall.score} />}
+            </XStack>
+            {byPlatform.length > 0 && (
+              <YStack gap={10}>
+                <Muted fontSize={12}>{t('byPlatform')}</Muted>
+                <YStack render="dl" m={0} gap={0}>
+                  {byPlatform.map((score, index) => {
+                    const slug = score.platformSlug!;
+                    const name = nameBySlug.get(slug) ?? slug;
+                    const icon = platformIconUrl(slug);
+                    return (
+                      <XStack
+                        key={slug}
+                        gap={12}
+                        py={12}
+                        items="center"
+                        borderTopWidth={index === 0 ? 0 : 1}
+                        borderColor="$borderColor"
+                      >
+                        <YStack render="dt" flex={1} minW={0} gap={5}>
+                          <XStack items="center" gap={8}>
+                            {icon && (
+                              <PlatformIcon src={icon} label={name} size={28} />
+                            )}
+                            <Strong
+                              flex={1}
+                              minW={0}
+                              style={{ overflowWrap: 'anywhere' }}
+                            >
+                              {name}
+                            </Strong>
+                          </XStack>
+                          <ScoreDetails score={score} />
+                          {score.positiveCount !== null && (
+                            <Muted fontSize={12} lineHeight={18}>
+                              {t('split', {
+                                positive: score.positiveCount,
+                                mixed: score.neutralCount ?? 0,
+                                negative: score.negativeCount ?? 0,
+                              })}
+                            </Muted>
+                          )}
+                        </YStack>
+                        <XStack render="dd" m={0}>
+                          <CriticScoreBadge score={score.score} compact />
+                        </XStack>
+                      </XStack>
+                    );
+                  })}
+                </YStack>
+              </YStack>
+            )}
           </YStack>
-        </YStack>
-      )}
+        );
+      })}
     </YStack>
   );
 }

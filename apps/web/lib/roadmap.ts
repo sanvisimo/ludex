@@ -38,6 +38,13 @@ export const roadmap: RoadmapEntry[] = [
   { id: 'categoryPages', status: 'next', areas: ['game', 'library'] },
   { id: 'metaquest', status: 'idea', areas: ['import'] },
   {
+    id: 'dialogDesign',
+    status: 'done',
+    areas: ['game', 'library'],
+    month: '2026-11',
+    points: 3,
+  },
+  {
     id: 'accountDesign',
     status: 'done',
     areas: ['account', 'import'],

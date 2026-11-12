@@ -27,7 +27,6 @@ const meta: Meta<DialogProps> = {
 export default meta;
 type Story = StoryObj<DialogProps>;
 
-/** La forma di «Aggiungi gioco»: trigger, intestazione, un campo, la fascia. */
 export const Default: Story = {
   render: () => (
     <Dialog>
@@ -52,11 +51,6 @@ export const Default: Story = {
   ),
 };
 
-/**
- * Aperta da fuori, com'è la maggior parte degli usi: `open` legato a una riga
- * scelta (`entry !== null`), senza trigger. Parte aperta, così la si vede —
- * e la si fotografa — senza cliccare.
- */
 export const Controlled: Story = {
   render: function Render() {
     const [open, setOpen] = useState(true);
@@ -66,7 +60,7 @@ export const Controlled: Story = {
           Rimuovi Hollow Knight
         </Button>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent closeLabel="Chiudi">
+          <DialogContent closeLabel="Chiudi" size="compact">
             <DialogHeader>
               <DialogTitle>Rimuovere Hollow Knight?</DialogTitle>
               <DialogDescription>
@@ -89,21 +83,15 @@ export const Controlled: Story = {
   },
 };
 
-/**
- * Il comportamento: il trigger apre una finestra col suo nome (dal titolo),
- * Esc la chiude, la x la chiude.
- */
 export const OpenAndClose: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
     await userEvent.click(canvas.getByText('Aggiungi gioco'));
-    // Il pannello sta in un portale, fuori dal canvas della storia.
     const dialog = await screen.findByRole('dialog', {
       name: 'Aggiungi un gioco',
     });
-    // Entra in dissolvenza: visibile a transizione finita, non subito.
     await waitFor(() => expect(dialog).toBeVisible());
 
     await userEvent.keyboard('{Escape}');
@@ -112,5 +100,67 @@ export const OpenAndClose: Story = {
     await userEvent.click(canvas.getByText('Aggiungi gioco'));
     await userEvent.click(await screen.findByLabelText('Chiudi'));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  },
+};
+
+export const LongForm: Story = {
+  render: function Render() {
+    const [open, setOpen] = useState(false);
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <Button onPress={() => setOpen(true)}>Apri modulo lungo</Button>
+        <DialogContent closeLabel="Chiudi" size="wide" maxH={360}>
+          <form onSubmit={(event) => event.preventDefault()}>
+            <YStack gap={20}>
+              <DialogHeader>
+                <DialogTitle>Modifica la tua libreria</DialogTitle>
+                <DialogDescription>
+                  Un modulo con molti campi.
+                </DialogDescription>
+              </DialogHeader>
+              {Array.from({ length: 12 }, (_, index) => (
+                <YStack key={index} gap={6}>
+                  <Label htmlFor={`campo-${index}`}>Campo {index + 1}</Label>
+                  <Input id={`campo-${index}`} />
+                </YStack>
+              ))}
+              <DialogFooter>
+                <DialogClose
+                  render={<Button variant="outline">Annulla</Button>}
+                />
+                <Button type="submit">Salva</Button>
+              </DialogFooter>
+            </YStack>
+          </form>
+        </DialogContent>
+      </Dialog>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole('button', {
+      name: 'Apri modulo lungo',
+    });
+    await userEvent.click(trigger);
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Modifica la tua libreria',
+    });
+    await waitFor(() => expect(dialog).toBeVisible());
+    const close = within(dialog).getByRole('button', { name: 'Chiudi' });
+    const save = within(dialog).getByRole('button', { name: 'Salva' });
+    const scroller = dialog.querySelector('form')!.parentElement!;
+    const checkActions = () => {
+      const bounds = dialog.getBoundingClientRect();
+      for (const action of [close, save]) {
+        const rect = action.getBoundingClientRect();
+        expect(rect.top).toBeGreaterThanOrEqual(bounds.top);
+        expect(rect.bottom).toBeLessThanOrEqual(bounds.bottom);
+      }
+    };
+    await waitFor(checkActions);
+    scroller.scrollTop = scroller.scrollHeight;
+    await waitFor(checkActions);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await expect(trigger).toHaveFocus();
   },
 };

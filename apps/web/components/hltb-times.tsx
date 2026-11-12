@@ -1,19 +1,9 @@
 import type { GameDetail } from '@repo/contracts';
-import { BrandIcon, XStack, YStack } from '@repo/ui';
+import { Badge, BrandIcon, Theme, XStack, YStack } from '@repo/ui';
 import { useTranslations } from 'use-intl';
 
 import { DetailTitle, Muted, Strong } from '@/components/detail-text';
 import { useDuration } from '@/lib/duration';
-
-/**
- * Le durate di HowLongToBeat, tutte e quattro con le segnalazioni: la sezione
- * del dialog «Dettagli» della pagina del gioco (12d), dove sulla pagina c'è
- * solo il riepilogo.
- *
- * Lo step 6 si ferma qui: mostrare il dato. Filtrare per durata è lo step 7 e
- * vive sul backlog — questa resta la schermata che dice se il dato c'è e se ci
- * si può fidare.
- */
 
 type Riga = {
   chiave: 'main' | 'plus' | 'completionist' | 'allStyles';
@@ -70,9 +60,9 @@ export function HltbTimes({ game }: { game: GameDetail }) {
     game.hltbHasVersus === true;
 
   return (
-    <YStack gap={8}>
+    <YStack gap={14}>
       <XStack items="center" gap={8}>
-        <BrandIcon brand="hltb" size={18} />
+        <BrandIcon brand="hltb" size={24} />
         <DetailTitle>{t('title')}</DetailTitle>
       </XStack>
       {game.hltbSyncedAt === null ? (
@@ -81,28 +71,81 @@ export function HltbTimes({ game }: { game: GameDetail }) {
         <Muted>{t('noTimes')}</Muted>
       ) : (
         <>
-          {senzaFine && <Muted>{t('noEnding')}</Muted>}
-          <YStack render="dl" gap={4} m={0}>
-            {righe.map((riga) => (
-              <XStack
-                key={riga.chiave}
-                flexWrap="wrap"
-                items="baseline"
-                columnGap={8}
-              >
-                <Muted render="dt">{t(riga.chiave)}</Muted>
-                <Strong render="dd">{duration(riga.minuti!)}</Strong>
-                {riga.segnalazioni !== null && (
-                  <Muted render="dd" fontSize={13}>
-                    {t('reports', { count: riga.segnalazioni })}
-                    {riga.segnalazioni < POCHE_SEGNALAZIONI &&
-                      ` · ${t('fewReports')}`}
-                  </Muted>
-                )}
-              </XStack>
-            ))}
+          {senzaFine && (
+            <Theme name="amber">
+              <Muted p={12} rounded={10} bg="$color3" color="$color12">
+                {t('noEnding')}
+              </Muted>
+            </Theme>
+          )}
+          <YStack gap={10}>
+            {righe.map((riga) => {
+              const blue = riga.chiave === 'main';
+              const neutral = riga.chiave === 'allStyles';
+              return (
+                <Theme key={riga.chiave} name={blue ? 'blue' : undefined}>
+                  <XStack
+                    render="dl"
+                    m={0}
+                    items="center"
+                    gap={12}
+                    p={14}
+                    rounded={12}
+                    bg={blue || neutral ? '$color3' : '$selectionBackground'}
+                    borderLeftWidth={3}
+                    borderColor={
+                      blue
+                        ? '$color9'
+                        : neutral
+                          ? '$color7'
+                          : '$selectionBorder'
+                    }
+                  >
+                    <YStack render="dt" flex={1} minW={0} gap={5}>
+                      <Strong fontSize={13}>{t(riga.chiave)}</Strong>
+                      {riga.segnalazioni !== null && (
+                        <Muted
+                          fontSize={12}
+                          lineHeight={18}
+                          color={blue ? '$color12' : '$color11'}
+                        >
+                          {t('reports', { count: riga.segnalazioni })}
+                        </Muted>
+                      )}
+                      {riga.segnalazioni !== null &&
+                        riga.segnalazioni < POCHE_SEGNALAZIONI && (
+                          <Badge
+                            variant="warning"
+                            self="flex-start"
+                            height="auto"
+                            py={2}
+                          >
+                            {t('fewReports')}
+                          </Badge>
+                        )}
+                    </YStack>
+                    <Strong
+                      render="dd"
+                      fontFamily="$heading"
+                      fontSize={26}
+                      lineHeight={32}
+                      shrink={0}
+                      color={
+                        blue
+                          ? '$color12'
+                          : neutral
+                            ? '$color12'
+                            : '$selectionColor'
+                      }
+                      style={{ fontVariantNumeric: 'tabular-nums' }}
+                    >
+                      {duration(riga.minuti!)}
+                    </Strong>
+                  </XStack>
+                </Theme>
+              );
+            })}
           </YStack>
-          {/* Solo, coop, versus: che tipo di tempi ha senso leggere. */}
           <Muted fontSize={13}>
             {[
               game.hltbHasSolo && t('solo'),

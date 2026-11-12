@@ -21,14 +21,7 @@ import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 
-/**
- * Dare un nome a un account, o toglierglielo.
- *
- * Serve soprattutto a distinguerne due dello stesso negozio: su Amazon il
- * negozio rende lo stesso nome per entrambi, e l'etichetta è l'unica cosa che
- * li separa nella lista dei possessi. Una stringa vuota è un valore legittimo,
- * l'etichetta cancellata: è un gesto e non un errore.
- */
+// L'etichetta vuota è ammessa: rimuove il nome assegnato all'account.
 export function RenameAccountDialog({
   account,
   onOpenChange,
@@ -38,7 +31,7 @@ export function RenameAccountDialog({
 }) {
   return (
     <Dialog open={account !== null} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent size="compact">
         {/* Il modulo è un figlio che si rimonta per ogni account: il campo
             riparte dall'etichetta di quello aperto, non dell'ultimo. */}
         {account && (
@@ -78,7 +71,6 @@ function RenameForm({
       await queryClient.invalidateQueries({
         queryKey: api.accounts.list.key(),
       });
-      // Il nome dell'account compare anche sui possessi, nella scheda del gioco.
       await queryClient.invalidateQueries({ queryKey: api.backlog.list.key() });
       onDone();
     },
@@ -111,8 +103,6 @@ function RenameForm({
             maxLength={60}
             autoFocus
           />
-          {/* Il nome che dà il negozio, accanto a quello che sta per scrivere:
-              serve a ritrovare quale account è. */}
           {account.displayName && (
             <Text fontSize={13} lineHeight={18} color="$color11">
               {t('renameKnownAs', { name: account.displayName })}
