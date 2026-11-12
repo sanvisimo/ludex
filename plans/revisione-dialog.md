@@ -47,3 +47,9 @@ nessun overflow, nessuna violazione axe e nessun pageerror. Con quattro voti
 per piattaforma la dialog misura 960 × 826 px sul desktop alto 1000 px e non
 richiede scroll. Con molte piattaforme mantiene lo scroll interno. Riscontri:
 [report desktop](../docs/brand/pilecue/dialog-review/desktop-columns-report.json).
+
+## Card della pagina del gioco allineata alla dialog
+
+Commento in uso: la card durata/critica usa gli stessi colori della dialog.
+Storia principale blu e le altre durate viola, con il bordo sinistro; i voti
+con `CriticScoreBadge` compatto, rosso, ambra o verde come nei dettagli.
