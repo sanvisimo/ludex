@@ -1538,6 +1538,14 @@
         "title": "Le pagine categoria",
         "text": "Il catalogo di tutto PileCue con i filtri del backlog: generi, temi, tipo, durata, voto della critica. E da lì porteranno i badge della pagina del gioco, anche senza accesso."
       },
+      "addToBacklog": {
+        "title": "Aggiungi al backlog dalla pagina del gioco",
+        "text": "Su un gioco che non hai, accanto ad «Aggiungi a playlist» ci sarà anche il pulsante per metterlo nel backlog."
+      },
+      "playtime": {
+        "title": "Tracciamento dei tempi di gioco",
+        "text": "Quanto hai giocato a ogni gioco, registrato in PileCue."
+      },
       "gameVersions": {
         "title": "Edizioni estese e gioco principale",
         "p1": "Nella pagina del gioco le edizioni estese stanno insieme a remake e remaster, nella fila «Altre versioni».",
