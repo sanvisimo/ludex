@@ -1507,6 +1507,10 @@
         "p2": "EA doesn't allow a link that lasts: to update the library you use “Import again” on the account card.",
         "p3": "Every EA copy links to its page in the EA catalog, and the game page to the EA website."
       },
+      "nintendoSwitch2": {
+        "title": "Switch 2 games from Nintendo",
+        "text": "The Nintendo import recognizes Switch 2 games, Nintendo Switch 2 Editions included: they used to be skipped. Just refresh your library."
+      },
       "metaquest": {
         "title": "The Meta Quest library",
         "text": "The feasibility study is done: to go further we need someone with a headset to try the import"

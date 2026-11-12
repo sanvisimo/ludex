@@ -204,7 +204,7 @@ describe('buildNintendoEntries', () => {
         giocato({
           titleId: '0100000000000001',
           name: 'Dallo storico',
-          platform: 'BEE',
+          platform: 'CTR',
         }),
       ],
       [
@@ -217,7 +217,7 @@ describe('buildNintendoEntries', () => {
     );
 
     expect(entries).toEqual([]);
-    expect(scartate).toEqual(['Dalle carte [ZZZ]', 'Dallo storico [BEE]']);
+    expect(scartate).toEqual(['Dalle carte [ZZZ]', 'Dallo storico [CTR]']);
   });
 
   it('la Switch 2 delle Virtual Game Cards è OUNCE', () => {
@@ -266,16 +266,17 @@ describe('buildNintendoEntries', () => {
 });
 
 describe('toPlatformSlug', () => {
-  it('traduce HAC e NX in Switch, OUNCE in Switch 2, anche scritti diversamente', () => {
+  it('traduce HAC e NX in Switch, BEE e OUNCE in Switch 2, anche scritti diversamente', () => {
     expect(toPlatformSlug('HAC')).toBe('nintendo_switch');
     expect(toPlatformSlug(' nx ')).toBe('nintendo_switch');
+    expect(toPlatformSlug('BEE')).toBe('nintendo_switch2');
     expect(toPlatformSlug('OUNCE')).toBe('nintendo_switch2');
   });
 
   it('rende null su tutto il resto', () => {
     expect(toPlatformSlug(null)).toBe(null);
     expect(toPlatformSlug('')).toBe(null);
-    expect(toPlatformSlug('BEE')).toBe(null);
+    expect(toPlatformSlug('CTR')).toBe(null);
   });
 });
 

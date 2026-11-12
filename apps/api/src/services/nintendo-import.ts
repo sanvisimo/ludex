@@ -67,14 +67,17 @@ import {
  * su Switch 1, e si salta con un log.
  *
  * `HAC` è dello storico e `NX` delle Virtual Game Cards, e sono tutte e due
- * misurate. `OUNCE` — la Switch 2 — viene dal codice di Playnite (l'estensione
- * Nintendo di XenorPLxx), **non è misurato**: l'account di prova non ha giochi
- * Switch 2. Il codice dello **storico** per la Switch 2 non si conosce, e finché
- * non compare in un log quei giochi, lì, non entrano.
+ * misurate. `BEE` è la Switch 2, misurata il 12/11/2026 su un import vero
+ * (_Tears of the Kingdom – Nintendo Switch 2 Edition_): è il prefisso dei codici
+ * prodotto Switch 2 come `HAC` lo è dei Switch, quindi con ogni probabilità
+ * dello storico, ma il log non distingue la fonte. `OUNCE` viene dal codice di
+ * Playnite (l'estensione Nintendo di XenorPLxx) per le Virtual Game Cards, **non
+ * è misurato**.
  */
 const PLATFORMS: Record<string, string> = {
   HAC: 'nintendo_switch',
   NX: 'nintendo_switch',
+  BEE: 'nintendo_switch2',
   OUNCE: 'nintendo_switch2',
 };
 

@@ -295,8 +295,7 @@ export type NintendoPlayedTitle = {
   titleId: string;
   name: string;
   /**
-   * Il codice hardware: `HAC` per la Switch 1, misurato. Quello della Switch 2
-   * **non è misurato**: l'account di prova non ha giochi Switch 2.
+   * Il codice hardware: `HAC` per la Switch 1 e `BEE` per la Switch 2, misurati.
    * `deviceType` è assente su tutte le righe viste.
    */
   platform: string | null;
