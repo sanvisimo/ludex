@@ -394,7 +394,6 @@
         "openOn": "Apri su {store}",
         "loadFailed": "Non riesco a caricare le voci.",
         "resolveTitle": "Collega a un gioco",
-        "externalId": "Id del negozio",
         "back": "Torna all'elenco",
         "resolved": "{name} collegato: ora è nella lista",
         "resolveFailed": "Non sono riuscito a collegare la voce",
@@ -580,7 +579,6 @@
       "suggest": "Suggerisci il gioco giusto (facoltativo)",
       "searchIgdb": "Cerca su IGDB",
       "chosen": "{name} · IGDB {id}",
-      "remove": "Togli",
       "orName": "Oppure scrivi il nome",
       "note": "Nota (facoltativa)",
       "notePlaceholder": "Es. è il remake, su Switch c'è solo quello",
@@ -1751,23 +1749,28 @@
       "title": "Inserisci id {source}",
       "state": "Stato: {status}",
       "candidates": "Candidati scartati dal match",
-      "use": "Usa questo",
       "label": "Id, indirizzo della scheda o nome",
       "taken": "L'id {id} è già di «{game}»",
       "invalid": "Non è un id: per un nome usa «Cerca».",
-      "cancel": "Chiudi",
       "saved": "Id salvato, fonte in coda",
       "failed": "Non sono riuscito a salvare l'id",
       "search": "Cerca",
-      "add": "Aggiungi",
       "cost": "Cercare su OpenCritic usa 1 delle 25 ricerche del giorno.",
       "left": "Ne restano {count} per oggi.",
       "results": "Risultati",
       "choose": "Scegli",
-      "noResults": "Nessun risultato.",
       "searchFailed": "La ricerca non è andata.",
       "quota": "Le ricerche OpenCritic di oggi sono finite.",
-      "disabled": "OpenCritic è spento in questo ambiente."
+      "disabled": "OpenCritic è spento in questo ambiente.",
+      "save": "Salva ID",
+      "saving": "Salvataggio…",
+      "gameDetails": "Dettagli del gioco",
+      "manualHint": "Cerca per nome oppure incolla un ID o un link della fonte.",
+      "searchHint": "Cerca il titolo per confrontare le copertine e scegliere la scheda giusta.",
+      "emptyHint": "Prova con un titolo più breve oppure incolla un ID o un link della fonte.",
+      "lookupFailed": "Non riesco a verificare questo ID. Riprova.",
+      "selectionHint": "Seleziona un risultato o incolla un ID o un link.",
+      "manualSelection": "ID inserito a mano"
     },
     "forbidden": "Questa sezione è solo per gli admin.",
     "igdbPick": {
@@ -1778,9 +1781,7 @@
       "clearPlatform": "Togli il filtro",
       "search": "Cerca",
       "searchFailed": "La ricerca non è andata.",
-      "noResults": "Nessun risultato.",
-      "choose": "Scegli",
-      "inCatalog": "in PileCue"
+      "choose": "Scegli"
     },
     "unresolved": {
       "title": "Scarti d'import",
@@ -1814,11 +1815,9 @@
       "hiddenShort": "{count} {kind}",
       "details": "Dettagli di {name}",
       "detail": {
-        "externalId": "Id sul negozio",
         "libraries": "In {count, plural, one {# libreria} other {# librerie}}, {visible} da sistemare",
         "hidden": "Già nascosta: {list}",
         "notHidden": "Nessuno l'ha nascosta.",
-        "openOn": "Apri su {store}",
         "linkHint": "Scegli il gioco giusto: diventa quello per tutti."
       }
     },
@@ -1875,10 +1874,7 @@
     },
     "repoint": {
       "title": "Non è questo gioco",
-      "current": "{store} · {id} → oggi: {game}",
-      "currentTitled": "{store} · {id} «{title}» → oggi: {game}",
       "suggested": "Suggerito: {list}",
-      "pick": "Il gioco giusto",
       "preview": "Cosa succede",
       "linkTo": "La riga {store} · {id} punta a «{game}»",
       "notInCatalog": "(lo aggiunge al catalogo)",
@@ -1893,7 +1889,8 @@
       "done": "Ripuntato: {copies, plural, =0 {nessuna copia} one {# copia} other {# copie}} spostate",
       "failed": "Non sono riuscito a ripuntarlo",
       "sameGame": "Il collegamento punta già a questo gioco.",
-      "previewFailed": "Non sono riuscito a preparare l'anteprima"
+      "previewFailed": "Non sono riuscito a preparare l'anteprima",
+      "currentlyLinked": "Collegato attualmente a"
     },
     "unlink": {
       "title": "Scollega questo id",
@@ -2124,5 +2121,29 @@
     "title": "Pagina non trovata",
     "description": "Questo indirizzo non esiste o non è più disponibile.",
     "back": "Torna al catalogo"
+  },
+  "gameMatch": {
+    "close": "Chiudi",
+    "cancel": "Annulla",
+    "enlargeCover": "Ingrandisci la copertina di {name}",
+    "coverAlt": "Copertina di {name}",
+    "storeDetails": "Dettagli del negozio",
+    "copyId": "Copia ID",
+    "idCopied": "ID copiato",
+    "copyFailed": "Non sono riuscito a copiare l’ID",
+    "searchPlaceholder": "Titolo, ID o link IGDB",
+    "searching": "Ricerca in corso…",
+    "startSearch": "Scrivi almeno due caratteri per cercare.",
+    "results": "{count, plural, =0 {Nessun risultato} one {# risultato} other {# risultati}}",
+    "retry": "Riprova",
+    "noResultsFor": "Nessun risultato per “{query}”",
+    "noResultsHint": "Prova con un titolo più breve, senza marchi o nomi di edizioni, oppure incolla un link IGDB.",
+    "selectGame": "Seleziona {name}",
+    "selected": "Selezionato",
+    "selectHint": "Seleziona il gioco da collegare.",
+    "link": "Collega gioco",
+    "saving": "Collegamento…",
+    "alreadyLinked": "Già collegato",
+    "alreadyLinkedGame": "{name} è già collegato"
   }
 }

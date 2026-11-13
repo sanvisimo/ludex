@@ -18,22 +18,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
-import { IgdbPicker } from '@/components/admin/igdb-pick-dialog';
+import { IgdbMatch } from '@/components/admin/igdb-pick-dialog';
+import { StoreEntryCard } from '@/components/store-entry-card';
 import { UnresolvedCover } from '@/components/unresolved-row';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useStoreLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 import { ExternalLink } from '@/src/components/external-link';
 
-/**
- * Le voci di una wishlist di negozio che l'import non ha saputo legare a un gioco
- * (15e): si collegano a mano a un gioco di IGDB, o si mettono da parte se non sono
- * giochi (un software, un bundle). Quelle messe da parte stanno sotto «Mostra le
- * nascoste», e si rimettono fra quelle da sistemare.
- *
- * Le voci vengono dal negozio e si riscrivono a ogni aggiornamento (nome,
- * copertina); ciò che qui si decide — nascondere — resta.
- */
 export function WishlistUnresolvedDialog({
   listId,
   open,
@@ -44,6 +36,7 @@ export function WishlistUnresolvedDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const t = useTranslations('wishlist.store.unresolved');
+  const tMatch = useTranslations('gameMatch');
   const format = useFormatter();
   const storeLabels = useStoreLabels();
   const errorMessage = useApiErrorMessage();
@@ -158,70 +151,59 @@ export function WishlistUnresolvedDialog({
       open={open}
       onOpenChange={(next) => {
         onOpenChange(next);
-        // Riaprendolo si riparte dall'elenco.
         if (!next) {
           setResolving(null);
           setShowHidden(false);
         }
       }}
     >
-      <DialogContent>
+      <DialogContent
+        size={resolving ? 'wide' : 'default'}
+        $lg={{ maxW: resolving ? 960 : 560 }}
+        closeLabel={tMatch('close')}
+      >
         {resolving ? (
           <>
             <DialogHeader>
               <DialogTitle>{t('resolveTitle')}</DialogTitle>
             </DialogHeader>
-            <YStack gap={16}>
-              <XStack gap={16} items="flex-start">
-                <UnresolvedCover
-                  key={resolving.id}
-                  entry={resolving}
-                  width={90}
-                  height={128}
-                />
-                <YStack flex={1} minW={0} gap={6}>
-                  <Text fontSize={14} fontWeight="500" color="$color12">
-                    {resolving.name}
-                  </Text>
-                  <Text fontSize={13} color="$color11">
-                    {storeLabels[resolving.store]}
-                  </Text>
-                  <YStack>
-                    <Text fontSize={12} color="$color11">
-                      {t('externalId')}
-                    </Text>
-                    {/* Intero, e selezionabile: è ciò che si copia per cercarlo. */}
-                    <Text
-                      fontSize={13}
-                      color="$color12"
-                      {...({
-                        style: { wordBreak: 'break-all', userSelect: 'text' },
-                      } as object)}
-                    >
-                      {resolving.externalId}
-                    </Text>
-                  </YStack>
-                </YStack>
-              </XStack>
-              <Button
-                variant="ghost"
-                size="sm"
-                self="flex-start"
-                onClick={() => setResolving(null)}
-              >
-                <ChevronLeft size={14} color="$color11" />
-                {t('back')}
-              </Button>
-              {/* Rimontato a ogni voce: riparte dal suo nome, e lo cerca. */}
-              <IgdbPicker
-                key={resolving.id}
-                initialQuery={resolving.name}
-                pending={resolve.isPending}
-                onPick={(hit) =>
-                  resolve.mutate({ id: resolving.id, igdbId: hit.igdbId })
-                }
-              />
-            </YStack>
+            <IgdbMatch
+              key={resolving.id}
+              initialQuery={resolving.name}
+              pending={resolve.isPending}
+              onConfirm={(hit) =>
+                resolve.mutate({ id: resolving.id, igdbId: hit.igdbId })
+              }
+              onCancel={() => setResolving(null)}
+              reference={
+                <>
+                  <StoreEntryCard
+                    reference
+                    store={resolving.store}
+                    externalIds={[resolving.externalId]}
+                    imageUrl={resolving.imageUrl}
+                    title={resolving.name}
+                    subtitle={storeLabels[resolving.store]}
+                    facts={
+                      resolving.addedAt
+                        ? [t('addedOn', { date: date(resolving.addedAt) })]
+                        : []
+                    }
+                    pageUrl={storePageUrl(resolving.store, resolving.storePage)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    self="flex-start"
+                    onPress={() => setResolving(null)}
+                    disabled={resolve.isPending}
+                  >
+                    <ChevronLeft size={14} />
+                    {t('back')}
+                  </Button>
+                </>
+              }
+            />
           </>
         ) : (
           <>
@@ -231,7 +213,6 @@ export function WishlistUnresolvedDialog({
             </DialogHeader>
             <YStack
               gap={0}
-              // Molte voci non devono allungare il dialogo oltre la finestra.
               {...({
                 style: { maxHeight: '60vh', overflowY: 'auto' },
               } as object)}

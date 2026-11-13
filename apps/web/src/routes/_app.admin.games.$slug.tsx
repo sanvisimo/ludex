@@ -35,7 +35,6 @@ import { useGameTypeLabels } from '@/lib/labels';
 import { api, client } from '@/lib/orpc';
 import { ExternalLink } from '@/src/components/external-link';
 
-// `giochi_` e non `giochi`: la scheda non sta dentro la lista, le sta accanto.
 export const Route = createFileRoute('/_app/admin/games/$slug')({
   component: GameAdminPage,
 });
@@ -44,12 +43,6 @@ type Link = GameAdminDetail['links'][number];
 type Source = GameAdminDetail['sources'][number];
 type Report = GameAdminDetail['reports'][number];
 
-/**
- * La scheda admin di un gioco (11a, frame 5 del wireframe): tutto ciò che
- * l'admin può correggere su un gioco solo. I collegamenti dai negozi, con
- * «Non è questo gioco» e «Scollega»; le fonti, con «Ritenta» e «Inserisci id», anche su una
- * fonte `ok` agganciata male; le segnalazioni aperte.
- */
 function GameAdminPage() {
   const t = useTranslations('admin');
   const { slug } = Route.useParams();
@@ -126,8 +119,6 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       header: t('game.externalId'),
       flex: 2,
       minWidth: 120,
-      // Il link alla pagina sul negozio, per controllare che sia il gioco
-      // giusto: dove il negozio un link non lo dà, solo l'id.
       render: (link) =>
         link.url ? (
           <ExternalLink href={link.url}>
@@ -142,10 +133,9 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       header: t('game.storeTitle'),
       flex: 2,
       minWidth: 180,
-      // Come il negozio chiama e mostra quell'id: due id Epic sullo stesso
-      // gioco si distinguono solo così, perché Epic una pagina da aprire non
-      // la dà. Il titolo può ingannare (Aiko's Choice ha quello del gioco
-      // base), la copertina no.
+      // Due id Epic sullo stesso gioco si distinguono solo così: Epic una
+      // pagina da aprire non la dà. Il titolo può ingannare (Aiko's Choice ha
+      // quello del gioco base), la copertina no.
       render: (link) => (
         <XStack gap={10} items="center" minW={0}>
           <UnresolvedCover
@@ -225,7 +215,6 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       header: t('game.id'),
       flex: 1,
       minWidth: 120,
-      // Il link alla scheda sulla fonte, per controllare che sia quella giusta.
       render: (row) => {
         const id =
           row.externalId ??
@@ -306,8 +295,6 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
 
   return (
     <YStack gap={24}>
-      {/* Alla scheda si arriva da più posti — segnalati, dati mancanti, la
-          ricerca — e «indietro» torna da dove si è venuti. */}
       <Text
         render="button"
         fontSize={13}
@@ -427,10 +414,6 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
                   </Text>
                 ))}
               </YStack>
-              {/* Il gesto che risolve la segnalazione, accanto a lei: sulla
-                  copia si ripunta il collegamento di quel negozio, sulla fonte
-                  si scrive l'id. Prima stava solo nelle tabelle sopra, e
-                  sembrava che si potesse soltanto archiviare. */}
               <ReportFix
                 report={report}
                 detail={detail}
@@ -454,6 +437,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       <RepointDialog
         link={repointing}
         gameName={game.name}
+        gameIgdbId={game.igdbId}
         suggestions={detail.reports
           .filter((report) => report.store === repointing?.source)
           .flatMap((report) => report.suggestions)}
@@ -497,7 +481,6 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
   );
 }
 
-/** Il gesto che risolve una segnalazione: ripuntare la copia, o l'id della fonte. */
 function ReportFix({
   report,
   detail,

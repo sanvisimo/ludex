@@ -14,7 +14,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Separator,
   Text,
   XStack,
   YStack,
@@ -24,18 +23,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
-import { IgdbPicker } from '@/components/admin/igdb-pick-dialog';
-import { UnresolvedCover } from '@/components/unresolved-row';
+import { IgdbMatch } from '@/components/admin/igdb-pick-dialog';
+import { StoreEntryCard } from '@/components/store-entry-card';
 import { api } from '@/lib/orpc';
-import { ExternalLink } from '@/src/components/external-link';
 
-/** I tipi che si nascondono per tutti: `unwanted` è una preferenza. */
 export const globalKinds = hiddenKindValues.filter(
   (kind) => kind !== 'unwanted',
 );
 export type GlobalKind = (typeof globalKinds)[number];
 
-/** «7 App · 2 DLC», la forma corta per la cella della tabella. */
 export function useHiddenSummary() {
   const t = useTranslations('admin.unresolved');
   const tKind = useTranslations('account.hiddenTab.tabs');
@@ -48,15 +44,6 @@ export function useHiddenSummary() {
       .join(separator);
 }
 
-/**
- * Il dettaglio di uno scarto (11a): la voce com'è, con la copertina grande e
- * tutti i dati, e i due gesti per tutti. Nella tabella i testi si tagliano e
- * non si capisce cosa si sta collegando: qui no.
- *
- * «Collega per tutti» non apre un secondo dialogo: apre la ricerca IGDB qui
- * sotto, così si sceglie il gioco con la voce sotto gli occhi. Dalla tabella
- * il dialogo si apre con la ricerca già aperta (`searching`).
- */
 export function UnresolvedDetailDialog({
   row,
   searching,
@@ -75,13 +62,13 @@ export function UnresolvedDetailDialog({
   onHide: (row: UnresolvedGroup, kind: GlobalKind) => void;
 }) {
   const t = useTranslations('admin.unresolved');
+  const tMatch = useTranslations('gameMatch');
   const tStore = useTranslations('store');
   const tKind = useTranslations('account.hiddenTab.tabs');
   const hiddenSummary = useHiddenSummary();
   const platforms = useQuery(api.platforms.list.queryOptions());
   const [search, setSearch] = useState(searching);
 
-  // Ogni voce si apre come la chiede chi la apre.
   useEffect(() => setSearch(searching), [row, searching]);
 
   const platform = row?.platformSlug
@@ -91,108 +78,81 @@ export function UnresolvedDetailDialog({
   const pageUrl = row ? storePageUrl(row.store, row.storePage) : null;
   const hidden = row ? hiddenSummary(row, ', ') : '';
 
+  const reference = row ? (
+    <>
+      <StoreEntryCard
+        reference
+        store={row.store}
+        externalIds={[row.externalId]}
+        imageUrl={row.imageUrl}
+        title={row.name}
+        subtitle={[tStore(row.store), platform].filter(Boolean).join(' · ')}
+        facts={[
+          hidden ? t('detail.hidden', { list: hidden }) : t('detail.notHidden'),
+        ]}
+        pageUrl={pageUrl}
+      >
+        <Text fontSize={13} lineHeight={20}>
+          {t('detail.libraries', {
+            count: row.libraries,
+            visible: row.visible,
+          })}
+        </Text>
+      </StoreEntryCard>
+      <XStack gap={8} flexWrap="wrap">
+        {!search ? (
+          <Button onPress={() => setSearch(true)}>
+            <Link2 size={16} />
+            {t('link')}
+          </Button>
+        ) : null}
+        <DropdownMenu align="start">
+          <DropdownMenuTrigger
+            render={
+              <Button variant="outline" disabled={hidePending || linkPending}>
+                <EyeOff size={16} />
+                {t('hide')}
+                <ChevronDown size={14} />
+              </Button>
+            }
+          />
+          <DropdownMenuContent>
+            {globalKinds.map((kind) => (
+              <DropdownMenuItem key={kind} onClick={() => onHide(row, kind)}>
+                {t('hideAs', { kind: tKind(kind) })}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </XStack>
+    </>
+  ) : null;
+
   return (
     <Dialog open={row !== null} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent
+        size={search ? 'wide' : 'default'}
+        $lg={{ maxW: search ? 960 : 560 }}
+        closeLabel={tMatch('close')}
+      >
         <DialogHeader>
           <DialogTitle>{row?.name ?? ''}</DialogTitle>
         </DialogHeader>
-
         {row ? (
-          <YStack gap={16}>
-            <XStack gap={16} items="flex-start">
-              <UnresolvedCover
-                key={`${row.store}-${row.externalId}`}
-                entry={row}
-                width={90}
-                height={128}
-              />
-              <YStack flex={1} minW={0} gap={6}>
-                <Text fontSize={14} color="$color12">
-                  {[tStore(row.store), platform].filter(Boolean).join(' · ')}
-                </Text>
-                <YStack>
-                  <Text fontSize={12} color="$color11">
-                    {t('detail.externalId')}
-                  </Text>
-                  {/* Intero, e selezionabile: è ciò che si copia per cercarlo. */}
-                  <Text
-                    fontSize={13}
-                    color="$color12"
-                    {...({
-                      style: { wordBreak: 'break-all', userSelect: 'text' },
-                    } as object)}
-                  >
-                    {row.externalId}
-                  </Text>
-                </YStack>
-                <Text fontSize={13} color="$color12">
-                  {t('detail.libraries', {
-                    count: row.libraries,
-                    visible: row.visible,
-                  })}
-                </Text>
-                <Text fontSize={13} color="$color11">
-                  {hidden
-                    ? t('detail.hidden', { list: hidden })
-                    : t('detail.notHidden')}
-                </Text>
-                {pageUrl ? (
-                  <Text fontSize={13}>
-                    <ExternalLink href={pageUrl}>
-                      {t('detail.openOn', { store: tStore(row.store) })}
-                    </ExternalLink>
-                  </Text>
-                ) : null}
-              </YStack>
-            </XStack>
-
-            <XStack gap={8} flexWrap="wrap">
-              <Button
-                variant={search ? 'secondary' : 'default'}
-                onPress={() => setSearch(true)}
-              >
-                <Link2 size={16} />
-                {t('link')}
-              </Button>
-              <DropdownMenu align="start">
-                <DropdownMenuTrigger
-                  render={
-                    <Button variant="outline" disabled={hidePending}>
-                      <EyeOff size={16} />
-                      {t('hide')}
-                      <ChevronDown size={14} />
-                    </Button>
-                  }
-                />
-                <DropdownMenuContent>
-                  {globalKinds.map((kind) => (
-                    <DropdownMenuItem
-                      key={kind}
-                      onClick={() => onHide(row, kind)}
-                    >
-                      {t('hideAs', { kind: tKind(kind) })}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </XStack>
-
-            {search ? (
-              <>
-                <Separator />
-                <Text fontSize={13} color="$color11">
-                  {t('detail.linkHint')}
-                </Text>
-                <IgdbPicker
-                  key={`${row.store}-${row.externalId}`}
-                  initialQuery={row.name}
-                  pending={linkPending}
-                  onPick={(hit) => onLink(row, hit)}
-                />
-              </>
-            ) : null}
-          </YStack>
+          search ? (
+            <IgdbMatch
+              key={`${row.store}-${row.externalId}`}
+              initialQuery={row.name}
+              pending={linkPending || hidePending}
+              onConfirm={(hit) => onLink(row, hit)}
+              onCancel={() => onOpenChange(false)}
+              confirmLabel={t('link')}
+              hint={t('detail.linkHint')}
+              reference={reference}
+            />
+          ) : (
+            <YStack gap={16}>{reference}</YStack>
+          )
         ) : null}
       </DialogContent>
     </Dialog>

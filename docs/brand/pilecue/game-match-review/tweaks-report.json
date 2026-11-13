@@ -1,0 +1,181 @@
+{
+  "cases": [
+    {
+      "key": "source-hltb-dark-1440",
+      "passed": true
+    },
+    {
+      "key": "source-hltb-dark-390",
+      "passed": true
+    },
+    {
+      "key": "source-hltb-dark-320",
+      "passed": true
+    },
+    {
+      "key": "source-hltb-light-1440",
+      "passed": true
+    },
+    {
+      "key": "source-hltb-light-390",
+      "passed": true
+    },
+    {
+      "key": "source-hltb-light-320",
+      "passed": true
+    },
+    {
+      "key": "source-metacritic-dark-1440",
+      "passed": true
+    },
+    {
+      "key": "source-metacritic-dark-390",
+      "passed": true
+    },
+    {
+      "key": "source-metacritic-dark-320",
+      "passed": true
+    },
+    {
+      "key": "source-metacritic-light-1440",
+      "passed": true
+    },
+    {
+      "key": "source-metacritic-light-390",
+      "passed": true
+    },
+    {
+      "key": "source-metacritic-light-320",
+      "passed": true
+    },
+    {
+      "key": "source-opencritic-dark-1440",
+      "passed": true
+    },
+    {
+      "key": "source-opencritic-dark-390",
+      "passed": true
+    },
+    {
+      "key": "source-opencritic-dark-320",
+      "passed": true
+    },
+    {
+      "key": "source-opencritic-light-1440",
+      "passed": true
+    },
+    {
+      "key": "source-opencritic-light-390",
+      "passed": true
+    },
+    {
+      "key": "source-opencritic-light-320",
+      "passed": true
+    },
+    {
+      "key": "repoint-current-dark-1440",
+      "passed": true
+    },
+    {
+      "key": "repoint-current-dark-390",
+      "passed": true
+    },
+    {
+      "key": "repoint-current-dark-320",
+      "passed": true
+    },
+    {
+      "key": "repoint-current-light-1440",
+      "passed": true
+    },
+    {
+      "key": "repoint-current-light-390",
+      "passed": true
+    },
+    {
+      "key": "repoint-current-light-320",
+      "passed": true
+    },
+    {
+      "key": "copy-inline-dark-1440",
+      "passed": true
+    },
+    {
+      "key": "copy-inline-dark-390",
+      "passed": true
+    },
+    {
+      "key": "copy-inline-light-1440",
+      "passed": true
+    },
+    {
+      "key": "copy-inline-light-390",
+      "passed": true
+    },
+    {
+      "key": "manual-url-hltb",
+      "passed": true
+    },
+    {
+      "key": "manual-url-metacritic",
+      "passed": true
+    },
+    {
+      "key": "manual-url-opencritic",
+      "passed": true
+    },
+    {
+      "key": "search-and-selection-reset",
+      "passed": true
+    },
+    {
+      "key": "opencritic-quota",
+      "passed": true
+    },
+    {
+      "key": "opencritic-disabled",
+      "passed": true
+    },
+    {
+      "key": "edge-1024-&long",
+      "passed": true
+    },
+    {
+      "key": "edge-1023-&long",
+      "passed": true
+    },
+    {
+      "key": "edge-320-&long&missing",
+      "passed": true
+    },
+    {
+      "key": "edge-1280-&candidates",
+      "passed": true
+    },
+    {
+      "key": "english-set-id",
+      "passed": true
+    },
+    {
+      "key": "english-current-link",
+      "passed": true
+    },
+    {
+      "key": "lookup-error-and-recovery",
+      "passed": true
+    },
+    {
+      "key": "copy-keyboard-and-tooltip",
+      "passed": true
+    }
+  ],
+  "failures": [],
+  "accessibility": {
+    "scans": 22,
+    "violations": 0
+  },
+  "environment": {
+    "browser": "Chromium",
+    "data": "Componenti reali, dati fittizi e API intercettate; nessuna modifica a dati utente."
+  }
+}

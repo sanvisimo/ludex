@@ -5,14 +5,12 @@ import {
   Button,
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   Skeleton,
   Text,
   toast,
-  XStack,
   YStack,
 } from '@repo/ui';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -20,33 +18,30 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { IgdbPicker } from '@/components/admin/igdb-pick-dialog';
-import { UnresolvedCover } from '@/components/unresolved-row';
+import { StoreEntryCard } from '@/components/store-entry-card';
 import { hasErrorCode, useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 
 type Link = GameAdminDetail['links'][number];
 type Suggestion = GameAdminDetail['reports'][number]['suggestions'][number];
 
-/**
- * «Non è questo gioco» (11a, frame 6 del wireframe): un dialogo solo, in due
- * tempi. Prima si sceglie il gioco giusto con la ricerca IGDB — che parte dal
- * suggerimento di chi l'ha segnalato, se c'è —, poi si vede cosa succede utente
- * per utente, e solo allora si conferma. L'anteprima non scrive niente.
- */
 export function RepointDialog({
   link,
   gameName,
+  gameIgdbId,
   suggestions,
   onOpenChange,
   onDone,
 }: {
   link: Link | null;
   gameName: string;
+  gameIgdbId: number | null;
   suggestions: Suggestion[];
   onOpenChange: (open: boolean) => void;
   onDone: () => Promise<unknown>;
 }) {
   const t = useTranslations('admin.repoint');
+  const tMatch = useTranslations('gameMatch');
   const tStore = useTranslations('store');
   const tMedium = useTranslations('medium');
   const errorMessage = useApiErrorMessage();
@@ -57,8 +52,6 @@ export function RepointDialog({
 
   useEffect(() => setTarget(null), [link]);
 
-  // Un id IGDB suggerito si cerca per id: la ricerca lo riconosce e lo mette
-  // in cima. Altrimenti il nome suggerito, altrimenti quello del gioco.
   const suggested = suggestions.find((s) => s.igdbId !== null);
   const initialQuery = suggested?.igdbId
     ? String(suggested.igdbId)
@@ -88,178 +81,198 @@ export function RepointDialog({
 
   return (
     <Dialog open={link !== null} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent
+        size="wide"
+        $lg={{ maxW: 960 }}
+        closeLabel={tMatch('close')}
+      >
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
-          <XStack gap={16} items="center">
-            {/* La copertina del negozio: su Epic il titolo può essere quello
-                del gioco base (Aiko's Choice), la copertina no. */}
-            {link ? (
-              <UnresolvedCover
+        </DialogHeader>
+        {link ? (
+          <YStack className="game-match-layout">
+            <YStack className="game-match-source" gap={16}>
+              <StoreEntryCard
                 key={link.id}
-                entry={{
-                  store: link.source,
-                  externalId: link.externalId,
-                  imageUrl: link.storeImageUrl,
-                }}
-                width={60}
-                height={86}
+                reference
+                store={link.source}
+                externalIds={[link.externalId]}
+                imageUrl={link.storeImageUrl}
+                title={link.storeTitle}
+                subtitle={[store, ...link.platforms].join(' · ')}
+                facts={[]}
+                pageUrl={link.url}
               />
-            ) : null}
-            <YStack flex={1} minW={0}>
-              <DialogDescription>
-                {link
-                  ? link.storeTitle
-                    ? t('currentTitled', {
-                        store,
-                        id: link.externalId,
-                        title: link.storeTitle,
-                        game: gameName,
-                      })
-                    : t('current', {
-                        store,
-                        id: link.externalId,
-                        game: gameName,
-                      })
-                  : ''}
-              </DialogDescription>
-              {/* Su che console stanno le copie: fra l'originale e i suoi
-                  port si sceglie da qui, confrontando coi risultati. */}
-              {link && link.platforms.length > 0 ? (
-                <Text fontSize={13} lineHeight={18}>
-                  {`${store} · ${link.platforms.join(', ')}`}
+              <YStack
+                gap={6}
+                p={12}
+                rounded={8}
+                bg="$blue2"
+                borderWidth={1}
+                borderColor="$blue8"
+              >
+                <Text fontSize={12} color="$blue11">
+                  {t('currentlyLinked')}
+                </Text>
+                <Text
+                  fontSize={14}
+                  lineHeight={20}
+                  fontWeight="600"
+                  style={{ overflowWrap: 'anywhere' }}
+                >
+                  {gameName}
+                </Text>
+                {gameIgdbId !== null ? (
+                  <Text fontSize={12} color="$color11">
+                    IGDB {gameIgdbId}
+                  </Text>
+                ) : null}
+              </YStack>
+              {suggestions.length > 0 ? (
+                <Text fontSize={13} color="$color11">
+                  {t('suggested', {
+                    list: suggestions
+                      .map((s) =>
+                        [s.name, s.igdbId ? `IGDB ${s.igdbId}` : null]
+                          .filter(Boolean)
+                          .join(' · '),
+                      )
+                      .join('; '),
+                  })}
                 </Text>
               ) : null}
             </YStack>
-          </XStack>
-        </DialogHeader>
-
-        {link && target === null ? (
-          <YStack gap={12}>
-            {suggestions.length > 0 ? (
-              <Text fontSize={13} color="$color11">
-                {t('suggested', {
-                  list: suggestions
-                    .map((s) =>
-                      [s.name, s.igdbId ? `IGDB ${s.igdbId}` : null]
-                        .filter(Boolean)
-                        .join(' · '),
-                    )
-                    .join('; '),
-                })}
-              </Text>
-            ) : null}
-            <IgdbPicker
-              key={link.id}
-              initialQuery={initialQuery}
-              onPick={setTarget}
-            />
-          </YStack>
-        ) : null}
-
-        {link && target !== null ? (
-          <YStack gap={12}>
-            <Text fontSize={14} fontWeight="600">
-              {t('preview')}
-            </Text>
-            {preview.isPending ? (
-              <Skeleton height={120} width="100%" rounded={8} />
-            ) : preview.isError ? (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  {hasErrorCode(preview.error, 'CONFLICT')
-                    ? t('sameGame')
-                    : t('previewFailed')}
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <YStack
-                gap={8}
-                p={12}
-                rounded={8}
-                borderWidth={1}
-                borderColor="$borderColor"
-              >
-                <Text fontSize={13}>
-                  ·{' '}
-                  {t('linkTo', {
-                    store,
-                    id: link.externalId,
-                    game: `${preview.data.to.name}${target.releaseYear ? ` (${target.releaseYear})` : ''}`,
-                  })}{' '}
-                  {preview.data.to.inCatalog ? '' : t('notInCatalog')}
-                </Text>
-                {preview.data.moves.length === 0 ? (
-                  <Text fontSize={13} color="$color11">
-                    · {t('nobody', { store })}
+            <YStack gap={20} minW={0}>
+              <IgdbPicker
+                key={link.id}
+                initialQuery={initialQuery}
+                selected={target}
+                currentIgdbId={gameIgdbId}
+                onSelect={setTarget}
+                pending={repoint.isPending}
+              />
+              {link && target !== null ? (
+                <YStack gap={12}>
+                  <Text fontSize={14} fontWeight="600">
+                    {t('preview')}
                   </Text>
-                ) : (
-                  preview.data.moves.map((move, index) => (
-                    <YStack key={index} gap={2}>
-                      <Text fontSize={13} fontWeight="500">
-                        · {move.userName}:{' '}
-                        {move.copies
-                          .map((copy) =>
-                            [
-                              platformName(copy.platformSlug),
-                              copy.medium ? tMedium(copy.medium) : null,
-                              copy.account,
-                            ]
-                              .filter(Boolean)
-                              .join(' · '),
-                          )
-                          .join('; ')}
+                  {preview.isPending ? (
+                    <Skeleton height={120} width="100%" rounded={8} />
+                  ) : preview.isError ? (
+                    <Alert variant="destructive">
+                      <AlertDescription>
+                        {hasErrorCode(preview.error, 'CONFLICT')
+                          ? t('sameGame')
+                          : t('previewFailed')}
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <YStack
+                      gap={8}
+                      p={12}
+                      rounded={8}
+                      borderWidth={1}
+                      borderColor="$borderColor"
+                    >
+                      <Text fontSize={13}>
+                        ·{' '}
+                        {t('linkTo', {
+                          store,
+                          id: link.externalId,
+                          game: `${preview.data.to.name}${target.releaseYear ? ` (${target.releaseYear})` : ''}`,
+                        })}{' '}
+                        {preview.data.to.inCatalog ? '' : t('notInCatalog')}
                       </Text>
-                      <Text fontSize={12} color="$color11" pl={10}>
-                        {move.wholeRow ? t('wholeRow') : t('copiesOnly')}
+                      {preview.data.moves.length === 0 ? (
+                        <Text fontSize={13} color="$color11">
+                          · {t('nobody', { store })}
+                        </Text>
+                      ) : (
+                        preview.data.moves.map((move, index) => (
+                          <YStack key={index} gap={2}>
+                            <Text fontSize={13} fontWeight="500">
+                              · {move.userName}:{' '}
+                              {move.copies
+                                .map((copy) =>
+                                  [
+                                    platformName(copy.platformSlug),
+                                    copy.medium ? tMedium(copy.medium) : null,
+                                    copy.account,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' · '),
+                                )
+                                .join('; ')}
+                            </Text>
+                            <Text fontSize={12} color="$color11" pl={10}>
+                              {move.wholeRow ? t('wholeRow') : t('copiesOnly')}
+                            </Text>
+                          </YStack>
+                        ))
+                      )}
+                      <Text fontSize={13} color="$color11">
+                        · {t('reportsClose')}
                       </Text>
                     </YStack>
-                  ))
-                )}
-                <Text fontSize={13} color="$color11">
-                  · {t('reportsClose')}
-                </Text>
-              </YStack>
-            )}
-            {preview.data && preview.data.otherIdsSameStore.length > 0 ? (
-              <Alert>
-                <AlertDescription>
-                  {t('otherIds', {
-                    store,
-                    list: preview.data.otherIdsSameStore
-                      .map((other) => other.externalId)
-                      .join(', '),
-                  })}
-                </AlertDescription>
-              </Alert>
-            ) : null}
+                  )}
+                  {preview.data && preview.data.otherIdsSameStore.length > 0 ? (
+                    <Alert>
+                      <AlertDescription>
+                        {t('otherIds', {
+                          store,
+                          list: preview.data.otherIdsSameStore
+                            .map((other) => other.externalId)
+                            .join(', '),
+                        })}
+                      </AlertDescription>
+                    </Alert>
+                  ) : null}
+                </YStack>
+              ) : null}
+            </YStack>
           </YStack>
         ) : null}
 
-        {target !== null ? (
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onPress={() => setTarget(null)}
-              disabled={repoint.isPending}
-            >
-              {t('back')}
-            </Button>
-            <Button
-              variant="outline"
-              onPress={() => onOpenChange(false)}
-              disabled={repoint.isPending}
-            >
-              {t('cancel')}
-            </Button>
-            <Button
-              onPress={() => repoint.mutate()}
-              disabled={!preview.data || repoint.isPending}
-            >
-              {t('confirm')}
-            </Button>
-          </DialogFooter>
-        ) : null}
+        <DialogFooter flexWrap="wrap">
+          <Text
+            flex={1}
+            $max-sm={{ grow: 0, shrink: 0, flexBasis: 'auto' }}
+            minW={0}
+            fontSize={13}
+            fontWeight="600"
+            style={{ overflowWrap: 'anywhere' }}
+          >
+            {target
+              ? `${target.name}${target.releaseYear ? ` (${target.releaseYear})` : ''}`
+              : tMatch('selectHint')}
+          </Text>
+          <Button
+            variant="outline"
+            onPress={() => setTarget(null)}
+            disabled={repoint.isPending || !target}
+          >
+            {t('back')}
+          </Button>
+          <Button
+            variant="outline"
+            onPress={() => onOpenChange(false)}
+            disabled={repoint.isPending}
+          >
+            {t('cancel')}
+          </Button>
+          <Button
+            onPress={() => repoint.mutate()}
+            disabled={
+              !target ||
+              !preview.data ||
+              preview.isFetching ||
+              preview.isError ||
+              repoint.isPending
+            }
+          >
+            {t('confirm')}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
