@@ -18,7 +18,11 @@ export default defineConfig({
     // @repo/db apre la connessione leggendo `DATABASE_URL` al momento dell'import.
     // Dirottarla qui è l'unico punto che precede con certezza qualunque import
     // dei file di test: farlo in un setup file sarebbe una corsa.
-    env: { DATABASE_URL: testDatabaseUrl },
+    //
+    // `test/env.ts` carica tutto il `.env` dello sviluppo, flag compresi: chi
+    // ha `SHOW_OPENCRITIC=0` come in produzione vedrebbe fallire i test della
+    // pagina del gioco. Qui vale il default, e il caso spento lo stubba da sé.
+    env: { DATABASE_URL: testDatabaseUrl, SHOW_OPENCRITIC: '1' },
     globalSetup: ['./test/global-setup.ts'],
     // Azzera implementazione e cronologia dei mock fra un caso e l'altro. Senza,
     // un `toHaveBeenCalled` legge le chiamate del test precedente e il caso
