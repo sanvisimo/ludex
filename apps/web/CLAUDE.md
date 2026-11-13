@@ -228,7 +228,7 @@ con alcune differenze che non si indovinano:
   `WishlistCard`). Ha «Aggiorna wishlist» (`useSyncWishlist`, la stessa mutazione della
   scheda), lo stato dell'ultimo import sotto il titolo (`StoreListStatus`) e, se ci sono
   voci non riconosciute, una barra che apre `WishlistUnresolvedDialog`: «Collega…»
-  (`IgdbPicker`, come per gli scarti della libreria) e «Nascondi»; le nascoste sono sotto
+  (`IgdbMatch`, come per gli scarti della libreria) e «Nascondi»; le nascoste sono sotto
   «Mostra le nascoste» e si rimettono con «Ripristina». `WishlistMenu` guarda `store`: si
   rinomina, si sposta e si **elimina** (dialogo con un testo suo; non mentre l'import gira).
 - **La scheda dell'account** ha il cuore accanto al ↻ (Steam, GOG, PSN, non sulle schede
@@ -537,18 +537,26 @@ che non si indovinano:
   «Fine as is» la lista **non ha bottoni**: non c'è niente da ritentare, e un id
   sbagliato si corregge dalla scheda del gioco. I bottoni di azione hanno
   l'icona (lucide, `@repo/ui/icons`); filtri e Annulla/Conferma no.
-- **La ricerca IGDB è `IgdbPicker`**, una sezione e non un dialogo: il dettaglio
-  di uno scarto e «Non è questo gioco» la mettono sotto i dati, così si sceglie
-  con la voce sotto gli occhi. `IgdbPickDialog` la avvolge per chi non ha altro
-  da mostrare. Il dialogo dell'account (`resolve-import-dialog.tsx`) la usa
-  anch'esso, con in testa i dati della voce (`StoreEntryCard`: copertina e
-  nome del negozio, account, id, link). La stessa scheda sta in «Segnala un
-  errore» sotto la copia spuntata, una per copia, con l'id che
-  `reports.myCopies` ricava dalla pagina del negozio; la ricerca parte dal nome
-  del negozio.
-- **«Inserisci id» ha due bottoni**: «Aggiungi» salva un id o un indirizzo e
-  rifiuta un nome; «Cerca» usa il testo come nome sulla fonte. OpenCritic costa
-  una delle 25 ricerche del giorno, e il dialogo lo dice prima.
+- **La ricerca IGDB è `IgdbPicker`**, una sezione e non un dialogo, che
+  seleziona e non scrive: la conferma sta nel footer. `IgdbMatch` mette insieme
+  picker e footer (`IgdbSelectionFooter`), con a fianco la voce di origine
+  (`reference`): due colonne da 1024 px, una sotto, layout in
+  `components/game-match.css`. La usano il dettaglio di uno scarto, il dialogo
+  dell'account (`resolve-import-dialog.tsx`) e gli scarti della wishlist;
+  `IgdbPickDialog` la avvolge per chi non ha una voce da mostrare. «Non è
+  questo gioco» e «Segnala un errore» usano il picker da solo: il primo ha
+  l'anteprima degli effetti prima della conferma, il secondo conferma con
+  l'invio della segnalazione. La voce è `StoreEntryCard` (copertina
+  ingrandibile, `CoverPreview`, nome del negozio, dettagli richiudibili con
+  l'id copiabile, link); in «Segnala un errore» ce n'è una per copia spuntata,
+  con l'id che `reports.myCopies` ricava dalla pagina del negozio, e la ricerca
+  parte dal nome del negozio. Cambiare ricerca o filtro azzera la scelta.
+- **«Inserisci id»** ha «Cerca», che usa il testo come nome sulla fonte, e
+  «Salva ID» nel footer. Si salva un risultato scelto o un id/indirizzo
+  incollato, solo dopo che `admin.sources.lookup` l'ha riconosciuto (un nome
+  non passa); un id già di un altro gioco si salva lo stesso, con l'avviso.
+  OpenCritic costa una delle 25 ricerche del giorno, e il dialogo lo dice
+  prima.
 - **«Piattaforme sbagliate»** (`/admin/platforms`, 9b,
   `platform-mismatches.tsx`) sono le copie su una piattaforma dove il gioco non
   è uscito, con «Va bene così» e i segnati da annullare; il numero nel menu è

@@ -394,7 +394,6 @@
         "openOn": "Open on {store}",
         "loadFailed": "Couldn't load the entries.",
         "resolveTitle": "Link to a game",
-        "externalId": "Store id",
         "back": "Back to the list",
         "resolved": "{name} linked: it's now in the list",
         "resolveFailed": "Couldn't link the entry",
@@ -581,7 +580,6 @@
       "suggest": "Suggest the right game (optional)",
       "searchIgdb": "Search IGDB",
       "chosen": "{name} · IGDB {id}",
-      "remove": "Remove",
       "orName": "Or type its name",
       "note": "Note (optional)",
       "notePlaceholder": "E.g. it's the remake, Switch only has that one",
@@ -1752,23 +1750,28 @@
       "title": "Set {source} id",
       "state": "State: {status}",
       "candidates": "Candidates the match rejected",
-      "use": "Use this",
       "label": "Id, page address or name",
       "taken": "Id {id} already belongs to “{game}”",
       "invalid": "Not an id: for a name use “Search”.",
-      "cancel": "Close",
       "saved": "Id saved, source queued",
       "failed": "Couldn't save the id",
       "search": "Search",
-      "add": "Add",
       "cost": "Searching OpenCritic uses 1 of today's 25 searches.",
       "left": "{count} left for today.",
       "results": "Results",
       "choose": "Choose",
-      "noResults": "No results.",
       "searchFailed": "The search failed.",
       "quota": "Today's OpenCritic searches are used up.",
-      "disabled": "OpenCritic is turned off in this environment."
+      "disabled": "OpenCritic is turned off in this environment.",
+      "save": "Save ID",
+      "saving": "Saving…",
+      "gameDetails": "Game details",
+      "manualHint": "Search by name, or paste an ID or a link from the source.",
+      "searchHint": "Search the title to compare covers and choose the right page.",
+      "emptyHint": "Try a shorter title, or paste an ID or a link from the source.",
+      "lookupFailed": "I couldn’t check this ID. Try again.",
+      "selectionHint": "Select a result, or paste an ID or a link.",
+      "manualSelection": "Manually entered ID"
     },
     "forbidden": "This section is for admins only.",
     "igdbPick": {
@@ -1779,9 +1782,7 @@
       "clearPlatform": "Clear the filter",
       "search": "Search",
       "searchFailed": "The search failed.",
-      "noResults": "No results.",
-      "choose": "Choose",
-      "inCatalog": "in PileCue"
+      "choose": "Choose"
     },
     "unresolved": {
       "title": "Unresolved imports",
@@ -1815,11 +1816,9 @@
       "hiddenShort": "{count} {kind}",
       "details": "Details of {name}",
       "detail": {
-        "externalId": "Store id",
         "libraries": "In {count, plural, one {# library} other {# libraries}}, {visible} to fix",
         "hidden": "Already hidden: {list}",
         "notHidden": "Nobody hid it.",
-        "openOn": "Open on {store}",
         "linkHint": "Pick the right game: it becomes that game for everyone."
       }
     },
@@ -1876,10 +1875,7 @@
     },
     "repoint": {
       "title": "Not this game",
-      "current": "{store} · {id} → today: {game}",
-      "currentTitled": "{store} · {id} “{title}” → today: {game}",
       "suggested": "Suggested: {list}",
-      "pick": "The right game",
       "preview": "What happens",
       "linkTo": "The {store} · {id} link points to “{game}”",
       "notInCatalog": "(adds it to the catalog)",
@@ -1894,7 +1890,8 @@
       "done": "Repointed: {copies, plural, =0 {no copies} one {# copy} other {# copies}} moved",
       "failed": "Couldn't repoint it",
       "sameGame": "The link already points to this game.",
-      "previewFailed": "Couldn't prepare the preview"
+      "previewFailed": "Couldn't prepare the preview",
+      "currentlyLinked": "Currently linked to"
     },
     "unlink": {
       "title": "Unlink this id",
@@ -2125,5 +2122,29 @@
     "title": "Page not found",
     "description": "This address does not exist or is no longer available.",
     "back": "Back to the catalog"
+  },
+  "gameMatch": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "enlargeCover": "Enlarge the cover of {name}",
+    "coverAlt": "Cover of {name}",
+    "storeDetails": "Store details",
+    "copyId": "Copy ID",
+    "idCopied": "ID copied",
+    "copyFailed": "I couldn’t copy the ID",
+    "searchPlaceholder": "Title, ID or IGDB link",
+    "searching": "Searching…",
+    "startSearch": "Enter at least two characters to search.",
+    "results": "{count, plural, =0 {No results} one {# result} other {# results}}",
+    "retry": "Try again",
+    "noResultsFor": "No results for “{query}”",
+    "noResultsHint": "Try a shorter title without trademarks or edition names, or paste an IGDB link.",
+    "selectGame": "Select {name}",
+    "selected": "Selected",
+    "selectHint": "Select the game to link.",
+    "link": "Link game",
+    "saving": "Linking…",
+    "alreadyLinked": "Already linked",
+    "alreadyLinkedGame": "{name} is already linked"
   }
 }

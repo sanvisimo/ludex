@@ -1,0 +1,854 @@
+{
+  "cases": [
+    {
+      "key": "resolve-dark-1440",
+      "geometry": {
+        "width": 960,
+        "height": 791,
+        "left": 240,
+        "top": 104.5,
+        "right": 1200,
+        "bottom": 895.5,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "resolve-dark-1024",
+      "geometry": {
+        "width": 960,
+        "height": 719.625,
+        "left": 32,
+        "top": 24.1875,
+        "right": 992,
+        "bottom": 743.8125,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "resolve-dark-390",
+      "geometry": {
+        "width": 358,
+        "height": 812,
+        "left": 16,
+        "top": 16,
+        "right": 374,
+        "bottom": 828,
+        "overflow": [],
+        "columns": "316px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "resolve-dark-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "resolve-light-1440",
+      "geometry": {
+        "width": 960,
+        "height": 791,
+        "left": 240,
+        "top": 104.5,
+        "right": 1200,
+        "bottom": 895.5,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "resolve-light-1024",
+      "geometry": {
+        "width": 960,
+        "height": 719.625,
+        "left": 32,
+        "top": 24.1875,
+        "right": 992,
+        "bottom": 743.8125,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "resolve-light-390",
+      "geometry": {
+        "width": 358,
+        "height": 812,
+        "left": 16,
+        "top": 16,
+        "right": 374,
+        "bottom": 828,
+        "overflow": [],
+        "columns": "316px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "resolve-light-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "wishlist-dark-1440",
+      "geometry": {
+        "width": 960,
+        "height": 791,
+        "left": 240,
+        "top": 104.5,
+        "right": 1200,
+        "bottom": 895.5,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "wishlist-dark-1024",
+      "geometry": {
+        "width": 960,
+        "height": 719.625,
+        "left": 32,
+        "top": 24.1875,
+        "right": 992,
+        "bottom": 743.8125,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "wishlist-dark-390",
+      "geometry": {
+        "width": 358,
+        "height": 812,
+        "left": 16,
+        "top": 16,
+        "right": 374,
+        "bottom": 828,
+        "overflow": [],
+        "columns": "316px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "wishlist-dark-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "wishlist-light-1440",
+      "geometry": {
+        "width": 960,
+        "height": 791,
+        "left": 240,
+        "top": 104.5,
+        "right": 1200,
+        "bottom": 895.5,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "wishlist-light-1024",
+      "geometry": {
+        "width": 960,
+        "height": 719.625,
+        "left": 32,
+        "top": 24.1875,
+        "right": 992,
+        "bottom": 743.8125,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "wishlist-light-390",
+      "geometry": {
+        "width": 358,
+        "height": 812,
+        "left": 16,
+        "top": 16,
+        "right": 374,
+        "bottom": 828,
+        "overflow": [],
+        "columns": "316px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "wishlist-light-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "admin-dark-1440",
+      "geometry": {
+        "width": 960,
+        "height": 804,
+        "left": 240,
+        "top": 98,
+        "right": 1200,
+        "bottom": 902,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "admin-dark-1024",
+      "geometry": {
+        "width": 960,
+        "height": 732.625,
+        "left": 32,
+        "top": 17.6875,
+        "right": 992,
+        "bottom": 750.3125,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "admin-dark-390",
+      "geometry": {
+        "width": 358,
+        "height": 812,
+        "left": 16,
+        "top": 16,
+        "right": 374,
+        "bottom": 828,
+        "overflow": [],
+        "columns": "316px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "admin-dark-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "admin-light-1440",
+      "geometry": {
+        "width": 960,
+        "height": 804,
+        "left": 240,
+        "top": 98,
+        "right": 1200,
+        "bottom": 902,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "admin-light-1024",
+      "geometry": {
+        "width": 960,
+        "height": 732.625,
+        "left": 32,
+        "top": 17.6875,
+        "right": 992,
+        "bottom": 750.3125,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "admin-light-390",
+      "geometry": {
+        "width": 358,
+        "height": 812,
+        "left": 16,
+        "top": 16,
+        "right": 374,
+        "bottom": 828,
+        "overflow": [],
+        "columns": "316px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "admin-light-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "unlinked-dark-1440",
+      "geometry": {
+        "width": 720,
+        "height": 791,
+        "left": 360,
+        "top": 104.5,
+        "right": 1080,
+        "bottom": 895.5,
+        "overflow": [],
+        "columns": null
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "unlinked-dark-1024",
+      "geometry": {
+        "width": 720,
+        "height": 719.625,
+        "left": 152,
+        "top": 24.1875,
+        "right": 872,
+        "bottom": 743.8125,
+        "overflow": [],
+        "columns": null
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "unlinked-dark-390",
+      "geometry": {
+        "width": 358,
+        "height": 805.109375,
+        "left": 16,
+        "top": 19.4375,
+        "right": 374,
+        "bottom": 824.546875,
+        "overflow": [],
+        "columns": null
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "unlinked-dark-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": null
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "unlinked-light-1440",
+      "geometry": {
+        "width": 720,
+        "height": 791,
+        "left": 360,
+        "top": 104.5,
+        "right": 1080,
+        "bottom": 895.5,
+        "overflow": [],
+        "columns": null
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "unlinked-light-1024",
+      "geometry": {
+        "width": 720,
+        "height": 719.625,
+        "left": 152,
+        "top": 24.1875,
+        "right": 872,
+        "bottom": 743.8125,
+        "overflow": [],
+        "columns": null
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "unlinked-light-390",
+      "geometry": {
+        "width": 358,
+        "height": 805.109375,
+        "left": 16,
+        "top": 19.4375,
+        "right": 374,
+        "bottom": 824.546875,
+        "overflow": [],
+        "columns": null
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "unlinked-light-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": null
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "repoint-dark-1440",
+      "geometry": {
+        "width": 960,
+        "height": 791,
+        "left": 240,
+        "top": 104.5,
+        "right": 1200,
+        "bottom": 895.5,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "repoint-dark-1024",
+      "geometry": {
+        "width": 960,
+        "height": 719.625,
+        "left": 32,
+        "top": 24.1875,
+        "right": 992,
+        "bottom": 743.8125,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "repoint-dark-390",
+      "geometry": {
+        "width": 358,
+        "height": 812,
+        "left": 16,
+        "top": 16,
+        "right": 374,
+        "bottom": 828,
+        "overflow": [],
+        "columns": "316px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "repoint-dark-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "repoint-light-1440",
+      "geometry": {
+        "width": 960,
+        "height": 791,
+        "left": 240,
+        "top": 104.5,
+        "right": 1200,
+        "bottom": 895.5,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "repoint-light-1024",
+      "geometry": {
+        "width": 960,
+        "height": 719.625,
+        "left": 32,
+        "top": 24.1875,
+        "right": 992,
+        "bottom": 743.8125,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "repoint-light-390",
+      "geometry": {
+        "width": 358,
+        "height": 812,
+        "left": 16,
+        "top": 16,
+        "right": 374,
+        "bottom": 828,
+        "overflow": [],
+        "columns": "316px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "repoint-light-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "report-dark-1440",
+      "geometry": {
+        "width": 960,
+        "height": 968,
+        "left": 240,
+        "top": 16,
+        "right": 1200,
+        "bottom": 984,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "report-dark-1024",
+      "geometry": {
+        "width": 960,
+        "height": 736,
+        "left": 32,
+        "top": 16,
+        "right": 992,
+        "bottom": 752,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "report-dark-390",
+      "geometry": {
+        "width": 358,
+        "height": 812,
+        "left": 16,
+        "top": 16,
+        "right": 374,
+        "bottom": 828,
+        "overflow": [],
+        "columns": "316px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "report-dark-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "report-light-1440",
+      "geometry": {
+        "width": 960,
+        "height": 968,
+        "left": 240,
+        "top": 16,
+        "right": 1200,
+        "bottom": 984,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "report-light-1024",
+      "geometry": {
+        "width": 960,
+        "height": 736,
+        "left": 32,
+        "top": 16,
+        "right": 992,
+        "bottom": 752,
+        "overflow": [],
+        "columns": "240px 638px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "report-light-390",
+      "geometry": {
+        "width": 358,
+        "height": 812,
+        "left": 16,
+        "top": 16,
+        "right": 374,
+        "bottom": 828,
+        "overflow": [],
+        "columns": "316px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "report-light-320",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      },
+      "selection": true,
+      "confirmation": true
+    },
+    {
+      "key": "edge-1440-dark-&long",
+      "geometry": {
+        "width": 960,
+        "height": 791,
+        "left": 240,
+        "top": 104.5,
+        "right": 1200,
+        "bottom": 895.5,
+        "overflow": [],
+        "columns": "240px 638px"
+      }
+    },
+    {
+      "key": "edge-320-light-&long",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      }
+    },
+    {
+      "key": "edge-1440-light-&missing",
+      "geometry": {
+        "width": 960,
+        "height": 791,
+        "left": 240,
+        "top": 104.5,
+        "right": 1200,
+        "bottom": 895.5,
+        "overflow": [],
+        "columns": "240px 638px"
+      }
+    },
+    {
+      "key": "edge-320-dark-&missing",
+      "geometry": {
+        "width": 288,
+        "height": 688,
+        "left": 16,
+        "top": 16,
+        "right": 304,
+        "bottom": 704,
+        "overflow": [],
+        "columns": "246px"
+      }
+    },
+    {
+      "key": "search-states-and-reset",
+      "empty": true,
+      "error": true,
+      "loading": true,
+      "selectionReset": true,
+      "focusReturn": true
+    },
+    {
+      "key": "boundary-1023-768",
+      "geometry": {
+        "width": 720,
+        "height": 736,
+        "left": 151.5,
+        "top": 16,
+        "right": 871.5,
+        "bottom": 752,
+        "overflow": [],
+        "columns": "670px"
+      }
+    },
+    {
+      "key": "boundary-768-1024",
+      "geometry": {
+        "width": 720,
+        "height": 943,
+        "left": 24,
+        "top": 40.5,
+        "right": 744,
+        "bottom": 983.5,
+        "overflow": [],
+        "columns": "670px"
+      }
+    },
+    {
+      "key": "boundary-1280-600",
+      "geometry": {
+        "width": 960,
+        "height": 568,
+        "left": 160,
+        "top": 16,
+        "right": 1120,
+        "bottom": 584,
+        "overflow": [],
+        "columns": "240px 638px"
+      }
+    },
+    {
+      "key": "filter-result-cover-and-copy",
+      "filterReset": true,
+      "coverFocusReturn": true,
+      "copyId": true
+    },
+    {
+      "key": "english-dark-1440",
+      "selection": true,
+      "translations": true
+    },
+    {
+      "key": "english-light-390",
+      "selection": true,
+      "translations": true
+    }
+  ],
+  "failures": [],
+  "accessibility": {
+    "scans": 24,
+    "tags": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21aa"
+    ],
+    "violations": 0,
+    "scope": "Dialog reali, sei flussi, desktop 1440 e mobile 390, temi chiaro e scuro."
+  },
+  "environment": {
+    "browser": "Chromium",
+    "data": "Fixtures locali e copertine schematiche; chiamate API intercettate, nessun dato utente modificato."
+  }
+}

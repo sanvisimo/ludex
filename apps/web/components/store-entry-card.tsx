@@ -1,22 +1,25 @@
+import { storeCoverFallbackUrl, storeCoverUrl } from '@repo/contracts';
 import type { Store } from '@repo/contracts/vocabulary';
-import { Text, XStack, YStack } from '@repo/ui';
+import {
+  BrandIcon,
+  Button,
+  Text,
+  toast,
+  Tooltip,
+  XStack,
+  YStack,
+} from '@repo/ui';
+import { Copy } from '@repo/ui/icons';
+import type { ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
-import { UnresolvedCover } from '@/components/unresolved-row';
+import { CoverPreview } from '@/components/cover-preview';
 import { useStoreLabels } from '@/lib/labels';
+import { STORE_BRAND } from '@/lib/store-brand';
 import { ExternalLink } from '@/src/components/external-link';
 
-/**
- * Una voce vista dal negozio: copertina del negozio, il nome e l'anno che le
- * dà, da dove viene, l'id, i fatti e il link alla sua pagina. È la testa di «Collega
- * al gioco giusto» e il dettaglio della copia in «Segnala un errore»: in tutti
- * e due si sceglie il gioco giusto confrontando con i risultati di IGDB, e la
- * copertina ha la loro misura.
- *
- * Più id vuol dire che non si sa quale sia: si elencano tutti, e copertina e
- * titolo non ci sono. Chi la usa la rimonta con una `key` quando cambia voce,
- * perché la copertina rotta si ricorda.
- */
+import './game-match.css';
+
 export function StoreEntryCard({
   store,
   externalIds,
@@ -26,58 +29,115 @@ export function StoreEntryCard({
   subtitle,
   facts,
   pageUrl,
+  reference = false,
+  children,
 }: {
   store: Store;
   externalIds: string[];
   imageUrl: string | null;
   title: string | null;
-  /** Come nei risultati di IGDB, «(2018)»: si confronta con quelli. */
   releaseYear?: number | null;
   subtitle: string;
   facts: string[];
   pageUrl: string | null;
+  reference?: boolean;
+  children?: ReactNode;
 }) {
   const t = useTranslations('account.unresolved');
+  const tMatch = useTranslations('gameMatch');
   const storeLabels = useStoreLabels();
   const externalId = externalIds.length === 1 ? externalIds[0]! : null;
+  const brand = STORE_BRAND[store];
+  // Con più id non sappiamo a quale prodotto appartenga la copertina.
+  const sources =
+    externalId === null
+      ? []
+      : [
+          storeCoverUrl(store, externalId, imageUrl),
+          storeCoverFallbackUrl(store, externalId),
+        ].filter((url): url is string => url !== null);
 
   return (
-    <XStack gap={16} items="flex-start">
-      <UnresolvedCover
-        entry={{ store, externalId, imageUrl }}
+    <YStack
+      className={reference ? 'game-match-reference' : undefined}
+      {...(!reference ? { flexDirection: 'row', gap: 16 } : {})}
+      minW={0}
+    >
+      <CoverPreview
+        key={`${store}-${externalIds.join(',')}-${imageUrl}`}
+        sources={sources}
+        name={title ?? storeLabels[store]}
         width={90}
-        height={128}
+        desktopWidth={reference ? 160 : 90}
+        fallback={brand ? <BrandIcon brand={brand} size={44} /> : undefined}
       />
       <YStack flex={1} minW={0} gap={6}>
         {title ? (
-          <Text fontSize={14} fontWeight="500" color="$color12">
+          <Text
+            fontSize={reference ? 16 : 14}
+            lineHeight={22}
+            fontWeight="600"
+            color="$color12"
+            style={{ overflowWrap: 'anywhere' }}
+          >
             {releaseYear ? `${title} (${releaseYear})` : title}
           </Text>
         ) : null}
         <Text fontSize={13} color="$color11">
           {subtitle}
         </Text>
-        {externalIds.length > 0 ? (
-          <YStack>
-            <Text fontSize={12} color="$color11">
-              {t('externalId')}
-            </Text>
-            {/* Intero, e selezionabile: è ciò che si copia per cercarlo. */}
-            <Text
-              fontSize={13}
-              color="$color12"
-              {...({
-                style: { wordBreak: 'break-all', userSelect: 'text' },
-              } as object)}
-            >
-              {externalIds.join(', ')}
-            </Text>
-          </YStack>
-        ) : null}
-        {facts.length > 0 ? (
-          <Text fontSize={13} color="$color11">
-            {facts.join(' · ')}
-          </Text>
+        {children}
+        {externalIds.length > 0 || facts.length > 0 ? (
+          <details className="game-match-details">
+            <summary>{tMatch('storeDetails')}</summary>
+            <YStack gap={8} pt={8}>
+              {externalIds.length > 0 ? (
+                <YStack gap={4}>
+                  <Text fontSize={12} color="$color11">
+                    {t('externalId')}
+                  </Text>
+                  <XStack gap={4} items="center" minW={0}>
+                    <Text
+                      shrink={1}
+                      minW={0}
+                      fontSize={13}
+                      color="$color12"
+                      {...({
+                        style: { wordBreak: 'break-all', userSelect: 'text' },
+                      } as object)}
+                    >
+                      {externalIds.join(', ')}
+                    </Text>
+                    <Tooltip content={tMatch('copyId')}>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        shrink={0}
+                        aria-label={tMatch('copyId')}
+                        onPress={async () => {
+                          try {
+                            await navigator.clipboard.writeText(
+                              externalIds.join(', '),
+                            );
+                            toast.success(tMatch('idCopied'));
+                          } catch {
+                            toast.error(tMatch('copyFailed'));
+                          }
+                        }}
+                      >
+                        <Copy size={14} />
+                      </Button>
+                    </Tooltip>
+                  </XStack>
+                </YStack>
+              ) : null}
+              {facts.length > 0 ? (
+                <Text fontSize={13} color="$color11">
+                  {facts.join(' · ')}
+                </Text>
+              ) : null}
+            </YStack>
+          </details>
         ) : null}
         {pageUrl ? (
           <Text fontSize={13}>
@@ -87,6 +147,6 @@ export function StoreEntryCard({
           </Text>
         ) : null}
       </YStack>
-    </XStack>
+    </YStack>
   );
 }
