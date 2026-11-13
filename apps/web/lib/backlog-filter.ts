@@ -161,7 +161,6 @@ const fields = {
     listOf(oneOf(subscriptionValues)),
     [] as Subscription[],
   ),
-  // Digitale o fisico: `ownerships.medium`, in AND come gli store.
   media: field(listOf(oneOf(mediumValues)), [] as Medium[]),
   attributes: field(listOf(integer), [] as number[]),
   gameTypes: field(listOf(oneOf(gameTypeValues)), [] as GameType[]),

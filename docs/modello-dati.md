@@ -89,8 +89,8 @@ Nessuno nasconde né esclude i DLC da solo: un'espansione come _Phantom Liberty_
 si gioca eccome. Il tipo si **mostra** — un badge accanto al titolo quando non è
 un gioco principale — e si **filtra**, ma nessun filtro è acceso di default.
 
-Il filtro è in **OR**, come lo stato e al contrario di tutto il resto del
-pannello: una riga ha esattamente un tipo, quindi l'AND darebbe sempre zero. E
+Il filtro è in **OR**, come lo stato: una riga ha esattamente un tipo, quindi
+l'AND darebbe sempre zero. E
 un gioco **senza** tipo non risponde a nessuna spunta, perché null vuol dire
 «non lo so» e non «è un gioco»: senza filtro c'è, con «Gioco» spuntato no. È la
 stessa regola dei NULL che vale per la durata.
