@@ -1506,6 +1506,10 @@
         "p2": "EA non permette un collegamento che duri: per aggiornare la libreria usi «Importa di nuovo» sulla scheda dell'account.",
         "p3": "Ogni copia EA porta alla sua pagina sul catalogo di EA, e la pagina del gioco al sito di EA."
       },
+      "nintendo3dsWiiu": {
+        "title": "Giochi 3DS e Wii U da Nintendo",
+        "text": "L'import Nintendo riconosce i giochi 3DS e Wii U: prima venivano saltati. Nintendo li mostra solo se l'account è collegato al Nintendo Network ID della console, e solo fino a febbraio 2020. Basta aggiornare la libreria."
+      },
       "nintendoSwitch2": {
         "title": "Giochi Switch 2 da Nintendo",
         "text": "L'import Nintendo riconosce i giochi Switch 2, comprese le Nintendo Switch 2 Edition: prima venivano saltati. Basta aggiornare la libreria."
