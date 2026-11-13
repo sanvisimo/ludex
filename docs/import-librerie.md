@@ -654,6 +654,24 @@ anche le voci in più di un prodotto Epic con quei nomi (_Barony (Beta)_,
 _Chivalry 2 - Public Testing_) nascono nascoste invece che fra i «Possibili
 doppioni».
 
+**Le demo che il nome non dice (Steam, 13/11/2026).** Due casi segnalati da
+un'utente, [piano](../plans/steam-demo-e-app-senza-scheda.md):
+
+- **la demo dentro l'app del gioco completo**: Steam dà come posseduto
+  _Create the Drops of God: The Ambrosia_ (2687220), che sullo store non è
+  uscito. Il collegamento è giusto, la copia no. Un'app che lo store dà come
+  non ancora uscita (`is_coming_soon` di `GetItems`) **si salta**: né copia né
+  scarto, ed entra normale al primo import dopo l'uscita. Non scarto nascosto,
+  perché il nascondere segue lo scarto quando si risolve e il gioco comprato
+  dopo nascerebbe nascosto;
+- **un'app senza scheda sullo store** (ritirata, editor, strumento) si cerca
+  per nome **solo col titolo intero** (`fullTitleOnly`): _inZOI: Creative
+  Studio_, accorciato a «inZOI», finiva sul gioco completo. Un gioco ritirato
+  che si trovava solo col titolo accorciato va fra i «da sistemare».
+
+Le copie già scritte restano: l'import Steam non pota le proprie. Si tolgono
+con «Rimuovi», e il reimport non le ricrea.
+
 ## L'import da CSV (10)
 
 Fatto il 19/10/2026; misure, decisioni e wireframe in

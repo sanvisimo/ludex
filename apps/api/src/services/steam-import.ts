@@ -120,7 +120,7 @@ export function buildSteamEntries(
   library: SteamLibraryEntry[],
   family: SteamFamilyLibrary,
   steamId: string,
-): { entries: LibraryEntry[]; familyCount: number } {
+): LibraryEntry[] {
   // La data d'acquisto Steam la dà solo la famiglia, e **solo per le app dove
   // l'utente è proprietario** vale la sua: per un'app in comune con un parente la
   // risposta con `include_own=true` rende la data dell'utente (misurato su
@@ -166,7 +166,7 @@ export function buildSteamEntries(
       storePage: storePage(app.externalId),
     }));
 
-  return { entries: [...own, ...shared], familyCount: shared.length };
+  return [...own, ...shared];
 }
 
 export async function importSteamLibrary(
@@ -209,7 +209,12 @@ export async function importSteamLibrary(
     return { ...(await importFromProfile(account)), familySkipped: true };
   }
 
-  const { entries, familyCount } = buildSteamEntries(library, family, steamId);
+  const entries = await withStoreFacts(
+    buildSteamEntries(library, family, steamId),
+  );
+  const familyCount = entries.filter(
+    (entry) => entry.subscription === 'steam_family',
+  ).length;
   const report = await importLibrary(account, entries);
   await fillUnresolvedCovers(account);
 
@@ -311,6 +316,55 @@ export async function licenseEntries(
   }
 }
 
+/**
+ * Le voci con ciò che lo store sa di loro: tolte quelle non ancora uscite, e
+ * segnate quelle senza scheda.
+ *
+ * **Non ancora uscita.** Steam la mette in libreria quando la demo sta dentro
+ * l'app del gioco completo: _Create the Drops of God: The Ambrosia_ (2687220),
+ * con la data «To be announced», arrivava come gioco posseduto. Il collegamento
+ * a IGDB è giusto, ed è giusto per chi il gioco lo comprerà: è la copia che
+ * non lo è. **Si salta, non diventa uno scarto nascosto** come le demo col
+ * nome: il nascondere segue lo scarto quando si risolve
+ * (`hideEntriesFromHiddenUnresolved`), e chi poi il gioco lo compra se lo
+ * troverebbe nascosto. Saltata, entra normale al primo import dopo l'uscita.
+ * Un preordine, se Steam lo dà, aspetta l'uscita anche lui: prima non si gioca.
+ *
+ * **Senza scheda** (ritirata, strumento, editor): si cerca per nome solo col
+ * titolo intero (`fullTitleOnly`). _inZOI: Creative Studio_ (3092450),
+ * accorciato a «inZOI», finiva sul gioco completo.
+ *
+ * Come per le licenze, un errore dello store non ferma l'import: si importa
+ * come prima, senza né l'una né l'altra cosa.
+ */
+async function withStoreFacts<T extends LibraryEntry>(
+  entries: T[],
+): Promise<T[]> {
+  let types: Awaited<ReturnType<typeof fetchSteamAppTypes>>;
+  try {
+    types = await fetchSteamAppTypes([
+      ...new Set(entries.map((entry) => entry.externalId)),
+    ]);
+  } catch (error) {
+    console.log(
+      `[import] steam: schede dello store non lette, voci prese così come sono: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return entries;
+  }
+
+  const kept = entries
+    .filter((entry) => !types.get(entry.externalId)?.comingSoon)
+    .map((entry) =>
+      types.has(entry.externalId) ? entry : { ...entry, fullTitleOnly: true },
+    );
+  if (kept.length < entries.length) {
+    console.log(
+      `[import] steam: ${entries.length - kept.length} app non ancora uscite, saltate`,
+    );
+  }
+  return kept;
+}
+
 /** La libreria propria dal profilo pubblico, con la chiave dell'applicazione. */
 async function importFromProfile(
   account: StoreAccountRow,
@@ -318,10 +372,12 @@ async function importFromProfile(
   const library = await fetchSteamLibrary(account.externalAccountId);
   const report = await importLibrary(
     account,
-    library.map((entry) => ({
-      ...entry,
-      storePage: storePage(entry.externalId),
-    })),
+    await withStoreFacts(
+      library.map((entry) => ({
+        ...entry,
+        storePage: storePage(entry.externalId),
+      })),
+    ),
   );
   await fillUnresolvedCovers(account);
   return report;

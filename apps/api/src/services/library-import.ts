@@ -160,6 +160,13 @@ export type LibraryEntry = {
    */
   retryWithoutYear?: boolean;
   /**
+   * Si cerca per nome solo col titolo intero, senza accorciarlo: la voce non
+   * ha una scheda sul negozio che confermi che è un gioco. È il caso di
+   * _inZOI: Creative Studio_ su Steam, l'editor gratuito senza più pagina
+   * nello store: accorciato a «inZOI» trovava il gioco completo.
+   */
+  fullTitleOnly?: boolean;
+  /**
    * Lo stato e le categorie dell'utente **alla nascita** della riga di
    * backlog, mai dopo: dall'import da CSV (10), dove sono dati dell'utente e
    * non del negozio. Una riga che c'era già resta com'è.
@@ -723,7 +730,10 @@ async function currentUnresolvedIds(storeAccountId: string) {
  * copia — o mostrerebbe scarti che il job non farebbe, che è esattamente il
  * modo in cui questo ripiego era stato dimenticato la prima volta.
  */
-export async function searchWithFallback(name: string) {
+export async function searchWithFallback(
+  name: string,
+  { shorten = true }: { shorten?: boolean } = {},
+) {
   // La coda di piattaforma di Nintendo («– Nintendo Switch 2 Edition») si
   // toglie prima di cercare, e il titolo pulito torna al giudizio come
   // `searchedAs`: vedi `stripPlatformSuffix`.
@@ -734,7 +744,7 @@ export async function searchWithFallback(name: string) {
   // ™ e ® nei titoli — Epic in particolare — e IGDB su quelli non trova niente:
   // «Rocket League®» dà zero risultati, «rocket league» venti.
   const hits = await searchIgdbGames(normalizeTitle(base));
-  if (hits.length > 0) return { hits, searchedAs: pulito };
+  if (hits.length > 0 || !shorten) return { hits, searchedAs: pulito };
 
   const tried: string[] = [];
   for (const searchedAs of [shortenTitle(base), shortenTitle(base, true)]) {
@@ -832,7 +842,9 @@ export async function resolveByName(
     fatte++;
 
     const entry = gruppo[0]!;
-    const { hits: trovati, searchedAs } = await searchWithFallback(entry.name);
+    const { hits: trovati, searchedAs } = await searchWithFallback(entry.name, {
+      shorten: !entry.fullTitleOnly,
+    });
     const hits = isPrologueName(entry.name)
       ? trovati.filter((hit) => isPrologueName(hit.name))
       : trovati;

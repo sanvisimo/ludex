@@ -122,6 +122,111 @@ describe('importSteamLibrary', () => {
     // dagli appid, e i test che parlano di irrisolti vogliono restare irrisolti.
     mockedSearch.mockResolvedValue([]);
     mockedCovers.mockResolvedValue(new Map());
+    mockedAppTypes.mockResolvedValue(new Map());
+  });
+
+  describe('le app non ancora uscite', () => {
+    beforeEach(() => {
+      mockedLibrary.mockResolvedValue([
+        steamEntry({ externalId: '220' }),
+        // La demo dentro l'app del gioco completo, con la data «To be announced».
+        steamEntry({
+          externalId: '2687220',
+          name: 'Create the Drops of God: The Ambrosia',
+          playtimeMinutes: 45,
+        }),
+      ]);
+      igdbKnows([
+        { externalId: '220', igdbId: 233 },
+        { externalId: '2687220', igdbId: 291378 },
+      ]);
+    });
+
+    it('non entrano, nemmeno fra gli scarti', async () => {
+      mockedAppTypes.mockResolvedValue(
+        new Map([
+          ['220', { type: 0, name: 'Half-Life 2', comingSoon: false }],
+          [
+            '2687220',
+            {
+              type: 0,
+              name: 'Create the Drops of God: The Ambrosia',
+              comingSoon: true,
+            },
+          ],
+        ]),
+      );
+
+      await importSteamLibrary(account);
+
+      expect([...(await byApp(userId)).keys()]).toEqual(['220']);
+      expect(await unresolvedOf(userId)).toHaveLength(0);
+    });
+
+    it('se lo store non risponde si importa come prima', async () => {
+      mockedAppTypes.mockRejectedValue(new Error('Steam GetItems: 503'));
+
+      await importSteamLibrary(account);
+
+      expect([...(await byApp(userId)).keys()].sort()).toEqual([
+        '220',
+        '2687220',
+      ]);
+    });
+  });
+
+  describe('le app senza scheda nello store', () => {
+    beforeEach(() => {
+      mockedLibrary.mockResolvedValue([
+        steamEntry({ externalId: '3092450', name: 'inZOI: Creative Studio' }),
+      ]);
+      mockedResolve.mockResolvedValue(new Map());
+      // Il titolo intero non trova niente, quello accorciato il gioco completo.
+      mockedSearch.mockImplementation(async (term: string) =>
+        term.includes('creative')
+          ? []
+          : [
+              {
+                igdbId: 279051,
+                name: 'Inzoi',
+                releaseYear: 2025,
+                developer: null,
+                cover: null,
+                gameType: 'main_game' as const,
+                totalRatingCount: null,
+                platformIds: [],
+              },
+            ],
+      );
+    });
+
+    it('si cercano solo col titolo intero, e restano fra gli scarti', async () => {
+      mockedAppTypes.mockResolvedValue(new Map());
+
+      await importSteamLibrary(account);
+
+      expect(await byApp(userId)).toEqual(new Map());
+      expect(await unresolvedOf(userId)).toMatchObject([
+        { externalId: '3092450', hiddenAt: null },
+      ]);
+      expect(mockedSearch).toHaveBeenCalledTimes(1);
+    });
+
+    it('con la scheda il titolo si accorcia come prima', async () => {
+      mockedAppTypes.mockResolvedValue(
+        new Map([
+          [
+            '3092450',
+            { type: 0, name: 'inZOI: Creative Studio', comingSoon: false },
+          ],
+        ]),
+      );
+
+      await importSteamLibrary(account);
+
+      expect([...(await byApp(userId)).keys()]).toEqual(['3092450']);
+      expect(mockedSearch).toHaveBeenCalledTimes(2);
+    });
   });
 
   it('crea giochi, backlog e possessi con le ore di Steam', async () => {
@@ -569,6 +674,22 @@ describe('importSteamLibrary col login (9f)', () => {
     expect(mockedFamily).toHaveBeenCalledWith('token', ME);
   });
 
+  it('una copia della famiglia non ancora uscita non entra, e non conta', async () => {
+    mockedLibrary.mockResolvedValue([steamEntry({ externalId: '220' })]);
+    mockedFamily.mockResolvedValue(
+      family([{ externalId: '400' }, { externalId: '500' }]),
+    );
+    mockedAppTypes.mockResolvedValue(
+      new Map([['500', { type: 0, name: 'Gioco 500', comingSoon: true }]]),
+    );
+    igdbKnowsAll(['220', '400', '500']);
+
+    const report = await importSteamLibrary(account);
+
+    expect([...(await byApp(userId)).keys()].sort()).toEqual(['220', '400']);
+    expect(report.family).toEqual({ copies: 1, removed: 0, kept: 0 });
+  });
+
   it('la data d’acquisto delle copie proprie porta indietro `aggiunto il`, quella della famiglia no', async () => {
     mockedLibrary.mockResolvedValue([
       steamEntry({ externalId: '220' }),
@@ -1007,7 +1128,7 @@ describe('importSteamLibrary col login (9f)', () => {
         new Map(
           apps.map(([appId, type, name]) => [
             appId,
-            { type, name: name ?? `App ${appId}` },
+            { type, name: name ?? `App ${appId}`, comingSoon: false },
           ]),
         ),
       );

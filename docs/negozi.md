@@ -930,6 +930,12 @@ dello store nel suo browser interno, poi `GetOwnedGames`, poi
   l'import Steam le copie proprie non le pota.
 - **Chi usa solo il profilo** resta senza i gratuiti mai avviati, come Playnite
   senza login.
+- **`GetItems` anche per le voci di `GetOwnedGames` e della famiglia**
+  (13/11/2026), con o senza login: un'app non ancora uscita si salta, una
+  senza scheda si cerca solo col titolo intero (`withStoreFacts` in
+  `steam-import.ts`; il perché in
+  [import-librerie.md](import-librerie.md), «Le demo che il nome non dice»).
+  Cinque richieste anonime su 455 giochi; un errore non ferma l'import.
 
 Entrano anche 8 giochi che Playnite non ha (_Golden Axe_ e _Sonic 2_ dentro la
 raccolta SEGA, _Fall of the Samurai_, _CoH2 Ardennes Assault_…): Steam li dà
