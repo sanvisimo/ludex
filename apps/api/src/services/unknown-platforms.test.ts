@@ -20,13 +20,13 @@ describe('warnUnknownPlatforms', () => {
   });
 
   it('avvisa una volta per codice, anche su più import', async () => {
-    await warnUnknownPlatforms('nintendo', new Map([['CTR', 'Un gioco 3DS']]));
-    await warnUnknownPlatforms('nintendo', new Map([['CTR', 'Un altro']]));
+    await warnUnknownPlatforms('nintendo', new Map([['ZZZ', 'Un gioco']]));
+    await warnUnknownPlatforms('nintendo', new Map([['ZZZ', 'Un altro']]));
 
     expect(notifyAdmin).toHaveBeenCalledTimes(1);
     expect(vi.mocked(notifyAdmin).mock.calls[0]![0]).toContain('nintendo');
-    expect(vi.mocked(notifyAdmin).mock.calls[0]![0]).toContain('CTR');
-    expect(vi.mocked(notifyAdmin).mock.calls[0]![0]).toContain('Un gioco 3DS');
+    expect(vi.mocked(notifyAdmin).mock.calls[0]![0]).toContain('ZZZ');
+    expect(vi.mocked(notifyAdmin).mock.calls[0]![0]).toContain('Un gioco');
   });
 
   it('lo stesso codice su due negozi sono due avvisi', async () => {

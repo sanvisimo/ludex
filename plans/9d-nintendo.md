@@ -409,6 +409,21 @@ Nintendo), una funzione pura per il controllo con i suoi test, i testi
 `account.stores.*` e `account.store.*` in it/en, e `storeAccountName` nel contratto per
 il punto 3.
 
+## 3DS e Wii U (13/11/2026)
+
+La mappa dei codici era fatta solo sull'account dell'utente, tutto Switch: il
+punto 1 qui sopra rimandava ogni altro codice al giorno in cui fosse comparso.
+Dopo `BEE` è comparso `CTR`, dall'avviso Telegram (branch `fix/nintendo-3ds-wiiu`):
+14 voci saltate, fra cui _Ocarina of Time 3D_ e le app di sistema del 3DS.
+
+Cercato allora una volta per tutte: lo storico è quello dell'app Nintendo Store,
+che per la [FAQ di Nintendo](https://en-americas-support.nintendo.com/app/answers/detail/a_id/68648)
+copre Switch, Switch 2, 3DS e Wii U (le ultime due col Nintendo Network ID
+collegato, fino a febbraio 2020), e nient'altro. Aggiunti `CTR` e `KTR` →
+`nintendo_3ds`, `WUP` → `nintendo_wiiu`; `WUP` e `KTR` sono i codici hardware,
+non misurati. Nessuno dei progetti terzi letti su GitHub traduce codici oltre
+`HAC` e `BEE`.
+
 ## Fuori da questo lotto
 
 Cronologia acquisti dei due anni, l'aggiornamento automatico di Nintendo (si decide

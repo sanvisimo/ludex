@@ -206,7 +206,7 @@ describe('buildNintendoEntries', () => {
         giocato({
           titleId: '0100000000000001',
           name: 'Dallo storico',
-          platform: 'CTR',
+          platform: 'ZZZ',
         }),
       ],
       [
@@ -219,14 +219,14 @@ describe('buildNintendoEntries', () => {
     );
 
     expect(entries).toEqual([]);
-    expect(scartate).toEqual(['Dalle carte [ZZZ]', 'Dallo storico [CTR]']);
+    expect(scartate).toEqual(['Dalle carte [ZZZ]', 'Dallo storico [ZZZ]']);
   });
 
   it('rende i codici sconosciuti con un titolo d’esempio, per l’avviso', () => {
     const { sconosciuti } = buildNintendoEntries(
       [
-        giocato({ titleId: '0100000000000001', name: 'Uno', platform: 'CTR' }),
-        giocato({ titleId: '0100000000000002', name: 'Due', platform: 'CTR' }),
+        giocato({ titleId: '0100000000000001', name: 'Uno', platform: 'ZZZ' }),
+        giocato({ titleId: '0100000000000002', name: 'Due', platform: 'ZZZ' }),
         giocato({ titleId: '0100000000000003', name: 'Tre', platform: null }),
       ],
       [],
@@ -234,7 +234,7 @@ describe('buildNintendoEntries', () => {
 
     expect(sconosciuti).toEqual(
       new Map([
-        ['CTR', 'Uno'],
+        ['ZZZ', 'Uno'],
         ['senza piattaforma', 'Tre'],
       ]),
     );
@@ -293,10 +293,16 @@ describe('toPlatformSlug', () => {
     expect(toPlatformSlug('OUNCE')).toBe('nintendo_switch2');
   });
 
+  it('traduce CTR e KTR in 3DS e WUP in Wii U', () => {
+    expect(toPlatformSlug('CTR')).toBe('nintendo_3ds');
+    expect(toPlatformSlug('KTR')).toBe('nintendo_3ds');
+    expect(toPlatformSlug('WUP')).toBe('nintendo_wiiu');
+  });
+
   it('rende null su tutto il resto', () => {
     expect(toPlatformSlug(null)).toBe(null);
     expect(toPlatformSlug('')).toBe(null);
-    expect(toPlatformSlug('CTR')).toBe(null);
+    expect(toPlatformSlug('RVL')).toBe(null);
   });
 });
 
@@ -331,14 +337,14 @@ describe('importNintendoLibrary', () => {
 
   it('passa i codici sconosciuti all’avviso dell’admin', async () => {
     vi.mocked(fetchNintendoPlayHistory).mockResolvedValue([
-      giocato({ titleId: '0100000000000001', name: 'Uno', platform: 'CTR' }),
+      giocato({ titleId: '0100000000000001', name: 'Uno', platform: 'ZZZ' }),
     ]);
 
     await importNintendoLibrary(account);
 
     expect(warnUnknownPlatforms).toHaveBeenCalledWith(
       'nintendo',
-      new Map([['CTR', 'Uno']]),
+      new Map([['ZZZ', 'Uno']]),
     );
   });
 
