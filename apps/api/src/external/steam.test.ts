@@ -458,11 +458,18 @@ describe('fetchSteamAppTypes', () => {
     expect(url).not.toContain('access_token');
   });
 
-  it('tiene tipo e nome delle app che Steam descrive, e lascia fuori le altre', async () => {
+  it('tiene tipo, nome e uscita delle app che Steam descrive, e lascia fuori le altre', async () => {
     jsonOnce({
       response: {
         store_items: [
           { appid: 238960, success: 1, type: 0, name: 'Path of Exile' },
+          {
+            appid: 2687220,
+            success: 1,
+            type: 0,
+            name: 'Create the Drops of God: The Ambrosia',
+            is_coming_soon: true,
+          },
           { appid: 439890, success: 1, type: 4, name: 'HITMAN™: Episode 2 ' },
           { appid: 5000760, success: 1, type: 1, name: '' },
           // Le app che lo store non descrive tornano senza appid.
@@ -473,15 +480,24 @@ describe('fetchSteamAppTypes', () => {
 
     const types = await fetchSteamAppTypes([
       '238960',
+      '2687220',
       '439890',
       '5000760',
       '1368430',
     ]);
 
     expect([...types.entries()]).toEqual([
-      ['238960', { type: 0, name: 'Path of Exile' }],
-      ['439890', { type: 4, name: 'HITMAN™: Episode 2' }],
-      ['5000760', { type: 1, name: 'App 5000760' }],
+      ['238960', { type: 0, name: 'Path of Exile', comingSoon: false }],
+      [
+        '2687220',
+        {
+          type: 0,
+          name: 'Create the Drops of God: The Ambrosia',
+          comingSoon: true,
+        },
+      ],
+      ['439890', { type: 4, name: 'HITMAN™: Episode 2', comingSoon: false }],
+      ['5000760', { type: 1, name: 'App 5000760', comingSoon: false }],
     ]);
   });
 

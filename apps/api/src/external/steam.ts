@@ -555,7 +555,16 @@ const GET_ITEMS_PAGE = 100;
 /** Il `type` di `GetItems` per un gioco. Gli altri: 1 demo, 4 DLC, 11 musica, 12 beta. */
 export const STEAM_APP_TYPE_GAME = 0;
 
-export type SteamAppType = { type: number; name: string };
+export type SteamAppType = {
+  type: number;
+  name: string;
+  /**
+   * Lo store lo dà come non ancora uscito. Un'app così può essere lo stesso
+   * nella libreria: c'è chi distribuisce la demo dentro l'app del gioco
+   * completo (_Create the Drops of God: The Ambrosia_, 2687220).
+   */
+  comingSoon: boolean;
+};
 
 type GetItemsResponse = {
   response?: {
@@ -564,6 +573,8 @@ type GetItemsResponse = {
       success?: number;
       type?: number;
       name?: string;
+      // C'è anche senza `include_release` nella richiesta, e solo se vero.
+      is_coming_soon?: boolean;
     }[];
   };
 };
@@ -609,6 +620,7 @@ export async function fetchSteamAppTypes(
       types.set(String(item.appid), {
         type: item.type,
         name: item.name?.trim() || `App ${item.appid}`,
+        comingSoon: item.is_coming_soon === true,
       });
     }
   }

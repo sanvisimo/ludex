@@ -187,6 +187,25 @@ describe('importLibrary: risoluzione per nome (passo 3)', () => {
     expect(mockedSearch).toHaveBeenCalledTimes(2);
   });
 
+  it('una voce `fullTitleOnly` si cerca solo col titolo intero', async () => {
+    mockedSearch.mockImplementation(async (term: string) =>
+      term.toLowerCase().includes('career')
+        ? []
+        : [hit({ igdbId: 77, name: 'Legend of Keepers' })],
+    );
+
+    const report = await importLibrary(account, [
+      {
+        externalId: '1208434383',
+        name: 'Legend of Keepers: Career of a Dungeon Manager',
+        fullTitleOnly: true,
+      },
+    ]);
+
+    expect(report).toMatchObject({ resolved: 0, unresolved: 1 });
+    expect(mockedSearch).toHaveBeenCalledTimes(1);
+  });
+
   it('giudica anche sulla forma con cui ha cercato, non solo sul titolo intero', async () => {
     // «Wargame Construction Set III: Age of Rifles 1846-1905 + Campaigns» non
     // somiglia abbastanza al titolo IGDB per superare la soglia. Somiglia la
