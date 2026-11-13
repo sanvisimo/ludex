@@ -74,12 +74,22 @@ import { warnUnknownPlatforms } from './unknown-platforms';
  * dello storico, ma il log non distingue la fonte. `OUNCE` viene dal codice di
  * Playnite (l'estensione Nintendo di XenorPLxx) per le Virtual Game Cards, **non
  * è misurato**.
+ *
+ * Lo storico è quello dell'app Nintendo Store, che per la FAQ di Nintendo copre
+ * Switch, Switch 2, 3DS e Wii U: le ultime due solo con il Nintendo Network ID
+ * collegato, e solo fino a febbraio 2020. `CTR` (3DS) è misurato il 13/11/2026
+ * su un import vero. `WUP` (Wii U) e `KTR` (New 3DS) sono i codici hardware
+ * delle due console, **non misurati**: `KTR` forse non compare mai, se Nintendo
+ * scrive `CTR` anche per gli esclusivi New 3DS.
  */
 const PLATFORMS: Record<string, string> = {
   HAC: 'nintendo_switch',
   NX: 'nintendo_switch',
   BEE: 'nintendo_switch2',
   OUNCE: 'nintendo_switch2',
+  CTR: 'nintendo_3ds',
+  KTR: 'nintendo_3ds',
+  WUP: 'nintendo_wiiu',
 };
 
 export function toPlatformSlug(code: string | null): string | null {
