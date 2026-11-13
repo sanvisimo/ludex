@@ -56,9 +56,8 @@ import { parseRangeInput } from '@/lib/range-input';
  * Non tengono stato loro: leggono e scrivono quello dell'URL tramite
  * `useBacklogFilter`, lo stesso hook che usa la pagina per costruire la query.
  * Sono due letture della stessa cosa, non due copie da tenere allineate. Le
- * regole sono quelle dello step 7 e non cambiano col ridisegno: le spunte
- * dello stesso criterio in AND, stato e tipo in OR, i range nulli che non
- * filtrano.
+ * regole stanno sul contratto (`BacklogFilterSchema`): generi e tag in AND,
+ * copie, stato e tipo in OR, i range nulli che non filtrano.
  */
 
 // I limiti degli slider. Una maniglia a un estremo vale «non filtrare», come
@@ -488,7 +487,7 @@ export function FilterPanel({
       body: (
         <CheckList
           prefix={`${prefix}-platforms`}
-          hint={t('allOfThem')}
+          hint={t('oneOfThem')}
           items={(options?.platforms ?? []).map((platform) => ({
             value: platform.slug,
             label: platform.name,
@@ -508,7 +507,7 @@ export function FilterPanel({
       body: (
         <CheckList
           prefix={`${prefix}-stores`}
-          hint={t('allOfThem')}
+          hint={t('oneOfThem')}
           items={(options?.stores ?? []).map((store) => ({
             value: store,
             label: storeLabels[store],
@@ -530,7 +529,7 @@ export function FilterPanel({
       body: (
         <CheckList
           prefix={`${prefix}-media`}
-          hint={t('allOfThem')}
+          hint={t('oneOfThem')}
           items={(options?.media ?? []).map((medium) => ({
             value: medium,
             label: mediumLabels[medium],
@@ -561,7 +560,7 @@ export function FilterPanel({
           </Text>
           <CheckList
             prefix={`${prefix}-subscriptions`}
-            hint={t('allOfThem')}
+            hint={t('oneOfThem')}
             items={subscriptionItems}
             selected={filter.subscriptions}
             onToggle={(value) =>

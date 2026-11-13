@@ -630,10 +630,12 @@ export type HiddenItem = z.infer<typeof HiddenItemSchema>;
  *   richiesta vuota rende il backlog intero. I default che l'utente vede
  *   (nascondere `excluded`) li mette il client, che è l'unico posto dove può
  *   anche mostrarli spuntati.
- * - **i multi-valore sono in AND**: un gioco deve avere *tutti* i valori
- *   selezionati. In SQL è un `EXISTS` correlato per valore, tutti in AND, senza
- *   casi speciali. L'eccezione è `status`, che non è un insieme: una riga ha
- *   esattamente uno stato, quindi lì l'AND darebbe sempre zero ed è un `IN`.
+ * - **i criteri sono in AND fra loro, i valori dentro un criterio dipendono da
+ *   cosa descrivono**. Generi, temi e tag dicono com'è il gioco, e sono in AND:
+ *   «carte» e «azione» li vuole tutti e due. Piattaforma, negozio, abbonamento
+ *   e supporto dicono quale copia hai, e sono in OR: «PS5» o «Xbox». Si
+ *   chiedono anche **alla stessa copia**: «PS5» + «Fisico» è un disco per PS5.
+ *   Stato e tipo sono in OR perché una riga ne ha uno solo.
  * - **un criterio attivo esclude i NULL**. Un gioco senza durata non è un gioco
  *   corto, e un gioco non votato non è un gioco votato male. Il client deve
  *   dirlo, o l'utente crede di aver perso metà libreria.
@@ -642,11 +644,11 @@ export const BacklogFilterSchema = z.object({
   // Solo il nome del gioco. Le note sono testo libero per scelta, e per la
   // stessa scelta non sono un campo su cui si cerca.
   q: z.string().trim().min(1).max(100).optional(),
-  // In OR fra loro: è l'unico criterio a valore singolo per riga. Vedi sopra.
+  // In OR fra loro: una riga ha uno stato solo. Vedi sopra.
   status: z.array(BacklogStatusSchema).max(10).optional(),
   platforms: z.array(z.string().min(1)).max(20).optional(),
   stores: z.array(StoreSchema).max(20).optional(),
-  // A che titolo si ha la copia: la famiglia Steam, il PS Plus. In AND come
+  // A che titolo si ha la copia: la famiglia Steam, il PS Plus. In OR come
   // `stores`, ma sta su una colonna a parte (`ownerships.subscription`), che è
   // il motivo per cui è un criterio suo e non un valore di `stores`.
   subscriptions: z.array(SubscriptionSchema).max(5).optional(),
@@ -657,17 +659,17 @@ export const BacklogFilterSchema = z.object({
   // giochi che stasera puoi avviare e domani no. Con tutti i valori è «solo
   // copie tue». Un gioco senza possessi non c'è, quindi non è un caso.
   excludeSubscriptions: z.array(SubscriptionSchema).max(5).optional(),
-  // Digitale o fisico, cioè che cosa hai in mano: `ownerships.medium`. In AND
-  // come `stores`, quindi tutti e due vuol dire «ce l'ho in tutti e due i
-  // modi». Una copia senza supporto (inserita a mano senza dirlo) non è né
-  // l'uno né l'altro, e un criterio attivo la lascia fuori.
+  // Digitale o fisico, cioè che cosa hai in mano: `ownerships.medium`. In OR
+  // come `stores`, quindi tutti e due non filtrano niente, se non le copie
+  // senza supporto (inserite a mano senza dirlo): non sono né l'una né l'altra,
+  // e un criterio attivo le lascia fuori.
   media: z.array(MediumSchema).max(2).optional(),
   // Gli id di `igdb_attributes`, non le coppie (kind, igdbId): sono la chiave
   // che `game_attributes` referenzia davvero, e il client li riceve da
   // `backlog.filterOptions` senza doverli comporre.
   attributes: z.array(z.number().int().positive()).max(20).optional(),
-  // Che cos'è la scheda: gioco, DLC, bundle… **In OR fra loro**, come lo stato
-  // e al contrario di tutto il resto: una riga ha esattamente un tipo, quindi
+  // Che cos'è la scheda: gioco, DLC, bundle… **In OR fra loro**, come lo
+  // stato: una riga ha esattamente un tipo, quindi
   // l'AND darebbe sempre zero risultati. Un gioco senza tipo — non ancora
   // arricchito — non corrisponde a nessuna spunta: null vuol dire «non lo so»,
   // e «non lo so» non è «è un gioco».

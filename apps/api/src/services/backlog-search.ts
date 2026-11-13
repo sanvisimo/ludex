@@ -102,115 +102,51 @@ export function buildConditions(userId: string, input: BacklogFilter): SQL[] {
     conditions.push(inArray(schema.backlog.status, input.status));
   }
 
-  // Una copia che non è fra quelle escluse: `subscription` nullo (tua) o un altro
-  // valore. Sta in ogni sottoquery sulle copie e non solo nel suo predicato: «Steam»
-  // + «senza Famiglia Steam» vuol dire una copia **Steam** che non è da famiglia,
-  // non una copia Steam qualunque e, da qualche altra parte, una copia tua.
-  const nonEsclusa = input.excludeSubscriptions?.length
-    ? or(
+  // Piattaforma, negozio, abbonamento e supporto sono dati della copia, quindi si
+  // chiedono **alla stessa copia**: «PS5» + «Fisico» è un disco per PS5, non un
+  // digitale PS5 e, da qualche altra parte, una cartuccia Switch. Dentro un
+  // criterio i valori sono in OR: «PS5 o Xbox» è la domanda di «cosa gioco
+  // adesso», «su tutte e due» non lo è.
+  const copia: SQL[] = [];
+  if (input.platforms?.length) {
+    copia.push(
+      inArray(schema.ownerships.platformSlug, input.platforms),
+      // Una copia «non più tua» (step 14) stasera non la avvii: la
+      // piattaforma è il filtro hard di «cosa gioco adesso».
+      isNull(schema.ownerships.subscriptionEndedAt),
+    );
+  }
+  if (input.stores?.length) {
+    copia.push(inArray(schema.ownerships.store, input.stores));
+  }
+  // Una copia comprata ha `subscription` nullo e non corrisponde a nessuna spunta.
+  if (input.subscriptions?.length) {
+    copia.push(inArray(schema.ownerships.subscription, input.subscriptions));
+  }
+  // Una copia senza supporto non è né digitale né fisica.
+  if (input.media?.length) {
+    copia.push(inArray(schema.ownerships.medium, input.media));
+  }
+  // Tieni i giochi con una copia che non è fra quelle escluse: `subscription`
+  // nullo (tua) o un altro valore. Non è il contrario di `subscriptions`: quello
+  // chiede «ha una copia da famiglia», questo «ha una copia che non lo è», e un
+  // gioco può avere tutte e due.
+  if (input.excludeSubscriptions?.length) {
+    copia.push(
+      or(
         isNull(schema.ownerships.subscription),
         notInArray(schema.ownerships.subscription, input.excludeSubscriptions),
-      )
-    : undefined;
-
-  if (input.platforms?.length) {
-    conditions.push(
-      ...tuttiPresenti(input.platforms, (slug) =>
-        exists(
-          db
-            .select({ uno: sql`1` })
-            .from(schema.ownerships)
-            .where(
-              and(
-                eq(schema.ownerships.backlogId, schema.backlog.id),
-                eq(schema.ownerships.platformSlug, slug),
-                // Una copia «non più tua» (step 14) stasera non la avvii: la
-                // piattaforma è il filtro hard di «cosa gioco adesso».
-                isNull(schema.ownerships.subscriptionEndedAt),
-                nonEsclusa,
-              ),
-            ),
-        ),
-      ),
+      )!,
     );
   }
-
-  if (input.stores?.length) {
-    conditions.push(
-      ...tuttiPresenti(input.stores, (store) =>
-        exists(
-          db
-            .select({ uno: sql`1` })
-            .from(schema.ownerships)
-            .where(
-              and(
-                eq(schema.ownerships.backlogId, schema.backlog.id),
-                eq(schema.ownerships.store, store),
-                nonEsclusa,
-              ),
-            ),
-        ),
-      ),
-    );
-  }
-
-  // Come `stores`, ma su un'altra colonna: «Famiglia Steam» non è un negozio,
-  // è a che titolo si ha la copia. Una copia comprata ha `subscription` nullo e
-  // non corrisponde a nessuna spunta.
-  if (input.subscriptions?.length) {
-    conditions.push(
-      ...tuttiPresenti(input.subscriptions, (subscription) =>
-        exists(
-          db
-            .select({ uno: sql`1` })
-            .from(schema.ownerships)
-            .where(
-              and(
-                eq(schema.ownerships.backlogId, schema.backlog.id),
-                eq(schema.ownerships.subscription, subscription),
-                nonEsclusa,
-              ),
-            ),
-        ),
-      ),
-    );
-  }
-
-  // Come `stores`, su `ownerships.medium`: «Fisico» vuol dire almeno una copia
-  // su disco o cartuccia. Una copia senza supporto non corrisponde a nessuna
-  // spunta, e con `nonEsclusa` dentro un digitale che hai solo dal Plus non
-  // conta, se il Plus è escluso.
-  if (input.media?.length) {
-    conditions.push(
-      ...tuttiPresenti(input.media, (medium) =>
-        exists(
-          db
-            .select({ uno: sql`1` })
-            .from(schema.ownerships)
-            .where(
-              and(
-                eq(schema.ownerships.backlogId, schema.backlog.id),
-                eq(schema.ownerships.medium, medium),
-                nonEsclusa,
-              ),
-            ),
-        ),
-      ),
-    );
-  }
-
-  // Almeno una copia che non è fra quelle escluse. Non è il contrario del filtro
-  // qui sopra: quello chiede «ha una copia da famiglia», questo «ha una copia
-  // che non lo è», e un gioco può avere tutte e due. Serve anche da solo, quando
-  // nessun filtro sulle copie lo porta già dentro la sua sottoquery.
-  if (nonEsclusa) {
+  if (copia.length) {
     conditions.push(
       exists(
         db
           .select({ uno: sql`1` })
           .from(schema.ownerships)
           .where(
-            and(eq(schema.ownerships.backlogId, schema.backlog.id), nonEsclusa),
+            and(eq(schema.ownerships.backlogId, schema.backlog.id), ...copia),
           ),
       ),
     );

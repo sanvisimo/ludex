@@ -84,7 +84,38 @@ describe('filtri sui multi-valore', () => {
     expect(await nomi(userId, { tags: [tag!.id] })).toEqual([]);
   });
 
-  it('più piattaforme sono in AND: le vuole tutte', async () => {
+  it('più generi sono in AND: «carte» e «azione» li vuole tutti e due', async () => {
+    const attributi = await db
+      .insert(schema.igdbAttributes)
+      .values([
+        { kind: 'genre', igdbId: 35, name: 'Card & Board Game' },
+        { kind: 'theme', igdbId: 1, name: 'Action' },
+      ])
+      .returning({ id: schema.igdbAttributes.id });
+    const [carte, azione] = attributi.map((row) => row.id);
+    const giochi = {
+      'Carte e azione': [carte!, azione!],
+      'Solo carte': [carte!],
+    };
+    for (const [name, ids] of Object.entries(giochi)) {
+      const gioco = await createGame({ name });
+      await addToBacklog({
+        userId,
+        gameId: gioco.id,
+        status: 'backlog',
+        ownerships: [{ platformSlug: 'pc_windows' }],
+      });
+      await db
+        .insert(schema.gameAttributes)
+        .values(ids.map((attributeId) => ({ gameId: gioco.id, attributeId })));
+    }
+
+    expect(await nomi(userId, { attributes: [carte!, azione!] })).toEqual([
+      'Carte e azione',
+    ]);
+  });
+
+  it('più piattaforme sono in OR: ne basta una', async () => {
     const gioco = await createGame({ name: 'Su due' });
     await addToBacklog({
       userId,
@@ -103,7 +134,7 @@ describe('filtri sui multi-valore', () => {
     ]);
     expect(
       await nomi(userId, { platforms: ['pc_windows', 'nintendo_switch'] }),
-    ).toEqual(['Su due']);
+    ).toEqual(['Solo PC', 'Su due']);
   });
 });
 
@@ -132,7 +163,7 @@ describe('filtro per abbonamento', () => {
     ]);
   });
 
-  it('più abbonamenti sono in AND: servono tutti e due, anche su copie diverse', async () => {
+  it('più abbonamenti sono in OR: ne basta uno', async () => {
     await conAbbonamento(userId, 'Tutti e due', [
       {
         platformSlug: 'pc_windows',
@@ -154,8 +185,10 @@ describe('filtro per abbonamento', () => {
     ]);
 
     expect(
-      await nomi(userId, { subscriptions: ['steam_family', 'ps_plus'] }),
-    ).toEqual(['Tutti e due']);
+      (
+        await nomi(userId, { subscriptions: ['steam_family', 'ps_plus'] })
+      ).sort(),
+    ).toEqual(['Solo Plus', 'Tutti e due']);
     expect(await nomi(userId, { subscriptions: ['ps_plus'] })).toEqual([
       'Solo Plus',
       'Tutti e due',
@@ -396,10 +429,10 @@ describe('filtro per supporto', () => {
     ]);
   });
 
-  it('tutti e due sono in AND: ce l’hai in tutti e due i modi', async () => {
-    expect(await nomi(userId, { media: ['digital', 'physical'] })).toEqual([
-      'Disco e digitale',
-    ]);
+  it('tutti e due sono in OR: lasciano fuori solo le copie senza supporto', async () => {
+    expect(
+      (await nomi(userId, { media: ['digital', 'physical'] })).sort(),
+    ).toEqual(['Cartuccia', 'Digitale', 'Disco e digitale']);
   });
 
   it('una copia senza supporto non è né digitale né fisica', async () => {
@@ -419,7 +452,7 @@ describe('filtro per supporto', () => {
     expect(risultato.entries).toHaveLength(3);
   });
 
-  it('con lo store è un criterio in più, ognuno sulla sua copia, come piattaforma e store', async () => {
+  it('con lo store si chiede alla stessa copia', async () => {
     await conSupporto(userId, 'Steam e cartuccia', [
       { platformSlug: 'pc_windows', store: 'steam', medium: 'digital' },
       {
@@ -429,12 +462,32 @@ describe('filtro per supporto', () => {
       },
     ]);
 
-    // Una copia Steam e una cartuccia: «Steam» + «Fisico» lo trova, anche se
-    // nessuna copia è le due cose insieme. Solo gli abbonamenti esclusi stanno
-    // dentro la stessa copia (`nonEsclusa`).
+    // Una copia Steam e una cartuccia: nessuna copia è le due cose insieme.
     expect(
       await nomi(userId, { stores: ['steam'], media: ['physical'] }),
-    ).toEqual(['Steam e cartuccia']);
+    ).toEqual([]);
+    expect(
+      await nomi(userId, { stores: ['nintendo'], media: ['physical'] }),
+    ).toEqual(['Steam e cartuccia', 'Cartuccia']);
+  });
+
+  it('«PS o Xbox» + «Fisico» vuole un disco per una delle due', async () => {
+    // Il digitale è su PS5, il disco su Switch: un disco PS5 non c'è.
+    await conSupporto(userId, 'Digitale PS5, cartuccia Switch', [
+      { platformSlug: 'sony_playstation5', store: 'psn', medium: 'digital' },
+      {
+        platformSlug: 'nintendo_switch',
+        store: 'nintendo',
+        medium: 'physical',
+      },
+    ]);
+
+    expect(
+      await nomi(userId, {
+        platforms: ['sony_playstation4', 'sony_playstation5', 'xbox_series'],
+        media: ['physical'],
+      }),
+    ).toEqual(['Disco e digitale']);
   });
 
   it('il digitale che hai solo dal Plus non conta se il Plus è escluso', async () => {
