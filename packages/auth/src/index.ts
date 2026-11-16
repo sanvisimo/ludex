@@ -1,3 +1,4 @@
+import { expo } from '@better-auth/expo';
 import { db, schema } from '@repo/db';
 import { and, count, eq, ne } from '@repo/db/orm';
 import { betterAuth } from 'better-auth';
@@ -36,7 +37,11 @@ export const auth = betterAuth({
   secret,
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3005',
   // Il web gira su un'origine diversa dall'API, quindi va dichiarata esplicitamente.
-  trustedOrigins: [webUrl],
+  // L'app mobile si presenta con il suo schema (`expo-origin`, letto dal
+  // plugin `expo`): `pilecue://` nelle build, `exp://` dentro Expo Go. Il
+  // secondo resta anche in produzione: il controllo dell'origine ferma il CSRF
+  // di un browser, e un browser non manda mai un'origine che non sia http.
+  trustedOrigins: [webUrl, 'pilecue://', 'exp://'],
   database: drizzleAdapter(db, { provider: 'pg', schema }),
   session: {
     // Spento il controllo di freschezza. `freshAge` si misura da `createdAt`,
@@ -198,6 +203,7 @@ export const auth = betterAuth({
   // pubblica (`PUBLIC_TURNSTILE_SITE_KEY`), quindi le due vanno messe insieme,
   // o l'accesso risponde sempre «CAPTCHA mancante».
   plugins: [
+    expo(),
     admin(),
     ...(turnstileSecret
       ? [

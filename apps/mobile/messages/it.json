@@ -1,0 +1,81 @@
+{
+  "login": {
+    "title": "Accedi",
+    "email": "Email",
+    "password": "Password",
+    "forgot": "Password dimenticata?",
+    "submit": "Accedi",
+    "pending": "Attendi…",
+    "failed": "Accesso fallito",
+    "noAccount": "Non hai un account?",
+    "toRegister": "Registrati"
+  },
+  "register": {
+    "title": "Crea un account",
+    "name": "Nome",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "Almeno 8 caratteri.",
+    "submit": "Crea account",
+    "pending": "Attendi…",
+    "failed": "Registrazione fallita",
+    "hasAccount": "Hai già un account?",
+    "toLogin": "Accedi"
+  },
+  "checkEmail": {
+    "title": "Controlla la posta",
+    "text": "Ti abbiamo scritto a {email}. Apri il link, poi torna qui e accedi.",
+    "hint": "Non arriva? Guarda nello spam, oppure accedi: te ne mandiamo uno nuovo.",
+    "toLogin": "Vai all'accesso"
+  },
+  "legal": {
+    "privacy": "Informativa",
+    "terms": "Condizioni"
+  },
+  "captcha": {
+    "unavailable": "Non è stato possibile caricare il controllo anti-bot. Controlla la connessione e riprova."
+  },
+  "tabs": {
+    "backlog": "Backlog",
+    "playlist": "Playlist",
+    "wishlist": "Wishlist",
+    "account": "Account"
+  },
+  "soon": {
+    "text": "Questa sezione arriva nei prossimi aggiornamenti dell’app."
+  },
+  "account": {
+    "preferences": "Preferenze",
+    "onWeb": "Sul sito",
+    "profile": "Profilo e sicurezza",
+    "libraries": "Librerie collegate",
+    "deleteAccount": "Elimina account",
+    "signOut": "Esci"
+  },
+  "theme": {
+    "label": "Tema",
+    "system": "Sistema",
+    "light": "Chiaro",
+    "dark": "Scuro"
+  },
+  "locale": {
+    "label": "Lingua",
+    "system": "Sistema",
+    "it": "Italiano",
+    "en": "English"
+  },
+  "authErrors": {
+    "INVALID_EMAIL_OR_PASSWORD": "Email o password non corretti.",
+    "INVALID_EMAIL": "Questo indirizzo email non è valido.",
+    "USER_ALREADY_EXISTS": "Esiste già un account con questa email.",
+    "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL": "Esiste già un account con questa email: usane un'altra.",
+    "PASSWORD_TOO_SHORT": "La password è troppo corta.",
+    "PASSWORD_TOO_LONG": "La password è troppo lunga.",
+    "EMAIL_NOT_VERIFIED": "Per accedere è necessario confermare l'indirizzo email. Ti abbiamo inviato un nuovo link di conferma.",
+    "FAILED_TO_CREATE_USER": "Non sono riuscito a creare l'account.",
+    "BANNED_USER": "Questo account è sospeso. Se pensi che sia un errore, scrivici: l'indirizzo è nelle condizioni d'uso.",
+    "MISSING_RESPONSE": "Completa il controllo anti-bot prima di continuare.",
+    "VERIFICATION_FAILED": "Il controllo anti-bot non è riuscito. Riprova.",
+    "TOO_MANY_REQUESTS": "Troppi tentativi ravvicinati. Attendi qualche secondo e riprova."
+  }
+}
