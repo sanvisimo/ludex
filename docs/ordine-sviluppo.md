@@ -7,7 +7,7 @@ Parte della documentazione in `docs/`, spostata dal CLAUDE.md della radice. Gli 
 I numeri degli step sono nomi, non una sequenza: compaiono nei piani, nei
 commenti e nei messaggi dei commit, e non si rinumerano. Quello che resta si fa
 in quest'ordine (deciso il 09/10/2026, aggiornato il 16/10, il 18/10, il 19/10,
-il 21/10 e il 22/10), e l'ordine è anche quello della
+il 21/10, il 22/10 e il 16/11), e l'ordine è anche quello della
 [roadmap](../apps/web/lib/roadmap.ts) pubblica:
 
 1. **Rilascio — fatto l'08/11/2026**: un server stabile al posto del mini PC
@@ -15,14 +15,15 @@ il 21/10 e il 22/10), e l'ordine è anche quello della
    il recupero della password e login e registrazione da stabilizzare. Non ha
    un numero: non è una feature ma il passaggio da ambiente di prova a
    servizio. Piano in `plans/rilascio.md`.
-2. **13a e 13b — AI**: la base (provider, embedding, profilo, serie IGDB) e
+2. **Mobile — in corso dal 16/11/2026**: un'app nuova, con le sue schermate
+   (`plans/mobile.md`).
+3. **13a e 13b — AI**: la base (provider, embedding, profilo, serie IGDB) e
    l'assistente in sola lettura. Analisi di fornitori e costi, fatta in
    anticipo (18–22/10/2026), in `plans/13-ai.md`.
-3. **I prerequisiti del 13c**, utili anche senza AI: un tag a tutti i giochi
+4. **I prerequisiti del 13c**, utili anche senza AI: un tag a tutti i giochi
    di un filtro e `criticMax` nel filtro. Le playlist aperte (15f A) sono
    **fatte dal 30/10/2026**, `plans/15f-playlist-aperte.md`.
-4. **13c — le azioni** dell'assistente, con la scheda di conferma.
-5. **Mobile**: un'app nuova, con le sue schermate (`plans/mobile.md`).
+5. **13c — le azioni** dell'assistente, con la scheda di conferma.
 6. **Dopo**, secondari rispetto a «cosa gioco adesso»: la 15f B (playlist
    pubbliche) e il catalogo con i filtri (parte B di
    `plans/pagine-categoria.md`). Restano idee, fuori dall'ordine, Meta Quest
@@ -36,6 +37,11 @@ portano a un filtro già impostato: «18 giochi sotto le 5 ore», «7 negli
 abbonamenti che scadono», «42 da giocare su Switch». Sono conteggi SQL sui
 filtri che esistono, senza AI. Se entra nell'ordine, prima proposta e
 wireframe.
+
+**Il mobile è anticipato il 16/11/2026**, su decisione dell'utente: passa
+davanti a tutto il 13. L'aspetto grafico c'è già (`packages/ui`, condiviso col
+web), e per decidere cosa giocare i filtri del backlog bastano. Solo «cosa
+gioco adesso» (M3 del piano) aspetta il 13.
 
 **La 15f A è anticipata il 28/10/2026**, su decisione dell'utente: comincia prima
 del rilascio e di 13a e 13b, perché non dipende da nessuno dei due, ed è **fatta

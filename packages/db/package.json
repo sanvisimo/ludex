@@ -20,15 +20,15 @@
   "dependencies": {
     "@repo/contracts": "workspace:*",
     "drizzle-orm": "^0.45.2",
-    "postgres": "^3.4.9"
+    "postgres": "^4.1.1"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.15.3",
-    "dotenv": "^17.4.2",
+    "@types/node": "^24.19.2",
+    "dotenv": "^18.0.10",
     "drizzle-kit": "^0.31.10",
-    "eslint": "^9.39.1",
-    "typescript": "5.9.2"
+    "eslint": "^10.15.0",
+    "typescript": "6.0.3"
   }
 }

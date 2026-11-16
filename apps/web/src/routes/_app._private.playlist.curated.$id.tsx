@@ -18,6 +18,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import {
   Button,
+  type ButtonProps,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -53,14 +54,7 @@ import {
 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
-import {
-  type KeyboardEventHandler,
-  type RefObject,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from 'react';
+import { type RefObject, useEffect, useId, useRef, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { CuratedAddDialog } from '@/components/curated-add-dialog';
@@ -576,7 +570,7 @@ function SortableCard({
               // tipo stretto.
               {...(attributes as Omit<typeof attributes, 'role'>)}
               // dnd-kit tipizza i suoi gestori come `Function`.
-              onKeyDown={onKeyDown as KeyboardEventHandler | undefined}
+              onKeyDown={onKeyDown as ButtonProps['onKeyDown']}
             >
               <GripVertical size={16} color="$color11" />
             </Button>

@@ -34,8 +34,8 @@ export type RoadmapEntry = {
 export const roadmap: RoadmapEntry[] = [
   { id: 'nintendo3dsWiiu', status: 'doing', areas: ['import'] },
   { id: 'nintendoSwitch2', status: 'doing', areas: ['import'] },
+  { id: 'mobile', status: 'doing', areas: ['mobile'] },
   { id: 'ai', status: 'next', areas: ['ai'] },
-  { id: 'mobile', status: 'next', areas: ['mobile'] },
   { id: 'publicPlaylists', status: 'next', areas: ['playlists'] },
   { id: 'categoryPages', status: 'next', areas: ['game', 'library'] },
   { id: 'addToBacklog', status: 'next', areas: ['game', 'library'] },

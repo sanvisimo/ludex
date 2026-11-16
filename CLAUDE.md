@@ -105,9 +105,10 @@ rispettare `pnpm lint`, con `no-restricted-imports` in
 risolvendone gli import dalla sua cartella, e due versioni nel repo diventano due
 React nel bundle mobile, che rompono gli hook. Si alza insieme alla SDK.
 
-**`apps/mobile` è per ora uno scheletro**: una schermata con i componenti di
-`@repo/ui`, la prova che l'universale è universale. L'app mobile vera viene dopo
-lo step 13.
+**`apps/mobile` è in costruzione** (`plans/mobile.md`): Expo Router, login con
+il plugin Expo di Better Auth (il cookie nel portachiavi, rimandato a mano anche
+alle chiamate oRPC), testi propri in `apps/mobile/messages`. `pnpm --filter
+mobile start` legge il `.env` della radice.
 
 ## Architettura del layer di raccomandazione
 
@@ -182,9 +183,9 @@ Il dettaglio di ogni step è in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.m
 16. Cancellazione ed esportazione dell'account
 
 Poi il mobile. I numeri sono nomi e non si rinumerano: **quello che resta si fa
-in quest'ordine** (09/10/2026, aggiornato il 22/10; il rilascio è fatto
-dall'08/11) — 13a e 13b ·
-tag in blocco e `criticMax` · 13c · mobile · poi le
+in quest'ordine** (09/10/2026, aggiornato il 22/10 e il 16/11; il rilascio è
+fatto dall'08/11, il mobile è anticipato e in corso dal 16/11) — mobile ·
+13a e 13b · tag in blocco e `criticMax` · 13c · poi le
 parti pubbliche (15f B, catalogo con i filtri) (la 15e e la 9c sono fatte dal 13/10/2026, i link della pagina del gioco e il gioco a caso dal filtro dal 16/10, l'import CSV dal 19/10, Xbox e gli abbonamenti (14) dal 21/10, i badge della pagina del gioco dal 22/10, le playlist aperte (15f A, anticipate) dal 30/10), con le
 ragioni in [docs/ordine-sviluppo.md](docs/ordine-sviluppo.md). Non anticipare
 step successivi: se una feature appartiene allo step 13, non implementarla
@@ -311,7 +312,7 @@ progetto, e server e worker lavorano su una coda vuota.
 | `pnpm --filter @repo/ui dev`     | Storybook, il banco del design system     |
 | `pnpm --filter @repo/ui test`    | le storie in Chromium, con axe            |
 | `pnpm --filter web test`         | la logica pura di `apps/web/lib`          |
-| `pnpm --filter mobile start`     | Metro per lo scheletro Expo               |
+| `pnpm --filter mobile start`     | Metro per l'app Expo                      |
 
 Gli arnesi che si lanciano a mano dal workspace `api` (probe, backfill, dashboard
 delle code) sono in [apps/api/CLAUDE.md](apps/api/CLAUDE.md).

@@ -1,24 +1,16 @@
 # L'app mobile
 
-**Stato: piano, scritto il 22/10/2026.** Il codice parte quando lo decide
-l'utente. In [ordine di lavoro](../docs/ordine-sviluppo.md) viene dopo
-rilascio e 13, ma nessuno dei due la blocca tecnicamente:
-
-- **il rilascio** serve solo quando l'app la usano altri: in sviluppo Expo Go
-  sul telefono parla con l'API della macchina in LAN, come il web;
-- **lo step 13** serve solo per «cosa gioco adesso» (M3): le altre schermate
-  non dipendono da lui.
-
-Se il mobile parte prima, l'ordine va aggiornato in
-[ordine-sviluppo](../docs/ordine-sviluppo.md) e nel CLAUDE.md della radice.
-La roadmap pubblica (`mobile`, «in arrivo») passa a «in corso» quando
-comincia il lavoro.
+**Stato: in corso dal 16/11/2026**, piano scritto il 22/10/2026. Anticipato
+prima del 13 su decisione dell'utente (vedi
+[ordine-sviluppo](../docs/ordine-sviluppo.md)): l'aspetto grafico c'è già, e
+per decidere bastano i filtri del backlog. **Lo step 13** serve solo per «cosa
+gioco adesso» (M3), che lo aspetta: le altre schermate non dipendono da lui.
 
 ## Cosa c'è oggi
 
 - `apps/mobile` è uno scheletro: Expo SDK 57, una schermata con i quindici
   componenti di `@repo/ui` ([App.tsx](../apps/mobile/App.tsx)). Niente
-  navigazione, niente login, niente API.
+  navigazione, niente login, niente API, niente `eas.json`.
 - Il login è Better Auth col **cookie**
   ([client.ts](../packages/auth/src/client.ts)): React Native non ha un
   cookie jar affidabile.
@@ -32,29 +24,32 @@ comincia il lavoro.
 
 ## I lotti
 
-### M0 · Decisioni prima del codice
+### M0 · Decisioni prima del codice — chiuso il 16/11/2026
 
-Solo carta.
-
-1. **OpenCritic**: l'app non mostra dati OpenCritic, o si chiede a
-   OpenCritic, o si compra il piano. Default: non mostrarli, come le card del
-   web. Da chiedere a OpenCritic in ogni caso: se F-Droid conta come «App
-   Store».
-2. **Distribuzione**: default l'**APK dal nostro sito**, che non è un App
+1. **OpenCritic**: l'app mostra ciò che l'API restituisce, come il web
+   (`SHOW_OPENCRITIC` sta sul server). Prima di pubblicare su uno store si
+   decide se comprare il piano o spegnerlo. Da chiedere a OpenCritic in ogni
+   caso: se F-Droid conta come «App Store».
+2. **Distribuzione**: l'**APK dal nostro sito**, che non è un App
    Store. Poi, secondo la risposta di OpenCritic: F-Droid, Play Store,
    App Store (TestFlight prima). Costi: Apple Developer 99 $/anno, Google
    Play 25 $ una volta. F-Droid compila lui dal sorgente (niente EAS) e
    accetta solo dipendenze libere: niente Google Play Services, quindi niente
    push via FCM. Le dipendenze Expo di oggi sono libere.
-3. **Le schermate della prima versione**. Proposta: accesso e registrazione,
-   «cosa gioco adesso» (13), backlog come lista a schede, pagina del gioco,
-   playlist e wishlist. Restano sul web: admin, import CSV, crediti, roadmap,
-   informativa e condizioni (queste come link al sito).
+   **iOS** si prova senza Mac e senza iPhone come si può; poi l'app la provano
+   gli amici con l'iPhone. Se serve, si cerca un Mac.
+3. **Le schermate della prima versione**: accesso e registrazione, backlog
+   come lista a schede, pagina del gioco, playlist e wishlist; «cosa gioco
+   adesso» arriva col 13 (M3). Restano sul web: admin, import CSV, crediti,
+   roadmap, informativa e condizioni (queste come link al sito).
 
 ### M1 · Fondamenta
 
-- **Navigazione con Expo Router**, bottom tab: Adesso · Backlog · Playlist ·
-  Account.
+- **Build e API**: `eas.json`, e `EXPO_PUBLIC_API_URL` per l'indirizzo
+  dell'API, dichiarata anche in `globalEnv` di `turbo.json`.
+- **Navigazione con Expo Router**, bottom tab: Backlog · Playlist · Wishlist ·
+  Account. L'assistente del 13 non è una tab (vedi M3). Wireframe in
+  [mobile-m1.excalidraw](mobile-m1.excalidraw).
 - **Login** col plugin `@better-auth/expo`: `expo()` sul server, `expoClient`
   con `expo-secure-store` sul client, lo schema dell'app nei
   `trustedOrigins`. È l'unico punto in cui il mobile tocca `packages/auth`.
@@ -63,13 +58,35 @@ Solo carta.
 - **Testi**: `use-intl` anche qui, con **file di messaggi propri** in
   `apps/mobile`: le schermate sono diverse, e lo sono anche i testi.
 
+**Stato di M1 (16/11/2026)**: scritto, da provare su un telefono.
+Type-check, lint e bundle Android (`expo export`) passano, e i test dell'API
+pure. Fatto: `eas.json` (`preview` per l'APK, `production`), le tre
+`EXPO_PUBLIC_*` (API, sito, Turnstile), lo schema `pilecue` e gli id
+`com.pilecue.app`, il plugin `expo()` sul server con `pilecue://` ed `exp://`
+nei `trustedOrigins`, accesso, registrazione, «controlla la posta», le
+quattro tab (tre segnaposto) e Account. Lo scheletro con i componenti
+(`App.tsx`) non c'è più: il banco del design system è Storybook.
+
+Il 16/11 l'app è passata all'**SDK 58** (React Native 0.88, React 19.3 in
+tutto il repo) e a Better Auth 1.7, che ha tolto il cast del plugin Expo.
+
+Da verificare:
+
+- **il giro completo su Android**: registrazione, link, accesso, Esci;
+- **Turnstile nella WebView** con la chiave vera: la pagina dichiara
+  l'origine del sito (`baseUrl`), da vedere se Cloudflare la accetta;
+- **EAS**: `eas init` col tuo account Expo (aggiunge il `projectId` ad
+  `app.json`) e la chiave di Turnstile fra le variabili del progetto EAS.
+
 ### M2 · Backlog e pagina del gioco
 
 Lista a schede, filtri in un bottom sheet, voto al volo e stato.
 
 ### M3 · «Cosa gioco adesso»
 
-La schermata del 13, nella forma per il telefono. Aspetta il 13.
+La chat dell'assistente del 13, che porta a una vista filtrata del backlog.
+Dove sta il suo ingresso (un pulsante o un campo nel Backlog) si decide qui.
+Aspetta il 13.
 
 ### M4 · Playlist e wishlist
 

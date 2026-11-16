@@ -45,7 +45,7 @@ export const getI18n = createServerFn({ method: 'GET' }).handler(async () => {
  * arriva dal client e va validato qui, non ci si può fidare del tipo.
  */
 export const setLocale = createServerFn({ method: 'POST' })
-  .inputValidator((value: unknown) => {
+  .validator((value: unknown) => {
     if (typeof value !== 'string' || !isLocale(value)) {
       throw new Error('Lingua non supportata');
     }

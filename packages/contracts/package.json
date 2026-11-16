@@ -13,14 +13,14 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@orpc/contract": "^1.15.0",
+    "@orpc/contract": "^1.16.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.15.3",
-    "eslint": "^9.39.1",
-    "typescript": "5.9.2"
+    "@types/node": "^24.19.2",
+    "eslint": "^10.15.0",
+    "typescript": "6.0.3"
   }
 }

@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config';
 
-import { testDatabaseUrl } from './test/env';
+import { testDatabaseUrl } from './test/env.ts';
 
 export default defineConfig({
   // I `.ts` prima dei `.js`, al contrario del default di Vite.

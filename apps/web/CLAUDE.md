@@ -32,12 +32,13 @@ alla pagina di prima. Una pagina oltre la fine torna alla prima e non
 all'ultima: con `count(*) over()` e nessuna riga restituita il server risponde
 `total: 0`, e l'ultima non la sa.
 
-**La vista compatta del backlog usa TanStack Table v8**, in
+**La vista compatta del backlog usa TanStack Table v9** (`useTable`, con la
+sola `rowSortingFeature` e `meta` tipizzati in `tableFeatures`), in
 `components/backlog-views.tsx`, condivisa con le playlist a filtro.
 Colonne, celle e header derivano dalle stesse definizioni, con layout Tamagui
 e visibilità responsive via CSS. Ordinamento controllato dall'URL,
-`manualSorting` e `manualPagination`: il server ordina l'intero risultato prima
-di paginarlo, mai solo le righe caricate. Le playlist mostrano l'ordine salvato
+`manualSorting` e nessuna paginazione nella tabella: il server ordina l'intero
+risultato prima di paginarlo, mai solo le righe caricate. Le playlist mostrano l'ordine salvato
 salvo override nell'URL; cliccare un header non riscrive la playlist.
 «Voto» distingue voto personale e critica nel menu, senza mescolare le scale.
 `AdminTable` resta indipendente e non fa parte di questa integrazione.

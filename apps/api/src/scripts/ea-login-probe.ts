@@ -210,7 +210,7 @@ for (const client of CLIENTS) {
 
   // Quello che EA mostra: un JSON, si spera con `code`. Le chiavi si stampano
   // comunque, perché anche un errore dice qualcosa.
-  let pagina: Record<string, unknown> | null = null;
+  let pagina: Record<string, unknown> | null;
   try {
     pagina = JSON.parse(incollato) as Record<string, unknown>;
   } catch {

@@ -1,0 +1,81 @@
+{
+  "login": {
+    "title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "forgot": "Forgot your password?",
+    "submit": "Sign in",
+    "pending": "Please wait…",
+    "failed": "Sign-in failed",
+    "noAccount": "Don't have an account?",
+    "toRegister": "Sign up"
+  },
+  "register": {
+    "title": "Create an account",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "submit": "Create account",
+    "pending": "Please wait…",
+    "failed": "Sign-up failed",
+    "hasAccount": "Already have an account?",
+    "toLogin": "Sign in"
+  },
+  "checkEmail": {
+    "title": "Check your email",
+    "text": "We wrote to {email}. Open the link, then come back here and sign in.",
+    "hint": "Not there? Check your spam folder, or sign in: we'll send you a new one.",
+    "toLogin": "Go to sign in"
+  },
+  "legal": {
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "captcha": {
+    "unavailable": "The anti-bot check couldn't load. Check your connection and try again."
+  },
+  "tabs": {
+    "backlog": "Backlog",
+    "playlist": "Playlists",
+    "wishlist": "Wishlist",
+    "account": "Account"
+  },
+  "soon": {
+    "text": "This section is coming in a future update of the app."
+  },
+  "account": {
+    "preferences": "Preferences",
+    "onWeb": "On the website",
+    "profile": "Profile and security",
+    "libraries": "Linked libraries",
+    "deleteAccount": "Delete account",
+    "signOut": "Sign out"
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "locale": {
+    "label": "Language",
+    "system": "System",
+    "it": "Italiano",
+    "en": "English"
+  },
+  "authErrors": {
+    "INVALID_EMAIL_OR_PASSWORD": "Wrong email or password.",
+    "INVALID_EMAIL": "This email address isn't valid.",
+    "USER_ALREADY_EXISTS": "An account with this email already exists.",
+    "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL": "An account with this email already exists: use another one.",
+    "PASSWORD_TOO_SHORT": "That password is too short.",
+    "PASSWORD_TOO_LONG": "That password is too long.",
+    "EMAIL_NOT_VERIFIED": "To sign in you need to confirm your email address. We've sent you a new confirmation link.",
+    "FAILED_TO_CREATE_USER": "I couldn't create the account.",
+    "BANNED_USER": "This account is suspended. If you think it's a mistake, write to us: the address is in the terms of use.",
+    "MISSING_RESPONSE": "Complete the bot check before continuing.",
+    "VERIFICATION_FAILED": "The bot check didn't pass. Please try again.",
+    "TOO_MANY_REQUESTS": "Too many attempts in a short time. Wait a few seconds and try again."
+  }
+}

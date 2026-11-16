@@ -44,7 +44,7 @@ si sa:
 - **i caratteri stanno in `packages/ui/src/fonts.ts`**, con due forme. Sul web
   una famiglia variabile, caricata da `@fontsource-variable` nella radice di
   `apps/web` e nel `preview` di Storybook. Su mobile un file per peso, con
-  `face`, caricato da `apps/mobile/App.tsx` con `useFonts` **sotto gli stessi
+  `face`, caricato da `apps/mobile/app/_layout.tsx` con `useFonts` **sotto gli stessi
   nomi**: un peso nuovo in un componente va aggiunto in tutti e due i posti.
   Un titolo è `fontFamily="$heading"`.
 - **il simbolo ha i colori fissi**, unica eccezione alla regola dei token: è

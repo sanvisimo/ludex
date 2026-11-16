@@ -16,20 +16,14 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Button, toast, YStack } from '@repo/ui';
+import { Button, type ButtonProps, toast, YStack } from '@repo/ui';
 import { GripVertical } from '@repo/ui/icons';
 import {
   type QueryKey,
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
-import {
-  type KeyboardEventHandler,
-  type ReactNode,
-  type RefObject,
-  useId,
-  useRef,
-} from 'react';
+import { type ReactNode, type RefObject, useId, useRef } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { useApiErrorMessage } from '@/lib/api-error';
@@ -228,7 +222,7 @@ function SortableBand({
         // stretto.
         {...(attributes as Omit<typeof attributes, 'role'>)}
         // dnd-kit tipizza i suoi gestori come `Function`.
-        onKeyDown={onKeyDown as KeyboardEventHandler | undefined}
+        onKeyDown={onKeyDown as ButtonProps['onKeyDown']}
       >
         <GripVertical size={16} color="$color11" />
       </Button>

@@ -16,20 +16,18 @@ allowBuilds:
   # Arriva da steam-session. Il postinstall controlla solo la versione di
   # protobufjs-cli, che non usiamo: il build script non serve.
   protobufjs: false
-minimumReleaseAgeExclude:
-  - '@better-auth/core@1.6.27'
-  - '@better-auth/drizzle-adapter@1.6.27'
-  - '@better-auth/kysely-adapter@1.6.27'
-  - '@better-auth/memory-adapter@1.6.27'
-  - '@better-auth/mongo-adapter@1.6.27'
-  - '@better-auth/prisma-adapter@1.6.27'
-  - '@better-auth/telemetry@1.6.27'
-  - better-auth@1.6.27
+# TypeScript 6: vite-plugin-rnw 0.0.11 (fissato esatto da Storybook) e
+# tsconfck 3 dichiarano `typescript ^5`. Per tsconfck il peer è facoltativo,
+# e vite-plugin-rnw lo toglie dalla 0.0.13: nessuno dei due usa API rimosse.
+peerDependencyRules:
+  allowedVersions:
+    vite-plugin-rnw>typescript: '6'
+    tsconfck>typescript: '6'
 # Una React sola in tutto il repo, alla versione che Expo fissa per la sua SDK.
 # Metro compila il sorgente di `packages/ui` risolvendo gli import dalla sua
 # cartella: con due versioni nel monorepo il bundle mobile ne conterrebbe due, e
 # due React rompono gli hook. Senza override, `better-auth` e i peer di Next ne
-# tiravano dentro altre (19.2.0, 19.3.0). Si alza insieme alla SDK di Expo.
+# tiravano dentro altre. Si alza insieme alla SDK di Expo.
 overrides:
-  react: 19.2.3
-  react-dom: 19.2.3
+  react: 19.3.0
+  react-dom: 19.3.0

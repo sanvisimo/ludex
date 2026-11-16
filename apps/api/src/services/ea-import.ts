@@ -50,7 +50,7 @@ function forgetToken(account: StoreAccountRow) {
 export async function importEaLibrary(
   account: StoreAccountRow,
 ): Promise<ImportReport> {
-  let token: EaToken | null = null;
+  let token: EaToken | null;
   try {
     token = account.credentials
       ? decryptCredentials<EaToken>(account.credentials)
