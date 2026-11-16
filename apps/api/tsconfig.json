@@ -4,6 +4,7 @@
     "module": "Preserve",
     "moduleResolution": "Bundler",
     "noEmit": true,
+    "types": ["node"],
     "lib": ["es2022"]
   },
   "include": ["src/**/*.ts"],
