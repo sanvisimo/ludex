@@ -116,10 +116,25 @@ const ButtonFrame = styled(ButtonBase, {
     },
 
     size: {
-      default: { height: 32, px: 10, rounded: 8, fontSize: 14, gap: 6 },
+      // Sul telefono 44, come l'Input: la misura minima di tocco, e nei moduli
+      // bottone e campo restano alti uguali.
+      default: {
+        height: 32,
+        px: 10,
+        rounded: 8,
+        fontSize: 14,
+        gap: 6,
+        '$platform-native': { height: 44 },
+      },
       sm: { height: 28, px: 10, rounded: 8, fontSize: 13, gap: 4 },
       // I tre formati quadrati per i bottoni di sola icona.
-      icon: { height: 32, width: 32, px: 0, rounded: 8 },
+      icon: {
+        height: 32,
+        width: 32,
+        px: 0,
+        rounded: 8,
+        '$platform-native': { height: 44, width: 44 },
+      },
       'icon-sm': { height: 28, width: 28, px: 0, rounded: 8 },
       'icon-xs': { height: 24, width: 24, px: 0, rounded: 6 },
     },

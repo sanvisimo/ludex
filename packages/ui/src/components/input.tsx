@@ -30,6 +30,11 @@ const InputFrame = styled(InputBase, {
   borderColor: '$color9',
   placeholderTextColor: '$color11',
 
+  // Sul telefono: 44, la misura minima di tocco di Apple e Google, e niente
+  // padding verticale, che il TextInput di Android aggiunge da sé (circa 10 dp
+  // per lato) e che in 32 pixel lasciava al testo una dozzina di pixel.
+  '$platform-native': { height: 44, py: 0 },
+
   hoverStyle: { borderColor: '$color10' },
   focusStyle: { borderColor: '$accent9' },
   focusVisibleStyle: {
