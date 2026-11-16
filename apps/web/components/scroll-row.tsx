@@ -1,13 +1,14 @@
 import { Button, ScrollView, XStack, YStack } from '@repo/ui';
 import { ChevronLeft, ChevronRight } from '@repo/ui/icons';
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ElementRef,
-  type ReactNode,
-} from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
+
+// Ciò che serve dell'istanza di ScrollView. Tamagui 2.7 tipizza il ref come il
+// componente di React Native, che dalla 0.88 è una funzione e non una classe.
+type Scroller = {
+  scrollTo: (options: { x?: number; y?: number; animated?: boolean }) => void;
+  getScrollableNode: () => unknown;
+};
 
 /**
  * Una fila che scorre di lato, col titolo sopra e le frecce accanto: i giochi
@@ -31,7 +32,7 @@ export function ScrollRow({
   children: ReactNode;
 }) {
   const t = useTranslations('game');
-  const scroller = useRef<ElementRef<typeof ScrollView>>(null);
+  const scroller = useRef<Scroller>(null);
   const [{ x, content, viewport }, setScroll] = useState({
     x: 0,
     content: 0,
@@ -42,8 +43,7 @@ export function ScrollRow({
   // al `ScrollView` di Tamagui sul web non arrivano mai.
   useEffect(() => {
     const node = scroller.current?.getScrollableNode() as
-      | HTMLElement
-      | undefined;
+      HTMLElement | undefined;
     if (!node) return;
     const measure = () =>
       setScroll({
@@ -103,7 +103,7 @@ export function ScrollRow({
         )}
       </XStack>
       <ScrollView
-        ref={scroller}
+        ref={scroller as never}
         horizontal
         showsHorizontalScrollIndicator={false}
       >

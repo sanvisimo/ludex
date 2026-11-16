@@ -20,13 +20,7 @@ import {
 } from '@repo/ui';
 import { X } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
-import {
-  useId,
-  useRef,
-  useState,
-  type ComponentRef,
-  type ReactNode,
-} from 'react';
+import { useId, useRef, useState, type ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { useStoreLabels } from '@/lib/labels';
@@ -87,14 +81,16 @@ function StoreTrigger({
 }) {
   const t = useTranslations('game');
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef<ComponentRef<typeof Button>>(null);
+  // Sul web il bottone è un `<button>`: dalla 0.88 i tipi di React Native lo
+  // dichiarano come l'unione con l'elemento nativo, che `focus` non ce l'ha.
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const dialogId = useId();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <Tooltip content={tooltip}>
         <Button
-          ref={triggerRef}
+          ref={triggerRef as never}
           variant="ghost"
           size={iconOnly ? 'icon' : 'sm'}
           height="auto"

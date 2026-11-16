@@ -8,7 +8,7 @@ import { apiUrl } from './env';
 
 const link = new RPCLink({
   url: `${apiUrl}/rpc`,
-  headers: () => ({ cookie: sessionCookie() }),
+  headers: async () => ({ cookie: await sessionCookie() }),
 });
 
 export const client: ApiClient = createORPCClient(link);

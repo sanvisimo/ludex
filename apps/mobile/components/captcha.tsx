@@ -1,6 +1,7 @@
 import { Text } from '@repo/ui';
 import { useRef, useState } from 'react';
 import { WebView } from 'react-native-webview';
+import type { WebViewMessageEvent } from 'react-native-webview';
 import { useLocale, useTranslations } from 'use-intl';
 
 import { turnstileSiteKey, webUrl } from '../lib/env';
@@ -45,7 +46,9 @@ export function useCaptcha() {
   const { dark } = usePreferences();
   const [token, setToken] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
-  const view = useRef<WebView>(null);
+  // `WebView<object>` e non `WebView`: in 14.0.1 il generico vale `undefined`
+  // di default, e `WebViewProps & undefined` fa delle props un `never`.
+  const view = useRef<WebView<object>>(null);
 
   if (!turnstileSiteKey)
     return { widget: null, headers: undefined, ready: true, reset: () => {} };
@@ -53,7 +56,7 @@ export function useCaptcha() {
   const widget = unavailable ? (
     <Text color="$red11">{t('unavailable')}</Text>
   ) : (
-    <WebView
+    <WebView<object>
       ref={view}
       source={{
         html: page(turnstileSiteKey, dark ? 'dark' : 'light', locale),
@@ -62,7 +65,7 @@ export function useCaptcha() {
       originWhitelist={['*']}
       scrollEnabled={false}
       style={{ width: 300, height: 70, backgroundColor: 'transparent' }}
-      onMessage={(event) => {
+      onMessage={(event: WebViewMessageEvent) => {
         const message = JSON.parse(event.nativeEvent.data) as {
           token?: string | null;
           unavailable?: boolean;

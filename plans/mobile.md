@@ -67,14 +67,14 @@ nei `trustedOrigins`, accesso, registrazione, «controlla la posta», le
 quattro tab (tre segnaposto) e Account. Lo scheletro con i componenti
 (`App.tsx`) non c'è più: il banco del design system è Storybook.
 
+Il 16/11 l'app è passata all'**SDK 58** (React Native 0.88, React 19.3 in
+tutto il repo) e a Better Auth 1.7, che ha tolto il cast del plugin Expo.
+
 Da verificare:
 
 - **il giro completo su Android**: registrazione, link, accesso, Esci;
 - **Turnstile nella WebView** con la chiave vera: la pagina dichiara
   l'origine del sito (`baseUrl`), da vedere se Cloudflare la accetta;
-- **il cast del plugin Expo** in `apps/mobile/lib/auth.ts`: in 1.6.27 i suoi
-  tipi non combaciano con `createAuthClient`. Da togliere quando un
-  aggiornamento lo risolve;
 - **EAS**: `eas init` col tuo account Expo (aggiunge il `projectId` ad
   `app.json`) e la chiave di Turnstile fra le variabili del progetto EAS.
 
