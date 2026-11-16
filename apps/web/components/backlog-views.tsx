@@ -34,8 +34,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
   flexRender,
-  getCoreRowModel,
-  useReactTable,
+  metaHelper,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
   type Column,
   type ColumnDef,
   type SortingState,
@@ -382,17 +384,29 @@ type CompactColumnMeta = {
   layout: ComponentProps<typeof XStack>;
   headerInset?: number;
 };
-type CompactColumnDef = ColumnDef<BacklogEntry> & { meta: CompactColumnMeta };
-
 type CompactTableMeta = EntryHandlers & { sorting?: EntrySorting };
 
-function tableMeta(table: Table<BacklogEntry>) {
-  return table.options.meta as CompactTableMeta;
+const compactFeatures = tableFeatures({
+  rowSortingFeature,
+  tableMeta: metaHelper<CompactTableMeta>(),
+  columnMeta: metaHelper<CompactColumnMeta>(),
+});
+type CompactFeatures = typeof compactFeatures;
+
+type CompactColumnDef = ColumnDef<CompactFeatures, BacklogEntry> & {
+  meta: CompactColumnMeta;
+};
+
+function tableMeta(table: Table<CompactFeatures, BacklogEntry>) {
+  return table.options.meta!;
 }
 
-function columnLayout(column: Column<BacklogEntry>, header = false) {
-  const meta = column.columnDef.meta as CompactColumnMeta;
-  return { ...meta.layout, ...(header && { pl: meta.headerInset }) };
+function columnLayout(
+  column: Column<CompactFeatures, BacklogEntry>,
+  header = false,
+) {
+  const meta = column.columnDef.meta;
+  return { ...meta?.layout, ...(header && { pl: meta?.headerInset }) };
 }
 
 function SortHeader({
@@ -401,7 +415,7 @@ function SortHeader({
   sorting,
 }: {
   label: string;
-  column: Column<BacklogEntry>;
+  column: Column<CompactFeatures, BacklogEntry>;
   sorting?: EntrySorting;
 }) {
   const t = useTranslations('filters');
@@ -660,13 +674,12 @@ function CompactView({
         },
       ]
     : [];
-  const table = useReactTable({
+  const table = useTable({
+    features: compactFeatures,
     data: entries,
     columns,
     getRowId: (entry) => entry.id,
-    getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
-    manualPagination: true,
     enableSorting: !!sorting,
     enableMultiSort: false,
     enableSortingRemoval: false,
@@ -751,7 +764,7 @@ function CompactView({
           borderColor="$borderColor"
           hoverStyle={{ bg: '$color2' }}
         >
-          {row.getVisibleCells().map((cell) => (
+          {row.getAllCells().map((cell) => (
             <XStack role="cell" key={cell.id} {...columnLayout(cell.column)}>
               {flexRender(cell.column.columnDef.cell, cell.getContext())}
             </XStack>
