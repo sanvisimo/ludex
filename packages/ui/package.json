@@ -12,6 +12,7 @@
   },
   "scripts": {
     "brand:generate": "node scripts/generate-brand-assets.mjs",
+    "icons:add": "sh -c 'tamagui icons add --out src/lucide \"$@\" && prettier --write src/lucide' --",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
     "dev": "storybook dev -p 6006",
@@ -25,7 +26,7 @@
     "@tamagui/config": "^3.3.3",
     "@tamagui/core": "^3.3.3",
     "@tamagui/focus-scope": "3.3.3",
-    "@tamagui/lucide-icons-2": "^2.7.7",
+    "@tamagui/helpers-icon": "3.3.3",
     "@tamagui/toast": "3.3.3",
     "@tamagui/web": "^3.3.3",
     "tamagui": "^3.3.3"

@@ -1,8 +1,9 @@
 # Tamagui 3
 
 **Stato: in corso dal 16/11/2026**, piano approvato lo stesso giorno. Passo 1
-fatto e base di Chromatic pulita il 17/11, passo 2 fatto lo stesso giorno: si
-riparte dal passo 3, vedi «Ripresa» in fondo. Lavoro interno: non entra nella roadmap pubblica.
+fatto e base di Chromatic pulita il 17/11, passi 2 e 3 fatti lo stesso giorno:
+si riparte dal passo 4, vedi «Ripresa» in fondo. Lavoro interno: non entra
+nella roadmap pubblica.
 
 ## Perché
 
@@ -39,10 +40,11 @@ passi, caratteri e abbreviazioni.
 | Sheet: `Frame` → `Container` + `Background`                                  | `sheet.tsx`                                  |
 | ScrollView del web: implementazione propria, non più RNW                     | galleria, righe che scorrono                 |
 | un modello di focus per Dialog, Popover, Select; attivo → `background-press` | gli 8 aggiramenti di `packages/ui/CLAUDE.md` |
-| icone: niente pacchetto, si generano                                         | 118 icone, 102 file che le usano             |
+| icone: niente pacchetto, si generano                                         | 87 icone, 98 file che le usano               |
 
 Il nome `color-11` è nella tabella perché la guida lo dà per la Config v6; con
-la v5 i nomi dei temi vanno verificati al passo 2, prima del codemod.
+la v5 i nomi restano senza trattino (`color11`, `accent9`, `red11`): lo dicono
+gli errori di `tsc` del passo 3.
 
 ## I passi
 
@@ -75,11 +77,23 @@ Su `chore/tamagui-3`, da `main` (la PR #141, con React 19.3 e React Native
      previsti, `select.tsx` usa anch'esso `Sheet.Frame`, e i `focus-out` di
      Dialog, Drawer e DropdownMenu non hanno più `preventDefault`.
      Fino al passo 4 né il web né Storybook partono.
-3. **Le icone.** `@tamagui/cli icons add` per le 118 che usiamo, in
-   `packages/ui/src/icons/`; `icons.ts` le ri-esporta, quindi gli import
-   `@repo/ui/icons` non cambiano. Via `@tamagui/lucide-icons-2`, dentro
+3. **Le icone — fatto il 17/11.** `@tamagui/cli icons add` per le 118 che
+   usiamo, in `packages/ui/src/icons/`; `icons.ts` le ri-esporta, quindi gli
+   import `@repo/ui/icons` non cambiano. Via `@tamagui/lucide-icons-2`, dentro
    `@tamagui/helpers-icon`. Media e stati non stanno più sull'icona: dove ci
    sono, un `View` intorno.
+   - Com'è andato: le icone usate sono 87, non 118. Stanno in
+     `packages/ui/src/lucide/` e non in `src/icons/`, che accanto a
+     `icons.ts` renderebbe ambiguo `'../icons'`. Un'icona nuova:
+     `pnpm --filter @repo/ui icons:add Nome`, che passa anche Prettier.
+     `@tamagui/helpers-icon` 3.3.3 fra le dipendenze; `IconProps` esce da
+     `@repo/ui/icons` (lo usa `tabs.tsx`). L'unica prop di stile su
+     un'icona era `rotate` sul chevron dell'accordion, ora su un `XStack`
+     intorno. Nel lockfile non resta niente della 2.x, e c'è una copia sola
+     di `@tamagui/core`.
+   - Le icone generate tipizzano `color`: i 27 errori in più di `tsc`
+     (411) sono i `color="$color11"` sulle icone. Al passo 4 va controllato
+     che il codemod li veda, perché un'icona non è un componente di stile.
 4. **Il codemod.** `@tamagui/codemod-flat-values --source-semantics v2-pixels`
    su `packages/ui/src`, `apps/web` e `apps/mobile`: prima a vuoto col
    resoconto, poi `--write`. Le righe che segnala si sistemano a mano, e un
@@ -125,9 +139,9 @@ Compiler: lotti a parte.
 Scritta il 17/11/2026 per riprendere da una chat nuova.
 
 **Dove si è.** Branch `chore/tamagui-3`, rimesso sopra `main` dopo il merge
-della #141. Passo 2 fatto (vedi lì), si riparte dal **passo 3**. La base di Chromatic è la build 12:
-159 storie, nessuna rossa; le sue 159 immagini vanno accettate come base
-nella dashboard, se non è già stato fatto.
+della #141. Passi 2 e 3 fatti (vedi lì), si riparte dal **passo 4**. La base
+di Chromatic è la build 12: 159 storie, nessuna rossa; le sue 159 immagini
+vanno accettate come base nella dashboard, se non è già stato fatto.
 
 **Chromatic costa sempre tutto.** TurboSnap non è attivo sull'account (serve
 almeno 10 build da CI), quindi `onlyChanged` non riduce niente: ogni build
@@ -174,4 +188,4 @@ e il `play` aperto con Playwright su `iframe.html?id=…`.
 
 > Riprendiamo la migrazione a Tamagui 3: leggi `plans/tamagui-3.md`, in
 > particolare «Ripresa», e lavora sul branch `chore/tamagui-3`. Si parte dal
-> passo 3.
+> passo 4.

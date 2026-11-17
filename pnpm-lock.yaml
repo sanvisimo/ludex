@@ -616,9 +616,9 @@ importers:
       '@tamagui/focus-scope':
         specifier: 3.3.3
         version: 3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)
-      '@tamagui/lucide-icons-2':
-        specifier: ^2.7.7
-        version: 2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@tamagui/helpers-icon':
+        specifier: 3.3.3
+        version: 3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)
       '@tamagui/toast':
         specifier: 3.3.3
         version: 3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)
@@ -3622,11 +3622,6 @@ packages:
   '@tamagui/compiler-core@3.3.3':
     resolution: {integrity: sha512-mBxIiKQP88G9dpX6TcywKYrtGksb9IvPa69tztDb+YaDhBXpsTkbvc8+65cml8K+1ONgQgsarWtCZb31gFGsxg==}
 
-  '@tamagui/compose-refs@2.7.7':
-    resolution: {integrity: sha512-kypqmq2ADv7ESiE5up2FjrdluqA/IXtICnRGWgfBf02Vwq6gC0vawZcq4NKCi+AjmZFC73OcTyaST/1qQVr7ZQ==}
-    peerDependencies:
-      react: 19.3.0
-
   '@tamagui/compose-refs@3.3.3':
     resolution: {integrity: sha512-y99kxyvER/e1cPb3fCaYjqFMGKns1qDJMiSkaQwH4o3qM+88squdLcJP7J/S0TSsVjrlWZrXs6QWvxZ99LQaBw==}
     peerDependencies:
@@ -3638,11 +3633,6 @@ packages:
   '@tamagui/config@3.3.3':
     resolution: {integrity: sha512-oPUzwNcmVcN4Jrq59Ud5xutIXEZGO1VW3CZR3EFUAiVV+HPBmjAORB4hXLdIW9LRq8mnBfu7OQmxNom1q44G6Q==}
 
-  '@tamagui/constants@2.7.7':
-    resolution: {integrity: sha512-rqqHn2v4zMeIOLVifqzPqOjYwhp2LfCoOqVTr+E4utKCOP8K7WmsM4qrRsQ13REph0lja3+Gd7Wq1weoot5+wg==}
-    peerDependencies:
-      react: 19.3.0
-
   '@tamagui/constants@3.3.3':
     resolution: {integrity: sha512-tYNXg7dbt2hFUKPJe5YM2RfKURmlywmbZyGUT+UZq4yHVpl31Swf9GvPmpdNTwv5pk/dX9XIyl2zUD+BrhmeTg==}
     peerDependencies:
@@ -3650,11 +3640,6 @@ packages:
 
   '@tamagui/context-menu@3.3.3':
     resolution: {integrity: sha512-u2Vl4hDMsBVk1aBHAS78Ds9uMbNjI8i+2SB+LjkXckNuyvGbslzyDv/uO3C0eArMxApw2ygG3LLOrVVveSseyg==}
-    peerDependencies:
-      react: 19.3.0
-
-  '@tamagui/core@2.7.7':
-    resolution: {integrity: sha512-wQrMmtqCeTr6nTlWSwFsyM5LzH5RGSKZs79ovBYn1hYjimF5UkRaqvRXCceJtEgfl/cAeV8vCofWXo9T9hqYHA==}
     peerDependencies:
       react: 19.3.0
 
@@ -3773,8 +3758,8 @@ packages:
     peerDependencies:
       react: 19.3.0
 
-  '@tamagui/helpers-icon@2.7.7':
-    resolution: {integrity: sha512-ieVyI4AIdQiVAcAVHLb9pdhVm+hBFESj+mlY9+kiXmUCmKG0CxNrT+PN3K92swzSk6ZFysv2h8SLu/nTlFJDyw==}
+  '@tamagui/helpers-icon@3.3.3':
+    resolution: {integrity: sha512-g9PsvPpjUjrBB2Dsu2ndO6dZI0wBEGGD/mvfVJgAZI3vbonGVK2/4/rAdWjARsDrfSxHc0zpEsp7f95PxK1uaw==}
     peerDependencies:
       react: 19.3.0
 
@@ -3783,11 +3768,6 @@ packages:
 
   '@tamagui/helpers-tamagui@3.3.3':
     resolution: {integrity: sha512-RoPetrzxqrRHHG/W+PyAijI3ZTOE/RpIPHKeq/7/6dkr4juC1WlYYxwPN9cpf2tNvo36TE3ZyrNtV4G+lM8U5g==}
-    peerDependencies:
-      react: 19.3.0
-
-  '@tamagui/helpers@2.7.7':
-    resolution: {integrity: sha512-TsJKCYVyPtzzzsVcI74LI8BdIycNkt3mFCKxW6FVRTIpjs5QQevuRo0i6UiqXG+qyMF61IkUXXWdQIGKfFHiew==}
     peerDependencies:
       react: 19.3.0
 
@@ -3804,11 +3784,6 @@ packages:
 
   '@tamagui/input@3.3.3':
     resolution: {integrity: sha512-JbOfZLrnRrJCq6yWxq7tjDylQuSYmMbVctBOupYF4+yZlFY+Pk8btMMG1A4FssKIfb7MC2KMtnKkM5l2ia1tSA==}
-    peerDependencies:
-      react: 19.3.0
-
-  '@tamagui/is-equal-shallow@2.7.7':
-    resolution: {integrity: sha512-eOvn4fyuPhCAGoUn6fNEE8Ov8fQt7m0lJNDy7cwpVdhzWJXO/ZuS040yIcTkv4WC3H/6+RNSw2a47czTfDiwpQ==}
     peerDependencies:
       react: 19.3.0
 
@@ -3836,11 +3811,6 @@ packages:
     peerDependencies:
       react: 19.3.0
 
-  '@tamagui/lucide-icons-2@2.7.7':
-    resolution: {integrity: sha512-+YSsqyx6xM7SED+xxVN7oegTyj5TiCTL+6aJVeR8nQTDx38NVU+n7jtHJmDN/+kGOKYqhm5XpAVyeNWr3dio3Q==}
-    peerDependencies:
-      react: 19.3.0
-
   '@tamagui/menu@3.3.3':
     resolution: {integrity: sha512-ilX/hI8YRO/j01j/oa8fDofDzsSqTk/MhCcYUeu1S/P0zQAUqbypTlOQagepmtCNmxpSOg+jdvhgBtAUeE9RHg==}
     peerDependencies:
@@ -3851,11 +3821,6 @@ packages:
     peerDependencies:
       metro: '>=0.84.4 <0.88.0'
       metro-resolver: '>=0.84.4 <0.88.0'
-
-  '@tamagui/native@2.7.7':
-    resolution: {integrity: sha512-4XX9DZwVonsPx0Hscb+Em0t9kIK56DrsTuygZ22vNo4u0SPCCydVxExFUMBP94DJvtqjWj5IqPAxyxYmVfUSVA==}
-    peerDependencies:
-      react: 19.3.0
 
   '@tamagui/native@3.3.3':
     resolution: {integrity: sha512-tO8b+XnDApGfPf69sfCyYVViIeJDjT1HAl9St4mPgD7GjwGFdPopd4mxDwQTBbuDjwLBFa0VOsuM0xTrsIYMyg==}
@@ -3895,9 +3860,6 @@ packages:
         optional: true
       zeego:
         optional: true
-
-  '@tamagui/normalize-css-color@2.7.7':
-    resolution: {integrity: sha512-cKOxHlJANLFwqKt88p9yggSghtwqulYYl1QDR8foo+Vkmi1crCJ/wP54vfXrD3Kum4svq0HvE7fadETk1lsjCA==}
 
   '@tamagui/normalize-css-color@3.3.3':
     resolution: {integrity: sha512-DGqzXEl/FrudWDFNmGtZFxAs06FXIRM4Y1N949TNgtzHNe2DvzQlrfknYuNnrjksVkWxWCNP2IfoE7jqnTi65Q==}
@@ -3946,9 +3908,6 @@ packages:
     peerDependencies:
       react: 19.3.0
 
-  '@tamagui/react-native-media-driver@2.7.7':
-    resolution: {integrity: sha512-rGRzCDENDqizpwRNk92d5HpuJM8N+Vm1PyUL+tfiur5LIolKHGKwNUf/I10+11e2MIN5t4r97VsL68tfDgoHfg==}
-
   '@tamagui/react-native-media-driver@3.3.3':
     resolution: {integrity: sha512-09rjPftg1dUSEAby9m/ib0VuO6lsl6SVV6B1GE+sj4cOscrIfX7qBKoVTBYNyDbatjzNm+hVsVyKbGermH3Fig==}
     peerDependencies:
@@ -3966,11 +3925,6 @@ packages:
 
   '@tamagui/react-native-types@3.3.3':
     resolution: {integrity: sha512-eg0CUIsLEAmpUAmSY48MSySihfxUqFurGpzJaF/sADKTAcJBxgJVJFkG0dYfMH/DPD5jAvxzycYOPPf6E9TP1Q==}
-    peerDependencies:
-      react: 19.3.0
-
-  '@tamagui/react-native-use-pressable@2.7.7':
-    resolution: {integrity: sha512-55dBrzzwfqEpl8ajTBUUzQSHNvXByT51ssZNAkULZzQfYzdpiwjHeOc3dri0QM4Ww4PsxiJaOzdyk4sAxRYxUg==}
     peerDependencies:
       react: 19.3.0
 
@@ -4040,16 +3994,8 @@ packages:
   '@tamagui/shorthands@3.3.3':
     resolution: {integrity: sha512-Ey7goarXplCfufAR6UB78dE9gZ8QNqN78SULDL0ocWXC+3A0pmw7eEd5f1EvTt4kMTVR2qz+zR9fNX4zjw/udg==}
 
-  '@tamagui/simple-hash@2.7.7':
-    resolution: {integrity: sha512-zowTxvDPfyIkezyNMLYgg065PPeUtN6XwAKwOiGeji0UYGD/Ly833YfJIDkzFE1cHDIhSIGsuj+DUJ0RhOSC6A==}
-
   '@tamagui/simple-hash@3.3.3':
     resolution: {integrity: sha512-D5BRqwRf6m1leTBsIetYSJZjHvNty/w9DHe+LvidFYGtsfdecTss9Wo/J9+28rl9MZ3jz7MXzOLXTaPkZcz3fQ==}
-
-  '@tamagui/sizable-context@2.7.7':
-    resolution: {integrity: sha512-3bJGylCPowR+x2her8+8edZt9Inqvl4BPQmKo7hdfrz0yBu2TIRcM9ew8rxUBNGB7qW70sK1uu3Zg5Q2gf+EAw==}
-    peerDependencies:
-      react: 19.3.0
 
   '@tamagui/slider@3.3.3':
     resolution: {integrity: sha512-Vc6TgnpQSNM/LnggT6Mq08uuZne+kN4+ssU4oJUmkaZ6zy1rWCECV2fm1bKhfhCcv7ZvIdkz6KJ3GslK0u6M0w==}
@@ -4119,9 +4065,6 @@ packages:
   '@tamagui/themes@3.3.3':
     resolution: {integrity: sha512-dVwTkI+yIJeX6O6/GLAdcBSEs0GKhqXcztYxLS1Ry31HlFcQi41NeRlF74mIPr64YUZnSoX7r9RMXfeZb5Cgsg==}
 
-  '@tamagui/timer@2.7.7':
-    resolution: {integrity: sha512-lPNn48cKvSi0VL60kmMqNrZmfDyFRWvg/hePBbJPivcviuwIQOVNaZ7cl4Azi0PQkMCRVZadGCVywrTYhzt3GQ==}
-
   '@tamagui/to-tailwind@3.3.3':
     resolution: {integrity: sha512-0Flcx01QrOI30i4cTouBrGFA13Ahb3fo9RO6J7D00caTnjStS0PzJFNrAF/GKedJxHNnm1/lmVr+xygHJDDnwg==}
 
@@ -4139,9 +4082,6 @@ packages:
     resolution: {integrity: sha512-cNvQHfVebgvS2CuN+9gFeGVCl/UrT/nfJyCUsSP3hHe1u7+pqQTJTjzVy8pWaz7fMv1ow8lia6hMaOhgNbk7jQ==}
     peerDependencies:
       react: 19.3.0
-
-  '@tamagui/types@2.7.7':
-    resolution: {integrity: sha512-CiOfuWrChi/RHhvE3kZ5Z+cxsOY33/gd3yvNsEGiMAHhYlVrANb9ZPoM6R/M7hQ9mkN7Z19GAFcn2FQnhEMzoA==}
 
   '@tamagui/types@3.3.3':
     resolution: {integrity: sha512-hYhbMlAjrBFPJyr7vjvYUvdEPtl+yPHGpokpwFHKOlRG9v/45fI57VYGuWNj/kEUf4UZv/EKZjJXfM5P9ji1Eg==}
@@ -4180,11 +4120,6 @@ packages:
     peerDependencies:
       react: 19.3.0
 
-  '@tamagui/use-did-finish-ssr@2.7.7':
-    resolution: {integrity: sha512-JtSoMQifU172ECEFDlMjGxSUL0j7RR4lXOOIykF57yPXvHN/InAFdC79dOX5Vf247hf7Plw+QpMcTuRqbo7arw==}
-    peerDependencies:
-      react: 19.3.0
-
   '@tamagui/use-did-finish-ssr@3.3.3':
     resolution: {integrity: sha512-Kr10cGljpAxEdqFzXPLZpvKNGn/xsDNd+Eomrne+TaysERLouJJP2Lf7W9ZhCscF68vz2SjUGc8Zs46Mo6I6xA==}
     peerDependencies:
@@ -4192,11 +4127,6 @@ packages:
 
   '@tamagui/use-direction@3.3.3':
     resolution: {integrity: sha512-ZGUWdPfXLOJmArmXKSx1FpRewtGBjKWfSaNVk4/ko1fmtFGL6bwq88aGs9W9k43g4hnMMSWclaclNKCk9hxNrg==}
-    peerDependencies:
-      react: 19.3.0
-
-  '@tamagui/use-element-layout@2.7.7':
-    resolution: {integrity: sha512-MOkZYDuhuN+oYg7f0Dw0W6EV2tqGcWL/aoq8pTsvvDc6E1vhE44bapIFSAXlaWqMH6RUtBxJgKMZN7fhJxCknA==}
     peerDependencies:
       react: 19.3.0
 
@@ -4210,18 +4140,8 @@ packages:
     peerDependencies:
       react: 19.3.0
 
-  '@tamagui/use-event@2.7.7':
-    resolution: {integrity: sha512-tpZw1hQCnT6lvSm7dRGvu+0iHrZsZCjd4h0wLdq+d86vSWjn1tIdisOGyAdvg6HccuJGn9dL/jH/1+zk1hBI1A==}
-    peerDependencies:
-      react: 19.3.0
-
   '@tamagui/use-event@3.3.3':
     resolution: {integrity: sha512-hhvRys6WfZtPGM4DqblGg7FB1zRW494u1I51SZ0vNxHK9FbyqLijgKXF432AwI5GzpF/zwJFsLOzhemU5pJ9Ng==}
-    peerDependencies:
-      react: 19.3.0
-
-  '@tamagui/use-force-update@2.7.7':
-    resolution: {integrity: sha512-iQAbi6fGtU4ynZ7NsmyG0m5OxPiQEYb1oAg9C2e4fHi9xtIn7FSj57jCZXYDQXFP0jsBEZ21hukqefrWFDkwew==}
     peerDependencies:
       react: 19.3.0
 
@@ -4257,12 +4177,6 @@ packages:
     peerDependenciesMeta:
       vite:
         optional: true
-
-  '@tamagui/web@2.7.7':
-    resolution: {integrity: sha512-20R4thnIrJo/F9fnUv36gy/HKbh7bOLB0xcTjYL3AHP4r9dxlenHEzXBQjdBvl9yfYz3QY9gx2u87Pus06/N5g==}
-    peerDependencies:
-      react: 19.3.0
-      react-dom: 19.3.0
 
   '@tamagui/web@3.3.3':
     resolution: {integrity: sha512-ajUCISdGcVRHtc9zGDpbHHPWMclGSwcSGHU5zn0vbBZdHNRIFwaoKKMsVg+tyEMwXjS9UnepPOJFeq29x+1ZFw==}
@@ -11916,10 +11830,6 @@ snapshots:
       magic-string: 0.30.21
       yuku-analyzer: 0.6.1
 
-  '@tamagui/compose-refs@2.7.7(react@19.3.0)':
-    dependencies:
-      react: 19.3.0
-
   '@tamagui/compose-refs@3.3.3(react@19.3.0)':
     dependencies:
       react: 19.3.0
@@ -11976,10 +11886,6 @@ snapshots:
       - remix
       - zeego
 
-  '@tamagui/constants@2.7.7(react@19.3.0)':
-    dependencies:
-      react: 19.3.0
-
   '@tamagui/constants@3.3.3(react@19.3.0)':
     dependencies:
       react: 19.3.0
@@ -12012,18 +11918,6 @@ snapshots:
       - react-native-web
       - react-native-worklets-core
       - zeego
-
-  '@tamagui/core@2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
-    dependencies:
-      '@tamagui/helpers': 2.7.7(react@19.3.0)
-      '@tamagui/react-native-media-driver': 2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@tamagui/react-native-use-pressable': 2.7.7(react@19.3.0)
-      '@tamagui/use-element-layout': 2.7.7(react@19.3.0)
-      '@tamagui/use-event': 2.7.7(react@19.3.0)
-      '@tamagui/web': 2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      react: 19.3.0
-    transitivePeerDependencies:
-      - react-dom
 
   '@tamagui/core@3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)':
     dependencies:
@@ -12372,13 +12266,24 @@ snapshots:
       - react-native-worklets-core
       - zeego
 
-  '@tamagui/helpers-icon@2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@tamagui/helpers-icon@3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)':
     dependencies:
-      '@tamagui/core': 2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@tamagui/sizable-context': 2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@tamagui/core': 3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)
+      '@tamagui/font-size': 3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)
       react: 19.3.0
     transitivePeerDependencies:
+      - '@expo/ui'
+      - burnt
+      - one
       - react-dom
+      - react-native
+      - react-native-gesture-handler
+      - react-native-keyboard-controller
+      - react-native-safe-area-context
+      - react-native-teleport
+      - react-native-web
+      - react-native-worklets-core
+      - zeego
 
   '@tamagui/helpers-node@3.3.3':
     dependencies:
@@ -12405,12 +12310,6 @@ snapshots:
       - react-native-web
       - react-native-worklets-core
       - zeego
-
-  '@tamagui/helpers@2.7.7(react@19.3.0)':
-    dependencies:
-      '@tamagui/constants': 2.7.7(react@19.3.0)
-      '@tamagui/simple-hash': 2.7.7
-      react: 19.3.0
 
   '@tamagui/helpers@3.3.3(react@19.3.0)':
     dependencies:
@@ -12467,10 +12366,6 @@ snapshots:
       - react-native-web
       - react-native-worklets-core
       - zeego
-
-  '@tamagui/is-equal-shallow@2.7.7(react@19.3.0)':
-    dependencies:
-      react: 19.3.0
 
   '@tamagui/is-equal-shallow@3.3.3(react@19.3.0)':
     dependencies:
@@ -12551,14 +12446,6 @@ snapshots:
       - react-native-worklets-core
       - zeego
 
-  '@tamagui/lucide-icons-2@2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
-    dependencies:
-      '@tamagui/core': 2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@tamagui/helpers-icon': 2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      react: 19.3.0
-    transitivePeerDependencies:
-      - react-dom
-
   '@tamagui/menu@3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)':
     dependencies:
       '@tamagui/compose-refs': 3.3.3(react@19.3.0)
@@ -12615,10 +12502,6 @@ snapshots:
       - supports-color
       - zeego
 
-  '@tamagui/native@2.7.7(react@19.3.0)':
-    dependencies:
-      react: 19.3.0
-
   '@tamagui/native@3.3.3(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)':
     dependencies:
       '@tamagui/compose-refs': 3.3.3(react@19.3.0)
@@ -12629,10 +12512,6 @@ snapshots:
       react-native-gesture-handler: 3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)
       react-native-safe-area-context: 5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)
       react-native-web: 0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-
-  '@tamagui/normalize-css-color@2.7.7':
-    dependencies:
-      '@react-native/normalize-color': 2.1.0
 
   '@tamagui/normalize-css-color@3.3.3':
     dependencies:
@@ -12799,13 +12678,6 @@ snapshots:
       - react-native-worklets-core
       - zeego
 
-  '@tamagui/react-native-media-driver@2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
-    dependencies:
-      '@tamagui/web': 2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-    transitivePeerDependencies:
-      - react
-      - react-dom
-
   '@tamagui/react-native-media-driver@3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)':
     dependencies:
       '@tamagui/web': 3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)
@@ -12835,10 +12707,6 @@ snapshots:
       react: 19.3.0
 
   '@tamagui/react-native-types@3.3.3(react@19.3.0)':
-    dependencies:
-      react: 19.3.0
-
-  '@tamagui/react-native-use-pressable@2.7.7(react@19.3.0)':
     dependencies:
       react: 19.3.0
 
@@ -13084,16 +12952,7 @@ snapshots:
       - react-native-worklets-core
       - zeego
 
-  '@tamagui/simple-hash@2.7.7': {}
-
   '@tamagui/simple-hash@3.3.3': {}
-
-  '@tamagui/sizable-context@2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
-    dependencies:
-      '@tamagui/core': 2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      react: 19.3.0
-    transitivePeerDependencies:
-      - react-dom
 
   '@tamagui/slider@3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)':
     dependencies:
@@ -13369,8 +13228,6 @@ snapshots:
     dependencies:
       '@tamagui/create-theme': 3.3.3
 
-  '@tamagui/timer@2.7.7': {}
-
   '@tamagui/to-tailwind@3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)(supports-color@10.2.2)':
     dependencies:
       '@babel/generator': 7.29.14
@@ -13487,8 +13344,6 @@ snapshots:
       - react-native-worklets-core
       - zeego
 
-  '@tamagui/types@2.7.7': {}
-
   '@tamagui/types@3.3.3': {}
 
   '@tamagui/ui@3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)':
@@ -13604,22 +13459,12 @@ snapshots:
     dependencies:
       react: 19.3.0
 
-  '@tamagui/use-did-finish-ssr@2.7.7(react@19.3.0)':
-    dependencies:
-      react: 19.3.0
-
   '@tamagui/use-did-finish-ssr@3.3.3(react@19.3.0)':
     dependencies:
       react: 19.3.0
 
   '@tamagui/use-direction@3.3.3(react@19.3.0)':
     dependencies:
-      react: 19.3.0
-
-  '@tamagui/use-element-layout@2.7.7(react@19.3.0)':
-    dependencies:
-      '@tamagui/constants': 2.7.7(react@19.3.0)
-      '@tamagui/is-equal-shallow': 2.7.7(react@19.3.0)
       react: 19.3.0
 
   '@tamagui/use-element-layout@3.3.3(react@19.3.0)':
@@ -13633,15 +13478,7 @@ snapshots:
       '@tamagui/use-callback-ref': 3.3.3(react@19.3.0)
       react: 19.3.0
 
-  '@tamagui/use-event@2.7.7(react@19.3.0)':
-    dependencies:
-      react: 19.3.0
-
   '@tamagui/use-event@3.3.3(react@19.3.0)':
-    dependencies:
-      react: 19.3.0
-
-  '@tamagui/use-force-update@2.7.7(react@19.3.0)':
     dependencies:
       react: 19.3.0
 
@@ -13759,22 +13596,6 @@ snapshots:
       - react-native-worklets-core
       - supports-color
       - zeego
-
-  '@tamagui/web@2.7.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
-    dependencies:
-      '@tamagui/compose-refs': 2.7.7(react@19.3.0)
-      '@tamagui/constants': 2.7.7(react@19.3.0)
-      '@tamagui/helpers': 2.7.7(react@19.3.0)
-      '@tamagui/is-equal-shallow': 2.7.7(react@19.3.0)
-      '@tamagui/native': 2.7.7(react@19.3.0)
-      '@tamagui/normalize-css-color': 2.7.7
-      '@tamagui/timer': 2.7.7
-      '@tamagui/types': 2.7.7
-      '@tamagui/use-did-finish-ssr': 2.7.7(react@19.3.0)
-      '@tamagui/use-event': 2.7.7(react@19.3.0)
-      '@tamagui/use-force-update': 2.7.7(react@19.3.0)
-      react: 19.3.0
-      react-dom: 19.3.0(react@19.3.0)
 
   '@tamagui/web@3.3.3(react-dom@19.3.0(react@19.3.0))(react-native-gesture-handler@3.5.0(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-safe-area-context@5.11.1(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(@react-native/metro-config@0.88.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react@19.3.0)':
     dependencies:

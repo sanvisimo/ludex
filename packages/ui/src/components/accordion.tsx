@@ -118,11 +118,9 @@ export function AccordionTrigger({
             {/* Un contenitore suo: il Badge si allinea da sé in alto
                 (`self: flex-start`), e nella riga del titolo pendeva su. */}
             {hint && <XStack self="center">{hint}</XStack>}
-            <ChevronDown
-              size={16}
-              color="$color11"
-              rotate={open ? '180deg' : '0deg'}
-            />
+            <XStack rotate={open ? '180deg' : '0deg'}>
+              <ChevronDown size={16} color="$color11" />
+            </XStack>
           </>
         )}
       </AccordionBase.Trigger>

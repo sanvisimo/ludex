@@ -4,11 +4,12 @@ import {
   useEffect,
   useRef,
   type KeyboardEvent,
+  type ReactElement,
   type ReactNode,
 } from 'react';
-import type { Circle } from '@tamagui/lucide-icons-2';
 import { ScrollView, Text, XStack } from 'tamagui';
 
+import type { IconProps } from '../icons';
 import { Badge } from './badge';
 
 const TabsContext = createContext<{
@@ -105,7 +106,7 @@ export type TabsTabProps = {
    * Un'icona prima del nome, come componente (una di `@repo/ui/icons`): il tab
    * ne sceglie il colore, scuro da acceso e attenuato da spento, come il testo.
    */
-  icon?: typeof Circle;
+  icon?: (props: IconProps) => ReactElement;
   children: string;
 };
 

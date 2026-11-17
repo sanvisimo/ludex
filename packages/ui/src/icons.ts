@@ -1,16 +1,17 @@
 /**
  * L'iconografia: **lucide**, la stessa che `apps/web` già usava con
- * `lucide-react`, quindi il passaggio non cambia un disegno.
+ * `lucide-react`.
  *
- * Il pacchetto è `@tamagui/lucide-icons-2`, che rende su entrambe le
- * piattaforme perché sotto usa `react-native-svg`. Attenzione al nome: esiste
- * anche `@tamagui/lucide-icons` **senza** il `-2`, fermo a un `2.0.0-rc` di
- * marzo che pinna un `@tamagui/core` diverso dal nostro — due copie di core
- * nello stesso bundle, e il contesto del tema si spacca. Non è quello.
+ * Tamagui 3 non ha più un pacchetto di icone: si generano solo quelle che si
+ * usano, un file per icona in `src/lucide/`, col `themed` di
+ * `@tamagui/helpers-icon` e `react-native-svg` sotto, così rendono su
+ * entrambe le piattaforme. Quei file non si modificano a mano: un'icona nuova
+ * si aggiunge con `pnpm --filter @repo/ui icons:add NomeIcona`, che riscrive
+ * anche l'indice.
  *
- * Sta in un sottopercorso suo (`@repo/ui/icons`) e non in `index.ts` per un
- * motivo pratico: sono oltre millecinquecento nomi, e mescolarli ai quindici
- * componenti renderebbe illeggibile l'autocompletamento. Il tree-shaking
- * regge perché ogni icona è un modulo a sé.
+ * L'icona prende `size`, `color`, `fill` e `strokeWidth`, ma non è più un
+ * componente di stile: media query, stati e trasformazioni (`rotate`, `$sm`,
+ * `hoverStyle`) vanno su un `View` intorno.
  */
-export * from '@tamagui/lucide-icons-2';
+export * from './lucide';
+export type { IconProps } from '@tamagui/helpers-icon';
