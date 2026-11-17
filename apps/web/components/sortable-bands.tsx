@@ -224,7 +224,7 @@ function SortableBand({
         // dnd-kit tipizza i suoi gestori come `Function`.
         onKeyDown={onKeyDown as ButtonProps['onKeyDown']}
       >
-        <GripVertical size={16} color="$color11" />
+        <GripVertical size={16} color="color11" />
       </Button>
       {content}
     </div>

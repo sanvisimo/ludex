@@ -239,9 +239,9 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
           {row.reason ? (
             <Text
               fontSize={13}
-              lineHeight={18}
+              lineHeight="18px"
               fontWeight="600"
-              color="$color12"
+              color="color12"
             >
               {t(`reason.${row.reason}`)}
             </Text>
@@ -298,7 +298,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       <Text
         render="button"
         fontSize={13}
-        color="$color11"
+        color="color11"
         cursor="pointer"
         self="flex-start"
         bg="transparent"
@@ -312,10 +312,10 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       <XStack gap={16} items="flex-start">
         <GameCover imageId={game.coverImageId} name={game.name} width={72} />
         <YStack flex={1} minW={0} gap={4}>
-          <Text render="h2" fontSize={20} lineHeight={26} fontWeight="600">
+          <Text render="h2" fontSize={20} lineHeight="26px" fontWeight="600">
             {game.name}
           </Text>
-          <Text fontSize={13} color="$color11">
+          <Text fontSize={13} color="color11">
             {[
               game.igdbId ? `IGDB ${game.igdbId}` : t('game.noIgdb'),
               game.firstReleaseDate?.getFullYear(),
@@ -326,14 +326,14 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
               .join(' · ')}
           </Text>
           {game.igdbPlatforms.length > 0 ? (
-            <Text fontSize={13} color="$color11">
+            <Text fontSize={13} color="color11">
               {t('game.igdbPlatforms', {
                 platforms: game.igdbPlatforms.join(', '),
               })}
             </Text>
           ) : null}
           <Link to="/games/$slug" params={{ slug: game.slug }}>
-            <Text fontSize={13} color="$color11" textDecorationLine="underline">
+            <Text fontSize={13} color="color11" textDecorationLine="underline">
               {t('game.publicPage')} ↗
             </Text>
           </Link>
@@ -348,7 +348,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
           {t('game.links')}
         </Text>
         {detail.links.length === 0 ? (
-          <Text fontSize={13} color="$color11">
+          <Text fontSize={13} color="color11">
             {t('game.noLinks')}
           </Text>
         ) : (
@@ -378,7 +378,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
           {t('game.reports')}
         </Text>
         {detail.reports.length === 0 ? (
-          <Text fontSize={13} color="$color11">
+          <Text fontSize={13} color="color11">
             {t('game.noReports')}
           </Text>
         ) : (
@@ -390,14 +390,14 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
               p={10}
               rounded={8}
               borderWidth={1}
-              borderColor="$borderColor"
+              borderColor="border-color"
             >
               <YStack flex={1} minW={0} gap={2}>
                 <Text fontSize={13} fontWeight="500">
                   {what(report)} · {t('game.users', { count: report.users })}
                 </Text>
                 {report.suggestions.length > 0 ? (
-                  <Text fontSize={12} color="$color11">
+                  <Text fontSize={12} color="color11">
                     {t('games.suggested')}:{' '}
                     {report.suggestions
                       .map((s) =>
@@ -409,7 +409,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
                   </Text>
                 ) : null}
                 {report.notes.map((note, index) => (
-                  <Text key={index} fontSize={12} color="$color11">
+                  <Text key={index} fontSize={12} color="color11">
                     «{note}»
                   </Text>
                 ))}

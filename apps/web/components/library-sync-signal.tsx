@@ -21,13 +21,13 @@ function PhaseIcon({ phase, label }: { phase: Phase; label: string }) {
   return (
     <View role="img" aria-label={label}>
       {phase === 'done' ? (
-        <CircleCheck size={14} color="$green11" />
+        <CircleCheck size={14} color="green11" />
       ) : phase === 'running' ? (
         <Spinner>
-          <RefreshCw size={14} color="$blue11" />
+          <RefreshCw size={14} color="blue11" />
         </Spinner>
       ) : (
-        <Clock size={14} color="$amber11" />
+        <Clock size={14} color="amber11" />
       )}
     </View>
   );
@@ -97,9 +97,9 @@ export function LibrarySyncSignal() {
         onClick={() => setExplained((value) => !value)}
       >
         <Spinner>
-          <RefreshCw size={14} color="$blue11" />
+          <RefreshCw size={14} color="blue11" />
         </Spinner>
-        <Text fontSize={14} lineHeight={20} color="$color11">
+        <Text fontSize={14} lineHeight="20px" color="color11">
           {t('label', { done, total })}
         </Text>
       </Button>
@@ -112,7 +112,7 @@ export function LibrarySyncSignal() {
             return (
               <XStack render="li" key={row.id} items="center" gap={4}>
                 <PhaseIcon phase={phase} label={t(phase)} />
-                <Text fontSize={14} lineHeight={20} color="$color11">
+                <Text fontSize={14} lineHeight="20px" color="color11">
                   {nameOf(row)}
                 </Text>
               </XStack>

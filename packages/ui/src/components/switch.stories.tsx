@@ -30,7 +30,7 @@ export const Default: Story = {};
  */
 export const WithLabel: Story = {
   render: () => (
-    <XStack gap="$3" items="center">
+    <XStack gap="3" items="center">
       <Switch id="auto-sync" defaultChecked />
       <Label htmlFor="auto-sync">Aggiorna automaticamente la libreria</Label>
     </XStack>
@@ -40,7 +40,7 @@ export const WithLabel: Story = {
 /** Spento, acceso, e i due disabilitati: su PSN l'account segue il generale. */
 export const States: Story = {
   render: () => (
-    <XStack gap="$4" items="center">
+    <XStack gap="4" items="center">
       <Switch aria-label="Spento" />
       <Switch aria-label="Acceso" defaultChecked />
       <Switch aria-label="Spento disabilitato" disabled />
@@ -52,14 +52,14 @@ export const States: Story = {
 /** Chiaro e scuro affiancati: il binario spento deve vedersi su entrambi. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap="$2" bg="$background" p="$3" rounded="$4">
-            <Text color="$color11" fontSize={12}>
+          <YStack gap="2" bg="background" p="3" rounded="4">
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
-            <XStack gap="$3">
+            <XStack gap="3">
               <Switch aria-label={`Spento ${name}`} />
               <Switch aria-label={`Acceso ${name}`} defaultChecked />
             </XStack>

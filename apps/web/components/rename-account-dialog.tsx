@@ -104,7 +104,7 @@ function RenameForm({
             autoFocus
           />
           {account.displayName && (
-            <Text fontSize={13} lineHeight={18} color="$color11">
+            <Text fontSize={13} lineHeight="18px" color="color11">
               {t('renameKnownAs', { name: account.displayName })}
             </Text>
           )}

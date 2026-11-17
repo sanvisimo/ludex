@@ -4,8 +4,7 @@ import type { GetProps } from 'tamagui';
 
 const SkeletonFrame = styled(View, {
   name: 'Skeleton',
-
-  bg: '$color4',
+  bg: 'color4',
   rounded: 6,
   transition: 'superLazy',
 });

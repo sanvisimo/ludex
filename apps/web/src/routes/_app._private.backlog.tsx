@@ -161,9 +161,9 @@ function BacklogPage() {
           <AddGameDialog
             trigger={
               <Button variant="outline" aria-label={tAdd('trigger')}>
-                <Plus size={16} color="$color12" />
-                <XStack display="none" $sm={{ display: 'flex' }} aria-hidden>
-                  <Text fontSize={14} color="$color12">
+                <Plus size={16} color="color12" />
+                <XStack display="none sm:flex" aria-hidden>
+                  <Text fontSize={14} color="color12">
                     {tAdd('trigger')}
                   </Text>
                 </XStack>
@@ -175,7 +175,7 @@ function BacklogPage() {
       }
     >
       {inHidden && (
-        <Text fontSize={14} lineHeight={20} color="$color11">
+        <Text fontSize={14} lineHeight="20px" color="color11">
           {t('hiddenViewHint')}
         </Text>
       )}
@@ -194,13 +194,13 @@ function BacklogPage() {
             }
           >
             <ToggleGroupItem value="grid" aria-label={t('viewGrid')}>
-              <LayoutGrid size={16} color="$color12" />
+              <LayoutGrid size={16} color="color12" />
             </ToggleGroupItem>
             <ToggleGroupItem value="rows" aria-label={t('viewRows')}>
-              <Rows3 size={16} color="$color12" />
+              <Rows3 size={16} color="color12" />
             </ToggleGroupItem>
             <ToggleGroupItem value="compact" aria-label={t('viewCompact')}>
-              <List size={16} color="$color12" />
+              <List size={16} color="color12" />
             </ToggleGroupItem>
           </ToggleGroup>
         }
@@ -212,7 +212,7 @@ function BacklogPage() {
       <YStack gap={16} position="relative">
         <GridProbe probeRef={grid.ref} />
         {backlog.error ? (
-          <Text fontSize={14} color="$red11">
+          <Text fontSize={14} color="red11">
             {t('error')}
           </Text>
         ) : backlog.isPending ? (
@@ -226,7 +226,7 @@ function BacklogPage() {
           // filtri sono due cose diverse, e la seconda ha una via d'uscita.
           activeCount > 0 ? (
             <EmptyState
-              icon={<SearchX size={24} color="$color11" />}
+              icon={<SearchX size={24} color="color11" />}
               title={t('noMatchTitle')}
               description={t('noMatchHint')}
               action={
@@ -237,17 +237,17 @@ function BacklogPage() {
             />
           ) : inHidden ? (
             <EmptyState
-              icon={<EyeOff size={24} color="$color11" />}
+              icon={<EyeOff size={24} color="color11" />}
               title={t('hiddenEmptyTitle')}
             />
           ) : (
             <EmptyState
-              icon={<Gamepad2 size={24} color="$color11" />}
+              icon={<Gamepad2 size={24} color="color11" />}
               title={t('emptyTitle')}
               description={t('emptyHint')}
               action={
                 <ButtonLink href="/account/libraries">
-                  <Library size={16} color="$color12" />
+                  <Library size={16} color="color12" />
                   {t('addLibrary')}
                 </ButtonLink>
               }

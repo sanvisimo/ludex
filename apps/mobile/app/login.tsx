@@ -89,7 +89,7 @@ export default function Login() {
       </Button>
 
       <XStack gap={6} justify="center">
-        <Text color="$color11">{t('noAccount')}</Text>
+        <Text color="color11">{t('noAccount')}</Text>
         <TextLink onPress={() => router.replace('/register')}>
           {t('toRegister')}
         </TextLink>

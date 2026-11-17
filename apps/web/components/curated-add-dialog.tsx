@@ -126,7 +126,7 @@ function AddForm({
         disabled={busy}
         onClick={() => add.mutate({ key, ...target })}
       >
-        {busy ? <Spinner /> : <Plus size={14} color="$color1" />}
+        {busy ? <Spinner /> : <Plus size={14} color="color1" />}
         {t('add')}
       </Button>
     );
@@ -157,11 +157,11 @@ function AddForm({
 
       <YStack gap={16} maxH={420} overflow="scroll">
         {!searched ? (
-          <Text fontSize={13} lineHeight={18} color="$color11">
+          <Text fontSize={13} lineHeight="18px" color="color11">
             {t('hint')}
           </Text>
         ) : empty ? (
-          <Text fontSize={14} lineHeight={20} color="$color11">
+          <Text fontSize={14} lineHeight="20px" color="color11">
             {t('none')}
           </Text>
         ) : (
@@ -216,7 +216,7 @@ function AddForm({
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <YStack gap={8}>
-      <Text fontSize={13} lineHeight={18} color="$color11">
+      <Text fontSize={13} lineHeight="18px" color="color11">
         {title}
       </Text>
       <YStack render="ul" gap={8} p={0} m={0} style={{ listStyle: 'none' }}>
@@ -254,11 +254,11 @@ function Row({
     <XStack render="li" items="center" gap={12}>
       <GameCover imageId={cover} name={name} size="cover_small" width={36} />
       <YStack flex={1} minW={0}>
-        <Text fontSize={14} lineHeight={20} color="$color12" numberOfLines={1}>
+        <Text fontSize={14} lineHeight="20px" color="color12" numberOfLines={1}>
           {name}
         </Text>
         {meta && (
-          <Text fontSize={12} lineHeight={16} color="$color11">
+          <Text fontSize={12} lineHeight="16px" color="color11">
             {meta}
           </Text>
         )}
@@ -272,8 +272,8 @@ function Row({
 function Done({ children }: { children: ReactNode }) {
   return (
     <XStack items="center" gap={4} px={8} height={32}>
-      <Check size={14} color="$color11" />
-      <Text fontSize={13} lineHeight={18} color="$color11">
+      <Check size={14} color="color11" />
+      <Text fontSize={13} lineHeight="18px" color="color11">
         {children}
       </Text>
     </XStack>

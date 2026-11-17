@@ -82,7 +82,7 @@ export const Route = createFileRoute('/_app/games/$slug')({
  */
 function HeroSkeleton() {
   return (
-    <YStack width="100%" height={320} $max-md={{ height: 240 }}>
+    <YStack width="100%" height="320px max-md:240px">
       <Skeleton height="100%" width="100%" rounded={0} />
     </YStack>
   );
@@ -165,7 +165,7 @@ function GamePage() {
       <Page maxW={GAME_PAGE_WIDTH} hero={<HeroSkeleton />} title={game.name}>
         <XStack items="center" gap={8} role="status">
           <Spinner />
-          <Text fontSize={14} color="$color11">
+          <Text fontSize={14} color="color11">
             {t('enriching')}
           </Text>
         </XStack>
@@ -218,19 +218,19 @@ function GamePage() {
             <YStack gap={8} render="section">
               <Text
                 render="h2"
-                fontFamily="$heading"
+                fontFamily="heading"
                 fontSize={16}
-                lineHeight={22}
+                lineHeight="22px"
                 fontWeight="600"
-                color="$color12"
+                color="color12"
                 m={0}
               >
                 {t('description')}
               </Text>
               <Text
                 fontSize={15}
-                lineHeight={24}
-                color="$color12"
+                lineHeight="24px"
+                color="color12"
                 style={{ whiteSpace: 'pre-line' }}
               >
                 {game.summary}
@@ -248,7 +248,7 @@ function GamePage() {
               actions={
                 <>
                   <Button variant="outline" onPress={() => setEditing(true)}>
-                    <Pencil size={16} color="$color12" />
+                    <Pencil size={16} color="color12" />
                     {t('edit')}
                   </Button>
                   <Button
@@ -262,9 +262,9 @@ function GamePage() {
                     disabled={setHidden.isPending}
                   >
                     {entry.hiddenAt === null ? (
-                      <EyeOff size={16} color="$color11" />
+                      <EyeOff size={16} color="color11" />
                     ) : (
-                      <Eye size={16} color="$color11" />
+                      <Eye size={16} color="color11" />
                     )}
                     {entry.hiddenAt === null
                       ? tHidden('hide')
@@ -274,7 +274,7 @@ function GamePage() {
                     variant="destructive"
                     onPress={() => setRemoving(true)}
                   >
-                    <Trash2 size={16} color="$red11" />
+                    <Trash2 size={16} color="red11" />
                     {t('remove')}
                   </Button>
                 </>
@@ -294,7 +294,7 @@ function GamePage() {
                   variant="ghost"
                   href={`/admin/games/${game.slug}`}
                 >
-                  <Shield size={14} color="$color11" />
+                  <Shield size={14} color="color11" />
                   {tReport('admin')}
                 </ButtonLink>
               ) : null}

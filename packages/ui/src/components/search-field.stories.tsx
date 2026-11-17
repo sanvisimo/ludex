@@ -36,10 +36,10 @@ function Results({ query }: { query: string }) {
 
   const row = (game: { id: string; name: string; year: number }) => (
     <SearchFieldItem key={game.id} value={game.id}>
-      <Text flex={1} fontSize={14} lineHeight={20} color="$color12">
+      <Text flex={1} fontSize={14} lineHeight="20px" color="color12">
         {game.name}
       </Text>
-      <Text fontSize={12} color="$color11">
+      <Text fontSize={12} color="color11">
         {game.year}
       </Text>
     </SearchFieldItem>
@@ -97,11 +97,11 @@ export const Default: Story = {};
 /** Chiaro e scuro affiancati, col testo scritto e la tendina chiusa. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap="$2" bg="$background" p="$3" rounded="$4" width={280}>
-            <Text color="$color11" fontSize={12}>
+          <YStack gap="2" bg="background" p="3" rounded="4" width={280}>
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
             <SearchField

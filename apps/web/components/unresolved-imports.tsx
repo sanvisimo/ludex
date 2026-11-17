@@ -55,9 +55,9 @@ export function HideMenu({
       <DropdownMenuTrigger
         render={
           <Button size="sm" variant="ghost" disabled={disabled}>
-            <EyeOff size={16} color="$color12" />
+            <EyeOff size={16} color="color12" />
             {label}
-            <ChevronDown size={16} color="$color12" />
+            <ChevronDown size={16} color="color12" />
           </Button>
         }
       />
@@ -133,7 +133,7 @@ export function UnresolvedImports({
 
   return (
     <YStack gap={12}>
-      <Text fontSize={14} lineHeight={20} color="$color11">
+      <Text fontSize={14} lineHeight="20px" color="color11">
         {t('description')}
       </Text>
 
@@ -145,7 +145,7 @@ export function UnresolvedImports({
               variant="outline"
               onClick={() => onResolve(entry)}
             >
-              <Link2 size={16} color="$color12" />
+              <Link2 size={16} color="color12" />
               {t('resolve')}
             </Button>
             <HideMenu

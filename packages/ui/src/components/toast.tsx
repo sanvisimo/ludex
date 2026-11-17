@@ -27,11 +27,11 @@ export { toast } from '@tamagui/toast/v2';
  * `loading` è lo Spinner, che gira da sé invece di un'icona da animare.
  */
 const icons: ToasterProps['icons'] = {
-  success: <CircleCheck size={16} color="$green11" />,
-  info: <Info size={16} color="$color11" />,
-  warning: <TriangleAlert size={16} color="$amber11" />,
-  error: <OctagonX size={16} color="$red11" />,
-  loading: <Spinner size="small" color="$color11" />,
+  success: <CircleCheck size={16} color="green11" />,
+  info: <Info size={16} color="color11" />,
+  warning: <TriangleAlert size={16} color="amber11" />,
+  error: <OctagonX size={16} color="red11" />,
+  loading: <Spinner size="small" color="color11" />,
 };
 
 export function Toaster(props: ToasterProps) {

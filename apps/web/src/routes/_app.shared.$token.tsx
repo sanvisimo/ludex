@@ -103,12 +103,12 @@ function SharedPlaylistPage() {
       <Page title={' '}>
         {hasErrorCode(shared.error, 'NOT_FOUND') ? (
           <EmptyState
-            icon={<ListFilter size={24} color="$color11" />}
+            icon={<ListFilter size={24} color="color11" />}
             title={t('notFoundTitle')}
             description={t('notFoundHint')}
           />
         ) : (
-          <Text fontSize={14} color="$red11">
+          <Text fontSize={14} color="red11">
             {t('loadFailed')}
           </Text>
         )}
@@ -150,8 +150,8 @@ function SharedPlaylistPage() {
       actions={useFilters}
     >
       {data?.kind === 'filter' && data.droppedTags > 0 && (
-        <YStack bg="$color3" rounded={8} px={12} py={8}>
-          <Text fontSize={13} lineHeight={18} color="$color12">
+        <YStack bg="color3" rounded={8} px={12} py={8}>
+          <Text fontSize={13} lineHeight="18px" color="color12">
             {t('droppedTags', { count: data.droppedTags })}
           </Text>
         </YStack>
@@ -171,7 +171,7 @@ function SharedPlaylistPage() {
             ))}
           </Cards>
         ) : data && data.games.length === 0 ? (
-          <Text fontSize={14} color="$color11">
+          <Text fontSize={14} color="color11">
             {t('empty')}
           </Text>
         ) : (
@@ -216,7 +216,7 @@ function SharedPlaylistPage() {
         )}
       </YStack>
 
-      <Text fontSize={13} color="$color11">
+      <Text fontSize={13} color="color11">
         {t('about')}
       </Text>
     </Page>

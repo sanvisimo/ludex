@@ -109,8 +109,7 @@ export function useGameSearch(
     local,
     // Null quando IGDB non va chiesto: da ospiti, o con la tendina già piena.
     // Finché i nostri non sono arrivati non si sa ancora, e conta come chiesto.
-    igdb:
-      session && (room || local.isPending || mine.isPending) ? igdb : null,
+    igdb: session && (room || local.isPending || mine.isPending) ? igdb : null,
   };
 }
 
@@ -148,11 +147,11 @@ function ResultRow({
     <>
       <GameCover imageId={cover} name={name} size="cover_small" width={28} />
       <YStack flex={1} minW={0}>
-        <Text fontSize={14} lineHeight={20} color="$color12" numberOfLines={1}>
+        <Text fontSize={14} lineHeight="20px" color="color12" numberOfLines={1}>
           {name}
         </Text>
         {year !== null && (
-          <Text fontSize={12} lineHeight={16} color="$color11">
+          <Text fontSize={12} lineHeight="16px" color="color11">
             {year}
           </Text>
         )}
@@ -271,7 +270,7 @@ export function GameSearchBox() {
         </SearchFieldMessage>
       )}
       <SearchFieldItem value="all">
-        <Text flex={1} fontSize={14} lineHeight={20} color="$accent11">
+        <Text flex={1} fontSize={14} lineHeight="20px" color="accent11">
           {t('allResults', { query: q || query.trim() })}
         </Text>
       </SearchFieldItem>
@@ -305,27 +304,26 @@ export function IgdbCard({
       items="stretch"
       cursor="pointer"
       opacity={disabled ? 0.6 : 1}
-      focusVisibleStyle={{
-        outlineColor: '$outlineColor',
-        outlineStyle: 'solid',
-        outlineWidth: 2,
-        rounded: 6,
-      }}
-      {...({ type: 'button', disabled } as object)}
+      outlineColor="focus-visible:outline-color"
+      outlineStyle="focus-visible:solid"
+      outlineWidth="focus-visible:2px"
+      rounded="focus-visible:6px"
+      type={'button'}
+      {...{ disabled }}
       onPress={onOpen}
     >
       <GameCover imageId={hit.cover} name={hit.name} size="cover_big" fill />
       <Text
         fontSize={14}
-        lineHeight={20}
-        color="$color12"
+        lineHeight="20px"
+        color="color12"
         numberOfLines={2}
         text="left"
       >
         {hit.name}
       </Text>
       {hit.releaseYear !== null && (
-        <Text fontSize={14} lineHeight={20} color="$color11" text="left">
+        <Text fontSize={14} lineHeight="20px" color="color11" text="left">
           {hit.releaseYear}
         </Text>
       )}

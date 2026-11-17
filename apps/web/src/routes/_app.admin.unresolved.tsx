@@ -100,7 +100,7 @@ function UnresolvedSection() {
 
   return (
     <YStack gap={16}>
-      <Text render="h2" fontSize={18} lineHeight={24} fontWeight="600">
+      <Text render="h2" fontSize={18} lineHeight="24px" fontWeight="600">
         {t('title')}
       </Text>
 
@@ -261,10 +261,10 @@ function OpenList({
           bg="transparent"
           borderWidth={0}
           p={0}
+          opacity="hover:0.8"
+          style={{ textAlign: 'left' }}
           aria-label={t('details', { name: row.name })}
           onPress={() => setDetail({ row, searching: false })}
-          hoverStyle={{ opacity: 0.8 }}
-          {...({ style: { textAlign: 'left' } } as object)}
         >
           <UnresolvedCover
             key={`${row.store}-${row.externalId}`}

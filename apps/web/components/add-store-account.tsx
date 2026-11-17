@@ -40,7 +40,7 @@ export function AddStoreAccount({
       <Button variant={variant} onClick={() => setOpen(true)}>
         <Plus
           size={16}
-          color={variant === 'default' ? '$actionColor' : '$color12'}
+          color={`${variant === 'default' ? 'actionColor' : 'color12'}`}
         />
         {t('title')}
       </Button>
@@ -60,9 +60,8 @@ export function AddStoreAccount({
               items={storeLabels}
             >
               <SelectTrigger
-                width="100%"
+                width="100% sm:256px"
                 aria-label={t('storeLabel')}
-                $sm={{ width: 256 }}
               >
                 <SelectValue />
               </SelectTrigger>

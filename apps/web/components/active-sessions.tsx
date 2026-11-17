@@ -111,7 +111,7 @@ export function ActiveSessions({ embedded = false }: { embedded?: boolean }) {
         {sessions.isPending ? (
           <Skeleton height={56} width="100%" rounded={8} />
         ) : sessions.error ? (
-          <Text fontSize={14} color="$red11">
+          <Text fontSize={14} color="red11">
             {t('loadFailed')}
           </Text>
         ) : (
@@ -133,19 +133,19 @@ export function ActiveSessions({ embedded = false }: { embedded?: boolean }) {
                   py={8}
                   rounded={8}
                   borderWidth={1}
-                  borderColor="$borderColor"
-                  bg={isCurrent ? '$selectionBackground' : '$surface'}
+                  borderColor="border-color"
+                  bg={`${isCurrent ? 'selectionBackground' : 'surface'}`}
                 >
                   <YStack gap={2} shrink={1}>
                     <XStack items="center" gap={8} flexWrap="wrap">
-                      <Text fontWeight="500" color="$color12">
+                      <Text fontWeight="500" color="color12">
                         {device}
                       </Text>
                       {isCurrent && (
                         <Badge variant="success">{t('thisDevice')}</Badge>
                       )}
                     </XStack>
-                    <Text fontSize={13} lineHeight={18} color="$color11">
+                    <Text fontSize={13} lineHeight="18px" color="color11">
                       {t('signedIn', {
                         // Mai nel futuro: `now` si ferma al montaggio, e una
                         // sessione aperta dopo risulterebbe «tra 5 secondi».

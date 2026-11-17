@@ -22,21 +22,22 @@ export const Alert = styled(YStack, {
   name: 'Alert',
   context: AlertContext,
   role: 'alert',
-
   gap: 2,
   px: 10,
   py: 8,
   rounded: 8,
   borderWidth: 1,
-  bg: '$color2',
-
+  bg: 'color2',
   variants: {
     variant: {
-      default: { borderColor: '$borderColor' },
-      destructive: { borderColor: '$red6' },
+      default: {
+        borderColor: 'border-color',
+      },
+      destructive: {
+        borderColor: 'red6',
+      },
     },
   } as const,
-
   defaultVariants: {
     variant: 'default',
   },
@@ -47,13 +48,17 @@ export const AlertTitle = styled(Text, {
   context: AlertContext,
 
   fontSize: 14,
-  lineHeight: 20,
+  lineHeight: '20px',
   fontWeight: '500',
 
   variants: {
     variant: {
-      default: { color: '$color12' },
-      destructive: { color: '$red11' },
+      default: {
+        color: 'color12',
+      },
+      destructive: {
+        color: 'red11',
+      },
     },
   } as const,
 });
@@ -63,12 +68,16 @@ export const AlertDescription = styled(Text, {
   context: AlertContext,
 
   fontSize: 14,
-  lineHeight: 20,
+  lineHeight: '20px',
 
   variants: {
     variant: {
-      default: { color: '$color11' },
-      destructive: { color: '$red11' },
+      default: {
+        color: 'color11',
+      },
+      destructive: {
+        color: 'red11',
+      },
     },
   } as const,
 });

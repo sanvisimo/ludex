@@ -40,7 +40,7 @@ export function HiddenList({
               variant="outline"
               onClick={() => onResolve(item.entry)}
             >
-              <Link2 size={16} color="$color12" />
+              <Link2 size={16} color="color12" />
               {t('resolve')}
             </Button>
             <Button
@@ -49,7 +49,7 @@ export function HiddenList({
               onClick={() => unhide.mutate(item.entry.id)}
               disabled={unhide.isPending}
             >
-              <Eye size={16} color="$color12" />
+              <Eye size={16} color="color12" />
               {tReview('restoreImport')}
             </Button>
           </UnresolvedRow>

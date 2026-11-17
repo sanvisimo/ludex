@@ -23,7 +23,7 @@ type Story = StoryObj<EmptyStateProps>;
 /** Il backlog vuoto: nessun gioco, ancora. */
 export const Empty: Story = {
   args: {
-    icon: <Gamepad2 size={24} color="$color11" />,
+    icon: <Gamepad2 size={24} color="color11" />,
     title: 'Il backlog è vuoto',
     description:
       'Aggiungi un gioco a mano o collega una libreria dalla pagina Account.',
@@ -33,7 +33,7 @@ export const Empty: Story = {
 /** Nessun gioco passa i filtri: l'unico caso con una via d'uscita. */
 export const NoMatch: Story = {
   args: {
-    icon: <SearchX size={24} color="$color11" />,
+    icon: <SearchX size={24} color="color11" />,
     title: 'Nessun gioco corrisponde ai filtri',
     description: 'Prova ad allargare la ricerca o a togliere qualche filtro.',
     action: <Button variant="outline">Azzera i filtri</Button>,
@@ -43,7 +43,7 @@ export const NoMatch: Story = {
 /** Solo il titolo: nessun nascosto. */
 export const TitleOnly: Story = {
   args: {
-    icon: <EyeOff size={24} color="$color11" />,
+    icon: <EyeOff size={24} color="color11" />,
     title: 'Nessun gioco nascosto',
   },
 };

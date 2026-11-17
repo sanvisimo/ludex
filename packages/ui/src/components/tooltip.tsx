@@ -82,14 +82,12 @@ export function Tooltip({
         py={4}
         rounded={6}
         maxW={280}
-        bg="$color12"
+        bg="color12"
         transition="quick"
-        opacity={1}
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
+        opacity="1 enter:0 exit:0"
       >
         {typeof content === 'string' ? (
-          <Paragraph fontSize={12} lineHeight={16} color="$color1">
+          <Paragraph fontSize={12} lineHeight="16px" color="color1">
             {content}
           </Paragraph>
         ) : (

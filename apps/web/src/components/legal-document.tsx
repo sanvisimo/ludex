@@ -43,11 +43,11 @@ export function LegalDocument({ docs }: { docs: Record<string, LegalDoc> }) {
         <YStack key={section.heading} gap={8}>
           <Text
             render="h2"
-            fontFamily="$heading"
+            fontFamily="heading"
             fontSize={18}
-            lineHeight={24}
+            lineHeight="24px"
             fontWeight="600"
-            color="$color12"
+            color="color12"
             m={0}
           >
             {section.heading}
@@ -57,8 +57,8 @@ export function LegalDocument({ docs }: { docs: Record<string, LegalDoc> }) {
               <Text
                 key={index}
                 fontSize={15}
-                lineHeight={22}
-                color="$color12"
+                lineHeight="22px"
+                color="color12"
                 m={0}
               >
                 <Linkified text={block} />
@@ -78,8 +78,8 @@ export function LegalDocument({ docs }: { docs: Record<string, LegalDoc> }) {
                     render="li"
                     style={{ display: 'list-item' }}
                     fontSize={15}
-                    lineHeight={22}
-                    color="$color12"
+                    lineHeight="22px"
+                    color="color12"
                   >
                     <Linkified text={item} />
                   </Text>

@@ -23,7 +23,7 @@ export const Default: Story = {};
  */
 export const Shapes: Story = {
   render: () => (
-    <YStack gap="$3" width={360}>
+    <YStack gap="3" width={360}>
       <Skeleton height={36} width={256} />
       <Skeleton height={64} rounded={12} />
       <Skeleton height={64} rounded={12} />
@@ -35,11 +35,11 @@ export const Shapes: Story = {
 /** Chiaro e scuro affiancati: sul chiaro un grigio troppo tenue sparisce. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap="$2" bg="$background" p="$3" rounded="$4" width={240}>
-            <Text color="$color11" fontSize={12}>
+          <YStack gap="2" bg="background" p="3" rounded="4" width={240}>
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
             <Skeleton height={24} width={160} />

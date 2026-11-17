@@ -49,11 +49,11 @@ function AdminLayout() {
     <Page title={t('title')} maxW="100%" actions={<CatalogFinder />}>
       <XStack
         gap={24}
-        items="flex-start"
-        $max-md={{ flexDirection: 'column', items: 'stretch' }}
+        items="flex-start max-md:stretch"
+        flexDirection="max-md:column"
       >
         <AdminNav />
-        <YStack flex={1} minW={0} gap={24} $max-md={{ flexBasis: 'auto' }}>
+        <YStack flex={1} minW={0} gap={24} flexBasis="max-md:auto">
           <Outlet />
         </YStack>
       </XStack>

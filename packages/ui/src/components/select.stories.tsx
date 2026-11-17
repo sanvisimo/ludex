@@ -38,7 +38,7 @@ export const Default: Story = {
   render: function Render(args) {
     const [value, setValue] = useState('backlog');
     return (
-      <YStack gap="$2" width={240}>
+      <YStack gap="2" width={240}>
         <Label htmlFor="stato">Stato</Label>
         <Select
           items={statusLabels}
@@ -93,11 +93,11 @@ export const FixedPlusMapped: Story = {
 /** Chiaro e scuro affiancati, a tendina chiusa. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap="$2" bg="$background" p="$3" rounded="$4">
-            <Text color="$color11" fontSize={12}>
+          <YStack gap="2" bg="background" p="3" rounded="4">
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
             <Select items={statusLabels} defaultValue="playing">

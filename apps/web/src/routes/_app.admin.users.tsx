@@ -262,7 +262,7 @@ function UsersSection() {
   return (
     <YStack gap={16}>
       <XStack gap={12} items="center" flexWrap="wrap">
-        <Text render="h2" fontSize={18} lineHeight={24} fontWeight="600">
+        <Text render="h2" fontSize={18} lineHeight="24px" fontWeight="600">
           {t('title')}
         </Text>
         <YStack width={280}>

@@ -27,7 +27,10 @@ export default function TabsLayout() {
         options={{
           title: t('backlog'),
           tabBarIcon: ({ focused, size }) => (
-            <Library color={focused ? '$accent11' : '$color11'} size={size} />
+            <Library
+              color={`${focused ? 'accent11' : 'color11'}`}
+              size={size}
+            />
           ),
         }}
       />
@@ -36,7 +39,10 @@ export default function TabsLayout() {
         options={{
           title: t('playlist'),
           tabBarIcon: ({ focused, size }) => (
-            <ListMusic color={focused ? '$accent11' : '$color11'} size={size} />
+            <ListMusic
+              color={`${focused ? 'accent11' : 'color11'}`}
+              size={size}
+            />
           ),
         }}
       />
@@ -45,7 +51,7 @@ export default function TabsLayout() {
         options={{
           title: t('wishlist'),
           tabBarIcon: ({ focused, size }) => (
-            <Heart color={focused ? '$accent11' : '$color11'} size={size} />
+            <Heart color={`${focused ? 'accent11' : 'color11'}`} size={size} />
           ),
         }}
       />
@@ -55,7 +61,7 @@ export default function TabsLayout() {
           title: t('account'),
           tabBarIcon: ({ focused, size }) => (
             <CircleUser
-              color={focused ? '$accent11' : '$color11'}
+              color={`${focused ? 'accent11' : 'color11'}`}
               size={size}
             />
           ),

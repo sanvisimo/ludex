@@ -93,7 +93,7 @@ export function UnresolvedCover({
       items="center"
       justify="center"
       rounded={6}
-      bg="$color4"
+      bg="color4"
       aria-hidden
     >
       {brand ? (
@@ -171,12 +171,7 @@ export function UnresolvedRow({
     >
       {/* L'id esterno non si scrive: è nel suggerimento, per chi deve
           riconoscere una voce che si chiama «Live» o «Production». */}
-      <Text
-        fontWeight="500"
-        color="$color12"
-        // Gli attributi dell'elemento non sono nei tipi del testo.
-        {...({ title: entry.externalId } as object)}
-      >
+      <Text fontWeight="500" color="color12" title={entry.externalId}>
         {entry.name}
       </Text>
 
@@ -193,24 +188,18 @@ export function UnresolvedRow({
         {pageUrl ? (
           <XStack
             render="a"
-            // Come in `NavItem`: gli attributi del link arrivano all'`<a>`, ma
-            // i tipi della view non li conoscono.
-            {...({
-              href: pageUrl,
-              target: '_blank',
-              rel: 'noopener noreferrer',
-              title: t('openOn', { store: storeName }),
-            } as object)}
+            href={pageUrl}
+            target={'_blank'}
+            rel={'noopener noreferrer'}
+            title={t('openOn', { store: storeName })}
             shrink={0}
             mt={1}
             rounded={4}
             cursor="pointer"
-            hoverStyle={{ opacity: 0.8 }}
-            focusVisibleStyle={{
-              outlineColor: '$outlineColor',
-              outlineStyle: 'solid',
-              outlineWidth: 2,
-            }}
+            opacity="hover:0.8"
+            outlineColor="focus-visible:outline-color"
+            outlineStyle="focus-visible:solid"
+            outlineWidth="focus-visible:2px"
           >
             {icon}
           </XStack>
@@ -219,7 +208,7 @@ export function UnresolvedRow({
             {icon}
           </XStack>
         )}
-        <Text fontSize={13} lineHeight={18} color="$color11" flex={1} minW={0}>
+        <Text fontSize={13} lineHeight="18px" color="color11" flex={1} minW={0}>
           {facts.join(' · ')}
         </Text>
       </XStack>

@@ -35,7 +35,7 @@ export function PageSizeSelect({
 
   return (
     <XStack items="center" gap={8}>
-      <Label htmlFor={id} color="$color11" fontWeight="400">
+      <Label htmlFor={id} color="color11" fontWeight="400">
         {t('pageSize')}
       </Label>
       <Select

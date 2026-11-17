@@ -34,7 +34,7 @@ export function PlayedMinutesSlider({
 
   return (
     <YStack gap={8}>
-      <Text fontSize={14} color="$color12">
+      <Text fontSize={14} color="color12">
         {text}
       </Text>
       {mounted ? (
@@ -50,7 +50,7 @@ export function PlayedMinutesSlider({
       ) : (
         <YStack height={20} />
       )}
-      <Text fontSize={12} color="$color11">
+      <Text fontSize={12} color="color11">
         {hint}
       </Text>
     </YStack>
@@ -91,7 +91,7 @@ export function PlayedThreshold({
         <Label htmlFor={id}>{t('toggle')}</Label>
       </XStack>
       {store === 'ea' && (
-        <Text fontSize={12} color="$color11" pl={26}>
+        <Text fontSize={12} color="color11" pl={26}>
           {t('eaNote')}
         </Text>
       )}

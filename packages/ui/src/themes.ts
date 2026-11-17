@@ -56,6 +56,45 @@ function semanticRoles(scheme: 'light' | 'dark', theme: Theme) {
   };
 }
 
+/**
+ * Le chiavi semantiche che i componenti di Tamagui 3 leggono in kebab-case
+ * (`border-color`, `background-hover`…), e che il codemod scrive così. I temi
+ * v5 di Tamagui 3 portano le due grafie con lo stesso valore; i nostri, nati
+ * dalla 2.7.7, le avevano solo in camelCase. Elenco preso dal loro
+ * `generated-v5.ts`.
+ */
+const kebabKeys = {
+  backgroundHover: 'background-hover',
+  backgroundPress: 'background-press',
+  backgroundFocus: 'background-focus',
+  backgroundActive: 'background-active',
+  borderColor: 'border-color',
+  borderColorHover: 'border-color-hover',
+  borderColorPress: 'border-color-press',
+  borderColorFocus: 'border-color-focus',
+  colorHover: 'color-hover',
+  colorPress: 'color-press',
+  colorFocus: 'color-focus',
+  placeholderColor: 'placeholder-color',
+  outlineColor: 'outline-color',
+  shadowColor: 'shadow-color',
+  accentBackground: 'accent-background',
+  accentColor: 'accent-color',
+} as const;
+
+type KebabAliases = {
+  [Key in keyof typeof kebabKeys as (typeof kebabKeys)[Key]]: string;
+};
+
+function withKebabKeys<T extends Record<string, string>>(theme: T) {
+  const aliases: Record<string, string> = {};
+  for (const [camel, kebab] of Object.entries(kebabKeys)) {
+    const value = theme[camel];
+    if (value !== undefined) aliases[kebab] = value;
+  }
+  return { ...theme, ...aliases } as T & KebabAliases;
+}
+
 export const themes = Object.fromEntries(
   Object.entries(generatedThemes).map(([name, theme]) => {
     const scheme = name.startsWith('dark') ? 'dark' : 'light';
@@ -84,11 +123,12 @@ export const themes = Object.fromEntries(
           }
         : {};
     const local = { ...(theme as Theme), ...exact };
-    return [name, { ...local, ...semanticRoles(scheme, local) }];
+    return [name, withKebabKeys({ ...local, ...semanticRoles(scheme, local) })];
   }),
 ) as {
   [Name in keyof typeof generatedThemes]: Theme &
-    ReturnType<typeof semanticRoles>;
+    ReturnType<typeof semanticRoles> &
+    KebabAliases;
 };
 
 export type Themes = typeof themes;

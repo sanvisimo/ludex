@@ -51,10 +51,10 @@ export function GameCover({
         items="center"
         justify="center"
         rounded={radius}
-        bg="$color4"
+        bg="color4"
         aria-hidden
       >
-        <Text fontSize={12} color="$color11">
+        <Text fontSize={12} color="color11">
           —
         </Text>
       </YStack>

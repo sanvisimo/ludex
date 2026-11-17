@@ -51,7 +51,7 @@ export function AccordionItem({
       <AccordionBase.Item
         value={value}
         borderBottomWidth={1}
-        borderColor="$borderColor"
+        borderColor="border-color"
       >
         {children}
       </AccordionBase.Item>
@@ -93,12 +93,10 @@ export function AccordionTrigger({
         bg="transparent"
         borderWidth={0}
         cursor="pointer"
-        focusVisibleStyle={{
-          outlineColor: '$outlineColor',
-          outlineStyle: 'solid',
-          outlineWidth: 2,
-          outlineOffset: 2,
-        }}
+        outlineColor="focus-visible:outline-color"
+        outlineStyle="focus-visible:solid"
+        outlineWidth="focus-visible:2px"
+        outlineOffset="focus-visible:2px"
       >
         {({ open }: { open: boolean }) => (
           <>
@@ -107,11 +105,11 @@ export function AccordionTrigger({
             <Text
               flex={1}
               text="left"
-              fontFamily={heading ? '$heading' : '$body'}
+              fontFamily={`${heading ? 'heading' : 'body'}`}
               fontSize={heading ? 18 : 14}
-              lineHeight={heading ? 24 : undefined}
+              lineHeight={heading ? '24px' : undefined}
               fontWeight={heading ? '600' : '500'}
-              color="$color12"
+              color="color12"
             >
               {children}
             </Text>
@@ -119,7 +117,7 @@ export function AccordionTrigger({
                 (`self: flex-start`), e nella riga del titolo pendeva su. */}
             {hint && <XStack self="center">{hint}</XStack>}
             <XStack rotate={open ? '180deg' : '0deg'}>
-              <ChevronDown size={16} color="$color11" />
+              <ChevronDown size={16} color="color11" />
             </XStack>
           </>
         )}

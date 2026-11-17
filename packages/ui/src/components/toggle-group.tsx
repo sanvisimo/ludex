@@ -47,7 +47,7 @@ export function ToggleGroup({
         gap={2}
         rounded={8}
         borderWidth={1}
-        borderColor="$color9"
+        borderColor="color9"
         self="flex-start"
       >
         {children}
@@ -85,27 +85,17 @@ export function ToggleGroupItem({
       flexDirection="row"
       items="center"
       justify="center"
-      bg={active ? '$selectionBackground' : 'transparent'}
+      bg={`${active ? 'selectionBackground' : 'transparent'} hover:${active ? 'selectionBackgroundHover' : 'color4'} press:${active ? 'selectionBackgroundPress' : 'color5'}`}
       borderWidth={1}
-      borderColor={active ? '$selectionBorder' : 'transparent'}
+      borderColor={`${active ? 'selectionBorder' : 'transparent'} hover:${active ? 'selectionBorderHover' : 'transparent'} press:${active ? 'selectionBorderPress' : 'transparent'}`}
       cursor="pointer"
-      hoverStyle={{
-        bg: active ? '$selectionBackgroundHover' : '$color4',
-        borderColor: active ? '$selectionBorderHover' : 'transparent',
-      }}
-      pressStyle={{
-        bg: active ? '$selectionBackgroundPress' : '$color5',
-        borderColor: active ? '$selectionBorderPress' : 'transparent',
-      }}
+      outlineColor="focus-visible:outline-color"
+      outlineStyle="focus-visible:solid"
+      outlineWidth="focus-visible:2px"
+      outlineOffset="focus-visible:1px"
       activeStyle={{
-        bg: '$selectionBackground',
-        borderColor: '$selectionBorder',
-      }}
-      focusVisibleStyle={{
-        outlineColor: '$outlineColor',
-        outlineStyle: 'solid',
-        outlineWidth: 2,
-        outlineOffset: 1,
+        backgroundColor: 'selectionBackground',
+        borderColor: 'selectionBorder',
       }}
     >
       {children}

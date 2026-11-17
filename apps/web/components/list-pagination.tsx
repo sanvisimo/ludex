@@ -30,8 +30,7 @@ export function ListPagination({
     <XStack
       flexWrap="wrap"
       items="center"
-      justify="center"
-      $sm={{ justify: 'space-between' }}
+      justify="center sm:space-between"
       gap={16}
     >
       {(pageSize || summary) && (
@@ -44,7 +43,7 @@ export function ListPagination({
             />
           )}
           {summary && (
-            <Text fontSize={13} color="$color11">
+            <Text fontSize={13} color="color11">
               {summary}
             </Text>
           )}

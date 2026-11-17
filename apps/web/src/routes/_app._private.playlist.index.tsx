@@ -50,7 +50,7 @@ function PlaylistsPage() {
   // Come «Nuova lista» in `/wishlist`.
   const newButton = (size?: 'sm') => (
     <Button variant="outline" size={size} onClick={() => setCreating(true)}>
-      <Plus size={16} color="$color12" />
+      <Plus size={16} color="color12" />
       {tCurated('new')}
     </Button>
   );
@@ -64,14 +64,14 @@ function PlaylistsPage() {
       actions={loaded && total > 0 ? newButton() : undefined}
     >
       {filters.error || curated.error ? (
-        <Text fontSize={14} color="$red11">
+        <Text fontSize={14} color="red11">
           {t('error')}
         </Text>
       ) : !loaded ? (
         <BandSkeleton />
       ) : total === 0 ? (
         <EmptyState
-          icon={<ListFilter size={24} color="$color11" />}
+          icon={<ListFilter size={24} color="color11" />}
           title={tCurated('emptyAllTitle')}
           description={tCurated('emptyAllHint')}
           action={
@@ -154,11 +154,11 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
     <YStack render="section" gap={24}>
       <Text
         render="h2"
-        fontFamily="$heading"
+        fontFamily="heading"
         fontSize={22}
-        lineHeight={28}
+        lineHeight="28px"
         fontWeight="600"
-        color="$color12"
+        color="color12"
         m={0}
       >
         {title}
@@ -171,7 +171,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function EmptyRow({ text, children }: { text: string; children: ReactNode }) {
   return (
     <XStack items="center" gap={12} flexWrap="wrap">
-      <Text fontSize={14} lineHeight={20} color="$color11">
+      <Text fontSize={14} lineHeight="20px" color="color11">
         {text}
       </Text>
       {children}
@@ -196,11 +196,11 @@ function BandTitle({ children }: { children: string }) {
   return (
     <Text
       render="h3"
-      fontFamily="$heading"
+      fontFamily="heading"
       fontSize={18}
-      lineHeight={24}
+      lineHeight="24px"
       fontWeight="600"
-      color="$color12"
+      color="color12"
       numberOfLines={1}
       m={0}
     >
@@ -244,12 +244,12 @@ function CuratedBand({
           >
             <BandTitle>{playlist.name}</BandTitle>
           </Link>
-          <Text fontSize={14} lineHeight={20} color="$color11" shrink={0}>
+          <Text fontSize={14} lineHeight="20px" color="color11" shrink={0}>
             {tBacklog('count', { count: playlist.count })}
           </Text>
           {playlist.shareToken && (
             <XStack role="img" aria-label={t('sharedBadge')}>
-              <Share2 size={14} color="$color11" />
+              <Share2 size={14} color="color11" />
             </XStack>
           )}
           <CuratedPlaylistMenu playlist={playlist} position={position} />
@@ -259,13 +259,13 @@ function CuratedBand({
       arrowsFromMd
     >
       {band.error ? (
-        <Text fontSize={14} color="$red11">
+        <Text fontSize={14} color="red11">
           {t('loadFailed')}
         </Text>
       ) : band.isPending ? (
         <CardSkeletons />
       ) : games.length === 0 ? (
-        <Text fontSize={14} lineHeight={20} color="$color11">
+        <Text fontSize={14} lineHeight="20px" color="color11">
           {tCurated('bandEmpty')}
         </Text>
       ) : (
@@ -315,14 +315,14 @@ function PlaylistBand({
             <BandTitle>{playlist.name}</BandTitle>
           </Link>
           {band.data && (
-            <Text fontSize={14} lineHeight={20} color="$color11" shrink={0}>
+            <Text fontSize={14} lineHeight="20px" color="color11" shrink={0}>
               {tBacklog('count', { count: band.data.total })}
             </Text>
           )}
           {/* Chi ha il link la vede: dirlo a colpo d'occhio, senza aprire il menu. */}
           {playlist.shareToken && (
             <XStack role="img" aria-label={t('sharedBadge')}>
-              <Share2 size={14} color="$color11" />
+              <Share2 size={14} color="color11" />
             </XStack>
           )}
           <PlaylistMenu
@@ -336,13 +336,13 @@ function PlaylistBand({
       arrowsFromMd
     >
       {band.error ? (
-        <Text fontSize={14} color="$red11">
+        <Text fontSize={14} color="red11">
           {t('loadFailed')}
         </Text>
       ) : band.isPending ? (
         <CardSkeletons />
       ) : entries.length === 0 ? (
-        <Text fontSize={14} lineHeight={20} color="$color11">
+        <Text fontSize={14} lineHeight="20px" color="color11">
           {t('emptyTitle')}
         </Text>
       ) : (

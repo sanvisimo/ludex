@@ -98,7 +98,7 @@ export function WishlistControl({
               <Button variant="outline" disabled={lists.isPending}>
                 <Heart
                   size={16}
-                  color="$color12"
+                  color="color12"
                   {...(inAny && { fill: 'currentColor' })}
                 />
                 {inAny ? t('inList') : t('button')}

@@ -29,14 +29,10 @@ function RoadmapPage() {
           le darebbe un'altezza zero. */}
       <XStack
         gap={32}
-        items="flex-start"
-        $max-lg={{ flexDirection: 'column', items: 'stretch' }}
+        items="flex-start max-lg:stretch"
+        flexDirection="max-lg:column"
       >
-        <YStack
-          flex={1}
-          minW={0}
-          $max-lg={{ width: '100%', flexBasis: 'auto' }}
-        >
+        <YStack flex={1} minW={0} width="max-lg:100%" flexBasis="max-lg:auto">
           <YStack render="ol" m={0} p={0} style={{ listStyle: 'none' }}>
             {roadmap.map((entry, index) => (
               <Entry
@@ -49,10 +45,9 @@ function RoadmapPage() {
         </YStack>
         {/* In colonna resta in vista mentre si scorre la timeline, che è lunga. */}
         <YStack
-          width={280}
+          width="280px max-lg:100%"
           shrink={0}
           gap={16}
-          $max-lg={{ width: '100%' }}
           style={{ position: 'sticky', top: 72 }}
         >
           <Invitation />
@@ -94,13 +89,13 @@ function Entry({ entry, last }: { entry: RoadmapEntry; last: boolean }) {
       pb={last ? 0 : 28}
       borderLeftWidth={2}
       // L'ultima voce non ha niente sotto: la linea si ferma al suo pallino.
-      borderLeftColor={last ? 'transparent' : '$accent6'}
+      borderLeftColor={`${last ? 'transparent' : 'accent6'}`}
     >
       <Dot status={entry.status} />
       <YStack gap={6}>
         <XStack flexWrap="wrap" items="center" gap={8}>
           {entry.status === 'done' ? (
-            <Text fontSize={13} lineHeight={20} color="$color11">
+            <Text fontSize={13} lineHeight="20px" color="color11">
               {t('status.done')} · {month}
             </Text>
           ) : (
@@ -115,11 +110,11 @@ function Entry({ entry, last }: { entry: RoadmapEntry; last: boolean }) {
         <Text
           render="h2"
           m={0}
-          fontFamily="$heading"
+          fontFamily="heading"
           fontSize={20}
-          lineHeight={28}
+          lineHeight="28px"
           fontWeight="600"
-          color={done ? '$accent11' : '$color12'}
+          color={`${done ? 'accent11' : 'color12'}`}
         >
           {t(`items.${entry.id}.title`)}
         </Text>
@@ -161,38 +156,33 @@ function Dot({ status }: { status: RoadmapStatus }) {
 
   if (status === 'done') {
     return (
-      <XStack {...common} bg="$accent9">
-        <Check size={12} color="$actionColor" />
+      <XStack {...common} bg="accent9">
+        <Check size={12} color="actionColor" />
       </XStack>
     );
   }
   if (status === 'doing') {
     return (
-      <XStack
-        {...common}
-        bg="$accent9"
-        borderWidth={4}
-        borderColor="$accent5"
-      />
+      <XStack {...common} bg="accent9" borderWidth={4} borderColor="accent5" />
     );
   }
   if (status === 'next') {
     return (
       <XStack
         {...common}
-        bg="$background"
+        bg="background"
         borderWidth={2}
-        borderColor="$accent9"
+        borderColor="accent9"
       />
     );
   }
   return (
     <XStack
       {...common}
-      bg="$background"
+      bg="background"
       borderWidth={2}
       borderStyle="dashed"
-      borderColor="$color9"
+      borderColor="color9"
     />
   );
 }
@@ -204,7 +194,7 @@ function StatusBadge({ status }: { status: Exclude<RoadmapStatus, 'done'> }) {
   if (status === 'doing') return <Badge variant="default">{label}</Badge>;
   if (status === 'next') {
     return (
-      <Badge variant="outline" borderColor="$accent9">
+      <Badge variant="outline" borderColor="accent9">
         {label}
       </Badge>
     );
@@ -225,19 +215,19 @@ function Invitation() {
       gap={12}
       p={20}
       rounded={12}
-      bg="$accent3"
+      bg="accent3"
       borderWidth={1}
-      borderColor="$accent6"
+      borderColor="accent6"
     >
       <YStack gap={4}>
         <Text
           render="h2"
           m={0}
-          fontFamily="$heading"
+          fontFamily="heading"
           fontSize={18}
-          lineHeight={26}
+          lineHeight="26px"
           fontWeight="600"
-          color="$color12"
+          color="color12"
         >
           {t('cta.title')}
         </Text>
@@ -265,7 +255,7 @@ function Invitation() {
 /** Un paragrafo: lo stesso di `/credits`, perché le pagine si leggano uguali. */
 function Body({ children }: { children: ReactNode }) {
   return (
-    <Text fontSize={15} lineHeight={22} color="$color12" m={0}>
+    <Text fontSize={15} lineHeight="22px" color="color12" m={0}>
       {children}
     </Text>
   );

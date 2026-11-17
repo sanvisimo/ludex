@@ -101,7 +101,7 @@ export const Destructive: Story = {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           destructive
-          icon={<Trash2 size={16} color="$red11" />}
+          icon={<Trash2 size={16} color="red11" />}
           onClick={() => onHide('delete')}
         >
           Elimina

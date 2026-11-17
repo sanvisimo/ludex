@@ -35,14 +35,14 @@ function HomePage() {
       actions={
         session && (
           <ButtonLink href="/backlog" variant="outline">
-            <Gamepad2 size={16} color="$color12" />
+            <Gamepad2 size={16} color="color12" />
             {t('goToBacklog')}
           </ButtonLink>
         )
       }
     >
       {error ? (
-        <Text fontSize={14} color="$red11">
+        <Text fontSize={14} color="red11">
           {t('error')}
         </Text>
       ) : isPending ? (
@@ -54,8 +54,7 @@ function HomePage() {
                 {Array.from({ length: 8 }).map((_, card) => (
                   <YStack
                     key={card}
-                    width={CARD_WIDTH}
-                    $max-sm={{ width: SMALL_CARD_WIDTH }}
+                    width={`${CARD_WIDTH}px max-sm:${SMALL_CARD_WIDTH}px`}
                   >
                     <Skeleton
                       width="100%"
@@ -72,7 +71,7 @@ function HomePage() {
       ) : data.length === 0 ? (
         <Card>
           <CardContent>
-            <Text color="$color11">{t('empty')}</Text>
+            <Text color="color11">{t('empty')}</Text>
           </CardContent>
         </Card>
       ) : (

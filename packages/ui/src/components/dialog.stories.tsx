@@ -38,7 +38,7 @@ export const Default: Story = {
             Cercalo su IGDB e scegli la piattaforma.
           </DialogDescription>
         </DialogHeader>
-        <YStack gap="$2">
+        <YStack gap="2">
           <Label htmlFor="titolo">Titolo</Label>
           <Input id="titolo" placeholder="Hollow Knight" />
         </YStack>

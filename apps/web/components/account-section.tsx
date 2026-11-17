@@ -33,17 +33,17 @@ export function AccountSectionHeader({
           <Text
             render="h2"
             m={0}
-            fontFamily="$heading"
+            fontFamily="heading"
             fontSize={24}
-            lineHeight={30}
+            lineHeight="30px"
             fontWeight="600"
-            color="$color12"
+            color="color12"
           >
             {title}
           </Text>
           {count !== undefined && <Badge variant="secondary">{count}</Badge>}
         </XStack>
-        <Text fontSize={14} lineHeight={21} color="$color11">
+        <Text fontSize={14} lineHeight="21px" color="color11">
           {description}
         </Text>
       </YStack>

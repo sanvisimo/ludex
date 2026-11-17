@@ -24,26 +24,26 @@ export function SupportCard({ compact = false }: { compact?: boolean }) {
       gap={12}
       p={compact ? 16 : 20}
       rounded={12}
-      bg="$color2"
+      bg="color2"
       borderWidth={1}
-      borderColor="$borderColor"
+      borderColor="border-color"
     >
       <YStack gap={4}>
         <Text
           render="h2"
           m={0}
-          fontFamily="$heading"
+          fontFamily="heading"
           fontSize={compact ? 15 : 18}
-          lineHeight={compact ? 22 : 26}
+          lineHeight={compact ? '22px' : '26px'}
           fontWeight="600"
-          color="$color12"
+          color="color12"
         >
           {t('title')}
         </Text>
         <Text
           fontSize={compact ? 13 : 15}
-          lineHeight={compact ? 18 : 22}
-          color="$color11"
+          lineHeight={compact ? '18px' : '22px'}
+          color="color11"
           m={0}
         >
           {t(compact ? 'short' : 'text')}

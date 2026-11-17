@@ -120,7 +120,7 @@ function ToFixSection() {
           <YStack gap={20}>
             {data.total === 0 ? (
               <EmptyState
-                icon={<CheckCheck size={24} color="$color11" />}
+                icon={<CheckCheck size={24} color="color11" />}
                 title={q || store ? tFilters('noMatch') : t('title')}
                 description={q || store ? undefined : t('description')}
               />

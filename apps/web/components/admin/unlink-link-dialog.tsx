@@ -137,7 +137,7 @@ export function UnlinkLinkDialog({
         {kind === 'link_only' ? (
           <YStack gap={8}>
             <Text fontSize={14}>{t('body')}</Text>
-            <Text fontSize={14} color="$color11">
+            <Text fontSize={14} color="color11">
               {t('next', { store })}
             </Text>
           </YStack>
@@ -153,10 +153,10 @@ export function UnlinkLinkDialog({
               p={12}
               rounded={8}
               borderWidth={1}
-              borderColor="$borderColor"
+              borderColor="border-color"
             >
               {moves.length === 0 ? (
-                <Text fontSize={13} color="$color11">
+                <Text fontSize={13} color="color11">
                   · {t('nobody', { store })}
                 </Text>
               ) : (
@@ -176,13 +176,13 @@ export function UnlinkLinkDialog({
                         )
                         .join('; ')}
                     </Text>
-                    <Text fontSize={12} color="$color11" pl={10}>
+                    <Text fontSize={12} color="color11" pl={10}>
                       {move.rowStays ? t('rowStays') : t('rowGone')}
                     </Text>
                   </YStack>
                 ))
               )}
-              <Text fontSize={13} color="$color11">
+              <Text fontSize={13} color="color11">
                 · {t('reportsClose')}
               </Text>
             </YStack>

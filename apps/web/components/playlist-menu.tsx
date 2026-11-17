@@ -92,7 +92,7 @@ export function PlaylistMenu({
               size="icon"
               aria-label={t('actionsFor', { name: playlist.name })}
             >
-              <EllipsisVertical size={16} color="$color11" />
+              <EllipsisVertical size={16} color="color11" />
             </Button>
           }
         />
@@ -146,7 +146,7 @@ export function PlaylistMenu({
           <DropdownMenuSeparator />
           <DropdownMenuItem
             destructive
-            icon={<Trash2 size={16} color="$red11" />}
+            icon={<Trash2 size={16} color="red11" />}
             onClick={() => setDeleting(true)}
           >
             {t('delete')}

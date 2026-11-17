@@ -92,13 +92,13 @@ export function CsvImportPanel() {
       p={16}
       rounded={12}
       borderWidth={1}
-      borderColor="$borderColor"
+      borderColor="border-color"
     >
       <YStack gap={4} grow={1} shrink={1} flexBasis={320} minW={0}>
-        <Text render="h3" m={0} fontWeight="600" color="$color12">
+        <Text render="h3" m={0} fontWeight="600" color="color12">
           {t('title')}
         </Text>
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {t('description')}
         </Text>
         {status.data?.syncing ? (
@@ -106,7 +106,7 @@ export function CsvImportPanel() {
             {t('syncing')}
           </Badge>
         ) : status.data?.lastImportAt ? (
-          <Text fontSize={13} lineHeight={18} color="$color11">
+          <Text fontSize={13} lineHeight="18px" color="color11">
             {t('lastImport', {
               date: format.dateTime(status.data.lastImportAt, {
                 dateStyle: 'short',
@@ -118,7 +118,7 @@ export function CsvImportPanel() {
       </YStack>
 
       <Button variant="outline" onClick={() => setOpen(true)}>
-        <Upload size={16} color="$color12" />
+        <Upload size={16} color="color12" />
         {t('open')}
       </Button>
 
@@ -267,13 +267,12 @@ function CsvImportDialog({
             <ScrollView mx={-16} px={16} shrink={1} minH={0}>
               <YStack gap={16}>
                 <XStack items="center" gap={8}>
-                  <Download size={16} color="$color12" />
+                  <Download size={16} color="color12" />
                   <Text
                     render="a"
-                    // Gli attributi del link arrivano all'`<a>`, ma i tipi del
-                    // testo non li conoscono (come in `ExternalLink`).
-                    {...({ href: EXAMPLE_URL, download: true } as object)}
-                    color="$color12"
+                    href={EXAMPLE_URL}
+                    download={true}
+                    color="color12"
                     textDecorationLine="underline"
                     cursor="pointer"
                   >
@@ -315,15 +314,13 @@ function CsvImportDialog({
                     rounded={12}
                     borderWidth={1}
                     borderStyle="dashed"
-                    borderColor={
-                      error ? '$red9' : dragging ? '$accent9' : '$borderColor'
-                    }
-                    bg={dragging ? '$color3' : 'transparent'}
+                    borderColor={`${error ? 'red9' : dragging ? 'accent9' : 'border-color'}`}
+                    bg={`${dragging ? 'color3' : 'transparent'}`}
                   >
                     {file ? (
                       <XStack items="center" gap={8} maxW="100%">
-                        <FileSpreadsheet size={16} color="$color12" />
-                        <Text color="$color12" numberOfLines={1} shrink={1}>
+                        <FileSpreadsheet size={16} color="color12" />
+                        <Text color="color12" numberOfLines={1} shrink={1}>
                           {file.name}
                         </Text>
                       </XStack>
@@ -331,8 +328,8 @@ function CsvImportDialog({
                       // Sul telefono non si trascina: resta il bottone. La
                       // media query su uno stack e non sul testo, o server e
                       // browser scrivono due classi diverse.
-                      <YStack $max-sm={{ display: 'none' }}>
-                        <Text fontSize={13} color="$color11" text="center">
+                      <YStack display="max-sm:none">
+                        <Text fontSize={13} color="color11" text="center">
                           {t('drop')}
                         </Text>
                       </YStack>
@@ -363,8 +360,8 @@ function CsvImportDialog({
                 {error && (
                   <Text
                     fontSize={13}
-                    lineHeight={18}
-                    color="$red11"
+                    lineHeight="18px"
+                    color="red11"
                     role="alert"
                   >
                     {error}
@@ -376,8 +373,8 @@ function CsvImportDialog({
                     <Text
                       key={note}
                       fontSize={13}
-                      lineHeight={18}
-                      color="$color11"
+                      lineHeight="18px"
+                      color="color11"
                     >
                       · {note}
                     </Text>
@@ -406,7 +403,7 @@ function CsvImportDialog({
 
 function Heading({ children }: { children: ReactNode }) {
   return (
-    <Text render="h3" m={0} fontWeight="600" color="$color12">
+    <Text render="h3" m={0} fontWeight="600" color="color12">
       {children}
     </Text>
   );
@@ -419,13 +416,13 @@ function Columns() {
   const rows = (columns: readonly (readonly [string, string])[]) =>
     columns.map(([name, key]) => (
       <XStack key={name} gap={4} columnGap={16} flexWrap="wrap">
-        <Text fontWeight="600" color="$color12" width={150}>
+        <Text fontWeight="600" color="color12" width={150}>
           {name}
         </Text>
         <Text
           fontSize={13}
-          lineHeight={20}
-          color="$color11"
+          lineHeight="20px"
+          color="color11"
           flexBasis={240}
           grow={1}
           shrink={1}
@@ -442,20 +439,20 @@ function Columns() {
         gap={8}
         p={12}
         rounded={12}
-        bg="$color3"
+        bg="color3"
         borderWidth={1}
-        borderColor="$borderColor"
+        borderColor="border-color"
       >
-        <Text fontSize={12} color="$color11">
+        <Text fontSize={12} color="color11">
           {t('required')}
         </Text>
         {rows(REQUIRED)}
-        <Text fontSize={12} color="$color11" mt={8}>
+        <Text fontSize={12} color="color11" mt={8}>
           {t('optional')}
         </Text>
         {rows(OPTIONAL)}
       </YStack>
-      <Text fontSize={13} lineHeight={18} color="$color11">
+      <Text fontSize={13} lineHeight="18px" color="color11">
         {t('columnsNote')}
       </Text>
     </YStack>
@@ -474,10 +471,10 @@ function SourceSteps({ source }: { source: 'playnite' | 'launchbox' }) {
         <YStack gap={8} pb={8}>
           {steps.map((step, index) => (
             <XStack key={step} gap={8}>
-              <Text fontSize={13} lineHeight={18} color="$color11" width={16}>
+              <Text fontSize={13} lineHeight="18px" color="color11" width={16}>
                 {index + 1}.
               </Text>
-              <Text fontSize={13} lineHeight={18} color="$color12" shrink={1}>
+              <Text fontSize={13} lineHeight="18px" color="color12" shrink={1}>
                 {step}
               </Text>
             </XStack>
@@ -516,11 +513,11 @@ function CsvImportReport({
         {brand ? (
           <BrandIcon brand={brand} size={28} label={storeLabels[store]} />
         ) : (
-          <YStack width={28} height={28} rounded={6} bg="$color4" />
+          <YStack width={28} height={28} rounded={6} bg="color4" />
         )}
         <YStack shrink={1}>
-          <Text color="$color12">{storeLabels[store]}</Text>
-          <Text fontSize={13} lineHeight={18} color="$color11">
+          <Text color="color12">{storeLabels[store]}</Text>
+          <Text fontSize={13} lineHeight="18px" color="color11">
             {detail}
           </Text>
         </YStack>
@@ -553,22 +550,22 @@ function CsvImportReport({
         <YStack gap={4}>
           <Heading>{t('report.skippedTitle')}</Heading>
           {excluded > 0 && (
-            <Text fontSize={13} lineHeight={18} color="$color11">
+            <Text fontSize={13} lineHeight="18px" color="color11">
               · {t('report.excluded', { count: excluded })}
             </Text>
           )}
           {report.duplicates > 0 && (
-            <Text fontSize={13} lineHeight={18} color="$color11">
+            <Text fontSize={13} lineHeight="18px" color="color11">
               · {t('report.duplicates', { count: report.duplicates })}
             </Text>
           )}
           {report.noPlatform > 0 && (
-            <Text fontSize={13} lineHeight={18} color="$color11">
+            <Text fontSize={13} lineHeight="18px" color="color11">
               · {t('report.noPlatform', { count: report.noPlatform })}
             </Text>
           )}
           {noStoreCount > 0 && (
-            <Text fontSize={13} lineHeight={18} color="$color11">
+            <Text fontSize={13} lineHeight="18px" color="color11">
               ·{' '}
               {t('report.noStore', {
                 count: noStoreCount,
@@ -716,7 +713,7 @@ function CsvPreview({
             {(['all', 'new', 'in_backlog', 'unknown', 'skipped'] as const).map(
               (value) => (
                 <ToggleGroupItem key={value} value={value}>
-                  <Text fontSize={13} color="$color12" whiteSpace="nowrap">
+                  <Text fontSize={13} color="color12" whiteSpace="nowrap">
                     {t(`preview.${value}`)} {counts[value]}
                   </Text>
                 </ToggleGroupItem>
@@ -737,7 +734,7 @@ function CsvPreview({
 
       {/* L'intestazione: la spunta di tutte le righe visibili, e i nomi delle
           colonne che da $md ci sono. */}
-      <XStack items="center" gap={12} px={8} py={8} rounded={8} bg="$color3">
+      <XStack items="center" gap={12} px={8} py={8} rounded={8} bg="color3">
         <Checkbox
           checked={allChecked}
           disabled={selectable.length === 0}
@@ -752,16 +749,16 @@ function CsvPreview({
         <YStack grow={1} shrink={1} minW={0}>
           <HeaderText>{t('preview.colFile')}</HeaderText>
         </YStack>
-        <YStack width={COL.ludex} $max-md={{ display: 'none' }}>
+        <YStack width={COL.ludex} display="max-md:none">
           <HeaderText>{t('preview.colLudex')}</HeaderText>
         </YStack>
-        <YStack width={COL.store} $max-md={{ display: 'none' }}>
+        <YStack width={COL.store} display="max-md:none">
           <HeaderText>{t('preview.colStore')}</HeaderText>
         </YStack>
-        <YStack width={COL.status} $max-md={{ display: 'none' }}>
+        <YStack width={COL.status} display="max-md:none">
           <HeaderText>{t('preview.colStatus')}</HeaderText>
         </YStack>
-        <YStack width={COL.outcome} $max-md={{ display: 'none' }}>
+        <YStack width={COL.outcome} display="max-md:none">
           <HeaderText>{t('preview.colOutcome')}</HeaderText>
         </YStack>
       </XStack>
@@ -769,7 +766,7 @@ function CsvPreview({
       <ScrollView mx={-16} px={16} shrink={1} minH={0}>
         <YStack>
           {visible.length === 0 && (
-            <Text fontSize={13} color="$color11" py={16}>
+            <Text fontSize={13} color="color11" py={16}>
               {t('preview.empty')}
             </Text>
           )}
@@ -783,7 +780,7 @@ function CsvPreview({
                 px={8}
                 py={8}
                 borderBottomWidth={1}
-                borderColor="$borderColor"
+                borderColor="border-color"
                 opacity={skipped ? 0.6 : 1}
               >
                 <Checkbox
@@ -795,12 +792,12 @@ function CsvPreview({
                   aria-label={row.name}
                 />
                 <YStack grow={1} shrink={1} minW={0} gap={2}>
-                  <Text color="$color12" numberOfLines={1}>
+                  <Text color="color12" numberOfLines={1}>
                     {row.name}
                   </Text>
                   {/* Sul telefono le colonne vanno qui sotto, in una riga. */}
-                  <YStack $md={{ display: 'none' }}>
-                    <Text fontSize={12} lineHeight={16} color="$color11">
+                  <YStack display="md:none">
+                    <Text fontSize={12} lineHeight="16px" color="color11">
                       {[
                         where(row),
                         row.outcome === 'new' ? statusLabels[row.status] : null,
@@ -810,13 +807,13 @@ function CsvPreview({
                     </Text>
                   </YStack>
                 </YStack>
-                <YStack width={COL.ludex} $max-md={{ display: 'none' }}>
+                <YStack width={COL.ludex} display="max-md:none">
                   <CellText>{row.game?.name ?? '—'}</CellText>
                 </YStack>
-                <YStack width={COL.store} $max-md={{ display: 'none' }}>
+                <YStack width={COL.store} display="max-md:none">
                   <CellText>{where(row)}</CellText>
                 </YStack>
-                <YStack width={COL.status} $max-md={{ display: 'none' }}>
+                <YStack width={COL.status} display="max-md:none">
                   {/* Lo stato del file vale solo per i giochi nuovi: altrove
                       non lo si scrive, per non promettere quello che non fa. */}
                   <CellText>
@@ -826,9 +823,8 @@ function CsvPreview({
                   </CellText>
                 </YStack>
                 <YStack
-                  width={COL.outcome}
+                  width={`${COL.outcome}px max-md:auto`}
                   items="flex-start"
-                  $max-md={{ width: 'auto' }}
                 >
                   <Badge variant={OUTCOME_BADGE[row.outcome]}>
                     {skipped && row.skipReason
@@ -843,7 +839,7 @@ function CsvPreview({
       </ScrollView>
 
       {error && (
-        <Text fontSize={13} lineHeight={18} color="$red11" role="alert">
+        <Text fontSize={13} lineHeight="18px" color="red11" role="alert">
           {error}
         </Text>
       )}
@@ -862,7 +858,7 @@ function CsvPreview({
 
 function HeaderText({ children }: { children: ReactNode }) {
   return (
-    <Text fontSize={12} lineHeight={16} color="$color11">
+    <Text fontSize={12} lineHeight="16px" color="color11">
       {children}
     </Text>
   );
@@ -870,7 +866,7 @@ function HeaderText({ children }: { children: ReactNode }) {
 
 function CellText({ children }: { children: ReactNode }) {
   return (
-    <Text fontSize={13} lineHeight={18} color="$color11" numberOfLines={1}>
+    <Text fontSize={13} lineHeight="18px" color="color11" numberOfLines={1}>
       {children}
     </Text>
   );

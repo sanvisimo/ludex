@@ -41,12 +41,13 @@ export function Select({ items, children, ...props }: SelectProps) {
 
       <SelectBase.Adapt platform="touch">
         <Sheet modal dismissOnSnapToBottom snapPointsMode="fit">
-          <Sheet.Frame p="$3">
+          <Sheet.Container p="3">
+            <Sheet.Background />
             <Sheet.ScrollView>
               <Adapt.Contents />
             </Sheet.ScrollView>
-          </Sheet.Frame>
-          <Sheet.Overlay bg="$shadow6" />
+          </Sheet.Container>
+          <Sheet.Overlay bg="shadow6" />
         </Sheet>
       </SelectBase.Adapt>
     </SelectBase>
@@ -69,14 +70,11 @@ export function SelectTrigger({ children, ...props }: SelectTriggerProps) {
       gap={6}
       rounded={8}
       borderWidth={1}
-      borderColor="$color9"
-      bg="transparent"
+      borderColor="color9 hover:color10 press:color10 focus:accent9"
+      bg="transparent hover:color3 press:color4"
       width="auto"
       self="flex-start"
-      hoverStyle={{ borderColor: '$color10', bg: '$color3' }}
-      pressStyle={{ borderColor: '$color10', bg: '$color4' }}
-      focusStyle={{ borderColor: '$accent9' }}
-      iconAfter={<ChevronDown size={16} color="$color11" />}
+      iconAfter={<ChevronDown size={16} color="color11" />}
       {...props}
     >
       {children}
@@ -90,7 +88,7 @@ export function SelectValue(props: SelectValueProps) {
   return (
     <SelectBase.Value
       fontSize={14}
-      color="$color12"
+      color="color12"
       whiteSpace="nowrap"
       {...props}
     />
@@ -114,9 +112,9 @@ export function SelectContent({ children }: { children: ReactNode }) {
         minW={160}
         p={4}
         rounded={8}
-        bg="$color2"
+        bg="color2"
         borderWidth={1}
-        borderColor="$borderColor"
+        borderColor="border-color"
       >
         <SelectBase.Group>{indexed}</SelectBase.Group>
       </SelectBase.Viewport>
@@ -149,17 +147,14 @@ export function SelectItem({
       py={0}
       gap={8}
       rounded={6}
-      bg="transparent"
-      hoverStyle={{ bg: '$color4' }}
-      focusStyle={{ bg: '$color4' }}
-      pressStyle={{ bg: '$color5' }}
+      bg="transparent hover:color4 press:color5 focus:color4"
       {...props}
     >
-      <SelectBase.ItemText fontSize={14} color="$color12">
+      <SelectBase.ItemText fontSize={14} color="color12">
         {children}
       </SelectBase.ItemText>
       <SelectBase.ItemIndicator ml="auto">
-        <Check size={14} color="$color12" />
+        <Check size={14} color="color12" />
       </SelectBase.ItemIndicator>
     </SelectBase.Item>
   );

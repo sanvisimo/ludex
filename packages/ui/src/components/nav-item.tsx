@@ -4,30 +4,22 @@ import type { GetProps } from 'tamagui';
 
 const NavItemFrame = styled(XStack, {
   name: 'NavItem',
-
   height: 36,
   px: 12,
   gap: 10,
   items: 'center',
   rounded: 8,
   cursor: 'pointer',
-
-  hoverStyle: { bg: '$color4' },
-  pressStyle: { bg: '$color5' },
-
+  bg: 'hover:color4 press:color5',
   // Come sul Button: l'anello solo da tastiera.
-  focusVisibleStyle: {
-    outlineColor: '$outlineColor',
-    outlineStyle: 'solid',
-    outlineWidth: 2,
-    outlineOffset: 2,
-  },
-
+  outlineColor: 'focus-visible:outline-color',
+  outlineStyle: 'focus-visible:solid',
+  outlineWidth: 'focus-visible:2px',
+  outlineOffset: 'focus-visible:2px',
   variants: {
     active: {
       true: {
-        bg: '$color5',
-        hoverStyle: { bg: '$color5' },
+        bg: 'color5 hover:color5',
       },
     },
   } as const,
@@ -35,14 +27,15 @@ const NavItemFrame = styled(XStack, {
 
 const NavItemText = styled(Text, {
   name: 'NavItemText',
-
   fontSize: 14,
-  lineHeight: 20,
-  color: '$color11',
-
+  lineHeight: '20px',
+  color: 'color11',
   variants: {
     active: {
-      true: { color: '$color12', fontWeight: '500' },
+      true: {
+        color: 'color12',
+        fontWeight: '500',
+      },
     },
   } as const,
 });
@@ -53,11 +46,10 @@ const NavItemText = styled(Text, {
 // lascia accanto all'etichetta in una fila.
 const NavItemTrailing = styled(Text, {
   name: 'NavItemTrailing',
-
   ml: 'auto',
   fontSize: 12,
-  lineHeight: 16,
-  color: '$color11',
+  lineHeight: '16px',
+  color: 'color11',
 });
 
 export type NavItemProps = Omit<

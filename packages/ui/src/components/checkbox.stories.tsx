@@ -26,9 +26,9 @@ export const Default: Story = {};
 /** La forma degli usi veri: una lista di spunte, ciascuna con l'etichetta accanto. */
 export const List: Story = {
   render: () => (
-    <YStack gap="$2">
+    <YStack gap="2">
       {['PC', 'PlayStation 5', 'Nintendo Switch'].map((name, index) => (
-        <XStack key={name} gap="$2" items="center">
+        <XStack key={name} gap="2" items="center">
           <Checkbox id={`platform-${index}`} defaultChecked={index === 1} />
           <Label htmlFor={`platform-${index}`}>{name}</Label>
         </XStack>
@@ -39,7 +39,7 @@ export const List: Story = {
 
 export const States: Story = {
   render: () => (
-    <XStack gap="$4" items="center">
+    <XStack gap="4" items="center">
       <Checkbox aria-label="Spenta" />
       <Checkbox aria-label="Accesa" defaultChecked />
       <Checkbox aria-label="Spenta disabilitata" disabled />
@@ -51,14 +51,14 @@ export const States: Story = {
 /** Chiaro e scuro affiancati: il bordo spento deve vedersi su entrambi. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap="$2" bg="$background" p="$3" rounded="$4">
-            <Text color="$color11" fontSize={12}>
+          <YStack gap="2" bg="background" p="3" rounded="4">
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
-            <XStack gap="$3">
+            <XStack gap="3">
               <Checkbox aria-label={`Spenta ${name}`} />
               <Checkbox aria-label={`Accesa ${name}`} defaultChecked />
             </XStack>
@@ -86,7 +86,7 @@ export const Toggle: Story = {
 /** Il clic sull'etichetta accende la spunta, come con un `input` vero. */
 export const LabelClick: Story = {
   render: (args) => (
-    <XStack gap="$2" items="center">
+    <XStack gap="2" items="center">
       <Checkbox id="never-played" onCheckedChange={args.onCheckedChange} />
       <Label htmlFor="never-played">Mai giocato</Label>
     </XStack>

@@ -54,14 +54,12 @@ export function DropdownMenuContent({
         minW={128}
         p={4}
         rounded={8}
-        bg="$color2"
+        bg="color2"
         borderWidth={1}
-        borderColor="$borderColor"
+        borderColor="border-color"
         transition="quick"
-        opacity={1}
-        y={0}
-        enterStyle={{ opacity: 0, y: -4 }}
-        exitStyle={{ opacity: 0, y: -4 }}
+        opacity="1 enter:0 exit:0"
+        y="0 enter:-4px exit:-4px"
         {...props}
         onCloseAutoFocus={(event) => {
           onCloseAutoFocus?.(event);
@@ -99,28 +97,28 @@ export function DropdownMenuLabel(props: GetProps<typeof Menu.Label>) {
       px={6}
       py={4}
       fontSize={12}
-      lineHeight={16}
+      lineHeight="16px"
       fontWeight="500"
-      color="$color11"
+      color="color11"
       {...props}
     />
   );
 }
 
 export function DropdownMenuSeparator() {
-  return <Menu.Separator mx={-4} my={4} bg="$borderColor" />;
+  return <Menu.Separator mx={-4} my={4} bg="border-color" />;
 }
 
 /** Il testo della voce, che è anche ciò su cui cerca il typeahead. */
 function ItemText({
   children,
-  color = '$color12',
+  color = 'color12',
 }: {
   children: ReactNode;
-  color?: '$color12' | '$red11';
+  color?: 'color12' | 'red11';
 }) {
   return typeof children === 'string' || typeof children === 'number' ? (
-    <Menu.ItemTitle fontSize={14} lineHeight={20} color={color}>
+    <Menu.ItemTitle fontSize={14} lineHeight="20px" color={color}>
       {children}
     </Menu.ItemTitle>
   ) : (
@@ -134,8 +132,7 @@ const itemStyle = {
   py: 4,
   rounded: 6,
   minH: 28,
-  focusStyle: { bg: '$color5' },
-  pressStyle: { bg: '$color6' },
+  bg: 'focus:color5 press:color6',
 } as const;
 
 type DropdownMenuItemProps = Omit<GetProps<typeof Menu.Item>, 'onSelect'> & {
@@ -145,14 +142,13 @@ type DropdownMenuItemProps = Omit<GetProps<typeof Menu.Item>, 'onSelect'> & {
   /**
    * Una voce che toglie qualcosa: il testo in rosso e il fondo rosso al passaggio,
    * con le tinte di `Button variant="destructive"`. L'icona la colora chi la
-   * passa (`color="$red11"`). Non sostituisce la conferma: avvisa soltanto.
+   * passa (`color="red11"`). Non sostituisce la conferma: avvisa soltanto.
    */
   destructive?: boolean;
 };
 
 const destructiveStyle = {
-  focusStyle: { bg: '$red4' },
-  pressStyle: { bg: '$red5' },
+  bg: 'focus:red4 press:red5',
 } as const;
 
 export function DropdownMenuItem({
@@ -170,7 +166,7 @@ export function DropdownMenuItem({
       {...props}
     >
       {icon}
-      <ItemText color={destructive ? '$red11' : '$color12'}>
+      <ItemText color={destructive ? 'red11' : 'color12'}>
         {children}
       </ItemText>
     </Menu.Item>
@@ -195,7 +191,7 @@ export function DropdownMenuRadioItem({
     <Menu.RadioItem {...itemStyle} pr={28} {...props}>
       <ItemText>{children}</ItemText>
       <Menu.ItemIndicator position="absolute" r={8}>
-        <Check size={14} color="$color12" />
+        <Check size={14} color="color12" />
       </Menu.ItemIndicator>
     </Menu.RadioItem>
   );

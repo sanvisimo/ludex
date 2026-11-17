@@ -153,7 +153,7 @@ function ChangePasswordDialog({
                 onChange={(event) => setNext(event.target.value)}
                 autoComplete="new-password"
               />
-              <Text fontSize={13} lineHeight={18} color="$color11">
+              <Text fontSize={13} lineHeight="18px" color="color11">
                 {t('newHint', { min: MIN_LENGTH })}
               </Text>
             </YStack>
@@ -169,7 +169,7 @@ function ChangePasswordDialog({
                 aria-invalid={mismatch}
               />
               {mismatch && (
-                <Text fontSize={13} lineHeight={18} color="$red11">
+                <Text fontSize={13} lineHeight="18px" color="red11">
                   {t('mismatch')}
                 </Text>
               )}
@@ -185,7 +185,7 @@ function ChangePasswordDialog({
             </XStack>
 
             {error && (
-              <Text role="alert" fontSize={14} lineHeight={20} color="$red11">
+              <Text role="alert" fontSize={14} lineHeight="20px" color="red11">
                 {error}
               </Text>
             )}

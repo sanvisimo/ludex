@@ -10,7 +10,7 @@ const meta: Meta<ToasterProps> = {
   component: Toaster,
   render: (args) => (
     <>
-      <XStack gap="$3" flexWrap="wrap">
+      <XStack gap="3" flexWrap="wrap">
         <Button onPress={() => toast.success('Modifiche salvate')}>
           Successo
         </Button>

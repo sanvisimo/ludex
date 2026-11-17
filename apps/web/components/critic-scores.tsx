@@ -26,7 +26,7 @@ function ScoreDetails({ score }: { score: GameScore }) {
   ].filter(Boolean);
 
   return details.length > 0 ? (
-    <Muted fontSize={12} lineHeight={18}>
+    <Muted fontSize={12} lineHeight="18px">
       {details.join(' · ')}
     </Muted>
   ) : null;
@@ -60,13 +60,12 @@ export function CriticScores({ game }: { game: GameDetail }) {
         return (
           <YStack
             key={source}
-            p={16}
+            p="16px max-sm:12px"
             gap={16}
             rounded={16}
-            bg="$color3"
+            bg="color3"
             borderWidth={1}
-            borderColor="$borderColor"
-            $max-sm={{ p: 12 }}
+            borderColor="border-color"
           >
             <XStack items="center" gap={12}>
               <BrandIcon brand={source} size={32} />
@@ -100,7 +99,7 @@ export function CriticScores({ game }: { game: GameDetail }) {
                         py={12}
                         items="center"
                         borderTopWidth={index === 0 ? 0 : 1}
-                        borderColor="$borderColor"
+                        borderColor="border-color"
                       >
                         <YStack render="dt" flex={1} minW={0} gap={5}>
                           <XStack items="center" gap={8}>
@@ -117,7 +116,7 @@ export function CriticScores({ game }: { game: GameDetail }) {
                           </XStack>
                           <ScoreDetails score={score} />
                           {score.positiveCount !== null && (
-                            <Muted fontSize={12} lineHeight={18}>
+                            <Muted fontSize={12} lineHeight="18px">
                               {t('split', {
                                 positive: score.positiveCount,
                                 mixed: score.neutralCount ?? 0,

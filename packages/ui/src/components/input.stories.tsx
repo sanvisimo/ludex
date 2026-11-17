@@ -36,7 +36,7 @@ export const Default: Story = {};
 /** La forma di quasi tutti gli usi: etichetta sopra, campo sotto. */
 export const WithLabel: Story = {
   render: () => (
-    <YStack gap="$2">
+    <YStack gap="2">
       <Label htmlFor="email">Email</Label>
       <Input id="email" type="email" placeholder="nome@esempio.it" />
     </YStack>
@@ -46,7 +46,7 @@ export const WithLabel: Story = {
 /** Campo e bottone sulla stessa riga: per questo hanno la stessa altezza. */
 export const WithButton: Story = {
   render: () => (
-    <XStack gap="$2">
+    <XStack gap="2">
       <Input flex={1} aria-label="Cerca" placeholder="Cerca su IGDB" />
       <Button variant="outline">Cerca</Button>
     </XStack>
@@ -60,11 +60,11 @@ export const Disabled: Story = {
 /** Chiaro e scuro affiancati: il bordo deve vedersi su entrambi. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap="$2" bg="$background" p="$3" rounded="$4" width={240}>
-            <Text color="$color11" fontSize={12}>
+          <YStack gap="2" bg="background" p="3" rounded="4" width={240}>
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
             <Input aria-label={`Titolo ${name}`} placeholder="Vuoto" />
@@ -85,7 +85,7 @@ export const Typing: Story = {
   render: function Render(args) {
     const [value, setValue] = useState('');
     return (
-      <YStack gap="$2">
+      <YStack gap="2">
         <Input
           aria-label="Titolo"
           value={value}
@@ -94,7 +94,7 @@ export const Typing: Story = {
             setValue(event.target.value);
           }}
         />
-        <Text color="$color11" fontSize={12}>
+        <Text color="color11" fontSize={12}>
           {value ? `Hai scritto: ${value}` : 'Vuoto'}
         </Text>
       </YStack>

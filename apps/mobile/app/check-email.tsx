@@ -10,8 +10,8 @@ export default function CheckEmail() {
 
   return (
     <GuestScreen title={t('title')}>
-      <Text color="$color12">{t('text', { email: email ?? '' })}</Text>
-      <Text color="$color11">{t('hint')}</Text>
+      <Text color="color12">{t('text', { email: email ?? '' })}</Text>
+      <Text color="color11">{t('hint')}</Text>
       <Button onPress={() => router.replace('/login')}>{t('toLogin')}</Button>
     </GuestScreen>
   );

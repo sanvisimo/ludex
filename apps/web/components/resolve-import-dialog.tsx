@@ -69,7 +69,7 @@ export function ResolveImportDialog({
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
       <DialogContent
         size="wide"
-        $lg={{ maxW: 960 }}
+        maxW="lg:960px"
         closeLabel={tMatch('close')}
       >
         <DialogHeader>

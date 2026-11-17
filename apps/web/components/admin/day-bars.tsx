@@ -48,9 +48,9 @@ export function DayBars({
       p={16}
       rounded={12}
       borderWidth={1}
-      borderColor="$borderColor"
+      borderColor="border-color"
     >
-      <Text fontSize={14} lineHeight={20} fontWeight="600">
+      <Text fontSize={14} lineHeight="20px" fontWeight="600">
         {title}
       </Text>
       <YStack
@@ -91,13 +91,13 @@ export function DayBars({
                     py={6}
                     rounded={8}
                     borderWidth={1}
-                    borderColor="$borderColor"
-                    bg="$background"
+                    borderColor="border-color"
+                    bg="background"
                   >
-                    <Text fontSize={12} lineHeight={16} color="$color11">
+                    <Text fontSize={12} lineHeight="16px" color="color11">
                       {day(point.day, true)}
                     </Text>
-                    <Text fontSize={13} lineHeight={18} fontWeight="600">
+                    <Text fontSize={13} lineHeight="18px" fontWeight="600">
                       {valueLabel(point.count)}
                     </Text>
                   </YStack>

@@ -38,7 +38,7 @@ export function NumberField({
 
   return (
     <XStack items="center" gap={6}>
-      <Text fontSize={13} color="$color11">
+      <Text fontSize={13} color="color11">
         {label}
       </Text>
       <Input

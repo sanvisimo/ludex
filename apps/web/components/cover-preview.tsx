@@ -25,17 +25,16 @@ export function CoverPreview({
   if (!source) {
     return (
       <YStack
-        width={width}
-        $lg={{ width: desktopWidth }}
+        width={`${width}px lg:${desktopWidth}px`}
         aspectRatio={90 / 128}
         shrink={0}
         items="center"
         justify="center"
         rounded={8}
-        bg="$color4"
+        bg="color4"
         aria-hidden
       >
-        {fallback ?? <Text color="$color11">—</Text>}
+        {fallback ?? <Text color="color11">—</Text>}
       </YStack>
     );
   }
@@ -46,26 +45,23 @@ export function CoverPreview({
         render="button"
         ref={trigger as never}
         position="relative"
-        width={width}
-        $lg={{ width: desktopWidth }}
+        width={`${width}px lg:${desktopWidth}px`}
         aspectRatio={90 / 128}
         shrink={0}
         p={0}
         rounded={8}
         borderWidth={0}
-        bg="$color4"
+        bg="color4"
         cursor="zoom-in"
         overflow="hidden"
+        type={'button'}
+        opacity="hover:0.85"
+        outlineColor="focus-visible:outline-color"
+        outlineStyle="focus-visible:solid"
+        outlineWidth="focus-visible:2px"
+        outlineOffset="focus-visible:2px"
         aria-label={t('enlargeCover', { name })}
-        {...({ type: 'button' } as object)}
         onPress={() => setOpen(true)}
-        hoverStyle={{ opacity: 0.85 }}
-        focusVisibleStyle={{
-          outlineColor: '$outlineColor',
-          outlineStyle: 'solid',
-          outlineWidth: 2,
-          outlineOffset: 2,
-        }}
       >
         <img
           key={source}
@@ -82,10 +78,10 @@ export function CoverPreview({
           r={4}
           p={4}
           rounded={4}
-          bg="$color2"
+          bg="color2"
           pointerEvents="none"
         >
-          <ZoomIn size={14} color="$color12" />
+          <ZoomIn size={14} color="color12" />
         </YStack>
       </YStack>
       <Dialog modal open={open} onOpenChange={setOpen}>

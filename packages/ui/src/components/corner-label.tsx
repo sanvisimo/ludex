@@ -9,7 +9,6 @@ import type { ColorTokens, GetProps } from 'tamagui';
  */
 const CornerLabelFrame = styled(XStack, {
   name: 'CornerLabel',
-
   // Attaccata all'angolo: il raggio esterno è quello della copertina (6).
   position: 'absolute',
   t: 0,
@@ -19,10 +18,9 @@ const CornerLabelFrame = styled(XStack, {
   px: 6,
   gap: 4,
   items: 'center',
-  bg: '$accent9',
+  bg: 'accent9',
   borderTopLeftRadius: 6,
   borderBottomRightRadius: 6,
-
   variants: {
     floating: {
       true: {
@@ -34,9 +32,9 @@ const CornerLabelFrame = styled(XStack, {
         rounded: 7,
         borderTopLeftRadius: 7,
         borderBottomRightRadius: 7,
-        bg: '$background',
+        bg: 'background',
         borderWidth: 1,
-        borderColor: '$selectionBorder',
+        borderColor: 'selectionBorder',
       },
     },
     compact: {
@@ -56,19 +54,17 @@ const CornerLabelFrame = styled(XStack, {
 
 const CornerLabelText = styled(Text, {
   name: 'CornerLabelText',
-
-  color: '$actionColor',
+  color: 'actionColor',
   fontSize: 11,
-  lineHeight: 16,
+  lineHeight: '16px',
   fontWeight: '600',
   whiteSpace: 'nowrap',
   minW: 0,
   shrink: 1,
-
   variants: {
     floating: {
       true: {
-        color: '$selectionColor',
+        color: 'selectionColor',
         fontSize: 12,
         fontWeight: '500',
       },
@@ -107,7 +103,7 @@ export function CornerLabel({
         <XStack shrink={0} aria-hidden>
           <Icon
             size={floating && !compact ? 14 : 12}
-            color={floating ? '$selectionColor' : '$actionColor'}
+            color={floating ? 'selectionColor' : 'actionColor'}
           />
         </XStack>
       )}

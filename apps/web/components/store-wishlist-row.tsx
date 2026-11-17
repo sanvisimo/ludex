@@ -41,7 +41,7 @@ export function StoreWishlistRow({
         <Badge variant="error" self="flex-start">
           {t('errorBadge')}
         </Badge>
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {errorText(account.wishlistError)}
         </Text>
       </YStack>
@@ -58,13 +58,13 @@ export function StoreWishlistRow({
           params={{ id: list.id }}
           style={{ color: 'inherit' }}
         >
-          <Text fontSize={13} lineHeight={18} color="$color12">
+          <Text fontSize={13} lineHeight="18px" color="color12">
             {t('summary', { count: list.count })}
           </Text>
         </Link>
       </XStack>
       {account.wishlistSyncedAt && (
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {t('updated', {
             when: format.relativeTime(account.wishlistSyncedAt, now),
           })}

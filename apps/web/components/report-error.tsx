@@ -58,7 +58,7 @@ export function ReportError({
     <>
       <XStack gap={8} items="center" flexWrap="wrap">
         {last ? (
-          <Text fontSize={13} color="$color11">
+          <Text fontSize={13} color="color11">
             {t('sent', {
               date: format.dateTime(last.updatedAt, {
                 day: '2-digit',
@@ -68,7 +68,7 @@ export function ReportError({
           </Text>
         ) : null}
         <Button size="sm" variant="ghost" onPress={() => setOpen(true)}>
-          <Flag size={14} color="$color11" />
+          <Flag size={14} color="color11" />
           {last ? t('again') : t('open')}
         </Button>
       </XStack>
@@ -200,7 +200,7 @@ function ReportDialog({
     <Dialog open onOpenChange={(value) => !value && onClose()}>
       <DialogContent
         size="wide"
-        $lg={{ maxW: 960 }}
+        maxW="lg:960px"
         closeLabel={tMatch('close')}
       >
         <DialogHeader>
@@ -323,12 +323,15 @@ function ReportDialog({
 
         <DialogFooter
           flexWrap="wrap"
-          $max-sm={{ flexDirection: 'column', items: 'stretch' }}
+          flexDirection="max-sm:column"
+          items="max-sm:stretch"
         >
           {suggested ? (
             <Text
               flex={1}
-              $max-sm={{ grow: 0, shrink: 0, flexBasis: 'auto' }}
+              grow="max-sm:0px"
+              shrink="max-sm:0px"
+              flexBasis="max-sm:auto"
               minW={0}
               fontSize={13}
               style={{ overflowWrap: 'anywhere' }}

@@ -35,7 +35,7 @@ export function HiddenGameRow({ entry }: { entry: BacklogEntry }) {
     >
       <XStack items="center" gap={8} flexWrap="wrap">
         <Link to="/games/$slug" params={{ slug: entry.game.slug }}>
-          <Text fontWeight="600" color="$color12">
+          <Text fontWeight="600" color="color12">
             {entry.game.name}
           </Text>
         </Link>
@@ -46,7 +46,7 @@ export function HiddenGameRow({ entry }: { entry: BacklogEntry }) {
       </Badge>
       <OwnershipBadges ownerships={entry.ownerships} compact />
       {entry.hiddenAt && (
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {t('hiddenOn', {
             date: format.dateTime(entry.hiddenAt, { dateStyle: 'medium' }),
           })}

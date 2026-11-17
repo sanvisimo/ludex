@@ -185,8 +185,8 @@ function CuratedPlaylistPage() {
       }}
     >
       <XStack items="center" gap={2}>
-        <ChevronLeft size={14} color="$color11" />
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <ChevronLeft size={14} color="color11" />
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {t('back')}
         </Text>
       </XStack>
@@ -198,13 +198,13 @@ function CuratedPlaylistPage() {
       <Page eyebrow={back} title={tPlaylists('title')}>
         {hasErrorCode(list.error, 'NOT_FOUND') ? (
           <EmptyState
-            icon={<ListOrdered size={24} color="$color11" />}
+            icon={<ListOrdered size={24} color="color11" />}
             title={t('notFoundTitle')}
             description={t('notFoundHint')}
             action={<ButtonLink href="/playlist">{t('back')}</ButtonLink>}
           />
         ) : (
-          <Text fontSize={14} color="$red11">
+          <Text fontSize={14} color="red11">
             {t('loadFailed')}
           </Text>
         )}
@@ -226,10 +226,10 @@ function CuratedPlaylistPage() {
               onClick={() => setSharing(true)}
               aria-label={t('share')}
             >
-              <Share2 size={16} color="$color12" />
+              <Share2 size={16} color="color12" />
               {/* Sul telefono resta l'icona, come gli altri bottoni in alto. */}
-              <XStack $max-sm={{ display: 'none' }}>
-                <Text fontSize={14} color="$color12">
+              <XStack display="max-sm:none">
+                <Text fontSize={14} color="color12">
                   {t('share')}
                 </Text>
               </XStack>
@@ -257,7 +257,7 @@ function CuratedPlaylistPage() {
             />
           </YStack>
           <Button onClick={() => setAdding(true)}>
-            <Plus size={16} color="$color1" />
+            <Plus size={16} color="color1" />
             {t('add')}
           </Button>
         </XStack>
@@ -280,9 +280,9 @@ function CuratedPlaylistPage() {
           <EmptyState
             icon={
               searching ? (
-                <SearchX size={24} color="$color11" />
+                <SearchX size={24} color="color11" />
               ) : (
-                <ListOrdered size={24} color="$color11" />
+                <ListOrdered size={24} color="color11" />
               )
             }
             title={searching ? t('emptySearch') : t('emptyList')}
@@ -290,7 +290,7 @@ function CuratedPlaylistPage() {
             action={
               searching ? undefined : (
                 <Button onClick={() => setAdding(true)}>
-                  <Plus size={16} color="$color1" />
+                  <Plus size={16} color="color1" />
                   {t('add')}
                 </Button>
               )
@@ -572,7 +572,7 @@ function SortableCard({
               // dnd-kit tipizza i suoi gestori come `Function`.
               onKeyDown={onKeyDown as ButtonProps['onKeyDown']}
             >
-              <GripVertical size={16} color="$color11" />
+              <GripVertical size={16} color="color11" />
             </Button>
           ) : (
             <XStack />
@@ -638,7 +638,7 @@ function CardMenu({
               size="icon-sm"
               aria-label={t('actionsFor', { name: game.name })}
             >
-              <EllipsisVertical size={16} color="$color11" />
+              <EllipsisVertical size={16} color="color11" />
             </Button>
           }
         />
@@ -674,7 +674,7 @@ function CardMenu({
           </DropdownMenuItem>
           <DropdownMenuItem
             destructive
-            icon={<Trash2 size={16} color="$red11" />}
+            icon={<Trash2 size={16} color="red11" />}
             disabled={remove.isPending}
             onClick={() => remove.mutate()}
           >
@@ -751,7 +751,7 @@ function MoveToForm({
                 autoFocus
               />
             </YStack>
-            <Text fontSize={14} color="$color11">
+            <Text fontSize={14} color="color11">
               {t('range', { total: listCount })}
             </Text>
           </XStack>

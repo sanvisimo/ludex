@@ -28,13 +28,13 @@ export const Default: Story = {};
  */
 export const InAButton: Story = {
   render: () => (
-    <XStack gap="$3" items="center">
+    <XStack gap="3" items="center">
       <Button variant="outline" size="icon" aria-label="Aggiorna" disabled>
         <Spinner>
-          <RefreshCw size={16} color="$color12" />
+          <RefreshCw size={16} color="color12" />
         </Spinner>
       </Button>
-      <Text color="$color11" fontSize={13}>
+      <Text color="color11" fontSize={13}>
         importazione in corso…
       </Text>
     </XStack>
@@ -46,7 +46,7 @@ export const Stopped: Story = {
   args: { spinning: false },
   render: (args) => (
     <Spinner {...args}>
-      <RefreshCw size={16} color="$color12" />
+      <RefreshCw size={16} color="color12" />
     </Spinner>
   ),
 };
@@ -61,7 +61,7 @@ export const Rotates: Story = {
   render: () => (
     <div data-testid="giro">
       <Spinner>
-        <RefreshCw size={16} color="$color12" />
+        <RefreshCw size={16} color="color12" />
       </Spinner>
     </div>
   ),

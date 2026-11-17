@@ -36,14 +36,14 @@ export function Avatar({ name, src, size = 32 }: AvatarProps) {
       {src ? (
         <AvatarBase.Image src={src} alt={name} width={size} height={size} />
       ) : null}
-      <AvatarBase.Fallback bg="$accent5" items="center" justify="center">
+      <AvatarBase.Fallback bg="accent5" items="center" justify="center">
         {/* Il nome lo dice già chi sta accanto all'avatar: le iniziali per un
             lettore di schermo sarebbero solo due lettere ripetute. */}
         <Text
           aria-hidden
           fontSize={Math.round(size * 0.4)}
           fontWeight="600"
-          color="$accent12"
+          color="accent12"
         >
           {initials(name)}
         </Text>

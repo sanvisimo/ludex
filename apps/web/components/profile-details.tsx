@@ -77,12 +77,12 @@ export function ProfileDetails() {
         {name === null ? (
           <XStack items="center" justify="space-between" gap={12}>
             <YStack gap={2} shrink={1}>
-              <Text fontSize={13} lineHeight={18} color="$color11">
+              <Text fontSize={13} lineHeight="18px" color="color11">
                 {t('name')}
               </Text>
               <Text
                 fontWeight="500"
-                color="$color12"
+                color="color12"
                 style={{ overflowWrap: 'anywhere' }}
               >
                 {session.user.name}
@@ -132,10 +132,10 @@ export function ProfileDetails() {
 
         <XStack items="center" justify="space-between" gap={12}>
           <YStack gap={2} shrink={1}>
-            <Text fontSize={13} lineHeight={18} color="$color11">
+            <Text fontSize={13} lineHeight="18px" color="color11">
               {t('email')}
             </Text>
-            <Text color="$color12" style={{ overflowWrap: 'anywhere' }}>
+            <Text color="color12" style={{ overflowWrap: 'anywhere' }}>
               {session.user.email}
             </Text>
           </YStack>
@@ -257,14 +257,14 @@ function ChangeEmailDialog({
                 aria-invalid={same}
               />
               {same && (
-                <Text fontSize={13} lineHeight={18} color="$red11">
+                <Text fontSize={13} lineHeight="18px" color="red11">
                   {t('emailSame')}
                 </Text>
               )}
             </YStack>
 
             {error && (
-              <Text role="alert" fontSize={14} lineHeight={20} color="$red11">
+              <Text role="alert" fontSize={14} lineHeight="20px" color="red11">
                 {error}
               </Text>
             )}

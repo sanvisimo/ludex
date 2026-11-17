@@ -37,8 +37,8 @@ export const Range: Story = {
 function Hours() {
   const [value, setValue] = useState([2, 20]);
   return (
-    <YStack gap="$2" width={280}>
-      <Text fontSize={13} color="$color11">
+    <YStack gap="2" width={280}>
+      <Text fontSize={13} color="color11">
         {value[0]} – {value[1]} h
       </Text>
       <Slider

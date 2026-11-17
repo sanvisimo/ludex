@@ -169,7 +169,7 @@ function MismatchTable({ dismissed }: { dismissed: boolean }) {
   return (
     <YStack gap={12}>
       {dismissed ? null : (
-        <Text render="h2" fontSize={18} lineHeight={24} fontWeight="600">
+        <Text render="h2" fontSize={18} lineHeight="24px" fontWeight="600">
           {t('title', { count: query.data.total })}
         </Text>
       )}

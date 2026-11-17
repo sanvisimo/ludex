@@ -31,7 +31,7 @@ type Tema = { nome: 'dark' | 'light' };
 function Banco({ theme, children }: { theme: Tema; children: ReactNode }) {
   return (
     <TamaguiProvider config={config} defaultTheme={theme.nome}>
-      <YStack bg="$background" p="$4" gap="$3" items="flex-start" minH="100vh">
+      <YStack bg="background" p="4" gap="3" items="flex-start" minH="100vh">
         {children}
       </YStack>
     </TamaguiProvider>

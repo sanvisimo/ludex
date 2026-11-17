@@ -71,7 +71,7 @@ export function AccountData() {
       </Card>
 
       {/* La zona rossa: è l'unica cosa della pagina che non si può disfare. */}
-      <Card borderColor="$red7">
+      <Card borderColor="red7">
         <CardHeaderRow
           title={t('deleteTitle')}
           description={t('deleteDescription')}
@@ -163,7 +163,7 @@ function DeleteAccountDialog({
             </YStack>
 
             {error && (
-              <Text role="alert" fontSize={14} lineHeight={20} color="$red11">
+              <Text role="alert" fontSize={14} lineHeight="20px" color="red11">
                 {error}
               </Text>
             )}

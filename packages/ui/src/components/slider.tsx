@@ -39,8 +39,8 @@ export function Slider({ thumbLabels, ...props }: SliderProps) {
           `top: 50%`), il binario invece nel flusso, in cima a un contenitore
           interno che non si raggiunge: senza il margine le maniglie gli
           pendevano sotto. (20 − 4) / 2 = 8. */}
-      <SliderBase.Track height={4} mt={8} bg="$color6" rounded={2}>
-        <SliderBase.TrackActive bg="$accent9" rounded={2} />
+      <SliderBase.Track height={4} mt={8} bg="color6" rounded={2}>
+        <SliderBase.TrackActive bg="accent9" rounded={2} />
       </SliderBase.Track>
       {Array.from({ length: thumbs }, (_, index) => (
         <SliderBase.Thumb
@@ -50,18 +50,14 @@ export function Slider({ thumbLabels, ...props }: SliderProps) {
           size={16}
           width={16}
           height={16}
-          circular
-          bg="$color1"
+          bg="color1 hover:color3 press:color4"
           borderWidth={2}
-          borderColor="$accent9"
-          hoverStyle={{ bg: '$color3' }}
-          pressStyle={{ bg: '$color4' }}
-          focusVisibleStyle={{
-            outlineColor: '$outlineColor',
-            outlineStyle: 'solid',
-            outlineWidth: 2,
-            outlineOffset: 2,
-          }}
+          borderColor="accent9"
+          outlineColor="focus-visible:outline-color"
+          outlineStyle="focus-visible:solid"
+          outlineWidth="focus-visible:2px"
+          outlineOffset="focus-visible:2px"
+          circular
         />
       ))}
     </SliderBase>

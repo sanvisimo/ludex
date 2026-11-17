@@ -119,14 +119,14 @@ function HiddenSection() {
       ) : (
         data && (
           <YStack gap={20}>
-            <Text fontSize={14} lineHeight={21} color="$color11">
+            <Text fontSize={14} lineHeight="21px" color="color11">
               {active === 'unwanted'
                 ? `${tEntries('description')} ${t('unwantedHint')}`
                 : tUnresolved('hiddenHint')}
             </Text>
             {data.total === 0 ? (
               <EmptyState
-                icon={<EyeOff size={24} color="$color11" />}
+                icon={<EyeOff size={24} color="color11" />}
                 title={q || store ? tFilters('noMatch') : tEmpty('title')}
                 description={q || store ? undefined : tEmpty('description')}
               />

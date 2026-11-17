@@ -75,15 +75,15 @@ export function StoreEntryCard({
         {title ? (
           <Text
             fontSize={reference ? 16 : 14}
-            lineHeight={22}
+            lineHeight="22px"
             fontWeight="600"
-            color="$color12"
+            color="color12"
             style={{ overflowWrap: 'anywhere' }}
           >
             {releaseYear ? `${title} (${releaseYear})` : title}
           </Text>
         ) : null}
-        <Text fontSize={13} color="$color11">
+        <Text fontSize={13} color="color11">
           {subtitle}
         </Text>
         {children}
@@ -93,7 +93,7 @@ export function StoreEntryCard({
             <YStack gap={8} pt={8}>
               {externalIds.length > 0 ? (
                 <YStack gap={4}>
-                  <Text fontSize={12} color="$color11">
+                  <Text fontSize={12} color="color11">
                     {t('externalId')}
                   </Text>
                   <XStack gap={4} items="center" minW={0}>
@@ -101,10 +101,8 @@ export function StoreEntryCard({
                       shrink={1}
                       minW={0}
                       fontSize={13}
-                      color="$color12"
-                      {...({
-                        style: { wordBreak: 'break-all', userSelect: 'text' },
-                      } as object)}
+                      color="color12"
+                      style={{ wordBreak: 'break-all', userSelect: 'text' }}
                     >
                       {externalIds.join(', ')}
                     </Text>
@@ -132,7 +130,7 @@ export function StoreEntryCard({
                 </YStack>
               ) : null}
               {facts.length > 0 ? (
-                <Text fontSize={13} color="$color11">
+                <Text fontSize={13} color="color11">
                   {facts.join(' · ')}
                 </Text>
               ) : null}

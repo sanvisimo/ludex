@@ -33,17 +33,13 @@ export function Switch(props: SwitchProps) {
       minH={18}
       p={1}
       borderWidth={0}
-      bg="$color9"
-      activeStyle={{ backgroundColor: '$accent9' }}
-      disabledStyle={{ opacity: 0.5, cursor: 'not-allowed' }}
+      bg="color9"
+      opacity="disabled:0.5"
+      cursor="disabled:not-allowed"
+      activeStyle={{ backgroundColor: 'accent9' }}
       {...props}
     >
-      <SwitchBase.Thumb
-        width={16}
-        height={16}
-        bg="$color1"
-        transition="quick"
-      />
+      <SwitchBase.Thumb width={16} height={16} bg="color1" transition="quick" />
     </SwitchBase>
   );
 }

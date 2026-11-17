@@ -19,31 +19,23 @@ import type { GetProps } from 'tamagui';
  */
 const InputFrame = styled(InputBase, {
   name: 'Input',
-
-  height: 32,
+  // Sul telefono: 44, la misura minima di tocco di Apple e Google, e niente
+  // padding verticale, che il TextInput di Android aggiunge da sé (circa 10 dp
+  // per lato) e che in 32 pixel lasciava al testo una dozzina di pixel.
+  height: '32px native:44px',
   px: 10,
   rounded: 8,
   fontSize: 14,
   width: '100%',
   bg: 'transparent',
-  color: '$color12',
-  borderColor: '$color9',
-  placeholderTextColor: '$color11',
-
-  // Sul telefono: 44, la misura minima di tocco di Apple e Google, e niente
-  // padding verticale, che il TextInput di Android aggiunge da sé (circa 10 dp
-  // per lato) e che in 32 pixel lasciava al testo una dozzina di pixel.
-  '$platform-native': { height: 44, py: 0 },
-
-  hoverStyle: { borderColor: '$color10' },
-  focusStyle: { borderColor: '$accent9' },
-  focusVisibleStyle: {
-    outlineColor: '$outlineColor',
-    outlineStyle: 'solid',
-    outlineWidth: 2,
-    outlineOffset: 0,
-  },
-
+  color: 'color12',
+  borderColor: 'color9 hover:color10 focus:accent9',
+  placeholderTextColor: 'color11',
+  py: 'native:0px',
+  outlineColor: 'focus-visible:outline-color',
+  outlineStyle: 'focus-visible:solid',
+  outlineWidth: 'focus-visible:2px',
+  outlineOffset: 'focus-visible:0px',
   variants: {
     disabled: {
       true: { opacity: 0.5, cursor: 'not-allowed' },

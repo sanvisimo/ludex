@@ -56,15 +56,14 @@ export function Sheet({ open, onOpenChange, label, children }: SheetProps) {
       unmountChildrenWhenHidden
     >
       <SheetBase.Overlay
-        bg="$shadow6"
+        bg="shadow6"
         transition="quick"
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
+        opacity="enter:0 exit:0"
       />
-      <SheetBase.Handle bg="$color8" />
+      <SheetBase.Handle bg="color8" />
       <SheetBase.Frame
         p={16}
-        bg="$color2"
+        bg="color2"
         borderTopLeftRadius={16}
         borderTopRightRadius={16}
       >

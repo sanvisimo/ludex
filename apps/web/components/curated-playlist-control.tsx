@@ -66,7 +66,7 @@ export function CuratedPlaylistControl({ game }: { game: { id: string } }) {
         <DropdownMenuTrigger
           render={
             <Button variant="outline" disabled={lists.isPending}>
-              <ListOrdered size={16} color="$color12" />
+              <ListOrdered size={16} color="color12" />
               {inside > 0 ? t('inLists', { count: inside }) : t('button')}
             </Button>
           }
@@ -172,7 +172,7 @@ function MembershipForm({
       {lists.isPending ? (
         <Skeleton height={64} width="100%" rounded={6} />
       ) : lists.data?.length === 0 ? (
-        <Text fontSize={14} lineHeight={20} color="$color11">
+        <Text fontSize={14} lineHeight="20px" color="color11">
           {t('none')}
         </Text>
       ) : (
@@ -195,7 +195,7 @@ function MembershipForm({
 
       <DialogFooter>
         <Button variant="outline" onClick={onCreate}>
-          <Plus size={16} color="$color12" />
+          <Plus size={16} color="color12" />
           {tCurated('new')}
         </Button>
         <Button onClick={onDone}>{t('done')}</Button>

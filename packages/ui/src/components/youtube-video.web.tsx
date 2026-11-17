@@ -47,14 +47,12 @@ export function YoutubeVideo({ videoId, title, playLabel }: YoutubeVideoProps) {
       cursor="pointer"
       items="center"
       justify="center"
-      bg="$color3"
+      bg="color3"
       borderWidth={0}
       p={0}
-      focusVisibleStyle={{
-        outlineColor: '$outlineColor',
-        outlineStyle: 'solid',
-        outlineWidth: 2,
-      }}
+      outlineColor="focus-visible:outline-color"
+      outlineStyle="focus-visible:solid"
+      outlineWidth="focus-visible:2px"
     >
       <Image
         src={youtubeThumbnail(videoId)}

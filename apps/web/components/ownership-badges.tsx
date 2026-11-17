@@ -123,14 +123,14 @@ function StoreTrigger({
         </DialogHeader>
         <YStack gap={14}>
           {groups.map((group) => (
-            <YStack key={group.key} gap={12} p={14} rounded={14} bg="$color3">
+            <YStack key={group.key} gap={12} p={14} rounded={14} bg="color3">
               <XStack items="center" gap={10}>
                 <StoreGroupIcon store={group.store} size={28} />
                 <Text
                   fontSize={15}
-                  lineHeight={22}
+                  lineHeight="22px"
                   fontWeight="600"
-                  color="$color12"
+                  color="color12"
                   flex={1}
                 >
                   {group.label}
@@ -146,7 +146,7 @@ function StoreTrigger({
                       py={10}
                       items="flex-start"
                       borderTopWidth={index === 0 ? 0 : 1}
-                      borderColor="$borderColor"
+                      borderColor="border-color"
                     >
                       {icon && (
                         <PlatformIcon
@@ -158,17 +158,17 @@ function StoreTrigger({
                       <YStack flex={1} minW={0} gap={3}>
                         <Text
                           fontSize={14}
-                          lineHeight={20}
+                          lineHeight="20px"
                           fontWeight="500"
-                          color="$color12"
+                          color="color12"
                         >
                           {detail.platform}
                         </Text>
                         {detail.account && (
                           <Text
                             fontSize={13}
-                            lineHeight={20}
-                            color="$color11"
+                            lineHeight="20px"
+                            color="color11"
                             style={{ overflowWrap: 'anywhere' }}
                           >
                             {detail.account}
@@ -217,8 +217,8 @@ function OwnershipStore({
       ) : (
         <Text
           fontSize={12}
-          lineHeight={16}
-          color="$color11"
+          lineHeight="16px"
+          color="color11"
           shrink={1}
           numberOfLines={1}
         >
@@ -246,7 +246,7 @@ function MoreStores({
           {groups.map((group) => (
             <XStack key={group.key} items="center" gap={8}>
               <StoreGroupIcon store={group.store} size={16} />
-              <Text fontSize={12} lineHeight={16} color="$color1">
+              <Text fontSize={12} lineHeight="16px" color="color1">
                 {group.label}
               </Text>
             </XStack>
@@ -256,7 +256,7 @@ function MoreStores({
       groups={groups}
       iconOnly
     >
-      <Text fontSize={13} lineHeight={16} fontWeight="600" color="$color11">
+      <Text fontSize={13} lineHeight="16px" fontWeight="600" color="color11">
         +{hidden}
       </Text>
     </StoreTrigger>
@@ -373,7 +373,7 @@ export function OwnershipBadges({
     <XStack
       flexWrap="wrap"
       gap={4}
-      $max-sm={compact ? { display: 'none' } : undefined}
+      display={compact ? 'max-sm:none' : undefined}
     >
       {ownerships.map((ownership) => {
         const label = labelFor(ownership);
@@ -396,16 +396,12 @@ export function OwnershipBadges({
                 borderWidth={0}
                 p={0}
                 cursor="pointer"
-                opacity={0.5}
-                hoverStyle={{ opacity: 1 }}
-                focusVisibleStyle={{
-                  opacity: 1,
-                  outlineColor: '$outlineColor',
-                  outlineStyle: 'solid',
-                  outlineWidth: 2,
-                }}
+                opacity="0.5 hover:1 focus-visible:1"
+                outlineColor="focus-visible:outline-color"
+                outlineStyle="focus-visible:solid"
+                outlineWidth="focus-visible:2px"
               >
-                <X size={12} color="$color12" />
+                <X size={12} color="color12" />
               </XStack>
             )}
           </Badge>
@@ -419,7 +415,7 @@ export function OwnershipBadges({
   return (
     <>
       {full}
-      <XStack flexWrap="wrap" gap={4} $sm={{ display: 'none' }}>
+      <XStack flexWrap="wrap" gap={4} display="sm:none">
         {storeNames.map((name) => (
           <Badge key={name} variant="secondary" maxW="100%" overflow="hidden">
             {name}

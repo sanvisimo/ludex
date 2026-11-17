@@ -35,32 +35,24 @@ const BAR_HEIGHT = 56;
  */
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <YStack minH="100vh" bg="$background" $max-md={{ pb: BAR_HEIGHT }}>
+    <YStack minH="100vh" bg="background" pb={`max-md:${BAR_HEIGHT}px`}>
       <XStack
         render="header"
-        position="sticky"
-        t={0}
+        position="sticky max-md:fixed"
+        t="0px max-md:auto"
         z={10}
-        height={72}
+        height={`72px max-md:${BAR_HEIGHT}px`}
         items="center"
         justify="space-between"
-        gap={16}
-        px={24}
-        bg="$background"
-        borderBottomWidth={1}
-        borderColor="$borderColor"
-        $max-md={{
-          position: 'fixed',
-          t: 'auto',
-          b: 0,
-          l: 0,
-          r: 0,
-          height: BAR_HEIGHT,
-          px: 12,
-          gap: 8,
-          borderBottomWidth: 0,
-          borderTopWidth: 1,
-        }}
+        gap="16px max-md:8px"
+        px="24px max-md:12px"
+        bg="background"
+        borderBottomWidth="1px max-md:0px"
+        borderColor="border-color"
+        b="max-md:0px"
+        l="max-md:0px"
+        r="max-md:0px"
+        borderTopWidth="max-md:1px"
       >
         <HomeLink />
         <MainNavigation />
@@ -77,11 +69,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       <YStack
         position="fixed"
         r={16}
-        b={16}
+        b={`16px max-md:${BAR_HEIGHT + 16}px`}
         z={9}
         gap={8}
         items="flex-end"
-        $max-md={{ b: BAR_HEIGHT + 16 }}
       >
         <BackToTop />
         <RandomGameDice />
@@ -113,7 +104,7 @@ function MainNavigation() {
   });
   if (!session) return null;
   return (
-    <XStack render="nav" aria-label={t('menu')} $max-md={{ display: 'none' }}>
+    <XStack render="nav" aria-label={t('menu')} display="max-md:none">
       <ButtonLink
         href="/backlog"
         variant={inBacklog ? 'selection' : 'ghost'}
@@ -140,17 +131,12 @@ function BarSearch() {
 
   return (
     <>
-      <XStack flex={1} justify="center" $max-md={{ display: 'none' }}>
+      <XStack flex={1} justify="center" display="max-md:none">
         <YStack width="100%" maxW={480}>
           <GameSearchBox />
         </YStack>
       </XStack>
-      <XStack
-        flex={1}
-        justify="flex-end"
-        display="none"
-        $max-md={{ display: 'flex' }}
-      >
+      <XStack flex={1} justify="flex-end" display="none max-md:flex">
         <ButtonLink
           href="/search"
           variant="ghost"
@@ -181,7 +167,7 @@ function Account() {
   if (session)
     return (
       <XStack items="center" gap={8}>
-        <XStack $max-md={{ display: 'none' }}>
+        <XStack display="max-md:none">
           <SettingsDropdown />
         </XStack>
         <UserMenu
@@ -193,14 +179,14 @@ function Account() {
 
   return (
     <>
-      <XStack items="center" gap={4} $max-md={{ display: 'none' }}>
+      <XStack items="center" gap={4} display="max-md:none">
         <SettingsDropdown />
         <ButtonLink href="/login" variant="ghost">
           {t('signIn')}
         </ButtonLink>
         <ButtonLink href="/register">{t('signUp')}</ButtonLink>
       </XStack>
-      <XStack display="none" $max-md={{ display: 'flex' }}>
+      <XStack display="none max-md:flex">
         <GuestSheet />
       </XStack>
     </>
@@ -238,7 +224,7 @@ function Footer() {
 
 function FooterText({ children }: { children: ReactNode }) {
   return (
-    <Text fontSize={12} lineHeight={16} color="$color11">
+    <Text fontSize={12} lineHeight="16px" color="color11">
       {children}
     </Text>
   );
@@ -255,13 +241,14 @@ function FooterExternalLink({
   return (
     <Text
       render="a"
-      {...({ href, target: '_blank', rel: 'noopener noreferrer' } as object)}
+      {...{ href }}
+      target={'_blank'}
+      rel={'noopener noreferrer'}
       fontSize={12}
-      lineHeight={16}
-      color="$color11"
+      lineHeight="16px"
+      color="color11 hover:color12"
       textDecorationLine="underline"
       cursor="pointer"
-      hoverStyle={{ color: '$color12' }}
     >
       {children}
     </Text>
@@ -280,21 +267,16 @@ function FooterLink({
   return (
     <Text
       render="a"
-      // Come in `NavItem`: gli attributi del link arrivano all'`<a>`, ma i
-      // tipi del testo non li conoscono.
-      {...({
-        href: to,
-        onClick: (event: unknown) => {
-          if (!takeLinkClick(event)) return;
-          void router.navigate({ to });
-        },
-      } as object)}
+      href={to}
+      onClick={(event: unknown) => {
+        if (!takeLinkClick(event)) return;
+        void router.navigate({ to });
+      }}
       fontSize={12}
-      lineHeight={16}
-      color="$color11"
+      lineHeight="16px"
+      color="color11 hover:color12"
       textDecorationLine="underline"
       cursor="pointer"
-      hoverStyle={{ color: '$color12' }}
     >
       {children}
     </Text>

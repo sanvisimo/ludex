@@ -25,7 +25,7 @@ const KINDS = [
 function Demo({ width }: { width?: number }) {
   const [value, setValue] = useState('app');
   return (
-    <YStack width={width} gap="$3">
+    <YStack width={width} gap="3">
       <Tabs value={value} onValueChange={setValue} label="Tipo di voce">
         {KINDS.map((kind) => (
           <TabsTab key={kind.value} value={kind.value} count={kind.count}>
@@ -33,7 +33,7 @@ function Demo({ width }: { width?: number }) {
           </TabsTab>
         ))}
       </Tabs>
-      <Text color="$color11" fontSize={13}>
+      <Text color="color11" fontSize={13}>
         Aperto: {value}
       </Text>
     </YStack>
@@ -140,11 +140,11 @@ export const Themes: Story = {
     children: null,
   },
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack bg="$background" p="$3" rounded="$4" gap="$2">
-            <Text color="$color11" fontSize={12}>
+          <YStack bg="background" p="3" rounded="4" gap="2">
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
             <Demo width={420} />

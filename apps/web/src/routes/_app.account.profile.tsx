@@ -23,16 +23,16 @@ function ProfileSection() {
         <Text
           render="h3"
           m={0}
-          fontFamily="$heading"
+          fontFamily="heading"
           fontSize={18}
           fontWeight="600"
-          color="$color12"
+          color="color12"
         >
           {t('security')}
         </Text>
         <Card gap={0} py={0} overflow="hidden">
           <ChangePassword embedded />
-          <YStack borderTopWidth={1} borderColor="$borderColor">
+          <YStack borderTopWidth={1} borderColor="border-color">
             <ActiveSessions embedded />
           </YStack>
         </Card>
@@ -41,10 +41,10 @@ function ProfileSection() {
         <Text
           render="h3"
           m={0}
-          fontFamily="$heading"
+          fontFamily="heading"
           fontSize={18}
           fontWeight="600"
-          color="$color12"
+          color="color12"
         >
           {t('dataManagement')}
         </Text>

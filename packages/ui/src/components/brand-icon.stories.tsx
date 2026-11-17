@@ -35,14 +35,14 @@ export const Labelled: Story = {
 /** Tutti i marchi, chiaro e scuro: le tessere nere devono restare visibili. */
 export const All: Story = {
   render: () => (
-    <XStack gap="$4">
+    <XStack gap="4">
       {(['light', 'dark'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack bg="$background" p="$4" gap="$2" rounded="$4">
+          <YStack bg="background" p="4" gap="2" rounded="4">
             {brandValues.map((brand) => (
-              <XStack key={brand} items="center" gap="$2">
+              <XStack key={brand} items="center" gap="2">
                 <BrandIcon brand={brand} />
-                <Text color="$color12">{brandTitle(brand)}</Text>
+                <Text color="color12">{brandTitle(brand)}</Text>
               </XStack>
             ))}
           </YStack>

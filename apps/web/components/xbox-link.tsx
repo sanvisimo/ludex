@@ -74,7 +74,7 @@ export function XboxLink({
             placeholder={tStore('labelPlaceholder')}
             maxLength={60}
           />
-          <Text fontSize={12} color="$color11">
+          <Text fontSize={12} color="color11">
             {tStore('labelHint')}
           </Text>
         </YStack>
@@ -85,7 +85,7 @@ export function XboxLink({
           {t('continue')}
         </Button>
         {empty && (
-          <Text fontSize={12} color="$color11">
+          <Text fontSize={12} color="color11">
             {t('pickOne')}
           </Text>
         )}

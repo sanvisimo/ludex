@@ -120,15 +120,15 @@ function SearchPage() {
       </YStack>
 
       {!searching ? (
-        <Text fontSize={14} color="$color11">
+        <Text fontSize={14} color="color11">
           {t('hint')}
         </Text>
       ) : local.isError ? (
-        <Text fontSize={14} color="$red11">
+        <Text fontSize={14} color="red11">
           {t('error')}
         </Text>
       ) : nothing ? (
-        <Text fontSize={14} color="$color11">
+        <Text fontSize={14} color="color11">
           {t('noResults')}
         </Text>
       ) : (
@@ -217,17 +217,17 @@ function Section({
       <YStack gap={2}>
         <Text
           render="h2"
-          fontFamily="$heading"
+          fontFamily="heading"
           fontSize={18}
-          lineHeight={24}
+          lineHeight="24px"
           fontWeight="600"
-          color="$color12"
+          color="color12"
           m={0}
         >
           {title}
         </Text>
         {subtitle && (
-          <Text fontSize={14} lineHeight={20} color="$color11">
+          <Text fontSize={14} lineHeight="20px" color="color11">
             {subtitle}
           </Text>
         )}

@@ -9,12 +9,7 @@ import type { GetProps } from 'tamagui';
  */
 const BadgeContext = createStyledContext<{
   variant:
-    | 'default'
-    | 'secondary'
-    | 'outline'
-    | 'success'
-    | 'warning'
-    | 'error';
+    'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'error';
 }>({ variant: 'default' });
 
 /**
@@ -48,12 +43,25 @@ const BadgeFrame = styled(XStack, {
 
   variants: {
     variant: {
-      default: { bg: '$accent9' },
-      secondary: { bg: '$color6' },
-      outline: { bg: 'transparent', borderColor: '$color9' },
-      success: { bg: '$green3' },
-      warning: { bg: '$amber3' },
-      error: { bg: '$red3' },
+      default: {
+        bg: 'accent9',
+      },
+      secondary: {
+        bg: 'color6',
+      },
+      outline: {
+        bg: 'transparent',
+        borderColor: 'color9',
+      },
+      success: {
+        bg: 'green3',
+      },
+      warning: {
+        bg: 'amber3',
+      },
+      error: {
+        bg: 'red3',
+      },
     },
   } as const,
 
@@ -67,21 +75,33 @@ const BadgeText = styled(Text, {
   context: BadgeContext,
 
   fontSize: 12,
-  lineHeight: 16,
+  lineHeight: '16px',
   fontWeight: '500',
   whiteSpace: 'nowrap',
 
   variants: {
     variant: {
-      default: { color: '$actionColor' },
-      secondary: { color: '$color12' },
-      outline: { color: '$color12' },
+      default: {
+        color: 'actionColor',
+      },
+      secondary: {
+        color: 'color12',
+      },
+      outline: {
+        color: 'color12',
+      },
       // Il passo 12 e non l'11: a 12 px `$green11` su `$green3` nel tema chiaro
       // fa 4.21 e `$amber11` su `$amber3` 4.24, e ne servono 4.5. Il fondo dice
       // lo stato, il testo deve solo leggersi.
-      success: { color: '$green12' },
-      warning: { color: '$amber12' },
-      error: { color: '$red12' },
+      success: {
+        color: 'green12',
+      },
+      warning: {
+        color: 'amber12',
+      },
+      error: {
+        color: 'red12',
+      },
     },
   } as const,
 });

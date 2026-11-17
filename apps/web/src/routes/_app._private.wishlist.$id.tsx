@@ -150,8 +150,8 @@ function WishlistPage() {
       }}
     >
       <XStack items="center" gap={2}>
-        <ChevronLeft size={14} color="$color11" />
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <ChevronLeft size={14} color="color11" />
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {t('back')}
         </Text>
       </XStack>
@@ -163,13 +163,13 @@ function WishlistPage() {
       <Page eyebrow={back} title={t('title')}>
         {hasErrorCode(list.error, 'NOT_FOUND') ? (
           <EmptyState
-            icon={<Heart size={24} color="$color11" />}
+            icon={<Heart size={24} color="color11" />}
             title={t('notFoundTitle')}
             description={t('notFoundHint')}
             action={<ButtonLink href="/wishlist">{t('back')}</ButtonLink>}
           />
         ) : (
-          <Text fontSize={14} color="$red11">
+          <Text fontSize={14} color="red11">
             {t('loadFailed')}
           </Text>
         )}
@@ -247,9 +247,9 @@ function WishlistPage() {
           <EmptyState
             icon={
               search.q ? (
-                <SearchX size={24} color="$color11" />
+                <SearchX size={24} color="color11" />
               ) : (
-                <Heart size={24} color="$color11" />
+                <Heart size={24} color="color11" />
               )
             }
             title={
@@ -391,7 +391,7 @@ function RefreshStoreList({ accountId }: { accountId: string }) {
       disabled={syncing || sync.isPending || account?.status === 'needs_reauth'}
       onClick={() => sync.mutate()}
     >
-      <RefreshCw size={14} color="$color12" />
+      <RefreshCw size={14} color="color12" />
       {syncing ? t('syncing') : t('refresh')}
     </Button>
   );
@@ -425,13 +425,13 @@ function UnresolvedBar({ listId, store }: { listId: string; store: Store }) {
         flexWrap="wrap"
         p={12}
         rounded={8}
-        bg="$color3"
+        bg="color3"
       >
         <XStack items="center" gap={8} shrink={1} minW={0}>
           {brand && (
             <BrandIcon brand={brand} size={16} label={storeLabels[store]} />
           )}
-          <Text fontSize={14} lineHeight={20} color="$color12">
+          <Text fontSize={14} lineHeight="20px" color="color12">
             {pending > 0
               ? t('unresolvedBar', { count: pending })
               : t('unresolvedOnlyHidden', { count: hidden })}

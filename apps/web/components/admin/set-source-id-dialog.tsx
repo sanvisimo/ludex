@@ -68,7 +68,7 @@ export function SetSourceIdDialog({
   const t = useTranslations('gameMatch');
   return (
     <Dialog open={row !== null} onOpenChange={onOpenChange}>
-      <DialogContent size="wide" $lg={{ maxW: 960 }} closeLabel={t('close')}>
+      <DialogContent size="wide" maxW="lg:960px" closeLabel={t('close')}>
         {row ? (
           <SourceIdForm
             key={`${row.gameId}-${row.source}`}
@@ -196,13 +196,13 @@ function SourceIdForm({
             <YStack minW={0} gap={8}>
               <Text
                 fontSize={16}
-                lineHeight={22}
+                lineHeight="22px"
                 fontWeight="600"
                 style={{ overflowWrap: 'anywhere' }}
               >
                 {row.name}
               </Text>
-              <Text fontSize={13} lineHeight={20} color="$color11">
+              <Text fontSize={13} lineHeight="20px" color="color11">
                 {t('setId.state', {
                   status: row.reason
                     ? `${t(`status.${row.status}`)} · ${t(`reason.${row.reason}`)}`
@@ -210,7 +210,7 @@ function SourceIdForm({
                 })}
               </Text>
               {game ? (
-                <Text fontSize={12} lineHeight={18} color="$color11">
+                <Text fontSize={12} lineHeight="18px" color="color11">
                   {[
                     game.firstReleaseDate?.getFullYear(),
                     game.gameType ? gameTypeLabels[game.gameType] : null,
@@ -227,12 +227,12 @@ function SourceIdForm({
                   {detail.isPending ? (
                     <Skeleton height={48} />
                   ) : detail.isError ? (
-                    <Text fontSize={12} color="$red11">
+                    <Text fontSize={12} color="red11">
                       {t('game.notFound')}
                     </Text>
                   ) : null}
                   {game?.igdbId && game.igdbSlug ? (
-                    <Text fontSize={12} lineHeight={18}>
+                    <Text fontSize={12} lineHeight="18px">
                       IGDB {game.igdbId} ·{' '}
                       <ExternalLink
                         href={`https://www.igdb.com/games/${game.igdbSlug}`}
@@ -245,8 +245,8 @@ function SourceIdForm({
                     <Text
                       key={link.id}
                       fontSize={12}
-                      lineHeight={18}
-                      color="$color11"
+                      lineHeight="18px"
+                      color="color11"
                       style={{ overflowWrap: 'anywhere' }}
                     >
                       {tStore(link.source)} ·{' '}
@@ -267,8 +267,8 @@ function SourceIdForm({
                   {current?.externalId ? (
                     <Text
                       fontSize={12}
-                      lineHeight={18}
-                      color="$color11"
+                      lineHeight="18px"
+                      color="color11"
                       style={{ overflowWrap: 'anywhere' }}
                     >
                       {sourceName} ·{' '}
@@ -316,7 +316,7 @@ function SourceIdForm({
                 {t('setId.search')}
               </Button>
             </XStack>
-            <Text fontSize={12} lineHeight={18} color="$color11">
+            <Text fontSize={12} lineHeight="18px" color="color11">
               {t('setId.manualHint')}
             </Text>
           </YStack>
@@ -331,7 +331,7 @@ function SourceIdForm({
             </Alert>
           ) : null}
           {invalid ? (
-            <Text fontSize={13} color="$red11" role="alert">
+            <Text fontSize={13} color="red11" role="alert">
               {t('setId.invalid')}
             </Text>
           ) : owner ? (
@@ -346,7 +346,7 @@ function SourceIdForm({
           ) : null}
           {lookupFailed ? (
             <YStack gap={8}>
-              <Text fontSize={13} color="$red11" role="alert">
+              <Text fontSize={13} color="red11" role="alert">
                 {t('setId.lookupFailed')}
               </Text>
               <Button
@@ -376,7 +376,7 @@ function SourceIdForm({
             </details>
           ) : null}
           <YStack gap={8}>
-            <Text fontSize={12} color="$color11" role="status">
+            <Text fontSize={12} color="color11" role="status">
               {search.isPending
                 ? tMatch('searching')
                 : search.data
@@ -389,7 +389,7 @@ function SourceIdForm({
               gap={4}
               rounded={12}
               borderWidth={1}
-              borderColor="$borderColor"
+              borderColor="border-color"
               aria-busy={search.isPending}
             >
               {search.isPending ? (
@@ -398,7 +398,7 @@ function SourceIdForm({
                 ))
               ) : searchError ? (
                 <YStack p={16} gap={12} role="alert">
-                  <Text fontSize={13} color="$red11">
+                  <Text fontSize={13} color="red11">
                     {searchError}
                   </Text>
                   {hasErrorCode(search.error, 'TOO_MANY_REQUESTS') ||
@@ -421,7 +421,7 @@ function SourceIdForm({
                         query: search.variables ?? '',
                       })}
                     </Text>
-                    <Text fontSize={13} lineHeight={20} color="$color11">
+                    <Text fontSize={13} lineHeight="20px" color="color11">
                       {t('setId.emptyHint')}
                     </Text>
                   </YStack>
@@ -437,7 +437,7 @@ function SourceIdForm({
                   ))
                 )
               ) : (
-                <Text p={16} fontSize={13} lineHeight={20} color="$color11">
+                <Text p={16} fontSize={13} lineHeight="20px" color="color11">
                   {t('setId.searchHint')}
                 </Text>
               )}
@@ -447,21 +447,23 @@ function SourceIdForm({
       </YStack>
       <DialogFooter
         flexWrap="wrap"
-        items="center"
-        $max-sm={{ flexDirection: 'column', items: 'stretch' }}
+        items="center max-sm:stretch"
+        flexDirection="max-sm:column"
       >
         <YStack
           flex={1}
           minW={0}
           gap={4}
-          $max-sm={{ grow: 0, shrink: 0, flexBasis: 'auto' }}
+          grow="max-sm:0px"
+          shrink="max-sm:0px"
+          flexBasis="max-sm:auto"
           role="status"
         >
           <Text
             fontSize={13}
-            lineHeight={20}
+            lineHeight="20px"
             fontWeight={selected || validId ? '600' : '400'}
-            color={selected || validId ? '$color12' : '$color11'}
+            color={`${selected || validId ? 'color12' : 'color11'}`}
             style={{ overflowWrap: 'anywhere' }}
           >
             {selected
@@ -473,7 +475,7 @@ function SourceIdForm({
           {selected || validId ? (
             <Text
               fontSize={12}
-              color="$color11"
+              color="color11"
               style={{ overflowWrap: 'anywhere' }}
             >
               {sourceName} · {validId ?? proposed}
@@ -483,7 +485,8 @@ function SourceIdForm({
         <XStack
           gap={8}
           shrink={0}
-          $max-sm={{ justify: 'flex-end', flexWrap: 'wrap' }}
+          justify="max-sm:flex-end"
+          flexWrap="max-sm:wrap"
         >
           <Button variant="outline" onPress={onClose} disabled={save.isPending}>
             {tMatch('cancel')}
@@ -527,9 +530,8 @@ function SourceResult({
       p={10}
       rounded={8}
       borderWidth={1}
-      borderColor={active ? '$selectionBorder' : 'transparent'}
-      bg={active ? '$selectionBackground' : 'transparent'}
-      hoverStyle={{ bg: active ? '$selectionBackground' : '$color3' }}
+      borderColor={`${active ? 'selectionBorder' : 'transparent'}`}
+      bg={`${active ? 'selectionBackground' : 'transparent'} hover:${active ? 'selectionBackground' : 'color3'}`}
     >
       <CoverPreview
         key={hit.image}
@@ -539,20 +541,20 @@ function SourceResult({
       <YStack minW={0} gap={4}>
         <Text
           fontSize={14}
-          lineHeight={20}
+          lineHeight="20px"
           fontWeight="600"
           style={{ overflowWrap: 'anywhere' }}
         >
           {hit.name}
         </Text>
         {hit.releaseYear ? (
-          <Text fontSize={12} color="$color11">
+          <Text fontSize={12} color="color11">
             {hit.releaseYear}
           </Text>
         ) : null}
         <Text
           fontSize={12}
-          color="$color11"
+          color="color11"
           style={{ overflowWrap: 'anywhere' }}
         >
           {hit.id}

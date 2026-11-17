@@ -54,12 +54,12 @@ export function GameDuration({
         items="center"
         gap={4}
       >
-        <Hourglass size={12} color="$selectionColor" aria-hidden />
+        <Hourglass size={12} color="selectionColor" aria-hidden />
         <Text
           fontSize={13}
-          lineHeight={20}
+          lineHeight="20px"
           fontWeight="500"
-          color="$color12"
+          color="color12"
           aria-hidden
         >
           {short ? formatted : t('cardMain', { duration: formatted })}
@@ -68,7 +68,7 @@ export function GameDuration({
     );
   }
   return (
-    <Text fontSize={14} lineHeight={20} color="$color11">
+    <Text fontSize={14} lineHeight="20px" color="color11">
       {short ? formatted : t('cardMain', { duration: formatted })}
     </Text>
   );

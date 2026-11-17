@@ -80,7 +80,7 @@ export function AutoSyncSettings({
         py={8}
         rounded={12}
         borderWidth={1}
-        borderColor="$borderColor"
+        borderColor="border-color"
       >
         <XStack items="center" gap={12}>
           <Switch
@@ -98,7 +98,7 @@ export function AutoSyncSettings({
               aria-expanded={explained}
               onClick={() => setExplained((value) => !value)}
             >
-              <CircleHelp size={16} color="$color11" />
+              <CircleHelp size={16} color="color11" />
             </Button>
           </Tooltip>
         </XStack>
@@ -106,12 +106,12 @@ export function AutoSyncSettings({
       </XStack>
 
       {explained && (
-        <Text fontSize={13} lineHeight={18} color="$color11" px={4}>
+        <Text fontSize={13} lineHeight="18px" color="color11" px={4}>
           {description}
         </Text>
       )}
       {!checked && hasPsn && (
-        <Text fontSize={13} lineHeight={18} color="$red11" px={4}>
+        <Text fontSize={13} lineHeight="18px" color="red11" px={4}>
           {t('psnWarning')}
         </Text>
       )}

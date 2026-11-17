@@ -97,7 +97,7 @@ export function ShareForm({
       </DialogHeader>
 
       {token === null ? (
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {kind === 'curated' ? t('notSharedCurated') : t('notShared')}
         </Text>
       ) : (
@@ -114,11 +114,11 @@ export function ShareForm({
               />
             </YStack>
             <Button variant="outline" onClick={() => void copy(linkOf(token))}>
-              <Copy size={16} color="$color12" />
+              <Copy size={16} color="color12" />
               {t('copy')}
             </Button>
           </XStack>
-          <Text fontSize={13} lineHeight={18} color="$color11">
+          <Text fontSize={13} lineHeight="18px" color="color11">
             {t('stopHint')}
           </Text>
         </YStack>

@@ -35,13 +35,13 @@ function Views(args: ToggleGroupProps) {
       }}
     >
       <ToggleGroupItem value="rows" aria-label="Righe">
-        <Rows3 size={16} color="$color12" />
+        <Rows3 size={16} color="color12" />
       </ToggleGroupItem>
       <ToggleGroupItem value="grid" aria-label="Griglia">
-        <LayoutGrid size={16} color="$color12" />
+        <LayoutGrid size={16} color="color12" />
       </ToggleGroupItem>
       <ToggleGroupItem value="compact" aria-label="Compatta">
-        <List size={16} color="$color12" />
+        <List size={16} color="color12" />
       </ToggleGroupItem>
     </ToggleGroup>
   );
@@ -56,12 +56,12 @@ function Direction() {
   return (
     <ToggleGroup label="Direzione" value={value} onValueChange={setValue}>
       <ToggleGroupItem value="asc">
-        <Text fontSize={13} color="$color12">
+        <Text fontSize={13} color="color12">
           Crescente
         </Text>
       </ToggleGroupItem>
       <ToggleGroupItem value="desc">
-        <Text fontSize={13} color="$color12">
+        <Text fontSize={13} color="color12">
           Decrescente
         </Text>
       </ToggleGroupItem>

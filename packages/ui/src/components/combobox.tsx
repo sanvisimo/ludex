@@ -300,13 +300,13 @@ export function ComboboxContent({ children }: { children: ReactNode }) {
       <PopperContent
         // Il portale non prende i clic (`pointer-events: none`), la tendina sì.
         pointerEvents="auto"
-        onMouseDown={(event) => event.preventDefault()}
         width={'var(--tamagui-popper-anchor-width)' as never}
         p={4}
         rounded={8}
-        bg="$color2"
+        bg="color2"
         borderWidth={1}
-        borderColor="$borderColor"
+        borderColor="border-color"
+        onMouseDown={(event) => event.preventDefault()}
       >
         <ScrollView maxH={288} width="100%">
           {children}
@@ -321,7 +321,7 @@ export function ComboboxEmpty({ children }: { children: ReactNode }) {
   const { filtered } = useCombobox();
   if (filtered.length > 0) return null;
   return (
-    <Text px={8} py={6} fontSize={14} color="$color11">
+    <Text px={8} py={6} fontSize={14} color="color11">
       {children}
     </Text>
   );
@@ -379,15 +379,14 @@ export function ComboboxItem({
       minH={28}
       rounded={6}
       cursor="pointer"
-      bg={highlighted ? '$color5' : 'transparent'}
-      pressStyle={{ bg: '$color6' }}
+      bg={`${highlighted ? 'color5' : 'transparent'} press:color6`}
       onMouseEnter={() => setActive(index)}
       onPress={() => select(item)}
     >
-      <Text flex={1} fontSize={14} lineHeight={20} color="$color12">
+      <Text flex={1} fontSize={14} lineHeight="20px" color="color12">
         {children}
       </Text>
-      {selected && <Check size={14} color="$color12" />}
+      {selected && <Check size={14} color="color12" />}
     </XStack>
   );
 }

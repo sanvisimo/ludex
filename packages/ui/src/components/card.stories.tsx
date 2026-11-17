@@ -28,8 +28,8 @@ export const Default: Story = {
           Reimporta le librerie collegate ogni pochi giorni.
         </CardDescription>
       </CardHeader>
-      <CardContent gap="$3">
-        <Text color="$color12" fontSize={14}>
+      <CardContent gap="3">
+        <Text color="color12" fontSize={14}>
           PSN ogni tre giorni, gli altri negozi ogni sette.
         </Text>
         <Button variant="outline" self="flex-start">
@@ -45,7 +45,7 @@ export const ContentOnly: Story = {
   render: () => (
     <Card width={360}>
       <CardContent>
-        <Text color="$color11" fontSize={14}>
+        <Text color="color11" fontSize={14}>
           Nessun gioco nel backlog.
         </Text>
       </CardContent>
@@ -56,11 +56,11 @@ export const ContentOnly: Story = {
 /** La scheda che è un link: si schiarisce al passaggio del mouse. */
 export const Interactive: Story = {
   render: () => (
-    <YStack gap="$2" width={360}>
+    <YStack gap="2" width={360}>
       {['Hollow Knight', 'Disco Elysium'].map((name) => (
         <Card key={name} interactive>
-          <CardContent gap="$1">
-            <Text color="$color12" fontSize={14} fontWeight="500">
+          <CardContent gap="1">
+            <Text color="color12" fontSize={14} fontWeight="500">
               {name}
             </Text>
             <Badge variant="secondary">PC · Steam</Badge>
@@ -74,11 +74,11 @@ export const Interactive: Story = {
 /** Chiaro e scuro affiancati: la scheda deve staccarsi dal fondo in entrambi. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap="$2" bg="$background" p="$3" rounded="$4">
-            <Text color="$color11" fontSize={12}>
+          <YStack gap="2" bg="background" p="3" rounded="4">
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
             <Card width={260}>
@@ -87,7 +87,7 @@ export const Themes: Story = {
                 <CardDescription>OpenCritic · Metacritic</CardDescription>
               </CardHeader>
               <CardContent>
-                <Text color="$color12" fontSize={14}>
+                <Text color="color12" fontSize={14}>
                   88 su PC
                 </Text>
               </CardContent>

@@ -94,13 +94,13 @@ function Scale({
   const background = value('background');
 
   return (
-    <YStack gap="$2">
-      <XStack gap="$2" items="baseline">
-        <Text fontSize={13} fontWeight="600" color="$color12">
+    <YStack gap="2">
+      <XStack gap="2" items="baseline">
+        <Text fontSize={13} fontWeight="600" color="color12">
           {name}
         </Text>
         {note ? (
-          <Text fontSize={11} color="$color11">
+          <Text fontSize={11} color="color11">
             {note}
           </Text>
         ) : null}
@@ -121,12 +121,12 @@ function Scale({
                 height={44}
                 bg={token}
                 borderWidth={1}
-                borderColor="$color6"
+                borderColor="color6"
               />
-              <Text fontSize={10} color="$color12">
+              <Text fontSize={10} color="color12">
                 {step}
               </Text>
-              <Text fontSize={10} color={k >= 3 ? '$green11' : '$color11'}>
+              <Text fontSize={10} color={`${k >= 3 ? 'green11' : 'color11'}`}>
                 {k.toFixed(2)}
               </Text>
             </YStack>
@@ -145,7 +145,7 @@ function Scale({
  */
 export const Scales: Story = {
   render: () => (
-    <YStack gap="$5">
+    <YStack gap="5">
       <Scale
         name="base"
         prefix="color"

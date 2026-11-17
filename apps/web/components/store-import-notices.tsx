@@ -42,14 +42,14 @@ export function StoreImportNotices({ accounts }: { accounts: StoreAccount[] }) {
             flexWrap="wrap"
             p={12}
             rounded={8}
-            bg="$color3"
+            bg="color3"
           >
             {account.wishlistSyncing ? (
               <>
                 <Spinner spinning>
-                  <RefreshCw size={16} color="$color12" />
+                  <RefreshCw size={16} color="color12" />
                 </Spinner>
-                <Text flex={1} minW={0} fontSize={14} color="$color12">
+                <Text flex={1} minW={0} fontSize={14} color="color12">
                   {t('importingNotice', { name })}
                 </Text>
               </>
@@ -57,10 +57,10 @@ export function StoreImportNotices({ accounts }: { accounts: StoreAccount[] }) {
               <>
                 <Badge variant="error">{t('errorBadge')}</Badge>
                 <YStack flex={1} minW={0} gap={2}>
-                  <Text fontSize={14} fontWeight="500" color="$color12">
+                  <Text fontSize={14} fontWeight="500" color="color12">
                     {name}
                   </Text>
-                  <Text fontSize={13} lineHeight={18} color="$color11">
+                  <Text fontSize={13} lineHeight="18px" color="color11">
                     {account.wishlistError
                       ? errorText(account.wishlistError)
                       : null}

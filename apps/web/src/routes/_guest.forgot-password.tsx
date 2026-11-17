@@ -64,7 +64,7 @@ function ForgotPasswordPage() {
     <main className="flex flex-1 items-center justify-center p-6">
       <Card width="100%" maxW={384}>
         <CardHeader>
-          <CardTitle fontSize={18} lineHeight={28}>
+          <CardTitle fontSize={18} lineHeight="28px">
             {t('title')}
           </CardTitle>
           <CardDescription>{t('subtitle')}</CardDescription>

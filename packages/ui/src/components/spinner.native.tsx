@@ -65,7 +65,7 @@ export function Spinner({
 
   return (
     <Animated.View style={{ transform: [{ rotate }] }}>
-      {children ?? <LoaderCircle size={16} color="$color11" />}
+      {children ?? <LoaderCircle size={16} color="color11" />}
     </Animated.View>
   );
 }

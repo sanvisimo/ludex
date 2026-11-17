@@ -92,7 +92,7 @@ export const RichContent: Story = {
         {(['steam', 'gog', 'epic'] as const).map((brand) => (
           <XStack key={brand} items="center" gap={8}>
             <BrandIcon brand={brand} size={16} />
-            <Text fontSize={12} lineHeight={16} color="$color1">
+            <Text fontSize={12} lineHeight="16px" color="color1">
               {brand.toUpperCase()}
             </Text>
           </XStack>

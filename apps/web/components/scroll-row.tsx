@@ -76,10 +76,7 @@ export function ScrollRow({
         {overflows && (
           <XStack
             gap={8}
-            {...(arrowsFromMd && {
-              display: 'none',
-              $md: { display: 'flex' },
-            })}
+            display={arrowsFromMd ? 'none md:flex' : undefined}
           >
             <Button
               variant="secondary"

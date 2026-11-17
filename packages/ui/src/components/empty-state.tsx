@@ -33,14 +33,14 @@ export function EmptyState({
       rounded={12}
       borderWidth={1}
       borderStyle="dashed"
-      borderColor="$borderColor"
+      borderColor="border-color"
     >
       {icon && (
         <YStack
           width={48}
           height={48}
           rounded={999}
-          bg="$color4"
+          bg="color4"
           items="center"
           justify="center"
           mb={4}
@@ -48,11 +48,11 @@ export function EmptyState({
           {icon}
         </YStack>
       )}
-      <Text fontSize={16} fontWeight="500" color="$color12" text="center">
+      <Text fontSize={16} fontWeight="500" color="color12" text="center">
         {title}
       </Text>
       {description && (
-        <Text fontSize={14} color="$color11" text="center" maxW={420}>
+        <Text fontSize={14} color="color11" text="center" maxW={420}>
           {description}
         </Text>
       )}

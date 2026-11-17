@@ -125,9 +125,9 @@ export function SteamQrPanel({
     return (
       <YStack gap={8} items="center" py={48}>
         <Spinner>
-          <LoaderCircle size={24} color="$color11" />
+          <LoaderCircle size={24} color="color11" />
         </Spinner>
-        <Text fontSize={13} color="$color11">
+        <Text fontSize={13} color="color11">
           {t('preparing')}
         </Text>
       </YStack>
@@ -139,9 +139,9 @@ export function SteamQrPanel({
     return (
       <YStack gap={8} items="center" py={48}>
         <Spinner>
-          <LoaderCircle size={24} color="$color11" />
+          <LoaderCircle size={24} color="color11" />
         </Spinner>
-        <Text fontWeight="600" color="$color12">
+        <Text fontWeight="600" color="color12">
           {t('scanned')}
         </Text>
       </YStack>
@@ -151,7 +151,7 @@ export function SteamQrPanel({
   if (state === 'expired') {
     return (
       <YStack gap={12} items="center" py={24}>
-        <Text color="$color11">{t('expired')}</Text>
+        <Text color="color11">{t('expired')}</Text>
         {newCode}
       </YStack>
     );
@@ -185,7 +185,7 @@ export function SteamQrPanel({
         height={200}
         style={{ background: '#fff', borderRadius: 8 }}
       />
-      <Text fontSize={13} color="$color11">
+      <Text fontSize={13} color="color11">
         {t('waiting')}
       </Text>
       <YStack gap={4} self="stretch">
@@ -193,10 +193,10 @@ export function SteamQrPanel({
         <Text fontSize={14}>{t('step2')}</Text>
         <Text fontSize={14}>{t('step3')}</Text>
       </YStack>
-      <Text fontSize={12} color="$color11" self="stretch">
+      <Text fontSize={12} color="color11" self="stretch">
         {t('unusualHint')}
       </Text>
-      <Text fontSize={12} color="$color11">
+      <Text fontSize={12} color="color11">
         {t('validFor')}
       </Text>
       {newCode}

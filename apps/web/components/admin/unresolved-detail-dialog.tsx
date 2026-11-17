@@ -92,7 +92,7 @@ export function UnresolvedDetailDialog({
         ]}
         pageUrl={pageUrl}
       >
-        <Text fontSize={13} lineHeight={20}>
+        <Text fontSize={13} lineHeight="20px">
           {t('detail.libraries', {
             count: row.libraries,
             visible: row.visible,
@@ -132,7 +132,7 @@ export function UnresolvedDetailDialog({
     <Dialog open={row !== null} onOpenChange={onOpenChange}>
       <DialogContent
         size={search ? 'wide' : 'default'}
-        $lg={{ maxW: search ? 960 : 560 }}
+        maxW={`lg:${search ? 960 : 560}px`}
         closeLabel={tMatch('close')}
       >
         <DialogHeader>
