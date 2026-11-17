@@ -1,8 +1,8 @@
 # Tamagui 3
 
 **Stato: in corso dal 16/11/2026**, piano approvato lo stesso giorno. Passo 1
-fatto, si riparte dal passo 2: vedi «Ripresa» in fondo. Lavoro interno: non
-entra nella roadmap pubblica.
+fatto e base di Chromatic pulita il 17/11, si riparte dal passo 2: vedi
+«Ripresa» in fondo. Lavoro interno: non entra nella roadmap pubblica.
 
 ## Perché
 
@@ -46,11 +46,12 @@ la v5 i nomi dei temi vanno verificati al passo 2, prima del codemod.
 
 ## I passi
 
-Su un branch da `chore/expo-58` (React 19.3 e React Native 0.88 servono),
-finché la PR #141 non è unita; poi da `main`.
+Su `chore/tamagui-3`, da `main` (la PR #141, con React 19.3 e React Native
+0.88, è unita dal 16/11).
 
 1. **Lo stato di partenza — fatto il 16/11.** Una build di Storybook su
-   Chromatic come base dei pixel (build 10 e 11, su `chore/tamagui-3`). Niente
+   Chromatic come base dei pixel (build 10 e 11, su `chore/tamagui-3`; la
+   build 12 del 17/11 è quella con tutte le storie verdi). Niente
    screenshot delle schermate: il «prima» è pilecue.com, che resta su Tamagui
    2 finché non c'è il deploy, e al passo 6 si confronta con quella.
 2. **I pacchetti e i temi.** Tutti i `tamagui` e `@tamagui/*` alla 3.3.3
@@ -108,39 +109,36 @@ Compiler: lotti a parte.
 
 Scritta il 17/11/2026 per riprendere da una chat nuova.
 
-**Dove si è.** Branch `chore/tamagui-3`, sopra `chore/expo-58` (la PR #141,
-non ancora unita: M1 del mobile, Expo SDK 58, React 19.3, TypeScript 6 e gli
-altri aggiornamenti). Sul branch c'è solo questo piano. Se la #141 viene unita
-prima, `chore/tamagui-3` si rimette sopra `main` (`git rebase main`).
+**Dove si è.** Branch `chore/tamagui-3`, rimesso sopra `main` dopo il merge
+della #141. Si riparte dal **passo 2**. La base di Chromatic è la build 12:
+159 storie, nessuna rossa; le sue 159 immagini vanno accettate come base
+nella dashboard, se non è già stato fatto.
 
-**Il passo 1 ha lasciato quattro storie rosse su Chromatic**, per le
-interazioni (`play`), non per il rendering; in locale (`pnpm --filter
-@repo/ui test`) passano tutte e 159:
+**Chromatic costa sempre tutto.** TurboSnap non è attivo sull'account (serve
+almeno 10 build da CI), quindi `onlyChanged` non riduce niente: ogni build
+sono tutti i 318 snapshot. Se ne fa una sola, al passo 6. Gli errori li legge
+l'utente nella dashboard: **si chiedono a lui**, non si rilancia per ricavarli.
 
-- **Tooltip · Hover**: c'era già prima della #141.
-- **Tooltip · Long Content** e **Tooltip · Rich Content**: nuove con la #141.
-  Il tooltip non compare dopo l'`hover`; Long Content l'ha toccata la #141
-  (tolto l'`aria-label`, che axe 4.14 bocciava), Rich Content no.
-- **Gallery · Drag Thumbnails** (`expected 0 to be 100`): nuova con la #141.
-  Chromatic fotografa a 2400×1800, dove le miniature stanno tutte in vista e
-  non scorrono; ma prima passava, quindi c'è anche altro (React 19.3, o il
-  cast del ref di ScrollView in `gallery.tsx`).
-
-Le tre nuove si guardano **prima del passo 2**, in locale con Storybook
-(`pnpm --filter @repo/ui dev`), così la base è pulita: se sono tempi si allunga
-l'attesa delle storie, se è un cambio vero si corregge sulla #141. Gli errori
-di Chromatic li legge l'utente nella dashboard: **si chiedono a lui**, non si
-rilancia Chromatic per ricavarli (ogni build costa 318 snapshot della quota).
+**Le quattro storie rosse del passo 1, risolte.** Tooltip · Hover, Long
+Content, Rich Content e Gallery · Drag Thumbnails fallivano solo nello
+Storybook compilato, cioè su Chromatic: lì il `play` parte prima degli
+`useEffect` del montaggio, e in locale no, perché `addon-vitest` monta dentro
+`act()`. La Gallery attacca il trascinamento in un effetto; il Tooltip di
+Tamagui 2.7.7 aggancia il passaggio del mouse due volte, e un hover fra le due
+perde il timer. Correzione nelle storie e non nei componenti: la Gallery
+aspetta un giro, le storie del Tooltip riprovano l'hover (`passaSopra`). Al
+passo 5, col Tooltip della v3, si riprova senza `passaSopra`: se il doppio
+aggancio sparisce, si toglie col suo commento. Per riprodurre una storia che
+fallisce solo su Chromatic: `storybook build` in una cartella fuori dal repo,
+e il `play` aperto con Playwright su `iframe.html?id=…`.
 
 **Aperti fuori da questo lotto:**
 
-- la porta di Mailpit è passata alla 1035 (`docker-compose.yml`, nella #141),
-  ma `.env.example` (riga 26) e il CLAUDE.md della radice (le porte) dicono
-  ancora 1025: un commit sulla #141, deciso ma non fatto;
-- prima del merge della #141, la build di produzione del web in locale
-  (`pnpm --filter web build && pnpm --filter web start`), e dopo il deploy su
-  pilecue.com accesso, «Password dimenticata» (nodemailer 10 col server SMTP
-  vero) e la vista compatta del backlog.
+- Mailpit sulla 1035: `.env.example` aggiornato dall'utente, il CLAUDE.md
+  della radice (le porte) dice ancora 1025;
+- dopo il deploy della #141 su pilecue.com: accesso, «Password dimenticata»
+  (nodemailer 10 col server SMTP vero) e la vista compatta del backlog. La
+  build di produzione del web in locale è verificata.
 
 **Cose già verificate, da non rifare:**
 
@@ -160,5 +158,5 @@ rilancia Chromatic per ricavarli (ogni build costa 318 snapshot della quota).
 **Da incollare nella chat nuova:**
 
 > Riprendiamo la migrazione a Tamagui 3: leggi `plans/tamagui-3.md`, in
-> particolare «Ripresa», e lavora sul branch `chore/tamagui-3`. Prima le tre
-> storie nuove che falliscono su Chromatic, poi il passo 2.
+> particolare «Ripresa», e lavora sul branch `chore/tamagui-3`. Si parte dal
+> passo 2.
