@@ -7,6 +7,21 @@ import { BrandIcon } from './brand-icon';
 import { Button } from './button';
 import { Tooltip } from './tooltip';
 
+// Il Tooltip di Tamagui 2.7.7 aggancia i listener due volte dopo il montaggio,
+// e un hover che cade fra i due perde il timer dell'apertura. Nello Storybook
+// compilato, cioè su Chromatic, il `play` parte proprio lì; in locale no,
+// perché `addon-vitest` monta le storie dentro `act()`. Si esce e si riprova.
+async function passaSopra(trigger: HTMLElement, testo: string | RegExp) {
+  await waitFor(
+    async () => {
+      await userEvent.unhover(trigger);
+      await userEvent.hover(trigger);
+      await expect(await screen.findByText(testo)).toBeVisible();
+    },
+    { timeout: 5000 },
+  );
+}
+
 const meta = {
   title: 'Components/Tooltip',
   component: Tooltip,
@@ -46,8 +61,7 @@ export const Hover: Story = {
     const button = within(canvasElement).getByRole('button', {
       name: 'Lingua',
     });
-    await userEvent.hover(button);
-    await waitFor(() => expect(screen.getByText('Lingua')).toBeVisible());
+    await passaSopra(button, 'Lingua');
     await userEvent.unhover(button);
     await waitFor(() => expect(screen.queryByText('Lingua')).toBeNull());
   },
@@ -60,16 +74,12 @@ export const Hover: Story = {
 export const LongContent: Story = {
   args: {
     content: 'Thronebreaker: The Witcher Tales — Edizione completa',
-    children: (
-      <Button variant="ghost">Thronebreaker: The…</Button>
-    ),
+    children: <Button variant="ghost">Thronebreaker: The…</Button>,
   },
   play: async ({ canvasElement }) => {
-    await userEvent.hover(
+    await passaSopra(
       within(canvasElement).getByRole('button', { name: /Thronebreaker/ }),
-    );
-    await waitFor(() =>
-      expect(screen.getByText(/Edizione completa/)).toBeVisible(),
+      /Edizione completa/,
     );
   },
 };
@@ -96,9 +106,9 @@ export const RichContent: Story = {
     ),
   },
   play: async ({ canvasElement }) => {
-    await userEvent.hover(
+    await passaSopra(
       within(canvasElement).getByRole('button', { name: 'Altri 3 negozi' }),
+      'GOG',
     );
-    await waitFor(() => expect(screen.getByText('GOG')).toBeVisible());
   },
 };
