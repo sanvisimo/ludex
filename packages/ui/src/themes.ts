@@ -1,10 +1,8 @@
-import { createV5Theme } from '@tamagui/config/v5';
-
+import { generatedThemes } from './frozen-themes';
 import {
   accents,
   defaultAccent,
   base,
-  states,
   toAccent,
   actionPress,
 } from './palettes';
@@ -12,37 +10,31 @@ import {
 /**
  * **Livello 2 — i semantici.**
  *
- * Tamagui li genera dai primitivi: `$background`, `$color`, `$borderColor`,
+ * Vengono dai primitivi: `$background`, `$color`, `$borderColor`,
  * `$accentBackground` e le loro varianti per hover, press e focus. È il livello
  * che fa da isolante — cambiando la base o l'accento cambia tutto senza toccare
  * un solo componente — ed è l'unico che i componenti hanno il diritto di
  * nominare.
  *
- * Restano le due potature del tema originale: quattro sottotemi di stato e
- * componentThemes disattivato. I ruoli surface/action/selection si aggiungono
- * agli stessi temi, senza generare un secondo set per il vecchio accento.
+ * La parte generata da Tamagui sta congelata in `frozen-themes.ts`. I ruoli
+ * surface/action/selection si aggiungono agli stessi temi, senza generare un
+ * secondo set per il vecchio accento.
  */
 const accent = accents[defaultAccent];
 
-const generatedThemes = createV5Theme({
-  lightPalette: Object.values(base.light),
-  darkPalette: Object.values(base.dark),
-  accent: {
-    light: toAccent(accent.light),
-    dark: toAccent(accent.dark),
-  },
-  childrenThemes: states,
-  componentThemes: false,
-});
+/**
+ * Il tipo di ogni tema è quello completo, come lo dava `createV5Theme`: nel
+ * letterale congelato i sottotemi hanno solo le chiavi che cambiano, e il
+ * resto lo eredita a runtime dal tema genitore. Senza, i token di un
+ * componente sarebbero solo quelli comuni a tutti i 56 temi.
+ */
+type Theme = typeof generatedThemes.light;
 
 /** Livello semantico condiviso: vale anche dentro superfici e sottotemi.
  * Le superfici seguono il tema locale; azioni e selezioni hanno l'identità
  * di brand del relativo schema. Non si genera un secondo set di temi.
  */
-function semanticRoles(
-  scheme: 'light' | 'dark',
-  theme: typeof generatedThemes.light,
-) {
+function semanticRoles(scheme: 'light' | 'dark', theme: Theme) {
   const brand = toAccent(accent[scheme]);
   return {
     surface: theme.color3,
@@ -91,11 +83,11 @@ export const themes = Object.fromEntries(
             borderColor: palette.step4,
           }
         : {};
-    const local = { ...theme, ...exact };
+    const local = { ...(theme as Theme), ...exact };
     return [name, { ...local, ...semanticRoles(scheme, local) }];
   }),
 ) as {
-  [Name in keyof typeof generatedThemes]: (typeof generatedThemes)[Name] &
+  [Name in keyof typeof generatedThemes]: Theme &
     ReturnType<typeof semanticRoles>;
 };
 

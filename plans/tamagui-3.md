@@ -1,8 +1,8 @@
 # Tamagui 3
 
 **Stato: in corso dal 16/11/2026**, piano approvato lo stesso giorno. Passo 1
-fatto e base di Chromatic pulita il 17/11, si riparte dal passo 2: vedi
-«Ripresa» in fondo. Lavoro interno: non entra nella roadmap pubblica.
+fatto e base di Chromatic pulita il 17/11, passo 2 fatto lo stesso giorno: si
+riparte dal passo 3, vedi «Ripresa» in fondo. Lavoro interno: non entra nella roadmap pubblica.
 
 ## Perché
 
@@ -54,12 +54,27 @@ Su `chore/tamagui-3`, da `main` (la PR #141, con React 19.3 e React Native
    build 12 del 17/11 è quella con tutte le storie verdi). Niente
    screenshot delle schermate: il «prima» è pilecue.com, che resta su Tamagui
    2 finché non c'è il deploy, e al passo 6 si confronta con quella.
-2. **I pacchetti e i temi.** Tutti i `tamagui` e `@tamagui/*` alla 3.3.3
+2. **I pacchetti e i temi — fatto il 17/11.** Tutti i `tamagui` e `@tamagui/*` alla 3.3.3
    insieme, `npx tamagui check` per i doppioni. Config v5; i temi di
    `createV5Theme` **congelati** come valori statici in `themes.ts`, generati
    una volta dalla 2.7.7 prima di aggiornare (default: niente pacchetto
    `@tamagui/config-v5`, che è un'altra dipendenza da tenere allineata).
    `@tamagui/vite-plugin` 3 nel web e in Storybook (solo ESM).
+   - Com'è andato: i temi sono in `packages/ui/src/frozen-themes.ts`, e il
+     risultato finale di `themes.ts` è identico byte per byte a quello della
+     2.7.7 (56 temi). `themes.ts` ridà a ogni tema il tipo completo, che il
+     letterale da solo non ha. Token, media, abbreviazioni e impostazioni di
+     `@tamagui/config/v5` 3.3.3 hanno gli stessi valori della 2.7.7: cambia
+     solo il nome delle chiavi (`$1.5` → `1-5`) e sparisce `$true`, che non
+     usiamo. `v5-css` usa già `@tamagui/animations-css/extras`, come vuole lo
+     Sheet; `quick` resta, ma ora è una molla (si guarda al passo 6).
+     `@tamagui/cli` è fra le dipendenze di sviluppo di `packages/ui`.
+   - Resta alla 2.7.7 solo `@tamagui/lucide-icons-2`, con la sua copia di
+     `@tamagui/core`: se ne va col passo 3.
+   - `tsc` su `packages/ui`: 384 errori, tutti dei passi 4 e 5. Oltre a quelli
+     previsti, `select.tsx` usa anch'esso `Sheet.Frame`, e i `focus-out` di
+     Dialog, Drawer e DropdownMenu non hanno più `preventDefault`.
+     Fino al passo 4 né il web né Storybook partono.
 3. **Le icone.** `@tamagui/cli icons add` per le 118 che usiamo, in
    `packages/ui/src/icons/`; `icons.ts` le ri-esporta, quindi gli import
    `@repo/ui/icons` non cambiano. Via `@tamagui/lucide-icons-2`, dentro
@@ -110,7 +125,7 @@ Compiler: lotti a parte.
 Scritta il 17/11/2026 per riprendere da una chat nuova.
 
 **Dove si è.** Branch `chore/tamagui-3`, rimesso sopra `main` dopo il merge
-della #141. Si riparte dal **passo 2**. La base di Chromatic è la build 12:
+della #141. Passo 2 fatto (vedi lì), si riparte dal **passo 3**. La base di Chromatic è la build 12:
 159 storie, nessuna rossa; le sue 159 immagini vanno accettate come base
 nella dashboard, se non è già stato fatto.
 
@@ -159,4 +174,4 @@ e il `play` aperto con Playwright su `iframe.html?id=…`.
 
 > Riprendiamo la migrazione a Tamagui 3: leggi `plans/tamagui-3.md`, in
 > particolare «Ripresa», e lavora sul branch `chore/tamagui-3`. Si parte dal
-> passo 2.
+> passo 3.

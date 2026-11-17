@@ -21,14 +21,14 @@
     "brand:email": "node scripts/generate-email-brand.mjs"
   },
   "dependencies": {
-    "@tamagui/colors": "^2.7.0",
-    "@tamagui/config": "^2.7.0",
-    "@tamagui/core": "^2.7.0",
-    "@tamagui/focus-scope": "2.7.7",
+    "@tamagui/colors": "^3.3.3",
+    "@tamagui/config": "^3.3.3",
+    "@tamagui/core": "^3.3.3",
+    "@tamagui/focus-scope": "3.3.3",
     "@tamagui/lucide-icons-2": "^2.7.7",
-    "@tamagui/toast": "2.7.7",
-    "@tamagui/web": "^2.7.0",
-    "tamagui": "^2.7.0"
+    "@tamagui/toast": "3.3.3",
+    "@tamagui/web": "^3.3.3",
+    "tamagui": "^3.3.3"
   },
   "peerDependencies": {
     "react": ">=19",
@@ -48,8 +48,9 @@
     "@storybook/addon-themes": "^10.6.0",
     "@storybook/addon-vitest": "^10.6.0",
     "@storybook/react-native-web-vite": "^10.6.0",
-    "@tamagui/react-native-svg": "^2.7.7",
-    "@tamagui/vite-plugin": "^2.7.7",
+    "@tamagui/cli": "3.3.3",
+    "@tamagui/react-native-svg": "^3.3.3",
+    "@tamagui/vite-plugin": "^3.3.3",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitest/browser": "^5.1.0",
