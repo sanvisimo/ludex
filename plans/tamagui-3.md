@@ -1,7 +1,8 @@
 # Tamagui 3
 
-**Stato: piano, scritto il 16/11/2026.** Il codice parte quando l'utente lo
-approva. Lavoro interno: non entra nella roadmap pubblica.
+**Stato: in corso dal 16/11/2026**, piano approvato lo stesso giorno. Passo 1
+fatto, si riparte dal passo 2: vedi «Ripresa» in fondo. Lavoro interno: non
+entra nella roadmap pubblica.
 
 ## Perché
 
@@ -48,10 +49,10 @@ la v5 i nomi dei temi vanno verificati al passo 2, prima del codemod.
 Su un branch da `chore/expo-58` (React 19.3 e React Native 0.88 servono),
 finché la PR #141 non è unita; poi da `main`.
 
-1. **Lo stato di partenza.** Una build di Storybook su Chromatic come base dei
-   pixel, e screenshot delle schermate che contano: home, `/backlog` nelle tre
-   viste coi filtri aperti, pagina del gioco, playlist, wishlist, account,
-   admin; sull'emulatore Accedi e Account.
+1. **Lo stato di partenza — fatto il 16/11.** Una build di Storybook su
+   Chromatic come base dei pixel (build 10 e 11, su `chore/tamagui-3`). Niente
+   screenshot delle schermate: il «prima» è pilecue.com, che resta su Tamagui
+   2 finché non c'è il deploy, e al passo 6 si confronta con quella.
 2. **I pacchetti e i temi.** Tutti i `tamagui` e `@tamagui/*` alla 3.3.3
    insieme, `npx tamagui check` per i doppioni. Config v5; i temi di
    `createV5Theme` **congelati** come valori statici in `themes.ts`, generati
@@ -76,9 +77,11 @@ finché la PR #141 non è unita; poi da `main`.
 6. **Le verifiche.**
    - `tsc`, lint, i tre banchi di test (le storie in Chromium con axe);
    - Chromatic contro la base del passo 1: ogni differenza si guarda;
-   - le schermate del passo 1 a mano sul web, chiaro e scuro, telefono e
-     desktop: drawer dei filtri, dialoghi, menu, tooltip da tastiera, toast,
-     trascinamento delle playlist;
+   - le schermate a mano, accanto alle stesse su pilecue.com, chiaro e
+     scuro, telefono e desktop: home, `/backlog` nelle tre viste coi filtri
+     aperti, pagina del gioco, playlist, wishlist, account, admin; drawer dei
+     filtri, dialoghi, menu, tooltip da tastiera, toast, trascinamento delle
+     playlist;
    - l'app sull'emulatore: Accedi, Account, il Select del tema;
    - la build del web senza errori di Tamagui nel log (l'ottimizzazione che
      salta lo dice solo lì, vedi `apps/web/CLAUDE.md`).
@@ -100,3 +103,62 @@ finché la PR #141 non è unita; poi da `main`.
 
 La Config v6 (colori a 11 passi, griglia di 4 pixel) e le regole del React
 Compiler: lotti a parte.
+
+## Ripresa
+
+Scritta il 17/11/2026 per riprendere da una chat nuova.
+
+**Dove si è.** Branch `chore/tamagui-3`, sopra `chore/expo-58` (la PR #141,
+non ancora unita: M1 del mobile, Expo SDK 58, React 19.3, TypeScript 6 e gli
+altri aggiornamenti). Sul branch c'è solo questo piano. Se la #141 viene unita
+prima, `chore/tamagui-3` si rimette sopra `main` (`git rebase main`).
+
+**Il passo 1 ha lasciato quattro storie rosse su Chromatic**, per le
+interazioni (`play`), non per il rendering; in locale (`pnpm --filter
+@repo/ui test`) passano tutte e 159:
+
+- **Tooltip · Hover**: c'era già prima della #141.
+- **Tooltip · Long Content** e **Tooltip · Rich Content**: nuove con la #141.
+  Il tooltip non compare dopo l'`hover`; Long Content l'ha toccata la #141
+  (tolto l'`aria-label`, che axe 4.14 bocciava), Rich Content no.
+- **Gallery · Drag Thumbnails** (`expected 0 to be 100`): nuova con la #141.
+  Chromatic fotografa a 2400×1800, dove le miniature stanno tutte in vista e
+  non scorrono; ma prima passava, quindi c'è anche altro (React 19.3, o il
+  cast del ref di ScrollView in `gallery.tsx`).
+
+Le tre nuove si guardano **prima del passo 2**, in locale con Storybook
+(`pnpm --filter @repo/ui dev`), così la base è pulita: se sono tempi si allunga
+l'attesa delle storie, se è un cambio vero si corregge sulla #141. Gli errori
+di Chromatic li legge l'utente nella dashboard: **si chiedono a lui**, non si
+rilancia Chromatic per ricavarli (ogni build costa 318 snapshot della quota).
+
+**Aperti fuori da questo lotto:**
+
+- la porta di Mailpit è passata alla 1035 (`docker-compose.yml`, nella #141),
+  ma `.env.example` (riga 26) e il CLAUDE.md della radice (le porte) dicono
+  ancora 1025: un commit sulla #141, deciso ma non fatto;
+- prima del merge della #141, la build di produzione del web in locale
+  (`pnpm --filter web build && pnpm --filter web start`), e dopo il deploy su
+  pilecue.com accesso, «Password dimenticata» (nodemailer 10 col server SMTP
+  vero) e la vista compatta del backlog.
+
+**Cose già verificate, da non rifare:**
+
+- le icone non hanno un pacchetto v3: si generano con `@tamagui/cli icons add`
+  (pagina [lucide-icons](https://tamagui.dev/ui/lucide-icons#migrating-from-v2));
+  `@tamagui/helpers-icon` è alla 3.3.3 stabile;
+- `@tamagui/vite-plugin`, `@tamagui/toast`, `@tamagui/focus-scope`,
+  `@tamagui/react-native-svg`, `@tamagui/cli` sono tutti alla 3.3.3;
+- `themes.ts` usa `createV5Theme` da `@tamagui/config/v5`, rimosso nella v3;
+  `config.ts` usa `defaultConfig` da `@tamagui/config/v5` e le animazioni da
+  `@tamagui/config/v5-css`, che restano;
+- il riassunto completo della guida (pacchetti rimossi, token, temi, stili
+  piatti, componenti, animazioni, compilatore, verifiche) va riletto alla
+  fonte: la pagina HTML si tronca, il testo intero sta in
+  `https://tamagui.dev/llms.txt`.
+
+**Da incollare nella chat nuova:**
+
+> Riprendiamo la migrazione a Tamagui 3: leggi `plans/tamagui-3.md`, in
+> particolare «Ripresa», e lavora sul branch `chore/tamagui-3`. Prima le tre
+> storie nuove che falliscono su Chromatic, poi il passo 2.
