@@ -564,10 +564,15 @@ che non si indovinano:
   di rimettere un caso in verifica. Il server usa `igdbPlatformNamer` per
   restituire gli stessi nomi nella lista, in `IgdbPicker` e nelle copie in
   testa a «Non è questo gioco».
-- **«Uso»** (`/admin/usage`, `plans/admin-uso.md`) legge e basta: utenti,
-  giochi, code e chiamate alle fonti esterne. I grafici sono **Recharts**, solo
-  qui e non in `@repo/ui` (`DayBars`, `components/admin/day-bars.tsx`), coi
-  colori dalle variabili del tema. I giorni sono UTC, come sul server.
+- **«Utenti»** usa `q` e `page` nell’URL. La paginazione è lato server;
+  una nuova ricerca riparte dalla prima pagina. Cambio ruolo e chiusura
+  delle sessioni richiedono conferma dalla riga dell’account.
+- **«Uso»** (`/admin/usage`, `plans/admin-uso.md`) apre gli indicatori
+  principali e le viste Utenti e librerie, Catalogo e API e code. Le
+  ultime due si salvano nell’URL con `view=catalog` e `view=operations`.
+  I grafici Recharts (`DayBars`) usano i token del tema. I giorni sono UTC,
+  come sul server. Quando Redis è indisponibile, gli altri indicatori
+  rimangono consultabili.
 - **Le copertine dei risultati di HLTB e Metacritic** arrivano dalla loro
   ricerca; quelle di OpenCritic no, e costerebbero il budget.
 

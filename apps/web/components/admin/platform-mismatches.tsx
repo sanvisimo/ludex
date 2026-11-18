@@ -170,7 +170,7 @@ function MismatchTable({ dismissed }: { dismissed: boolean }) {
       render: (row) => (
         <>
           <ButtonLink
-            href={`/admin/games/${row.slug}`}
+            href={`/admin/games/${row.slug}#links`}
             role="link"
             size="sm"
             aria-label={t('openGame', { name: row.name })}
