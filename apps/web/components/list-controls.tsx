@@ -145,9 +145,9 @@ export function SortSelect({
         aria-label={t(direction === 'asc' ? 'ascending' : 'descending')}
       >
         {direction === 'asc' ? (
-          <ArrowUpNarrowWide size={16} color="$color12" />
+          <ArrowUpNarrowWide size={16} color="color12" />
         ) : (
-          <ArrowDownWideNarrow size={16} color="$color12" />
+          <ArrowDownWideNarrow size={16} color="color12" />
         )}
       </Button>
     </XStack>

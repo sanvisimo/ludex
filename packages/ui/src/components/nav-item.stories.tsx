@@ -83,11 +83,11 @@ export const WithCount: Story = {
 /** Chiaro e scuro affiancati: la voce attiva deve staccarsi in tutti e due. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap={4} bg="$background" p="$3" rounded="$4" width={224}>
-            <Text color="$color11" fontSize={12}>
+          <YStack gap={4} bg="background" p="3" rounded="4" width={224}>
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
             <NavItem href="#catalogo" icon={<House size={16} />}>

@@ -31,10 +31,10 @@ export const Default: Story = {
 /** Un'icona scura resta leggibile anche sul tema scuro: il cerchio è chiaro. */
 export const Themes: Story = {
   render: (args) => (
-    <XStack gap="$4">
+    <XStack gap="4">
       {(['light', 'dark'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack bg="$background" p="$4" rounded="$4">
+          <YStack bg="background" p="4" rounded="4">
             <PlatformIcon {...args} size={32} />
           </YStack>
         </Theme>

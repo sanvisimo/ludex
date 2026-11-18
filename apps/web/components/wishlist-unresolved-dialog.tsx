@@ -87,7 +87,7 @@ export function WishlistUnresolvedDialog({
         <YStack flex={1} minW={0} gap={2}>
           <Text
             fontWeight="500"
-            color="$color12"
+            color="color12"
             // Gli attributi dell'elemento non sono nei tipi del testo: l'id del
             // negozio sta nel suggerimento, per riconoscere una voce che si chiama
             // «Production».
@@ -95,7 +95,7 @@ export function WishlistUnresolvedDialog({
           >
             {entry.name}
           </Text>
-          <Text fontSize={13} lineHeight={18} color="$color11">
+          <Text fontSize={13} lineHeight="18px" color="color11">
             {[
               storeLabels[entry.store],
               entry.hiddenAt
@@ -159,7 +159,7 @@ export function WishlistUnresolvedDialog({
     >
       <DialogContent
         size={resolving ? 'wide' : 'default'}
-        $lg={{ maxW: resolving ? 960 : 560 }}
+        maxW={`lg:${resolving ? 960 : 560}px`}
         closeLabel={tMatch('close')}
       >
         {resolving ? (
@@ -220,13 +220,13 @@ export function WishlistUnresolvedDialog({
               {entries.isPending ? (
                 <Skeleton height={64} rounded={6} />
               ) : entries.error ? (
-                <Text fontSize={14} color="$red11">
+                <Text fontSize={14} color="red11">
                   {t('loadFailed')}
                 </Text>
               ) : (
                 <>
                   {pending.length === 0 ? (
-                    <Text fontSize={14} color="$color11" py={8}>
+                    <Text fontSize={14} color="color11" py={8}>
                       {t('none')}
                     </Text>
                   ) : (

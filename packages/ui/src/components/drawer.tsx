@@ -99,11 +99,9 @@ export function Drawer({
       <DialogBase.Portal>
         <DialogBase.Overlay
           key="overlay"
-          bg="$shadow6"
+          bg="shadow6"
           transition="quick"
-          opacity={1}
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
+          opacity="1 enter:0 exit:0"
         />
         <DialogBase.Content
           key="content"
@@ -115,17 +113,15 @@ export function Drawer({
           maxW={380}
           p={0}
           rounded={0}
-          bg="$color2"
+          bg="color2"
           borderLeftWidth={1}
-          borderColor="$borderColor"
+          borderColor="border-color"
           transition="quick"
-          x={0}
-          opacity={1}
-          enterStyle={{ x: 40, opacity: 0 }}
-          exitStyle={{ x: 40, opacity: 0 }}
-          // `preventDefault` salta il rientro di Tamagui sul trigger che non
+          x="0 enter:40px exit:40px"
+          opacity="1 enter:0 exit:0"
+          // `cancel` salta il rientro di Tamagui sul trigger che non
           // c'è: il focus l'ha già rimesso a posto l'effetto qui sopra.
-          onCloseAutoFocus={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => event.cancel()}
         >
           <XStack
             items="center"
@@ -134,14 +130,14 @@ export function Drawer({
             px={16}
             py={12}
             borderBottomWidth={1}
-            borderColor="$borderColor"
+            borderColor="border-color"
           >
             <DialogBase.Title
-              fontFamily="$heading"
+              fontFamily="heading"
               fontSize={18}
-              lineHeight={24}
+              lineHeight="24px"
               fontWeight="600"
-              color="$color12"
+              color="color12"
             >
               {title}
             </DialogBase.Title>

@@ -35,10 +35,10 @@ export function GameTitleLink({
       >
         <Text
           fontSize={14}
-          lineHeight={20}
+          lineHeight="20px"
           fontWeight="500"
-          color="$color12"
-          hoverStyle={{ textDecorationLine: 'underline' }}
+          color="color12"
+          textDecorationLine="hover:underline"
           numberOfLines={lines}
         >
           {game.name}

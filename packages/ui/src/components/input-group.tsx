@@ -20,22 +20,16 @@ import { Input } from './input';
 export const InputGroup = styled(XStack, {
   name: 'InputGroup',
   role: 'group',
-
   height: 32,
   width: '100%',
   minW: 0,
   items: 'center',
   rounded: 8,
   borderWidth: 1,
-  borderColor: '$color9',
-
-  hoverStyle: { borderColor: '$color10' },
-  focusWithinStyle: {
-    borderColor: '$accent9',
-    outlineColor: '$outlineColor',
-    outlineStyle: 'solid',
-    outlineWidth: 2,
-  },
+  borderColor: 'color9 hover:color10 focus-within:accent9',
+  outlineColor: 'focus-within:outline-color',
+  outlineStyle: 'focus-within:solid',
+  outlineWidth: 'focus-within:2px',
 });
 
 /**
@@ -44,16 +38,13 @@ export const InputGroup = styled(XStack, {
  */
 export const InputGroupInput = styled(Input, {
   name: 'InputGroupInput',
-
   flex: 1,
   height: '100%',
   borderWidth: 0,
   rounded: 0,
   bg: 'transparent',
-
-  hoverStyle: { borderColor: 'transparent' },
-  focusStyle: { borderColor: 'transparent' },
-  focusVisibleStyle: { outlineWidth: 0 },
+  borderColor: 'hover:transparent focus:transparent',
+  outlineWidth: 'focus-visible:0px',
 }) as unknown as typeof Input;
 
 /** Ciò che sta accanto al campo, prima o dopo. */

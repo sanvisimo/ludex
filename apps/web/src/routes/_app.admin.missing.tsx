@@ -137,10 +137,10 @@ function MissingSection() {
   return (
     <YStack gap={24}>
       <YStack gap={4}>
-        <Text render="h2" fontSize={18} lineHeight={24} fontWeight="600">
+        <Text render="h2" fontSize={18} lineHeight="24px" fontWeight="600">
           {t('missing.title')}
         </Text>
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {t('missing.description')}
         </Text>
       </YStack>
@@ -247,8 +247,8 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
       <Link from={Route.fullPath} search={{ source: row.source, bucket }}>
         <Text
           fontSize={13}
-          lineHeight={18}
-          color="$color12"
+          lineHeight="18px"
+          color="color12"
           textDecorationLine="underline"
           numberOfLines={1}
         >
@@ -287,7 +287,7 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
         rowKey={(row) => row.source}
       />
       <Link to="/admin/unresolved">
-        <Text fontSize={13} color="$color11" textDecorationLine="underline">
+        <Text fontSize={13} color="color11" textDecorationLine="underline">
           {t('missing.openUnresolved', { count: summary.unresolvedImports })}
         </Text>
       </Link>
@@ -404,9 +404,9 @@ function MissingList({
             {row.reason ? (
               <Text
                 fontSize={13}
-                lineHeight={18}
+                lineHeight="18px"
                 fontWeight="600"
-                color="$color12"
+                color="color12"
               >
                 {t(`reason.${row.reason}`)}
               </Text>

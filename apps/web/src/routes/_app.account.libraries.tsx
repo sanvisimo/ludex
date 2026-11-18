@@ -92,7 +92,7 @@ function LibrariesSection() {
       ) : rows.length === 0 ? (
         <>
           <EmptyState
-            icon={<Library size={24} color="$color11" />}
+            icon={<Library size={24} color="color11" />}
             title={t('libraries.emptyTitle')}
             description={t('libraries.emptyDescription')}
           />

@@ -33,11 +33,11 @@ export function PlayedTime({
       role="img"
       aria-label={t('playedLabel', { duration: duration(minutes) })}
     >
-      <Clock size={labelled ? 12 : 14} color="$color11" aria-hidden />
+      <Clock size={labelled ? 12 : 14} color="color11" aria-hidden />
       <Text
         fontSize={labelled ? 12 : 14}
-        lineHeight={20}
-        color="$color11"
+        lineHeight="20px"
+        color="color11"
         aria-hidden
       >
         {labelled

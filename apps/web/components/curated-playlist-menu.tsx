@@ -79,7 +79,7 @@ export function CuratedPlaylistMenu({
               size="icon"
               aria-label={t('actionsFor', { name: playlist.name })}
             >
-              <EllipsisVertical size={16} color="$color11" />
+              <EllipsisVertical size={16} color="color11" />
             </Button>
           }
         />
@@ -120,7 +120,7 @@ export function CuratedPlaylistMenu({
           <DropdownMenuSeparator />
           <DropdownMenuItem
             destructive
-            icon={<Trash2 size={16} color="$red11" />}
+            icon={<Trash2 size={16} color="red11" />}
             onClick={() => setDeleting(true)}
           >
             {t('delete')}
@@ -265,7 +265,7 @@ function NameForm({
             autoFocus
           />
           {creating && !gameId && (
-            <Text fontSize={13} lineHeight={18} color="$color11">
+            <Text fontSize={13} lineHeight="18px" color="color11">
               {t('hint')}
             </Text>
           )}

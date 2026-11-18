@@ -13,9 +13,9 @@ export function CriticScoreBadge({
   return (
     <Theme name={tone}>
       <XStack
-        bg="$color3"
+        bg="color3"
         borderWidth={1}
-        borderColor="$color6"
+        borderColor="color6"
         rounded={compact ? 10 : 14}
         px={compact ? 10 : 14}
         py={compact ? 6 : 10}
@@ -26,16 +26,16 @@ export function CriticScoreBadge({
         shrink={0}
       >
         <Text
-          fontFamily="$heading"
+          fontFamily="heading"
           fontSize={compact ? 20 : 28}
-          lineHeight={compact ? 26 : 34}
+          lineHeight={compact ? '26px' : '34px'}
           fontWeight="600"
-          color="$color12"
+          color="color12"
           style={{ fontVariantNumeric: 'tabular-nums' }}
         >
           {value}
         </Text>
-        <Text fontSize={11} lineHeight={16} color="$color12">
+        <Text fontSize={11} lineHeight="16px" color="color12">
           /100
         </Text>
       </XStack>

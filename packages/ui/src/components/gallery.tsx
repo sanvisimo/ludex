@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import type { ScrollViewInstance } from 'react-native';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Image, ScrollView, XStack, YStack, isWeb } from 'tamagui';
 
 import { ChevronLeft, ChevronRight } from '../icons';
@@ -58,7 +57,7 @@ export type GalleryProps = {
 export function Gallery({ items, labels }: GalleryProps) {
   const [index, setIndex] = useState(0);
   const [enlarged, setEnlarged] = useState(false);
-  const scroller = useRef<ScrollViewInstance>(null);
+  const scroller = useRef<ComponentRef<typeof ScrollView>>(null);
   const thumbs = useRef<HTMLElement | null>(null);
   const previousIndex = useRef(index);
 
@@ -212,15 +211,13 @@ export function Gallery({ items, labels }: GalleryProps) {
           aspectRatio={16 / 9}
           overflow="hidden"
           rounded={8}
-          bg="$color3"
+          bg="color3"
           borderWidth={0}
           p={0}
           cursor="zoom-in"
-          focusVisibleStyle={{
-            outlineColor: '$outlineColor',
-            outlineStyle: 'solid',
-            outlineWidth: 2,
-          }}
+          outlineColor="focus-visible:outline-color"
+          outlineStyle="focus-visible:solid"
+          outlineWidth="focus-visible:2px"
         >
           <Image
             src={current.src}
@@ -235,10 +232,7 @@ export function Gallery({ items, labels }: GalleryProps) {
       {total > 1 && (
         <XStack items="center" gap={8}>
           <ScrollView
-            // Tamagui 2.7 tipizza il ref come il componente ScrollView di React
-            // Native, che dalla 0.88 è una funzione: l'istanza vera è
-            // `ScrollViewInstance`, quella che `scroller` dichiara.
-            ref={scroller as never}
+            ref={scroller}
             horizontal
             flex={1}
             showsHorizontalScrollIndicator={false}
@@ -257,17 +251,14 @@ export function Gallery({ items, labels }: GalleryProps) {
                   overflow="hidden"
                   rounded={6}
                   p={0}
-                  bg="$color3"
+                  bg="color3"
                   borderWidth={2}
-                  borderColor={i === index ? '$accent9' : 'transparent'}
-                  opacity={i === index ? 1 : 0.7}
+                  borderColor={i === index ? 'accent9' : 'transparent'}
+                  opacity={`${i === index ? 1 : 0.7} hover:1`}
                   cursor="pointer"
-                  hoverStyle={{ opacity: 1 }}
-                  focusVisibleStyle={{
-                    outlineColor: '$outlineColor',
-                    outlineStyle: 'solid',
-                    outlineWidth: 2,
-                  }}
+                  outlineColor="focus-visible:outline-color"
+                  outlineStyle="focus-visible:solid"
+                  outlineWidth="focus-visible:2px"
                 >
                   <Image
                     src={

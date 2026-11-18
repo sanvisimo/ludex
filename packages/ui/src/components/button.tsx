@@ -1,5 +1,34 @@
-import { Button as ButtonBase, isWeb, styled, useThemeName } from 'tamagui';
+import { createStyledHOC, isWeb, styled, useThemeName } from 'tamagui';
 import type { GetProps } from 'tamagui';
+import {
+  ButtonFrame as ButtonBehaviorFrame,
+  ButtonText as ButtonBehaviorText,
+  textParentInlineProps,
+  useButton,
+  type ButtonBehaviorProps,
+} from 'tamagui/unstyled';
+
+/**
+ * Il comportamento del bottone di Tamagui — il testo avvolto, il `<button>`,
+ * lo stato disabilitato — senza la sua pelle. Il `Button` di `tamagui` ha
+ * taglie sue (`xs`…`xl`) che leggono la stessa prop `size` delle nostre, e ci
+ * mettevano sopra padding e altezza minima: 38 pixel invece di 32.
+ * `inlineProps` fa arrivare al testo colore e carattere delle varianti qui
+ * sotto, come fa la pelle, anche su React Native, dove il testo non li eredita.
+ */
+const ButtonText = styled(ButtonBehaviorText, {
+  name: 'ButtonText',
+  select: 'none',
+});
+
+const ButtonBehavior = createStyledHOC(
+  ButtonBehaviorFrame,
+  function ButtonBehavior(props: ButtonBehaviorProps, ref) {
+    const { props: buttonProps } = useButton(props, { Text: ButtonText });
+    return <ButtonBehaviorFrame ref={ref} {...buttonProps} />;
+  },
+  { staticConfig: { inlineProps: textParentInlineProps } },
+);
 
 /**
  * Il bottone.
@@ -19,50 +48,33 @@ import type { GetProps } from 'tamagui';
  * I nomi (`variant`, `size`, e i valori) restano quelli di prima, così le
  * schermate cambiano l'import e non la struttura.
  */
-const ButtonFrame = styled(ButtonBase, {
+const ButtonFrame = styled(ButtonBehavior, {
   name: 'Button',
-
   borderWidth: 1,
+  borderStyle: 'solid',
   borderColor: 'transparent',
+  cursor: 'web:pointer',
   fontWeight: '500',
-  // Le nostre size (default, sm, icon…) non sono token tipografici Tamagui.
-  iconSize: '$true',
-
   // Il focus si vede **solo da tastiera**: `focusVisibleStyle` e non
   // `focusStyle`, o l'anello comparirebbe a ogni clic del mouse.
-  focusVisibleStyle: {
-    outlineColor: '$outlineColor',
-    outlineStyle: 'solid',
-    outlineWidth: 2,
-    outlineOffset: 2,
-  },
-
-  disabledStyle: {
-    opacity: 0.5,
-  },
-
+  outlineColor: 'focus-visible:outline-color',
+  outlineStyle: 'focus-visible:solid',
+  outlineWidth: 'focus-visible:2px',
+  outlineOffset: 'focus-visible:2px',
+  opacity: 'disabled:0.5',
   variants: {
     variant: {
       /** Coppie fondo/testo misurate in entrambi i temi, anche in pressione. */
       default: {
-        bg: '$actionBackground',
-        color: '$actionColor',
-        hoverStyle: { bg: '$actionBackgroundHover' },
-        pressStyle: { bg: '$actionBackgroundPress' },
+        bg: 'actionBackground hover:actionBackgroundHover press:actionBackgroundPress',
+        color: 'actionColor',
       },
       /** Filtri attivi: superficie tenue distinta dall'azione principale. */
       selection: {
-        bg: '$selectionBackground',
-        color: '$selectionColor',
-        borderColor: '$selectionBorder',
-        hoverStyle: {
-          bg: '$selectionBackgroundHover',
-          borderColor: '$selectionBorderHover',
-        },
-        pressStyle: {
-          bg: '$selectionBackgroundPress',
-          borderColor: '$selectionBorderPress',
-        },
+        bg: 'selectionBackground hover:selectionBackgroundHover press:selectionBackgroundPress',
+        color: 'selectionColor',
+        borderColor:
+          'selectionBorder hover:selectionBorderHover press:selectionBorderPress',
       },
       /**
        * Il bordo è `$color9` e non `$borderColor`, ed è una scelta **misurata**:
@@ -78,29 +90,23 @@ const ButtonFrame = styled(ButtonBase, {
        * Radix mettono al passo 9 la tinta piena, non un filo.
        */
       outline: {
-        bg: '$background',
-        borderColor: '$color9',
-        color: '$color12',
-        hoverStyle: { bg: '$color3', borderColor: '$color10' },
-        pressStyle: { bg: '$color4', borderColor: '$color10' },
+        bg: 'background hover:color3 press:color4',
+        borderColor: 'color9 hover:color10 press:color10',
+        color: 'color12',
       },
       secondary: {
-        bg: '$color6',
-        color: '$color12',
         // Sopra il base, non sotto: con `$color4` e `$color5` il bottone si
         // **abbassava** al passaggio del mouse, che è il contrario di ciò che
         // un rilievo deve fare.
-        hoverStyle: { bg: '$color7' },
-        pressStyle: { bg: '$color8' },
+        bg: 'color6 hover:color7 press:color8',
+        color: 'color12',
       },
       /** Il più usato: sta in silenzio finché non lo si sfiora. */
       ghost: {
-        bg: 'transparent',
-        color: '$color11',
-        hoverStyle: { bg: '$color6', color: '$color12' },
         // Premendo deve succedere qualcosa: con lo stesso `$color6` dell'hover
         // il clic non dava nessun ritorno.
-        pressStyle: { bg: '$color7', color: '$color12' },
+        bg: 'transparent hover:color6 press:color7',
+        color: 'color11 hover:color12 press:color12',
       },
       /**
        * Tinta e non superficie piena, come prima: un rosso pieno accanto a
@@ -108,10 +114,8 @@ const ButtonFrame = styled(ButtonBase, {
        * e sono gesti che il dialogo di conferma spiega già.
        */
       destructive: {
-        bg: '$red3',
-        color: '$red11',
-        hoverStyle: { bg: '$red4' },
-        pressStyle: { bg: '$red5' },
+        bg: 'red3 hover:red4 press:red5',
+        color: 'red11',
       },
     },
 
@@ -119,39 +123,36 @@ const ButtonFrame = styled(ButtonBase, {
       // Sul telefono 44, come l'Input: la misura minima di tocco, e nei moduli
       // bottone e campo restano alti uguali.
       default: {
-        height: 32,
+        height: '32px native:44px',
         px: 10,
         rounded: 8,
         fontSize: 14,
         gap: 6,
-        '$platform-native': { height: 44 },
       },
       sm: { height: 28, px: 10, rounded: 8, fontSize: 13, gap: 4 },
       // I tre formati quadrati per i bottoni di sola icona.
       icon: {
-        height: 32,
-        width: 32,
+        height: '32px native:44px',
+        width: '32px native:44px',
         px: 0,
         rounded: 8,
-        '$platform-native': { height: 44, width: 44 },
       },
       'icon-sm': { height: 28, width: 28, px: 0, rounded: 8 },
       'icon-xs': { height: 24, width: 24, px: 0, rounded: 6 },
     },
   } as const,
-
   defaultVariants: {
     variant: 'default',
     size: 'default',
   },
 });
 
-// Il Button styleable di Tamagui 2.7.7 risolve le varianti native prima
-// del cambio di schema e può conservarne i colori. Passare il nome al frame
+// Su Tamagui 2.7.7 il Button risolveva le varianti native prima del cambio di
+// schema e poteva conservarne i colori. Passare il nome al frame
 // forza la risoluzione nel tema corrente senza rimontare o perdere stato.
 export const Button = isWeb
   ? ButtonFrame
-  : ButtonFrame.styleable((props, ref) => {
+  : createStyledHOC(ButtonFrame, (props: ButtonProps, ref) => {
       const theme = useThemeName();
       return <ButtonFrame {...props} ref={ref} theme={props.theme ?? theme} />;
     });

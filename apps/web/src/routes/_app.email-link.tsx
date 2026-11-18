@@ -72,7 +72,7 @@ function EmailLinkPage() {
     <Page maxW={480}>
       <Card>
         <CardHeader>
-          <CardTitle fontSize={18} lineHeight={28}>
+          <CardTitle fontSize={18} lineHeight="28px">
             {t(`${key}.title`)}
           </CardTitle>
           <CardDescription>

@@ -78,7 +78,7 @@ export function PossibleDuplicates({
 
   return (
     <YStack gap={12}>
-      <Text fontSize={14} lineHeight={20} color="$color11">
+      <Text fontSize={14} lineHeight="20px" color="color11">
         {t('description')}
       </Text>
 
@@ -93,7 +93,7 @@ export function PossibleDuplicates({
             p={12}
             rounded={12}
             borderWidth={1}
-            borderColor="$borderColor"
+            borderColor="border-color"
           >
             <XStack gap={12} items="flex-start" flexWrap="wrap">
               <UnresolvedCover
@@ -112,16 +112,16 @@ export function PossibleDuplicates({
                     params={{ slug: product.main.gameSlug }}
                     style={{ color: 'inherit' }}
                   >
-                    <Text fontWeight="600" color="$color12">
+                    <Text fontWeight="600" color="color12">
                       {product.main.name}
                     </Text>
                   </Link>
                 ) : (
-                  <Text fontWeight="600" color="$color12">
+                  <Text fontWeight="600" color="color12">
                     {product.main.name}
                   </Text>
                 )}
-                <Text fontSize={13} lineHeight={18} color="$color11">
+                <Text fontSize={13} lineHeight="18px" color="color11">
                   {product.main.gameSlug
                     ? t('alsoInProduct', {
                         store: storeName,
@@ -160,7 +160,7 @@ export function PossibleDuplicates({
                     variant="outline"
                     onClick={() => onResolve(entry)}
                   >
-                    <Link2 size={16} color="$color12" />
+                    <Link2 size={16} color="color12" />
                     {t('standalone')}
                   </Button>
                   <HideMenu

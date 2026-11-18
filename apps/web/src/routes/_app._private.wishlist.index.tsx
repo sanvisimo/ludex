@@ -54,7 +54,7 @@ function WishlistsPage() {
 
   const newList = (
     <Button variant="outline" onClick={() => setCreating(true)}>
-      <Plus size={16} color="$color12" />
+      <Plus size={16} color="color12" />
       {t('newList')}
     </Button>
   );
@@ -70,14 +70,14 @@ function WishlistsPage() {
       {accounts.data && <StoreImportNotices accounts={accounts.data} />}
 
       {lists.error ? (
-        <Text fontSize={14} color="$red11">
+        <Text fontSize={14} color="red11">
           {t('error')}
         </Text>
       ) : lists.isPending ? (
         <BandSkeleton />
       ) : rows.length === 0 && importing ? null : rows.length === 0 ? (
         <EmptyState
-          icon={<Heart size={24} color="$color11" />}
+          icon={<Heart size={24} color="color11" />}
           title={t('emptyTitle')}
           description={t('emptyHint')}
           action={newList}
@@ -95,11 +95,11 @@ function WishlistsPage() {
                 {mine.length > 0 && fromStores.length > 0 && (
                   <Text
                     render="h2"
-                    fontFamily="$heading"
+                    fontFamily="heading"
                     fontSize={14}
-                    lineHeight={20}
+                    lineHeight="20px"
                     fontWeight="600"
-                    color="$color11"
+                    color="color11"
                     m={0}
                   >
                     {group.key === 'mine'
@@ -178,11 +178,11 @@ function WishlistBand({
           >
             <Text
               render="h2"
-              fontFamily="$heading"
+              fontFamily="heading"
               fontSize={18}
-              lineHeight={24}
+              lineHeight="24px"
               fontWeight="600"
-              color="$color12"
+              color="color12"
               numberOfLines={1}
               m={0}
             >
@@ -190,7 +190,7 @@ function WishlistBand({
             </Text>
           </Link>
           {band.data && (
-            <Text fontSize={14} lineHeight={20} color="$color11">
+            <Text fontSize={14} lineHeight="20px" color="color11">
               {tBacklog('count', { count: band.data.total })}
             </Text>
           )}
@@ -212,13 +212,13 @@ function WishlistBand({
       arrowsFromMd
     >
       {band.error ? (
-        <Text fontSize={14} color="$red11">
+        <Text fontSize={14} color="red11">
           {t('loadFailed')}
         </Text>
       ) : band.isPending ? (
         <CardSkeletons />
       ) : games.length === 0 ? (
-        <Text fontSize={14} lineHeight={20} color="$color11">
+        <Text fontSize={14} lineHeight="20px" color="color11">
           {list.store ? t('store.emptyList') : t('emptyList')}
         </Text>
       ) : (

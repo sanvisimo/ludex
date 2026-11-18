@@ -180,7 +180,7 @@ export function SearchField({
         <PopperAnchor width="100%" {...props}>
           <InputGroup>
             <InputGroupAddon align="inline-start" pl={8} aria-hidden>
-              <Search size={14} color="$color11" />
+              <Search size={14} color="color11" />
             </InputGroupAddon>
             <InputGroupInput
               id={id}
@@ -230,14 +230,14 @@ export function SearchField({
               // tendina sì; e un clic dentro non porta via il fuoco al campo,
               // o lo chiuderebbe prima che il clic sulla voce arrivi.
               pointerEvents="auto"
-              onMouseDown={(event) => event.preventDefault()}
               width={'var(--tamagui-popper-anchor-width)' as never}
               minW={280}
               p={4}
               rounded={8}
-              bg="$color2"
+              bg="color2"
               borderWidth={1}
-              borderColor="$borderColor"
+              borderColor="border-color"
+              onMouseDown={(event) => event.preventDefault()}
             >
               <ScrollView maxH={440} width="100%">
                 <YStack
@@ -276,9 +276,9 @@ export function SearchFieldGroup({
         pt={8}
         pb={4}
         fontSize={12}
-        lineHeight={16}
+        lineHeight="16px"
         fontWeight="500"
-        color="$color11"
+        color="color11"
       >
         {label}
       </Text>
@@ -320,8 +320,7 @@ export function SearchFieldItem({
       minH={32}
       rounded={6}
       cursor="pointer"
-      bg={highlighted ? '$color5' : 'transparent'}
-      pressStyle={{ bg: '$color6' }}
+      bg={`${highlighted ? 'color5' : 'transparent'} press:color6`}
       onMouseEnter={() => setActive(index)}
       onPress={() => select(item)}
     >
@@ -333,7 +332,7 @@ export function SearchFieldItem({
 /** Un messaggio nella tendina, al posto delle voci: «Cerco…», «Nessun gioco». */
 export function SearchFieldMessage({ children }: { children: ReactNode }) {
   return (
-    <Text px={8} py={6} fontSize={14} lineHeight={20} color="$color11">
+    <Text px={8} py={6} fontSize={14} lineHeight="20px" color="color11">
       {children}
     </Text>
   );

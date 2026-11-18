@@ -23,25 +23,25 @@ export function GuestScreen({
     >
       <ScrollView
         flex={1}
-        bg="$background"
+        bg="background"
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
-          px: 20,
-          pt: insets.top + 40,
-          pb: insets.bottom + 24,
+          paddingHorizontal: 20,
+          paddingTop: insets.top + 40,
+          paddingBottom: insets.bottom + 24,
         }}
       >
         <YStack gap={24} maxW={420} width="100%" self="center">
           <Wordmark />
-          <Text fontSize={22} fontWeight="700" color="$color12">
+          <Text fontSize={22} fontWeight="700" color="color12">
             {title}
           </Text>
           {children}
           <XStack gap={16} justify="center">
-            <Text color="$color11" onPress={() => openOnWeb('/privacy')}>
+            <Text color="color11" onPress={() => openOnWeb('/privacy')}>
               {t('privacy')}
             </Text>
-            <Text color="$color11" onPress={() => openOnWeb('/terms')}>
+            <Text color="color11" onPress={() => openOnWeb('/terms')}>
               {t('terms')}
             </Text>
           </XStack>
@@ -60,7 +60,7 @@ export function TextLink({
 }) {
   return (
     <Text
-      color="$accent11"
+      color="accent11"
       textDecorationLine="underline"
       onPress={onPress}
       role="link"

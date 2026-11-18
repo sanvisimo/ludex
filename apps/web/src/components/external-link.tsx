@@ -25,7 +25,7 @@ export function ExternalLink({
           ? {}
           : { target: '_blank', rel: 'noopener noreferrer' }),
       } as object)}
-      color="$color12"
+      color="color12"
       fontWeight={strong ? '600' : '400'}
       textDecorationLine="underline"
       cursor="pointer"

@@ -115,7 +115,7 @@ export function StatusButton({
               status: statusLabels[entry.status],
             })}
           >
-            <Icon size={16} color="$color12" />
+            <Icon size={16} color="color12" />
           </Button>
         }
       />
@@ -135,8 +135,8 @@ export function StatusButton({
                 textValue={statusLabels[value]}
               >
                 <XStack items="center" gap={8}>
-                  <ItemIcon size={14} color="$color11" />
-                  <Text fontSize={14} lineHeight={20} color="$color12">
+                  <ItemIcon size={14} color="color11" />
+                  <Text fontSize={14} lineHeight="20px" color="color12">
                     {statusLabels[value]}
                   </Text>
                 </XStack>
@@ -170,7 +170,7 @@ function EntryActions({
               size="icon"
               aria-label={t('actionsFor', { name: entry.game.name })}
             >
-              <EllipsisVertical size={16} color="$color11" />
+              <EllipsisVertical size={16} color="color11" />
             </Button>
           }
         />
@@ -199,7 +199,7 @@ function EntryActions({
           <DropdownMenuSeparator />
           <DropdownMenuItem
             destructive
-            icon={<Trash2 size={16} color="$red11" />}
+            icon={<Trash2 size={16} color="red11" />}
             onClick={() => onRemove(entry)}
           >
             {t('remove')}
@@ -228,7 +228,7 @@ function Facts({
       <XStack items="center" justify="space-between" gap={8}>
         <XStack flexWrap="wrap" items="center" gap={8} flex={1} minW={0}>
           {entry.game.firstReleaseDate && (
-            <Text fontSize={12} lineHeight={20} color="$color11">
+            <Text fontSize={12} lineHeight="20px" color="color11">
               {entry.game.firstReleaseDate.getFullYear()}
             </Text>
           )}
@@ -252,7 +252,7 @@ function RowsView({
         <YStack render="li" key={entry.id} style={{ listStyle: 'none' }}>
           {/* La spaziatura è sul contenuto: il padding della Card la raddoppierebbe. */}
           <Card py={0}>
-            <XStack p={8} gap={8} $md={{ gap: 12, p: 12 }} items="flex-start">
+            <XStack p="8px md:12px" gap="8px md:12px" items="flex-start">
               <Link
                 to="/games/$slug"
                 params={{ slug: entry.game.slug }}
@@ -273,7 +273,7 @@ function RowsView({
                       </YStack>
                       <GameTypeBadge
                         type={entry.game.gameType}
-                        $max-sm={{ display: 'none' }}
+                        display="max-sm:none"
                       />
                     </XStack>
                     <Facts entry={entry} inlineScore />
@@ -355,7 +355,7 @@ function GridView({
                 gap={2}
                 mt="auto"
                 borderTopWidth={1}
-                borderColor="$borderColor"
+                borderColor="border-color"
                 pt={8}
               >
                 <XStack shrink={0}>
@@ -421,7 +421,7 @@ function SortHeader({
   const t = useTranslations('filters');
   if (!column.getCanSort())
     return (
-      <Text fontSize={12} fontWeight="500" color="$color11">
+      <Text fontSize={12} fontWeight="500" color="color11">
         {label}
       </Text>
     );
@@ -446,12 +446,12 @@ function SortHeader({
       <Text
         fontSize={12}
         fontWeight="500"
-        color={direction ? '$selectionColor' : '$color11'}
+        color={direction ? 'selectionColor' : 'color11'}
         numberOfLines={1}
       >
         {label}
       </Text>
-      <Icon size={12} color={direction ? '$selectionColor' : '$color11'} />
+      <Icon size={12} color={direction ? 'selectionColor' : 'color11'} />
     </Button>
   );
   if (!ratingMenu) return button;
@@ -535,11 +535,11 @@ function CompactView({
                 <YStack shrink={1} minW={0}>
                   <GameTitleLink game={entry.game} lines={1} />
                 </YStack>
-                <XStack display="none" $sm={{ display: 'flex' }}>
+                <XStack display="none sm:flex">
                   <GameTypeBadge type={entry.game.gameType} />
                 </XStack>
               </XStack>
-              <YStack $md={{ display: 'none' }}>
+              <YStack display="md:none">
                 <OwnershipBadges ownerships={entry.ownerships} storesOnly />
               </YStack>
             </YStack>
@@ -553,15 +553,14 @@ function CompactView({
           layout: {
             flex: 1,
             minW: 0,
-            display: 'none',
-            $lg: { display: 'flex' },
+            display: 'none lg:flex',
           },
         },
         header: ({ column }) => (
           <SortHeader label={t('columnPlatforms')} column={column} />
         ),
         cell: ({ row: { original: entry } }) => (
-          <Text fontSize={13} color="$color11" numberOfLines={1}>
+          <Text fontSize={13} color="color11" numberOfLines={1}>
             {[
               ...new Set(
                 entry.ownerships.map(
@@ -579,8 +578,7 @@ function CompactView({
           layout: {
             flex: 1,
             minW: 0,
-            display: 'none',
-            $md: { display: 'flex' },
+            display: 'none md:flex',
           },
         },
         header: ({ column }) => (
@@ -595,7 +593,7 @@ function CompactView({
         accessorFn: (entry) => entry.game.hltbMainMinutes,
         sortDescFirst: false,
         meta: {
-          layout: { width: 72, display: 'none', $sm: { display: 'flex' } },
+          layout: { width: 72, display: 'none sm:flex' },
         },
         header: ({ column }) => (
           <SortHeader label={t('columnDuration')} column={column} />
@@ -609,7 +607,7 @@ function CompactView({
         accessorFn: (entry) => latestPlaytime(entry.ownerships),
         sortDescFirst: true,
         meta: {
-          layout: { width: 72, display: 'none', $md: { display: 'flex' } },
+          layout: { width: 72, display: 'none md:flex' },
         },
         header: ({ column }) => (
           <SortHeader label={t('columnPlayed')} column={column} />
@@ -623,7 +621,7 @@ function CompactView({
         accessorFn: (entry) => entry.rating,
         sortDescFirst: true,
         meta: {
-          layout: { width: 56, display: 'none', $md: { display: 'flex' } },
+          layout: { width: 56, display: 'none md:flex' },
         },
         header: ({ column, table }) => (
           <SortHeader
@@ -711,7 +709,7 @@ function CompactView({
       aria-label={t('title')}
       rounded={12}
       borderWidth={1}
-      borderColor="$borderColor"
+      borderColor="border-color"
       overflow="hidden"
     >
       {table.getHeaderGroups().map((group) => (
@@ -722,9 +720,9 @@ function CompactView({
           py={8}
           gap={12}
           items="center"
-          bg="$surface"
+          bg="surface"
           borderBottomWidth={1}
-          borderColor="$borderColor"
+          borderColor="border-color"
         >
           {group.headers.map((header) => {
             const direction = header.column.getIsSorted();
@@ -761,8 +759,8 @@ function CompactView({
           gap={12}
           items="center"
           borderTopWidth={index === 0 ? 0 : 1}
-          borderColor="$borderColor"
-          hoverStyle={{ bg: '$color2' }}
+          borderColor="border-color"
+          bg="hover:color2"
         >
           {row.getAllCells().map((cell) => (
             <XStack role="cell" key={cell.id} {...columnLayout(cell.column)}>

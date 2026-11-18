@@ -1,10 +1,8 @@
-import { createV5Theme } from '@tamagui/config/v5';
-
+import { generatedThemes } from './frozen-themes';
 import {
   accents,
   defaultAccent,
   base,
-  states,
   toAccent,
   actionPress,
 } from './palettes';
@@ -12,37 +10,31 @@ import {
 /**
  * **Livello 2 — i semantici.**
  *
- * Tamagui li genera dai primitivi: `$background`, `$color`, `$borderColor`,
+ * Vengono dai primitivi: `$background`, `$color`, `$borderColor`,
  * `$accentBackground` e le loro varianti per hover, press e focus. È il livello
  * che fa da isolante — cambiando la base o l'accento cambia tutto senza toccare
  * un solo componente — ed è l'unico che i componenti hanno il diritto di
  * nominare.
  *
- * Restano le due potature del tema originale: quattro sottotemi di stato e
- * componentThemes disattivato. I ruoli surface/action/selection si aggiungono
- * agli stessi temi, senza generare un secondo set per il vecchio accento.
+ * La parte generata da Tamagui sta congelata in `frozen-themes.ts`. I ruoli
+ * surface/action/selection si aggiungono agli stessi temi, senza generare un
+ * secondo set per il vecchio accento.
  */
 const accent = accents[defaultAccent];
 
-const generatedThemes = createV5Theme({
-  lightPalette: Object.values(base.light),
-  darkPalette: Object.values(base.dark),
-  accent: {
-    light: toAccent(accent.light),
-    dark: toAccent(accent.dark),
-  },
-  childrenThemes: states,
-  componentThemes: false,
-});
+/**
+ * Il tipo di ogni tema è quello completo, come lo dava `createV5Theme`: nel
+ * letterale congelato i sottotemi hanno solo le chiavi che cambiano, e il
+ * resto lo eredita a runtime dal tema genitore. Senza, i token di un
+ * componente sarebbero solo quelli comuni a tutti i 56 temi.
+ */
+type Theme = typeof generatedThemes.light;
 
 /** Livello semantico condiviso: vale anche dentro superfici e sottotemi.
  * Le superfici seguono il tema locale; azioni e selezioni hanno l'identità
  * di brand del relativo schema. Non si genera un secondo set di temi.
  */
-function semanticRoles(
-  scheme: 'light' | 'dark',
-  theme: typeof generatedThemes.light,
-) {
+function semanticRoles(scheme: 'light' | 'dark', theme: Theme) {
   const brand = toAccent(accent[scheme]);
   return {
     surface: theme.color3,
@@ -62,6 +54,45 @@ function semanticRoles(
     selectionBorderPress: brand.accent9,
     outlineColor: brand.accent9,
   };
+}
+
+/**
+ * Le chiavi semantiche che i componenti di Tamagui 3 leggono in kebab-case
+ * (`border-color`, `background-hover`…), e che il codemod scrive così. I temi
+ * v5 di Tamagui 3 portano le due grafie con lo stesso valore; i nostri, nati
+ * dalla 2.7.7, le avevano solo in camelCase. Elenco preso dal loro
+ * `generated-v5.ts`.
+ */
+const kebabKeys = {
+  backgroundHover: 'background-hover',
+  backgroundPress: 'background-press',
+  backgroundFocus: 'background-focus',
+  backgroundActive: 'background-active',
+  borderColor: 'border-color',
+  borderColorHover: 'border-color-hover',
+  borderColorPress: 'border-color-press',
+  borderColorFocus: 'border-color-focus',
+  colorHover: 'color-hover',
+  colorPress: 'color-press',
+  colorFocus: 'color-focus',
+  placeholderColor: 'placeholder-color',
+  outlineColor: 'outline-color',
+  shadowColor: 'shadow-color',
+  accentBackground: 'accent-background',
+  accentColor: 'accent-color',
+} as const;
+
+type KebabAliases = {
+  [Key in keyof typeof kebabKeys as (typeof kebabKeys)[Key]]: string;
+};
+
+function withKebabKeys<T extends Record<string, string>>(theme: T) {
+  const aliases: Record<string, string> = {};
+  for (const [camel, kebab] of Object.entries(kebabKeys)) {
+    const value = theme[camel];
+    if (value !== undefined) aliases[kebab] = value;
+  }
+  return { ...theme, ...aliases } as T & KebabAliases;
 }
 
 export const themes = Object.fromEntries(
@@ -91,12 +122,13 @@ export const themes = Object.fromEntries(
             borderColor: palette.step4,
           }
         : {};
-    const local = { ...theme, ...exact };
-    return [name, { ...local, ...semanticRoles(scheme, local) }];
+    const local = { ...(theme as Theme), ...exact };
+    return [name, withKebabKeys({ ...local, ...semanticRoles(scheme, local) })];
   }),
 ) as {
-  [Name in keyof typeof generatedThemes]: (typeof generatedThemes)[Name] &
-    ReturnType<typeof semanticRoles>;
+  [Name in keyof typeof generatedThemes]: Theme &
+    ReturnType<typeof semanticRoles> &
+    KebabAliases;
 };
 
 export type Themes = typeof themes;

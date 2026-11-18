@@ -118,9 +118,9 @@ export function XboxCodePanel({
     return (
       <YStack gap={8} items="center" py={48}>
         <Spinner>
-          <LoaderCircle size={24} color="$color11" />
+          <LoaderCircle size={24} color="color11" />
         </Spinner>
-        <Text fontSize={13} color="$color11">
+        <Text fontSize={13} color="color11">
           {state === 'done' ? t('waiting') : t('preparing')}
         </Text>
       </YStack>
@@ -130,7 +130,7 @@ export function XboxCodePanel({
   if (state === 'expired') {
     return (
       <YStack gap={12} items="center" py={24}>
-        <Text color="$color11">{t('expired')}</Text>
+        <Text color="color11">{t('expired')}</Text>
         {again('newCode')}
       </YStack>
     );
@@ -156,7 +156,7 @@ export function XboxCodePanel({
 
   return (
     <YStack gap={16}>
-      <Text fontWeight="600" color="$color12">
+      <Text fontWeight="600" color="color12">
         {t('codeTitle')}
       </Text>
 
@@ -166,15 +166,15 @@ export function XboxCodePanel({
         gap={12}
         p={16}
         rounded={12}
-        bg="$color3"
+        bg="color3"
       >
         {/* Grande e spaziato: si ricopia a mano, magari dal telefono. */}
         <Text
           fontSize={32}
           fontWeight="700"
           letterSpacing={4}
-          color="$color12"
-          selectable
+          color="color12"
+          select="text"
         >
           {userCode}
         </Text>
@@ -187,7 +187,7 @@ export function XboxCodePanel({
               .then(() => toast.success(t('copied')))
           }
         >
-          <Copy size={14} color="$color12" />
+          <Copy size={14} color="color12" />
           {t('copy')}
         </Button>
       </XStack>
@@ -199,7 +199,7 @@ export function XboxCodePanel({
         onClick={() => window.open(verificationUri, '_blank', 'noopener')}
       >
         {t('open')}
-        <ExternalLink size={14} color="$color12" />
+        <ExternalLink size={14} color="color12" />
       </Button>
 
       <YStack gap={4}>
@@ -210,13 +210,13 @@ export function XboxCodePanel({
 
       <XStack items="center" gap={8}>
         <Spinner>
-          <LoaderCircle size={16} color="$color11" />
+          <LoaderCircle size={16} color="color11" />
         </Spinner>
-        <Text fontSize={13} color="$color11">
+        <Text fontSize={13} color="color11">
           {t('waiting')}
         </Text>
       </XStack>
-      <Text fontSize={12} color="$color11">
+      <Text fontSize={12} color="color11">
         {t('validFor', { time })}
         {' · '}
         {t('closeHint')}

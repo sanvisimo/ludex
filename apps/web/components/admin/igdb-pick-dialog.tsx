@@ -106,7 +106,7 @@ export function IgdbPicker({
             {t('search')}
           </Button>
         </XStack>
-        <Text fontSize={12} color="$color11">
+        <Text fontSize={12} color="color11">
           {t('hint')}
         </Text>
         <YStack
@@ -129,7 +129,7 @@ export function IgdbPicker({
       </YStack>
 
       <YStack gap={8}>
-        <Text fontSize={12} color="$color11" role="status">
+        <Text fontSize={12} color="color11" role="status">
           {search.isFetching
             ? tMatch('searching')
             : submitted === null
@@ -140,7 +140,7 @@ export function IgdbPicker({
           className="game-match-results"
           rounded={12}
           borderWidth={1}
-          borderColor="$borderColor"
+          borderColor="border-color"
           p={4}
           gap={4}
           aria-busy={search.isFetching}
@@ -151,7 +151,7 @@ export function IgdbPicker({
             ))
           ) : search.isError ? (
             <YStack p={16} gap={12} role="alert">
-              <Text fontSize={13} color="$red11">
+              <Text fontSize={13} color="red11">
                 {t('searchFailed')}
               </Text>
               <Button
@@ -164,7 +164,7 @@ export function IgdbPicker({
               </Button>
             </YStack>
           ) : submitted === null ? (
-            <Text p={16} fontSize={13} color="$color11">
+            <Text p={16} fontSize={13} color="color11">
               {tMatch('startSearch')}
             </Text>
           ) : search.data?.length === 0 ? (
@@ -172,7 +172,7 @@ export function IgdbPicker({
               <Text fontSize={14} fontWeight="600">
                 {tMatch('noResultsFor', { query: submitted })}
               </Text>
-              <Text fontSize={13} lineHeight={20} color="$color11">
+              <Text fontSize={13} lineHeight="20px" color="color11">
                 {tMatch('noResultsHint')}
               </Text>
               {platform ? (
@@ -199,25 +199,12 @@ export function IgdbPicker({
                   borderWidth={1}
                   borderColor={
                     current
-                      ? '$blue8'
+                      ? 'blue8'
                       : active
-                        ? '$selectionBorder'
+                        ? 'selectionBorder'
                         : 'transparent'
                   }
-                  bg={
-                    current
-                      ? '$blue2'
-                      : active
-                        ? '$selectionBackground'
-                        : 'transparent'
-                  }
-                  hoverStyle={{
-                    bg: current
-                      ? '$blue2'
-                      : active
-                        ? '$selectionBackground'
-                        : '$color3',
-                  }}
+                  bg={`${current ? 'blue2' : active ? 'selectionBackground' : 'transparent'} hover:${current ? 'blue2' : active ? 'selectionBackground' : 'color3'}`}
                 >
                   <CoverPreview
                     sources={hit.cover ? [igdbCoverUrl(hit.cover)] : []}
@@ -225,21 +212,21 @@ export function IgdbPicker({
                   />
                   <YStack minW={0} gap={4}>
                     {current ? (
-                      <Badge bg="$blue3" borderColor="$blue8" self="flex-start">
-                        <Text fontSize={12} color="$blue12">
+                      <Badge bg="blue3" borderColor="blue8" self="flex-start">
+                        <Text fontSize={12} color="blue12">
                           {tMatch('alreadyLinked')}
                         </Text>
                       </Badge>
                     ) : null}
                     <Text
                       fontSize={14}
-                      lineHeight={20}
+                      lineHeight="20px"
                       fontWeight="600"
                       style={{ overflowWrap: 'anywhere' }}
                     >
                       {hit.name}
                     </Text>
-                    <Text fontSize={12} color="$color11">
+                    <Text fontSize={12} color="color11">
                       {[
                         hit.releaseYear,
                         hit.gameType && hit.gameType !== 'main_game'
@@ -251,11 +238,11 @@ export function IgdbPicker({
                         .join(' · ')}
                     </Text>
                     {hit.platforms.length > 0 ? (
-                      <Text fontSize={12} lineHeight={18} color="$color11">
+                      <Text fontSize={12} lineHeight="18px" color="color11">
                         {hit.platforms.join(', ')}
                       </Text>
                     ) : null}
-                    <Text fontSize={11} color="$color11">
+                    <Text fontSize={11} color="color11">
                       IGDB {hit.igdbId}
                     </Text>
                   </YStack>
@@ -307,20 +294,22 @@ export function IgdbSelectionFooter({
   return (
     <DialogFooter
       flexWrap="wrap"
-      items="center"
-      $max-sm={{ flexDirection: 'column', items: 'stretch' }}
+      items="center max-sm:stretch"
+      flexDirection="max-sm:column"
     >
       <YStack
         flex={1}
         minW={0}
         gap={4}
-        $max-sm={{ grow: 0, shrink: 0, flexBasis: 'auto' }}
+        grow="max-sm:0px"
+        shrink="max-sm:0px"
+        flexBasis="max-sm:auto"
         role="status"
       >
         <Text
           fontSize={13}
           fontWeight={selected ? '600' : '400'}
-          color={selected ? '$color12' : '$color11'}
+          color={selected ? 'color12' : 'color11'}
           style={{ overflowWrap: 'anywhere' }}
         >
           {selected
@@ -328,7 +317,7 @@ export function IgdbSelectionFooter({
             : t('selectHint')}
         </Text>
         {hint ? (
-          <Text fontSize={12} lineHeight={18} color="$color11">
+          <Text fontSize={12} lineHeight="18px" color="color11">
             {hint}
           </Text>
         ) : null}
@@ -336,7 +325,8 @@ export function IgdbSelectionFooter({
       <XStack
         gap={8}
         shrink={0}
-        $max-sm={{ justify: 'flex-end', flexWrap: 'wrap' }}
+        justify="max-sm:flex-end"
+        flexWrap="max-sm:wrap"
       >
         <Button variant="outline" onPress={onCancel} disabled={pending}>
           {t('cancel')}

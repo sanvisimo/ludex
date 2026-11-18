@@ -4,11 +4,12 @@ import {
   useEffect,
   useRef,
   type KeyboardEvent,
+  type ReactElement,
   type ReactNode,
 } from 'react';
-import type { Circle } from '@tamagui/lucide-icons-2';
 import { ScrollView, Text, XStack } from 'tamagui';
 
+import type { IconProps } from '../icons';
 import { Badge } from './badge';
 
 const TabsContext = createContext<{
@@ -79,7 +80,7 @@ export function Tabs({ value, onValueChange, label, children }: TabsProps) {
         showsHorizontalScrollIndicator={false}
         // La linea sotto tutti i tab, anche dove il testo finisce.
         borderBottomWidth={1}
-        borderBottomColor="$borderColor"
+        borderBottomColor="border-color"
         // Non si allarga oltre chi lo contiene: senza, con `flex-shrink: 0`
         // delle view di Tamagui, la riga spinge la pagina fuori dallo schermo.
         maxW="100%"
@@ -105,7 +106,7 @@ export type TabsTabProps = {
    * Un'icona prima del nome, come componente (una di `@repo/ui/icons`): il tab
    * ne sceglie il colore, scuro da acceso e attenuato da spento, come il testo.
    */
-  icon?: typeof Circle;
+  icon?: (props: IconProps) => ReactElement;
   children: string;
 };
 
@@ -138,32 +139,28 @@ export function TabsTab({ value, count, icon: Icon, children }: TabsTabProps) {
       gap={8}
       items="center"
       shrink={0}
-      bg="transparent"
+      bg="transparent hover:color3 press:color4"
       borderWidth={0}
       // Si sovrappone alla linea di tutti i tab: l'accento sta **sopra** la
       // linea grigia, non sotto.
       borderBottomWidth={2}
-      borderBottomColor={selected ? '$accent9' : 'transparent'}
+      borderBottomColor={selected ? 'accent9' : 'transparent'}
       mb={-1}
       cursor="pointer"
-      hoverStyle={{ bg: '$color3' }}
-      pressStyle={{ bg: '$color4' }}
-      focusVisibleStyle={{
-        outlineColor: '$outlineColor',
-        outlineStyle: 'solid',
-        outlineWidth: 2,
-        outlineOffset: -2,
-      }}
+      outlineColor="focus-visible:outline-color"
+      outlineStyle="focus-visible:solid"
+      outlineWidth="focus-visible:2px"
+      outlineOffset="focus-visible:-2px"
     >
       {Icon ? (
-        <Icon size={16} color={selected ? '$color12' : '$color11'} />
+        <Icon size={16} color={selected ? 'color12' : 'color11'} />
       ) : null}
       <Text
         fontSize={14}
-        lineHeight={20}
+        lineHeight="20px"
         fontWeight="500"
         whiteSpace="nowrap"
-        color={selected ? '$color12' : '$color11'}
+        color={selected ? 'color12' : 'color11'}
       >
         {children}
       </Text>

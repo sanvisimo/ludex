@@ -28,13 +28,11 @@ export function BadgeLink({
         style: { textDecoration: 'none' },
       } as object)}
       cursor="pointer"
-      hoverStyle={{ borderColor: '$color11' }}
-      focusVisibleStyle={{
-        outlineColor: '$outlineColor',
-        outlineStyle: 'solid',
-        outlineWidth: 2,
-        outlineOffset: 2,
-      }}
+      borderColor="hover:color11"
+      outlineColor="focus-visible:outline-color"
+      outlineStyle="focus-visible:solid"
+      outlineWidth="focus-visible:2px"
+      outlineOffset="focus-visible:2px"
       onClick={(event) => {
         if (takeLinkClick(event)) void router.navigate({ href });
       }}

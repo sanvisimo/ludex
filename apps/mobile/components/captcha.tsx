@@ -54,7 +54,7 @@ export function useCaptcha() {
     return { widget: null, headers: undefined, ready: true, reset: () => {} };
 
   const widget = unavailable ? (
-    <Text color="$red11">{t('unavailable')}</Text>
+    <Text color="red11">{t('unavailable')}</Text>
   ) : (
     <WebView<object>
       ref={view}

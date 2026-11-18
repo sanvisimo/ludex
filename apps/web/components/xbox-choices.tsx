@@ -60,10 +60,10 @@ export function XboxChoices({
   return (
     <YStack gap={16}>
       <YStack gap={8}>
-        <Text fontWeight="600" color="$color12">
+        <Text fontWeight="600" color="color12">
           {t('platformsTitle')}
         </Text>
-        <Text fontSize={12} color="$color11">
+        <Text fontSize={12} color="color11">
           {t('platformsHint')}
         </Text>
         {xboxPlatformValues.map((platform) => (
@@ -91,7 +91,7 @@ export function XboxChoices({
           />
           <Label htmlFor={`${id}-gamepass`}>{t('gamePass')}</Label>
         </XStack>
-        <Text fontSize={12} color="$color11" pl={26}>
+        <Text fontSize={12} color="color11" pl={26}>
           {t('gamePassHint')}
         </Text>
       </YStack>

@@ -144,7 +144,7 @@ export function SteamLink({
           dal loro bottone, e una soglia scritta sotto non la vedrebbe nessuno. */}
       {!loginOnly && <PlayedThreshold value={played} onChange={setPlayed} />}
 
-      <Text fontSize={13} color="$color11">
+      <Text fontSize={13} color="color11">
         {t('chooseLogin')}
       </Text>
 
@@ -153,14 +153,14 @@ export function SteamLink({
         p={16}
         rounded={12}
         borderWidth={1}
-        borderColor="$borderColor"
-        bg="$color2"
+        borderColor="border-color"
+        bg="color2"
       >
         <Button self="flex-start" onClick={() => setMode('qr')}>
           {t('button')}
         </Button>
         <Text fontSize={14}>✓ {t('qrAuto')}</Text>
-        <Text fontSize={12} color="$color11">
+        <Text fontSize={12} color="color11">
           {t('phoneHint')}
         </Text>
       </YStack>
@@ -170,8 +170,8 @@ export function SteamLink({
         p={16}
         rounded={12}
         borderWidth={1}
-        borderColor="$borderColor"
-        bg="$color2"
+        borderColor="border-color"
+        bg="color2"
       >
         <Button
           self="flex-start"
@@ -181,13 +181,13 @@ export function SteamLink({
           {t('tokenButton')}
         </Button>
         <Text fontSize={14}>⚠ {t('tokenDaily')}</Text>
-        <Text fontSize={12} color="$color11">
+        <Text fontSize={12} color="color11">
           {t('browserHint')}
         </Text>
       </YStack>
 
       <YStack gap={2}>
-        <Text fontSize={13} color="$color11">
+        <Text fontSize={13} color="color11">
           {t('bothInclude')}
         </Text>
         <Text fontSize={14}>✓ {t('benefitFamily')}</Text>
@@ -199,7 +199,7 @@ export function SteamLink({
           c'è già, e col profilo non c'è niente da rifare. */}
       {!loginOnly && (
         <>
-          <Text fontSize={13} color="$color11" text="center">
+          <Text fontSize={13} color="color11" text="center">
             — {t('or')} —
           </Text>
 
@@ -222,7 +222,7 @@ export function SteamLink({
                 {tAdd('submit')}
               </Button>
             </XStack>
-            <Text fontSize={12} color="$color11">
+            <Text fontSize={12} color="color11">
               {tSteam('hint')}
             </Text>
           </YStack>
@@ -237,7 +237,7 @@ export function SteamLink({
               maxLength={60}
             />
             {/* Facoltativa, e detto: con un account solo non serve a niente. */}
-            <Text fontSize={12} color="$color11">
+            <Text fontSize={12} color="color11">
               {tStore('labelHint')}
             </Text>
           </YStack>

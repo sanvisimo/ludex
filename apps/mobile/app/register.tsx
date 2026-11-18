@@ -81,7 +81,7 @@ export default function Register() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <Text color="$color11">{t('passwordHint')}</Text>
+        <Text color="color11">{t('passwordHint')}</Text>
       </YStack>
 
       {captcha.widget}
@@ -97,7 +97,7 @@ export default function Register() {
       </Button>
 
       <XStack gap={6} justify="center">
-        <Text color="$color11">{t('hasAccount')}</Text>
+        <Text color="color11">{t('hasAccount')}</Text>
         <TextLink onPress={() => router.replace('/login')}>
           {t('toLogin')}
         </TextLink>

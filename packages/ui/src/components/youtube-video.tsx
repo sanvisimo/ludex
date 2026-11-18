@@ -38,7 +38,7 @@ export function YoutubeVideo({ videoId, title, playLabel }: YoutubeVideoProps) {
       rounded={8}
       items="center"
       justify="center"
-      bg="$color3"
+      bg="color3"
     >
       <Image
         src={youtubeThumbnail(videoId)}

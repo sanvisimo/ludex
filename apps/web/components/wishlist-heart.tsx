@@ -87,7 +87,7 @@ export function WishlistHeart({ game }: { game: HomeGame }) {
         variant="secondary"
         // Il fondo della pagina e non una tinta: su una copertina il cuore deve
         // distinguersi da qualunque immagine, come il voto in alto a destra.
-        bg="$background"
+        bg="background"
         rounded={999}
         aria-label={game.wishlisted ? t('inList') : t('add')}
         aria-pressed={game.wishlisted}
@@ -96,7 +96,7 @@ export function WishlistHeart({ game }: { game: HomeGame }) {
       >
         <Heart
           size={16}
-          color={game.wishlisted ? '$red10' : '$color12'}
+          color={game.wishlisted ? 'red10' : 'color12'}
           {...(game.wishlisted && { fill: 'currentColor' })}
         />
       </Button>

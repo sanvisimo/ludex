@@ -73,7 +73,7 @@ export function HltbTimes({ game }: { game: GameDetail }) {
         <>
           {senzaFine && (
             <Theme name="amber">
-              <Muted p={12} rounded={10} bg="$color3" color="$color12">
+              <Muted p={12} rounded={10} bg="color3" color="color12">
                 {t('noEnding')}
               </Muted>
             </Theme>
@@ -91,14 +91,10 @@ export function HltbTimes({ game }: { game: GameDetail }) {
                     gap={12}
                     p={14}
                     rounded={12}
-                    bg={blue || neutral ? '$color3' : '$selectionBackground'}
+                    bg={blue || neutral ? 'color3' : 'selectionBackground'}
                     borderLeftWidth={3}
                     borderColor={
-                      blue
-                        ? '$color9'
-                        : neutral
-                          ? '$color7'
-                          : '$selectionBorder'
+                      blue ? 'color9' : neutral ? 'color7' : 'selectionBorder'
                     }
                   >
                     <YStack render="dt" flex={1} minW={0} gap={5}>
@@ -106,8 +102,8 @@ export function HltbTimes({ game }: { game: GameDetail }) {
                       {riga.segnalazioni !== null && (
                         <Muted
                           fontSize={12}
-                          lineHeight={18}
-                          color={blue ? '$color12' : '$color11'}
+                          lineHeight="18px"
+                          color={blue ? 'color12' : 'color11'}
                         >
                           {t('reports', { count: riga.segnalazioni })}
                         </Muted>
@@ -126,16 +122,16 @@ export function HltbTimes({ game }: { game: GameDetail }) {
                     </YStack>
                     <Strong
                       render="dd"
-                      fontFamily="$heading"
+                      fontFamily="heading"
                       fontSize={26}
-                      lineHeight={32}
+                      lineHeight="32px"
                       shrink={0}
                       color={
                         blue
-                          ? '$color12'
+                          ? 'color12'
                           : neutral
-                            ? '$color12'
-                            : '$selectionColor'
+                            ? 'color12'
+                            : 'selectionColor'
                       }
                       style={{ fontVariantNumeric: 'tabular-nums' }}
                     >

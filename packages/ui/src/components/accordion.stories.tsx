@@ -29,7 +29,7 @@ export const Default: Story = {
             Piattaforme
           </AccordionTrigger>
           <AccordionContent>
-            <Text fontSize={14} color="$color11">
+            <Text fontSize={14} color="color11">
               PC, PlayStation 5
             </Text>
           </AccordionContent>
@@ -37,7 +37,7 @@ export const Default: Story = {
         <AccordionItem value="genres">
           <AccordionTrigger>Generi</AccordionTrigger>
           <AccordionContent>
-            <Text fontSize={14} color="$color11">
+            <Text fontSize={14} color="color11">
               Avventura, GDR, Strategia
             </Text>
           </AccordionContent>
@@ -45,7 +45,7 @@ export const Default: Story = {
         <AccordionItem value="duration">
           <AccordionTrigger>Durata</AccordionTrigger>
           <AccordionContent>
-            <Text fontSize={14} color="$color11">
+            <Text fontSize={14} color="color11">
               2 – 20 h
             </Text>
           </AccordionContent>
@@ -63,7 +63,7 @@ export const Heading: Story = {
         <AccordionItem value="services">
           <AccordionTrigger variant="heading">Servizi</AccordionTrigger>
           <AccordionContent>
-            <Text fontSize={15} lineHeight={22} color="$color12">
+            <Text fontSize={15} lineHeight="22px" color="color12">
               Chi ci dà i dati.
             </Text>
           </AccordionContent>
@@ -71,7 +71,7 @@ export const Heading: Story = {
         <AccordionItem value="software">
           <AccordionTrigger variant="heading">Software</AccordionTrigger>
           <AccordionContent>
-            <Text fontSize={15} lineHeight={22} color="$color12">
+            <Text fontSize={15} lineHeight="22px" color="color12">
               Su cosa poggia.
             </Text>
           </AccordionContent>

@@ -44,6 +44,9 @@ quindi il "costruire da soli" è in parte inevitabile a prescindere.
 
 ## La decisione, e cosa costa
 
+> Dal 18/11/2026 il design system è su Tamagui 3.3.3, con la stessa Config
+> v5: vedi [tamagui-3.md](tamagui-3.md). Qui sotto la scelta com'era.
+
 **Tamagui 2.7.7** (`@tamagui/core` per lo styling, `tamagui` per il kit). È
 l'unico candidato credibile per un design system universale: compila a CSS
 atomico sul web e a stili nativi su mobile, i token sono type-safe e condivisi,

@@ -28,7 +28,7 @@ export const Default: Story = {
 /** Il simbolo da solo, dalla misura della favicon in su. */
 export const Sizes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-end">
+    <XStack gap="4" items="flex-end">
       <Logo size={16} />
       <Logo size={24} />
       <Logo size={32} />
@@ -41,10 +41,10 @@ export const Sizes: Story = {
 /** Chiaro e scuro: il simbolo non cambia, Pile segue il tema. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4">
+    <XStack gap="4">
       {(['light', 'dark'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack bg="$background" p="$4" gap="$3" rounded="$4">
+          <YStack bg="background" p="4" gap="3" rounded="4">
             <Wordmark />
             <Logo size={16} />
           </YStack>
@@ -60,8 +60,8 @@ export const SystemThemeBeforeHydration: Story = {
     <Theme name="light">
       <YStack
         className="t_dark"
-        bg="$background"
-        p="$4"
+        bg="background"
+        p="4"
         data-testid="system-theme-logo"
       >
         <Wordmark />

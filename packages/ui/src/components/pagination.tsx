@@ -57,21 +57,17 @@ const PageFrame = styled(XStack, {
     interactive: {
       true: {
         cursor: 'pointer',
-        hoverStyle: { bg: '$color4' },
-        pressStyle: { bg: '$color5' },
-        focusVisibleStyle: {
-          outlineColor: '$outlineColor',
-          outlineStyle: 'solid',
-          outlineWidth: 2,
-          outlineOffset: 2,
-        },
+        bg: 'hover:color4 press:color5',
+        outlineColor: 'focus-visible:outline-color',
+        outlineStyle: 'focus-visible:solid',
+        outlineWidth: 'focus-visible:2px',
+        outlineOffset: 'focus-visible:2px',
       },
       false: { opacity: 0.5 },
     },
     current: {
       true: {
-        bg: '$color6',
-        hoverStyle: { bg: '$color6' },
+        bg: 'color6 hover:color6',
       },
     },
   } as const,
@@ -80,12 +76,14 @@ const PageFrame = styled(XStack, {
 const PageText = styled(Text, {
   name: 'PaginationText',
   fontSize: 14,
-  lineHeight: 20,
-  color: '$color11',
-
+  lineHeight: '20px',
+  color: 'color11',
   variants: {
     current: {
-      true: { color: '$color12', fontWeight: '500' },
+      true: {
+        color: 'color12',
+        fontWeight: '500',
+      },
     },
   } as const,
 });
@@ -242,27 +240,22 @@ export function Pagination({
         page - 1,
         page > 1,
         previousLabel,
-        <ChevronLeft size={16} color="$color11" />,
+        <ChevronLeft size={16} color="color11" />,
       )}
       {/* Due serie, una sola a vista: con le pagine vicine la riga non sta
           su un telefono, e la freccia avanti andava a capo. La scelta la fa
           il CSS e non `useMedia`, così la pagina nasce già giusta dal server. */}
-      <XStack gap={4} items="center" $max-sm={{ display: 'none' }}>
+      <XStack gap={4} items="center" display="max-sm:none">
         {pages(pageRange(page, pageCount))}
       </XStack>
-      <XStack
-        gap={4}
-        items="center"
-        display="none"
-        $max-sm={{ display: 'flex' }}
-      >
+      <XStack gap={4} items="center" display="none max-sm:flex">
         {pages(pageRange(page, pageCount, 0))}
       </XStack>
       {edge(
         page + 1,
         page < pageCount,
         nextLabel,
-        <ChevronRight size={16} color="$color11" />,
+        <ChevronRight size={16} color="color11" />,
       )}
     </XStack>
   );

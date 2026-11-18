@@ -13,15 +13,13 @@ import type { GetProps } from 'tamagui';
  */
 export const Card = styled(YStack, {
   name: 'Card',
-
   gap: 16,
   py: 16,
   rounded: 12,
   overflow: 'hidden',
-  bg: '$surface',
+  bg: 'surface',
   borderWidth: 1,
-  borderColor: '$borderColor',
-
+  borderColor: 'border-color',
   variants: {
     /**
      * La scheda che è un link — l'elenco dei giochi in home. Si schiarisce al
@@ -31,8 +29,7 @@ export const Card = styled(YStack, {
       true: {
         cursor: 'pointer',
         transition: 'quick',
-        hoverStyle: { bg: '$surfaceHover' },
-        pressStyle: { bg: '$surfacePress' },
+        bg: 'hover:surfaceHover press:surfacePress',
       },
     },
   } as const,
@@ -47,21 +44,19 @@ export const CardHeader = styled(YStack, {
 
 export const CardTitle = styled(Text, {
   name: 'CardTitle',
-
   // I titoli parlano con la voce dell'app: Space Grotesk.
-  fontFamily: '$heading',
+  fontFamily: 'heading',
   fontSize: 16,
-  lineHeight: 22,
+  lineHeight: '22px',
   fontWeight: '500',
-  color: '$color12',
+  color: 'color12',
 });
 
 export const CardDescription = styled(Text, {
   name: 'CardDescription',
-
   fontSize: 14,
-  lineHeight: 20,
-  color: '$color11',
+  lineHeight: '20px',
+  color: 'color11',
 });
 
 export const CardContent = styled(YStack, {

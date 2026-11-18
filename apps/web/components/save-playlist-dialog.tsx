@@ -43,13 +43,12 @@ export function SavePlaylistButton({
 
   return (
     <Button variant="outline" aria-label={t('button')} onClick={onOpen}>
-      <BookmarkPlus size={16} color="$color12" />
+      <BookmarkPlus size={16} color="color12" />
       <XStack
-        display={labelled ? 'flex' : 'none'}
-        {...(!labelled && { $md: { display: 'flex' } })}
+        display={labelled ? 'flex' : 'none md:flex'}
         aria-hidden
       >
-        <Text fontSize={14} fontWeight="500" color="$color12">
+        <Text fontSize={14} fontWeight="500" color="color12">
           {t('button')}
         </Text>
       </XStack>
@@ -186,13 +185,13 @@ function SaveForm({
             aria-invalid={blocked ? true : undefined}
           />
           {updatingSource && (
-            <Text fontSize={13} lineHeight={18} color="$color11">
+            <Text fontSize={13} lineHeight="18px" color="color11">
               {t('editing', { name: clash.name })}
             </Text>
           )}
           {blocked && (
             <YStack gap={8}>
-              <Text fontSize={13} lineHeight={18} color="$red11">
+              <Text fontSize={13} lineHeight="18px" color="red11">
                 {t('exists', { name: clash.name })}
               </Text>
               <Button
@@ -203,7 +202,7 @@ function SaveForm({
               >
                 {t('replace', { name: clash.name })}
               </Button>
-              <Text fontSize={13} lineHeight={18} color="$color11">
+              <Text fontSize={13} lineHeight="18px" color="color11">
                 {t('orRename')}
               </Text>
             </YStack>

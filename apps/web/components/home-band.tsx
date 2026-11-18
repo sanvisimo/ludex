@@ -60,9 +60,10 @@ export function HomeCard({
 
   return (
     <YStack
-      width={fill ? '100%' : CARD_WIDTH}
-      $max-sm={{ width: fill ? '100%' : SMALL_CARD_WIDTH }}
-      bg="$surface"
+      width={
+        fill ? '100%' : `${CARD_WIDTH}px max-sm:${SMALL_CARD_WIDTH}px`
+      }
+      bg="surface"
       rounded={12}
       overflow="hidden"
       grow={1}
@@ -107,7 +108,7 @@ export function HomeCard({
         <XStack items="center" justify="space-between" gap={8} mt="auto">
           <XStack flexWrap="wrap" items="center" gap={8} flex={1} minW={0}>
             {game.firstReleaseDate && (
-              <Text fontSize={12} lineHeight={20} color="$color11">
+              <Text fontSize={12} lineHeight="20px" color="color11">
                 {game.firstReleaseDate.getFullYear()}
               </Text>
             )}
@@ -141,12 +142,12 @@ function RankLabel({ rank }: { rank: number }) {
       items="center"
       justify="center"
       rounded={6}
-      bg="$background"
+      bg="background"
       pointerEvents="none"
       role="img"
       aria-label={t('rank', { position: rank })}
     >
-      <Text fontSize={14} lineHeight={20} fontWeight="600" color="$color12">
+      <Text fontSize={14} lineHeight="20px" fontWeight="600" color="color12">
         {rank}
       </Text>
     </XStack>
@@ -162,11 +163,11 @@ export function HomeBandRow({ band }: { band: HomeBand }) {
       title={
         <Text
           render="h2"
-          fontFamily="$heading"
+          fontFamily="heading"
           fontSize={18}
-          lineHeight={24}
+          lineHeight="24px"
           fontWeight="600"
-          color="$color12"
+          color="color12"
           m={0}
         >
           {title}

@@ -27,7 +27,7 @@ function ReportedSection() {
   const t = useTranslations('admin.reported');
   return (
     <YStack gap={16}>
-      <Text render="h2" fontSize={18} lineHeight={24} fontWeight="600">
+      <Text render="h2" fontSize={18} lineHeight="24px" fontWeight="600">
         {t('title')}
       </Text>
       <ReportList />

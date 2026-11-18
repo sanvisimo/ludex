@@ -110,7 +110,7 @@ export function useCaptcha() {
     // non salta quando arriva.
     widget: siteKey ? (
       unavailable ? (
-        <Text role="alert" fontSize={14} lineHeight={20} color="$red11">
+        <Text role="alert" fontSize={14} lineHeight="20px" color="red11">
           {t('unavailable')}
         </Text>
       ) : (

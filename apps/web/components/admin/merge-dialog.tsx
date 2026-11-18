@@ -119,7 +119,7 @@ export function MergeDialog({
                 p={12}
                 rounded={8}
                 borderWidth={1}
-                borderColor="$borderColor"
+                borderColor="border-color"
               >
                 <Text fontSize={13} fontWeight="500">
                   ·{' '}
@@ -137,7 +137,7 @@ export function MergeDialog({
                     slug: preview.data.absorbed.slug,
                   })}
                 </Text>
-                <Text fontSize={13} color="$color11">
+                <Text fontSize={13} color="color11">
                   ·{' '}
                   {t('counts', {
                     moved: preview.data.moved,
@@ -150,7 +150,7 @@ export function MergeDialog({
                     <Text fontSize={13} fontWeight="500">
                       {user.userName}
                     </Text>
-                    <Text fontSize={12} color="$color11">
+                    <Text fontSize={12} color="color11">
                       {t('bothStatus', {
                         a: statusLabels[user.statuses[0]],
                         b: statusLabels[user.statuses[1]],
@@ -167,11 +167,11 @@ export function MergeDialog({
                   </YStack>
                 ))}
                 {preview.data.both.length > 0 ? (
-                  <Text fontSize={12} color="$color11">
+                  <Text fontSize={12} color="color11">
                     {t('bothRest')}
                   </Text>
                 ) : null}
-                <Text fontSize={13} color="$color11">
+                <Text fontSize={13} color="color11">
                   ·{' '}
                   {t('rest', {
                     ids: preview.data.externalIds,
@@ -251,7 +251,7 @@ function GamePicker({
         autoFocus
       />
       {games?.length === 0 ? (
-        <Text fontSize={13} color="$color11">
+        <Text fontSize={13} color="color11">
           {t('findEmpty')}
         </Text>
       ) : null}
@@ -264,10 +264,9 @@ function GamePicker({
           px={8}
           py={4}
           rounded={6}
-          bg="transparent"
+          bg="transparent hover:color3"
           borderWidth={0}
           cursor="pointer"
-          hoverStyle={{ bg: '$color3' }}
           onPress={() =>
             onPick({
               id: game.id,

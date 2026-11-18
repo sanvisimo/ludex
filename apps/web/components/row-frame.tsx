@@ -20,8 +20,8 @@ export function RowFrame({
       p={12}
       rounded={12}
       borderWidth={1}
-      borderColor="$borderColor"
-      bg="$surface"
+      borderColor="border-color"
+      bg="surface"
       items="center"
       flexWrap="wrap"
     >
@@ -34,14 +34,10 @@ export function RowFrame({
           gap={8}
           flexWrap="wrap"
           items="center"
-          justify="flex-end"
-          maxW="50%"
-          $max-lg={{
-            width: '100%',
-            maxW: '100%',
-            justify: 'flex-start',
-            pl: ROW_COVER_WIDTH + ROW_GAP,
-          }}
+          justify="flex-end max-lg:flex-start"
+          maxW="50% max-lg:100%"
+          width="max-lg:100%"
+          pl={`max-lg:${ROW_COVER_WIDTH + ROW_GAP}px`}
         >
           {actions}
         </XStack>

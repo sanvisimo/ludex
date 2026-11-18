@@ -21,8 +21,8 @@ export function RatingValue({ value }: { value: number | null }) {
       gap={4}
       aria-label={t('ratingOf', { value })}
     >
-      <Star size={14} color="$accent9" fill="currentColor" />
-      <Text fontSize={14} lineHeight={20} color="$color11" aria-hidden>
+      <Star size={14} color="accent9" fill="currentColor" />
+      <Text fontSize={14} lineHeight="20px" color="color11" aria-hidden>
         {value}
       </Text>
     </XStack>

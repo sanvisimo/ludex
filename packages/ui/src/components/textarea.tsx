@@ -14,28 +14,21 @@ import type { GetProps } from 'tamagui';
  */
 const TextareaFrame = styled(TextAreaBase, {
   name: 'Textarea',
-
   minH: 64,
   px: 10,
   py: 8,
   rounded: 8,
   fontSize: 14,
-  lineHeight: 20,
+  lineHeight: '20px',
   width: '100%',
   bg: 'transparent',
-  color: '$color12',
-  borderColor: '$color9',
-  placeholderTextColor: '$color11',
-
-  hoverStyle: { borderColor: '$color10' },
-  focusStyle: { borderColor: '$accent9' },
-  focusVisibleStyle: {
-    outlineColor: '$outlineColor',
-    outlineStyle: 'solid',
-    outlineWidth: 2,
-    outlineOffset: 0,
-  },
-
+  color: 'color12',
+  borderColor: 'color9 hover:color10 focus:accent9',
+  placeholderTextColor: 'color11',
+  outlineColor: 'focus-visible:outline-color',
+  outlineStyle: 'focus-visible:solid',
+  outlineWidth: 'focus-visible:2px',
+  outlineOffset: 'focus-visible:0px',
   variants: {
     disabled: {
       true: { opacity: 0.5, cursor: 'not-allowed' },

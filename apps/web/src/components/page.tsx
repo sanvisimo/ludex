@@ -51,16 +51,16 @@ export function Page({
               {eyebrow}
               <Text
                 render="h1"
-                fontFamily="$heading"
+                fontFamily="heading"
                 fontSize={largeTitle ? 32 : 24}
-                lineHeight={largeTitle ? 40 : 32}
+                lineHeight={largeTitle ? '40px' : '32px'}
                 fontWeight="700"
-                color="$color12"
+                color="color12"
               >
                 {title}
               </Text>
               {subtitle ? (
-                <Text fontSize={14} lineHeight={20} color="$color11">
+                <Text fontSize={14} lineHeight="20px" color="color11">
                   {subtitle}
                 </Text>
               ) : null}

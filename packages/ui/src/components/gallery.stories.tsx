@@ -40,6 +40,16 @@ function filaDi(miniatura: HTMLElement) {
   return fila;
 }
 
+// Nello Storybook compilato, cioè su Chromatic, il `play` parte prima degli
+// `useEffect`, e il listener del trascinamento si attacca in uno di quelli: il
+// primo `pointerdown` arriverebbe a vuoto. In locale non si vede, perché
+// `addon-vitest` monta le storie dentro `act()`.
+function effettiEseguiti() {
+  return new Promise<void>((resolve) =>
+    requestAnimationFrame(() => setTimeout(resolve, 0)),
+  );
+}
+
 const labels = {
   previous: 'Precedente',
   next: 'Successiva',
@@ -126,6 +136,7 @@ export const ManyThumbnails: Story = {
 export const DragThumbnails: Story = {
   args: { items: tanteImmagini },
   play: async ({ canvasElement }) => {
+    await effettiEseguiti();
     const canvas = within(canvasElement);
     const prima = canvas.getByRole('button', { name: 'Elemento 1 di 12' });
     const seconda = canvas.getByRole('button', { name: 'Elemento 2 di 12' });

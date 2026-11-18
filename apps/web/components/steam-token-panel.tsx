@@ -131,10 +131,10 @@ export function SteamTokenPanel({
       </Button>
 
       <YStack gap={4}>
-        <Text fontSize={12} color="$color11">
+        <Text fontSize={12} color="color11">
           {t('tokenNoDevice')}
         </Text>
-        <Text fontSize={12} color="$color11">
+        <Text fontSize={12} color="color11">
           {t('tokenLimit')}
         </Text>
       </YStack>

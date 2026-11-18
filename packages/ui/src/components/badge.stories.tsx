@@ -33,7 +33,7 @@ export const Default: Story = {};
 
 export const Variants: Story = {
   render: () => (
-    <XStack gap="$3" items="center" flexWrap="wrap">
+    <XStack gap="3" items="center" flexWrap="wrap">
       <Badge>Default</Badge>
       <Badge variant="secondary">Secondary</Badge>
       <Badge variant="outline">Outline</Badge>
@@ -51,7 +51,7 @@ export const Variants: Story = {
  */
 export const WithRemove: Story = {
   render: () => (
-    <XStack gap="$3" items="center" flexWrap="wrap">
+    <XStack gap="3" items="center" flexWrap="wrap">
       <Badge variant="secondary" pr={2}>
         PC · Steam
         <Button
@@ -85,14 +85,14 @@ export const WithRemove: Story = {
 /** Chiaro e scuro affiancati, come per il Button. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap="$2" bg="$background" p="$3" rounded="$4">
-            <Text color="$color11" fontSize={12}>
+          <YStack gap="2" bg="background" p="3" rounded="4">
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
-            <XStack gap="$2" flexWrap="wrap">
+            <XStack gap="2" flexWrap="wrap">
               <Badge>Default</Badge>
               <Badge variant="secondary">Secondary</Badge>
               <Badge variant="outline">Outline</Badge>

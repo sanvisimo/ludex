@@ -1,5 +1,6 @@
-import { createContext, useContext, useId, type ReactNode } from 'react';
-import { Accordion as AccordionBase, Text, XStack } from 'tamagui';
+import type { ReactNode } from 'react';
+import { Text, XStack } from 'tamagui';
+import { Accordion as AccordionBase } from 'tamagui/unstyled';
 
 import { ChevronDown } from '../icons';
 
@@ -30,14 +31,6 @@ export function Accordion({ children, ...props }: AccordionProps) {
   );
 }
 
-/**
- * L'id del contenuto di ogni sezione, che il titolo nomina in
- * `aria-controls`. Lo teniamo noi perché l'Accordion di Tamagui 2.7.7 lo
- * mette sul titolo ma **non** sul contenuto: il titolo puntava a un id che non
- * esisteva, e axe lo segnala. Si toglie quando Tamagui lo sistema.
- */
-const ContentId = createContext<string | undefined>(undefined);
-
 export function AccordionItem({
   value,
   children,
@@ -45,17 +38,14 @@ export function AccordionItem({
   value: string;
   children: ReactNode;
 }) {
-  const contentId = useId();
   return (
-    <ContentId.Provider value={contentId}>
-      <AccordionBase.Item
-        value={value}
-        borderBottomWidth={1}
-        borderColor="$borderColor"
-      >
-        {children}
-      </AccordionBase.Item>
-    </ContentId.Provider>
+    <AccordionBase.Item
+      value={value}
+      borderBottomWidth={1}
+      borderColor="border-color"
+    >
+      {children}
+    </AccordionBase.Item>
   );
 }
 
@@ -78,12 +68,9 @@ export function AccordionTrigger({
   variant?: 'default' | 'heading';
 }) {
   const heading = variant === 'heading';
-  const contentId = useContext(ContentId);
   return (
     <AccordionBase.Header>
       <AccordionBase.Trigger
-        aria-controls={contentId}
-        unstyled
         flexDirection="row"
         items="center"
         gap={8}
@@ -93,12 +80,10 @@ export function AccordionTrigger({
         bg="transparent"
         borderWidth={0}
         cursor="pointer"
-        focusVisibleStyle={{
-          outlineColor: '$outlineColor',
-          outlineStyle: 'solid',
-          outlineWidth: 2,
-          outlineOffset: 2,
-        }}
+        outlineColor="focus-visible:outline-color"
+        outlineStyle="focus-visible:solid"
+        outlineWidth="focus-visible:2px"
+        outlineOffset="focus-visible:2px"
       >
         {({ open }: { open: boolean }) => (
           <>
@@ -107,22 +92,20 @@ export function AccordionTrigger({
             <Text
               flex={1}
               text="left"
-              fontFamily={heading ? '$heading' : '$body'}
+              fontFamily={heading ? 'heading' : 'body'}
               fontSize={heading ? 18 : 14}
-              lineHeight={heading ? 24 : undefined}
+              lineHeight={heading ? '24px' : undefined}
               fontWeight={heading ? '600' : '500'}
-              color="$color12"
+              color="color12"
             >
               {children}
             </Text>
             {/* Un contenitore suo: il Badge si allinea da sé in alto
                 (`self: flex-start`), e nella riga del titolo pendeva su. */}
             {hint && <XStack self="center">{hint}</XStack>}
-            <ChevronDown
-              size={16}
-              color="$color11"
-              rotate={open ? '180deg' : '0deg'}
-            />
+            <XStack rotate={open ? '180deg' : '0deg'}>
+              <ChevronDown size={16} color="color11" />
+            </XStack>
           </>
         )}
       </AccordionBase.Trigger>
@@ -131,9 +114,8 @@ export function AccordionTrigger({
 }
 
 export function AccordionContent({ children }: { children: ReactNode }) {
-  const contentId = useContext(ContentId);
   return (
-    <AccordionBase.Content id={contentId} unstyled pb={12} gap={8}>
+    <AccordionBase.Content pb={12} gap={8}>
       {children}
     </AccordionBase.Content>
   );

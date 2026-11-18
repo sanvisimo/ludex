@@ -39,7 +39,7 @@ const meta: Meta<Args> = {
   render: function Render({ onValueChange, initial, showClear }) {
     const [value, setValue] = useState<string | null>(initial);
     return (
-      <YStack gap="$2" width={280}>
+      <YStack gap="2" width={280}>
         <Label htmlFor="piattaforma">Piattaforma</Label>
         <Combobox
           items={slugs}
@@ -87,11 +87,11 @@ export const WithValue: Story = {
 /** Chiaro e scuro affiancati, a tendina chiusa. */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap="$2" bg="$background" p="$3" rounded="$4" width={240}>
-            <Text color="$color11" fontSize={12}>
+          <YStack gap="2" bg="background" p="3" rounded="4" width={240}>
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
             <Combobox

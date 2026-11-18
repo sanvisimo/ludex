@@ -50,11 +50,9 @@ export function DialogContent({
     >
       <DialogBase.Overlay
         key="overlay"
-        bg="$shadow6"
+        bg="shadow6"
         transition="quick"
-        opacity={1}
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
+        opacity="1 enter:0 exit:0"
       />
       <DialogBase.Content
         key="content"
@@ -65,34 +63,31 @@ export function DialogContent({
         mx={16}
         p={0}
         rounded={20}
-        bg="$color2"
+        bg="color2"
         borderWidth={1}
-        borderColor="$borderColor"
-        shadowColor="$shadow6"
+        borderColor="border-color"
+        shadowColor="shadow6"
         shadowRadius={32}
         shadowOffset={{ width: 0, height: 16 }}
         overflow="hidden"
         transition="quick"
-        opacity={1}
-        scale={1}
-        enterStyle={{ opacity: 0, scale: 0.98 }}
-        exitStyle={{ opacity: 0, scale: 0.98 }}
+        opacity="1 enter:0 exit:0"
+        scale="1 enter:0.98 exit:0.98"
         {...props}
         onCloseAutoFocus={(event) => {
           props.onCloseAutoFocus?.(event);
           // Le dialog controllate non hanno necessariamente un Dialog.Trigger.
-          if (!event.defaultPrevented && returnFocusTo.current?.isConnected) {
-            event.preventDefault();
+          if (!event.isCanceled && returnFocusTo.current?.isConnected) {
+            event.cancel();
             returnFocusTo.current.focus();
           }
         }}
       >
         <YStack
-          p={24}
-          gap={24}
+          p="24px max-sm:20px"
+          gap="24px max-sm:20px"
           minH={0}
           shrink={1}
-          $max-sm={{ p: 20, gap: 20 }}
           {...(isWeb
             ? {
                 maxH: 'inherit' as const,
@@ -112,13 +107,12 @@ export function DialogContent({
               variant="ghost"
               size="icon"
               position="absolute"
-              t={16}
-              r={16}
+              t="16px max-sm:12px"
+              r="16px max-sm:12px"
               rounded={999}
-              bg="$color2"
+              bg="color2"
               style={{ zIndex: 3 }}
               aria-label={closeLabel}
-              $max-sm={{ t: 12, r: 12 }}
             >
               <X size={18} />
             </Button>
@@ -136,43 +130,37 @@ export const DialogHeader = styled(YStack, {
 
 export const DialogFooter = styled(XStack, {
   name: 'DialogFooter',
-  mx: -24,
-  mb: -24,
+  mx: '-24px max-sm:-20px',
+  mb: '-24px max-sm:-20px',
   mt: 4,
-  px: 24,
+  px: '24px max-sm:20px',
   py: 20,
   gap: 10,
   justify: 'flex-end',
+  flexDirection: 'row max-sm:column-reverse',
   borderTopWidth: 1,
-  borderColor: '$borderColor',
-  bg: '$color2',
+  borderColor: 'border-color',
+  bg: 'color2',
+  ...(isWeb ? { position: 'sticky' as never, b: '-24px max-sm:-20px' } : {}),
   style: { zIndex: 2 },
-  ...(isWeb ? { position: 'sticky' as never, b: -24 } : {}),
-  '$max-sm': {
-    flexDirection: 'column-reverse',
-    mx: -20,
-    mb: -20,
-    p: 20,
-    ...(isWeb ? { b: -20 } : {}),
-  },
 });
 
 export const DialogTitle = styled(DialogBase.Title, {
   name: 'DialogTitle',
-  fontFamily: '$heading',
+  fontFamily: 'heading',
   pr: 40,
   fontSize: 20,
-  lineHeight: 28,
+  lineHeight: '28px',
   fontWeight: '600',
-  color: '$color12',
+  color: 'color12',
   m: 0,
 });
 
 export const DialogDescription = styled(DialogBase.Description, {
   name: 'DialogDescription',
   fontSize: 14,
-  lineHeight: 22,
-  color: '$color11',
+  lineHeight: '22px',
+  color: 'color11',
   m: 0,
 });
 

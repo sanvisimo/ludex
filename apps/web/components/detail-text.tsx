@@ -7,25 +7,25 @@ import { Text, styled } from '@repo/ui';
  */
 export const DetailTitle = styled(Text, {
   render: 'h3',
-  fontFamily: '$heading',
+  fontFamily: 'heading',
   fontSize: 15,
-  lineHeight: 20,
+  lineHeight: '20px',
   fontWeight: '600',
-  color: '$color12',
+  color: 'color12',
   m: 0,
 });
 
 export const Muted = styled(Text, {
   fontSize: 14,
-  lineHeight: 20,
-  color: '$color11',
+  lineHeight: '20px',
+  color: 'color11',
   m: 0,
 });
 
 export const Strong = styled(Text, {
   fontSize: 14,
-  lineHeight: 20,
+  lineHeight: '20px',
   fontWeight: '600',
-  color: '$color12',
+  color: 'color12',
   m: 0,
 });

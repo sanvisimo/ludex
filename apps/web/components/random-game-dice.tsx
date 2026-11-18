@@ -109,7 +109,7 @@ export function RandomGameDice({
       disabled={pick.isPending}
       onPress={roll}
     >
-      <Dices size={16} color="$actionColor" />
+      <Dices size={16} color="actionColor" />
       {labelled && t('chooseForMe')}
     </Button>
   );

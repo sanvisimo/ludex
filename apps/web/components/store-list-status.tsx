@@ -26,9 +26,9 @@ export function StoreListStatus({ accountId }: { accountId: string }) {
     return (
       <XStack items="center" gap={8}>
         <Spinner spinning>
-          <RefreshCw size={14} color="$color11" />
+          <RefreshCw size={14} color="color11" />
         </Spinner>
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {t('syncing')}
         </Text>
       </XStack>
@@ -39,7 +39,7 @@ export function StoreListStatus({ accountId }: { accountId: string }) {
     return (
       <XStack items="center" gap={8} flexWrap="wrap">
         <Badge variant="error">{t('errorBadge')}</Badge>
-        <Text fontSize={13} lineHeight={18} color="$color11" flex={1} minW={0}>
+        <Text fontSize={13} lineHeight="18px" color="color11" flex={1} minW={0}>
           {errorText(account.wishlistError)}
         </Text>
       </XStack>
@@ -47,7 +47,7 @@ export function StoreListStatus({ accountId }: { accountId: string }) {
   }
 
   return account.wishlistSyncedAt ? (
-    <Text fontSize={13} lineHeight={18} color="$color11">
+    <Text fontSize={13} lineHeight="18px" color="color11">
       {t('updated', {
         when: format.relativeTime(account.wishlistSyncedAt, now),
       })}

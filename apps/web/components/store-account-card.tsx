@@ -269,13 +269,13 @@ export function StoreAccountCard({
             />
           ) : null}
           <YStack shrink={1} minW={0}>
-            <Text fontWeight="600" color="$color12">
+            <Text fontWeight="600" color="color12">
               {storeLabels[account.store]}
             </Text>
             <Text
               fontSize={13}
-              lineHeight={18}
-              color="$color11"
+              lineHeight="18px"
+              color="color11"
               numberOfLines={1}
             >
               {storeAccountName(account)}
@@ -285,8 +285,8 @@ export function StoreAccountCard({
             {account.label && account.displayName && (
               <Text
                 fontSize={12}
-                lineHeight={16}
-                color="$color11"
+                lineHeight="16px"
+                color="color11"
                 numberOfLines={1}
               >
                 {account.displayName}
@@ -305,7 +305,7 @@ export function StoreAccountCard({
                   name: storeAccountName(account),
                 })}
               >
-                <EllipsisVertical size={16} color="$color12" />
+                <EllipsisVertical size={16} color="color12" />
               </Button>
             }
           />
@@ -394,7 +394,7 @@ export function StoreAccountCard({
                   <Badge variant="secondary">
                     {tSteam('badgeTokenExpired')}
                   </Badge>
-                  <Text fontSize={13} color="$color11">
+                  <Text fontSize={13} color="color11">
                     · {tSteam('familyFrozen')}
                   </Text>
                   <Button
@@ -419,7 +419,7 @@ export function StoreAccountCard({
                       ? tSteam('badgeDead')
                       : tSteam('badgeOn')}
                   </Badge>
-                  <Text fontSize={13} color="$color11">
+                  <Text fontSize={13} color="color11">
                     · {tSteam('familyIncluded')}
                     {account.loginKind === 'token' &&
                       ` · ${tSteam('tokenKind')}`}
@@ -468,7 +468,7 @@ export function StoreAccountCard({
                 </Badge>
               </Tooltip>
             )}
-            <Text fontSize={13} color="$color11">
+            <Text fontSize={13} color="color11">
               {account.xbox.gamePassActive
                 ? tXbox('gamePassOn')
                 : tXbox('gamePassOff')}
@@ -486,7 +486,7 @@ export function StoreAccountCard({
             <Badge variant="error" self="flex-start">
               {t('needsReauthBadge')}
             </Badge>
-            <Text fontSize={13} lineHeight={18} color="$color11">
+            <Text fontSize={13} lineHeight="18px" color="color11">
               {t('needsReauth')}
             </Text>
           </YStack>
@@ -495,7 +495,7 @@ export function StoreAccountCard({
             {t('syncing')}
           </Badge>
         ) : (
-          <Text fontSize={13} lineHeight={18} color="$color11">
+          <Text fontSize={13} lineHeight="18px" color="color11">
             {account.lastSyncAt
               ? t('lastSync', {
                   when: format.relativeTime(account.lastSyncAt, now),
@@ -521,7 +521,7 @@ export function StoreAccountCard({
         <XStack items="center" gap={8}>
           {relinkStore ? (
             <Button onClick={() => setRelinking(true)}>
-              <Link2 size={16} color="$actionColor" />
+              <Link2 size={16} color="actionColor" />
               {t('reconnect')}
             </Button>
           ) : reimportStore ? (
@@ -533,7 +533,7 @@ export function StoreAccountCard({
               disabled={busy || syncing}
             >
               <Spinner spinning={syncing}>
-                <Download size={16} color="$color12" />
+                <Download size={16} color="color12" />
               </Spinner>
               {t('reimport')}
             </Button>
@@ -549,7 +549,7 @@ export function StoreAccountCard({
                 {/* Gira mentre quell'account importa: il bottone resta spento
                     e dice «Aggiorna», lo Spinner è solo il movimento. */}
                 <Spinner spinning={syncing}>
-                  <RefreshCw size={16} color="$color12" />
+                  <RefreshCw size={16} color="color12" />
                 </Spinner>
                 {t('sync')}
               </Button>
@@ -573,7 +573,7 @@ export function StoreAccountCard({
                 disabled={account.wishlistSyncing || syncWishlist.isPending}
               >
                 <Spinner spinning={account.wishlistSyncing}>
-                  <Heart size={16} color="$color12" />
+                  <Heart size={16} color="color12" />
                 </Spinner>
               </Button>
             </Tooltip>
@@ -598,7 +598,7 @@ export function StoreAccountCard({
 
       <Slot>
         {reimportStore ? null : !autoSyncLibrary ? (
-          <Text fontSize={13} lineHeight={18} color="$color11">
+          <Text fontSize={13} lineHeight="18px" color="color11">
             {t('autoSyncOffGlobally')}
           </Text>
         ) : (
@@ -606,7 +606,7 @@ export function StoreAccountCard({
           // meno fresca, qui vuol dire un collegamento che muore.
           account.store === 'psn' &&
           !autoSyncChecked && (
-            <Text fontSize={13} lineHeight={18} color="$red11">
+            <Text fontSize={13} lineHeight="18px" color="red11">
               {t('autoSyncPsnWarning')}
             </Text>
           )

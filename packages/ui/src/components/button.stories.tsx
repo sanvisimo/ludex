@@ -48,7 +48,7 @@ export const Default: Story = {
  */
 export const Variants: Story = {
   render: () => (
-    <XStack gap="$3" items="center" flexWrap="wrap">
+    <XStack gap="3" items="center" flexWrap="wrap">
       <Button>Default</Button>
       <Button variant="outline">Outline</Button>
       <Button variant="selection" aria-pressed>
@@ -63,7 +63,7 @@ export const Variants: Story = {
 
 export const Sizes: Story = {
   render: () => (
-    <XStack gap="$3" items="center">
+    <XStack gap="3" items="center">
       <Button>Normal</Button>
       <Button size="sm">small</Button>
       <Button size="icon" aria-label="Filtri">
@@ -86,7 +86,7 @@ export const Sizes: Story = {
  */
 export const Disabled: Story = {
   render: () => (
-    <XStack gap="$3" items="center" flexWrap="wrap">
+    <XStack gap="3" items="center" flexWrap="wrap">
       <Button disabled>Default</Button>
       <Button variant="outline" disabled>
         Outline
@@ -111,11 +111,11 @@ export const Disabled: Story = {
  */
 export const Themes: Story = {
   render: () => (
-    <XStack gap="$4" items="flex-start">
+    <XStack gap="4" items="flex-start">
       {(['dark', 'light'] as const).map((name) => (
         <Theme key={name} name={name}>
-          <YStack gap="$2" bg="$background" p="$3" rounded="$4">
-            <Text color="$color11" fontSize={12}>
+          <YStack gap="2" bg="background" p="3" rounded="4">
+            <Text color="color11" fontSize={12}>
               {name === 'dark' ? 'Dark' : 'Light'}
             </Text>
             <Button>Add</Button>
@@ -148,7 +148,11 @@ export const DisabledNotRespond: Story = {
   args: { disabled: true },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByText('Add Game'));
+    // Da disabilitato il bottone ha `pointer-events: none`, e `userEvent` da
+    // solo non ci clicca: si forza, perché va provato che non risponda.
+    await userEvent
+      .setup({ pointerEventsCheck: 0 })
+      .click(canvas.getByText('Add Game'));
     await expect(args.onPress).not.toHaveBeenCalled();
   },
 };

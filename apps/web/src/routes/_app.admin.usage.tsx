@@ -35,10 +35,10 @@ function UsageSection() {
   return (
     <YStack gap={32}>
       <YStack gap={4}>
-        <Text render="h2" fontSize={18} lineHeight={24} fontWeight="600">
+        <Text render="h2" fontSize={18} lineHeight="24px" fontWeight="600">
           {t('title')}
         </Text>
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {t('intro')}
         </Text>
       </YStack>
@@ -61,7 +61,7 @@ function UsageSection() {
 function Block({ title, children }: { title: string; children: ReactNode }) {
   return (
     <YStack render="section" gap={16}>
-      <Text render="h3" fontSize={16} lineHeight={22} fontWeight="600">
+      <Text render="h3" fontSize={16} lineHeight="22px" fontWeight="600">
         {title}
       </Text>
       {children}
@@ -83,12 +83,12 @@ function Stats({ items }: { items: { label: string; value: string }[] }) {
           p={16}
           rounded={12}
           borderWidth={1}
-          borderColor="$borderColor"
+          borderColor="border-color"
         >
-          <Text fontSize={12} lineHeight={16} color="$color11">
+          <Text fontSize={12} lineHeight="16px" color="color11">
             {item.label}
           </Text>
-          <Text fontSize={26} lineHeight={32} fontWeight="600">
+          <Text fontSize={26} lineHeight="32px" fontWeight="600">
             {item.value}
           </Text>
         </YStack>
@@ -99,7 +99,7 @@ function Stats({ items }: { items: { label: string; value: string }[] }) {
 
 function Note({ children }: { children: ReactNode }) {
   return (
-    <Text fontSize={12} lineHeight={16} color="$color11">
+    <Text fontSize={12} lineHeight="16px" color="color11">
       {children}
     </Text>
   );
@@ -162,7 +162,7 @@ function UsersBlock({ usage }: { usage: AdminUsage }) {
         data={users.signups}
         valueLabel={(count) => t('signupsCount', { count })}
       />
-      <Text fontSize={14} lineHeight={20} fontWeight="600">
+      <Text fontSize={14} lineHeight="20px" fontWeight="600">
         {t('libraries')}
       </Text>
       {usage.libraries.length === 0 ? (
@@ -233,7 +233,7 @@ function GamesBlock({ usage }: { usage: AdminUsage }) {
         data={games.added}
         valueLabel={(count) => t('addedCount', { count })}
       />
-      <Text fontSize={14} lineHeight={20} fontWeight="600">
+      <Text fontSize={14} lineHeight="20px" fontWeight="600">
         {t('top')}
       </Text>
       {games.top.length === 0 ? (
@@ -350,7 +350,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
 
   return (
     <Block title={t('apis')}>
-      <Text fontSize={14} lineHeight={20} fontWeight="600">
+      <Text fontSize={14} lineHeight="20px" fontWeight="600">
         {t('queues')}
       </Text>
       {usage.queues ? (
@@ -364,7 +364,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
         <Note>{t('redisDown')}</Note>
       )}
 
-      <Text fontSize={14} lineHeight={20} fontWeight="600">
+      <Text fontSize={14} lineHeight="20px" fontWeight="600">
         {t('calls')}
       </Text>
       {usage.apis ? (
@@ -381,7 +381,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
         <Note>{t('redisDown')}</Note>
       )}
 
-      <Text fontSize={14} lineHeight={20} fontWeight="600">
+      <Text fontSize={14} lineHeight="20px" fontWeight="600">
         {t('outcomes')}
       </Text>
       <AdminTable

@@ -58,10 +58,10 @@ export function UserMenu({
 }) {
   return (
     <>
-      <XStack $max-md={{ display: 'none' }}>
+      <XStack display="max-md:none">
         <UserDropdown name={name} isAdmin={isAdmin} />
       </XStack>
-      <XStack display="none" $max-md={{ display: 'flex' }}>
+      <XStack display="none max-md:flex">
         <UserSheet name={name} isAdmin={isAdmin} />
       </XStack>
     </>
@@ -124,8 +124,8 @@ function UserDropdown({ name, isAdmin }: { name: string; isAdmin: boolean }) {
       <DropdownMenuContent width={224}>
         <DropdownMenuLabel
           fontSize={14}
-          lineHeight={20}
-          color="$color12"
+          lineHeight="20px"
+          color="color12"
           numberOfLines={1}
         >
           {name}
@@ -193,9 +193,9 @@ function UserSheet({ name, isAdmin }: { name: string; isAdmin: boolean }) {
           <Avatar name={name} size={32} />
           <Text
             fontSize={15}
-            lineHeight={20}
+            lineHeight="20px"
             fontWeight="500"
-            color="$color12"
+            color="color12"
             numberOfLines={1}
             shrink={1}
           >
@@ -316,9 +316,9 @@ export function SettingsDropdown() {
       <DropdownMenuTrigger
         render={
           <Button variant="ghost" aria-label={t('settings')}>
-            <Settings2 size={16} color="$color12" />
+            <Settings2 size={16} color="color12" />
             {t('settings')}
-            <ChevronDown size={14} color="$color11" />
+            <ChevronDown size={14} color="color11" />
           </Button>
         }
       />
@@ -384,7 +384,7 @@ function SheetSetting({
 }) {
   return (
     <XStack items="center" justify="space-between" gap={12} px={12} py={4}>
-      <Text fontSize={14} lineHeight={20} color="$color11">
+      <Text fontSize={14} lineHeight="20px" color="color11">
         {label}
       </Text>
       {children}
@@ -437,7 +437,7 @@ function SheetLink({
 /** Il testo di un'opzione: dentro un `ToggleGroupItem` va in un `Text`. */
 function OptionText({ children }: { children: string }) {
   return (
-    <Text fontSize={13} lineHeight={18} color="$color12">
+    <Text fontSize={13} lineHeight="18px" color="color12">
       {children}
     </Text>
   );

@@ -147,8 +147,8 @@ function PlaylistPage() {
       }}
     >
       <XStack items="center" gap={2}>
-        <ChevronLeft size={14} color="$color11" />
-        <Text fontSize={13} lineHeight={18} color="$color11">
+        <ChevronLeft size={14} color="color11" />
+        <Text fontSize={13} lineHeight="18px" color="color11">
           {t('back')}
         </Text>
       </XStack>
@@ -160,13 +160,13 @@ function PlaylistPage() {
       <Page eyebrow={back} title={t('title')}>
         {hasErrorCode(playlist.error, 'NOT_FOUND') ? (
           <EmptyState
-            icon={<ListFilter size={24} color="$color11" />}
+            icon={<ListFilter size={24} color="color11" />}
             title={t('notFoundTitle')}
             description={t('notFoundHint')}
             action={<ButtonLink href="/playlist">{t('back')}</ButtonLink>}
           />
         ) : (
-          <Text fontSize={14} color="$red11">
+          <Text fontSize={14} color="red11">
             {t('loadFailed')}
           </Text>
         )}
@@ -212,8 +212,8 @@ function PlaylistPage() {
         // Il tag mancante si ignora invece di svuotare la lista, e senza
         // questo avviso la playlist mostrerebbe più giochi del previsto senza
         // dire perché.
-        <YStack bg="$color3" rounded={8} px={12} py={8}>
-          <Text fontSize={13} lineHeight={18} color="$color12">
+        <YStack bg="color3" rounded={8} px={12} py={8}>
+          <Text fontSize={13} lineHeight="18px" color="color12">
             {t('missingTags', { count: data.missingTags })}
           </Text>
         </YStack>
@@ -260,16 +260,16 @@ function PlaylistPage() {
                 }
               >
                 <ToggleGroupItem value="grid" aria-label={tBacklog('viewGrid')}>
-                  <LayoutGrid size={16} color="$color12" />
+                  <LayoutGrid size={16} color="color12" />
                 </ToggleGroupItem>
                 <ToggleGroupItem value="rows" aria-label={tBacklog('viewRows')}>
-                  <Rows3 size={16} color="$color12" />
+                  <Rows3 size={16} color="color12" />
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="compact"
                   aria-label={tBacklog('viewCompact')}
                 >
-                  <List size={16} color="$color12" />
+                  <List size={16} color="color12" />
                 </ToggleGroupItem>
               </ToggleGroup>
             </XStack>
@@ -289,7 +289,7 @@ function PlaylistPage() {
           </YStack>
         ) : entries.length === 0 ? (
           <EmptyState
-            icon={<SearchX size={24} color="$color11" />}
+            icon={<SearchX size={24} color="color11" />}
             // Vuota per via della ricerca di chi guarda, o vuota di suo: la
             // prima ha una via d'uscita nel campo qui sopra.
             title={search.q ? t('emptySearchTitle') : t('emptyTitle')}

@@ -98,7 +98,7 @@ export function BacklogToolbar({
         {backlogStatusValues.map((status) => {
           const active = filter.status.includes(status);
           const Icon = statusIcons[status];
-          const color = active ? '$selectionColor' : '$color12';
+          const color = active ? 'selectionColor' : 'color12';
           return (
             <Button
               key={status}
@@ -114,7 +114,7 @@ export function BacklogToolbar({
               }
             >
               <Icon size={14} color={color} />
-              <XStack display="none" $sm={{ display: 'flex' }} aria-hidden>
+              <XStack display="none sm:flex" aria-hidden>
                 <Text fontSize={13} fontWeight="500" color={color}>
                   {statusLabels[status]}
                 </Text>
@@ -129,23 +129,17 @@ export function BacklogToolbar({
       <XStack items="center" flexWrap="wrap" gap={8}>
         {/* La base, non la larghezza: con `flex={1}` la base è 0 e vince su
             `width`, e la ricerca resterebbe sulla riga dei bottoni. */}
-        <YStack
-          grow={1}
-          shrink={1}
-          minW={0}
-          flexBasis="100%"
-          $sm={{ flexBasis: 160 }}
-        >
+        <YStack grow={1} shrink={1} minW={0} flexBasis="100% sm:160px">
           <SearchInput
             value={filter.q}
             onChange={(q) => void setFilter({ q: q || null })}
           />
         </YStack>
         <Button variant="outline" onClick={onOpenFilters}>
-          <SlidersHorizontal size={16} color="$color12" />
+          <SlidersHorizontal size={16} color="color12" />
           {t('filtersButton', { count: activeCount })}
         </Button>
-        <YStack width={224} display="none" $md={{ display: 'flex' }}>
+        <YStack width={224} display="none md:flex">
           <SortControl labelled={false} />
         </YStack>
         {/* Salvare i filtri in una playlist ha senso con almeno un filtro
@@ -171,7 +165,7 @@ function SortControl({ labelled = true }: { labelled?: boolean }) {
   return (
     <YStack gap={8}>
       {labelled && (
-        <Label htmlFor={id} color="$color11">
+        <Label htmlFor={id} color="color11">
           {t('sortLabel')}
         </Label>
       )}
@@ -349,7 +343,7 @@ function ActiveChips() {
           aria-label={t('removeChip', { label: chip.label })}
         >
           {chip.label}
-          <X size={14} color="$color11" />
+          <X size={14} color="color11" />
         </Button>
       ))}
       <Button size="sm" variant="ghost" onClick={() => void reset()}>
@@ -801,15 +795,15 @@ export function FilterPanel({
   return (
     <YStack gap={16}>
       {/* Sul telefono il pannello copre la barra, e con lei la ricerca: qui
-          la stessa, sullo stesso `q`. Da `$sm` la barra resta visibile
+          la stessa, sullo stesso `q`. Da `sm` la barra resta visibile
           accanto al pannello, e due caselle sarebbero una di troppo. */}
-      <YStack $sm={{ display: 'none' }}>
+      <YStack display="sm:none">
         <SearchInput
           value={filter.q}
           onChange={(q) => void setFilter({ q: q || null })}
         />
       </YStack>
-      <YStack $md={{ display: 'none' }}>
+      <YStack display="md:none">
         <SortControl />
       </YStack>
       {/* Un sì o un no, non un elenco: fuori dalle sezioni. */}
@@ -881,7 +875,7 @@ function CheckList({
 }) {
   if (items.length === 0)
     return empty ? (
-      <Text fontSize={13} color="$color11">
+      <Text fontSize={13} color="color11">
         {empty}
       </Text>
     ) : null;
@@ -893,7 +887,7 @@ function CheckList({
       {hint &&
         selected.filter((value) => items.some((i) => i.value === value))
           .length > 1 && (
-          <Text fontSize={13} color="$color11">
+          <Text fontSize={13} color="color11">
             {hint}
           </Text>
         )}
@@ -908,7 +902,7 @@ function CheckList({
                   checked={selected.includes(item.value)}
                   onCheckedChange={() => onToggle(item.value)}
                 />
-                <Label htmlFor={id} fontSize={14} lineHeight={20}>
+                <Label htmlFor={id} fontSize={14} lineHeight="20px">
                   {item.label}
                 </Label>
               </XStack>
@@ -1004,11 +998,11 @@ function RangeFilter({
   return (
     <YStack gap={8}>
       {help && (
-        <Text fontSize={13} color="$color11">
+        <Text fontSize={13} color="color11">
           {help}
         </Text>
       )}
-      <Text fontSize={14} color="$color12">
+      <Text fontSize={14} color="color12">
         {text(lowValue, highValue)}
       </Text>
       {mounted ? (
@@ -1048,7 +1042,7 @@ function RangeFilter({
         )}
       </XStack>
       {hint && (lowValue !== null || highValue !== null) && (
-        <Text fontSize={13} color="$color11">
+        <Text fontSize={13} color="color11">
           {hint}
         </Text>
       )}

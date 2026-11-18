@@ -197,7 +197,7 @@ export function AddGameDialog({
         render={
           trigger ?? (
             <Button>
-              <Plus size={16} color="$actionColor" />
+              <Plus size={16} color="actionColor" />
               {game ? t('triggerForGame') : t('trigger')}
             </Button>
           )

@@ -85,21 +85,18 @@ function LinkRow({
       px={tile ? 10 : href ? 6 : 0}
       py={tile ? 10 : href ? 2 : 0}
       rounded={tile ? 10 : 6}
-      bg={tile ? '$color3' : 'transparent'}
+      bg={`${tile ? 'color3' : 'transparent'}${href ? ' hover:color4' : ''}`}
       borderWidth={tile ? 1 : 0}
-      borderColor="$borderColor"
+      borderColor="border-color"
       cursor={href ? 'pointer' : undefined}
-      hoverStyle={href ? { bg: '$color4' } : undefined}
-      focusVisibleStyle={{
-        outlineColor: '$outlineColor',
-        outlineStyle: 'solid',
-        outlineWidth: 2,
-      }}
+      outlineColor="focus-visible:outline-color"
+      outlineStyle="focus-visible:solid"
+      outlineWidth="focus-visible:2px"
     >
       {children}
       {tile && href && (
         <XStack shrink={0} pt={items === 'flex-start' ? 2 : 0}>
-          <ArrowUpRight size={13} color="$color11" aria-hidden />
+          <ArrowUpRight size={13} color="color11" aria-hidden />
         </XStack>
       )}
     </XStack>
@@ -147,10 +144,9 @@ export function GameHero({ game }: { game: GameDetail }) {
       <YStack
         position="relative"
         overflow="hidden"
-        bg="$color2"
-        minH={320}
+        bg="color2"
+        minH="320px max-md:240px"
         justify="flex-end"
-        $max-md={{ minH: 240 }}
       >
         {background && (
           <img
@@ -191,7 +187,7 @@ export function GameHero({ game }: { game: GameDetail }) {
           gap={20}
           items="flex-end"
         >
-          <YStack $max-sm={{ display: 'none' }}>
+          <YStack display="max-sm:none">
             <GameCover
               imageId={game.coverImageId}
               name={game.name}
@@ -203,13 +199,12 @@ export function GameHero({ game }: { game: GameDetail }) {
             <XStack flexWrap="wrap" items="center" gap={8}>
               <Text
                 render="h1"
-                fontFamily="$heading"
-                fontSize={30}
-                lineHeight={36}
+                fontFamily="heading"
+                fontSize="30px max-sm:24px"
+                lineHeight="36px max-sm:30px"
                 fontWeight="700"
-                color="$color12"
+                color="color12"
                 m={0}
-                $max-sm={{ fontSize: 24, lineHeight: 30 }}
               >
                 {game.name}
               </Text>
@@ -246,22 +241,18 @@ export function GameGallery({ game }: { game: GameDetail }) {
   const t = useTranslations('game');
 
   const items: GalleryItem[] = [
-    ...(game.videos ?? []).map(
-      (video): GalleryItem => ({
-        kind: 'video',
-        videoId: video.videoId,
-        title: video.name ?? 'Trailer',
-      }),
-    ),
-    ...(game.screenshotImageIds ?? []).map(
-      (imageId, index): GalleryItem => ({
-        kind: 'image',
-        src: igdbImageUrl(imageId, 'screenshot_big'),
-        thumb: igdbImageUrl(imageId, 'screenshot_med', false),
-        full: igdbImageUrl(imageId, '1080p', false),
-        alt: t('screenshotAlt', { index: index + 1, name: game.name }),
-      }),
-    ),
+    ...(game.videos ?? []).map((video): GalleryItem => ({
+      kind: 'video',
+      videoId: video.videoId,
+      title: video.name ?? 'Trailer',
+    })),
+    ...(game.screenshotImageIds ?? []).map((imageId, index): GalleryItem => ({
+      kind: 'image',
+      src: igdbImageUrl(imageId, 'screenshot_big'),
+      thumb: igdbImageUrl(imageId, 'screenshot_med', false),
+      full: igdbImageUrl(imageId, '1080p', false),
+      alt: t('screenshotAlt', { index: index + 1, name: game.name }),
+    })),
   ];
 
   if (items.length === 0) return null;
@@ -301,17 +292,11 @@ function Panel({
       p={16}
       rounded={12}
       borderWidth={1}
-      borderColor="$borderColor"
-      bg="$color2"
-      focusVisibleStyle={
-        id
-          ? {
-              outlineColor: '$outlineColor',
-              outlineStyle: 'solid',
-              outlineWidth: 2,
-            }
-          : undefined
-      }
+      borderColor="border-color"
+      bg="color2"
+      outlineColor={id ? 'focus-visible:outline-color' : undefined}
+      outlineStyle={id ? 'focus-visible:solid' : undefined}
+      outlineWidth={id ? 'focus-visible:2px' : undefined}
     >
       {children}
     </YStack>
@@ -322,11 +307,11 @@ function PanelTitle({ children }: { children: ReactNode }) {
   return (
     <Text
       render="h2"
-      fontFamily="$heading"
+      fontFamily="heading"
       fontSize={16}
-      lineHeight={22}
+      lineHeight="22px"
       fontWeight="600"
-      color="$color12"
+      color="color12"
       m={0}
     >
       {children}
@@ -435,22 +420,22 @@ export function DurationAndCritics({
                     minW={96}
                     p={10}
                     rounded={8}
-                    bg={blue ? '$color3' : '$selectionBackground'}
+                    bg={blue ? 'color3' : 'selectionBackground'}
                     borderLeftWidth={3}
-                    borderColor={blue ? '$color9' : '$selectionBorder'}
+                    borderColor={blue ? 'color9' : 'selectionBorder'}
                     gap={4}
                   >
                     <Muted
                       fontSize={12}
-                      lineHeight={16}
-                      color={blue ? '$color12' : '$color11'}
+                      lineHeight="16px"
+                      color={blue ? 'color12' : 'color11'}
                     >
                       {tHltb(key)}
                     </Muted>
                     <Strong
                       fontSize={22}
-                      lineHeight={28}
-                      color={blue ? '$color12' : '$selectionColor'}
+                      lineHeight="28px"
+                      color={blue ? 'color12' : 'selectionColor'}
                     >
                       {duration(minutes!)}
                     </Strong>
@@ -467,7 +452,7 @@ export function DurationAndCritics({
         pt={16}
         mt={4}
         borderTopWidth={1}
-        borderColor="$borderColor"
+        borderColor="border-color"
       >
         <PanelTitle>{tCritic('title')}</PanelTitle>
         {scores.length === 0 ? (
@@ -495,32 +480,28 @@ export function DurationAndCritics({
           </YStack>
         )}
         <Button variant="outline" onPress={() => setOpen(true)}>
-          <Info size={16} color="$color12" />
+          <Info size={16} color="color12" />
           {t('details')}
         </Button>
       </YStack>
       <Dialog modal open={open} onOpenChange={setOpen}>
-        <DialogContent closeLabel={t('close')} $lg={{ maxW: 960 }}>
+        <DialogContent closeLabel={t('close')} maxW="lg:960px">
           <DialogHeader>
             <DialogTitle>{t('durationAndCritics')}</DialogTitle>
             <DialogDescription>{game.name}</DialogDescription>
           </DialogHeader>
-          <YStack gap={24} $lg={{ flexDirection: 'row', items: 'flex-start' }}>
-            <YStack minW={0} $lg={{ width: 320, shrink: 0 }}>
+          <YStack gap={24} flexDirection="lg:row" items="lg:flex-start">
+            <YStack minW={0} width="lg:320px" shrink="lg:0px">
               <HltbTimes game={game} />
             </YStack>
             <YStack
               minW={0}
-              pt={24}
-              borderTopWidth={1}
-              borderColor="$borderColor"
-              $lg={{
-                flex: 1,
-                pt: 0,
-                pl: 24,
-                borderTopWidth: 0,
-                borderLeftWidth: 1,
-              }}
+              pt="24px lg:0px"
+              borderTopWidth="1px lg:0px"
+              borderColor="border-color"
+              flex="lg:1"
+              pl="lg:24px"
+              borderLeftWidth="lg:1px"
             >
               <CriticScores game={game} />
             </YStack>
@@ -588,13 +569,12 @@ export function GamePersonalBar({
       render="section"
       aria-label={t('inBacklog')}
       gap={12}
-      px={20}
+      px="20px max-sm:12px"
       py={16}
       rounded={12}
-      bg="$surface"
+      bg="surface"
       borderWidth={1}
-      borderColor="$borderColor"
-      $max-sm={{ px: 12 }}
+      borderColor="border-color"
     >
       <div className="game-personal-fields">
         <YStack gap={6} minW={0}>
@@ -627,7 +607,7 @@ export function GamePersonalBar({
               gap={4}
             >
               {t('copyCount', { count: entry.ownerships.length })}
-              <ArrowDown size={13} color="$color11" aria-hidden />
+              <ArrowDown size={13} color="color11" aria-hidden />
             </Button>
             <PlayedTime ownerships={entry.ownerships} />
           </XStack>
@@ -725,14 +705,14 @@ export function BacklogPanel({
                 {brand ? (
                   <BrandIcon brand={brand} size={24} />
                 ) : (
-                  <Gamepad2 size={24} color="$color11" aria-hidden />
+                  <Gamepad2 size={24} color="color11" aria-hidden />
                 )}
               </XStack>
               <YStack grow={1} shrink={1} minW={0} gap={4}>
                 <Text
                   fontSize={13}
-                  lineHeight={18}
-                  color="$color12"
+                  lineHeight="18px"
+                  color="color12"
                   style={{ overflowWrap: 'anywhere' }}
                 >
                   {storeName && (
@@ -746,21 +726,21 @@ export function BacklogPanel({
                 {label && (
                   <Muted
                     fontSize={12}
-                    lineHeight={18}
+                    lineHeight="18px"
                     style={{ overflowWrap: 'anywhere' }}
                   >
                     {label}
                   </Muted>
                 )}
                 {!!ownership.playtimeMinutes && (
-                  <Strong fontSize={12} lineHeight={18}>
+                  <Strong fontSize={12} lineHeight="18px">
                     {t('played', {
                       duration: duration(ownership.playtimeMinutes),
                     })}
                   </Strong>
                 )}
                 {dates && (
-                  <Muted fontSize={12} lineHeight={18}>
+                  <Muted fontSize={12} lineHeight="18px">
                     {dates}
                   </Muted>
                 )}
@@ -771,14 +751,14 @@ export function BacklogPanel({
       </YStack>
 
       {(entry.notes || entry.tags.length > 0) && (
-        <YStack gap={10} pt={12} borderTopWidth={1} borderColor="$borderColor">
+        <YStack gap={10} pt={12} borderTopWidth={1} borderColor="border-color">
           {entry.notes && (
             <YStack gap={4}>
               <Muted fontSize={13}>{t('notes')}</Muted>
               <Text
                 fontSize={14}
-                lineHeight={20}
-                color="$color12"
+                lineHeight="20px"
+                color="color12"
                 style={{ whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}
               >
                 {entry.notes}
@@ -794,7 +774,7 @@ export function BacklogPanel({
         pt={12}
         mt={4}
         borderTopWidth={1}
-        borderColor="$borderColor"
+        borderColor="border-color"
       >
         {actions}
       </XStack>
@@ -827,14 +807,14 @@ export function StoreLinks({ game }: { game: GameDetail }) {
       <PanelTitle>{t('links')}</PanelTitle>
       {official && (
         <LinkRow href={official.url} title={t('officialSite')} tile>
-          <Globe size={20} color="$color11" aria-hidden />
+          <Globe size={20} color="color11" aria-hidden />
           <Text
             grow={1}
             shrink={1}
             minW={0}
             fontSize={13}
             fontWeight="500"
-            color="$color12"
+            color="color12"
           >
             {t('officialSite')}
           </Text>
@@ -861,9 +841,9 @@ export function StoreLinks({ game }: { game: GameDetail }) {
                   shrink={1}
                   minW={0}
                   fontSize={13}
-                  lineHeight={18}
+                  lineHeight="18px"
                   fontWeight="500"
-                  color="$color12"
+                  color="color12"
                   style={{ overflowWrap: 'anywhere' }}
                 >
                   {storeLabels[store].replace(/ (store|eshop)/i, '')}
@@ -886,9 +866,9 @@ export function StoreLinks({ game }: { game: GameDetail }) {
                 shrink={1}
                 minW={0}
                 fontSize={13}
-                lineHeight={18}
+                lineHeight="18px"
                 fontWeight="500"
-                color="$color12"
+                color="color12"
               >
                 {brandTitle(type)}
               </Text>
@@ -897,7 +877,7 @@ export function StoreLinks({ game }: { game: GameDetail }) {
         </div>
       )}
       {wikipedia && (
-        <YStack pt={12} borderTopWidth={1} borderColor="$borderColor">
+        <YStack pt={12} borderTopWidth={1} borderColor="border-color">
           <LinkRow
             href={wikipedia.url}
             title={t('openOn', { name: brandTitle('wikipedia') })}
@@ -910,7 +890,7 @@ export function StoreLinks({ game }: { game: GameDetail }) {
               minW={0}
               fontSize={13}
               fontWeight="500"
-              color="$color12"
+              color="color12"
             >
               {brandTitle('wikipedia')}
             </Text>
@@ -971,7 +951,7 @@ export function RelatedRow({
                 opacity={opacity}
                 borderWidth={game.owned ? 0 : 1}
                 borderStyle="dashed"
-                borderColor="$color8"
+                borderColor="color8"
               >
                 <GameCover
                   imageId={game.coverImageId}
@@ -999,8 +979,8 @@ export function RelatedRow({
             </YStack>
             <Text
               fontSize={13}
-              lineHeight={18}
-              color={game.owned ? '$color12' : '$color11'}
+              lineHeight="18px"
+              color={game.owned ? 'color12' : 'color11'}
               numberOfLines={2}
               // Dentro il bottone il browser centrerebbe.
               text="left"
@@ -1035,12 +1015,10 @@ export function RelatedRow({
               borderWidth={0}
               items="stretch"
               cursor="pointer"
-              focusVisibleStyle={{
-                outlineColor: '$outlineColor',
-                outlineStyle: 'solid',
-                outlineWidth: 2,
-                rounded: 8,
-              }}
+              outlineColor="focus-visible:outline-color"
+              outlineStyle="focus-visible:solid"
+              outlineWidth="focus-visible:2px"
+              rounded="focus-visible:8px"
               {...({ type: 'button', disabled: openIgdb.isPending } as object)}
               onPress={() => openIgdb.mutate(game.igdbId)}
             >

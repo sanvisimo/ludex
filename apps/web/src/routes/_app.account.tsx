@@ -57,21 +57,21 @@ function AccountLayout() {
     <Page title={t('title')} maxW={1080}>
       <XStack
         gap={24}
-        items="flex-start"
-        $max-md={{ flexDirection: 'column', items: 'stretch' }}
+        items="flex-start max-md:stretch"
+        flexDirection="max-md:column"
       >
         {/* Il menu e, solo da `$md`, la scheda delle donazioni sotto: sul
             telefono il footer, con la stessa voce, è subito sotto. */}
-        <YStack width={200} shrink={0} gap={24} $max-md={{ width: '100%' }}>
+        <YStack width="200px max-md:100%" shrink={0} gap={24}>
           <AccountNav />
-          <YStack $max-md={{ display: 'none' }}>
+          <YStack display="max-md:none">
             <SupportCard compact />
           </YStack>
         </YStack>
         {/* `flex={1}` in una fila che sotto `$md` diventa colonna ha base 0 e
             altezza zero: lì ci va `flexBasis: 'auto'`. `minW={0}` perché una
             sezione larga non spinga fuori il menu. */}
-        <YStack flex={1} minW={0} gap={24} $max-md={{ flexBasis: 'auto' }}>
+        <YStack flex={1} minW={0} gap={24} flexBasis="max-md:auto">
           <Outlet />
         </YStack>
       </XStack>

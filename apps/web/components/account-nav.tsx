@@ -27,20 +27,18 @@ export function AccountNav() {
     <YStack
       render="nav"
       aria-label={t('label')}
-      width={200}
+      width="200px max-md:100%"
       shrink={0}
       gap={4}
-      $max-md={{ width: '100%', flexDirection: 'row' }}
+      flexDirection="max-md:row"
       // Sul telefono la riga scorre, e **senza barra**: `overflow: scroll` su
       // Windows disegna sempre i nastri grigi, anche quando non servono. Su
       // desktop, in colonna, non c'è niente che sfori e lo stile non fa niente.
-      {...({
-        style: {
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          scrollbarWidth: 'none',
-        },
-      } as object)}
+      style={{
+        overflowX: 'auto',
+        overflowY: 'hidden',
+        scrollbarWidth: 'none',
+      }}
     >
       <SectionLink to="/account/profile" icon={<User size={16} />}>
         {t('profile')}

@@ -1,9 +1,10 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import { ToggleGroup as ToggleGroupBase } from 'tamagui';
+import { style } from 'tamagui';
+import { ToggleGroup as ToggleGroupBase } from 'tamagui/unstyled';
 
 /**
  * Il valore scelto, per le opzioni. A scelta singola il ToggleGroup di
- * Tamagui 2.7.7 toglie `aria-pressed` dalle opzioni e non ci mette niente al
+ * Tamagui (anche la 3.3.3) toglie `aria-pressed` e non ci mette niente al
  * suo posto: a un lettore di schermo tre bottoni uguali, senza dire quale è
  * acceso. Lo rimettiamo noi. Si toglie quando Tamagui lo sistema.
  */
@@ -47,7 +48,7 @@ export function ToggleGroup({
         gap={2}
         rounded={8}
         borderWidth={1}
-        borderColor="$color9"
+        borderColor="color9"
         self="flex-start"
       >
         {children}
@@ -60,6 +61,11 @@ export function ToggleGroup({
  * Un'opzione. Con sola icona va dato `aria-label`, perché l'icona non dice
  * niente a un lettore di schermo.
  */
+const selectedStyle = style({
+  bg: 'selectionBackground',
+  borderColor: 'selectionBorder',
+});
+
 export function ToggleGroupItem({
   value,
   children,
@@ -76,7 +82,6 @@ export function ToggleGroupItem({
       value={value}
       aria-label={ariaLabel}
       aria-pressed={active}
-      unstyled
       height={26}
       minW={26}
       px={6}
@@ -85,28 +90,15 @@ export function ToggleGroupItem({
       flexDirection="row"
       items="center"
       justify="center"
-      bg={active ? '$selectionBackground' : 'transparent'}
+      bg={`${active ? 'selectionBackground' : 'transparent'} hover:${active ? 'selectionBackgroundHover' : 'color4'} press:${active ? 'selectionBackgroundPress' : 'color5'}`}
       borderWidth={1}
-      borderColor={active ? '$selectionBorder' : 'transparent'}
+      borderColor={`${active ? 'selectionBorder' : 'transparent'} hover:${active ? 'selectionBorderHover' : 'transparent'} press:${active ? 'selectionBorderPress' : 'transparent'}`}
       cursor="pointer"
-      hoverStyle={{
-        bg: active ? '$selectionBackgroundHover' : '$color4',
-        borderColor: active ? '$selectionBorderHover' : 'transparent',
-      }}
-      pressStyle={{
-        bg: active ? '$selectionBackgroundPress' : '$color5',
-        borderColor: active ? '$selectionBorderPress' : 'transparent',
-      }}
-      activeStyle={{
-        bg: '$selectionBackground',
-        borderColor: '$selectionBorder',
-      }}
-      focusVisibleStyle={{
-        outlineColor: '$outlineColor',
-        outlineStyle: 'solid',
-        outlineWidth: 2,
-        outlineOffset: 1,
-      }}
+      outlineColor="focus-visible:outline-color"
+      outlineStyle="focus-visible:solid"
+      outlineWidth="focus-visible:2px"
+      outlineOffset="focus-visible:1px"
+      activeStyle={selectedStyle}
     >
       {children}
     </ToggleGroupBase.Item>

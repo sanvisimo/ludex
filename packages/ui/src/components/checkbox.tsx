@@ -1,4 +1,4 @@
-import { Checkbox as CheckboxBase } from 'tamagui';
+import { Checkbox as CheckboxBase, style } from 'tamagui';
 import type { CheckboxProps as CheckboxBaseProps } from 'tamagui';
 
 import { Check } from '../icons';
@@ -20,6 +20,11 @@ export type CheckboxProps = Omit<CheckboxBaseProps, 'children' | 'size'>;
  *
  * L'etichetta va **accanto**, con `<Label htmlFor>` che punta all'`id`.
  */
+const checkedStyle = style({
+  bg: 'accent9',
+  borderColor: 'accent9',
+});
+
 export function Checkbox(props: CheckboxProps) {
   return (
     <CheckboxBase
@@ -32,23 +37,21 @@ export function Checkbox(props: CheckboxProps) {
       p={0}
       rounded={4}
       borderWidth={1}
-      borderColor="$color9"
+      borderColor="color9 hover:color10"
       bg="transparent"
       items="center"
       justify="center"
-      hoverStyle={{ borderColor: '$color10' }}
-      activeStyle={{ bg: '$accent9', borderColor: '$accent9' }}
-      focusVisibleStyle={{
-        outlineColor: '$outlineColor',
-        outlineStyle: 'solid',
-        outlineWidth: 2,
-        outlineOffset: 2,
-      }}
-      disabledStyle={{ opacity: 0.5, cursor: 'not-allowed' }}
+      outlineColor="focus-visible:outline-color"
+      outlineStyle="focus-visible:solid"
+      outlineWidth="focus-visible:2px"
+      outlineOffset="focus-visible:2px"
+      opacity="disabled:0.5"
+      cursor="disabled:not-allowed"
+      activeStyle={checkedStyle}
       {...props}
     >
       <CheckboxBase.Indicator>
-        <Check size={12} strokeWidth={3} color="$actionColor" />
+        <Check size={12} strokeWidth={3} color="actionColor" />
       </CheckboxBase.Indicator>
     </CheckboxBase>
   );

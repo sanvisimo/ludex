@@ -1,4 +1,8 @@
-import { createSystemFont } from '@tamagui/config/v5';
+import {
+  createSystemFont,
+  v5SystemFontLineHeight,
+  v5SystemFontSizes,
+} from '@tamagui/create-system-font';
 import { isWeb } from '@tamagui/core';
 
 /**
@@ -50,11 +54,17 @@ const heading = isWeb
       },
     };
 
+// Le taglie e le interlinee della config v5, come le passa Tamagui ai suoi
+// caratteri v5: da Tamagui 3 quelle di serie di `createSystemFont` sono la
+// scala nuova della v6, e il testo cambiava misura (la taglia 4 da 15 a 14).
 export const fonts = {
   body: createSystemFont({
+    sizes: v5SystemFontSizes,
+    sizeLineHeight: v5SystemFontLineHeight,
     font: { ...body, weight: { 1: '400' } },
   }),
   heading: createSystemFont({
+    sizes: v5SystemFontSizes,
     font: { ...heading, weight: { 0: '600', 6: '700', 9: '700' } },
     sizeLineHeight: headingLineHeight,
   }),

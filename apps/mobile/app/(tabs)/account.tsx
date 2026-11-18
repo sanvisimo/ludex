@@ -46,13 +46,17 @@ export default function Account() {
   }
 
   return (
-    <ScrollView flex={1} bg="$background" contentContainerStyle={{ p: 20 }}>
+    <ScrollView
+      flex={1}
+      bg="background"
+      contentContainerStyle={{ padding: 20 }}
+    >
       <YStack gap={24}>
         <YStack gap={4}>
-          <Text fontSize={20} fontWeight="700" color="$color12">
+          <Text fontSize={20} fontWeight="700" color="color12">
             {session?.user.name}
           </Text>
-          <Text color="$color11">{session?.user.email}</Text>
+          <Text color="color11">{session?.user.email}</Text>
         </YStack>
 
         <Section title={t('preferences')}>
@@ -77,10 +81,10 @@ export default function Account() {
         </Section>
 
         <XStack gap={16}>
-          <Text color="$color11" onPress={() => openOnWeb('/privacy')}>
+          <Text color="color11" onPress={() => openOnWeb('/privacy')}>
             {tLegal('privacy')}
           </Text>
-          <Text color="$color11" onPress={() => openOnWeb('/terms')}>
+          <Text color="color11" onPress={() => openOnWeb('/terms')}>
             {tLegal('terms')}
           </Text>
         </XStack>
@@ -96,7 +100,7 @@ export default function Account() {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <YStack gap={8}>
-      <Text fontSize={12} fontWeight="600" color="$color11">
+      <Text fontSize={12} fontWeight="600" color="color11">
         {title.toUpperCase()}
       </Text>
       {children}
@@ -117,7 +121,7 @@ function Choice<T extends string>({
 }) {
   return (
     <XStack items="center" justify="space-between" gap={12}>
-      <Text color="$color12">{label}</Text>
+      <Text color="color12">{label}</Text>
       <Select
         items={items}
         value={value}
@@ -145,7 +149,7 @@ function WebRow({ label, path }: { label: string; path: string }) {
       justify="space-between"
       onPress={() => openOnWeb(path)}
     >
-      <Text color="$color12">{label}</Text>
+      <Text color="color12">{label}</Text>
       <ExternalLink size={16} />
     </Button>
   );

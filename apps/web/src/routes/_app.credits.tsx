@@ -101,7 +101,7 @@ function CreditSection({
                 gap={2}
                 style={{ display: 'list-item' }}
               >
-                <Text fontSize={15} lineHeight={22} color="$color12">
+                <Text fontSize={15} lineHeight="22px" color="color12">
                   <ExternalLink href={credit.url} strong>
                     {credit.name}
                   </ExternalLink>
@@ -136,7 +136,7 @@ function CreditSection({
 /** Un paragrafo: lo stesso di `LegalDocument`, perché le pagine si leggano uguali. */
 function Body({ children }: { children: ReactNode }) {
   return (
-    <Text fontSize={15} lineHeight={22} color="$color12" m={0}>
+    <Text fontSize={15} lineHeight="22px" color="color12" m={0}>
       {children}
     </Text>
   );

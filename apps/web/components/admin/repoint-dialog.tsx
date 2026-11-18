@@ -83,7 +83,7 @@ export function RepointDialog({
     <Dialog open={link !== null} onOpenChange={onOpenChange}>
       <DialogContent
         size="wide"
-        $lg={{ maxW: 960 }}
+        maxW="lg:960px"
         closeLabel={tMatch('close')}
       >
         <DialogHeader>
@@ -107,29 +107,29 @@ export function RepointDialog({
                 gap={6}
                 p={12}
                 rounded={8}
-                bg="$blue2"
+                bg="blue2"
                 borderWidth={1}
-                borderColor="$blue8"
+                borderColor="blue8"
               >
-                <Text fontSize={12} color="$blue11">
+                <Text fontSize={12} color="blue11">
                   {t('currentlyLinked')}
                 </Text>
                 <Text
                   fontSize={14}
-                  lineHeight={20}
+                  lineHeight="20px"
                   fontWeight="600"
                   style={{ overflowWrap: 'anywhere' }}
                 >
                   {gameName}
                 </Text>
                 {gameIgdbId !== null ? (
-                  <Text fontSize={12} color="$color11">
+                  <Text fontSize={12} color="color11">
                     IGDB {gameIgdbId}
                   </Text>
                 ) : null}
               </YStack>
               {suggestions.length > 0 ? (
-                <Text fontSize={13} color="$color11">
+                <Text fontSize={13} color="color11">
                   {t('suggested', {
                     list: suggestions
                       .map((s) =>
@@ -172,7 +172,7 @@ export function RepointDialog({
                       p={12}
                       rounded={8}
                       borderWidth={1}
-                      borderColor="$borderColor"
+                      borderColor="border-color"
                     >
                       <Text fontSize={13}>
                         ·{' '}
@@ -184,7 +184,7 @@ export function RepointDialog({
                         {preview.data.to.inCatalog ? '' : t('notInCatalog')}
                       </Text>
                       {preview.data.moves.length === 0 ? (
-                        <Text fontSize={13} color="$color11">
+                        <Text fontSize={13} color="color11">
                           · {t('nobody', { store })}
                         </Text>
                       ) : (
@@ -204,13 +204,13 @@ export function RepointDialog({
                                 )
                                 .join('; ')}
                             </Text>
-                            <Text fontSize={12} color="$color11" pl={10}>
+                            <Text fontSize={12} color="color11" pl={10}>
                               {move.wholeRow ? t('wholeRow') : t('copiesOnly')}
                             </Text>
                           </YStack>
                         ))
                       )}
-                      <Text fontSize={13} color="$color11">
+                      <Text fontSize={13} color="color11">
                         · {t('reportsClose')}
                       </Text>
                     </YStack>
@@ -236,7 +236,9 @@ export function RepointDialog({
         <DialogFooter flexWrap="wrap">
           <Text
             flex={1}
-            $max-sm={{ grow: 0, shrink: 0, flexBasis: 'auto' }}
+            grow="max-sm:0px"
+            shrink="max-sm:0px"
+            flexBasis="max-sm:auto"
             minW={0}
             fontSize={13}
             fontWeight="600"

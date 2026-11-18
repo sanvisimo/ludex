@@ -41,7 +41,7 @@ export function RatingStars({
   // spostava le stelle sotto il puntatore — il secondo clic cadeva su un'altra
   // mezza stella.
   const numero = size === 'sm' && value !== null && (
-    <Text fontSize={14} lineHeight={20} color="$color11" aria-hidden>
+    <Text fontSize={14} lineHeight="20px" color="color11" aria-hidden>
       {value}
     </Text>
   );
@@ -52,7 +52,7 @@ export function RatingStars({
       <XStack onMouseLeave={() => setHovered(null)}>
         {POSITIONS.map((position) => (
           <XStack key={position} position="relative" width={px} height={px}>
-            <Star size={px} color="$color8" />
+            <Star size={px} color="color8" />
 
             {/* La stella piena ritagliata: 0%, 50% o 100% di larghezza. Dentro,
                 un contenitore largo quanto la stella intera: senza, l'icona si
@@ -68,7 +68,7 @@ export function RatingStars({
               pointerEvents="none"
             >
               <XStack width={px} height={px}>
-                <Star size={px} color="$accent9" fill="currentColor" />
+                <Star size={px} color="accent9" fill="currentColor" />
               </XStack>
             </XStack>
 
@@ -95,11 +95,9 @@ export function RatingStars({
                 borderWidth={0}
                 p={0}
                 cursor="pointer"
-                focusVisibleStyle={{
-                  outlineColor: '$outlineColor',
-                  outlineStyle: 'solid',
-                  outlineWidth: 2,
-                }}
+                outlineColor="focus-visible:outline-color"
+                outlineStyle="focus-visible:solid"
+                outlineWidth="focus-visible:2px"
               />
             ))}
           </XStack>
@@ -107,7 +105,7 @@ export function RatingStars({
       </XStack>
 
       {size === 'md' && (
-        <Text color="$color11">
+        <Text color="color11">
           {value === null ? t('noRating') : t('ratingOf', { value })}
         </Text>
       )}
@@ -123,16 +121,12 @@ export function RatingStars({
           borderWidth={0}
           p={0}
           cursor="pointer"
-          opacity={0.5}
-          hoverStyle={{ opacity: 1 }}
-          focusVisibleStyle={{
-            opacity: 1,
-            outlineColor: '$outlineColor',
-            outlineStyle: 'solid',
-            outlineWidth: 2,
-          }}
+          opacity="0.5 hover:1 focus-visible:1"
+          outlineColor="focus-visible:outline-color"
+          outlineStyle="focus-visible:solid"
+          outlineWidth="focus-visible:2px"
         >
-          <X size={16} color="$color12" />
+          <X size={16} color="color12" />
         </XStack>
       )}
     </XStack>

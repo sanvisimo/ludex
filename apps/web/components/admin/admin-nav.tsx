@@ -50,17 +50,15 @@ export function AdminNav() {
     <YStack
       render="nav"
       aria-label={t('label')}
-      width={200}
+      width="200px max-md:100%"
       shrink={0}
       gap={4}
-      $max-md={{ width: '100%', flexDirection: 'row' }}
-      {...({
-        style: {
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          scrollbarWidth: 'none',
-        },
-      } as object)}
+      flexDirection="max-md:row"
+      style={{
+        overflowX: 'auto',
+        overflowY: 'hidden',
+        scrollbarWidth: 'none',
+      }}
     >
       <SectionLink to="/admin/missing" icon={<Database size={16} />}>
         {t('missing')}

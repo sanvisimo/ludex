@@ -18,12 +18,10 @@ import type { GetProps } from 'tamagui';
  */
 export const Label = styled(LabelBase, {
   name: 'Label',
-
   fontSize: 14,
-  lineHeight: 14,
+  lineHeight: '14px',
   fontWeight: '500',
-  color: '$color12',
-  pressStyle: { color: '$color12' },
+  color: 'color12 press:color12',
 });
 
 export type LabelProps = GetProps<typeof Label>;

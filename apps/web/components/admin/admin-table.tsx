@@ -51,17 +51,15 @@ export function AdminTable<T>({
       role="table"
       aria-label={label}
       tabIndex={0}
-      focusVisibleStyle={{
-        outlineColor: '$outlineColor',
-        outlineStyle: 'solid',
-        outlineWidth: 2,
-        outlineOffset: 2,
-      }}
+      outlineColor="focus-visible:outline-color"
+      outlineStyle="focus-visible:solid"
+      outlineWidth="focus-visible:2px"
+      outlineOffset="focus-visible:2px"
       rounded={12}
       borderWidth={1}
-      borderColor="$borderColor"
+      borderColor="border-color"
       overflow="hidden"
-      {...({ style: { overflowX: 'auto' } } as object)}
+      style={{ overflowX: 'auto' }}
     >
       <XStack
         role="row"
@@ -69,18 +67,18 @@ export function AdminTable<T>({
         py={10}
         gap={12}
         items="center"
-        bg="$color3"
+        bg="color3"
         borderBottomWidth={1}
-        borderColor="$borderColor"
+        borderColor="border-color"
         minW={minW}
       >
         {columns.map((column) => (
           <Cell key={column.key} column={column} role="columnheader">
             <Text
               fontSize={12}
-              lineHeight={16}
+              lineHeight="16px"
               fontWeight="600"
-              color="$color11"
+              color="color11"
             >
               {column.header}
             </Text>
@@ -98,8 +96,8 @@ export function AdminTable<T>({
           items="center"
           minW={minW}
           borderTopWidth={index === 0 ? 0 : 1}
-          borderColor="$borderColor"
-          hoverStyle={{ bg: '$color2' }}
+          borderColor="border-color"
+          bg="hover:color2"
         >
           {columns.map((column) => (
             <Cell key={column.key} column={column} role="cell">
@@ -160,9 +158,9 @@ export function CellText({
   return (
     <Text
       fontSize={13}
-      lineHeight={18}
-      color={muted ? '$color11' : '$color12'}
-      {...({ style: { overflowWrap: 'anywhere' } } as object)}
+      lineHeight="18px"
+      color={muted ? 'color11' : 'color12'}
+      style={{ overflowWrap: 'anywhere' }}
     >
       {children}
     </Text>

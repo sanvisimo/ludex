@@ -21,7 +21,7 @@ export const Route = createFileRoute('/_guest')({
 
 function GuestLayout() {
   return (
-    <YStack minH="100vh" bg="$background">
+    <YStack minH="100vh" bg="background">
       <XStack
         render="header"
         items="center"

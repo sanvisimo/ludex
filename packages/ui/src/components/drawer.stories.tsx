@@ -60,10 +60,10 @@ export const Default: Story = {
           </YStack>
           {sections.map((name) => (
             <YStack key={name} py={12} gap={4}>
-              <Text fontSize={14} fontWeight="500" color="$color12">
+              <Text fontSize={14} fontWeight="500" color="color12">
                 {name}
               </Text>
-              <Text fontSize={14} color="$color11">
+              <Text fontSize={14} color="color11">
                 Le voci della sezione.
               </Text>
             </YStack>

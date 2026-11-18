@@ -54,7 +54,7 @@ export function Spinner({
             : undefined
         }
       >
-        {children ?? <LoaderCircle size={16} color="$color11" />}
+        {children ?? <LoaderCircle size={16} color="color11" />}
       </View>
     </>
   );
