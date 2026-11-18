@@ -17,7 +17,7 @@ import {
   YStack,
 } from '@repo/ui';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ComponentProps } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { GameCover } from '@/components/game-cover';
@@ -30,27 +30,19 @@ type Picked = Pick<MergeGame, 'id' | 'name'> & {
   year?: number | null;
 };
 
-/**
- * La fusione di due giochi (11b): un dialogo solo, in due tempi come «Non è
- * questo gioco». Prima si sceglie l'altro gioco dal catalogo — o ci si arriva
- * già scelto, da «Collega a IGDB» con un id già preso —, poi si vede cosa
- * succede utente per utente, e solo allora si conferma. L'anteprima non scrive
- * niente; la fusione non si disfa.
- */
 export function MergeDialog({
   open,
   game,
   other,
   onOpenChange,
+  onCloseAutoFocus,
   onDone,
 }: {
   open: boolean;
-  /** Il gioco da cui si parte. */
   game: { id: string; name: string };
-  /** L'altro, se già scelto. Altrimenti lo si cerca nel catalogo. */
   other?: Picked | null;
   onOpenChange: (open: boolean) => void;
-  /** Il gioco che resta, a fusione fatta: chi chiama aggiorna e naviga. */
+  onCloseAutoFocus?: ComponentProps<typeof DialogContent>['onCloseAutoFocus'];
   onDone: (survivor: MergeGame) => Promise<unknown> | void;
 }) {
   const t = useTranslations('admin.merge');
@@ -86,7 +78,7 @@ export function MergeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
@@ -217,7 +209,6 @@ export function MergeDialog({
   );
 }
 
-/** La ricerca nel catalogo, per scegliere l'altro gioco. Non porta da nessuna parte. */
 function GamePicker({
   excludeId,
   onPick,

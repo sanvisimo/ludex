@@ -9,6 +9,10 @@ import {
   type SourceReason,
 } from '@repo/contracts/vocabulary';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
   Button,
   ClearableInput,
   EmptyState,
@@ -70,8 +74,6 @@ const oneOf =
     (values as readonly unknown[]).includes(value) ? (value as T) : undefined;
 
 export const Route = createFileRoute('/_app/admin/missing')({
-  // Fonte, stato, motivo, ricerca e pagina stanno nell'indirizzo, come i
-  // filtri del backlog: «indietro» torna dov'eri.
   validateSearch: (search: Record<string, unknown>): Search => ({
     source: oneOf(enrichmentSourceValues)(search.source),
     bucket: oneOf(missingBucketValues)(search.bucket),
@@ -85,13 +87,11 @@ export const Route = createFileRoute('/_app/admin/missing')({
   component: MissingSection,
 });
 
-/** IGDB «trovato ma vuoto» non esiste: lì il gioco è il dato. */
 const bucketsOf = (source: EnrichmentSource) =>
   missingBucketValues.filter(
     (bucket) => !(source === 'igdb' && bucket === 'empty'),
   );
 
-/** Da sistemare, per fonte: su IGDB contano anche i giochi senza id. */
 function fixableOf(summary: MissingSummary, source: EnrichmentSource) {
   const fixable =
     summary.sources.find((row) => row.source === source)?.fixable ?? 0;
@@ -107,120 +107,64 @@ function countOf(
   return summary.sources.find((row) => row.source === source)?.[bucket] ?? 0;
 }
 
-/**
- * «Dati mancanti» (11a, frame 1 del wireframe rivisto): il riepilogo fonte
- * per stato in cima, e sotto una tab per fonte, col filtro per stato e la
- * lista già aperta. Una tab per fonte e non per stato, perché i gesti cambiano
- * con la fonte — su IGDB si collega il gioco, sulle altre si scrive l'id — e
- * si lavora una fonte alla volta.
- */
 function MissingSection() {
   const t = useTranslations('admin');
   const search = Route.useSearch();
-  const navigate = useNavigate({ from: Route.fullPath });
   const summary = useQuery(api.admin.missing.summary.queryOptions());
 
   if (summary.isPending)
     return <Skeleton height={320} width="100%" rounded={12} />;
   if (summary.isError) return <EmptyState title={t('missing.failed')} />;
 
-  // Senza una fonte nell'indirizzo si apre la prima che ha qualcosa da
-  // sistemare: arrivare su una lista vuota sarebbe un giro a vuoto.
   const source =
     search.source ??
     enrichmentSourceValues.find(
       (value) => fixableOf(summary.data, value) > 0,
     ) ??
     'hltb';
-  const bucket = search.bucket ?? 'fixable';
+  const bucket =
+    search.bucket && bucketsOf(source).includes(search.bucket)
+      ? search.bucket
+      : 'fixable';
 
   return (
-    <YStack gap={24}>
-      <YStack gap={4}>
-        <Text render="h2" fontSize={18} lineHeight="24px" fontWeight="600">
-          {t('missing.title')}
-        </Text>
-        <Text fontSize={13} lineHeight="18px" color="color11">
-          {t('missing.description')}
-        </Text>
-      </YStack>
+    <YStack gap={16}>
+      <Text
+        render="h2"
+        fontSize={22}
+        lineHeight="28px"
+        fontFamily="heading"
+        fontWeight="600"
+      >
+        {t('missing.title')}
+      </Text>
 
-      <SummaryTable summary={summary.data} />
+      <Accordion>
+        <AccordionItem value="summary">
+          <AccordionTrigger>{t('missing.summary')}</AccordionTrigger>
+          <AccordionContent>
+            <SummaryTable summary={summary.data} />
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
-      <YStack gap={12}>
-        <Tabs
-          label={t('missing.source')}
-          value={source}
-          onValueChange={(value) =>
-            void navigate({ search: { source: value as EnrichmentSource } })
-          }
-        >
-          {enrichmentSourceValues.map((value) => (
-            <TabsTab
-              key={value}
-              value={value}
-              count={fixableOf(summary.data, value)}
-            >
-              {t(`source.${value}`)}
-            </TabsTab>
-          ))}
-        </Tabs>
-
-        <XStack gap={6} flexWrap="wrap">
-          {bucketsOf(source).map((value) => (
-            <Button
-              key={value}
-              size="sm"
-              variant={value === bucket ? 'secondary' : 'outline'}
-              aria-pressed={value === bucket}
-              onPress={() =>
-                void navigate({ search: { source, bucket: value } })
-              }
-            >
-              {`${t(`bucket.${value}`)} ${countOf(summary.data, source, value)}`}
-            </Button>
-          ))}
-        </XStack>
-
-        {source === 'igdb' &&
-        bucket === 'fixable' &&
-        summary.data.gamesWithoutIgdb > 0 ? (
-          <YStack gap={8}>
-            <Text render="h3" fontSize={15} fontWeight="600">
-              {t('missing.withoutIgdb')} · {summary.data.gamesWithoutIgdb}
-            </Text>
-            <UnlinkedGames q={search.q} />
-          </YStack>
-        ) : null}
-
-        <MissingList
-          source={source}
-          bucket={bucket}
-          reason={search.reason}
-          q={search.q}
-          page={search.page ?? 1}
-          title={
-            source === 'igdb' && bucket === 'fixable'
-              ? t('missing.notFoundIgdb')
-              : undefined
-          }
-        />
-      </YStack>
+      <MissingList
+        summary={summary.data}
+        source={source}
+        bucket={bucket}
+        reason={bucket === 'fixable' ? search.reason : undefined}
+        q={search.q}
+        page={search.page ?? 1}
+      />
     </YStack>
   );
 }
 
-/**
- * Il riepilogo: ogni numero diverso da zero è un link che apre la tab e lo
- * stato giusti. Non è più l'unico modo di arrivarci — le tab stanno sotto —
- * ma chi guarda la tabella e vede «113» ci vuole cliccare.
- */
 function SummaryTable({ summary }: { summary: MissingSummary }) {
   const t = useTranslations('admin');
   const format = useFormatter();
   type Row = MissingSummary['sources'][number];
 
-  // L'ordine delle fonti è quello del vocabolario, non quello della query.
   const rows = enrichmentSourceValues
     .map((source) => summary.sources.find((row) => row.source === source))
     .filter((row): row is Row => row !== undefined);
@@ -250,9 +194,8 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
           lineHeight="18px"
           color="color12"
           textDecorationLine="underline"
-          numberOfLines={1}
         >
-          {note ? `${n} · ${note}` : String(n)}
+          {note ? `${format.number(n)} · ${note}` : format.number(n)}
         </Text>
       </Link>
     );
@@ -266,7 +209,6 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
       render: (row) => <CellText>{t(`source.${row.source}`)}</CellText>,
     },
     ...missingBucketValues.map((bucket): AdminColumn<Row> => {
-      // Le due con la nota accanto al numero: «12 · since 03/10».
       const wide = bucket === 'pending' || bucket === 'empty';
       return {
         key: bucket,
@@ -281,7 +223,7 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
   return (
     <YStack gap={8}>
       <AdminTable
-        label={t('missing.title')}
+        label={t('missing.summary')}
         columns={columns}
         rows={rows}
         rowKey={(row) => row.source}
@@ -295,27 +237,27 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
   );
 }
 
-/** Le fonti dove l'id si scrive a mano: IGDB no, lì si collega il gioco. */
 const isManualRow = (
   row: MissingRow,
 ): row is MissingRow & { source: ManualSource } => row.source !== 'igdb';
 
 function MissingList({
+  summary,
   source,
   bucket,
   reason,
   q,
   page,
-  title,
 }: {
+  summary: MissingSummary;
   source: EnrichmentSource;
   bucket: MissingBucket;
   reason?: SourceReason;
   q?: string;
   page: number;
-  title?: string;
 }) {
   const t = useTranslations('admin');
+  const format = useFormatter();
   const tSearch = useTranslations('search');
   const tBacklog = useTranslations('backlog');
   const navigate = useNavigate({ from: Route.fullPath });
@@ -324,7 +266,6 @@ function MissingList({
   const router = useRouter();
   const [setting, setSetting] = useState<SourceToSet | null>(null);
 
-  // La ricerca aspetta che si smetta di scrivere, poi va nell'indirizzo.
   const [text, setText] = useState(q ?? '');
   useEffect(() => setText(q ?? ''), [q]);
   useEffect(() => {
@@ -368,7 +309,6 @@ function MissingList({
       toast.error(errorMessage(error, { fallback: t('missing.retryFailed') })),
   });
 
-  // Il motivo si sceglie solo dove ha senso: fra i non trovati.
   const reasons =
     bucket === 'fixable'
       ? sourceReasonValues.filter((value) => value !== 'too_old')
@@ -394,10 +334,8 @@ function MissingList({
     {
       key: 'reason',
       header: t('missing.reasonColumn'),
-      flex: 3,
-      minWidth: 240,
-      // Il motivo è l'informazione: il titolo in grassetto come nella scheda
-      // del gioco, il dettaglio a capo. Senza motivo, lo stato nel suo colore.
+      flex: 2,
+      minWidth: 148,
       render: (row) => (
         <YStack flex={1} minW={0} gap={2}>
           <XStack items="center" gap={8} flexWrap="wrap">
@@ -417,7 +355,14 @@ function MissingList({
               <CellText muted>{t('missing.manual')}</CellText>
             ) : null}
           </XStack>
-          {row.error ? <CellText muted>{row.error}</CellText> : null}
+          {row.error ? (
+            <details>
+              <summary className="w-fit cursor-pointer rounded-sm py-1 text-xs text-muted-foreground underline decoration-dotted underline-offset-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring">
+                {t('missing.details')}
+              </summary>
+              <CellText muted>{row.error}</CellText>
+            </details>
+          ) : null}
         </YStack>
       ),
     },
@@ -425,23 +370,23 @@ function MissingList({
       key: 'users',
       header: t('missing.users'),
       width: 56,
-      render: (row) => <CellText>{row.users}</CellText>,
+      align: 'end',
+      render: (row) => <CellText>{format.number(row.users)}</CellText>,
     },
-    // Trovato ma vuoto, e «va bene così»: lì non c'è niente da ritentare. Un id
-    // sbagliato si corregge dalla scheda del gioco, dal nome nella riga.
     ...(bucket === 'empty' || bucket === 'fine'
       ? []
       : [
           {
             key: 'actions',
-            header: '',
-            width: 230,
+            header: t('missing.actions'),
+            width: source === 'igdb' ? 100 : 230,
+            align: 'end',
             render: (row: MissingRow) => (
               <>
                 <Tooltip content={t('missing.retryHint')}>
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant={isManualRow(row) ? 'ghost' : 'secondary'}
                     disabled={retry.isPending}
                     onPress={() => retry.mutate(row)}
                   >
@@ -452,7 +397,7 @@ function MissingList({
                 {isManualRow(row) ? (
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="secondary"
                     onPress={() => setSetting({ ...row, source: row.source })}
                   >
                     <Hash size={14} />
@@ -474,52 +419,138 @@ function MissingList({
 
   return (
     <YStack gap={12}>
-      {title ? (
-        <Text render="h3" fontSize={15} fontWeight="600">
-          {title}
-          {list.data ? ` · ${total}` : ''}
-        </Text>
-      ) : null}
-      <XStack gap={12} items="center" flexWrap="wrap">
-        {reasons.length > 0 ? (
-          <Select
-            items={Object.fromEntries([
-              ['all', t('missing.reasonAll')],
-              ...reasons.map((value) => [value, t(`reason.${value}`)]),
-            ])}
-            value={reason ?? 'all'}
-            onValueChange={(next) =>
-              void navigate({
-                search: (prev) => ({
-                  ...prev,
-                  reason: next === 'all' ? undefined : (next as SourceReason),
-                  page: undefined,
-                }),
-              })
-            }
+      <YStack
+        role="group"
+        aria-label={t('missing.filters')}
+        minW={0}
+        px={12}
+        py={10}
+        gap={12}
+        bg="color2"
+        rounded={12}
+        borderWidth={1}
+        borderColor="border-color"
+      >
+        <Tabs
+          label={t('missing.source')}
+          value={source}
+          onValueChange={(value) =>
+            void navigate({ search: { source: value as EnrichmentSource } })
+          }
+        >
+          {enrichmentSourceValues.map((value) => (
+            <TabsTab
+              key={value}
+              value={value}
+              count={fixableOf(summary, value)}
+            >
+              {t(`source.${value}`)}
+            </TabsTab>
+          ))}
+        </Tabs>
+
+        <XStack
+          role="group"
+          aria-label={t('missing.state')}
+          gap={6}
+          flexWrap="wrap"
+        >
+          <Text
+            self="center"
+            fontSize={12}
+            fontWeight="600"
+            color="color11"
+            mr={4}
           >
-            <SelectTrigger width={220} aria-label={t('missing.reasonAll')}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('missing.reasonAll')}</SelectItem>
-              {reasons.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {t(`reason.${value}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : null}
-        <YStack width={240}>
-          <ClearableInput
-            value={text}
-            onChangeText={setText}
-            placeholder={t('missing.search')}
-            aria-label={t('missing.search')}
-            clearLabel={tSearch('clear')}
-          />
+            {t('missing.state')}
+          </Text>
+          {bucketsOf(source).map((value) => (
+            <Button
+              key={value}
+              size="sm"
+              variant={value === bucket ? 'selection' : 'outline'}
+              aria-pressed={value === bucket}
+              onPress={() =>
+                void navigate({ search: { source, bucket: value } })
+              }
+            >
+              {`${t(`bucket.${value}`)} · ${format.number(countOf(summary, source, value))}`}
+            </Button>
+          ))}
+        </XStack>
+
+        <XStack gap={8} items="center" flexWrap="wrap">
+          {reasons.length > 0 ? (
+            <Select
+              items={Object.fromEntries([
+                ['all', t('missing.reasonAll')],
+                ...reasons.map((value) => [value, t(`reason.${value}`)]),
+              ])}
+              value={reason ?? 'all'}
+              onValueChange={(next) =>
+                void navigate({
+                  search: (prev) => ({
+                    ...prev,
+                    reason: next === 'all' ? undefined : (next as SourceReason),
+                    page: undefined,
+                  }),
+                })
+              }
+            >
+              <SelectTrigger
+                width="220px max-sm:100%"
+                aria-label={t('missing.reasonColumn')}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('missing.reasonAll')}</SelectItem>
+                {reasons.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {t(`reason.${value}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null}
+          <YStack width="260px max-sm:100%" minW={0}>
+            <ClearableInput
+              value={text}
+              onChangeText={setText}
+              placeholder={t('missing.search')}
+              aria-label={t('missing.search')}
+              clearLabel={tSearch('clear')}
+            />
+          </YStack>
+        </XStack>
+      </YStack>
+
+      {source === 'igdb' &&
+      bucket === 'fixable' &&
+      summary.gamesWithoutIgdb > 0 ? (
+        <YStack gap={8}>
+          <Text render="h3" fontSize={15} fontWeight="600">
+            {t('missing.withoutIgdb')} ·{' '}
+            {format.number(summary.gamesWithoutIgdb)}
+          </Text>
+          <UnlinkedGames q={q} />
         </YStack>
+      ) : null}
+
+      <XStack items="baseline" justify="space-between" gap={8} flexWrap="wrap">
+        <Text render="h3" fontSize={15} fontWeight="600">
+          {source === 'igdb' && bucket === 'fixable'
+            ? t('missing.notFoundIgdb')
+            : t('missing.listTitle', {
+                source: t(`source.${source}`),
+                bucket: t(`bucket.${bucket}`),
+              })}
+        </Text>
+        {list.data ? (
+          <Text fontSize={12} color="color11" role="status">
+            {t('missing.results', { count: total })}
+          </Text>
+        ) : null}
       </XStack>
 
       {list.isPending ? (

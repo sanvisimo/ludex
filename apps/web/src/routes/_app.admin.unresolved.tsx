@@ -80,12 +80,6 @@ export const Route = createFileRoute('/_app/admin/unresolved')({
   component: UnresolvedSection,
 });
 
-/**
- * Gli scarti d'import di tutti (11a, frame 3 del wireframe): una riga per
- * negozio e id esterno, perché lo stesso Netflix su PSN è una riga per ogni
- * utente e all'admin interessa una volta. Due viste, nell'indirizzo: quelli da
- * sistemare, e le regole «nascosto per tutti».
- */
 function UnresolvedSection() {
   const t = useTranslations('admin.unresolved');
   const search = Route.useSearch();
@@ -100,7 +94,13 @@ function UnresolvedSection() {
 
   return (
     <YStack gap={16}>
-      <Text render="h2" fontSize={18} lineHeight="24px" fontWeight="600">
+      <Text
+        render="h2"
+        fontSize={22}
+        lineHeight="28px"
+        fontFamily="heading"
+        fontWeight="600"
+      >
         {t('title')}
       </Text>
 
@@ -153,6 +153,7 @@ function OpenList({
   const tStore = useTranslations('store');
   const tKind = useTranslations('account.hiddenTab.tabs');
   const tBacklog = useTranslations('backlog');
+  const format = useFormatter();
   const navigate = useNavigate({ from: Route.fullPath });
   const router = useRouter();
   const errorMessage = useApiErrorMessage();
@@ -160,8 +161,6 @@ function OpenList({
   const platforms = useQuery(api.platforms.list.queryOptions());
   const platformName = (slug: string | null) =>
     slug ? (platforms.data?.find((p) => p.slug === slug)?.name ?? slug) : null;
-  // Il dettaglio aperto, e se con la ricerca IGDB già aperta: così lo apre
-  // «Collega per tutti» dalla riga.
   const [detail, setDetail] = useState<{
     row: UnresolvedGroup;
     searching: boolean;
@@ -233,23 +232,10 @@ function OpenList({
 
   const columns: AdminColumn<UnresolvedGroup>[] = [
     {
-      key: 'store',
-      header: t('store'),
-      width: 120,
-      render: (row) => (
-        <CellText>
-          {[tStore(row.store), platformName(row.platformSlug)]
-            .filter(Boolean)
-            .join(' · ')}
-        </CellText>
-      ),
-    },
-    {
       key: 'name',
       header: t('name'),
       flex: 2,
       minWidth: 200,
-      // Tutta la voce apre il dettaglio: nella tabella i testi si tagliano.
       render: (row) => (
         <XStack
           render="button"
@@ -262,6 +248,11 @@ function OpenList({
           borderWidth={0}
           p={0}
           opacity="hover:0.8"
+          outlineColor="focus-visible:outline-color"
+          outlineStyle="focus-visible:solid"
+          outlineWidth="focus-visible:2px"
+          outlineOffset="focus-visible:-2px"
+          rounded={4}
           style={{ textAlign: 'left' }}
           aria-label={t('details', { name: row.name })}
           onPress={() => setDetail({ row, searching: false })}
@@ -273,8 +264,20 @@ function OpenList({
             height={32}
           />
           <YStack flex={1} minW={0}>
-            <CellText>{row.name}</CellText>
-            <CellText muted>{row.externalId}</CellText>
+            <Text
+              fontSize={13}
+              lineHeight="18px"
+              color="color12"
+              textDecorationLine="underline"
+              style={{ overflowWrap: 'anywhere', textUnderlineOffset: 2 }}
+            >
+              {row.name}
+            </Text>
+            <CellText muted>
+              {[tStore(row.store), platformName(row.platformSlug)]
+                .filter(Boolean)
+                .join(' · ')}
+            </CellText>
           </YStack>
         </XStack>
       ),
@@ -282,8 +285,9 @@ function OpenList({
     {
       key: 'libraries',
       header: t('libraries'),
-      width: 64,
-      render: (row) => <CellText>{row.libraries}</CellText>,
+      width: 72,
+      align: 'end',
+      render: (row) => <CellText>{format.number(row.libraries)}</CellText>,
     },
     {
       key: 'hidden',
@@ -294,13 +298,14 @@ function OpenList({
     },
     {
       key: 'actions',
-      header: '',
-      width: 340,
+      header: t('actions'),
+      width: 320,
+      align: 'end',
       render: (row) => (
         <>
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onPress={() => setDetail({ row, searching: true })}
           >
             <Link2 size={14} />
@@ -341,7 +346,19 @@ function OpenList({
 
   return (
     <YStack gap={12}>
-      <XStack gap={12} items="center" flexWrap="wrap">
+      <XStack
+        role="group"
+        aria-label={t('filters')}
+        gap={8}
+        px={12}
+        py={10}
+        items="center"
+        flexWrap="wrap"
+        bg="color2"
+        rounded={12}
+        borderWidth={1}
+        borderColor="border-color"
+      >
         <Select
           items={Object.fromEntries([
             ['all', t('allStores')],
@@ -358,7 +375,7 @@ function OpenList({
             })
           }
         >
-          <SelectTrigger width={180} aria-label={t('allStores')}>
+          <SelectTrigger width="220px max-sm:100%" aria-label={t('store')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -370,7 +387,7 @@ function OpenList({
             ))}
           </SelectContent>
         </Select>
-        <YStack width={240}>
+        <YStack width="260px max-sm:100%" minW={0}>
           <ClearableInput
             value={text}
             onChangeText={setText}
@@ -381,12 +398,18 @@ function OpenList({
         </YStack>
       </XStack>
 
+      {list.data && (store || q) ? (
+        <Text fontSize={12} color="color11" role="status">
+          {t('results', { count: total })}
+        </Text>
+      ) : null}
+
       {list.isPending ? (
         <Skeleton height={200} width="100%" rounded={12} />
       ) : list.isError ? (
         <EmptyState title={t('failed')} />
       ) : list.data.rows.length === 0 ? (
-        <EmptyState title={t('empty')} />
+        <EmptyState title={t(store || q ? 'emptyFiltered' : 'empty')} />
       ) : (
         <AdminTable
           label={t('open')}
@@ -477,7 +500,12 @@ function GlobalHiddenList({
       render: (rule) => (
         <YStack flex={1} minW={0}>
           <CellText>{rule.name}</CellText>
-          <CellText muted>{rule.externalId}</CellText>
+          <details>
+            <summary className="w-fit cursor-pointer rounded-sm py-1 text-xs text-muted-foreground underline decoration-dotted underline-offset-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring">
+              {t('externalId')}
+            </summary>
+            <CellText muted>{rule.externalId}</CellText>
+          </details>
         </YStack>
       ),
     },
@@ -492,8 +520,9 @@ function GlobalHiddenList({
     {
       key: 'libraries',
       header: t('libraries'),
-      width: 64,
-      render: (rule) => <CellText>{rule.libraries}</CellText>,
+      width: 72,
+      align: 'end',
+      render: (rule) => <CellText>{format.number(rule.libraries)}</CellText>,
     },
     {
       key: 'decided',
@@ -517,8 +546,9 @@ function GlobalHiddenList({
     },
     {
       key: 'actions',
-      header: '',
-      width: 80,
+      header: t('actions'),
+      width: 136,
+      align: 'end',
       render: (rule) => (
         <Button
           size="sm"
@@ -538,11 +568,16 @@ function GlobalHiddenList({
   if (rules.isError) return <EmptyState title={t('failed')} />;
   if (rules.data.length === 0) return <EmptyState title={t('emptyHidden')} />;
   return (
-    <AdminTable
-      label={t('globalHidden')}
-      columns={columns}
-      rows={rules.data}
-      rowKey={(rule) => `${rule.store}-${rule.externalId}`}
-    />
+    <YStack gap={12}>
+      <Text fontSize={13} lineHeight="18px" color="color11">
+        {t('unhideHint')}
+      </Text>
+      <AdminTable
+        label={t('globalHidden')}
+        columns={columns}
+        rows={rules.data}
+        rowKey={(rule) => `${rule.store}-${rule.externalId}`}
+      />
+    </YStack>
   );
 }

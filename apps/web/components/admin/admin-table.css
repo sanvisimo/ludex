@@ -1,0 +1,68 @@
+.admin-table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--borderColor);
+  border-radius: 12px;
+  background: var(--background);
+}
+
+.admin-table-scroll:focus-visible {
+  outline: 2px solid var(--outlineColor);
+  outline-offset: 2px;
+}
+
+.admin-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.admin-table thead {
+  background: var(--color3);
+}
+
+.admin-table :is(th, td) {
+  padding: 12px 6px;
+  vertical-align: middle;
+}
+
+.admin-table :is(th, td):first-child {
+  padding-inline-start: 16px;
+}
+
+.admin-table :is(th, td):last-child {
+  padding-inline-end: 16px;
+}
+
+.admin-table th {
+  /* Le etichette sr-only devono restare ancorate al contenitore scorrevole. */
+  position: relative;
+  border-bottom: 1px solid var(--borderColor);
+  color: var(--color11);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+.admin-table th[data-align='end'] {
+  text-align: end;
+}
+
+.admin-table tbody tr + tr {
+  border-top: 1px solid var(--borderColor);
+}
+
+.admin-table tbody tr:hover {
+  background: var(--color2);
+}
+
+.admin-table-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-table td[data-align='end'] .admin-table-cell {
+  justify-content: flex-end;
+}

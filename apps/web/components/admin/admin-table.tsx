@@ -1,31 +1,55 @@
-import { Text, XStack, YStack } from '@repo/ui';
-import type { ReactNode } from 'react';
+import { Text } from '@repo/ui';
+import {
+  flexRender,
+  metaHelper,
+  tableFeatures,
+  useTable,
+  type CellContext,
+  type ColumnDef,
+  type HeaderContext,
+  type RowData,
+} from '@tanstack/react-table';
+import { useMemo, type ReactNode } from 'react';
+import { useTranslations } from 'use-intl';
 
-/**
- * Una colonna della tabella. `width` fissa la larghezza; senza, la colonna
- * prende la sua parte di ciò che resta (`flex`, 1 di default).
- */
+import './admin-table.css';
+
 export type AdminColumn<T> = {
   key: string;
   header: ReactNode;
   width?: number;
   flex?: number;
-  /**
-   * Una colonna elastica non scende sotto questa larghezza: sotto, la tabella
-   * scorre di lato. Senza, stretta la finestra, un numero finiva spezzato a
-   * metà e un motivo restava una colonna di tre parole.
-   */
+  align?: 'end';
   minWidth?: number;
   render: (row: T) => ReactNode;
 };
 
-/**
- * La tabella delle sezioni admin: la stessa forma della vista compatta del
- * backlog — righe di `XStack` con i ruoli ARIA di una tabella — perché in
- * `@repo/ui` una tabella non c'è, e l'admin è roba da desktop: niente forma
- * per il telefono, sotto si scorre di lato.
- */
-export function AdminTable<T>({
+function adminFeatures<T>() {
+  return tableFeatures({ columnMeta: metaHelper<AdminColumn<T>>() });
+}
+
+type AdminFeatures<T> = ReturnType<typeof adminFeatures<T>>;
+
+function AdminHeader<T extends RowData>({
+  column,
+}: HeaderContext<AdminFeatures<T>, T>) {
+  const t = useTranslations('admin');
+  const header = column.columnDef.meta?.header;
+  return column.id === 'actions' && header === '' ? (
+    <span className="sr-only">{t('actions')}</span>
+  ) : (
+    header
+  );
+}
+
+function AdminCell<T extends RowData>({
+  column,
+  row,
+}: CellContext<AdminFeatures<T>, T>) {
+  return column.columnDef.meta?.render(row.original);
+}
+
+export function AdminTable<T extends RowData>({
   label,
   columns,
   rows,
@@ -36,118 +60,102 @@ export function AdminTable<T>({
   rows: T[];
   rowKey: (row: T) => string;
 }) {
-  // La larghezza sotto cui la tabella scorre: quella delle colonne che hanno una
-  // misura, più i vuoti. Mai meno di 640, com'è sempre stato.
-  const minW = Math.max(
-    640,
-    columns.reduce(
-      (sum, column) => sum + (column.width ?? column.minWidth ?? 0),
-      24 + 12 * (columns.length - 1),
-    ),
+  const features = useMemo(() => adminFeatures<T>(), []);
+  const definitions = useMemo<ColumnDef<AdminFeatures<T>, T>[]>(
+    // I renderer restano stabili anche quando il chiamante ricrea le colonne,
+    // così React conserva il focus e lo stato dei controlli dentro le celle.
+    () =>
+      columns.map((column) => ({
+        id: column.key,
+        header: AdminHeader<T>,
+        cell: AdminCell<T>,
+        meta: column,
+      })),
+    [columns],
   );
+  const table = useTable({
+    features,
+    columns: definitions,
+    data: rows,
+    getRowId: rowKey,
+  });
+
+  const layout = table.getAllLeafColumns().map((column, index, all) => {
+    const config = column.columnDef.meta!;
+    const padding =
+      12 + (index === 0 ? 10 : 0) + (index === all.length - 1 ? 10 : 0);
+    return {
+      id: column.id,
+      basis: (config.width ?? config.minWidth ?? 0) + padding,
+      weight: config.width === undefined ? (config.flex ?? 1) : 0,
+    };
+  });
+  const basis = layout.reduce((total, column) => total + column.basis, 0);
+  const weight = layout.reduce((total, column) => total + column.weight, 0);
 
   return (
-    <YStack
-      role="table"
+    <div
+      role="region"
       aria-label={label}
       tabIndex={0}
-      outlineColor="focus-visible:outline-color"
-      outlineStyle="focus-visible:solid"
-      outlineWidth="focus-visible:2px"
-      outlineOffset="focus-visible:2px"
-      rounded={12}
-      borderWidth={1}
-      borderColor="border-color"
-      overflow="hidden"
-      style={{ overflowX: 'auto' }}
+      className="admin-table-scroll"
     >
-      <XStack
-        role="row"
-        px={12}
-        py={10}
-        gap={12}
-        items="center"
-        bg="color3"
-        borderBottomWidth={1}
-        borderColor="border-color"
-        minW={minW}
+      <table
+        aria-label={label}
+        className="admin-table"
+        style={{ minWidth: Math.max(640, basis) }}
       >
-        {columns.map((column) => (
-          <Cell key={column.key} column={column} role="columnheader">
-            <Text
-              fontSize={12}
-              lineHeight="16px"
-              fontWeight="600"
-              color="color11"
-            >
-              {column.header}
-            </Text>
-          </Cell>
-        ))}
-      </XStack>
-
-      {rows.map((row, index) => (
-        <XStack
-          role="row"
-          key={rowKey(row)}
-          px={12}
-          py={10}
-          gap={12}
-          items="center"
-          minW={minW}
-          borderTopWidth={index === 0 ? 0 : 1}
-          borderColor="border-color"
-          bg="hover:color2"
-        >
-          {columns.map((column) => (
-            <Cell key={column.key} column={column} role="cell">
-              {column.render(row)}
-            </Cell>
+        <colgroup>
+          {layout.map((column) => (
+            <col
+              key={column.id}
+              style={{
+                width: column.weight
+                  ? `calc(${column.basis}px + (100% - ${basis}px) * ${column.weight / weight})`
+                  : column.basis,
+              }}
+            />
           ))}
-        </XStack>
-      ))}
-    </YStack>
+        </colgroup>
+        <thead>
+          {table.getHeaderGroups().map((group) => (
+            <tr key={group.id}>
+              {group.headers.map((header) => (
+                <th
+                  key={header.id}
+                  scope="col"
+                  data-align={header.column.columnDef.meta?.align}
+                >
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map((row) => (
+            <tr key={row.id}>
+              {row.getAllCells().map((cell) => (
+                <td
+                  key={cell.id}
+                  data-align={cell.column.columnDef.meta?.align}
+                >
+                  <div className="admin-table-cell">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </div>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
-function Cell<T>({
-  column,
-  role,
-  children,
-}: {
-  column: AdminColumn<T>;
-  role: 'cell' | 'columnheader';
-  children: ReactNode;
-}) {
-  // Solo le colonne elastiche hanno `overflow`: le view di Tamagui non si
-  // restringono da sole, e un id Amazon lungo usciva dalla sua colonna e finiva
-  // sopra quella accanto. Le fisse no, perché tengono i bottoni, e si
-  // perderebbe l'anello del focus: la loro larghezza va data giusta.
-  return column.width !== undefined ? (
-    <XStack role={role} width={column.width} shrink={0} items="center" gap={6}>
-      {children}
-    </XStack>
-  ) : (
-    <XStack
-      role={role}
-      flex={column.flex ?? 1}
-      minW={column.minWidth ?? 0}
-      overflow="hidden"
-      items="center"
-      gap={6}
-    >
-      {children}
-    </XStack>
-  );
-}
-
-/**
- * Il testo di una cella: va a capo, mai tagliato, perché in queste tabelle il
- * testo è l'informazione. Si spezza in mezzo a una parola solo se la parola non
- * ci sta nemmeno da sola: `anywhere` e non `break-word`, che lascerebbe a un id
- * lungo la larghezza minima dell'id intero, e la cella lo taglierebbe. Accanto a
- * una copertina va dentro un blocco con `flex={1} minW={0}`.
- */
 export function CellText({
   children,
   muted = false,
