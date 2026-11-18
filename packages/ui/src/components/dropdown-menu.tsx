@@ -4,27 +4,6 @@ import type { GetProps } from 'tamagui';
 
 import { Check } from '../icons';
 
-/**
- * Il menu a tendina: tema, lingua, e il «Nascondi come…» degli scarti.
- *
- * Sotto c'è il Menu di Tamagui — tastiera, typeahead, chiusura con Esc e al
- * clic fuori, `role="menu"` e `menuitem` — e qui ci sono i nomi di prima:
- * `DropdownMenu`, `…Trigger`, `…Content`, `…Group`, `…Label`, `…Item`,
- * `…RadioGroup`, `…RadioItem`, `…Separator`. Le altre voci di shadcn — le
- * spunte, i sottomenu, le scorciatoie — non le usava nessuno. La voce
- * `destructive` è tornata con le playlist, ma come tinta, non come variante di
- * shadcn.
- *
- * Due traduzioni, perché le schermate non cambino:
- *
- * - `onClick` sulla voce diventa l'`onSelect` di Tamagui, che è ciò che
- *   scatta anche da tastiera.
- * - `align` (`start` / `end`) diventa la `placement` del popper: il menu
- *   del tema, in fondo a destra della barra, si allinea al bordo destro.
- *   Sta sul **`DropdownMenu`** e non sul `Content` come in shadcn, perché in
- *   Tamagui il popper lo governa la radice: nelle schermate la prop si sposta
- *   di due righe.
- */
 type DropdownMenuProps = Omit<
   ComponentProps<typeof Menu>,
   'placement' | 'offset'
@@ -36,7 +15,6 @@ export function DropdownMenu({ align = 'start', ...props }: DropdownMenuProps) {
   return <Menu placement={`bottom-${align}`} offset={4} {...props} />;
 }
 
-/** Avvolge il bottone che gli si passa, come il trigger del Dialog. */
 export function DropdownMenuTrigger({ render }: { render: ReactElement }) {
   return <Menu.Trigger asChild>{render}</Menu.Trigger>;
 }
@@ -89,7 +67,6 @@ export function DropdownMenuSeparator() {
   return <Menu.Separator mx={-4} my={4} bg="border-color" />;
 }
 
-/** Il testo della voce, che è anche ciò su cui cerca il typeahead. */
 function ItemText({
   children,
   color = 'color12',
@@ -117,13 +94,7 @@ const itemStyle = {
 
 type DropdownMenuItemProps = Omit<GetProps<typeof Menu.Item>, 'onSelect'> & {
   onClick?: () => void;
-  /** Un'icona prima del testo, come le voci del foglio mobile. Facoltativa. */
   icon?: ReactNode;
-  /**
-   * Una voce che toglie qualcosa: il testo in rosso e il fondo rosso al passaggio,
-   * con le tinte di `Button variant="destructive"`. L'icona la colora chi la
-   * passa (`color="red11"`). Non sostituisce la conferma: avvisa soltanto.
-   */
   destructive?: boolean;
 };
 
@@ -140,6 +111,8 @@ export function DropdownMenuItem({
 }: DropdownMenuItemProps) {
   return (
     <Menu.Item
+      flexDirection="row"
+      items="center"
       {...itemStyle}
       {...(destructive && destructiveStyle)}
       onSelect={onClick}
@@ -151,13 +124,10 @@ export function DropdownMenuItem({
   );
 }
 
-/**
- * Come il gruppo: senza `bg` il RadioGroup di Tamagui prende il fondo del
- * tema, e nel tema scuro le voci stavano su una fascia più scura del menu.
- */
 export function DropdownMenuRadioGroup(
   props: GetProps<typeof Menu.RadioGroup>,
 ) {
+  // Il fondo predefinito di RadioGroup crea una fascia più scura nel tema scuro.
   return <Menu.RadioGroup bg="transparent" {...props} />;
 }
 
