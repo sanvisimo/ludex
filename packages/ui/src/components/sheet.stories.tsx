@@ -7,7 +7,6 @@ import { Button } from './button';
 import { NavItem } from './nav-item';
 import { Sheet, type SheetProps } from './sheet';
 
-// Annotato e non inferito, come per il Dialog.
 const meta: Meta<SheetProps> = {
   title: 'Components/Sheet',
   component: Sheet,
@@ -16,7 +15,6 @@ const meta: Meta<SheetProps> = {
 export default meta;
 type Story = StoryObj<SheetProps>;
 
-/** Il caso per cui nasce: la navigazione sulle finestre strette. */
 export const Default: Story = {
   render: function Render() {
     const [open, setOpen] = useState(false);
@@ -39,21 +37,16 @@ export const Default: Story = {
   },
 };
 
-/**
- * Il bottone lo apre, col suo nome, e il focus ci entra; Esc lo chiude, il
- * foglio sparisce dal DOM e il focus torna sul bottone.
- */
 export const OpenAndClose: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByText('Menu'));
-    // Il foglio sta in un portale, fuori dal canvas della storia.
+    const trigger = within(canvasElement).getByRole('button', { name: 'Menu' });
+    await userEvent.click(trigger);
     const sheet = await screen.findByRole('dialog', { name: 'Navigazione' });
     await waitFor(() => expect(sheet).toBeVisible());
     await waitFor(() =>
       expect(sheet).toContainElement(document.activeElement as HTMLElement),
     );
-    // Il primo Tab porta alla prima voce, dentro il foglio.
     await userEvent.tab();
     await expect(
       within(sheet).getByRole('link', { name: 'Catalogo' }),
@@ -62,8 +55,6 @@ export const OpenAndClose: Story = {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Navigazione' })).toBeNull(),
     );
-    await expect(
-      within(canvasElement).getByText('Menu').closest('button'),
-    ).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
   },
 };
