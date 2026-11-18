@@ -1,6 +1,10 @@
 import type { GameAdminDetail } from '@repo/contracts';
 import {
   Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   EmptyState,
   Skeleton,
   Text,
@@ -9,10 +13,24 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { Archive, Hash, Link2Off, RotateCw, Unlink } from '@repo/ui/icons';
+import {
+  Archive,
+  ChevronDown,
+  ChevronLeft,
+  Hash,
+  Link2Off,
+  RotateCw,
+  Unlink,
+} from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
-import { useState } from 'react';
+import {
+  createFileRoute,
+  Link,
+  useCanGoBack,
+  useLocation,
+  useRouter,
+} from '@tanstack/react-router';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { useTranslations } from 'use-intl';
 
 import {
@@ -63,11 +81,39 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const canGoBack = useCanGoBack();
+  const section = useLocation({ select: ({ hash }) => hash });
+
   const [repointing, setRepointing] = useState<Link | null>(null);
   const [unlinking, setUnlinking] = useState<Link | null>(null);
   const [setting, setSetting] = useState<SourceToSet | null>(null);
   const [merging, setMerging] = useState(false);
+  const maintenanceTrigger = useRef<ComponentRef<typeof Button>>(null);
   const { game } = detail;
+
+  useEffect(() => {
+    if (section !== 'links' && section !== 'reports') return;
+    // La destinazione si monta dopo la risposta della query di dettaglio.
+    const heading = document.getElementById(section);
+    heading?.focus({ preventScroll: true });
+    heading?.scrollIntoView({ block: 'start' });
+  }, [game.slug, section]);
+
+  function goBack() {
+    if (canGoBack) {
+      router.history.back();
+      return;
+    }
+    void router.navigate({
+      to:
+        section === 'reports'
+          ? '/admin/reported'
+          : section === 'links'
+            ? '/admin/platforms'
+            : '/admin/missing',
+      replace: true,
+    });
+  }
 
   const refresh = () =>
     Promise.all([
@@ -105,7 +151,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
   const what = (report: Report) =>
     report.store
       ? t('games.copyOf', { store: tStore(report.store) })
-      : t(`source.${report.source!}`);
+      : t('reported.sourceData', { source: t(`source.${report.source!}`) });
 
   const linkColumns: AdminColumn<Link>[] = [
     {
@@ -178,17 +224,13 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
         <XStack gap={8}>
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onPress={() => setRepointing(link)}
           >
             <Unlink size={14} />
             {t('game.notThis')}
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onPress={() => setUnlinking(link)}
-          >
+          <Button size="sm" variant="ghost" onPress={() => setUnlinking(link)}>
             <Link2Off size={14} />
             {t('game.unlink')}
           </Button>
@@ -259,7 +301,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
           <Tooltip content={t('missing.retryHint')}>
             <Button
               size="sm"
-              variant="outline"
+              variant={row.source === 'igdb' ? 'secondary' : 'ghost'}
               disabled={retry.isPending}
               onPress={() => retry.mutate(row)}
             >
@@ -270,7 +312,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
           {row.source !== 'igdb' ? (
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onPress={() =>
                 setSetting({
                   gameId: game.id,
@@ -295,19 +337,27 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
 
   return (
     <YStack gap={24}>
-      <Text
-        render="button"
-        fontSize={13}
-        color="color11"
-        cursor="pointer"
-        self="flex-start"
-        bg="transparent"
-        borderWidth={0}
-        p={0}
-        onPress={() => router.history.back()}
-      >
-        ‹ {t('game.back')}
-      </Text>
+      <XStack justify="space-between" items="center" gap={8} flexWrap="wrap">
+        <Button size="sm" variant="ghost" onPress={goBack}>
+          <ChevronLeft size={14} />
+          {t('game.back')}
+        </Button>
+        <DropdownMenu align="end">
+          <DropdownMenuTrigger
+            render={
+              <Button ref={maintenanceTrigger} size="sm" variant="outline">
+                {t('game.maintenance')}
+                <ChevronDown size={14} />
+              </Button>
+            }
+          />
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => setMerging(true)}>
+              {t('game.merge')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </XStack>
 
       <XStack gap={16} items="flex-start">
         <GameCover imageId={game.coverImageId} name={game.name} width={72} />
@@ -325,27 +375,35 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
               .filter(Boolean)
               .join(' · ')}
           </Text>
-          {game.igdbPlatforms.length > 0 ? (
-            <Text fontSize={13} color="color11">
-              {t('game.igdbPlatforms', {
-                platforms: game.igdbPlatforms.join(', '),
-              })}
-            </Text>
-          ) : null}
           <Link to="/games/$slug" params={{ slug: game.slug }}>
             <Text fontSize={13} color="color11" textDecorationLine="underline">
               {t('game.publicPage')} ↗
             </Text>
           </Link>
         </YStack>
-        <Button size="sm" variant="outline" onPress={() => setMerging(true)}>
-          {t('game.merge')}
-        </Button>
       </XStack>
 
       <YStack gap={8}>
-        <Text render="h3" fontSize={16} fontWeight="600">
+        <Text
+          id="links"
+          render="h3"
+          tabIndex={-1}
+          className="scroll-mt-24 max-md:scroll-mt-4"
+          fontSize={16}
+          fontWeight="600"
+        >
           {t('game.links')}
+        </Text>
+        <Text
+          fontSize={13}
+          color="color11"
+          style={{ overflowWrap: 'anywhere' }}
+        >
+          {game.igdbPlatforms.length > 0
+            ? t('game.igdbPlatforms', {
+                platforms: game.igdbPlatforms.join(', '),
+              })
+            : t('game.noIgdbPlatforms')}
         </Text>
         {detail.links.length === 0 ? (
           <Text fontSize={13} color="color11">
@@ -374,7 +432,14 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       </YStack>
 
       <YStack gap={8}>
-        <Text render="h3" fontSize={16} fontWeight="600">
+        <Text
+          id="reports"
+          render="h3"
+          tabIndex={-1}
+          className="scroll-mt-24 max-md:scroll-mt-4"
+          fontSize={16}
+          fontWeight="600"
+        >
           {t('game.reports')}
         </Text>
         {detail.reports.length === 0 ? (
@@ -386,19 +451,27 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
             <XStack
               key={`${report.store ?? ''}-${report.source ?? ''}`}
               gap={12}
-              items="center"
-              p={10}
+              items="flex-start"
+              flexWrap="wrap"
+              p={12}
               rounded={8}
               borderWidth={1}
               borderColor="border-color"
             >
-              <YStack flex={1} minW={0} gap={2}>
-                <Text fontSize={13} fontWeight="500">
-                  {what(report)} · {t('game.users', { count: report.users })}
+              <YStack flex={1} minW={0} flexBasis="max-sm:100%" gap={4}>
+                <Text fontSize={14} fontWeight="600">
+                  {what(report)}
+                </Text>
+                <Text fontSize={12} color="color11">
+                  {t('game.users', { count: report.users })}
                 </Text>
                 {report.suggestions.length > 0 ? (
-                  <Text fontSize={12} color="color11">
-                    {t('games.suggested')}:{' '}
+                  <Text
+                    fontSize={13}
+                    color="color12"
+                    style={{ overflowWrap: 'anywhere' }}
+                  >
+                    {t('reported.suggestedFix')}:{' '}
                     {report.suggestions
                       .map((s) =>
                         [s.name, s.igdbId ? `IGDB ${s.igdbId}` : null]
@@ -409,26 +482,33 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
                   </Text>
                 ) : null}
                 {report.notes.map((note, index) => (
-                  <Text key={index} fontSize={12} color="color11">
+                  <Text
+                    key={index}
+                    fontSize={12}
+                    color="color11"
+                    style={{ overflowWrap: 'anywhere' }}
+                  >
                     «{note}»
                   </Text>
                 ))}
               </YStack>
-              <ReportFix
-                report={report}
-                detail={detail}
-                onRepoint={setRepointing}
-                onSetId={setSetting}
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={archive.isPending}
-                onPress={() => archive.mutate(report)}
-              >
-                <Archive size={14} />
-                {t('games.archive')}
-              </Button>
+              <XStack gap={8} items="center" flexWrap="wrap">
+                <ReportFix
+                  report={report}
+                  detail={detail}
+                  onRepoint={setRepointing}
+                  onSetId={setSetting}
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={archive.isPending}
+                  onPress={() => archive.mutate(report)}
+                >
+                  <Archive size={14} />
+                  {t('games.archive')}
+                </Button>
+              </XStack>
             </XStack>
           ))
         )}
@@ -459,6 +539,12 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
         open={merging}
         game={game}
         onOpenChange={setMerging}
+        onCloseAutoFocus={(event) => {
+          // La voce di menu che apre il dialogo è già smontata alla chiusura.
+          if (!maintenanceTrigger.current) return;
+          event.cancel();
+          maintenanceTrigger.current.focus();
+        }}
         onDone={async (survivor) => {
           await refresh();
           // Se questo era l'assorbito il suo indirizzo non c'è più: si va al

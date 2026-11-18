@@ -1,7 +1,15 @@
 import type { AdminUsage } from '@repo/contracts';
-import { EmptyState, Skeleton, Text, XStack, YStack } from '@repo/ui';
+import {
+  EmptyState,
+  Skeleton,
+  Tabs,
+  TabsTab,
+  Text,
+  XStack,
+  YStack,
+} from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
@@ -13,7 +21,15 @@ import {
 import { DayBars } from '@/components/admin/day-bars';
 import { api } from '@/lib/orpc';
 
+type UsageView = 'catalog' | 'operations';
+
 export const Route = createFileRoute('/_app/admin/usage')({
+  validateSearch: (search: Record<string, unknown>): { view?: UsageView } => ({
+    view:
+      search.view === 'catalog' || search.view === 'operations'
+        ? search.view
+        : undefined,
+  }),
   component: UsageSection,
 });
 
@@ -23,19 +39,23 @@ type QueueRow = NonNullable<AdminUsage['queues']>[number];
 type ApiRow = NonNullable<AdminUsage['apis']>[number];
 type Outcome = AdminUsage['outcomes'][number];
 
-/**
- * Uso (plans/admin-uso.md): chi usa Ludex, cosa entra nel catalogo, e come
- * stanno code e fonti esterne. Solo letture, dal database e da Redis; le
- * visite di chi non ha un account stanno su Cloudflare, non qui.
- */
 function UsageSection() {
   const t = useTranslations('admin.usage');
+  const { view } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const usage = useQuery(api.admin.usage.get.queryOptions());
+  const format = useFormatter();
 
   return (
-    <YStack gap={32}>
+    <YStack gap={24}>
       <YStack gap={4}>
-        <Text render="h2" fontSize={18} lineHeight="24px" fontWeight="600">
+        <Text
+          render="h2"
+          fontSize={22}
+          lineHeight="28px"
+          fontFamily="heading"
+          fontWeight="600"
+        >
           {t('title')}
         </Text>
         <Text fontSize={13} lineHeight="18px" color="color11">
@@ -43,16 +63,65 @@ function UsageSection() {
         </Text>
       </YStack>
 
+      {usage.data ? (
+        <YStack role="group" aria-label={t('overview')}>
+          <Stats
+            items={[
+              {
+                label: t('registered'),
+                value: format.number(usage.data.users.total),
+              },
+              {
+                label: t('active7'),
+                value: format.number(usage.data.users.active7),
+              },
+              {
+                label: t('catalog'),
+                value: format.number(usage.data.games.total),
+              },
+              {
+                label: t('accountsToReconnect'),
+                value: format.number(
+                  usage.data.libraries.reduce(
+                    (total, row) => total + row.needsReauth,
+                    0,
+                  ),
+                ),
+              },
+            ]}
+          />
+        </YStack>
+      ) : null}
+
+      <Tabs
+        label={t('views')}
+        value={view ?? 'users'}
+        onValueChange={(value) =>
+          void navigate({
+            search: {
+              view:
+                value === 'catalog' || value === 'operations'
+                  ? value
+                  : undefined,
+            },
+          })
+        }
+      >
+        <TabsTab value="users">{t('usersAndLibraries')}</TabsTab>
+        <TabsTab value="catalog">{t('catalogView')}</TabsTab>
+        <TabsTab value="operations">{t('apis')}</TabsTab>
+      </Tabs>
+
       {usage.isPending ? (
         <Skeleton height={400} width="100%" rounded={12} />
       ) : usage.isError ? (
         <EmptyState title={t('loadFailed')} />
+      ) : view === 'catalog' ? (
+        <GamesBlock usage={usage.data} />
+      ) : view === 'operations' ? (
+        <ApisBlock usage={usage.data} />
       ) : (
-        <>
-          <UsersBlock usage={usage.data} />
-          <GamesBlock usage={usage.data} />
-          <ApisBlock usage={usage.data} />
-        </>
+        <UsersBlock usage={usage.data} />
       )}
     </YStack>
   );
@@ -69,7 +138,6 @@ function Block({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-/** I numeri in testa a un blocco: quattro riquadri che vanno a capo. */
 function Stats({ items }: { items: { label: string; value: string }[] }) {
   return (
     <XStack gap={12} flexWrap="wrap">
@@ -84,6 +152,7 @@ function Stats({ items }: { items: { label: string; value: string }[] }) {
           rounded={12}
           borderWidth={1}
           borderColor="border-color"
+          bg="color2"
         >
           <Text fontSize={12} lineHeight="16px" color="color11">
             {item.label}
@@ -124,35 +193,37 @@ function UsersBlock({ usage }: { usage: AdminUsage }) {
       key: 'accounts',
       header: t('accounts'),
       width: 80,
+      align: 'end',
       render: (row) => <CellText>{n(row.accounts)}</CellText>,
     },
     {
       key: 'imported',
       header: t('imported'),
       width: 170,
+      align: 'end',
       render: (row) => <CellText>{n(row.imported)}</CellText>,
     },
     {
       key: 'synced7',
       header: t('synced7'),
       width: 150,
+      align: 'end',
       render: (row) => <CellText>{n(row.synced7)}</CellText>,
     },
     {
       key: 'needsReauth',
       header: t('needsReauth'),
       width: 120,
+      align: 'end',
       render: (row) => <CellText>{n(row.needsReauth)}</CellText>,
     },
   ];
 
   return (
-    <Block title={t('users')}>
+    <Block title={t('usersAndLibraries')}>
       <Stats
         items={[
-          { label: t('registered'), value: n(users.total) },
           { label: t('new7'), value: n(users.new7) },
-          { label: t('active7'), value: n(users.active7) },
           { label: t('active30'), value: n(users.active30) },
         ]}
       />
@@ -214,15 +285,15 @@ function GamesBlock({ usage }: { usage: AdminUsage }) {
       key: 'users',
       header: t('gameUsers'),
       width: 80,
+      align: 'end',
       render: (row) => <CellText>{n(row.users)}</CellText>,
     },
   ];
 
   return (
-    <Block title={t('games')}>
+    <Block title={t('catalogView')}>
       <Stats
         items={[
-          { label: t('catalog'), value: n(games.total) },
           { label: t('new7'), value: n(games.new7) },
           { label: t('resolved'), value: resolved },
           { label: t('inLibraries'), value: n(games.inLibraries) },
@@ -281,6 +352,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
         key,
         header: t(key),
         width: 96,
+        align: 'end',
         render: (row) => <CellText>{n(row[key])}</CellText>,
       }),
     ),
@@ -304,18 +376,21 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
       key: 'today',
       header: t('today'),
       width: 72,
+      align: 'end',
       render: (row) => <CellText>{n(row.today)}</CellText>,
     },
     {
       key: 'calls7',
       header: t('calls7'),
       width: 96,
+      align: 'end',
       render: (row) => <CellText>{n(row.calls7)}</CellText>,
     },
     {
       key: 'rejected7',
       header: t('rejected7'),
       width: 72,
+      align: 'end',
       render: (row) => <CellText>{n(row.rejected7)}</CellText>,
     },
   ];
@@ -332,24 +407,28 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
       key: 'ok',
       header: t('ok'),
       width: 96,
+      align: 'end',
       render: (row) => <CellText>{n(row.ok)}</CellText>,
     },
     {
       key: 'failed',
       header: t('failed'),
       width: 96,
+      align: 'end',
       render: (row) => <CellText>{n(row.failed)}</CellText>,
     },
     {
       key: 'notFound',
       header: t('notFound'),
       width: 96,
+      align: 'end',
       render: (row) => <CellText>{n(row.notFound)}</CellText>,
     },
   ];
 
   return (
     <Block title={t('apis')}>
+      {!usage.queues || !usage.apis ? <Note>{t('redisDown')}</Note> : null}
       <Text fontSize={14} lineHeight="20px" fontWeight="600">
         {t('queues')}
       </Text>
@@ -361,7 +440,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
           rowKey={(row) => row.name}
         />
       ) : (
-        <Note>{t('redisDown')}</Note>
+        <Note>{t('unavailable')}</Note>
       )}
 
       <Text fontSize={14} lineHeight="20px" fontWeight="600">
@@ -378,7 +457,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
           <Note>{t('callsNote')}</Note>
         </>
       ) : (
-        <Note>{t('redisDown')}</Note>
+        <Note>{t('unavailable')}</Note>
       )}
 
       <Text fontSize={14} lineHeight="20px" fontWeight="600">

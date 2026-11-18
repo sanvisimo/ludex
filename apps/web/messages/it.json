@@ -1865,7 +1865,7 @@
       "back": "Indietro",
       "users": "{count, plural, one {# utente} other {# utenti}}",
       "noIgdb": "senza id IGDB",
-      "igdbPlatforms": "IGDB lo dà su: {platforms}",
+      "igdbPlatforms": "Piattaforme su IGDB: {platforms}",
       "publicPage": "Apri la pagina pubblica",
       "links": "Collegamenti dai negozi",
       "store": "Negozio",
@@ -1885,7 +1885,9 @@
       "noReports": "Nessuna segnalazione aperta.",
       "notFound": "Gioco inesistente",
       "open": "Apri la pagina",
-      "merge": "Fondi con…"
+      "maintenance": "Manutenzione",
+      "noIgdbPlatforms": "IGDB non indica piattaforme.",
+      "merge": "Unisci giochi"
     },
     "repoint": {
       "title": "Non è questo gioco",
@@ -1961,22 +1963,30 @@
       "failed": "Non sono riuscito a leggere le segnalazioni"
     },
     "mismatches": {
-      "title": "Copie su una piattaforma dove il gioco non è uscito ({count})",
-      "copies": "Copie",
-      "igdb": "IGDB lo dà su",
-      "ok": "Va bene così",
-      "okDone": "Tolto dalla lista",
-      "okFailed": "Non sono riuscito a toglierlo",
-      "restore": "Annulla",
-      "restored": "Rimesso in lista",
-      "restoreFailed": "Non sono riuscito a rimetterlo",
-      "empty": "Nessuna copia fuori posto.",
-      "dismissed": "Segnati «va bene così»",
-      "emptyDismissed": "Nessuno."
+      "title": "Piattaforme sbagliate",
+      "open": "Da verificare",
+      "hint": "Controlla il collegamento. Se il gioco è corretto e manca solo la piattaforma su IGDB, accetta l’eccezione.",
+      "count": "{count, plural, one {# caso} other {# casi}}",
+      "copies": "Piattaforme importate",
+      "igdb": "Piattaforme su IGDB",
+      "noIgdbPlatforms": "Nessuna piattaforma indicata",
+      "openGame": "Apri {name}",
+      "ok": "Accetta eccezione",
+      "acceptGame": "Accetta eccezione per {name}",
+      "okDone": "Eccezione accettata",
+      "okFailed": "Non sono riuscito ad accettare l’eccezione",
+      "restore": "Rimetti da verificare",
+      "restoreGame": "Rimetti da verificare {name}",
+      "restored": "Rimesso da verificare",
+      "restoreFailed": "Non sono riuscito a rimetterlo da verificare",
+      "empty": "Nessuna piattaforma da verificare.",
+      "dismissed": "Eccezioni accettate",
+      "emptyDismissed": "Nessuna eccezione accettata.",
+      "loadFailed": "Non sono riuscito a leggere le piattaforme da verificare"
     },
     "usage": {
       "title": "Uso",
-      "intro": "Dal nostro database e dalle code. Chi visita senza account qui non c'è: quello sta su Cloudflare.",
+      "intro": "Attività degli account, del catalogo e dei servizi. I grafici e i contatori giornalieri seguono i giorni UTC.",
       "loadFailed": "Non sono riuscito a leggere i dati",
       "users": "Utenti",
       "registered": "Registrati",
@@ -2012,11 +2022,11 @@
       "delayed": "Rimandati",
       "failed": "Falliti",
       "completed": "Completati",
-      "redisDown": "Redis non risponde: questi numeri ora non si possono leggere.",
+      "redisDown": "Redis non risponde. I dati delle code o delle chiamate alle fonti potrebbero non essere disponibili.",
       "calls": "Chiamate alle fonti esterne",
       "source": "Fonte",
       "limit": "Limite",
-      "today": "Oggi",
+      "today": "Oggi (UTC)",
       "calls7": "7 giorni",
       "rejected7": "429 · 7 gg",
       "callsNote": "Contate dal giorno in cui c'è il contatore. I giorni sono UTC: «oggi» comincia all'una o alle due di notte italiane. Un 429 vuol dire che la fonte ci ha chiesto di rallentare.",
@@ -2043,7 +2053,13 @@
         "itad": "1000 ogni 5 minuti",
         "steam_api": "100.000 al giorno",
         "steam_store": "nessuno pubblicato"
-      }
+      },
+      "accountsToReconnect": "Account da ricollegare",
+      "overview": "Panoramica",
+      "views": "Sezioni di Uso",
+      "usersAndLibraries": "Utenti e librerie",
+      "catalogView": "Catalogo",
+      "unavailable": "Dati non disponibili."
     },
     "users": {
       "title": "Utenti",
@@ -2057,7 +2073,7 @@
       "state": "Stato",
       "admin": "admin",
       "you": "tu",
-      "banned": "bannato",
+      "banned": "Accesso bloccato",
       "bannedUntil": "bannato fino al {date}",
       "actions": "Azioni",
       "makeAdmin": "Rendi admin",
@@ -2081,7 +2097,20 @@
       "banConfirm": "Banna",
       "cancel": "Annulla",
       "lastSeen": "Ultimo accesso",
-      "never": "mai"
+      "never": "Non disponibile",
+      "account": "Account utente",
+      "member": "Utente",
+      "allowed": "Accesso consentito",
+      "banUntil": "Fino al {date}",
+      "count": "{count, plural, one {# utente} other {# utenti}}",
+      "emptyFiltered": "Nessun utente corrisponde alla ricerca.",
+      "actionsFor": "Azioni per {name}",
+      "actionOn": "Account {name} ({email})",
+      "effect": {
+        "makeAdmin": "L’account potrà accedere all’admin e gestire il catalogo e gli utenti.",
+        "removeAdmin": "L’account perderà l’accesso all’admin e potrà continuare a usare PileCue.",
+        "revoke": "Tutte le sessioni di questo account verranno chiuse. Per continuare a usare PileCue dovrà accedere di nuovo."
+      }
     }
   },
   "forgotPassword": {
