@@ -1987,7 +1987,7 @@
     },
     "usage": {
       "title": "Usage",
-      "intro": "From our database and queues. Visitors without an account aren't here: they're on Cloudflare.",
+      "intro": "Account, catalog, and service activity. Charts and daily counts use UTC days.",
       "loadFailed": "Couldn't load the data",
       "users": "Users",
       "registered": "Registered",
@@ -2023,11 +2023,11 @@
       "delayed": "Delayed",
       "failed": "Failed",
       "completed": "Completed",
-      "redisDown": "Redis isn't responding: these numbers can't be read right now.",
+      "redisDown": "Redis is unavailable. Queue or source request data may be missing.",
       "calls": "Calls to external sources",
       "source": "Source",
       "limit": "Limit",
-      "today": "Today",
+      "today": "Today (UTC)",
       "calls7": "7 days",
       "rejected7": "429 · 7 d",
       "callsNote": "Counted since the counter exists. Days are UTC. A 429 means the source asked us to slow down.",
@@ -2054,7 +2054,13 @@
         "itad": "1000 per 5 minutes",
         "steam_api": "100,000 per day",
         "steam_store": "none published"
-      }
+      },
+      "accountsToReconnect": "Accounts to reconnect",
+      "overview": "Overview",
+      "views": "Usage sections",
+      "usersAndLibraries": "Users and libraries",
+      "catalogView": "Catalog",
+      "unavailable": "Data unavailable."
     },
     "users": {
       "title": "Users",
@@ -2068,7 +2074,7 @@
       "state": "State",
       "admin": "admin",
       "you": "you",
-      "banned": "banned",
+      "banned": "Access blocked",
       "bannedUntil": "banned until {date}",
       "actions": "Actions",
       "makeAdmin": "Make admin",
@@ -2092,7 +2098,20 @@
       "banConfirm": "Ban",
       "cancel": "Cancel",
       "lastSeen": "Last seen",
-      "never": "never"
+      "never": "Unavailable",
+      "account": "User account",
+      "member": "Member",
+      "allowed": "Access allowed",
+      "banUntil": "Until {date}",
+      "count": "{count, plural, one {# user} other {# users}}",
+      "emptyFiltered": "No users match your search.",
+      "actionsFor": "Actions for {name}",
+      "actionOn": "Account {name} ({email})",
+      "effect": {
+        "makeAdmin": "This account will gain access to the admin and can manage the catalog and users.",
+        "removeAdmin": "This account will lose admin access and can continue to use PileCue.",
+        "revoke": "All sessions for this account will end. The user will need to sign in again to use PileCue."
+      }
     }
   },
   "forgotPassword": {
