@@ -77,8 +77,8 @@ export function DialogContent({
         onCloseAutoFocus={(event) => {
           props.onCloseAutoFocus?.(event);
           // Le dialog controllate non hanno necessariamente un Dialog.Trigger.
-          if (!event.defaultPrevented && returnFocusTo.current?.isConnected) {
-            event.preventDefault();
+          if (!event.isCanceled && returnFocusTo.current?.isConnected) {
+            event.cancel();
             returnFocusTo.current.focus();
           }
         }}
@@ -141,9 +141,7 @@ export const DialogFooter = styled(XStack, {
   borderTopWidth: 1,
   borderColor: 'border-color',
   bg: 'color2',
-  ...(isWeb
-    ? { position: 'sticky' as never, b: '-24px max-sm:-20px' }
-    : {}),
+  ...(isWeb ? { position: 'sticky' as never, b: '-24px max-sm:-20px' } : {}),
   style: { zIndex: 2 },
 });
 

@@ -1,5 +1,34 @@
-import { Button as ButtonBase, isWeb, styled, useThemeName } from 'tamagui';
+import { createStyledHOC, isWeb, styled, useThemeName } from 'tamagui';
 import type { GetProps } from 'tamagui';
+import {
+  ButtonFrame as ButtonBehaviorFrame,
+  ButtonText as ButtonBehaviorText,
+  textParentInlineProps,
+  useButton,
+  type ButtonBehaviorProps,
+} from 'tamagui/unstyled';
+
+/**
+ * Il comportamento del bottone di Tamagui — il testo avvolto, il `<button>`,
+ * lo stato disabilitato — senza la sua pelle. Il `Button` di `tamagui` ha
+ * taglie sue (`xs`…`xl`) che leggono la stessa prop `size` delle nostre, e ci
+ * mettevano sopra padding e altezza minima: 38 pixel invece di 32.
+ * `inlineProps` fa arrivare al testo colore e carattere delle varianti qui
+ * sotto, come fa la pelle, anche su React Native, dove il testo non li eredita.
+ */
+const ButtonText = styled(ButtonBehaviorText, {
+  name: 'ButtonText',
+  select: 'none',
+});
+
+const ButtonBehavior = createStyledHOC(
+  ButtonBehaviorFrame,
+  function ButtonBehavior(props: ButtonBehaviorProps, ref) {
+    const { props: buttonProps } = useButton(props, { Text: ButtonText });
+    return <ButtonBehaviorFrame ref={ref} {...buttonProps} />;
+  },
+  { staticConfig: { inlineProps: textParentInlineProps } },
+);
 
 /**
  * Il bottone.
@@ -19,13 +48,13 @@ import type { GetProps } from 'tamagui';
  * I nomi (`variant`, `size`, e i valori) restano quelli di prima, così le
  * schermate cambiano l'import e non la struttura.
  */
-const ButtonFrame = styled(ButtonBase, {
+const ButtonFrame = styled(ButtonBehavior, {
   name: 'Button',
   borderWidth: 1,
+  borderStyle: 'solid',
   borderColor: 'transparent',
+  cursor: 'web:pointer',
   fontWeight: '500',
-  // Le nostre size (default, sm, icon…) non sono token tipografici Tamagui.
-  iconSize: true,
   // Il focus si vede **solo da tastiera**: `focusVisibleStyle` e non
   // `focusStyle`, o l'anello comparirebbe a ogni clic del mouse.
   outlineColor: 'focus-visible:outline-color',
@@ -123,7 +152,7 @@ const ButtonFrame = styled(ButtonBase, {
 // forza la risoluzione nel tema corrente senza rimontare o perdere stato.
 export const Button = isWeb
   ? ButtonFrame
-  : ButtonFrame.styleable((props, ref) => {
+  : createStyledHOC(ButtonFrame, (props: ButtonProps, ref) => {
       const theme = useThemeName();
       return <ButtonFrame {...props} ref={ref} theme={props.theme ?? theme} />;
     });

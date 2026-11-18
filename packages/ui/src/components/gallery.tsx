@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import type { ScrollViewInstance } from 'react-native';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Image, ScrollView, XStack, YStack, isWeb } from 'tamagui';
 
 import { ChevronLeft, ChevronRight } from '../icons';
@@ -58,7 +57,7 @@ export type GalleryProps = {
 export function Gallery({ items, labels }: GalleryProps) {
   const [index, setIndex] = useState(0);
   const [enlarged, setEnlarged] = useState(false);
-  const scroller = useRef<ScrollViewInstance>(null);
+  const scroller = useRef<ComponentRef<typeof ScrollView>>(null);
   const thumbs = useRef<HTMLElement | null>(null);
   const previousIndex = useRef(index);
 
@@ -233,10 +232,7 @@ export function Gallery({ items, labels }: GalleryProps) {
       {total > 1 && (
         <XStack items="center" gap={8}>
           <ScrollView
-            // Tamagui 2.7 tipizza il ref come il componente ScrollView di React
-            // Native, che dalla 0.88 è una funzione: l'istanza vera è
-            // `ScrollViewInstance`, quella che `scroller` dichiara.
-            ref={scroller as never}
+            ref={scroller}
             horizontal
             flex={1}
             showsHorizontalScrollIndicator={false}

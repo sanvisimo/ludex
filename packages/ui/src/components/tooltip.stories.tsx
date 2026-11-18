@@ -7,15 +7,18 @@ import { BrandIcon } from './brand-icon';
 import { Button } from './button';
 import { Tooltip } from './tooltip';
 
-// Il Tooltip di Tamagui 2.7.7 aggancia i listener due volte dopo il montaggio,
-// e un hover che cade fra i due perde il timer dell'apertura. Nello Storybook
+// Il Tooltip di Tamagui aggancia i listener due volte dopo il montaggio, e un
+// hover che cade fra i due perde il timer dell'apertura. Nello Storybook
 // compilato, cioè su Chromatic, il `play` parte proprio lì; in locale no,
-// perché `addon-vitest` monta le storie dentro `act()`. Si esce e si riprova.
+// perché `addon-vitest` monta le storie dentro `act()`. Se il suggerimento non
+// c'è si esce e si riprova; se c'è, si aspetta la fine della sua comparsa.
 async function passaSopra(trigger: HTMLElement, testo: string | RegExp) {
   await waitFor(
     async () => {
-      await userEvent.unhover(trigger);
-      await userEvent.hover(trigger);
+      if (!screen.queryByText(testo)) {
+        await userEvent.unhover(trigger);
+        await userEvent.hover(trigger);
+      }
       await expect(await screen.findByText(testo)).toBeVisible();
     },
     { timeout: 5000 },

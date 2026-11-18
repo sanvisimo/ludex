@@ -2,7 +2,7 @@
 
 **Stato: in corso dal 16/11/2026**, piano approvato lo stesso giorno. Passo 1
 fatto e base di Chromatic pulita il 17/11, passi 2 e 3 fatti lo stesso giorno,
-passo 4 il 18/11: si riparte dal passo 5, vedi «Ripresa» in fondo. Lavoro
+passi 4 e 5 il 18/11: si riparte dal passo 6, vedi «Ripresa» in fondo. Lavoro
 interno: non entra nella roadmap pubblica.
 
 ## Perché
@@ -131,11 +131,51 @@ Su `chore/tamagui-3`, da `main` (la PR #141, con React 19.3 e React Native
      Drawer, DropdownMenu, `cover-preview.tsx`, `ownership-badges.tsx`), le
      taglie di Select e Slider, `unstyled` rimosso da Accordion e
      ToggleGroup, `selectable` sul testo di `xbox-code-panel.tsx`. Lint verde.
-5. **Le API rimosse.** Button (`createStyledHOC`, le nostre taglie contro
-   quelle della base), Toast, Sheet, il focus di Dialog, Drawer e
-   DropdownMenu, ScrollView. Gli otto aggiramenti di `packages/ui/CLAUDE.md`
+5. **Le API rimosse — fatto il 18/11.** Button (`createStyledHOC`, le nostre
+   taglie contro quelle della base), Toast, Sheet, il focus di Dialog, Drawer
+   e DropdownMenu, ScrollView. Gli otto aggiramenti di `packages/ui/CLAUDE.md`
    si riprovano uno per uno: chi non serve più si toglie, col suo commento.
    Via i quattro cast di React Native 0.88, se la v3 li rende inutili.
+   - **Button sulle parti di comportamento** (`ButtonFrame`, `ButtonText`,
+     `useButton` da `tamagui/unstyled`), non sulla pelle del `Button` di
+     `tamagui`: quella ha taglie sue (`xs`…`xl`) che leggono la stessa `size`,
+     e il bottone di serie misurava 38 invece di 32 (padding 16, raggio 5,
+     testo 13). Misurato nello Storybook: ora 32 e 28, padding 10, raggio 8,
+     testo 14 e 13, peso 500, colori e stati come prima. Da disabilitato è un
+     `<button disabled>` con `pointer-events: none`.
+   - **Accordion, ToggleGroup e Slider da `tamagui/unstyled`**: la prop
+     `unstyled` non c'è più, e le pelle stilano proprio le parti che
+     stiliamo noi. Lo Slider senza pelle prende ancora `size` in pixel.
+   - Toast sulla nuova anatomia (`<Toast>`, `Toast.Viewport`, `Toast.List`),
+     con le stesse icone; i `toast()` delle schermate non cambiano. Sheet su
+     `Container` più `Background`. Select: niente più `index` sulle voci,
+     il chevron in `Select.Icon`. I `focus-out` usano `isCanceled` e
+     `cancel()`. `selectable` sul testo è `select="text"`.
+     `@tamagui/get-font-sized` fra le dipendenze di `packages/ui`, o
+     `declaration` non sa dare un nome ai tipi di `Label` e del Dialog.
+   - **Gli aggiramenti.** Tolti: il focus del Tooltip (la v3 lo apre da
+     tastiera, non al clic, e lo chiude con Esc: provato con Playwright),
+     Esc e `FocusScope` dello Sheet (li fa lo Sheet modale; resta lo
+     spostamento del focus all'apertura), l'id del contenuto dell'Accordion,
+     il focus del DropdownMenu (`OpensDialog` passa tre volte su tre). Restano:
+     il Drawer (senza, `OpenAndClose` fallisce), `aria-pressed` del
+     ToggleGroup (la v3 lo toglie ancora), lo Slider, il Button su native
+     (da provare sul telefono, passo 6).
+   - **Lo Sheet** è già un `role="dialog"` col nome passato allo `Sheet`
+     (`aria-label`): il nostro contenitore col ruolo era un secondo dialogo.
+   - I cast di galleria e riga che scorre tolti (`ComponentRef<typeof
+ScrollView>`); quelli dei bottoni in `ownership-badges.tsx`,
+     `sortable-bands.tsx` e playlist scelte a mano restano, perché vengono
+     dall'unione web/nativo del ref di Tamagui e non da React Native 0.88.
+   - Le storie: Button disabilitato forza il clic (`pointerEventsCheck: 0`),
+     Select si aspetta anche i dettagli dell'evento, `passaSopra` del
+     Tooltip ripassa col mouse solo se il suggerimento non c'è.
+   - Avvisi in console, senza effetto a schermo: le pelle di Sheet, Switch e
+     Tooltip usano nomi della Config v6 (`color-4`, `color-5`, `2.5`) che
+     con la v5 non esistono, e i nostri valori li coprono. Su tutte le storie
+     non ce ne sono altri.
+   - `tsc` a zero sui tre workspace, lint verde, 159 storie su 159, test del
+     web 68 su 68.
 6. **Le verifiche.**
    - `tsc`, lint, i tre banchi di test (le storie in Chromium con axe);
    - Chromatic contro la base del passo 1: ogni differenza si guarda;
@@ -176,8 +216,8 @@ Compiler: lotti a parte.
 Scritta il 17/11/2026 per riprendere da una chat nuova.
 
 **Dove si è.** Branch `chore/tamagui-3`, rimesso sopra `main` dopo il merge
-della #141. Passi 2, 3 e 4 fatti (vedi lì), si riparte dal **passo 5**. La base
-di Chromatic è la build 12: 159 storie, nessuna rossa; le sue 159 immagini
+della #141. Passi 2, 3, 4 e 5 fatti (vedi lì), si riparte dal **passo 6**. La
+base di Chromatic è la build 12: 159 storie, nessuna rossa; le sue 159 immagini
 vanno accettate come base nella dashboard, se non è già stato fatto.
 
 **Chromatic costa sempre tutto.** TurboSnap non è attivo sull'account (serve
@@ -225,4 +265,4 @@ e il `play` aperto con Playwright su `iframe.html?id=…`.
 
 > Riprendiamo la migrazione a Tamagui 3: leggi `plans/tamagui-3.md`, in
 > particolare «Ripresa», e lavora sul branch `chore/tamagui-3`. Si parte dal
-> passo 5.
+> passo 6.

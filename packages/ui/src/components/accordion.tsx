@@ -1,5 +1,6 @@
-import { createContext, useContext, useId, type ReactNode } from 'react';
-import { Accordion as AccordionBase, Text, XStack } from 'tamagui';
+import type { ReactNode } from 'react';
+import { Text, XStack } from 'tamagui';
+import { Accordion as AccordionBase } from 'tamagui/unstyled';
 
 import { ChevronDown } from '../icons';
 
@@ -30,14 +31,6 @@ export function Accordion({ children, ...props }: AccordionProps) {
   );
 }
 
-/**
- * L'id del contenuto di ogni sezione, che il titolo nomina in
- * `aria-controls`. Lo teniamo noi perché l'Accordion di Tamagui 2.7.7 lo
- * mette sul titolo ma **non** sul contenuto: il titolo puntava a un id che non
- * esisteva, e axe lo segnala. Si toglie quando Tamagui lo sistema.
- */
-const ContentId = createContext<string | undefined>(undefined);
-
 export function AccordionItem({
   value,
   children,
@@ -45,17 +38,14 @@ export function AccordionItem({
   value: string;
   children: ReactNode;
 }) {
-  const contentId = useId();
   return (
-    <ContentId.Provider value={contentId}>
-      <AccordionBase.Item
-        value={value}
-        borderBottomWidth={1}
-        borderColor="border-color"
-      >
-        {children}
-      </AccordionBase.Item>
-    </ContentId.Provider>
+    <AccordionBase.Item
+      value={value}
+      borderBottomWidth={1}
+      borderColor="border-color"
+    >
+      {children}
+    </AccordionBase.Item>
   );
 }
 
@@ -78,12 +68,9 @@ export function AccordionTrigger({
   variant?: 'default' | 'heading';
 }) {
   const heading = variant === 'heading';
-  const contentId = useContext(ContentId);
   return (
     <AccordionBase.Header>
       <AccordionBase.Trigger
-        aria-controls={contentId}
-        unstyled
         flexDirection="row"
         items="center"
         gap={8}
@@ -127,9 +114,8 @@ export function AccordionTrigger({
 }
 
 export function AccordionContent({ children }: { children: ReactNode }) {
-  const contentId = useContext(ContentId);
   return (
-    <AccordionBase.Content id={contentId} unstyled pb={12} gap={8}>
+    <AccordionBase.Content pb={12} gap={8}>
       {children}
     </AccordionBase.Content>
   );

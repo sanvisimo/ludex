@@ -148,7 +148,11 @@ export const DisabledNotRespond: Story = {
   args: { disabled: true },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByText('Add Game'));
+    // Da disabilitato il bottone ha `pointer-events: none`, e `userEvent` da
+    // solo non ci clicca: si forza, perché va provato che non risponda.
+    await userEvent
+      .setup({ pointerEventsCheck: 0 })
+      .click(canvas.getByText('Add Game'));
     await expect(args.onPress).not.toHaveBeenCalled();
   },
 };

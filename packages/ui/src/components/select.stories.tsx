@@ -43,8 +43,8 @@ export const Default: Story = {
         <Select
           items={statusLabels}
           value={value}
-          onValueChange={(next) => {
-            args.onValueChange?.(next);
+          onValueChange={(next, details) => {
+            args.onValueChange?.(next, details);
             setValue(next);
           }}
         >
@@ -136,7 +136,10 @@ export const Choose: Story = {
     const option = await screen.findByRole('option', { name: 'In corso' });
     await userEvent.click(option);
 
-    await expect(args.onValueChange).toHaveBeenCalledWith('playing');
+    await expect(args.onValueChange).toHaveBeenCalledWith(
+      'playing',
+      expect.anything(),
+    );
     await waitFor(() => expect(trigger).toHaveTextContent('In corso'));
   },
 };

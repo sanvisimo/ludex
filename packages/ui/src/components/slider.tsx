@@ -1,5 +1,5 @@
-import { Slider as SliderBase } from 'tamagui';
-import type { SliderProps as SliderBaseProps } from 'tamagui';
+import { Slider as SliderBase } from 'tamagui/unstyled';
+import type { SliderProps as SliderBaseProps } from 'tamagui/unstyled';
 
 export type SliderProps = Omit<SliderBaseProps, 'children' | 'size'> & {
   /**

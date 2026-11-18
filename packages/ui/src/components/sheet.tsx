@@ -1,6 +1,5 @@
-import { FocusScope } from '@tamagui/focus-scope';
-import { useEffect, type ReactNode } from 'react';
-import { Sheet as SheetBase, YStack } from 'tamagui';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { Sheet as SheetBase, YStack, type TamaguiElement } from 'tamagui';
 
 export type SheetProps = {
   open: boolean;
@@ -18,37 +17,35 @@ export type SheetProps = {
  * solo. Alto quanto il contenuto (`snapPointsMode="fit"`), si chiude
  * trascinandolo giù, toccando il velo o con Esc.
  *
- * Il foglio di Tamagui è solo un pannello che scorre: il comportamento da
- * dialogo modale lo aggiunge questo componente, ed è misurato in Storybook.
+ * Da modale lo Sheet di Tamagui 3 è già un dialogo: `role="dialog"`,
+ * `aria-modal`, Esc che lo chiude sul web, il focus che resta dentro e torna
+ * dove era. Questo componente aggiunge due cose, misurate in Storybook:
  *
- * - **Esc lo chiude.** Tamagui non lo ascolta, e un dialogo modale che la
- *   tastiera non sa chiudere è una trappola. Solo dove c'è `document`, cioè
- *   sul web: su un telefono si chiude col gesto.
- * - **Il focus entra, resta dentro ed esce dove era**: `FocusScope`, lo
- *   stesso che usa il Dialog. Senza, all'apertura restava sul bottone dietro
- *   il velo.
+ * - **Il focus entra.** All'apertura il `FocusScope` di Tamagui lo darebbe al
+ *   suo involucro `display: contents`, che non lo prende, e resterebbe sul
+ *   bottone dietro il velo: lo sposta questo componente, sul foglio
+ *   (`tabIndex={-1}`).
  * - **Da chiuso non c'è** (`unmountChildrenWhenHidden`): Tamagui lo lascerebbe
  *   montato fuori schermo, con i suoi link ancora raggiungibili col Tab.
  *
- * Tamagui non gli dà un ruolo: `role="dialog"` e `aria-modal` li mette questo
- * componente, e il nome lo decide chi lo apre, perché è l'app a sapere che
- * cosa c'è dentro. Stanno su un contenitore **dentro** il `Frame` e non sul
- * `Frame`: Tamagui ne copia le prop sulla copertura vuota che mette sotto il
- * foglio, e i dialoghi con quel nome sarebbero diventati due.
+ * Il nome lo decide chi apre il foglio, perché è l'app a sapere che cosa c'è
+ * dentro.
  */
 export function Sheet({ open, onOpenChange, label, children }: SheetProps) {
+  const container = useRef<TamaguiElement>(null);
+
   useEffect(() => {
-    if (!open || typeof document === 'undefined') return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onOpenChange(false);
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [open, onOpenChange]);
+    if (!open) return;
+    const frame = requestAnimationFrame(() =>
+      (container.current as HTMLElement | null)?.focus?.(),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
 
   return (
     <SheetBase
       modal
+      aria-label={label}
       open={open}
       onOpenChange={onOpenChange}
       dismissOnSnapToBottom
@@ -61,27 +58,14 @@ export function Sheet({ open, onOpenChange, label, children }: SheetProps) {
         opacity="enter:0 exit:0"
       />
       <SheetBase.Handle bg="color8" />
-      <SheetBase.Frame
-        p={16}
-        bg="color2"
-        borderTopLeftRadius={16}
-        borderTopRightRadius={16}
-      >
-        <FocusScope trapped loop enabled={open}>
-          {/* `tabIndex={-1}`: all'apertura `FocusScope` salta i link e, se non
-              trova altro, porta il focus sul contenitore — che deve poterlo
-              prendere, o il focus resterebbe dietro il velo. */}
-          <YStack
-            role="dialog"
-            aria-modal
-            aria-label={label}
-            tabIndex={-1}
-            gap={8}
-          >
-            {children}
-          </YStack>
-        </FocusScope>
-      </SheetBase.Frame>
+      <SheetBase.Container ref={container} p={16} tabIndex={-1}>
+        <SheetBase.Background
+          bg="color2"
+          borderTopLeftRadius={16}
+          borderTopRightRadius={16}
+        />
+        <YStack gap={8}>{children}</YStack>
+      </SheetBase.Container>
     </SheetBase>
   );
 }

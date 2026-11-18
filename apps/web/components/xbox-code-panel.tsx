@@ -174,7 +174,7 @@ export function XboxCodePanel({
           fontWeight="700"
           letterSpacing={4}
           color="color12"
-          selectable
+          select="text"
         >
           {userCode}
         </Text>

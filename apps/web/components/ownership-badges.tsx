@@ -114,7 +114,7 @@ function StoreTrigger({
         size="compact"
         closeLabel={t('close')}
         onCloseAutoFocus={(event) => {
-          event.preventDefault();
+          event.cancel();
           triggerRef.current?.focus();
         }}
       >

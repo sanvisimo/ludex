@@ -1,5 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import { style, ToggleGroup as ToggleGroupBase } from 'tamagui';
+import { style } from 'tamagui';
+import { ToggleGroup as ToggleGroupBase } from 'tamagui/unstyled';
 
 /**
  * Il valore scelto, per le opzioni. A scelta singola il ToggleGroup di
@@ -81,7 +82,6 @@ export function ToggleGroupItem({
       value={value}
       aria-label={ariaLabel}
       aria-pressed={active}
-      unstyled
       height={26}
       minW={26}
       px={6}

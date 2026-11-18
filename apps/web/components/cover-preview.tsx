@@ -92,7 +92,7 @@ export function CoverPreview({
             // Il trigger è nella dialog sottostante, fuori dal ripristino
             // previsto dal contenitore per i trigger nella pagina.
             if (trigger.current?.isConnected) {
-              event.preventDefault();
+              event.cancel();
               trigger.current.focus();
             }
           }}

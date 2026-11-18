@@ -119,9 +119,9 @@ export function Drawer({
           transition="quick"
           x="0 enter:40px exit:40px"
           opacity="1 enter:0 exit:0"
-          // `preventDefault` salta il rientro di Tamagui sul trigger che non
+          // `cancel` salta il rientro di Tamagui sul trigger che non
           // c'è: il focus l'ha già rimesso a posto l'effetto qui sopra.
-          onCloseAutoFocus={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => event.cancel()}
         >
           <XStack
             items="center"
