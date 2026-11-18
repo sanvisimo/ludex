@@ -8,8 +8,8 @@ import {
   Users,
 } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
-import { useMatchRoute, useRouter } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
+import { useLocation, useMatchRoute, useRouter } from '@tanstack/react-router';
+import { useEffect, useRef, type ComponentRef, type ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { api } from '@/lib/orpc';
@@ -25,6 +25,8 @@ type AdminSection =
 
 export function AdminNav() {
   const t = useTranslations('admin.nav');
+  const pathname = useLocation({ select: ({ pathname }) => pathname });
+  const navRef = useRef<ComponentRef<typeof YStack>>(null);
   const scarti = useQuery(
     api.admin.unresolved.list.queryOptions({ input: { limit: 1 } }),
   );
@@ -37,8 +39,27 @@ export function AdminNav() {
     }),
   );
 
+  const unresolvedCount = scarti.data?.total;
+  const reportsCount = segnalazioni.data?.total;
+  const platformsCount = piattaforme.data?.total;
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!(nav instanceof HTMLElement)) return;
+    const link = nav.querySelector('a[aria-current="page"]');
+    if (!link || nav.scrollWidth <= nav.clientWidth) return;
+    const bounds = link.getBoundingClientRect();
+    const viewport = nav.getBoundingClientRect();
+    if (bounds.right > viewport.right) {
+      nav.scrollLeft += bounds.right - viewport.right;
+    } else if (bounds.left < viewport.left) {
+      nav.scrollLeft += bounds.left - viewport.left;
+    }
+  }, [pathname, unresolvedCount, reportsCount, platformsCount]);
+
   return (
     <YStack
+      ref={navRef}
       render="nav"
       aria-label={t('label')}
       width="208px max-md:100%"
@@ -58,21 +79,21 @@ export function AdminNav() {
         <SectionLink
           to="/admin/unresolved"
           icon={<Inbox size={16} />}
-          count={scarti.data?.total}
+          count={unresolvedCount}
         >
           {t('unresolved')}
         </SectionLink>
         <SectionLink
           to="/admin/reported"
           icon={<Flag size={16} />}
-          count={segnalazioni.data?.total}
+          count={reportsCount}
         >
           {t('reported')}
         </SectionLink>
         <SectionLink
           to="/admin/platforms"
           icon={<MonitorX size={16} />}
-          count={piattaforme.data?.total}
+          count={platformsCount}
         >
           {t('platforms')}
         </SectionLink>
@@ -122,6 +143,7 @@ function SectionLink({
 }) {
   const router = useRouter();
   const matchRoute = useMatchRoute();
+  const active = matchRoute({ to, fuzzy: true }) !== false;
 
   return (
     <NavItem
@@ -131,7 +153,7 @@ function SectionLink({
       shrink={0}
       outlineOffset="focus-visible:-2px"
       href={to}
-      active={matchRoute({ to, fuzzy: true }) !== false}
+      active={active}
       icon={icon}
       trailing={count ? String(count) : undefined}
       onClick={(event) => {

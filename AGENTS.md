@@ -1,12 +1,15 @@
-## Metodo di lavoro: prima piano, poi attuazione
+## Metodo di lavoro: piano, branch dedicato, sviluppo
 
 - Analizza in sola lettura e presenta un piano breve.
 - Chiarisci approccio, alternative rilevanti e verifiche proporzionate.
 - Attendi la mia approvazione esplicita prima di modificare file.
 - Domande, feedback e discussioni sulle alternative non autorizzano
   automaticamente l’implementazione.
-- Dopo l’approvazione, esegui il piano senza chiedere conferma
-  per ogni passaggio ordinario.
+- Dopo l’approvazione, controlla non ci siano modifiche, nel caso chiedi cosa fare. 
+- Allinea main ad origin 
+- crea un branch dedicato prima di iniziare lo sviluppo.
+- Esegui il piano sul branch dedicato senza chiedere conferma per ogni
+  passaggio ordinario.
 - Se cambia l’approccio o l’ambito, aggiorna il piano e attendi
   una nuova approvazione.
 

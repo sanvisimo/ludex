@@ -1685,6 +1685,7 @@
   },
   "admin": {
     "title": "Admin",
+    "actions": "Actions",
     "nav": {
       "label": "Admin sections",
       "catalog": "Catalog",
@@ -1865,7 +1866,7 @@
       "back": "Back",
       "users": "{count, plural, one {# user} other {# users}}",
       "noIgdb": "no IGDB id",
-      "igdbPlatforms": "IGDB has it on: {platforms}",
+      "igdbPlatforms": "Platforms on IGDB: {platforms}",
       "publicPage": "Open the public page",
       "links": "Store links",
       "store": "Store",
@@ -1885,7 +1886,9 @@
       "noReports": "No open reports.",
       "notFound": "No such game",
       "open": "Open the page",
-      "merge": "Merge with…"
+      "maintenance": "Maintenance",
+      "noIgdbPlatforms": "IGDB lists no platforms.",
+      "merge": "Merge games"
     },
     "repoint": {
       "title": "Not this game",
@@ -1950,25 +1953,41 @@
       "previewFailed": "I couldn't prepare the preview"
     },
     "reported": {
-      "title": "Reported"
+      "title": "Reported",
+      "report": "Report",
+      "sourceData": "Data from {source}",
+      "suggestedFix": "Suggested fix",
+      "noSuggestion": "No suggested fix",
+      "notes": "{count, plural, one {# note} other {# notes}}",
+      "openReport": "Open {name} ({target})",
+      "archiveReport": "Archive report for {name} ({target})",
+      "failed": "Could not load reports"
     },
     "mismatches": {
-      "title": "Copies on a platform the game never came out on ({count})",
-      "copies": "Copies",
-      "igdb": "IGDB has it on",
-      "ok": "It's fine",
-      "okDone": "Removed from the list",
-      "okFailed": "Couldn't remove it",
-      "restore": "Undo",
-      "restored": "Back on the list",
-      "restoreFailed": "Couldn't put it back",
-      "empty": "No misplaced copies.",
-      "dismissed": "Marked “it's fine”",
-      "emptyDismissed": "None."
+      "title": "Wrong platforms",
+      "open": "To review",
+      "hint": "Check the game match. If the game is correct and IGDB is missing the platform, accept the exception.",
+      "count": "{count, plural, one {# case} other {# cases}}",
+      "copies": "Imported platforms",
+      "igdb": "Platforms on IGDB",
+      "noIgdbPlatforms": "No platforms listed",
+      "openGame": "Open {name}",
+      "ok": "Accept exception",
+      "acceptGame": "Accept exception for {name}",
+      "okDone": "Exception accepted",
+      "okFailed": "Could not accept the exception",
+      "restore": "Return to review",
+      "restoreGame": "Return {name} to review",
+      "restored": "Returned to review",
+      "restoreFailed": "Could not return it to review",
+      "empty": "No platforms to review.",
+      "dismissed": "Accepted exceptions",
+      "emptyDismissed": "No accepted exceptions.",
+      "loadFailed": "Could not load platform mismatches"
     },
     "usage": {
       "title": "Usage",
-      "intro": "From our database and queues. Visitors without an account aren't here: they're on Cloudflare.",
+      "intro": "Account, catalog, and service activity. Charts and daily counts use UTC days.",
       "loadFailed": "Couldn't load the data",
       "users": "Users",
       "registered": "Registered",
@@ -2004,11 +2023,11 @@
       "delayed": "Delayed",
       "failed": "Failed",
       "completed": "Completed",
-      "redisDown": "Redis isn't responding: these numbers can't be read right now.",
+      "redisDown": "Redis is unavailable. Queue or source request data may be missing.",
       "calls": "Calls to external sources",
       "source": "Source",
       "limit": "Limit",
-      "today": "Today",
+      "today": "Today (UTC)",
       "calls7": "7 days",
       "rejected7": "429 · 7 d",
       "callsNote": "Counted since the counter exists. Days are UTC. A 429 means the source asked us to slow down.",
@@ -2035,7 +2054,13 @@
         "itad": "1000 per 5 minutes",
         "steam_api": "100,000 per day",
         "steam_store": "none published"
-      }
+      },
+      "accountsToReconnect": "Accounts to reconnect",
+      "overview": "Overview",
+      "views": "Usage sections",
+      "usersAndLibraries": "Users and libraries",
+      "catalogView": "Catalog",
+      "unavailable": "Data unavailable."
     },
     "users": {
       "title": "Users",
@@ -2049,7 +2074,7 @@
       "state": "State",
       "admin": "admin",
       "you": "you",
-      "banned": "banned",
+      "banned": "Access blocked",
       "bannedUntil": "banned until {date}",
       "actions": "Actions",
       "makeAdmin": "Make admin",
@@ -2073,7 +2098,20 @@
       "banConfirm": "Ban",
       "cancel": "Cancel",
       "lastSeen": "Last seen",
-      "never": "never"
+      "never": "Unavailable",
+      "account": "User account",
+      "member": "Member",
+      "allowed": "Access allowed",
+      "banUntil": "Until {date}",
+      "count": "{count, plural, one {# user} other {# users}}",
+      "emptyFiltered": "No users match your search.",
+      "actionsFor": "Actions for {name}",
+      "actionOn": "Account {name} ({email})",
+      "effect": {
+        "makeAdmin": "This account will gain access to the admin and can manage the catalog and users.",
+        "removeAdmin": "This account will lose admin access and can continue to use PileCue.",
+        "revoke": "All sessions for this account will end. The user will need to sign in again to use PileCue."
+      }
     }
   },
   "forgotPassword": {
