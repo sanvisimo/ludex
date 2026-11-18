@@ -25,6 +25,7 @@
     "@tamagui/colors": "^3.3.3",
     "@tamagui/config": "^3.3.3",
     "@tamagui/core": "^3.3.3",
+    "@tamagui/create-system-font": "3.3.3",
     "@tamagui/get-font-sized": "3.3.3",
     "@tamagui/helpers-icon": "3.3.3",
     "@tamagui/toast": "3.3.3",

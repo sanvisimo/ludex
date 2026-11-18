@@ -31,3 +31,9 @@ peerDependencyRules:
 overrides:
   react: 19.3.0
   react-dom: 19.3.0
+# Tamagui 3 valuta la config col module runner di Vite e fa caricare a Node i
+# suoi pacchetti per nome nudo, cercandoli dalla radice dell'app: con pnpm
+# `@tamagui/sheet` e gli altri stanno solo accanto a `tamagui`, e la build del
+# web si fermava su «Cannot find module '@tamagui/sheet'».
+publicHoistPattern:
+  - '@tamagui/*'
