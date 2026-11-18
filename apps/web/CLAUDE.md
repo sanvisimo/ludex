@@ -559,20 +559,20 @@ che non si indovinano:
   OpenCritic costa una delle 25 ricerche del giorno, e il dialogo lo dice
   prima.
 - **«Piattaforme sbagliate»** (`/admin/platforms`, 9b,
-  `platform-mismatches.tsx`) sono le copie su una piattaforma dove il gioco non
-  è uscito, con «Va bene così» e i segnati da annullare; il numero nel menu è
-  come quello di scarti e segnalazioni. La scheda admin del gioco dice le stesse
-  due cose, le piattaforme delle copie e quelle di IGDB, così si capisce perché
-  è in lista. Copertina e titolo sono il link alla
-  scheda admin, e «Apri» resta, un bottone pieno con icona (`ButtonLink`): è
-  l'azione che conta. I nomi delle piattaforme li traduce il server, con una
-  funzione sola (`igdbPlatformNamer`): la colonna «IGDB lo dà su», i risultati
-  di `IgdbPicker` e le copie in testa a «Non è questo gioco» dicono le stesse
-  parole.
-- **«Uso»** (`/admin/usage`, `plans/admin-uso.md`) legge e basta: utenti,
-  giochi, code e chiamate alle fonti esterne. I grafici sono **Recharts**, solo
-  qui e non in `@repo/ui` (`DayBars`, `components/admin/day-bars.tsx`), coi
-  colori dalle variabili del tema. I giorni sono UTC, come sul server.
+  `platform-mismatches.tsx`) confronta le piattaforme importate con quelle su
+  IGDB. La scheda «Eccezioni accettate» si apre con `?view=accepted` e consente
+  di rimettere un caso in verifica. Il server usa `igdbPlatformNamer` per
+  restituire gli stessi nomi nella lista, in `IgdbPicker` e nelle copie in
+  testa a «Non è questo gioco».
+- **«Utenti»** usa `q` e `page` nell’URL. La paginazione è lato server;
+  una nuova ricerca riparte dalla prima pagina. Cambio ruolo e chiusura
+  delle sessioni richiedono conferma dalla riga dell’account.
+- **«Uso»** (`/admin/usage`, `plans/admin-uso.md`) apre gli indicatori
+  principali e le viste Utenti e librerie, Catalogo e API e code. Le
+  ultime due si salvano nell’URL con `view=catalog` e `view=operations`.
+  I grafici Recharts (`DayBars`) usano i token del tema. I giorni sono UTC,
+  come sul server. Quando Redis è indisponibile, gli altri indicatori
+  rimangono consultabili.
 - **Le copertine dei risultati di HLTB e Metacritic** arrivano dalla loro
   ricerca; quelle di OpenCritic no, e costerebbero il budget.
 
