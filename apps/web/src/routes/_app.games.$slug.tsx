@@ -203,6 +203,7 @@ function GamePage() {
         <XStack flexWrap="wrap" items="center" gap={8}>
           <AddGameDialog game={game} />
           <WishlistControl game={game} />
+          <CuratedPlaylistControl game={game} />
         </XStack>
       ) : null}
 
@@ -281,7 +282,7 @@ function GamePage() {
               }
             />
           ) : null}
-          {session.data && <CuratedPlaylistControl game={game} />}
+          {!!entry && session.data && <CuratedPlaylistControl game={game} />}
           <StoreLinks game={game} />
           {session.data ? (
             <XStack gap={8} items="center" flexWrap="wrap">
