@@ -1951,7 +1951,15 @@
       "previewFailed": "I couldn't prepare the preview"
     },
     "reported": {
-      "title": "Reported"
+      "title": "Reported",
+      "report": "Report",
+      "sourceData": "Data from {source}",
+      "suggestedFix": "Suggested fix",
+      "noSuggestion": "No suggested fix",
+      "notes": "{count, plural, one {# nota} other {# note}}",
+      "openReport": "Open {name} ({target})",
+      "archiveReport": "Archive report for {name} ({target})",
+      "failed": "Could not load reports"
     },
     "mismatches": {
       "title": "Copies on a platform the game never came out on ({count})",

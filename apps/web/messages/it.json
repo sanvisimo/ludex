@@ -1950,7 +1950,15 @@
       "previewFailed": "Non sono riuscito a preparare l'anteprima"
     },
     "reported": {
-      "title": "Segnalati"
+      "title": "Segnalati",
+      "report": "Segnalazione",
+      "sourceData": "Dati da {source}",
+      "suggestedFix": "Correzione suggerita",
+      "noSuggestion": "Nessuna correzione suggerita",
+      "notes": "{count, plural, one {# nota} other {# note}}",
+      "openReport": "Apri {name} ({target})",
+      "archiveReport": "Archivia la segnalazione per {name} ({target})",
+      "failed": "Non sono riuscito a leggere le segnalazioni"
     },
     "mismatches": {
       "title": "Copie su una piattaforma dove il gioco non è uscito ({count})",
