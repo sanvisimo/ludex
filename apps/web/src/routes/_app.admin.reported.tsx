@@ -128,7 +128,7 @@ function ReportedSection() {
       render: (report) => (
         <>
           <ButtonLink
-            href={`/admin/games/${report.slug}`}
+            href={`/admin/games/${report.slug}#reports`}
             role="link"
             size="sm"
             aria-label={tReported('openReport', {

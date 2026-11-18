@@ -1866,7 +1866,7 @@
       "back": "Back",
       "users": "{count, plural, one {# user} other {# users}}",
       "noIgdb": "no IGDB id",
-      "igdbPlatforms": "IGDB has it on: {platforms}",
+      "igdbPlatforms": "Platforms on IGDB: {platforms}",
       "publicPage": "Open the public page",
       "links": "Store links",
       "store": "Store",
@@ -1886,7 +1886,9 @@
       "noReports": "No open reports.",
       "notFound": "No such game",
       "open": "Open the page",
-      "merge": "Merge with…"
+      "maintenance": "Maintenance",
+      "noIgdbPlatforms": "IGDB lists no platforms.",
+      "merge": "Merge games"
     },
     "repoint": {
       "title": "Not this game",

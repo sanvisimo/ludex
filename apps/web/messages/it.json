@@ -1865,7 +1865,7 @@
       "back": "Indietro",
       "users": "{count, plural, one {# utente} other {# utenti}}",
       "noIgdb": "senza id IGDB",
-      "igdbPlatforms": "IGDB lo dà su: {platforms}",
+      "igdbPlatforms": "Piattaforme su IGDB: {platforms}",
       "publicPage": "Apri la pagina pubblica",
       "links": "Collegamenti dai negozi",
       "store": "Negozio",
@@ -1885,7 +1885,9 @@
       "noReports": "Nessuna segnalazione aperta.",
       "notFound": "Gioco inesistente",
       "open": "Apri la pagina",
-      "merge": "Fondi con…"
+      "maintenance": "Manutenzione",
+      "noIgdbPlatforms": "IGDB non indica piattaforme.",
+      "merge": "Unisci giochi"
     },
     "repoint": {
       "title": "Non è questo gioco",
