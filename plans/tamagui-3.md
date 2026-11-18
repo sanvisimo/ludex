@@ -2,7 +2,7 @@
 
 **Stato: in corso dal 16/11/2026**, piano approvato lo stesso giorno. Passo 1
 fatto e base di Chromatic pulita il 17/11, passi 2 e 3 fatti lo stesso giorno,
-passi 4 e 5 il 18/11: si riparte dal passo 6, vedi «Ripresa» in fondo. Lavoro
+passi 4 e 5 il 18/11, il 6 in corso, vedi «Ripresa» in fondo. Lavoro
 interno: non entra nella roadmap pubblica.
 
 ## Perché
@@ -192,6 +192,27 @@ ScrollView>`); quelli dei bottoni in `ownership-badges.tsx`,
    - le media query passate ai componenti di `@repo/ui` (`maxW="lg:960px"`
      su `DialogContent`, `display="max-sm:none"`) non rompono l'idratazione,
      come succedeva con la v2 (`apps/web/CLAUDE.md`).
+   - **In corso dal 18/11.** Fatto: `tsc`, lint e i banchi (159 storie, 68
+     test del web); la build del web, che si fermava su `@tamagui/sheet`
+     finché `publicHoistPattern` non ha portato gli `@tamagui/*` alla radice
+     (il compilatore li fa caricare a Node dalla radice dell'app), e ora non ha
+     errori di Tamagui nel log; le variabili CSS, che esistono tutte,
+     iniettate a runtime e non nei `.css`.
+   - **I caratteri** erano cambiati: `createSystemFont` di Tamagui 3 ha di
+     serie la scala della v6 (la taglia 4 da 15 a 14). `fonts.ts` passa ora
+     la scala v5 (`v5SystemFontSizes`, `v5SystemFontLineHeight`), e le 129
+     variabili dei caratteri coincidono con pilecue.com.
+   - **Roadmap e crediti** accanto a pilecue.com (build di produzione locale,
+     desktop scuro e telefono chiaro): uguali, salvo i `display: list-item`
+     (crediti, roadmap, documenti legali), alti 24 invece di 23. La v2 dava a
+     ogni `.is_View` l'interlinea della taglia `true`; la v3 no, e il `li`
+     eredita i 24 del `body`. Rimettere quella regola per intero peggiora
+     tutto (dal 6 al 12-25% di pixel diversi): resta da decidere solo per i
+     `li`.
+   - Chromatic, build 13: nessun errore, ma tutte le 159 storie «da accettare
+     come base», come la 12: il confronto coi pixel richiede la base accettata.
+   - Da fare: le schermate da utente collegato (servono Docker, API e un
+     utente), l'emulatore, l'idratazione con le media query.
 7. **La documentazione.** `packages/ui/CLAUDE.md` e `apps/web/CLAUDE.md`
    (abbreviazioni, media query, gli aggiramenti rimasti), e il piano del
    design system dove cita la 2.7.7.
