@@ -242,6 +242,7 @@ function GamePage() {
         <YStack className="game-detail-collection" minW={0} gap={16}>
           {/* Il prezzo serve a chi il gioco non ce l'ha: nel backlog è già tuo. */}
           {!entry && <GamePriceCard game={game} />}
+          {!!entry && session.data && <CuratedPlaylistControl game={game} />}
           {entry ? (
             <BacklogPanel
               entry={entry}
@@ -282,7 +283,6 @@ function GamePage() {
               }
             />
           ) : null}
-          {!!entry && session.data && <CuratedPlaylistControl game={game} />}
           <StoreLinks game={game} />
           {session.data ? (
             <XStack gap={8} items="center" flexWrap="wrap">
