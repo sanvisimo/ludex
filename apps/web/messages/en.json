@@ -1685,6 +1685,7 @@
   },
   "admin": {
     "title": "Admin",
+    "actions": "Actions",
     "nav": {
       "label": "Admin sections",
       "catalog": "Catalog",

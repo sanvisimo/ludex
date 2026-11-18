@@ -45,7 +45,6 @@ e visibilità responsive via CSS. Ordinamento controllato dall'URL,
 risultato prima di paginarlo, mai solo le righe caricate. Le playlist mostrano l'ordine salvato
 salvo override nell'URL; cliccare un header non riscrive la playlist.
 «Voto» distingue voto personale e critica nel menu, senza mescolare le scale.
-`AdminTable` resta indipendente e non fa parte di questa integrazione.
 
 **Test del web**: `pnpm --filter web test`. Vitest in Node, solo la logica pura di
 `lib/` (conversioni dei filtri, numeri per pagina, ore giocate): niente DOM e
@@ -529,15 +528,11 @@ scheda admin di un gioco, `/admin/games/$slug`. «Apri un gioco», la ricerca ne
 catalogo, sta nell'intestazione. I pezzi stanno in `components/admin/`. Cose
 che non si indovinano:
 
-- **In `@repo/ui` una tabella non c'è**: `AdminTable` fa righe di `XStack` coi
-  ruoli ARIA, come la vista compatta del backlog. **`CellText` va sempre a capo,
-  mai tagliato** (`overflow-wrap: anywhere`): il testo di queste tabelle è
-  l'informazione. Le colonne elastiche hanno `overflow="hidden"` e i blocchi di
-  testo accanto a una copertina vogliono `flex={1} minW={0}`, o il testo esce e
-  finisce sopra la colonna accanto; le colonne fisse no, perché tengono i bottoni
-  e nasconderebbero l'anello del focus: la loro larghezza va data giusta. Le
-  colonne hanno un `minWidth`: sotto la somma delle misure la tabella scorre di
-  lato (`AdminTable` la calcola, mai meno di 640) invece di spezzare i numeri.
+- **`AdminTable` usa TanStack Table v9** per colonne e righe e rende una
+  tabella HTML. Le viste gestiscono filtri e paginazione via URL e API.
+  I renderer delle celle conservano il focus quando le viste ricreano le
+  definizioni delle colonne. Sotto la larghezza minima si scorre nel contenitore,
+  anche da tastiera. `CellText` manda a capo anche gli ID lunghi.
 - **Lo stato di una fonte è `StatusBadge`**, lo stesso verde/giallo/rosso nella
   scheda del gioco e nella lista dei dati mancanti. In «Found but empty» e
   «Fine as is» la lista **non ha bottoni**: non c'è niente da ritentare, e un id

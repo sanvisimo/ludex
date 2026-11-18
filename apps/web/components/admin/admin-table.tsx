@@ -1,5 +1,18 @@
-import { Text, XStack, YStack } from '@repo/ui';
-import type { ReactNode } from 'react';
+import { Text } from '@repo/ui';
+import {
+  flexRender,
+  metaHelper,
+  tableFeatures,
+  useTable,
+  type CellContext,
+  type ColumnDef,
+  type HeaderContext,
+  type RowData,
+} from '@tanstack/react-table';
+import { useMemo, type ReactNode } from 'react';
+import { useTranslations } from 'use-intl';
+
+import './admin-table.css';
 
 export type AdminColumn<T> = {
   key: string;
@@ -11,7 +24,32 @@ export type AdminColumn<T> = {
   render: (row: T) => ReactNode;
 };
 
-export function AdminTable<T>({
+function adminFeatures<T>() {
+  return tableFeatures({ columnMeta: metaHelper<AdminColumn<T>>() });
+}
+
+type AdminFeatures<T> = ReturnType<typeof adminFeatures<T>>;
+
+function AdminHeader<T extends RowData>({
+  column,
+}: HeaderContext<AdminFeatures<T>, T>) {
+  const t = useTranslations('admin');
+  const header = column.columnDef.meta?.header;
+  return column.id === 'actions' && header === '' ? (
+    <span className="sr-only">{t('actions')}</span>
+  ) : (
+    header
+  );
+}
+
+function AdminCell<T extends RowData>({
+  column,
+  row,
+}: CellContext<AdminFeatures<T>, T>) {
+  return column.columnDef.meta?.render(row.original);
+}
+
+export function AdminTable<T extends RowData>({
   label,
   columns,
   rows,
@@ -22,104 +60,99 @@ export function AdminTable<T>({
   rows: T[];
   rowKey: (row: T) => string;
 }) {
-  const minW = Math.max(
-    640,
-    columns.reduce(
-      (sum, column) => sum + (column.width ?? column.minWidth ?? 0),
-      32 + 12 * (columns.length - 1),
-    ),
+  const features = useMemo(() => adminFeatures<T>(), []);
+  const definitions = useMemo<ColumnDef<AdminFeatures<T>, T>[]>(
+    // I renderer restano stabili anche quando il chiamante ricrea le colonne,
+    // così React conserva il focus e lo stato dei controlli dentro le celle.
+    () =>
+      columns.map((column) => ({
+        id: column.key,
+        header: AdminHeader<T>,
+        cell: AdminCell<T>,
+        meta: column,
+      })),
+    [columns],
   );
+  const table = useTable({
+    features,
+    columns: definitions,
+    data: rows,
+    getRowId: rowKey,
+  });
+
+  const layout = table.getAllLeafColumns().map((column, index, all) => {
+    const config = column.columnDef.meta!;
+    const padding =
+      12 + (index === 0 ? 10 : 0) + (index === all.length - 1 ? 10 : 0);
+    return {
+      id: column.id,
+      basis: (config.width ?? config.minWidth ?? 0) + padding,
+      weight: config.width === undefined ? (config.flex ?? 1) : 0,
+    };
+  });
+  const basis = layout.reduce((total, column) => total + column.basis, 0);
+  const weight = layout.reduce((total, column) => total + column.weight, 0);
 
   return (
-    <YStack
-      role="table"
+    <div
+      role="region"
       aria-label={label}
       tabIndex={0}
-      outlineColor="focus-visible:outline-color"
-      outlineStyle="focus-visible:solid"
-      outlineWidth="focus-visible:2px"
-      outlineOffset="focus-visible:2px"
-      bg="background"
-      rounded={12}
-      borderWidth={1}
-      borderColor="border-color"
-      overflow="hidden"
-      style={{ overflowX: 'auto' }}
+      className="admin-table-scroll"
     >
-      <XStack
-        role="row"
-        px={16}
-        py={12}
-        gap={12}
-        items="center"
-        bg="color3"
-        borderBottomWidth={1}
-        borderColor="border-color"
-        minW={minW}
+      <table
+        aria-label={label}
+        className="admin-table"
+        style={{ minWidth: Math.max(640, basis) }}
       >
-        {columns.map((column) => (
-          <Cell key={column.key} column={column} role="columnheader">
-            <Text
-              fontSize={12}
-              lineHeight="16px"
-              fontWeight="600"
-              color="color11"
-            >
-              {column.header}
-            </Text>
-          </Cell>
-        ))}
-      </XStack>
-
-      {rows.map((row, index) => (
-        <XStack
-          role="row"
-          key={rowKey(row)}
-          px={16}
-          py={12}
-          gap={12}
-          items="center"
-          minW={minW}
-          borderTopWidth={index === 0 ? 0 : 1}
-          borderColor="border-color"
-          bg="hover:color2"
-        >
-          {columns.map((column) => (
-            <Cell key={column.key} column={column} role="cell">
-              {column.render(row)}
-            </Cell>
+        <colgroup>
+          {layout.map((column) => (
+            <col
+              key={column.id}
+              style={{
+                width: column.weight
+                  ? `calc(${column.basis}px + (100% - ${basis}px) * ${column.weight / weight})`
+                  : column.basis,
+              }}
+            />
           ))}
-        </XStack>
-      ))}
-    </YStack>
-  );
-}
-
-function Cell<T>({
-  column,
-  role,
-  children,
-}: {
-  column: AdminColumn<T>;
-  role: 'cell' | 'columnheader';
-  children: ReactNode;
-}) {
-  // Le colonne fisse lasciano visibile il focus dei bottoni oltre il bordo della cella.
-  const fixed = column.width !== undefined;
-  return (
-    <XStack
-      role={role}
-      width={column.width}
-      shrink={fixed ? 0 : undefined}
-      flex={fixed ? undefined : (column.flex ?? 1)}
-      minW={fixed ? undefined : (column.minWidth ?? 0)}
-      overflow={fixed ? undefined : 'hidden'}
-      items="center"
-      gap={8}
-      justify={column.align === 'end' ? 'flex-end' : 'flex-start'}
-    >
-      {children}
-    </XStack>
+        </colgroup>
+        <thead>
+          {table.getHeaderGroups().map((group) => (
+            <tr key={group.id}>
+              {group.headers.map((header) => (
+                <th
+                  key={header.id}
+                  scope="col"
+                  data-align={header.column.columnDef.meta?.align}
+                >
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map((row) => (
+            <tr key={row.id}>
+              {row.getAllCells().map((cell) => (
+                <td
+                  key={cell.id}
+                  data-align={cell.column.columnDef.meta?.align}
+                >
+                  <div className="admin-table-cell">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </div>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
