@@ -795,7 +795,7 @@ export function FilterPanel({
   return (
     <YStack gap={16}>
       {/* Sul telefono il pannello copre la barra, e con lei la ricerca: qui
-          la stessa, sullo stesso `q`. Da `$sm` la barra resta visibile
+          la stessa, sullo stesso `q`. Da `sm` la barra resta visibile
           accanto al pannello, e due caselle sarebbero una di troppo. */}
       <YStack display="sm:none">
         <SearchInput

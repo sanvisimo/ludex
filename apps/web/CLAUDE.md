@@ -16,6 +16,10 @@ compilatore di Tamagui è un plugin di Vite (`@tamagui/vite-plugin`) in
   e da lì risolve `@tamagui/core` e `@tamagui/web`, per questo devDependency di
   `apps/web`. Senza, la build passa lo stesso ma l'ottimizzazione salta in
   silenzio: si vede solo dall'errore nel log.
+- **gli `@tamagui/*` stanno alla radice del repo** (`publicHoistPattern` in
+  `pnpm-workspace.yaml`): il compilatore di Tamagui 3 li fa caricare a Node per
+  nome dalla radice dell'app, e senza la build si ferma su «Cannot find module
+  '@tamagui/sheet'».
 
 La build (`vite build`) produce un gestore `fetch` in `dist/server/server.js`,
 e in produzione lo serve `srvx` (`pnpm --filter web start`). Le liste nella
@@ -158,8 +162,8 @@ si indovinano:
   il cuore, che cambiano da qualunque mutazione.
 
 **Il pannello dei filtri** (`FilterPanel`, nel drawer di `/backlog`) ha in cima,
-solo sotto `$sm`, la stessa ricerca della barra, che lì il drawer copre; poi
-l'ordinamento, solo sotto `$md` perché sul desktop è nella toolbar, poi
+solo sotto `sm`, la stessa ricerca della barra, che lì il drawer copre; poi
+l'ordinamento, solo sotto `md` perché sul desktop è nella toolbar, poi
 «Mai giocato» come spunta semplice fuori dalle sezioni, poi una
 sezione per criterio: stato, piattaforme, store, abbonamenti, tipo, attributi,
 tag, durata, il mio voto, **voto critica**, uscita. Lo stato ha le stesse sei
@@ -196,7 +200,7 @@ partenza, e ripartirebbe con un seme nuovo. Con nessun candidato il server rende
 copia giocata più di recente (`latestPlaytime` in `lib/playtime.ts`, mostrato da
 `PlayedTime`): in una riga secondaria etichettata nei fatti di griglia e righe,
 separata dalla durata HLTB, e in una colonna della
-compatta da `$md`. Le altre copie, con le date, sono nella scheda del gioco.
+compatta da `md`. Le altre copie, con le date, sono nella scheda del gioco.
 
 **Le liste a mano** (`/wishlist` e `/wishlist/$id`, step 15b) sono come le
 playlist ma con giochi scelti: una fascia per lista, e la lista aperta con ricerca,
@@ -261,7 +265,8 @@ Sette cose che le schermate devono sapere, perché si scoprono solo a vederle:
 - **le view di Tamagui non si restringono** (`flex-shrink: 0`, come su React
   Native): un campo al 100% accanto a un bottone lo spinge fuori. Ci va `flex={1}`.
 - **la config vuole le abbreviazioni**: `shrink`, non `flexShrink`; `grow`, non
-  `flexGrow`; `sm:` di Tailwind è `$sm`.
+  `flexGrow`. Le media query sono clausole come in Tailwind:
+  `display="none md:flex"`.
 - **`flex={1}` in una colonna ha base 0**, e dove l'altezza la decide il
   contenuto — una riga di griglia — Chrome la calcola da lì: schede alte pochi
   pixel. Per crescere senza schiacciare ci va `grow={1}`.
@@ -307,12 +312,12 @@ non si indovinano:
   l'API, che sta su un'altra origine, e li controlla con `trustedOrigins`.
 
 `AppShell` è **una barra sola** e un footer, senza barra laterale. Il logo porta
-sempre alla home. Da `$md` il link Backlog è esplicito per chi è collegato;
+sempre alla home. Da `md` il link Backlog è esplicito per chi è collegato;
 Settings raccoglie tema e lingua per utenti e ospiti (`SettingsDropdown`).
 L’avatar mantiene playlist, wishlist, account, librerie collegate, admin se
-previsto e uscita. Da anonimi ci sono «Accedi» e «Registrati». Sotto `$md`
+previsto e uscita. Da anonimi ci sono «Accedi» e «Registrati». Sotto `md`
 navigazione e preferenze restano nel foglio dell’avatar o in `GuestSheet`.
-La barra resta visibile, con un separatore: **in alto da `$md` (72 px), in basso
+La barra resta visibile, con un separatore: **in alto da `md` (72 px), in basso
 sotto (56 px)**, dove arriva il pollice e i menu le si aprono sopra. La posizione la
 sceglie il CSS, non JavaScript, come ogni forma del guscio: leggere la
 larghezza darebbe un primo render sbagliato da correggere all'idratazione. Sul
@@ -336,7 +341,7 @@ generi; la pagina le mostra nell'ordine in cui arrivano e non ne mostra una
 vuota. I pezzi sono in `apps/web/components/home-band.tsx`. La riga che
 scorre con le frecce è `ScrollRow` (`components/scroll-row.tsx`), la stessa
 dei giochi legati nella pagina del gioco; nella home le frecce ci sono solo
-da `$md` (`arrowsFromMd`). Il voto sulle card, qui come nel backlog, è
+da `md` (`arrowsFromMd`). Il voto sulle card, qui come nel backlog, è
 `criticScore`, che **non è mai OpenCritic** (vedi
 [apps/api/CLAUDE.md](../api/CLAUDE.md)).
 
@@ -345,7 +350,7 @@ Le `HomeCard` condivise con ricerca e liste hanno copertina a filo, superficie
 riga dei metadati su una base distinta, con l’anno più discreto e una clessidra
 per HLTB. Lo stato resta sulla copertina (`CornerLabel floating`, opaco e
 staccato di 8 px dal bordo) e cuore/ranking conservano i
-loro comandi. Le fasce usano 200 px, 160 sotto `$sm`; con `fill` la card segue
+loro comandi. Le fasce usano 200 px, 160 sotto `sm`; con `fill` la card segue
 la cella. Nel backlog la griglia usa un minimo di 176 px, che si riduce alla
 metà del contenitore sui telefoni: la sonda e la griglia hanno sempre lo stesso
 `GRID_TEMPLATE` e gap. Le card non hanno una scritta «Stato»: in fondo ci sono
@@ -362,7 +367,7 @@ mentre si cerca: le righe di `games` non si cancellano. I pezzi sono in
 `components/game-search.tsx`; il campo con la tendina è `SearchField` di
 `@repo/ui`. La tendina ha dieci posti: prima il tuo backlog, poi il resto di
 Ludex, e IGDB riempie quelli che restano, chiesto dopo e solo se ne restano. In barra il
-campo sta da `$md`; sotto c'è un'icona che porta a `/search`, la pagina con tutti i risultati: griglia con la card della home, a
+campo sta da `md`; sotto c'è un'icona che porta a `/search`, la pagina con tutti i risultati: griglia con la card della home, a
 pagine da 30, testo e pagina nell'URL come il backlog. Su `/search` la barra non
 ha il campo, perché la pagina ha il suo. La scrittura aspetta 300 ms prima di
 chiedere: IGDB regge quattro richieste al secondo per tutto il server.
@@ -408,7 +413,7 @@ card.
 **La pagina account** (`/account`) è un layout, `_app.account.tsx`, con quattro
 sezioni che sono rotte figlie: `profile`, `libraries`, `needs-attention`, `hidden`.
 `/account` da solo rimanda al profilo (`replace`). Il menu è `AccountNav`: una
-colonna da `$md`, una riga che scorre sotto, un `YStack` solo che cambia
+colonna da `md`, una riga che scorre sotto, un `YStack` solo che cambia
 direzione col CSS. Cose che non si indovinano:
 
 - **I numeri nel menu** (`useAccountCounts`) contano le voci da sistemare e i
@@ -474,7 +479,7 @@ direzione col CSS. Cose che non si indovinano:
   in silenzio (non dice chi è iscritto): l'avviso parte per email
   all'indirizzo di adesso, dall'hook in `packages/auth/src/index.ts`.
 - **La scheda delle donazioni** (`SupportCard`) sta in fondo alla colonna
-  della roadmap e sotto il menu dell'account, solo da `$md`; come la voce del
+  della roadmap e sotto il menu dell'account, solo da `md`; come la voce del
   footer, c'è solo se `supportUrl` (`lib/credits.ts`) non è `null`. È nostra e
   non il widget della piattaforma, che porterebbe script e cookie di terzi.
 - **Steam ha un corpo suo nel dialogo «Aggiungi libreria»** (`steam-link.tsx`): il

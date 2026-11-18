@@ -30,8 +30,8 @@ export function Slider({ thumbLabels, ...props }: SliderProps) {
     <SliderBase
       height={20}
       minW={120}
-      // `opacity` e non `disabledStyle`: sullo Slider di Tamagui 2.7.7 lo
-      // stile da spento vale sempre, e il cursore acceso usciva a metà.
+      // `opacity` e non lo stile da spento di Tamagui: sullo Slider della 2.7.7
+      // valeva sempre, e il cursore acceso usciva a metà.
       opacity={props.disabled ? 0.5 : 1}
       {...props}
     >

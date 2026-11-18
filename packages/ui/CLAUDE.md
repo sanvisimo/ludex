@@ -13,14 +13,35 @@ punta a un primitivo**.
         → di componente (nei `styled()` dei nostri componenti)
 
 Un `teal9` scritto in un componente resterebbe teal il giorno che l'accento
-cambia; `$accent9` no. I file di token di Tamagui sono la sorgente unica: niente
+cambia; `accent9` no. I file di token di Tamagui sono la sorgente unica: niente
 JSON intermedio.
+
+**Tamagui 3 con la Config v5** (`plans/tamagui-3.md`). Gli stili sono valori
+piatti: token e chiavi del tema senza `$` (`bg="color2"`), stati e media query
+come clausole nella stessa stringa (`bg="color2 hover:color3"`,
+`p="16px max-sm:12px"`). Una `lineHeight` numerica è un rapporto: i pixel si
+scrivono `"20px"`. Cose che non si indovinano:
+
+- **le chiavi semantiche di Tamagui sono in kebab-case** (`border-color`,
+  `background-hover`): i temi, congelati dalla 2.7.7 in `frozen-themes.ts` e
+  da non toccare a mano, le portano nelle due grafie grazie a `withKebabKeys`
+  in `themes.ts`. Le nostre (`actionColor`, `surface`) restano camelCase;
+- **i caratteri usano la scala v5** in `fonts.ts`: quella di serie di
+  `createSystemFont` è della v6, e il testo cambierebbe misura;
+- **la config ammette solo le abbreviazioni**, anche dentro `style()`: `bg` e
+  non `backgroundColor`, `select` e non `userSelect`;
+- **dove gli stili sono tutti nostri il pezzo viene da `tamagui/unstyled`**
+  (Accordion, ToggleGroup, Slider, le parti del Button): le pelle di `tamagui`
+  hanno taglie e colori della v6, che si sovrappongono ai nostri. Quelle di
+  Sheet, Switch e Tooltip in console dicono `unknown color "color-5"`:
+  innocuo, quei valori li copriamo.
 
 **`@repo/ui` esporta un solo `Button`, il nostro.** Niente `export * from
 'tamagui'`: Tamagui ha otto dei nostri quindici nomi, e con l'export generico
 vincerebbe l'ultima riga del file. Chi ha bisogno del pezzo grezzo lo importa da
 `tamagui` dentro `packages/ui`, mai dalle app. Le icone (lucide) stanno in
-`@repo/ui/icons`.
+`@repo/ui/icons`, generate in `src/lucide/`: una nuova si aggiunge con
+`pnpm --filter @repo/ui icons:add NomeIcona`.
 
 **Il banco è Storybook, dentro `packages/ui`**, non in `apps/web`: un banco
 montato sull'app web non si aprirebbe senza l'app. Ogni componente nasce con la sua
@@ -46,7 +67,7 @@ si sa:
   `apps/web` e nel `preview` di Storybook. Su mobile un file per peso, con
   `face`, caricato da `apps/mobile/app/_layout.tsx` con `useFonts` **sotto gli stessi
   nomi**: un peso nuovo in un componente va aggiunto in tutti e due i posti.
-  Un titolo è `fontFamily="$heading"`.
+  Un titolo è `fontFamily="heading"`.
 - **il simbolo ha i colori fissi**, unica eccezione alla regola dei token: è
   un'immagine e non cambia col tema. Ne esistono copie — `favicon.svg`,
   `favicon.ico` e `apple-touch-icon.png` in `apps/web/public`, icona e splash
@@ -76,32 +97,27 @@ sull'acceso, scorrono senza barra dove non stanno. Il `ToggleGroup` è la scelta
 di **come guardarla**, una vista, in una cornice. Messo a fare i tab sembra una
 barra di bottoni.
 
-Otto componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il
+Cinque componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il
 perché sta nel loro commento:
 
-- **`Tooltip` si apre da sé al focus da tastiera**: quello di Tamagui 2.7.7
-  non lo fa, nemmeno su un `<button>` nudo. Si toglie quando Tamagui lo
-  sistema. Le storie non possono provarlo — `userEvent.tab()` non produce
-  `:focus-visible` — e lo prova la tastiera vera di Playwright sull'app.
-- **`Sheet` è un dialogo modale**, che quello di Tamagui non è: Esc lo chiude,
-  il focus entra, resta dentro e torna al bottone (`FocusScope`), e da chiuso
-  non è montato.
+- **`Button` è costruito sulle parti di comportamento** (`ButtonFrame`,
+  `ButtonText`, `useButton` da `tamagui/unstyled`), non sul `Button` di
+  `tamagui`: quello ha taglie sue (`xs`…`xl`) che leggono la stessa `size`
+  delle nostre, e lo portavano a 38 pixel invece di 32. Su native propaga anche
+  il nome del tema al frame: il Button di Tamagui 2.7.7 poteva conservare i
+  colori dello schema precedente al cambio chiaro/scuro su Android
+  (verificato sul Pixel 9a).
+- **`Sheet` sposta lui il focus all'apertura**: da modale lo Sheet di Tamagui 3
+  è già un dialogo (ruolo, Esc, focus che resta dentro e torna), ma il suo
+  `FocusScope` darebbe il focus a un involucro `display: contents`, che non lo
+  prende. Da chiuso non è montato, e il nome va sullo `Sheet` (`aria-label`).
 - **`Drawer` rimette il focus e blocca lui lo scorrimento**: il Dialog di
   Tamagui sotto rimanda il focus solo al suo `Dialog.Trigger`, che un drawer
   aperto da fuori non ha, e il suo blocco (`scrollbar-gutter: stable`) lascia
   una striscia vuota fra il pannello e il bordo destro.
-- **`Accordion` tiene lui l'id del contenuto**: quello di Tamagui 2.7.7 lo
-  nomina in `aria-controls` ma non lo mette sul contenuto, e axe lo boccia.
 - **`ToggleGroup` rimette `aria-pressed`**: a scelta singola Tamagui lo toglie
-  e non mette niente al suo posto.
-- **`DropdownMenu` cede il focus al dialogo aperto da una sua voce**:
-  dopo lo smontaggio del menu il focus entra nel nuovo pannello, invece di
-  tornare al trigger del menu. La storia `OpensDialog` verifica la regressione.
-- **`Button` propaga il nome del tema al frame su native**: il Button
-  styleable di Tamagui 2.7.7 può conservare i colori dello schema precedente
-  al cambio chiaro/scuro su Android. La correzione non rimonta il componente;
-  verificata sul Pixel 9a. Il percorso web resta quello styled originale.
-- **`Slider` non usa `disabledStyle`**, che su Tamagui 2.7.7 vale sempre, e
-  centra il binario a mano. Calcola le maniglie misurando il binario, quindi
-  **sul server non c'è**: chi lo monta in una pagina renderizzata dal server
-  lo monta dopo l'idratazione (vedi `RangeFilter` in `backlog-filters.tsx`).
+  (anche la 3.3.3) e non mette niente al suo posto.
+- **`Slider` si spegne con l'opacità** e centra il binario a mano. Calcola le
+  maniglie misurando il binario, quindi **sul server non c'è**: chi lo monta in
+  una pagina renderizzata dal server lo monta dopo l'idratazione (vedi
+  `RangeFilter` in `backlog-filters.tsx`).

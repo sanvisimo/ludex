@@ -147,8 +147,8 @@ const ButtonFrame = styled(ButtonBehavior, {
   },
 });
 
-// Il Button styleable di Tamagui 2.7.7 risolve le varianti native prima
-// del cambio di schema e può conservarne i colori. Passare il nome al frame
+// Su Tamagui 2.7.7 il Button risolveva le varianti native prima del cambio di
+// schema e poteva conservarne i colori. Passare il nome al frame
 // forza la risoluzione nel tema corrente senza rimontare o perdere stato.
 export const Button = isWeb
   ? ButtonFrame

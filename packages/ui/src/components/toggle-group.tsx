@@ -4,7 +4,7 @@ import { ToggleGroup as ToggleGroupBase } from 'tamagui/unstyled';
 
 /**
  * Il valore scelto, per le opzioni. A scelta singola il ToggleGroup di
- * Tamagui 2.7.7 toglie `aria-pressed` dalle opzioni e non ci mette niente al
+ * Tamagui (anche la 3.3.3) toglie `aria-pressed` e non ci mette niente al
  * suo posto: a un lettore di schermo tre bottoni uguali, senza dire quale è
  * acceso. Lo rimettiamo noi. Si toglie quando Tamagui lo sistema.
  */

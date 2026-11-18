@@ -1,9 +1,8 @@
 # Tamagui 3
 
-**Stato: in corso dal 16/11/2026**, piano approvato lo stesso giorno. Passo 1
-fatto e base di Chromatic pulita il 17/11, passi 2 e 3 fatti lo stesso giorno,
-passi 4 e 5 il 18/11, il 6 in corso, vedi «Ripresa» in fondo. Lavoro
-interno: non entra nella roadmap pubblica.
+**Stato: fatto il 18/11/2026**, in corso dal 16/11, piano approvato lo stesso
+giorno. Passi 1, 2 e 3 il 17/11, passi 4, 5, 6 e 7 il 18/11. Lavoro interno:
+non entra nella roadmap pubblica.
 
 ## Perché
 
@@ -176,7 +175,7 @@ ScrollView>`); quelli dei bottoni in `ownership-badges.tsx`,
      non ce ne sono altri.
    - `tsc` a zero sui tre workspace, lint verde, 159 storie su 159, test del
      web 68 su 68.
-6. **Le verifiche.**
+6. **Le verifiche — fatto il 18/11.**
    - `tsc`, lint, i tre banchi di test (le storie in Chromium con axe);
    - Chromatic contro la base del passo 1: ogni differenza si guarda;
    - le schermate a mano, accanto alle stesse su pilecue.com, chiaro e
@@ -192,7 +191,7 @@ ScrollView>`); quelli dei bottoni in `ownership-badges.tsx`,
    - le media query passate ai componenti di `@repo/ui` (`maxW="lg:960px"`
      su `DialogContent`, `display="max-sm:none"`) non rompono l'idratazione,
      come succedeva con la v2 (`apps/web/CLAUDE.md`).
-   - **In corso dal 18/11.** Fatto: `tsc`, lint e i banchi (159 storie, 68
+   - Fatto: `tsc`, lint e i banchi (159 storie, 68
      test del web); la build del web, che si fermava su `@tamagui/sheet`
      finché `publicHoistPattern` non ha portato gli `@tamagui/*` alla radice
      (il compilatore li fa caricare a Node dalla radice dell'app), e ora non ha
@@ -209,12 +208,15 @@ ScrollView>`); quelli dei bottoni in `ownership-badges.tsx`,
      eredita i 24 del `body`. Rimettere quella regola per intero peggiora
      tutto (dal 6 al 12-25% di pixel diversi): resta da decidere solo per i
      `li`.
-   - Chromatic, build 13: nessun errore, ma tutte le 159 storie «da accettare
-     come base», come la 12: il confronto coi pixel richiede la base accettata.
-   - Da fare: le schermate da utente collegato (servono Docker, API e un
-     utente), l'emulatore, l'idratazione con le media query.
-7. **La documentazione.** `packages/ui/CLAUDE.md` e `apps/web/CLAUDE.md`
-   (abbreviazioni, media query, gli aggiramenti rimasti), e il piano del
+   - I `li` restano a 24: deciso dall'utente, è solo un filo più arioso.
+   - Chromatic: la build 12 non è mai stata accettata, e la 13 è stata
+     accettata come base. Il confronto dei pixel fra v2 e v3 quindi Chromatic
+     non l'ha fatto; l'hanno fatto la prova a mano e i confronti con
+     pilecue.com. Da qui in avanti la base è la v3.
+   - L'utente ha provato a mano schermate da collegato, emulatore e
+     idratazione: tutto funzionante, nessun errore di idratazione.
+7. **La documentazione — fatto il 18/11.** `packages/ui/CLAUDE.md` e
+   `apps/web/CLAUDE.md` (abbreviazioni, media query, gli aggiramenti rimasti), e il piano del
    design system dove cita la 2.7.7.
 
 ## Rischi
@@ -234,56 +236,14 @@ Compiler: lotti a parte.
 
 ## Ripresa
 
-Scritta il 17/11/2026 per riprendere da una chat nuova.
+Aggiornata il 18/11/2026. I sette passi sono fatti sul branch
+`chore/tamagui-3`; il lotto si chiude quando l'utente lo dice pronto. Restano
+la PR verso `main` e il deploy su pilecue.com, dopo il quale si guarda la
+pagina di produzione come al passo 6.
 
-**Dove si è.** Branch `chore/tamagui-3`, rimesso sopra `main` dopo il merge
-della #141. Passi 2, 3, 4 e 5 fatti (vedi lì), si riparte dal **passo 6**. La
-base di Chromatic è la build 12: 159 storie, nessuna rossa; le sue 159 immagini
-vanno accettate come base nella dashboard, se non è già stato fatto.
+**Chromatic costa sempre tutto**: TurboSnap non è attivo sull'account, ogni
+build sono tutti i 318 snapshot. La base è la build 13, cioè già la v3.
 
-**Chromatic costa sempre tutto.** TurboSnap non è attivo sull'account (serve
-almeno 10 build da CI), quindi `onlyChanged` non riduce niente: ogni build
-sono tutti i 318 snapshot. Se ne fa una sola, al passo 6. Gli errori li legge
-l'utente nella dashboard: **si chiedono a lui**, non si rilancia per ricavarli.
-
-**Le quattro storie rosse del passo 1, risolte.** Tooltip · Hover, Long
-Content, Rich Content e Gallery · Drag Thumbnails fallivano solo nello
-Storybook compilato, cioè su Chromatic: lì il `play` parte prima degli
-`useEffect` del montaggio, e in locale no, perché `addon-vitest` monta dentro
-`act()`. La Gallery attacca il trascinamento in un effetto; il Tooltip di
-Tamagui 2.7.7 aggancia il passaggio del mouse due volte, e un hover fra le due
-perde il timer. Correzione nelle storie e non nei componenti: la Gallery
-aspetta un giro, le storie del Tooltip riprovano l'hover (`passaSopra`). Al
-passo 5, col Tooltip della v3, si riprova senza `passaSopra`: se il doppio
-aggancio sparisce, si toglie col suo commento. Per riprodurre una storia che
-fallisce solo su Chromatic: `storybook build` in una cartella fuori dal repo,
-e il `play` aperto con Playwright su `iframe.html?id=…`.
-
-**Aperti fuori da questo lotto:**
-
-- Mailpit sulla 1035: `.env.example` aggiornato dall'utente, il CLAUDE.md
-  della radice (le porte) dice ancora 1025;
-- dopo il deploy della #141 su pilecue.com: accesso, «Password dimenticata»
-  (nodemailer 10 col server SMTP vero) e la vista compatta del backlog. La
-  build di produzione del web in locale è verificata.
-
-**Cose già verificate, da non rifare:**
-
-- le icone non hanno un pacchetto v3: si generano con `@tamagui/cli icons add`
-  (pagina [lucide-icons](https://tamagui.dev/ui/lucide-icons#migrating-from-v2));
-  `@tamagui/helpers-icon` è alla 3.3.3 stabile;
-- `@tamagui/vite-plugin`, `@tamagui/toast`, `@tamagui/focus-scope`,
-  `@tamagui/react-native-svg`, `@tamagui/cli` sono tutti alla 3.3.3;
-- `themes.ts` usa `createV5Theme` da `@tamagui/config/v5`, rimosso nella v3;
-  `config.ts` usa `defaultConfig` da `@tamagui/config/v5` e le animazioni da
-  `@tamagui/config/v5-css`, che restano;
-- il riassunto completo della guida (pacchetti rimossi, token, temi, stili
-  piatti, componenti, animazioni, compilatore, verifiche) va riletto alla
-  fonte: la pagina HTML si tronca, il testo intero sta in
-  `https://tamagui.dev/llms.txt`.
-
-**Da incollare nella chat nuova:**
-
-> Riprendiamo la migrazione a Tamagui 3: leggi `plans/tamagui-3.md`, in
-> particolare «Ripresa», e lavora sul branch `chore/tamagui-3`. Si parte dal
-> passo 6.
+**Le icone, i temi e i caratteri** non si rigenerano con gli strumenti di
+Tamagui senza guardare: i temi sono congelati, e i caratteri passano la scala
+v5 a mano (vedi `packages/ui/CLAUDE.md`).
