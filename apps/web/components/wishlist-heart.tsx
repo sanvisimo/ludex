@@ -96,7 +96,7 @@ export function WishlistHeart({ game }: { game: HomeGame }) {
       >
         <Heart
           size={16}
-          color={`${game.wishlisted ? 'red10' : 'color12'}`}
+          color={game.wishlisted ? 'red10' : 'color12'}
           {...(game.wishlisted && { fill: 'currentColor' })}
         />
       </Button>

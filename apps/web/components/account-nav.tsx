@@ -31,6 +31,9 @@ export function AccountNav() {
       shrink={0}
       gap={4}
       flexDirection="max-md:row"
+      // Sul telefono la riga scorre, e **senza barra**: `overflow: scroll` su
+      // Windows disegna sempre i nastri grigi, anche quando non servono. Su
+      // desktop, in colonna, non c'è niente che sfori e lo stile non fa niente.
       style={{
         overflowX: 'auto',
         overflowY: 'hidden',

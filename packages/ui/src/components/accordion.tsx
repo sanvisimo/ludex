@@ -105,7 +105,7 @@ export function AccordionTrigger({
             <Text
               flex={1}
               text="left"
-              fontFamily={`${heading ? 'heading' : 'body'}`}
+              fontFamily={heading ? 'heading' : 'body'}
               fontSize={heading ? 18 : 14}
               lineHeight={heading ? '24px' : undefined}
               fontWeight={heading ? '600' : '500'}

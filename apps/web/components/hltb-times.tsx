@@ -91,9 +91,11 @@ export function HltbTimes({ game }: { game: GameDetail }) {
                     gap={12}
                     p={14}
                     rounded={12}
-                    bg={`${blue || neutral ? 'color3' : 'selectionBackground'}`}
+                    bg={blue || neutral ? 'color3' : 'selectionBackground'}
                     borderLeftWidth={3}
-                    borderColor={`${blue ? 'color9' : neutral ? 'color7' : 'selectionBorder'}`}
+                    borderColor={
+                      blue ? 'color9' : neutral ? 'color7' : 'selectionBorder'
+                    }
                   >
                     <YStack render="dt" flex={1} minW={0} gap={5}>
                       <Strong fontSize={13}>{t(riga.chiave)}</Strong>
@@ -101,7 +103,7 @@ export function HltbTimes({ game }: { game: GameDetail }) {
                         <Muted
                           fontSize={12}
                           lineHeight="18px"
-                          color={`${blue ? 'color12' : 'color11'}`}
+                          color={blue ? 'color12' : 'color11'}
                         >
                           {t('reports', { count: riga.segnalazioni })}
                         </Muted>
@@ -124,7 +126,13 @@ export function HltbTimes({ game }: { game: GameDetail }) {
                       fontSize={26}
                       lineHeight="32px"
                       shrink={0}
-                      color={`${blue ? 'color12' : neutral ? 'color12' : 'selectionColor'}`}
+                      color={
+                        blue
+                          ? 'color12'
+                          : neutral
+                            ? 'color12'
+                            : 'selectionColor'
+                      }
                       style={{ fontVariantNumeric: 'tabular-nums' }}
                     >
                       {duration(riga.minuti!)}

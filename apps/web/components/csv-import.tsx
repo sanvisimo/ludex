@@ -270,8 +270,9 @@ function CsvImportDialog({
                   <Download size={16} color="color12" />
                   <Text
                     render="a"
-                    href={EXAMPLE_URL}
-                    download={true}
+                    // Gli attributi del link arrivano all'`<a>`, ma i tipi del
+                    // testo non li conoscono (come in `ExternalLink`).
+                    {...({ href: EXAMPLE_URL, download: true } as object)}
                     color="color12"
                     textDecorationLine="underline"
                     cursor="pointer"
@@ -314,8 +315,10 @@ function CsvImportDialog({
                     rounded={12}
                     borderWidth={1}
                     borderStyle="dashed"
-                    borderColor={`${error ? 'red9' : dragging ? 'accent9' : 'border-color'}`}
-                    bg={`${dragging ? 'color3' : 'transparent'}`}
+                    borderColor={
+                      error ? 'red9' : dragging ? 'accent9' : 'border-color'
+                    }
+                    bg={dragging ? 'color3' : 'transparent'}
                   >
                     {file ? (
                       <XStack items="center" gap={8} maxW="100%">

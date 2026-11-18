@@ -241,9 +241,7 @@ function FooterExternalLink({
   return (
     <Text
       render="a"
-      {...{ href }}
-      target={'_blank'}
-      rel={'noopener noreferrer'}
+      {...({ href, target: '_blank', rel: 'noopener noreferrer' } as object)}
       fontSize={12}
       lineHeight="16px"
       color="color11 hover:color12"
@@ -267,11 +265,15 @@ function FooterLink({
   return (
     <Text
       render="a"
-      href={to}
-      onClick={(event: unknown) => {
-        if (!takeLinkClick(event)) return;
-        void router.navigate({ to });
-      }}
+      // Come in `NavItem`: gli attributi del link arrivano all'`<a>`, ma i
+      // tipi del testo non li conoscono.
+      {...({
+        href: to,
+        onClick: (event: unknown) => {
+          if (!takeLinkClick(event)) return;
+          void router.navigate({ to });
+        },
+      } as object)}
       fontSize={12}
       lineHeight="16px"
       color="color11 hover:color12"

@@ -89,7 +89,7 @@ function Entry({ entry, last }: { entry: RoadmapEntry; last: boolean }) {
       pb={last ? 0 : 28}
       borderLeftWidth={2}
       // L'ultima voce non ha niente sotto: la linea si ferma al suo pallino.
-      borderLeftColor={`${last ? 'transparent' : 'accent6'}`}
+      borderLeftColor={last ? 'transparent' : 'accent6'}
     >
       <Dot status={entry.status} />
       <YStack gap={6}>
@@ -114,7 +114,7 @@ function Entry({ entry, last }: { entry: RoadmapEntry; last: boolean }) {
           fontSize={20}
           lineHeight="28px"
           fontWeight="600"
-          color={`${done ? 'accent11' : 'color12'}`}
+          color={done ? 'accent11' : 'color12'}
         >
           {t(`items.${entry.id}.title`)}
         </Text>

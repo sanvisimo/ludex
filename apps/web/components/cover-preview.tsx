@@ -54,7 +54,7 @@ export function CoverPreview({
         bg="color4"
         cursor="zoom-in"
         overflow="hidden"
-        type={'button'}
+        {...({ type: 'button' } as object)}
         opacity="hover:0.85"
         outlineColor="focus-visible:outline-color"
         outlineStyle="focus-visible:solid"

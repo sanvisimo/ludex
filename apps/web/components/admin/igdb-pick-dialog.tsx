@@ -197,7 +197,13 @@ export function IgdbPicker({
                   p={10}
                   rounded={8}
                   borderWidth={1}
-                  borderColor={`${current ? 'blue8' : active ? 'selectionBorder' : 'transparent'}`}
+                  borderColor={
+                    current
+                      ? 'blue8'
+                      : active
+                        ? 'selectionBorder'
+                        : 'transparent'
+                  }
                   bg={`${current ? 'blue2' : active ? 'selectionBackground' : 'transparent'} hover:${current ? 'blue2' : active ? 'selectionBackground' : 'color3'}`}
                 >
                   <CoverPreview
@@ -303,7 +309,7 @@ export function IgdbSelectionFooter({
         <Text
           fontSize={13}
           fontWeight={selected ? '600' : '400'}
-          color={`${selected ? 'color12' : 'color11'}`}
+          color={selected ? 'color12' : 'color11'}
           style={{ overflowWrap: 'anywhere' }}
         >
           {selected

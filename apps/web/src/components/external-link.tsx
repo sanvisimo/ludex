@@ -17,10 +17,14 @@ export function ExternalLink({
   return (
     <Text
       render="a"
-      {...{ href }}
-      {...(href.startsWith('mailto:')
-        ? {}
-        : { target: '_blank', rel: 'noopener noreferrer' })}
+      // Come in `LinkRow`: gli attributi del link arrivano all'`<a>`, ma i
+      // tipi del testo non li conoscono.
+      {...({
+        href,
+        ...(href.startsWith('mailto:')
+          ? {}
+          : { target: '_blank', rel: 'noopener noreferrer' }),
+      } as object)}
       color="color12"
       fontWeight={strong ? '600' : '400'}
       textDecorationLine="underline"

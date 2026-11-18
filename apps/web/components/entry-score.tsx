@@ -77,23 +77,21 @@ export function CriticValue({
       role="img"
       items="center"
       gap={4}
-      bg={`${badge ? 'color4' : 'transparent'}`}
+      bg={badge ? 'color4' : 'transparent'}
       rounded={badge ? 6 : 0}
       px={badge ? 6 : 0}
       py={badge ? 2 : 0}
       minH={badge ? 24 : undefined}
-      title={label}
+      // `title` Tamagui lo passa al DOM ma non lo dichiara nei tipi.
+      {...({ title: label } as object)}
       aria-label={label}
     >
-      <Award
-        size={compact ? 12 : 14}
-        color={`${compact ? 'color12' : 'color11'}`}
-      />
+      <Award size={compact ? 12 : 14} color={compact ? 'color12' : 'color11'} />
       <Text
         fontSize={compact ? 11 : badge ? 13 : 14}
         lineHeight={compact ? '16px' : '20px'}
         fontWeight={compact || badge ? '600' : undefined}
-        color={`${compact || badge ? 'color12' : 'color11'}`}
+        color={compact || badge ? 'color12' : 'color11'}
         aria-hidden
       >
         {value}

@@ -46,7 +46,11 @@ export default function Account() {
   }
 
   return (
-    <ScrollView flex={1} bg="background" contentContainerStyle={{ p: 20 }}>
+    <ScrollView
+      flex={1}
+      bg="background"
+      contentContainerStyle={{ padding: 20 }}
+    >
       <YStack gap={24}>
         <YStack gap={4}>
           <Text fontSize={20} fontWeight="700" color="color12">

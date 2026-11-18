@@ -134,7 +134,7 @@ export function ActiveSessions({ embedded = false }: { embedded?: boolean }) {
                   rounded={8}
                   borderWidth={1}
                   borderColor="border-color"
-                  bg={`${isCurrent ? 'selectionBackground' : 'surface'}`}
+                  bg={isCurrent ? 'selectionBackground' : 'surface'}
                 >
                   <YStack gap={2} shrink={1}>
                     <XStack items="center" gap={8} flexWrap="wrap">

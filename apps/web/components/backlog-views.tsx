@@ -446,7 +446,7 @@ function SortHeader({
       <Text
         fontSize={12}
         fontWeight="500"
-        color={`${direction ? 'selectionColor' : 'color11'}`}
+        color={direction ? 'selectionColor' : 'color11'}
         numberOfLines={1}
       >
         {label}

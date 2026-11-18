@@ -308,8 +308,7 @@ export function IgdbCard({
       outlineStyle="focus-visible:solid"
       outlineWidth="focus-visible:2px"
       rounded="focus-visible:6px"
-      type={'button'}
-      {...{ disabled }}
+      {...({ type: 'button', disabled } as object)}
       onPress={onOpen}
     >
       <GameCover imageId={hit.cover} name={hit.name} size="cover_big" fill />

@@ -420,22 +420,22 @@ export function DurationAndCritics({
                     minW={96}
                     p={10}
                     rounded={8}
-                    bg={`${blue ? 'color3' : 'selectionBackground'}`}
+                    bg={blue ? 'color3' : 'selectionBackground'}
                     borderLeftWidth={3}
-                    borderColor={`${blue ? 'color9' : 'selectionBorder'}`}
+                    borderColor={blue ? 'color9' : 'selectionBorder'}
                     gap={4}
                   >
                     <Muted
                       fontSize={12}
                       lineHeight="16px"
-                      color={`${blue ? 'color12' : 'color11'}`}
+                      color={blue ? 'color12' : 'color11'}
                     >
                       {tHltb(key)}
                     </Muted>
                     <Strong
                       fontSize={22}
                       lineHeight="28px"
-                      color={`${blue ? 'color12' : 'selectionColor'}`}
+                      color={blue ? 'color12' : 'selectionColor'}
                     >
                       {duration(minutes!)}
                     </Strong>
@@ -980,7 +980,7 @@ export function RelatedRow({
             <Text
               fontSize={13}
               lineHeight="18px"
-              color={`${game.owned ? 'color12' : 'color11'}`}
+              color={game.owned ? 'color12' : 'color11'}
               numberOfLines={2}
               // Dentro il bottone il browser centrerebbe.
               text="left"
@@ -1019,8 +1019,7 @@ export function RelatedRow({
               outlineStyle="focus-visible:solid"
               outlineWidth="focus-visible:2px"
               rounded="focus-visible:8px"
-              type={'button'}
-              disabled={openIgdb.isPending}
+              {...({ type: 'button', disabled: openIgdb.isPending } as object)}
               onPress={() => openIgdb.mutate(game.igdbId)}
             >
               {card}

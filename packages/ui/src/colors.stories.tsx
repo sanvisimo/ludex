@@ -126,7 +126,7 @@ function Scale({
               <Text fontSize={10} color="color12">
                 {step}
               </Text>
-              <Text fontSize={10} color={`${k >= 3 ? 'green11' : 'color11'}`}>
+              <Text fontSize={10} color={k >= 3 ? 'green11' : 'color11'}>
                 {k.toFixed(2)}
               </Text>
             </YStack>

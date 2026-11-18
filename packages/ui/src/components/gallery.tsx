@@ -257,7 +257,7 @@ export function Gallery({ items, labels }: GalleryProps) {
                   p={0}
                   bg="color3"
                   borderWidth={2}
-                  borderColor={`${i === index ? 'accent9' : 'transparent'}`}
+                  borderColor={i === index ? 'accent9' : 'transparent'}
                   opacity={`${i === index ? 1 : 0.7} hover:1`}
                   cursor="pointer"
                   outlineColor="focus-visible:outline-color"

@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import { ToggleGroup as ToggleGroupBase } from 'tamagui';
+import { style, ToggleGroup as ToggleGroupBase } from 'tamagui';
 
 /**
  * Il valore scelto, per le opzioni. A scelta singola il ToggleGroup di
@@ -60,6 +60,11 @@ export function ToggleGroup({
  * Un'opzione. Con sola icona va dato `aria-label`, perché l'icona non dice
  * niente a un lettore di schermo.
  */
+const selectedStyle = style({
+  bg: 'selectionBackground',
+  borderColor: 'selectionBorder',
+});
+
 export function ToggleGroupItem({
   value,
   children,
@@ -93,10 +98,7 @@ export function ToggleGroupItem({
       outlineStyle="focus-visible:solid"
       outlineWidth="focus-visible:2px"
       outlineOffset="focus-visible:1px"
-      activeStyle={{
-        backgroundColor: 'selectionBackground',
-        borderColor: 'selectionBorder',
-      }}
+      activeStyle={selectedStyle}
     >
       {children}
     </ToggleGroupBase.Item>

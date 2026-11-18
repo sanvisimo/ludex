@@ -159,7 +159,7 @@ export function CellText({
     <Text
       fontSize={13}
       lineHeight="18px"
-      color={`${muted ? 'color11' : 'color12'}`}
+      color={muted ? 'color11' : 'color12'}
       style={{ overflowWrap: 'anywhere' }}
     >
       {children}

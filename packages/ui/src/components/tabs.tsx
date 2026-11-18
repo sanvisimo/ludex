@@ -144,7 +144,7 @@ export function TabsTab({ value, count, icon: Icon, children }: TabsTabProps) {
       // Si sovrappone alla linea di tutti i tab: l'accento sta **sopra** la
       // linea grigia, non sotto.
       borderBottomWidth={2}
-      borderBottomColor={`${selected ? 'accent9' : 'transparent'}`}
+      borderBottomColor={selected ? 'accent9' : 'transparent'}
       mb={-1}
       cursor="pointer"
       outlineColor="focus-visible:outline-color"
@@ -160,7 +160,7 @@ export function TabsTab({ value, count, icon: Icon, children }: TabsTabProps) {
         lineHeight="20px"
         fontWeight="500"
         whiteSpace="nowrap"
-        color={`${selected ? 'color12' : 'color11'}`}
+        color={selected ? 'color12' : 'color11'}
       >
         {children}
       </Text>

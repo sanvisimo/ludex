@@ -463,7 +463,7 @@ function SourceIdForm({
             fontSize={13}
             lineHeight="20px"
             fontWeight={selected || validId ? '600' : '400'}
-            color={`${selected || validId ? 'color12' : 'color11'}`}
+            color={selected || validId ? 'color12' : 'color11'}
             style={{ overflowWrap: 'anywhere' }}
           >
             {selected
@@ -530,7 +530,7 @@ function SourceResult({
       p={10}
       rounded={8}
       borderWidth={1}
-      borderColor={`${active ? 'selectionBorder' : 'transparent'}`}
+      borderColor={active ? 'selectionBorder' : 'transparent'}
       bg={`${active ? 'selectionBackground' : 'transparent'} hover:${active ? 'selectionBackground' : 'color3'}`}
     >
       <CoverPreview

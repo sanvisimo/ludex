@@ -85,7 +85,14 @@ export function WishlistUnresolvedDialog({
       <XStack key={entry.id} gap={12} items="center" py={8}>
         <UnresolvedCover key={entry.id} entry={entry} width={44} height={64} />
         <YStack flex={1} minW={0} gap={2}>
-          <Text fontWeight="500" color="color12" title={entry.externalId}>
+          <Text
+            fontWeight="500"
+            color="color12"
+            // Gli attributi dell'elemento non sono nei tipi del testo: l'id del
+            // negozio sta nel suggerimento, per riconoscere una voce che si chiama
+            // «Production».
+            {...({ title: entry.externalId } as object)}
+          >
             {entry.name}
           </Text>
           <Text fontSize={13} lineHeight="18px" color="color11">

@@ -26,9 +26,9 @@ export function GuestScreen({
         bg="background"
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
-          px: 20,
-          pt: insets.top + 40,
-          pb: insets.bottom + 24,
+          paddingHorizontal: 20,
+          paddingTop: insets.top + 40,
+          paddingBottom: insets.bottom + 24,
         }}
       >
         <YStack gap={24} maxW={420} width="100%" self="center">

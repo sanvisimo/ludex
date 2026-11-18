@@ -1,9 +1,9 @@
 # Tamagui 3
 
 **Stato: in corso dal 16/11/2026**, piano approvato lo stesso giorno. Passo 1
-fatto e base di Chromatic pulita il 17/11, passi 2 e 3 fatti lo stesso giorno:
-si riparte dal passo 4, vedi «Ripresa» in fondo. Lavoro interno: non entra
-nella roadmap pubblica.
+fatto e base di Chromatic pulita il 17/11, passi 2 e 3 fatti lo stesso giorno,
+passo 4 il 18/11: si riparte dal passo 5, vedi «Ripresa» in fondo. Lavoro
+interno: non entra nella roadmap pubblica.
 
 ## Perché
 
@@ -94,11 +94,43 @@ Su `chore/tamagui-3`, da `main` (la PR #141, con React 19.3 e React Native
    - Le icone generate tipizzano `color`: i 27 errori in più di `tsc`
      (411) sono i `color="$color11"` sulle icone. Al passo 4 va controllato
      che il codemod li veda, perché un'icona non è un componente di stile.
-4. **Il codemod.** `@tamagui/codemod-flat-values --source-semantics v2-pixels`
-   su `packages/ui/src`, `apps/web` e `apps/mobile`: prima a vuoto col
+4. **Il codemod — fatto il 18/11.**
+   `@tamagui/codemod-flat-values --source-semantics v2-pixels` su
+   `packages/ui/src`, `apps/web` e `apps/mobile`: prima a vuoto col
    resoconto, poi `--write`. Le righe che segnala si sistemano a mano, e un
    `rg "hoverStyle|pressStyle|focusStyle|enterStyle|exitStyle|\\$[a-z]"` trova
    quelle che non vede (stili costruiti da funzioni o spread condizionali).
+   - Com'è andato: il codemod vuole un `tsconfig.json` nella cartella da cui
+     parte, quindi gira una volta per workspace. 1099 punti di stile, 188
+     file riscritti.
+   - **I temi portano anche le 16 chiavi in kebab-case** (`border-color`,
+     `background-hover`…), con lo stesso valore della camelCase
+     (`withKebabKeys` in `themes.ts`): i componenti di Tamagui 3 leggono
+     quelle, il codemod le scrive, e i temi v5 di Tamagui 3 le hanno tutte e
+     due. Le nostre chiavi (`actionColor`, `surface`…) restano camelCase.
+   - **Quattro difetti del codemod**, sistemati a mano: cancella i commenti
+     dentro le liste di prop (37 righe in 16 file, rimesse sopra la stessa
+     prop); sposta prop dopo `{...props}`, cambiandone la precedenza
+     (`activeStyle` di Checkbox e Switch, `iconAfter` di Select); scioglie i
+     cast `{...({ title } as object)}` in prop che i tipi non accettano (11,
+     rimessi con i loro commenti); avvolge i valori condizionali in template
+     inutili (34 tolti).
+   - **Sui componenti di `@repo/ui` non converte niente**, perché non ne
+     riconosce il tipo: i `$lg={{ maxW }}` di `DialogContent`, i token di
+     `Badge` e un `lineHeight={20}` su `DropdownMenuLabel`, che con la v3
+     sarebbe diventato venti volte il carattere. Una trentina di punti, più
+     gli oggetti di stato costruiti in variabili (`dropdown-menu.tsx`,
+     `game-page.tsx`, `backlog-views.tsx`). Lo sweep di `rg` ora è vuoto.
+   - `activeStyle` di Checkbox e ToggleGroup vuole un pezzo di `style()`, e lì
+     valgono solo le abbreviazioni (`bg`, per `onlyAllowShorthands`); quello
+     dello Switch è uno stile di React Native, un oggetto normale.
+     `contentContainerStyle` nel mobile prende le prop per esteso.
+   - `tsc`: 27 errori in `packages/ui`, 4 solo del web, 0 solo del mobile,
+     tutti del passo 5: `styleable` di Button (e i tipi delle sue storie),
+     Toast, `Sheet.Frame`, i `focus-out` senza `preventDefault` (Dialog,
+     Drawer, DropdownMenu, `cover-preview.tsx`, `ownership-badges.tsx`), le
+     taglie di Select e Slider, `unstyled` rimosso da Accordion e
+     ToggleGroup, `selectable` sul testo di `xbox-code-panel.tsx`. Lint verde.
 5. **Le API rimosse.** Button (`createStyledHOC`, le nostre taglie contro
    quelle della base), Toast, Sheet, il focus di Dialog, Drawer e
    DropdownMenu, ScrollView. Gli otto aggiramenti di `packages/ui/CLAUDE.md`
@@ -114,7 +146,12 @@ Su `chore/tamagui-3`, da `main` (la PR #141, con React 19.3 e React Native
      playlist;
    - l'app sull'emulatore: Accedi, Account, il Select del tema;
    - la build del web senza errori di Tamagui nel log (l'ottimizzazione che
-     salta lo dice solo lì, vedi `apps/web/CLAUDE.md`).
+     salta lo dice solo lì, vedi `apps/web/CLAUDE.md`);
+   - le variabili CSS di Tamagui che usano `globals.css` e i CSS delle pagine
+     (`--color12`, `--borderColor`, `--surface`…) esistono ancora;
+   - le media query passate ai componenti di `@repo/ui` (`maxW="lg:960px"`
+     su `DialogContent`, `display="max-sm:none"`) non rompono l'idratazione,
+     come succedeva con la v2 (`apps/web/CLAUDE.md`).
 7. **La documentazione.** `packages/ui/CLAUDE.md` e `apps/web/CLAUDE.md`
    (abbreviazioni, media query, gli aggiramenti rimasti), e il piano del
    design system dove cita la 2.7.7.
@@ -139,7 +176,7 @@ Compiler: lotti a parte.
 Scritta il 17/11/2026 per riprendere da una chat nuova.
 
 **Dove si è.** Branch `chore/tamagui-3`, rimesso sopra `main` dopo il merge
-della #141. Passi 2 e 3 fatti (vedi lì), si riparte dal **passo 4**. La base
+della #141. Passi 2, 3 e 4 fatti (vedi lì), si riparte dal **passo 5**. La base
 di Chromatic è la build 12: 159 storie, nessuna rossa; le sue 159 immagini
 vanno accettate come base nella dashboard, se non è già stato fatto.
 
@@ -188,4 +225,4 @@ e il `play` aperto con Playwright su `iframe.html?id=…`.
 
 > Riprendiamo la migrazione a Tamagui 3: leggi `plans/tamagui-3.md`, in
 > particolare «Ripresa», e lavora sul branch `chore/tamagui-3`. Si parte dal
-> passo 4.
+> passo 5.

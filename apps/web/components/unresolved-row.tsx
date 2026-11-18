@@ -171,7 +171,12 @@ export function UnresolvedRow({
     >
       {/* L'id esterno non si scrive: è nel suggerimento, per chi deve
           riconoscere una voce che si chiama «Live» o «Production». */}
-      <Text fontWeight="500" color="color12" title={entry.externalId}>
+      <Text
+        fontWeight="500"
+        color="color12"
+        // Gli attributi dell'elemento non sono nei tipi del testo.
+        {...({ title: entry.externalId } as object)}
+      >
         {entry.name}
       </Text>
 
@@ -188,10 +193,14 @@ export function UnresolvedRow({
         {pageUrl ? (
           <XStack
             render="a"
-            href={pageUrl}
-            target={'_blank'}
-            rel={'noopener noreferrer'}
-            title={t('openOn', { store: storeName })}
+            // Come in `NavItem`: gli attributi del link arrivano all'`<a>`, ma
+            // i tipi della view non li conoscono.
+            {...({
+              href: pageUrl,
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              title: t('openOn', { store: storeName }),
+            } as object)}
             shrink={0}
             mt={1}
             rounded={4}
