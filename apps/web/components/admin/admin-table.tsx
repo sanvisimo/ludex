@@ -1,30 +1,16 @@
 import { Text, XStack, YStack } from '@repo/ui';
 import type { ReactNode } from 'react';
 
-/**
- * Una colonna della tabella. `width` fissa la larghezza; senza, la colonna
- * prende la sua parte di ciò che resta (`flex`, 1 di default).
- */
 export type AdminColumn<T> = {
   key: string;
   header: ReactNode;
   width?: number;
   flex?: number;
-  /**
-   * Una colonna elastica non scende sotto questa larghezza: sotto, la tabella
-   * scorre di lato. Senza, stretta la finestra, un numero finiva spezzato a
-   * metà e un motivo restava una colonna di tre parole.
-   */
+  align?: 'end';
   minWidth?: number;
   render: (row: T) => ReactNode;
 };
 
-/**
- * La tabella delle sezioni admin: la stessa forma della vista compatta del
- * backlog — righe di `XStack` con i ruoli ARIA di una tabella — perché in
- * `@repo/ui` una tabella non c'è, e l'admin è roba da desktop: niente forma
- * per il telefono, sotto si scorre di lato.
- */
 export function AdminTable<T>({
   label,
   columns,
@@ -36,13 +22,11 @@ export function AdminTable<T>({
   rows: T[];
   rowKey: (row: T) => string;
 }) {
-  // La larghezza sotto cui la tabella scorre: quella delle colonne che hanno una
-  // misura, più i vuoti. Mai meno di 640, com'è sempre stato.
   const minW = Math.max(
     640,
     columns.reduce(
       (sum, column) => sum + (column.width ?? column.minWidth ?? 0),
-      24 + 12 * (columns.length - 1),
+      32 + 12 * (columns.length - 1),
     ),
   );
 
@@ -55,6 +39,7 @@ export function AdminTable<T>({
       outlineStyle="focus-visible:solid"
       outlineWidth="focus-visible:2px"
       outlineOffset="focus-visible:2px"
+      bg="background"
       rounded={12}
       borderWidth={1}
       borderColor="border-color"
@@ -63,8 +48,8 @@ export function AdminTable<T>({
     >
       <XStack
         role="row"
-        px={12}
-        py={10}
+        px={16}
+        py={12}
         gap={12}
         items="center"
         bg="color3"
@@ -90,8 +75,8 @@ export function AdminTable<T>({
         <XStack
           role="row"
           key={rowKey(row)}
-          px={12}
-          py={10}
+          px={16}
+          py={12}
           gap={12}
           items="center"
           minW={minW}
@@ -119,35 +104,25 @@ function Cell<T>({
   role: 'cell' | 'columnheader';
   children: ReactNode;
 }) {
-  // Solo le colonne elastiche hanno `overflow`: le view di Tamagui non si
-  // restringono da sole, e un id Amazon lungo usciva dalla sua colonna e finiva
-  // sopra quella accanto. Le fisse no, perché tengono i bottoni, e si
-  // perderebbe l'anello del focus: la loro larghezza va data giusta.
-  return column.width !== undefined ? (
-    <XStack role={role} width={column.width} shrink={0} items="center" gap={6}>
-      {children}
-    </XStack>
-  ) : (
+  // Le colonne fisse lasciano visibile il focus dei bottoni oltre il bordo della cella.
+  const fixed = column.width !== undefined;
+  return (
     <XStack
       role={role}
-      flex={column.flex ?? 1}
-      minW={column.minWidth ?? 0}
-      overflow="hidden"
+      width={column.width}
+      shrink={fixed ? 0 : undefined}
+      flex={fixed ? undefined : (column.flex ?? 1)}
+      minW={fixed ? undefined : (column.minWidth ?? 0)}
+      overflow={fixed ? undefined : 'hidden'}
       items="center"
-      gap={6}
+      gap={8}
+      justify={column.align === 'end' ? 'flex-end' : 'flex-start'}
     >
       {children}
     </XStack>
   );
 }
 
-/**
- * Il testo di una cella: va a capo, mai tagliato, perché in queste tabelle il
- * testo è l'informazione. Si spezza in mezzo a una parola solo se la parola non
- * ci sta nemmeno da sola: `anywhere` e non `break-word`, che lascerebbe a un id
- * lungo la larghezza minima dell'id intero, e la cella lo taglierebbe. Accanto a
- * una copertina va dentro un blocco con `flex={1} minW={0}`.
- */
 export function CellText({
   children,
   muted = false,

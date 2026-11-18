@@ -14,15 +14,7 @@ import { GameCover } from '@/components/game-cover';
 import { api } from '@/lib/orpc';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 
-/**
- * «Apri un gioco»: la ricerca del catalogo, che porta alla scheda admin. È il
- * `SearchField` della ricerca globale, così la tendina si chiude uscendo dal
- * campo, con Esc e dopo la scelta; prima era un riquadro che restava aperto
- * finché c'era del testo.
- *
- * Invio senza una voce evidenziata apre la prima: l'admin una pagina dei
- * risultati non ce l'ha.
- */
+// Invio senza selezione apre il primo risultato perché l’admin non ha una pagina dei risultati.
 export function CatalogFinder() {
   const t = useTranslations('admin.games');
   const tSearch = useTranslations('search');
@@ -34,7 +26,8 @@ export function CatalogFinder() {
     ...api.games.find.queryOptions({ input: { q, limit: 8 } }),
     enabled: q.length >= 2,
   });
-  const games = q.length >= 2 ? (found.data?.games ?? []) : [];
+  const games =
+    q.length >= 2 && q === text.trim() ? (found.data?.games ?? []) : [];
 
   const open = (slug: string) => {
     setText('');
@@ -42,9 +35,12 @@ export function CatalogFinder() {
   };
 
   return (
-    <YStack width={320}>
+    <YStack width={320} maxW="100%" gap={4}>
+      <Text fontSize={12} lineHeight="16px" fontWeight="600" color="color11">
+        {t('findLabel')}
+      </Text>
       <SearchField
-        aria-label={t('find')}
+        aria-label={t('findLabel')}
         placeholder={t('find')}
         clearLabel={tSearch('clear')}
         value={text}

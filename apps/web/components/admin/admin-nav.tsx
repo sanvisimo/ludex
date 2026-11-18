@@ -1,4 +1,4 @@
-import { NavItem, YStack } from '@repo/ui';
+import { NavItem, Text, YStack } from '@repo/ui';
 import {
   ChartColumn,
   Database,
@@ -23,15 +23,6 @@ type AdminSection =
   | '/admin/users'
   | '/admin/usage';
 
-/**
- * Il menu delle sezioni admin, con la stessa forma di quello dell'account:
- * una colonna da `$md`, una riga che scorre sotto.
- *
- * I numeri dicono dove c'è lavoro: le chiavi degli scarti ancora da
- * sistemare, le segnalazioni aperte e i giochi con copie su una piattaforma
- * dove non sono usciti. Una riga sola per lista: serve il totale, non
- * l'elenco.
- */
 export function AdminNav() {
   const t = useTranslations('admin.nav');
   const scarti = useQuery(
@@ -50,46 +41,70 @@ export function AdminNav() {
     <YStack
       render="nav"
       aria-label={t('label')}
-      width="200px max-md:100%"
+      width="208px max-md:100%"
       shrink={0}
-      gap={4}
+      gap={20}
+      pb="max-md:4px"
       flexDirection="max-md:row"
       style={{
         overflowX: 'auto',
         overflowY: 'hidden',
-        scrollbarWidth: 'none',
       }}
     >
-      <SectionLink to="/admin/missing" icon={<Database size={16} />}>
-        {t('missing')}
-      </SectionLink>
-      <SectionLink
-        to="/admin/unresolved"
-        icon={<Inbox size={16} />}
-        count={scarti.data?.total}
+      <NavGroup label={t('catalog')}>
+        <SectionLink to="/admin/missing" icon={<Database size={16} />}>
+          {t('missing')}
+        </SectionLink>
+        <SectionLink
+          to="/admin/unresolved"
+          icon={<Inbox size={16} />}
+          count={scarti.data?.total}
+        >
+          {t('unresolved')}
+        </SectionLink>
+        <SectionLink
+          to="/admin/reported"
+          icon={<Flag size={16} />}
+          count={segnalazioni.data?.total}
+        >
+          {t('reported')}
+        </SectionLink>
+        <SectionLink
+          to="/admin/platforms"
+          icon={<MonitorX size={16} />}
+          count={piattaforme.data?.total}
+        >
+          {t('platforms')}
+        </SectionLink>
+      </NavGroup>
+      <NavGroup label={t('management')}>
+        <SectionLink to="/admin/users" icon={<Users size={16} />}>
+          {t('users')}
+        </SectionLink>
+        <SectionLink to="/admin/usage" icon={<ChartColumn size={16} />}>
+          {t('usage')}
+        </SectionLink>
+      </NavGroup>
+    </YStack>
+  );
+}
+
+function NavGroup({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <YStack role="group" aria-label={label} gap={4} shrink={0}>
+      <Text
+        aria-hidden
+        fontSize={12}
+        lineHeight="16px"
+        fontWeight="600"
+        color="color11"
+        px={12}
       >
-        {t('unresolved')}
-      </SectionLink>
-      <SectionLink
-        to="/admin/reported"
-        icon={<Flag size={16} />}
-        count={segnalazioni.data?.total}
-      >
-        {t('reported')}
-      </SectionLink>
-      <SectionLink
-        to="/admin/platforms"
-        icon={<MonitorX size={16} />}
-        count={piattaforme.data?.total}
-      >
-        {t('platforms')}
-      </SectionLink>
-      <SectionLink to="/admin/users" icon={<Users size={16} />}>
-        {t('users')}
-      </SectionLink>
-      <SectionLink to="/admin/usage" icon={<ChartColumn size={16} />}>
-        {t('usage')}
-      </SectionLink>
+        {label}
+      </Text>
+      <YStack gap={4} flexDirection="max-md:row">
+        {children}
+      </YStack>
     </YStack>
   );
 }
@@ -110,6 +125,11 @@ function SectionLink({
 
   return (
     <NavItem
+      height="auto"
+      minH={40}
+      py={8}
+      shrink={0}
+      outlineOffset="focus-visible:-2px"
       href={to}
       active={matchRoute({ to, fuzzy: true }) !== false}
       icon={icon}

@@ -12,15 +12,7 @@ export const Route = createFileRoute('/_app/admin')({
   component: AdminLayout,
 });
 
-/**
- * La cornice dell'admin (11a), con la forma di quella dell'account: il menu
- * delle sezioni e, accanto, la sezione aperta.
- *
- * Chi non è admin viene rimandato al catalogo. È comodità, non sicurezza: la
- * sicurezza vera la fa il middleware `admin` sul server, che risponde 403 a
- * ogni procedura `admin.*`. Qui si evita solo di mostrare una pagina vuota di
- * errori.
- */
+// L’autorizzazione resta nel middleware admin del server.
 function AdminLayout() {
   const t = useTranslations('admin');
   const navigate = useNavigate();
@@ -42,10 +34,6 @@ function AdminLayout() {
   }
 
   return (
-    // Fluida e non più larga: le sezioni sono tabelle, e a 1200 il testo si
-    // tagliava con lo schermo mezzo vuoto.
-    // «Apri un gioco» sta nell'intestazione: c'è da qualunque sezione, perché
-    // un collegamento sbagliato che nessuno ha segnalato si trova così.
     <Page title={t('title')} maxW="100%" actions={<CatalogFinder />}>
       <XStack
         gap={24}
