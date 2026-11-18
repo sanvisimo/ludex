@@ -30,10 +30,6 @@ const meta: Meta<Args> = {
 export default meta;
 type Story = StoryObj<Args>;
 
-/**
- * Il «Nascondi come…» degli scarti: un gruppo con etichetta, un separatore,
- * e una voce fuori dal gruppo.
- */
 export const Default: Story = {
   render: ({ onHide }) => (
     <XStack width={320} justify="flex-end">
@@ -67,7 +63,6 @@ export const Default: Story = {
   ),
 };
 
-/** Le voci con l'icona prima del testo: il nome della voce resta il solo testo. */
 export const WithIcons: Story = {
   render: () => (
     <DropdownMenu>
@@ -84,14 +79,16 @@ export const WithIcons: Story = {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByText('Menu'));
     const item = await screen.findByRole('menuitem', { name: 'Backlog' });
-    await expect(item.querySelector('svg')).not.toBeNull();
+    const icon = item.querySelector('svg')!.getBoundingClientRect();
+    const label = within(item).getByText('Backlog').getBoundingClientRect();
+    await expect(icon.right).toBeLessThan(label.left);
+    await expect(icon.top + icon.height / 2).toBeCloseTo(
+      label.top + label.height / 2,
+      0,
+    );
   },
 };
 
-/**
- * Una voce che toglie qualcosa, in rosso e con la sua icona: resta una voce di
- * menu come le altre — si raggiunge, si legge e chiama il suo `onClick`.
- */
 export const Destructive: Story = {
   render: ({ onHide }) => (
     <DropdownMenu>
@@ -125,7 +122,6 @@ export const Destructive: Story = {
   },
 };
 
-/** Il selettore del tema: tre voci radio, la scelta ha la spunta. */
 export const Radio: Story = {
   render: function Render() {
     const [theme, setTheme] = useState('system');
@@ -152,20 +148,14 @@ export const Radio: Story = {
   },
 };
 
-/**
- * Il comportamento: il trigger apre, una voce chiama il suo `onClick` e il
- * menu si chiude. È la traduzione `onClick` → `onSelect` che qui si verifica.
- */
 export const Choose: Story = {
   ...Default,
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByText('Nascondi'));
 
-    // Il menu sta in un portale, fuori dal canvas della storia.
     const item = await screen.findByRole('menuitem', { name: 'DLC' });
 
-    // `align="end"`: il bordo destro del menu coincide con quello del bottone.
     const trigger = canvas.getByText('Nascondi').closest('button')!;
     await waitFor(() =>
       expect(
@@ -179,7 +169,6 @@ export const Choose: Story = {
   },
 };
 
-/** La radio: scegliere «Scuro» sposta la spunta, e riaprendo la si ritrova. */
 export const ChooseRadio: Story = {
   ...Radio,
   play: async ({ canvasElement }) => {
@@ -197,7 +186,6 @@ export const ChooseRadio: Story = {
   },
 };
 
-/** Il menu deve cedere il focus al dialogo aperto dalla sua voce. */
 export const OpensDialog: Story = {
   render: function Render() {
     const [open, setOpen] = useState(false);
