@@ -335,7 +335,7 @@ function SheetSettings() {
   const tLocale = useTranslations('locale');
   const { theme, setTheme } = useTheme();
   const locale = useLocale();
-  const { change } = useChangeLocale();
+  const { change } = useChangeLocale({ save: true });
 
   return (
     <>

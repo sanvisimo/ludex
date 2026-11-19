@@ -11,7 +11,7 @@ import type { Mail } from './mailer';
 // «mostra immagini» e nessun pixel di tracciamento. Colori e PNG li genera
 // `pnpm --filter @repo/ui brand:email` in `email-brand.ts` e `assets/`.
 
-type Locale = 'it' | 'en';
+export type Locale = 'it' | 'en';
 
 const webUrl = process.env.WEB_URL ?? 'http://localhost:8085';
 
@@ -49,6 +49,7 @@ type Texts = {
   addressTaken: (newEmail: string) => Content;
   reset: () => Content;
   existing: () => Content;
+  madeAdmin: () => Content;
 };
 
 const texts: Record<Locale, Texts> = {
@@ -120,6 +121,17 @@ const texts: Record<Locale, Texts> = {
         'Se non hai fatto tu la richiesta, puoi ignorare questa email: il tuo account non è cambiato.',
       ],
     }),
+    madeAdmin: () => ({
+      subject: 'Sei diventato admin di PileCue',
+      intro: [
+        'un admin di PileCue ti ha dato il ruolo di amministratore.',
+        "Da adesso nel menu trovi l'area admin: giochi da sistemare, segnalazioni e utenti.",
+      ],
+      button: "Apri l'area admin",
+      outro: [
+        'Se pensi che sia un errore, avvisa chi ti ha nominato: il ruolo si toglie dalla stessa sezione.',
+      ],
+    }),
   },
   en: {
     greeting: (name) => `Dear ${name},`,
@@ -186,6 +198,17 @@ const texts: Record<Locale, Texts> = {
       button: 'Recover your password',
       outro: [
         "If you didn't make this request, you can ignore this email: your account hasn't changed.",
+      ],
+    }),
+    madeAdmin: () => ({
+      subject: "You're now a PileCue admin",
+      intro: [
+        'A PileCue admin has given you the administrator role.',
+        'From now on the menu includes the admin area: games to fix, reports and users.',
+      ],
+      button: 'Open the admin area',
+      outro: [
+        'If you think this is a mistake, let whoever made you admin know: the role is removed from the same section.',
       ],
     }),
   },
@@ -348,5 +371,16 @@ export function addressTaken(
     locale,
     user.name,
     texts[locale].addressTaken(newEmail),
+  );
+}
+
+/** A chi un admin ha appena dato il ruolo di admin. */
+export function madeAdmin(user: User, locale: Locale): Mail {
+  return compose(
+    user.email,
+    locale,
+    user.name,
+    texts[locale].madeAdmin(),
+    `${webUrl}/admin`,
   );
 }

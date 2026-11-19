@@ -14,9 +14,9 @@ export async function getUserSettings(userId: string): Promise<UserSettings> {
   const row = await db.query.userSettings.findFirst({
     where: eq(schema.userSettings.userId, userId),
   });
-  if (row) return { autoSyncLibrary: row.autoSyncLibrary };
+  if (row) return toSettings(row);
 
-  return { autoSyncLibrary: defaults().autoSyncLibrary };
+  return { autoSyncLibrary: defaults().autoSyncLibrary, locale: null };
 }
 
 /**
@@ -44,7 +44,13 @@ export async function updateUserSettings(
     })
     .returning();
 
-  return { autoSyncLibrary: row!.autoSyncLibrary };
+  return toSettings(row!);
+}
+
+function toSettings(
+  row: typeof schema.userSettings.$inferSelect,
+): UserSettings {
+  return { autoSyncLibrary: row.autoSyncLibrary, locale: row.locale };
 }
 
 /** I default dichiarati sulle colonne, letti dallo schema e non riscritti. */

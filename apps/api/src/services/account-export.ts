@@ -26,7 +26,10 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
   if (!profile) throw new Error(`utente ${userId} non trovato`);
 
   const [settings] = await db
-    .select({ autoSyncLibrary: schema.userSettings.autoSyncLibrary })
+    .select({
+      autoSyncLibrary: schema.userSettings.autoSyncLibrary,
+      locale: schema.userSettings.locale,
+    })
     .from(schema.userSettings)
     .where(eq(schema.userSettings.userId, userId));
 
@@ -255,7 +258,10 @@ export async function exportAccount(userId: string): Promise<AccountExport> {
   return {
     exportedAt: new Date(),
     profile,
-    settings: { autoSyncLibrary: settings?.autoSyncLibrary ?? true },
+    settings: {
+      autoSyncLibrary: settings?.autoSyncLibrary ?? true,
+      locale: settings?.locale ?? null,
+    },
     storeAccounts: accounts.map((account) => ({
       store: account.store,
       storeName: account.storeName,

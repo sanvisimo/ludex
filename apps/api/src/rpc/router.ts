@@ -4,7 +4,7 @@ import {
   hiddenPage,
 } from '../services/account-lists';
 import { ORPCError } from '@orpc/server';
-import { auth } from '@repo/auth';
+import { auth, madeAdmin, sendInBackground } from '@repo/auth';
 import { isOneShotStore } from '@repo/contracts/vocabulary';
 
 import {
@@ -57,7 +57,7 @@ import {
 } from '../services/admin-games';
 import { exportAccount } from '../services/account-export';
 import { mergeGames, previewMerge } from '../services/admin-merge';
-import { listUsers } from '../services/admin-users';
+import { findUserForRoleChange, listUsers } from '../services/admin-users';
 import { adminUsage } from '../services/admin-usage';
 import { listHomeBands } from '../services/home';
 import { findGamePrice } from '../services/itad';
@@ -1591,12 +1591,15 @@ export const router = os.router({
             throw new ORPCError('BAD_REQUEST', {
               message: 'Il tuo ruolo non lo togli da solo',
             });
+          const target = await findUserForRoleChange(input.userId);
           await asAdminAuthCall(() =>
             auth.api.setRole({
               body: { userId: input.userId, role: input.role },
               headers: context.headers,
             }),
           );
+          if (target && target.role !== 'admin' && input.role === 'admin')
+            sendInBackground(madeAdmin(target, target.locale ?? 'it'));
         }),
 
       ban: os.admin.users.ban
