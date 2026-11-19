@@ -10,7 +10,6 @@ import {
   restorePlatformMismatch,
 } from './platform-mismatches';
 
-/** Un gioco con le piattaforme che IGDB gli dà. */
 async function gioco(name: string, platformIgdbIds: number[] | null) {
   const game = await createGame({ name });
   await db
@@ -169,6 +168,25 @@ describe('listPlatformMismatches', () => {
       ['B', 2],
       ['A', 1],
     ]);
+  });
+
+  it('restituisce il totale quando una decisione svuota l’ultima pagina', async () => {
+    const primo = await gioco('A', [29]);
+    const ultimo = await gioco('B', [29]);
+    await copia(userId, primo.id, 'sony_playstation5');
+    await copia(userId, ultimo.id, 'sony_playstation5');
+    const secondaPagina = { dismissed: false, limit: 1, offset: 1 };
+    expect(await listPlatformMismatches(secondaPagina)).toMatchObject({
+      rows: [{ gameId: ultimo.id }],
+      total: 2,
+    });
+
+    await dismissPlatformMismatch(ultimo.id, ['sony_playstation5'], userId);
+
+    expect(await listPlatformMismatches(secondaPagina)).toEqual({
+      rows: [],
+      total: 1,
+    });
   });
 
   it('«va bene così» lo toglie, e si annulla', async () => {

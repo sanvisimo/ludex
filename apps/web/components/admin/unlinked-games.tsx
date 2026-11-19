@@ -1,6 +1,6 @@
 import {
-  adminUnlinkedDefaultSort,
   AdminUnlinkedSortSchema,
+  type AdminUnlinkedSort,
   type IgdbSearchHit,
   type MergeGame,
 } from '@repo/contracts';
@@ -11,6 +11,11 @@ import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
+import {
+  ADMIN_PAGE_SIZE,
+  AdminPagination,
+  type AdminPageNavigation,
+} from '@/components/admin/admin-pagination';
 import {
   AdminTable,
   CellText,
@@ -29,11 +34,25 @@ type Unlinked = {
   users: number;
 };
 
-export function UnlinkedGames({ q }: { q?: string }) {
-  const [sorting, setSorting] = useState(adminUnlinkedDefaultSort);
+export function UnlinkedGames({
+  q,
+  sorting,
+  onSortChange,
+  paging,
+}: {
+  q?: string;
+  sorting: AdminUnlinkedSort;
+  onSortChange: (sort: AdminUnlinkedSort) => void;
+  paging: AdminPageNavigation;
+}) {
   const query = useQuery(
     api.admin.games.unlinked.queryOptions({
-      input: { q, sorting, limit: 100 },
+      input: {
+        q,
+        sorting,
+        limit: ADMIN_PAGE_SIZE,
+        offset: (paging.page - 1) * ADMIN_PAGE_SIZE,
+      },
     }),
   );
   const t = useTranslations('admin.games');
@@ -112,21 +131,22 @@ export function UnlinkedGames({ q }: { q?: string }) {
   if (query.isError) return <EmptyState title={t('failed')} />;
   return (
     <>
-      {query.data?.rows.length === 0 ? (
+      {paging.page === 1 && query.data?.rows.length === 0 ? (
         <EmptyState title={t('emptyUnlinked')} />
       ) : (
         <AdminTable
           label={t('unlinked')}
           columns={columns}
-          rows={query.data?.rows}
+          rows={query.data?.rows.length ? query.data.rows : undefined}
           rowKey={(game) => game.id}
           serverSort={{
             value: sorting,
             keys: AdminUnlinkedSortSchema.shape.sort.options,
-            onChange: setSorting,
+            onChange: onSortChange,
           }}
         />
       )}
+      <AdminPagination {...paging} total={query.data?.total} />
       <IgdbPickDialog
         open={linking !== null}
         onOpenChange={(open) => {

@@ -1,87 +1,86 @@
 import type { GamePrice, HomeGame } from '@repo/contracts';
-import { Badge, BrandIcon, brandTitle, Text, Tooltip, XStack } from '@repo/ui';
+import { BrandIcon, brandTitle, Tooltip } from '@repo/ui';
+import { ArrowUpRight } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'use-intl';
 
 import { api } from '@/lib/orpc';
 
-/**
- * I prezzi ITAD delle card di una lista, in una chiamata sola. Un gioco che hai
- * già nel backlog non ha bisogno di un prezzo, come nella pagina del gioco.
- */
+import './card-price.css';
+
 export function useCardPrices(games: HomeGame[]) {
   const gameIds = games.filter((game) => !game.status).map((game) => game.id);
   const { data } = useQuery({
     ...api.games.prices.queryOptions({ input: { gameIds } }),
     enabled: gameIds.length > 0,
   });
-  return (game: HomeGame) =>
-    data?.[game.id] ? <CardPrice price={data[game.id]!} /> : undefined;
+  return (game: HomeGame) => (
+    <CardPrice price={game.status ? null : (data?.[game.id] ?? null)} />
+  );
 }
 
-/**
- * Una riga sola e mai a capo, o le card vicine perdono l'allineamento di anno e
- * voto. Il negozio sta nel suggerimento: sul telefono, dove non compare, è a un
- * tocco, nella pagina ITAD.
- */
-function CardPrice({ price }: { price: GamePrice }) {
+function CardPrice({ price }: { price: GamePrice | null }) {
   const t = useTranslations('game');
   const format = useFormatter();
-  const name = brandTitle('itad');
-  const { current } = price;
+  if (!price) return <div className="wishlist-price-slot" aria-hidden="true" />;
 
-  const amount =
-    current &&
-    (current.amount === 0
+  const { current } = price;
+  const priceText = current
+    ? current.amount === 0
       ? t('itadFree')
       : format.number(current.amount, {
           style: 'currency',
           currency: current.currency,
-        }));
+        })
+    : t('itadPriceUnavailable');
   const hint = [
     current
-      ? t('itadOffer', { price: amount!, shop: current.shop })
-      : t('itadNoOffer'),
+      ? t('itadOffer', { price: priceText, shop: current.shop })
+      : priceText,
     current?.historicalLow ? t('itadHistoricalLow') : null,
   ]
     .filter(Boolean)
     .join(' · ');
-  const label = `${hint} — ${t('openOn', { name })}`;
+  const label = `${hint} — ${t('openOn', { name: brandTitle('itad') })}`;
 
   return (
-    <Tooltip content={label}>
-      <a
-        href={price.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={label}
-        style={{ color: 'inherit', textDecoration: 'none', display: 'block' }}
-      >
-        <XStack
-          items="center"
-          gap={6}
-          height={29}
-          pt={8}
-          borderTopWidth={1}
-          borderColor="border-color"
+    <div className="wishlist-price-slot">
+      <Tooltip content={label}>
+        <a
+          className="wishlist-price"
+          href={price.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={label}
         >
-          <BrandIcon brand="itad" size={14} />
-          <Text
-            flex={1}
-            minW={0}
-            numberOfLines={1}
-            fontSize={13}
-            lineHeight="20px"
-            fontWeight={current ? '600' : '400'}
-            color={current ? 'color12' : 'color11'}
-          >
-            {amount ?? name}
-          </Text>
-          {current?.historicalLow && (
-            <Badge variant="success">{t('itadLowShort')}</Badge>
-          )}
-        </XStack>
-      </a>
-    </Tooltip>
+          <span className="wishlist-price-line">
+            <span
+              className={
+                current ? 'wishlist-price-amount' : 'wishlist-price-shop'
+              }
+            >
+              {priceText}
+            </span>
+            {current?.historicalLow && (
+              <span className="wishlist-price-minimum">
+                <span className="wishlist-price-minimum-full">
+                  {t('itadHistoricalLow')}
+                </span>
+                <span className="wishlist-price-minimum-short">
+                  {t('itadLowShort')}
+                </span>
+              </span>
+            )}
+          </span>
+          <span className="wishlist-price-line wishlist-price-shop">
+            <BrandIcon brand="itad" size={12} />
+            <span className="wishlist-price-store">
+              {current?.shop ?? 'ITAD'}
+            </span>
+            <ArrowUpRight size={13} aria-hidden />
+          </span>
+        </a>
+      </Tooltip>
+    </div>
   );
 }

@@ -11,16 +11,6 @@ import { igdbPlatformsOfCopy } from './copy-platforms';
 import { igdbPlatformNamer } from './platform-names';
 
 /**
- * Le copie su una piattaforma dove IGDB dice che il gioco non è uscito (9b PSN).
- *
- * È l'ultima spiaggia: l'import per nome queste copie non le scrive più (la
- * regola 3 in `resolveByName`), ma restano i collegamenti fatti da IGDB per id
- * — Steam, GOG, i dischi PSN — e quelli scritti prima della regola. Una copia
- * PS5 sull'_Harry Potter_ del 2001, che su PS5 non c'è, è un collegamento
- * sbagliato; l'admin apre il gioco e lo corregge con «Non è questo gioco», e la
- * riga sparisce da sola. Quando invece è IGDB che non ha la piattaforma, «va
- * bene così» la toglie per sempre.
- *
  * Calcolata a ogni richiesta, non tenuta in una tabella: le piattaforme valide
  * per una copia le dice `igdbPlatformsOfCopy`, la stessa funzione della regola
  * 3, e passarle a Postgres come tabella di valori evita di scriverle due volte.
@@ -63,17 +53,7 @@ export async function listPlatformMismatches(input: {
     users: sql`gr.users`,
   };
 
-  const rows = await db.execute<{
-    gameId: string;
-    name: string;
-    slug: string;
-    coverImageId: string | null;
-    releaseYear: number | null;
-    platformIgdbIds: number[];
-    copies: { store: Store; platformSlug: string }[];
-    users: number;
-    total: number;
-  }>(sql`
+  const mismatchedCopies = sql`
     with valide(slug, ids) as (values ${valide}),
     fuori as (
       select b.game_id, b.user_id, o.store, o.platform_slug
@@ -95,7 +75,20 @@ export async function listPlatformMismatches(input: {
           select 1 from platform_mismatch_dismissals d
           where d.game_id = b.game_id and d.platform_slug = o.platform_slug
         )
-    ),
+    )`;
+
+  const rows = await db.execute<{
+    gameId: string;
+    name: string;
+    slug: string;
+    coverImageId: string | null;
+    releaseYear: number | null;
+    platformIgdbIds: number[];
+    copies: { store: Store; platformSlug: string }[];
+    users: number;
+    total: number;
+  }>(sql`
+    ${mismatchedCopies},
     gruppi as (
       select game_id,
         jsonb_agg(distinct jsonb_build_object(
@@ -116,6 +109,16 @@ export async function listPlatformMismatches(input: {
     order by ${adminOrderBy(columns[sort], direction)}, g.name, g.id
     limit ${input.limit} offset ${input.offset}
   `);
+
+  let total = rows[0]?.total ?? 0;
+  // La window function non restituisce il totale quando l'offset supera l'ultima riga.
+  if (rows.length === 0 && input.offset > 0) {
+    const [count] = await db.execute<{ total: number }>(sql`
+      ${mismatchedCopies}
+      select count(distinct game_id)::int as total from fuori
+    `);
+    total = count?.total ?? 0;
+  }
 
   return {
     rows: rows.map((row) => ({
@@ -141,7 +144,7 @@ export async function listPlatformMismatches(input: {
       // tabella non conosce si mostra com'è: è comunque un «no».
       igdbPlatforms: row.platformIgdbIds.map(nomeIgdb),
     })),
-    total: rows[0]?.total ?? 0,
+    total,
   };
 }
 
