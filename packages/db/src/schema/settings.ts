@@ -14,8 +14,8 @@ import { timestamps } from './timestamps';
  *
  * Che l'assenza della riga valga i default è la scelta che conta: gli utenti
  * che c'erano prima di questa tabella non hanno bisogno di una migrazione dei
- * dati, e la registrazione non ha bisogno di un hook che la crei. Chi legge
- * deve quindi sempre ripiegare sul default — in SQL con `coalesce`, in
+ * dati. La registrazione la crea comunque, per segnare la lingua, ma una riga
+ * che manca resta valida. Chi legge deve quindi sempre ripiegare sul default — in SQL con `coalesce`, in
  * `getUserSettings` a mano — e i default stanno scritti **qui**, sulle colonne,
  * e da nessun'altra parte.
  */
@@ -32,5 +32,9 @@ export const userSettings = pgTable('user_settings', {
   // dieci giorni che ripartono a ogni rinnovo, e senza un import che rinnovi
   // l'account muore da solo.
   autoSyncLibrary: boolean('auto_sync_library').notNull().default(true),
+  // La lingua delle email che partono senza una richiesta di chi le riceve,
+  // come l'avviso a chi diventa admin: lì il cookie della lingua non c'è.
+  // Nullo vuol dire mai saputa, e si ripiega sull'italiano come il web.
+  locale: text('locale', { enum: ['it', 'en'] }),
   ...timestamps,
 });

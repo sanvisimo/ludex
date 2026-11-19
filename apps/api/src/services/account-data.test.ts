@@ -400,7 +400,7 @@ describe('esportare i dati', () => {
     ]);
     expect(data.wishlists).toEqual([]);
     expect(data.reports).toHaveLength(1);
-    expect(data.settings).toEqual({ autoSyncLibrary: true });
+    expect(data.settings).toEqual({ autoSyncLibrary: true, locale: null });
 
     // Nessun segreto in nessun punto del file, qualunque ne sia la chiave.
     const file = JSON.stringify(data);

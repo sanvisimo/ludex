@@ -132,6 +132,23 @@ export const auth = betterAuth({
         ),
     },
   },
+  // La lingua di chi si registra, per le email che gli arriveranno senza una
+  // sua richiesta. Gira dopo la transazione della registrazione, quindi la FK
+  // verso `user` regge. Senza una richiesta (un utente creato da un arnese)
+  // non c'è una lingua da indovinare: la riga non si crea.
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user, context) => {
+          if (!context?.request) return;
+          await db
+            .insert(schema.userSettings)
+            .values({ userId: user.id, locale: localeOf(context.request) })
+            .onConflictDoNothing();
+        },
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     // Senza email verificata non si entra (rilascio): senza Cloudflare Access
@@ -222,3 +239,6 @@ export type Auth = typeof auth;
 // `better-auth` direttamente.
 export { APIError } from 'better-auth/api';
 export type Session = typeof auth.$Infer.Session;
+// Le email che partono dall'API e non da una richiesta all'auth.
+export { madeAdmin } from './emails';
+export { sendInBackground } from './mailer';

@@ -1,5 +1,5 @@
 import { db, schema } from '@repo/db';
-import { count, desc, ilike, or, sql } from '@repo/db/orm';
+import { count, desc, eq, ilike, or, sql } from '@repo/db/orm';
 
 // La sezione Utenti dell'admin (11a, passo 7). Qui solo la lista: ruolo, ban e
 // sessioni passano dalle API del plugin `admin` di Better Auth, nel router,
@@ -66,4 +66,25 @@ export async function listUsers(input: {
     })),
     total: total?.n ?? 0,
   };
+}
+
+/**
+ * Chi riceve l'avviso di un cambio di ruolo: indirizzo, ruolo di adesso e la
+ * lingua che ha scelto, che non è quella dell'admin che fa la richiesta.
+ */
+export async function findUserForRoleChange(userId: string) {
+  const [row] = await db
+    .select({
+      name: schema.user.name,
+      email: schema.user.email,
+      role: schema.user.role,
+      locale: schema.userSettings.locale,
+    })
+    .from(schema.user)
+    .leftJoin(
+      schema.userSettings,
+      eq(schema.userSettings.userId, schema.user.id),
+    )
+    .where(eq(schema.user.id, userId));
+  return row ?? null;
 }

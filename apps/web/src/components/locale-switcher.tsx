@@ -11,7 +11,8 @@ import { LanguagesIcon } from 'lucide-react';
 import { useLocale, useTranslations } from 'use-intl';
 import { useTransition } from 'react';
 
-import { locales } from '@/i18n/config';
+import { isLocale, locales } from '@/i18n/config';
+import { client } from '@/lib/orpc';
 import { setLocale } from '@/src/i18n';
 
 /**
@@ -22,13 +23,18 @@ import { setLocale } from '@/src/i18n';
  * ricaricare la pagina né perdere la cache di react-query. La usano il
  * selettore e il menu utente.
  */
-export function useChangeLocale() {
+export function useChangeLocale({ save = false }: { save?: boolean } = {}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function change(next: string) {
     startTransition(async () => {
       await setLocale({ data: next });
+      // `save` solo con un utente dentro: senza sessione risponderebbe 401.
+      // Se fallisce la lingua cambia lo stesso; le email che partono senza una
+      // sua richiesta restano nella lingua di prima fino al prossimo cambio.
+      if (save && isLocale(next))
+        await client.settings.update({ locale: next }).catch(() => undefined);
       await router.invalidate();
     });
   }

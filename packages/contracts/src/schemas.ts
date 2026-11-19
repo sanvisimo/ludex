@@ -548,6 +548,9 @@ export const UserSettingsSchema = z.object({
   // con un account PSN collegato vuol dire lasciarlo morire in dieci giorni:
   // la UI lo deve dire.
   autoSyncLibrary: z.boolean(),
+  // La lingua scelta, per le email che partono senza una sua richiesta. Nulla
+  // finché non si è mai saputa.
+  locale: z.enum(['it', 'en']).nullable(),
 });
 
 // Una voce di libreria che l'import non ha saputo legare a un gioco. Il nome è

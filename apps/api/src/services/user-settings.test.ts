@@ -14,6 +14,7 @@ describe('preferenze utente', () => {
   it('senza riga rende i default, e non la crea', async () => {
     await expect(getUserSettings(userId)).resolves.toEqual({
       autoSyncLibrary: true,
+      locale: null,
     });
     expect(await db.select().from(schema.userSettings)).toHaveLength(0);
   });
@@ -21,12 +22,23 @@ describe('preferenze utente', () => {
   it('la prima modifica crea la riga, le successive la aggiornano', async () => {
     await expect(
       updateUserSettings(userId, { autoSyncLibrary: false }),
-    ).resolves.toEqual({ autoSyncLibrary: false });
+    ).resolves.toEqual({ autoSyncLibrary: false, locale: null });
     await expect(
       updateUserSettings(userId, { autoSyncLibrary: true }),
-    ).resolves.toEqual({ autoSyncLibrary: true });
+    ).resolves.toEqual({ autoSyncLibrary: true, locale: null });
 
     expect(await db.select().from(schema.userSettings)).toHaveLength(1);
+  });
+
+  it('la lingua si scrive senza toccare le altre preferenze', async () => {
+    await updateUserSettings(userId, { autoSyncLibrary: false });
+    await expect(updateUserSettings(userId, { locale: 'en' })).resolves.toEqual(
+      { autoSyncLibrary: false, locale: 'en' },
+    );
+    await expect(getUserSettings(userId)).resolves.toEqual({
+      autoSyncLibrary: false,
+      locale: 'en',
+    });
   });
 
   it('una richiesta senza cambiamenti non scrive niente', async () => {
