@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchItadOverview, itadEnabled, lookupItadIds } from './itad';
+import { fetchItadOverviews, itadEnabled, lookupItadIds } from './itad';
 
 // Puro: nessuna rete, nessun database. Le forme delle risposte sono quelle vere,
 // misurate con `itad:probe`.
@@ -73,7 +73,7 @@ describe('lookupItadIds', () => {
   });
 });
 
-describe('fetchItadOverview', () => {
+describe('fetchItadOverviews', () => {
   const voce = {
     id: 'uuid-hl2',
     current: {
@@ -89,23 +89,27 @@ describe('fetchItadOverview', () => {
   it('chiede IT senza voucher, con la chiave nell’header', async () => {
     answer({ prices: [voce], bundles: [] });
 
-    await expect(fetchItadOverview('uuid-hl2')).resolves.toEqual(voce);
+    await expect(fetchItadOverviews(['uuid-hl2'])).resolves.toEqual(
+      new Map([['uuid-hl2', voce]]),
+    );
+    expect(sentInit()?.body).toBe(JSON.stringify(['uuid-hl2']));
 
     expect(sentTo()).toContain('/games/overview/v2?country=IT&vouchers=false');
     expect(sentTo()).not.toContain('chiave');
     expect(sentInit()?.headers).toMatchObject({ 'ITAD-API-Key': 'chiave' });
   });
 
-  it('dà null se ITAD non restituisce il gioco', async () => {
-    answer({ prices: [], bundles: [] });
+  it('lascia fuori i giochi che ITAD non restituisce', async () => {
+    answer({ prices: [voce], bundles: [] });
 
-    await expect(fetchItadOverview('uuid-ritirato')).resolves.toBeNull();
+    const found = await fetchItadOverviews(['uuid-hl2', 'uuid-ritirato']);
+    expect([...found.keys()]).toEqual(['uuid-hl2']);
   });
 
   it('dice che la chiave è stata rifiutata', async () => {
     answer({ status_code: 403 }, 403);
 
-    await expect(fetchItadOverview('uuid-hl2')).rejects.toThrow(
+    await expect(fetchItadOverviews(['uuid-hl2'])).rejects.toThrow(
       'chiave rifiutata',
     );
   });
@@ -119,7 +123,9 @@ describe('dopo un 429', () => {
     expect(redis.values.get('itad:cooldown')?.ttl).toBe(120);
 
     fetchMock.mockClear();
-    await expect(fetchItadOverview('uuid-hl2')).rejects.toThrow('in pausa');
+    await expect(fetchItadOverviews(['uuid-hl2'])).rejects.toThrow(
+      'in pausa',
+    );
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

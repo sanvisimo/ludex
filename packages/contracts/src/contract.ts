@@ -115,6 +115,13 @@ export const contract = {
       .input(z.object({ gameId: z.uuid() }))
       .output(GamePriceSchema.nullable()),
 
+    // Gli stessi prezzi per le card delle liste, in una chiamata sola: ITAD li
+    // chiede in blocco, e una richiesta per card consumerebbe il suo limite. Per
+    // gioco, `null` dove la riga non c'è. 200 come la pagina più grande.
+    prices: oc
+      .input(z.object({ gameIds: z.array(z.uuid()).max(200) }))
+      .output(z.record(z.uuid(), GamePriceSchema.nullable())),
+
     // Il dado (15c): un gioco a caso. Pubblica: da loggati pesca dal backlog
     // dentro `filter`, da anonimi dal catalogo (i tipi giocabili della home) e
     // `filter` non conta. I candidati sono mescolati da `seed`, e `after` è lo

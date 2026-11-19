@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { AddGameDialog } from '@/components/add-game-dialog';
+import { useCardPrices } from '@/components/card-price';
 import {
   GRID_TEMPLATE,
   GridProbe,
@@ -100,6 +101,7 @@ function WishlistPage() {
   const games = data?.games ?? [];
   const total = data?.total ?? 0;
   const pageCount = Math.ceil(total / size);
+  const priceOf = useCardPrices(games);
 
   const paging = (patch: Partial<WishlistSearch>) =>
     validateWishlistSearch({ ...search, ...patch });
@@ -273,6 +275,7 @@ function WishlistPage() {
                     game={game}
                     listId={id}
                     readOnly={data.store !== undefined}
+                    price={priceOf(game)}
                   />
                 ))}
               </Cards>
@@ -311,9 +314,11 @@ function WishlistCard({
   game,
   listId,
   readOnly,
+  price,
 }: {
   game: HomeGame;
   listId: string;
+  price: React.ReactNode;
   /** Una lista di negozio (15e): si allinea al negozio, non si toglie a mano. */
   readOnly: boolean;
 }) {
@@ -344,7 +349,7 @@ function WishlistCard({
 
   return (
     <YStack render="li" gap={6} style={{ listStyle: 'none' }}>
-      <HomeCard game={game} fill showWishlist={false} />
+      <HomeCard game={game} fill showWishlist={false} footer={price} />
       {/* In una lista di negozio un gioco già nel backlog porta la sua
           etichetta di stato sulla card, e non ha niente da aggiungere. */}
       {!(readOnly && game.status) && (

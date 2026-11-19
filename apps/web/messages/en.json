@@ -548,6 +548,9 @@
     "details": "Details",
     "links": "Links",
     "itadFree": "Free",
+    "itadLowShort": "Low",
+    "itadOffer": "{price} on {shop}",
+    "itadNoOffer": "No offers",
     "itadHistoricalLow": "Historical low",
     "openOn": "Open on {name}",
     "officialSite": "Official website",
@@ -1508,6 +1511,10 @@
       "nintendo3dsWiiu": {
         "title": "3DS and Wii U games from Nintendo",
         "text": "The Nintendo import recognizes 3DS and Wii U games: they used to be skipped. Nintendo only shows them if your account is linked to the console's Nintendo Network ID, and only up to February 2020. Just refresh your library."
+      },
+      "itadWishlist": {
+        "title": "Prices in your wishlist",
+        "text": "On the cards of your lists, today's lowest price from IsThereAnyDeal, with its store and the historical low flag."
       },
       "nintendoSwitch2": {
         "title": "Switch 2 games from Nintendo",

@@ -121,18 +121,19 @@ export function fetchItadInfo(uuid: string): Promise<ItadInfo> {
 }
 
 /**
- * Il prezzo di adesso e il minimo storico. `null` se ITAD non restituisce il
- * gioco: succede coi titoli ritirati, che si legge come «nessuna offerta».
+ * Il prezzo di adesso e il minimo storico, per UUID, fino a 200 per richiesta.
+ * Un UUID che ITAD non restituisce manca dalla mappa: succede coi titoli
+ * ritirati, che si legge come «nessuna offerta».
  *
  * `vouchers=false` perché la riga non ha posto per il codice sconto: il prezzo
  * è quello che si paga senza.
  */
-export async function fetchItadOverview(
-  uuid: string,
-): Promise<ItadOverview | null> {
+export async function fetchItadOverviews(
+  uuids: string[],
+): Promise<Map<string, ItadOverview>> {
   const { prices } = await request<{ prices: ItadOverview[] }>(
     `/games/overview/v2?country=${COUNTRY}&vouchers=false`,
-    [uuid],
+    uuids,
   );
-  return prices.find((price) => price.id === uuid) ?? null;
+  return new Map(prices.map((price) => [price.id, price]));
 }

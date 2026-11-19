@@ -86,7 +86,9 @@ fonte con un limite va contato lì, con la sua voce in `apiCallSourceValues`.
   richieste ogni 5 minuti**. Al contrario delle altre fonti **non passa da
   `game_sources`**: l'id si chiede dagli id Steam e GOG e sta in Redis, e il
   prezzo si chiede all'apertura della pagina (`games.price`) e resta in Redis 3
-  ore. Dopo un 429 ci si ferma per il tempo di `Retry-After`: chi insiste sul
+  ore. Le card della wishlist (fasce e lista aperta) lo chiedono **in blocco**
+  (`games.prices`, da loggati, fino a 200 giochi): un lookup per negozio e
+  un'overview sola per tutti, mai una richiesta per card. Dopo un 429 ci si ferma per il tempo di `Retry-After`: chi insiste sul
   limite viene bandito. Vedi [plans/itad-prezzo.md](../../plans/itad-prezzo.md).
 
   **Termini d'uso** (letti il 02/11/2026): il link a ITAD è raccomandato, non

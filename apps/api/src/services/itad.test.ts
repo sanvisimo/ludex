@@ -4,12 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createGame, linkSteamAppId } from '../../test/factories';
 import {
   fetchItadInfo,
-  fetchItadOverview,
+  fetchItadOverviews,
   itadEnabled,
   lookupItadIds,
   type ItadOverview,
 } from '../external/itad';
-import { findGamePrice, resolveItadId } from './itad';
+import { findGamePrice, findGamePrices, resolveItadId } from './itad';
 
 // Redis in memoria: il Redis di sviluppo è uno solo e i test non vanno a
 // scriverci. Funzioni normali e non `vi.fn`: `mockReset` le svuoterebbe.
@@ -26,7 +26,7 @@ vi.mock('../lib/redis', () => ({
 
 vi.mock('../external/itad', () => ({
   fetchItadInfo: vi.fn(),
-  fetchItadOverview: vi.fn(),
+  fetchItadOverviews: vi.fn(),
   itadEnabled: vi.fn(),
   lookupItadIds: vi.fn(),
 }));
@@ -217,6 +217,13 @@ describe('resolveItadId', () => {
   });
 });
 
+/** L'overview di ITAD risponde con queste voci, o con nessuna. */
+function itadPrices(...overviews: ItadOverview[]) {
+  vi.mocked(fetchItadOverviews).mockImplementation(
+    async () => new Map(overviews.map((overview) => [overview.id, overview])),
+  );
+}
+
 describe('findGamePrice', () => {
   const URL = 'https://isthereanydeal.com/game/id:uuid-hl2/info/';
 
@@ -253,7 +260,7 @@ describe('findGamePrice', () => {
 
   it('dà prezzo, negozio e link, e tiene la risposta per 3 ore', async () => {
     const gameId = await gameOnItad();
-    vi.mocked(fetchItadOverview).mockResolvedValue(overview(null));
+    itadPrices(overview(null));
 
     await expect(findGamePrice(gameId)).resolves.toEqual({
       url: URL,
@@ -266,9 +273,9 @@ describe('findGamePrice', () => {
     });
     expect(redis.values.get('itad:price:uuid-hl2')?.ttl).toBe(3 * 60 * 60);
 
-    vi.mocked(fetchItadOverview).mockClear();
+    vi.mocked(fetchItadOverviews).mockClear();
     await findGamePrice(gameId);
-    expect(fetchItadOverview).not.toHaveBeenCalled();
+    expect(fetchItadOverviews).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -279,7 +286,7 @@ describe('findGamePrice', () => {
     'col flag %s, minimo storico: %s',
     async (flag, historicalLow) => {
       const gameId = await gameOnItad();
-      vi.mocked(fetchItadOverview).mockResolvedValue(overview(flag));
+      itadPrices(overview(flag));
 
       const price = await findGamePrice(gameId);
       expect(price?.current?.historicalLow).toBe(historicalLow);
@@ -288,7 +295,7 @@ describe('findGamePrice', () => {
 
   it('non segna il minimo storico su un gioco sempre gratuito', async () => {
     const gameId = await gameOnItad();
-    vi.mocked(fetchItadOverview).mockResolvedValue(overview('H', 0, 0));
+    itadPrices(overview('H', 0, 0));
 
     const price = await findGamePrice(gameId);
     expect(price?.current).toMatchObject({ amount: 0, historicalLow: false });
@@ -296,7 +303,7 @@ describe('findGamePrice', () => {
 
   it('lo segna su un gioco scontato al 100%', async () => {
     const gameId = await gameOnItad();
-    vi.mocked(fetchItadOverview).mockResolvedValue(overview('H', 0, 2599));
+    itadPrices(overview('H', 0, 2599));
 
     const price = await findGamePrice(gameId);
     expect(price?.current).toMatchObject({ amount: 0, historicalLow: true });
@@ -304,21 +311,21 @@ describe('findGamePrice', () => {
 
   it('senza offerte la riga resta, e la risposta si ricorda', async () => {
     const gameId = await gameOnItad();
-    vi.mocked(fetchItadOverview).mockResolvedValue(null);
+    itadPrices();
 
     await expect(findGamePrice(gameId)).resolves.toEqual({
       url: URL,
       current: null,
     });
 
-    vi.mocked(fetchItadOverview).mockClear();
+    vi.mocked(fetchItadOverviews).mockClear();
     await findGamePrice(gameId);
-    expect(fetchItadOverview).not.toHaveBeenCalled();
+    expect(fetchItadOverviews).not.toHaveBeenCalled();
   });
 
   it("con l'id noto e ITAD giù resta il link, e non si ricorda", async () => {
     const gameId = await gameOnItad();
-    vi.mocked(fetchItadOverview).mockRejectedValue(new Error('ITAD giù'));
+    vi.mocked(fetchItadOverviews).mockRejectedValue(new Error('ITAD giù'));
 
     await expect(findGamePrice(gameId)).resolves.toEqual({
       url: URL,
@@ -339,5 +346,80 @@ describe('findGamePrice', () => {
     vi.mocked(lookupItadIds).mockRejectedValue(new Error('ITAD giù'));
 
     await expect(findGamePrice(game.id)).resolves.toBeNull();
+  });
+});
+
+describe('findGamePrices', () => {
+  function overview(uuid: string): ItadOverview {
+    const price = { amount: 9.99, amountInt: 999, currency: 'EUR' };
+    return {
+      id: uuid,
+      current: {
+        shop: { id: 61, name: 'Steam' },
+        price,
+        regular: price,
+        cut: 0,
+        flag: null,
+      },
+      lowest: null,
+      urls: { game: `https://isthereanydeal.com/game/id:${uuid}/` },
+    };
+  }
+
+  it('un lookup per negozio e una overview sola per tutti i giochi', async () => {
+    const steam = await createGame();
+    await linkSteamAppId(steam.id, '220');
+    const gog = await createGame();
+    await linkGogId(gog.id, '1207659193');
+    const senzaId = await createGame();
+    itadKnows({ '220': 'uuid-hl2', '1207659193': 'uuid-gog' });
+    itadPrices(overview('uuid-hl2'), overview('uuid-gog'));
+
+    const prices = await findGamePrices([steam.id, gog.id, senzaId.id]);
+
+    expect(prices.get(steam.id)?.current?.shop).toBe('Steam');
+    expect(prices.get(gog.id)?.url).toContain('uuid-gog');
+    expect(prices.get(senzaId.id)).toBeNull();
+    expect(lookupItadIds).toHaveBeenCalledTimes(2);
+    expect(fetchItadOverviews).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(fetchItadOverviews).mock.calls[0]?.[0]).toEqual([
+      'uuid-hl2',
+      'uuid-gog',
+    ]);
+  });
+
+  it('chiede a ITAD solo i prezzi che non ha in cache', async () => {
+    const primo = await createGame();
+    await linkSteamAppId(primo.id, '220');
+    const secondo = await createGame();
+    await linkSteamAppId(secondo.id, '400');
+    itadKnows({ '220': 'uuid-hl2', '400': 'uuid-portal' });
+    itadPrices(overview('uuid-hl2'), overview('uuid-portal'));
+
+    await findGamePrices([primo.id]);
+    vi.mocked(fetchItadOverviews).mockClear();
+    await findGamePrices([primo.id, secondo.id]);
+
+    expect(vi.mocked(fetchItadOverviews).mock.calls).toEqual([
+      [['uuid-portal']],
+    ]);
+  });
+
+  it('con ITAD giù i giochi con id e prezzo in cache restano', async () => {
+    const noto = await createGame();
+    await linkSteamAppId(noto.id, '220');
+    itadKnows({ '220': 'uuid-hl2' });
+    itadPrices(overview('uuid-hl2'));
+    await findGamePrices([noto.id]);
+
+    const nuovo = await createGame();
+    await linkSteamAppId(nuovo.id, '400');
+    vi.mocked(lookupItadIds).mockRejectedValue(new Error('ITAD giù'));
+
+    const prices = await findGamePrices([noto.id, nuovo.id]);
+
+    expect(prices.get(noto.id)?.current?.amount).toBe(9.99);
+    expect(prices.get(nuovo.id)).toBeNull();
+    expect(redis.values.has('itad:id:steam:400')).toBe(false);
   });
 });

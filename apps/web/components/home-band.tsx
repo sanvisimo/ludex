@@ -1,6 +1,7 @@
 import type { HomeBand, HomeGame } from '@repo/contracts';
 import { CornerLabel, Text, XStack, YStack } from '@repo/ui';
 import { Link } from '@tanstack/react-router';
+import type { ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { CriticValue } from '@/components/entry-score';
@@ -34,6 +35,7 @@ export function HomeCard({
   fill = false,
   showWishlist = true,
   rank,
+  footer,
 }: {
   game: HomeGame;
   fill?: boolean;
@@ -47,6 +49,7 @@ export function HomeCard({
    * (la lista aperta, le fasce di `/wishlist`): lì il cuore sarebbe sempre pieno.
    */
   showWishlist?: boolean;
+  footer?: ReactNode;
 }) {
   const statusLabels = useStatusLabels();
 
@@ -120,6 +123,7 @@ export function HomeCard({
             badge
           />
         </XStack>
+        {footer}
       </YStack>
     </YStack>
   );

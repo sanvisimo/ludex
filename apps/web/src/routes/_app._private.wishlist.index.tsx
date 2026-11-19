@@ -15,6 +15,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslations } from 'use-intl';
 
+import { useCardPrices } from '@/components/card-price';
 import { CARD_WIDTH, HomeCard } from '@/components/home-band';
 import { ScrollRow } from '@/components/scroll-row';
 import { type BandDrag, SortableBands } from '@/components/sortable-bands';
@@ -159,6 +160,7 @@ function WishlistBand({
     }),
   );
   const games = band.data?.games ?? [];
+  const priceOf = useCardPrices(games);
 
   return (
     <ScrollRow
@@ -223,7 +225,12 @@ function WishlistBand({
         </Text>
       ) : (
         games.map((game) => (
-          <HomeCard key={game.id} game={game} showWishlist={false} />
+          <HomeCard
+            key={game.id}
+            game={game}
+            showWishlist={false}
+            footer={priceOf(game)}
+          />
         ))
       )}
     </ScrollRow>

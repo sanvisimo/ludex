@@ -60,7 +60,7 @@ import { mergeGames, previewMerge } from '../services/admin-merge';
 import { listUsers } from '../services/admin-users';
 import { adminUsage } from '../services/admin-usage';
 import { listHomeBands } from '../services/home';
-import { findGamePrice } from '../services/itad';
+import { findGamePrice, findGamePrices } from '../services/itad';
 import {
   createPlaylist,
   deletePlaylist,
@@ -245,6 +245,12 @@ export const router = os.router({
       }),
 
     price: os.games.price.handler(({ input }) => findGamePrice(input.gameId)),
+
+    prices: os.games.prices
+      .use(authed)
+      .handler(async ({ input }) =>
+        Object.fromEntries(await findGamePrices(input.gameIds)),
+      ),
 
     random: os.games.random
       .use(maybeAuthed)
