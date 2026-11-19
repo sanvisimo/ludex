@@ -1722,7 +1722,8 @@
       "ambiguous": "ambiguo",
       "year_mismatch": "anno diverso",
       "taken": "già di un altro gioco",
-      "gone": "non esiste più"
+      "gone": "non esiste più",
+      "absent": "non c'è, controllato"
     },
     "status": {
       "pending": "in coda",
@@ -1756,6 +1757,13 @@
       "manual": "scritto a mano",
       "failed": "Non sono riuscito a leggere i dati mancanti",
       "retryHint": "La rimette in coda e rifà il match: per id, se ce n'è uno",
+      "markAbsent": "Non c'è",
+      "markAbsentHint": "Hai controllato e sulla fonte non c'è: passa fra i giusti così",
+      "markedAbsent": "Spostato fra i giusti così",
+      "markAbsentFailed": "Non sono riuscito a segnarlo",
+      "acceptEmpty": "Va bene così",
+      "acceptEmptyHint": "La scheda è giusta e il dato sulla fonte non c'è: passa fra i giusti così",
+      "undoHint": "Annulla la decisione e rifà il match",
       "withoutIgdb": "Senza id IGDB",
       "notFoundIgdb": "Id IGDB non trovato",
       "openUnresolved": "Scarti d'import da sistemare: {count} →"

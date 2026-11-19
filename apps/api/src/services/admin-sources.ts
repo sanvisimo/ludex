@@ -15,7 +15,10 @@ import {
   count,
   eq,
   ilike,
+  inArray,
   isNull,
+  notInArray,
+  or,
   sql,
   type SQL,
 } from '@repo/db/orm';
@@ -38,13 +41,15 @@ import { closeReports } from './reports';
  * - `pending`: in coda. Su OpenCritic è normale averne: il budget è di 200
  *   richieste al giorno.
  * - `fixable`: `not_found` che un umano può sistemare, cioè tutti tranne
- *   `too_old`. Anche `no_results`: «non ha nulla» può essere un nome cercato
- *   male. E anche un motivo nullo, che vuol dire un testo che la migration non
- *   ha saputo classificare: meglio mostrarlo che perderlo.
- * - `fine`: `too_old`. Va bene così.
+ *   `too_old` e `absent`. Anche `no_results`: «non ha nulla» può essere un
+ *   nome cercato male. E anche un motivo nullo, che vuol dire un testo che la
+ *   migration non ha saputo classificare: meglio mostrarlo che perderlo.
+ * - `fine`: `too_old`, o ciò che un admin ha detto che va bene così: un
+ *   `absent`, o un vuoto con `emptyAccepted`.
  * - `empty`: trovato ma senza il dato. HLTB senza durata, OpenCritic e
  *   Metacritic senza voto. Spesso è vero — un gioco che nessuno ha cronometrato
- *   — ma è anche la faccia di un aggancio sbagliato.
+ *   — ma è anche la faccia di un aggancio sbagliato. Finché un admin non dice
+ *   «Va bene così».
  * - `failed`: l'ultimo tentativo è fallito per una ragione che può passare.
  *
  * I valori stanno in `missingBucketValues`, nel vocabolario dei contratti.
@@ -52,14 +57,19 @@ import { closeReports } from './reports';
 
 const gs = schema.gameSources;
 
-/** Il dato che dice «trovato ma vuoto», per fonte. IGDB non ce l'ha. */
-const isEmpty = sql`(
+/**
+ * Il dato che dice «trovato ma vuoto», per fonte. IGDB non ce l'ha. Vuole
+ * `games` nella query.
+ */
+export const isEmpty = sql`(
   (${gs.source} = 'hltb' and ${schema.games.hltbMainMinutes} is null)
   or (${gs.source} in ('opencritic', 'metacritic') and not exists (
     select 1 from game_scores sc
     where sc.game_id = ${gs.gameId} and sc.source::text = ${gs.source}::text
   ))
 )`;
+
+const fineReasons: SourceReason[] = ['too_old', 'absent'];
 
 function bucketCondition(bucket: MissingBucket): SQL {
   switch (bucket) {
@@ -68,11 +78,17 @@ function bucketCondition(bucket: MissingBucket): SQL {
     case 'failed':
       return eq(gs.status, 'failed');
     case 'fine':
-      return and(eq(gs.status, 'not_found'), eq(gs.reason, 'too_old'))!;
+      return or(
+        and(eq(gs.status, 'not_found'), inArray(gs.reason, fineReasons)),
+        sql`${gs.status} = 'ok' and ${gs.emptyAccepted} and ${isEmpty}`,
+      )!;
     case 'fixable':
-      return sql`${gs.status} = 'not_found' and ${gs.reason} is distinct from 'too_old'`;
+      return and(
+        eq(gs.status, 'not_found'),
+        or(isNull(gs.reason), notInArray(gs.reason, fineReasons)),
+      )!;
     case 'empty':
-      return sql`${gs.status} = 'ok' and ${isEmpty}`;
+      return sql`${gs.status} = 'ok' and not ${gs.emptyAccepted} and ${isEmpty}`;
   }
 }
 
@@ -152,6 +168,7 @@ export async function listMissing(input: {
         error: gs.error,
         externalId: gs.externalId,
         manual: gs.manual,
+        emptyAccepted: gs.emptyAccepted,
         attemptedAt: gs.attemptedAt,
         users,
       })
@@ -181,6 +198,7 @@ export async function listMissing(input: {
   };
 }
 
+// Annulla anche le decisioni di un admin, «Non c'è» e «Va bene così».
 export async function retrySource(gameId: string, source: EnrichmentSource) {
   const [row] = await db
     .update(gs)
@@ -188,6 +206,7 @@ export async function retrySource(gameId: string, source: EnrichmentSource) {
       status: 'pending',
       error: null,
       reason: null,
+      emptyAccepted: false,
       attemptedAt: null,
       updatedAt: new Date(),
     })
@@ -196,6 +215,63 @@ export async function retrySource(gameId: string, source: EnrichmentSource) {
   if (!row) return false;
 
   await enqueueEnrichment(source, gameId);
+  return true;
+}
+
+/**
+ * «Non c'è»: l'admin ha controllato, e sulla fonte il gioco non c'è. Solo su
+ * un `not_found`: una fonte `ok` agganciata male ha già scritto i suoi dati
+ * sul gioco, e quella si sistema con «Inserisci id».
+ */
+export async function markSourceAbsent(
+  gameId: string,
+  source: ManualSource,
+  // L'admin che lo decide: chiude a suo nome le segnalazioni su quella fonte.
+  resolvedBy: string | null = null,
+) {
+  const [row] = await db
+    .update(gs)
+    .set({ reason: 'absent', updatedAt: new Date() })
+    .where(
+      and(
+        eq(gs.gameId, gameId),
+        eq(gs.source, source),
+        eq(gs.status, 'not_found'),
+      ),
+    )
+    .returning({ gameId: gs.gameId });
+  if (!row) return false;
+
+  await closeReports(gameId, { source }, resolvedBy);
+  return true;
+}
+
+/**
+ * «Va bene così»: la scheda trovata è giusta, e il dato sulla fonte non c'è.
+ * Solo su una fonte `ok` e vuota.
+ */
+export async function acceptEmptySource(
+  gameId: string,
+  source: ManualSource,
+  resolvedBy: string | null = null,
+) {
+  const [row] = await db
+    .update(gs)
+    .set({ emptyAccepted: true, updatedAt: new Date() })
+    .from(schema.games)
+    .where(
+      and(
+        eq(schema.games.id, gs.gameId),
+        eq(gs.gameId, gameId),
+        eq(gs.source, source),
+        eq(gs.status, 'ok'),
+        isEmpty,
+      ),
+    )
+    .returning({ gameId: gs.gameId });
+  if (!row) return false;
+
+  await closeReports(gameId, { source }, resolvedBy);
   return true;
 }
 
@@ -283,6 +359,7 @@ export async function setSourceExternalId(
         status: 'pending',
         error: null,
         reason: null,
+        emptyAccepted: false,
         attemptedAt: null,
         updatedAt: now,
       },

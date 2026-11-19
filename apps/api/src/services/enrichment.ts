@@ -249,6 +249,8 @@ export async function reopenSourcesForNewExternalIds(
         and(
           eq(schema.gameSources.source, source),
           eq(schema.gameSources.status, 'not_found'),
+          // «Non c'è» l'ha deciso un admin: si riapre solo con «Riprova».
+          sql`${schema.gameSources.reason} is distinct from 'absent'`,
           inArray(schema.gameSources.gameId, [...gameIds]),
         ),
       )

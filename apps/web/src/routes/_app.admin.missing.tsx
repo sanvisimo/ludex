@@ -37,7 +37,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { Hash, RotateCw } from '@repo/ui/icons';
+import { CircleCheck, Hash, RotateCw, SearchX } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createFileRoute,
@@ -324,9 +324,43 @@ function MissingList({
       toast.error(errorMessage(error, { fallback: t('missing.retryFailed') })),
   });
 
+  const markAbsent = useMutation({
+    mutationFn: (row: MissingRow & { source: ManualSource }) =>
+      client.admin.sources.markAbsent({
+        gameId: row.gameId,
+        source: row.source,
+      }),
+    onSuccess: async () => {
+      await refresh();
+      toast.success(t('missing.markedAbsent'));
+    },
+    onError: (error) =>
+      toast.error(
+        errorMessage(error, { fallback: t('missing.markAbsentFailed') }),
+      ),
+  });
+
+  const acceptEmpty = useMutation({
+    mutationFn: (row: MissingRow & { source: ManualSource }) =>
+      client.admin.sources.acceptEmpty({
+        gameId: row.gameId,
+        source: row.source,
+      }),
+    onSuccess: async () => {
+      await refresh();
+      toast.success(t('missing.markedAbsent'));
+    },
+    onError: (error) =>
+      toast.error(
+        errorMessage(error, { fallback: t('missing.markAbsentFailed') }),
+      ),
+  });
+
   const reasons =
     bucket === 'fixable'
-      ? sourceReasonValues.filter((value) => value !== 'too_old')
+      ? sourceReasonValues.filter(
+          (value) => value !== 'too_old' && value !== 'absent',
+        )
       : [];
 
   const columns: AdminColumn<MissingRow>[] = [
@@ -388,41 +422,89 @@ function MissingList({
       align: 'end',
       render: (row) => <CellText>{format.number(row.users)}</CellText>,
     },
-    ...(bucket === 'empty' || bucket === 'fine'
-      ? []
-      : [
-          {
-            key: 'actions',
-            header: t('missing.actions'),
-            width: source === 'igdb' ? 100 : 230,
-            align: 'end',
-            render: (row: MissingRow) => (
-              <>
-                <Tooltip content={t('missing.retryHint')}>
-                  <Button
-                    size="sm"
-                    variant={isManualRow(row) ? 'ghost' : 'secondary'}
-                    disabled={retry.isPending}
-                    onPress={() => retry.mutate(row)}
-                  >
-                    <RotateCw size={14} />
-                    {t('missing.retry')}
-                  </Button>
-                </Tooltip>
-                {isManualRow(row) ? (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onPress={() => setSetting({ ...row, source: row.source })}
-                  >
-                    <Hash size={14} />
-                    {t('missing.setId')}
-                  </Button>
-                ) : null}
-              </>
-            ),
-          } satisfies AdminColumn<MissingRow>,
-        ]),
+    {
+      key: 'actions',
+      header: t('missing.actions'),
+      width:
+        bucket === 'fine'
+          ? 120
+          : bucket === 'empty'
+            ? 160
+            : source === 'igdb'
+              ? 100
+              : bucket === 'fixable'
+                ? 330
+                : 230,
+      align: 'end',
+      render: (row: MissingRow) => {
+        if (bucket === 'fine')
+          return row.reason === 'absent' || row.emptyAccepted ? (
+            <Tooltip content={t('missing.undoHint')}>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={retry.isPending}
+                onPress={() => retry.mutate(row)}
+              >
+                <RotateCw size={14} />
+                {t('missing.retry')}
+              </Button>
+            </Tooltip>
+          ) : null;
+        if (bucket === 'empty')
+          return isManualRow(row) ? (
+            <Tooltip content={t('missing.acceptEmptyHint')}>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={acceptEmpty.isPending}
+                onPress={() => acceptEmpty.mutate(row)}
+              >
+                <CircleCheck size={14} />
+                {t('missing.acceptEmpty')}
+              </Button>
+            </Tooltip>
+          ) : null;
+        return (
+          <>
+            <Tooltip content={t('missing.retryHint')}>
+              <Button
+                size="sm"
+                variant={isManualRow(row) ? 'ghost' : 'secondary'}
+                disabled={retry.isPending}
+                onPress={() => retry.mutate(row)}
+              >
+                <RotateCw size={14} />
+                {t('missing.retry')}
+              </Button>
+            </Tooltip>
+            {bucket === 'fixable' && isManualRow(row) ? (
+              <Tooltip content={t('missing.markAbsentHint')}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={markAbsent.isPending}
+                  onPress={() => markAbsent.mutate(row)}
+                >
+                  <SearchX size={14} />
+                  {t('missing.markAbsent')}
+                </Button>
+              </Tooltip>
+            ) : null}
+            {isManualRow(row) ? (
+              <Button
+                size="sm"
+                variant="secondary"
+                onPress={() => setSetting({ ...row, source: row.source })}
+              >
+                <Hash size={14} />
+                {t('missing.setId')}
+              </Button>
+            ) : null}
+          </>
+        );
+      },
+    },
   ];
 
   const total = list.data?.total ?? 0;

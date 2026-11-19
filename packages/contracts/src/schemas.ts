@@ -1273,6 +1273,7 @@ export const MissingRowSchema = z.object({
   error: z.string().nullable(),
   externalId: z.string().nullable(),
   manual: z.boolean(),
+  emptyAccepted: z.boolean(),
   attemptedAt: z.date().nullable(),
   users: z.number().int(),
 });
@@ -1438,6 +1439,9 @@ export const GameAdminDetailSchema = z.object({
       error: z.string().nullable(),
       externalId: z.string().nullable(),
       manual: z.boolean(),
+      // `ok` ma senza il dato, e se un admin ha detto «Va bene così».
+      empty: z.boolean(),
+      emptyAccepted: z.boolean(),
       attemptedAt: z.date().nullable(),
       // La scheda sulla fonte: si apre e si vede se è quella giusta.
       url: z.string().nullable(),

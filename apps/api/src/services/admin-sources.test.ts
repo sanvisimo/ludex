@@ -14,13 +14,16 @@ import {
 import { fetchHltbGameDetail, searchHltbGames } from '../external/hltb';
 import { enqueueEnrichment } from '../queue/enrichment';
 import {
+  acceptEmptySource,
   findSourceIdOwner,
   listMissing,
+  markSourceAbsent,
   missingSummary,
   parseSourceId,
   retrySource,
   setSourceExternalId,
 } from './admin-sources';
+import { reopenSourcesForNewExternalIds } from './enrichment';
 import { enrichGameFromHltb } from './hltb-enrichment';
 
 vi.mock('../external/hltb', () => ({
@@ -293,6 +296,91 @@ describe('«Dati mancanti»', () => {
     });
     expect(mockedEnqueue).toHaveBeenCalledWith('hltb', gioco.id);
     expect(await retrySource(gioco.id, 'opencritic')).toBe(false);
+  });
+
+  it('«Non c è» sposta un not_found fra i giusti così, e un appid nuovo non lo riapre', async () => {
+    const gioco = await createGame({ name: 'Elliot' });
+    await setSource({
+      gameId: gioco.id,
+      source: 'hltb',
+      status: 'not_found',
+      reason: 'ambiguous',
+    });
+
+    expect(await markSourceAbsent(gioco.id, 'hltb')).toBe(true);
+    expect(await hltbRow(gioco.id)).toMatchObject({
+      status: 'not_found',
+      reason: 'absent',
+    });
+    const [hltb] = (await missingSummary()).sources;
+    expect(hltb).toMatchObject({ source: 'hltb', fixable: 0, fine: 1 });
+
+    expect(
+      await reopenSourcesForNewExternalIds([
+        { gameId: gioco.id, source: 'steam' },
+      ]),
+    ).toEqual([]);
+    expect(await hltbRow(gioco.id)).toMatchObject({ reason: 'absent' });
+
+    expect(await retrySource(gioco.id, 'hltb')).toBe(true);
+    expect(await hltbRow(gioco.id)).toMatchObject({
+      status: 'pending',
+      reason: null,
+    });
+  });
+
+  it('«Va bene così» sposta un trovato ma vuoto fra i giusti così, e «Riprova» lo annulla', async () => {
+    const gioco = await createGame({ name: 'Elliot' });
+    await setSource({ gameId: gioco.id, source: 'hltb', status: 'ok' });
+
+    expect(await acceptEmptySource(gioco.id, 'hltb')).toBe(true);
+    const [dopo] = (await missingSummary()).sources;
+    expect(dopo).toMatchObject({ source: 'hltb', empty: 0, fine: 1 });
+    const fine = await listMissing({
+      source: 'hltb',
+      bucket: 'fine',
+      limit: 50,
+      offset: 0,
+    });
+    expect(fine.rows).toEqual([
+      expect.objectContaining({ name: 'Elliot', emptyAccepted: true }),
+    ]);
+
+    expect(await retrySource(gioco.id, 'hltb')).toBe(true);
+    expect(await hltbRow(gioco.id)).toMatchObject({ emptyAccepted: false });
+  });
+
+  it('«Va bene così» vale solo su un trovato ma vuoto, e «Inserisci id» lo azzera', async () => {
+    const conDurata = await createGame({ hltbMainMinutes: 600 });
+    await setSource({ gameId: conDurata.id, source: 'hltb', status: 'ok' });
+    expect(await acceptEmptySource(conDurata.id, 'hltb')).toBe(false);
+
+    const nonTrovato = await createGame();
+    await setSource({
+      gameId: nonTrovato.id,
+      source: 'hltb',
+      status: 'not_found',
+      reason: 'ambiguous',
+    });
+    expect(await acceptEmptySource(nonTrovato.id, 'hltb')).toBe(false);
+
+    const vuoto = await createGame();
+    await setSource({ gameId: vuoto.id, source: 'hltb', status: 'ok' });
+    expect(await acceptEmptySource(vuoto.id, 'hltb')).toBe(true);
+    await setSourceExternalId(vuoto.id, 'hltb', '5913');
+    expect(await hltbRow(vuoto.id)).toMatchObject({ emptyAccepted: false });
+  });
+
+  it('«Non c è» vale solo su un not_found', async () => {
+    const gioco = await createGame();
+    await setSource({ gameId: gioco.id, source: 'hltb', status: 'ok' });
+
+    expect(await markSourceAbsent(gioco.id, 'hltb')).toBe(false);
+    expect(await markSourceAbsent(gioco.id, 'metacritic')).toBe(false);
+    expect(await hltbRow(gioco.id)).toMatchObject({
+      status: 'ok',
+      reason: null,
+    });
   });
 });
 

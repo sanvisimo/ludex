@@ -320,6 +320,7 @@ export const sourceReasonValues = [
   'year_mismatch',
   'taken',
   'gone',
+  'absent',
 ] as const;
 
 // Le fonti dove l'admin scrive l'id a mano (11a). IGDB no: lì l'id sta su
