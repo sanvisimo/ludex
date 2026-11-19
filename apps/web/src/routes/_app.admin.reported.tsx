@@ -1,15 +1,24 @@
 import {
   adminReportsDefaultSort,
   AdminReportsSortSchema,
+  type AdminReportsSort,
   type ReportGroup,
 } from '@repo/contracts';
 import { Button, EmptyState, Text, toast, YStack } from '@repo/ui';
 import { Archive, ArrowUpRight } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import {
+  createFileRoute,
+  useNavigate,
+  useRouter,
+} from '@tanstack/react-router';
 import { useFormatter, useTranslations } from 'use-intl';
 
+import {
+  ADMIN_PAGE_SIZE,
+  AdminPagination,
+  adminPageParam,
+} from '@/components/admin/admin-pagination';
 import {
   AdminTable,
   CellText,
@@ -19,14 +28,38 @@ import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 import { ButtonLink } from '@/src/components/button-link';
 
+type Search = { page?: number } & Partial<AdminReportsSort>;
+
 export const Route = createFileRoute('/_app/admin/reported')({
+  validateSearch: (search: Record<string, unknown>): Search => ({
+    ...AdminReportsSortSchema.safeParse(search).data,
+    page: adminPageParam(search.page),
+  }),
   component: ReportedSection,
 });
 
 function ReportedSection() {
-  const [sorting, setSorting] = useState(adminReportsDefaultSort);
+  const {
+    page = 1,
+    sort = adminReportsDefaultSort.sort,
+    direction = adminReportsDefaultSort.direction,
+  } = Route.useSearch();
+  const sorting = { sort, direction };
+  const navigate = useNavigate({ from: Route.fullPath });
+  const router = useRouter();
+  const pageSearch = (target: number) => (prev: Search) => ({
+    ...prev,
+    page: adminPageParam(target),
+  });
+
   const query = useQuery(
-    api.admin.reports.list.queryOptions({ input: { sorting, limit: 100 } }),
+    api.admin.reports.list.queryOptions({
+      input: {
+        sorting,
+        limit: ADMIN_PAGE_SIZE,
+        offset: (page - 1) * ADMIN_PAGE_SIZE,
+      },
+    }),
   );
   const t = useTranslations('admin');
   const tReported = useTranslations('admin.reported');
@@ -176,23 +209,40 @@ function ReportedSection() {
       </Text>
       {query.isError ? (
         <EmptyState title={tReported('failed')} />
-      ) : query.data?.rows.length === 0 ? (
+      ) : page === 1 && query.data?.rows.length === 0 ? (
         <EmptyState title={t('games.emptyReports')} />
       ) : (
         <AdminTable
           label={t('games.reports')}
           columns={columns}
-          rows={query.data?.rows}
+          rows={query.data?.rows.length ? query.data.rows : undefined}
           rowKey={(report) =>
             `${report.gameId}-${report.store ?? ''}-${report.source ?? ''}`
           }
           serverSort={{
             value: sorting,
             keys: AdminReportsSortSchema.shape.sort.options,
-            onChange: setSorting,
+            onChange: (next) =>
+              void navigate({
+                search: (prev) => ({ ...prev, ...next, page: undefined }),
+              }),
           }}
         />
       )}
+      <AdminPagination
+        page={page}
+        total={query.isSuccess ? query.data.total : undefined}
+        href={(target) =>
+          router.buildLocation({
+            from: Route.fullPath,
+            to: Route.fullPath,
+            search: pageSearch(target),
+          }).href
+        }
+        onPageChange={(target, replace) =>
+          void navigate({ search: pageSearch(target), replace })
+        }
+      />
     </YStack>
   );
 }

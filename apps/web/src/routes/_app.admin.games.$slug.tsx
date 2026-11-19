@@ -158,7 +158,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       }),
     onSuccess: async () => {
       await refresh();
-      toast.success(t('missing.markedAbsent'));
+      toast.success(t('missing.acceptedEmpty'));
     },
     onError: (error) =>
       toast.error(

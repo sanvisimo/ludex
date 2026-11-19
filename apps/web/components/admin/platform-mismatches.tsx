@@ -1,6 +1,6 @@
 import {
-  adminMismatchesDefaultSort,
   AdminMismatchesSortSchema,
+  type AdminMismatchesSort,
   type PlatformMismatch,
 } from '@repo/contracts';
 import {
@@ -15,9 +15,13 @@ import {
 } from '@repo/ui';
 import { ArrowUpRight, Check, Undo2 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
+import {
+  ADMIN_PAGE_SIZE,
+  AdminPagination,
+  type AdminPageNavigation,
+} from '@/components/admin/admin-pagination';
 import {
   AdminTable,
   CellText,
@@ -28,14 +32,21 @@ import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
 import { ButtonLink } from '@/src/components/button-link';
 
-export function PlatformMismatches({
-  dismissed,
-  onDismissedChange,
-}: {
+type MismatchListProps = {
   dismissed: boolean;
+  sorting: AdminMismatchesSort;
+  onSortChange: (sort: AdminMismatchesSort) => void;
+  paging: AdminPageNavigation;
+};
+
+export function PlatformMismatches({
+  onDismissedChange,
+  ...list
+}: MismatchListProps & {
   onDismissedChange: (dismissed: boolean) => void;
 }) {
   const t = useTranslations('admin.mismatches');
+  const { dismissed } = list;
 
   return (
     <YStack gap={16}>
@@ -58,12 +69,17 @@ export function PlatformMismatches({
         <TabsTab value="accepted">{t('dismissed')}</TabsTab>
       </Tabs>
 
-      <MismatchTable dismissed={dismissed} />
+      <MismatchTable {...list} />
     </YStack>
   );
 }
 
-function MismatchTable({ dismissed }: { dismissed: boolean }) {
+function MismatchTable({
+  dismissed,
+  sorting,
+  onSortChange,
+  paging,
+}: MismatchListProps) {
   const t = useTranslations('admin.mismatches');
   const tAdmin = useTranslations('admin');
   const tGames = useTranslations('admin.games');
@@ -71,10 +87,14 @@ function MismatchTable({ dismissed }: { dismissed: boolean }) {
   const tStore = useTranslations('store');
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
-  const [sorting, setSorting] = useState(adminMismatchesDefaultSort);
   const query = useQuery(
     api.admin.platformMismatches.list.queryOptions({
-      input: { dismissed, sorting, limit: 100 },
+      input: {
+        dismissed,
+        sorting,
+        limit: ADMIN_PAGE_SIZE,
+        offset: (paging.page - 1) * ADMIN_PAGE_SIZE,
+      },
     }),
   );
 
@@ -202,34 +222,28 @@ function MismatchTable({ dismissed }: { dismissed: boolean }) {
 
   if (query.isError) return <EmptyState title={t('loadFailed')} />;
 
-  if (query.data?.rows.length === 0)
+  if (paging.page === 1 && query.data?.rows.length === 0)
     return <EmptyState title={dismissed ? t('emptyDismissed') : t('empty')} />;
 
   return (
     <YStack gap={12}>
-      <XStack items="baseline" justify="space-between" gap={8} flexWrap="wrap">
-        {!dismissed ? (
-          <Text fontSize={13} lineHeight="18px" color="color11">
-            {t('hint')}
-          </Text>
-        ) : null}
-        {query.data ? (
-          <Text fontSize={12} color="color11" role="status" ml="auto">
-            {t('count', { count: query.data.total })}
-          </Text>
-        ) : null}
-      </XStack>
+      {!dismissed ? (
+        <Text fontSize={13} lineHeight="18px" color="color11">
+          {t('hint')}
+        </Text>
+      ) : null}
       <AdminTable
         label={dismissed ? t('dismissed') : t('open')}
         columns={columns}
-        rows={query.data?.rows}
+        rows={query.data?.rows.length ? query.data.rows : undefined}
         rowKey={(row) => row.gameId}
         serverSort={{
           value: sorting,
           keys: AdminMismatchesSortSchema.shape.sort.options,
-          onChange: setSorting,
+          onChange: onSortChange,
         }}
       />
+      <AdminPagination {...paging} total={query.data?.total} />
     </YStack>
   );
 }

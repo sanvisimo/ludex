@@ -1,7 +1,10 @@
 import {
   adminMissingDefaultSort,
+  adminUnlinkedDefaultSort,
   AdminMissingSortSchema,
+  AdminUnlinkedSortSchema,
   type AdminMissingSort,
+  type AdminUnlinkedSort,
   type MissingRow,
   type MissingSummary,
 } from '@repo/contracts';
@@ -22,7 +25,6 @@ import {
   Button,
   ClearableInput,
   EmptyState,
-  Pagination,
   Select,
   SelectContent,
   SelectItem,
@@ -49,6 +51,10 @@ import { useEffect, useState } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
 import {
+  AdminPagination,
+  adminPageParam,
+} from '@/components/admin/admin-pagination';
+import {
   AdminTable,
   CellText,
   type AdminColumn,
@@ -62,7 +68,6 @@ import { UnlinkedGames } from '@/components/admin/unlinked-games';
 import { GameCover } from '@/components/game-cover';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { api, client } from '@/lib/orpc';
-import { takeLinkClick } from '@/src/link-click';
 
 const PAGE_SIZE = 20;
 
@@ -72,6 +77,8 @@ type Search = {
   reason?: SourceReason;
   q?: string;
   page?: number;
+  unlinkedPage?: number;
+  unlinkedSorting?: AdminUnlinkedSort;
 } & Partial<AdminMissingSort>;
 
 const oneOf =
@@ -85,11 +92,14 @@ export const Route = createFileRoute('/_app/admin/missing')({
     source: oneOf(enrichmentSourceValues)(search.source),
     bucket: oneOf(missingBucketValues)(search.bucket),
     reason: oneOf(sourceReasonValues)(search.reason),
-    q: typeof search.q === 'string' && search.q ? search.q : undefined,
-    page:
-      typeof search.page === 'number' && search.page > 1
-        ? Math.floor(search.page)
+    q:
+      typeof search.q === 'string'
+        ? search.q.trim().slice(0, 100) || undefined
         : undefined,
+    page: adminPageParam(search.page),
+    unlinkedPage: adminPageParam(search.unlinkedPage),
+    unlinkedSorting: AdminUnlinkedSortSchema.safeParse(search.unlinkedSorting)
+      .data,
   }),
   component: MissingSection,
 });
@@ -98,6 +108,17 @@ const bucketsOf = (source: EnrichmentSource) =>
   missingBucketValues.filter(
     (bucket) => !(source === 'igdb' && bucket === 'empty'),
   );
+
+const missingViewSearch =
+  (source: EnrichmentSource, bucket?: MissingBucket) =>
+  (prev: Search): Search => ({
+    ...prev,
+    source,
+    bucket,
+    reason: undefined,
+    page: undefined,
+    unlinkedPage: undefined,
+  });
 
 function fixableOf(summary: MissingSummary, source: EnrichmentSource) {
   const fixable =
@@ -116,19 +137,24 @@ function countOf(
 
 function MissingSection() {
   const t = useTranslations('admin');
-  const search = Route.useSearch();
   const summary = useQuery(api.admin.missing.summary.queryOptions());
 
   if (summary.isPending)
     return <Skeleton height={320} width="100%" rounded={12} />;
   if (summary.isError) return <EmptyState title={t('missing.failed')} />;
 
-  const source =
-    search.source ??
-    enrichmentSourceValues.find(
-      (value) => fixableOf(summary.data, value) > 0,
-    ) ??
-    'hltb';
+  return <MissingContent summary={summary.data} />;
+}
+
+function MissingContent({ summary }: { summary: MissingSummary }) {
+  const t = useTranslations('admin');
+  const search = Route.useSearch();
+  const [defaultSource] = useState(
+    () =>
+      enrichmentSourceValues.find((value) => fixableOf(summary, value) > 0) ??
+      'hltb',
+  );
+  const source = search.source ?? defaultSource;
   const bucket =
     search.bucket && bucketsOf(source).includes(search.bucket)
       ? search.bucket
@@ -150,13 +176,13 @@ function MissingSection() {
         <AccordionItem value="summary">
           <AccordionTrigger>{t('missing.summary')}</AccordionTrigger>
           <AccordionContent>
-            <SummaryTable summary={summary.data} />
+            <SummaryTable summary={summary} />
           </AccordionContent>
         </AccordionItem>
       </Accordion>
 
       <MissingList
-        summary={summary.data}
+        summary={summary}
         source={source}
         bucket={bucket}
         reason={bucket === 'fixable' ? search.reason : undefined}
@@ -195,7 +221,10 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
             : t('missing.emptyScore')
           : null;
     return (
-      <Link from={Route.fullPath} search={{ source: row.source, bucket }}>
+      <Link
+        from={Route.fullPath}
+        search={missingViewSearch(row.source, bucket)}
+      >
         <Text
           fontSize={13}
           lineHeight="18px"
@@ -246,9 +275,13 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
   );
 }
 
-const isManualRow = (
-  row: MissingRow,
-): row is MissingRow & { source: ManualSource } => row.source !== 'igdb';
+const isManualRow = (row: MissingRow): row is ManualMissingRow =>
+  row.source !== 'igdb';
+
+type ManualMissingRow = MissingRow & { source: ManualSource };
+type SourceDecision = 'markAbsent' | 'acceptEmpty';
+
+const decisionId = (gameId: string) => `admin-missing-decision-${gameId}`;
 
 function MissingList({
   summary,
@@ -268,7 +301,6 @@ function MissingList({
   const t = useTranslations('admin');
   const format = useFormatter();
   const tSearch = useTranslations('search');
-  const tBacklog = useTranslations('backlog');
   const navigate = useNavigate({ from: Route.fullPath });
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
@@ -276,6 +308,8 @@ function MissingList({
   const {
     sort = adminMissingDefaultSort.sort,
     direction = adminMissingDefaultSort.direction,
+    unlinkedPage = 1,
+    unlinkedSorting = adminUnlinkedDefaultSort,
   } = Route.useSearch();
   const sorting = { sort, direction };
   const [setting, setSetting] = useState<SourceToSet | null>(null);
@@ -288,7 +322,12 @@ function MissingList({
     const timer = setTimeout(
       () =>
         void navigate({
-          search: (prev) => ({ ...prev, q: value, page: undefined }),
+          search: (prev) => ({
+            ...prev,
+            q: value,
+            page: undefined,
+            unlinkedPage: undefined,
+          }),
           replace: true,
         }),
       300,
@@ -296,19 +335,18 @@ function MissingList({
     return () => clearTimeout(timer);
   }, [text, q, navigate]);
 
-  const list = useQuery(
-    api.admin.missing.list.queryOptions({
-      input: {
-        source,
-        bucket,
-        reason,
-        q,
-        sorting,
-        limit: PAGE_SIZE,
-        offset: (page - 1) * PAGE_SIZE,
-      },
-    }),
-  );
+  const listOptions = api.admin.missing.list.queryOptions({
+    input: {
+      source,
+      bucket,
+      reason,
+      q,
+      sorting,
+      limit: PAGE_SIZE,
+      offset: (page - 1) * PAGE_SIZE,
+    },
+  });
+  const list = useQuery(listOptions);
 
   const refresh = () =>
     queryClient.invalidateQueries({ queryKey: api.admin.key() });
@@ -324,15 +362,48 @@ function MissingList({
       toast.error(errorMessage(error, { fallback: t('missing.retryFailed') })),
   });
 
-  const markAbsent = useMutation({
-    mutationFn: (row: MissingRow & { source: ManualSource }) =>
-      client.admin.sources.markAbsent({
-        gameId: row.gameId,
-        source: row.source,
-      }),
-    onSuccess: async () => {
+  const decide = useMutation({
+    mutationFn: ({
+      kind,
+      row,
+    }: {
+      kind: SourceDecision;
+      row: ManualMissingRow;
+      index: number;
+      nextGameId?: string;
+      href: string;
+      queryKey: typeof listOptions.queryKey;
+    }) =>
+      client.admin.sources[kind]({ gameId: row.gameId, source: row.source }),
+    onSuccess: async (
+      _result,
+      { kind, row, index, nextGameId, href, queryKey },
+    ) => {
       await refresh();
-      toast.success(t('missing.markedAbsent'));
+      const rows = queryClient.getQueryData(queryKey)?.rows;
+      const next =
+        rows?.find((candidate) => candidate.gameId === nextGameId) ??
+        rows?.[index];
+      toast.success(
+        t(
+          kind === 'markAbsent'
+            ? 'missing.markedAbsent'
+            : 'missing.acceptedEmpty',
+        ),
+        next &&
+          next.gameId !== row.gameId &&
+          router.state.location.href === href
+          ? {
+              action: {
+                label: t('missing.nextRow'),
+                onClick: () => {
+                  if (router.state.location.href !== href) return;
+                  document.getElementById(decisionId(next.gameId))?.focus();
+                },
+              },
+            }
+          : undefined,
+      );
     },
     onError: (error) =>
       toast.error(
@@ -340,21 +411,20 @@ function MissingList({
       ),
   });
 
-  const acceptEmpty = useMutation({
-    mutationFn: (row: MissingRow & { source: ManualSource }) =>
-      client.admin.sources.acceptEmpty({
-        gameId: row.gameId,
-        source: row.source,
-      }),
-    onSuccess: async () => {
-      await refresh();
-      toast.success(t('missing.markedAbsent'));
-    },
-    onError: (error) =>
-      toast.error(
-        errorMessage(error, { fallback: t('missing.markAbsentFailed') }),
-      ),
-  });
+  function decideOn(row: ManualMissingRow, kind: SourceDecision) {
+    const rows = list.data?.rows ?? [];
+    const index = rows.findIndex(
+      (candidate) => candidate.gameId === row.gameId,
+    );
+    decide.mutate({
+      row,
+      kind,
+      index,
+      nextGameId: rows[index + 1]?.gameId,
+      href: router.state.location.href,
+      queryKey: listOptions.queryKey,
+    });
+  }
 
   const reasons =
     bucket === 'fixable'
@@ -455,10 +525,11 @@ function MissingList({
           return isManualRow(row) ? (
             <Tooltip content={t('missing.acceptEmptyHint')}>
               <Button
+                id={decisionId(row.gameId)}
                 size="sm"
                 variant="secondary"
-                disabled={acceptEmpty.isPending}
-                onPress={() => acceptEmpty.mutate(row)}
+                disabled={decide.isPending}
+                onPress={() => decideOn(row, 'acceptEmpty')}
               >
                 <CircleCheck size={14} />
                 {t('missing.acceptEmpty')}
@@ -481,10 +552,11 @@ function MissingList({
             {bucket === 'fixable' && isManualRow(row) ? (
               <Tooltip content={t('missing.markAbsentHint')}>
                 <Button
+                  id={decisionId(row.gameId)}
                   size="sm"
                   variant="ghost"
-                  disabled={markAbsent.isPending}
-                  onPress={() => markAbsent.mutate(row)}
+                  disabled={decide.isPending}
+                  onPress={() => decideOn(row, 'markAbsent')}
                 >
                   <SearchX size={14} />
                   {t('missing.markAbsent')}
@@ -507,12 +579,22 @@ function MissingList({
     },
   ];
 
-  const total = list.data?.total ?? 0;
-  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const goToPage = (target: number) =>
-    void navigate({
-      search: (prev) => ({ ...prev, page: target > 1 ? target : undefined }),
+  const pageSearch =
+    (field: 'page' | 'unlinkedPage', target: number) => (prev: Search) => ({
+      ...prev,
+      [field]: adminPageParam(target),
     });
+  const paging = (field: 'page' | 'unlinkedPage', current: number) => ({
+    page: current,
+    href: (target: number) =>
+      router.buildLocation({
+        from: Route.fullPath,
+        to: Route.fullPath,
+        search: pageSearch(field, target),
+      }).href,
+    onPageChange: (target: number, replace?: boolean) =>
+      void navigate({ search: pageSearch(field, target), replace }),
+  });
 
   return (
     <YStack gap={12}>
@@ -532,7 +614,9 @@ function MissingList({
           label={t('missing.source')}
           value={source}
           onValueChange={(value) =>
-            void navigate({ search: { source: value as EnrichmentSource } })
+            void navigate({
+              search: missingViewSearch(value as EnrichmentSource),
+            })
           }
         >
           {enrichmentSourceValues.map((value) => (
@@ -568,7 +652,7 @@ function MissingList({
               variant={value === bucket ? 'selection' : 'outline'}
               aria-pressed={value === bucket}
               onPress={() =>
-                void navigate({ search: { source, bucket: value } })
+                void navigate({ search: missingViewSearch(source, value) })
               }
             >
               {`${t(`bucket.${value}`)} · ${format.number(countOf(summary, source, value))}`}
@@ -613,6 +697,7 @@ function MissingList({
           <YStack width="260px max-sm:100%" minW={0}>
             <ClearableInput
               value={text}
+              maxLength={100}
               onChangeText={setText}
               placeholder={t('missing.search')}
               aria-label={t('missing.search')}
@@ -624,35 +709,41 @@ function MissingList({
 
       {source === 'igdb' &&
       bucket === 'fixable' &&
-      summary.gamesWithoutIgdb > 0 ? (
+      (summary.gamesWithoutIgdb > 0 || unlinkedPage > 1) ? (
         <YStack gap={8}>
           <Text render="h3" fontSize={15} fontWeight="600">
             {t('missing.withoutIgdb')} ·{' '}
             {format.number(summary.gamesWithoutIgdb)}
           </Text>
-          <UnlinkedGames q={q} />
+          <UnlinkedGames
+            q={q}
+            sorting={unlinkedSorting}
+            onSortChange={(next) =>
+              void navigate({
+                search: (prev) => ({
+                  ...prev,
+                  unlinkedSorting: next,
+                  unlinkedPage: undefined,
+                }),
+              })
+            }
+            paging={paging('unlinkedPage', unlinkedPage)}
+          />
         </YStack>
       ) : null}
 
-      <XStack items="baseline" justify="space-between" gap={8} flexWrap="wrap">
-        <Text render="h3" fontSize={15} fontWeight="600">
-          {source === 'igdb' && bucket === 'fixable'
-            ? t('missing.notFoundIgdb')
-            : t('missing.listTitle', {
-                source: t(`source.${source}`),
-                bucket: t(`bucket.${bucket}`),
-              })}
-        </Text>
-        {list.data ? (
-          <Text fontSize={12} color="color11" role="status">
-            {t('missing.results', { count: total })}
-          </Text>
-        ) : null}
-      </XStack>
+      <Text render="h3" fontSize={15} fontWeight="600">
+        {source === 'igdb' && bucket === 'fixable'
+          ? t('missing.notFoundIgdb')
+          : t('missing.listTitle', {
+              source: t(`source.${source}`),
+              bucket: t(`bucket.${bucket}`),
+            })}
+      </Text>
 
       {list.isError ? (
         <EmptyState title={t('missing.failed')} />
-      ) : list.data?.rows.length === 0 ? (
+      ) : page === 1 && list.data?.rows.length === 0 ? (
         <EmptyState title={t('missing.empty')} />
       ) : (
         <AdminTable
@@ -661,7 +752,7 @@ function MissingList({
             bucket: t(`bucket.${bucket}`),
           })}
           columns={columns}
-          rows={list.data?.rows}
+          rows={list.data?.rows.length ? list.data.rows : undefined}
           rowKey={(row) => `${row.gameId}-${row.source}`}
           serverSort={{
             value: sorting,
@@ -674,30 +765,11 @@ function MissingList({
         />
       )}
 
-      {pageCount > 1 ? (
-        <Pagination
-          page={page}
-          pageCount={pageCount}
-          href={(target) =>
-            router.buildLocation({
-              from: Route.fullPath,
-              to: Route.fullPath,
-              search: (prev) => ({
-                ...prev,
-                page: target > 1 ? target : undefined,
-              }),
-            }).href
-          }
-          onNavigate={(target, event) => {
-            if (takeLinkClick(event)) goToPage(target);
-          }}
-          label={tBacklog('pages')}
-          previousLabel={tBacklog('previousPage')}
-          nextLabel={tBacklog('nextPage')}
-          goToLabel={tBacklog('goToPage')}
-          onGoTo={goToPage}
-        />
-      ) : null}
+      <AdminPagination
+        {...paging('page', page)}
+        total={list.isSuccess ? list.data.total : undefined}
+        pageSize={PAGE_SIZE}
+      />
 
       <SetSourceIdDialog
         row={setting}
