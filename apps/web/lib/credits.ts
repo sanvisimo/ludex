@@ -1,26 +1,12 @@
-/**
- * Chi ringraziamo nella pagina `/credits`: i dati, ognuno con la sua licenza.
- *
- * Qui stanno solo le cose che non si traducono — nome, indirizzo, licenza. Il
- * «a cosa ci serve» sta nei messaggi, `credits.<sezione>.<id>`, e con
- * `note: true` anche `credits.<sezione>.<id>Note`.
- *
- * Le licenze del software le dice il `package.json` installato di ogni
- * pacchetto, non la memoria: se si aggiorna una dipendenza se ne rilegge la
- * riga. Di proposito è lo stack che il progetto dichiara e non le dipendenze
- * transitive, che sarebbero centinaia di righe senza valore per chi legge.
- */
 export type Credit = {
   id: string;
   name: string;
   url: string;
   license?: string;
   licenseUrl?: string;
-  /** C'è una nota in più nei messaggi (`<id>Note`). */
   note?: boolean;
 };
 
-/** Fonti dati e negozi da cui importiamo. Una licenza solo dove ne hanno una. */
 export const services: Credit[] = [
   { id: 'igdb', name: 'IGDB', url: 'https://www.igdb.com' },
   { id: 'hltb', name: 'HowLongToBeat', url: 'https://howlongtobeat.com' },
@@ -42,7 +28,7 @@ export const services: Credit[] = [
   { id: 'nintendo', name: 'Nintendo', url: 'https://www.nintendo.com' },
 ];
 
-/** Il software su cui poggia PileCue. */
+// L’elenco delle dipendenze dirette mantiene leggibile la pagina dei crediti.
 export const software: Credit[] = [
   { id: 'react', name: 'React', url: 'https://react.dev', license: 'MIT' },
   {
@@ -115,10 +101,6 @@ export const software: Credit[] = [
   },
 ];
 
-/**
- * Le icone. Le piattaforme stanno in `apps/web/public/platforms`, con la
- * provenienza file per file in `LICENSE.md`: se cambia una, cambia anche lì.
- */
 export const icons: Credit[] = [
   {
     id: 'romm',
@@ -142,6 +124,13 @@ export const icons: Credit[] = [
     license: 'CC0',
     licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
   },
+  {
+    id: 'dashboard-icons',
+    name: 'Dashboard Icons',
+    url: 'https://dashboardicons.com/icons/amazon-luna',
+    license: 'Apache-2.0',
+    licenseUrl: '/licenses/amazon-luna.txt',
+  },
   { id: 'igdb-icons', name: 'IGDB', url: 'https://www.igdb.com/icons' },
   {
     id: 'pcgamingwiki',
@@ -151,7 +140,6 @@ export const icons: Credit[] = [
   { id: 'lucide', name: 'Lucide', url: 'https://lucide.dev', license: 'ISC' },
 ];
 
-/** Dove sta l'elenco file per file delle icone delle piattaforme. */
 export const platformIconsLicense = '/platforms/LICENSE.md';
 
 /** Il sorgente: l'AGPL lo chiede a chi offre il servizio in rete. */
@@ -162,7 +150,6 @@ export const licenseUrl = 'https://www.gnu.org/licenses/agpl-3.0.html';
 // produzione `SHOW_OPENCRITIC` ed `ENABLE_OPENCRITIC` vanno a 0.
 export const supportUrl: string | null = 'https://ko-fi.com/sanvisimo';
 
-/** Dove arrivano suggerimenti, idee e segnalazioni: le issue, in pubblico. */
 export const issuesUrl = `${repoUrl}/issues`;
 
 /**

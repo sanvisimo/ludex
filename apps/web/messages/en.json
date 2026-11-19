@@ -1684,6 +1684,7 @@
       "libretro": "Some platform icons, passed on through RomM, come from Libretro / RetroArch.",
       "libretroNote": "© Libretro / RetroArch. Icons converted to PNG and renamed.",
       "simple-icons": "The glyphs of many stores and sources.",
+      "dashboard-icons": "The Amazon Luna glyph, resized and centered for the tile.",
       "igdb-icons": "The Xbox and Nintendo icons.",
       "pcgamingwiki": "The HowLongToBeat icon.",
       "lucide": "The interface icons.",

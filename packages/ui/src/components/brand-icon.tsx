@@ -1,29 +1,9 @@
 import { Path, Rect, Svg } from 'react-native-svg';
 
-/**
- * I tracciati dei marchi, ciascuno col suo colore.
- *
- * Da **Simple Icons** (CC0, simpleicons.org) Steam, GOG, Epic Games, EA,
- * Battle.net, PlayStation, Amazon, IGDB, OpenCritic e Metacritic, disegnati in
- * un quadrato da 24; da **IGDB** (`igdb.com/icons`) Xbox e Nintendo, che Simple
- * Icons ha tolto su richiesta dei proprietari, in un quadrato da 20; da
- * **PCGamingWiki** HowLongToBeat.
- *
- * Wikipedia, itch.io, App Store e Google Play, sempre da Simple Icons (16.35),
- * sono arrivati coi link della pagina del gioco (`plans/link-pagina-gioco.md`):
- * i loro nomi sono quelli di `gameWebsiteTypeValues`.
- *
- * IsThereAnyDeal è il logo del loro sito (`isthereanydeal.com`), che Simple
- * Icons non ha: un razzo blu con la fiamma bianca, disegnato per il fondo nero.
- * È l'unico a tenere i suoi colori (`layers`): in bianco non si riconosce.
- *
- * Amazon è arrivato col 12g, per le schede delle librerie. Prima il commento
- * lo dava per introvabile, e la pagina del gioco ripiega ancora sul nome:
- * `STORE_BRAND` in `game-page.tsx` non lo elenca.
- *
- * I colori sono **fissi**, come quelli di `Logo`: un marchio è un'immagine e
- * non cambia col tema.
- */
+// Simple Icons: Steam, GOG, Epic Games, EA, Battle.net, PlayStation, Ubisoft,
+// IGDB, OpenCritic, Metacritic, Wikipedia, itch.io, App Store e Google Play.
+// IGDB: Xbox e Nintendo. PCGamingWiki: HowLongToBeat.
+// IsThereAnyDeal conserva i colori originali: il razzo in bianco perde la fiamma.
 const BRANDS = {
   steam: {
     title: 'Steam',
@@ -61,11 +41,19 @@ const BRANDS = {
     box: 24,
     path: 'M8.984 2.596v17.547l3.915 1.261V6.688c0-.69.304-1.151.794-.991.636.18.76.814.76 1.505v5.875c2.441 1.193 4.362-.002 4.362-3.152 0-3.237-1.126-4.675-4.438-5.827-1.307-.448-3.728-1.186-5.39-1.502zm4.656 16.241l6.296-2.275c.715-.258.826-.625.246-.818-.586-.192-1.637-.139-2.357.123l-4.205 1.5V14.98l.24-.085s1.201-.42 2.913-.615c1.696-.18 3.785.03 5.437.661 1.848.601 2.04 1.472 1.576 2.072-.465.6-1.622 1.036-1.622 1.036l-8.544 3.107V18.86zM1.807 18.6c-1.9-.545-2.214-1.668-1.352-2.32.801-.586 2.16-1.052 2.16-1.052l5.615-2.013v2.313L4.205 17c-.705.271-.825.632-.239.826.586.195 1.637.15 2.343-.12L8.247 17v2.074c-.12.03-.256.044-.39.073-1.939.331-3.996.196-6.038-.479z',
   },
-  amazon: {
-    title: 'Amazon',
-    color: '#FF9900',
+  ubisoft: {
+    title: 'Ubisoft Connect',
+    color: '#151A36',
     box: 24,
-    path: 'M.045 18.02c.072-.116.187-.124.348-.022 3.636 2.11 7.594 3.166 11.87 3.166 2.852 0 5.668-.533 8.447-1.595l.315-.14c.138-.06.234-.1.293-.13.226-.088.39-.046.525.13.12.174.09.336-.12.48-.256.19-.6.41-1.006.654-1.244.743-2.64 1.316-4.185 1.726a17.617 17.617 0 01-10.951-.577 17.88 17.88 0 01-5.43-3.35c-.1-.074-.151-.15-.151-.22 0-.047.021-.09.051-.13zm6.565-6.218c0-1.005.247-1.863.743-2.577.495-.71 1.17-1.25 2.04-1.615.796-.335 1.756-.575 2.912-.72.39-.046 1.033-.103 1.92-.174v-.37c0-.93-.105-1.558-.3-1.875-.302-.43-.78-.65-1.44-.65h-.182c-.48.046-.896.196-1.246.46-.35.27-.575.63-.675 1.096-.06.3-.206.465-.435.51l-2.52-.315c-.248-.06-.372-.18-.372-.39 0-.046.007-.09.022-.15.247-1.29.855-2.25 1.82-2.88.976-.616 2.1-.975 3.39-1.05h.54c1.65 0 2.957.434 3.888 1.29.135.15.27.3.405.48.12.165.224.314.283.45.075.134.15.33.195.57.06.254.105.42.135.51.03.104.062.3.076.615.01.313.02.493.02.553v5.28c0 .376.06.72.165 1.036.105.313.21.54.315.674l.51.674c.09.136.136.256.136.36 0 .12-.06.226-.18.314-1.2 1.05-1.86 1.62-1.963 1.71-.165.135-.375.15-.63.045a6.062 6.062 0 01-.526-.496l-.31-.347a9.391 9.391 0 01-.317-.42l-.3-.435c-.81.886-1.603 1.44-2.4 1.665-.494.15-1.093.227-1.83.227-1.11 0-2.04-.343-2.76-1.034-.72-.69-1.08-1.665-1.08-2.94l-.05-.076zm3.753-.438c0 .566.14 1.02.425 1.364.285.34.675.512 1.155.512.045 0 .106-.007.195-.02.09-.016.134-.023.166-.023.614-.16 1.08-.553 1.424-1.178.165-.28.285-.58.36-.91.09-.32.12-.59.135-.8.015-.195.015-.54.015-1.005v-.54c-.84 0-1.484.06-1.92.18-1.275.36-1.92 1.17-1.92 2.43l-.035-.02zm9.162 7.027c.03-.06.075-.11.132-.17.362-.243.714-.41 1.05-.5a8.094 8.094 0 011.612-.24c.14-.012.28 0 .41.03.65.06 1.05.168 1.172.33.063.09.099.228.099.39v.15c0 .51-.149 1.11-.424 1.8-.278.69-.664 1.248-1.156 1.68-.073.06-.14.09-.197.09-.03 0-.06 0-.09-.012-.09-.044-.107-.12-.064-.24.54-1.26.806-2.143.806-2.64 0-.15-.03-.27-.087-.344-.145-.166-.55-.257-1.224-.257-.243 0-.533.016-.87.046-.363.045-.7.09-1 .135-.09 0-.148-.014-.18-.044-.03-.03-.036-.047-.02-.077 0-.017.006-.03.02-.063v-.06z',
+    path: 'M23.561 11.988C23.301-.304 6.954-4.89.656 6.634c.282.206.661.477.943.672a11.747 11.747 0 00-.976 3.067 11.885 11.885 0 00-.184 2.071C.439 18.818 5.621 24 12.005 24c6.385 0 11.556-5.17 11.556-11.556v-.455zm-20.27 2.06c-.152 1.246-.054 1.636-.054 1.788l-.282.098c-.108-.206-.37-.932-.488-1.908C2.163 10.308 4.7 6.96 8.57 6.33c3.544-.52 6.937 1.68 7.728 4.758l-.282.098c-.087-.087-.228-.336-.77-.878-4.281-4.281-11.002-2.32-11.956 3.74zm11.002 2.081a3.145 3.145 0 01-2.59 1.355 3.15 3.15 0 01-3.155-3.155 3.159 3.159 0 012.927-3.144c1.018-.043 1.972.51 2.416 1.398a2.58 2.58 0 01-.455 2.95c.293.205.575.4.856.595zm6.58.12c-1.669 3.782-5.106 5.766-8.77 5.712-7.034-.347-9.083-8.466-4.38-11.393l.207.206c-.076.108-.358.325-.791 1.182-.51 1.041-.672 2.081-.607 2.732.369 5.67 8.314 6.83 11.045 1.214C21.057 8.217 11.822.401 3.626 6.374l-.184-.184C5.599 2.808 9.816 1.3 13.837 2.309c6.147 1.55 9.453 7.956 7.035 13.94z',
+  },
+  // Tracciato da Dashboard Icons (Apache-2.0), ridimensionato e centrato.
+  // Testo della licenza e copyright in apps/web/public/licenses/amazon-luna.txt.
+  amazon: {
+    title: 'Amazon Luna',
+    color: '#7C2BFF',
+    box: 24,
+    path: 'M10.468 0.354c0.988 -0.258 2.088 -0.074 2.922 0.52 1.023 0.709 1.628 1.992 1.471 3.236 -0.387 1.582 -0.207 3.565 0.736 5.064 0.589 1.004 1.165 2.016 1.75 3.023 0.751 1.331 2.029 2.347 3.487 2.798 1.183 0.355 2.2 1.227 2.727 2.344 0.736 1.507 0.537 3.418 -0.509 4.733 -1.138 1.496 -3.342 2.023 -5.021 1.479 -0.928 -0.286 -1.591 -1.179 -2.47 -1.562 -2.538 -1.262 -5.459 -1.301 -8.223 -1.068 -1.485 0.111 -2.892 0.71 -4.304 1.143 -1.029 0.289 -2.205 -0.164 -2.72 -1.096 -0.68 -1.148 -0.212 -2.804 1.004 -3.384 1.113 -0.594 1.87 -1.632 2.503 -2.692 1.152 -1.982 2.291 -3.972 3.439 -5.956 0.665 -1.157 0.775 -2.522 0.743 -3.822 -0.004 -0.656 -0.259 -1.327 -0.112 -1.979 0.217 -1.326 1.276 -2.462 2.578 -2.782m-0.081 8.335c-0.767 0.292 -1.1 0.908 -1.557 1.541 -1.131 1.689 -1.96 3.476 -2.793 5.33 -0.47 1.078 0.014 2.335 1.043 2.893 0.683 0.374 1.326 0.341 2.079 0.422 1.96 0.107 3.937 0.105 5.886 -0.151 1.039 -0.142 1.898 -0.964 2.027 -1.982 0.105 -0.67 -0.205 -1.305 -0.502 -1.886 -0.536 -1.158 -1.239 -2.259 -1.877 -3.362 -0.512 -0.866 -1.04 -1.741 -1.751 -2.462 -0.625 -0.642 -1.734 -0.61 -2.555 -0.343z',
   },
   igdb: {
     title: 'IGDB',
@@ -164,30 +152,15 @@ export const brandValues = Object.keys(BRANDS) as Brand[];
 
 export type BrandIconProps = {
   brand: Brand;
-  /** Il lato, in pixel. */
   size?: number;
-  /**
-   * Il nome da leggere. Senza, l'icona è decorativa e il nome lo porta chi le
-   * sta accanto; con, è un'immagine col suo nome — il caso dell'icona che fa
-   * da link e non ha testo vicino.
-   */
   label?: string;
 };
 
-// La tessera sta in un quadrato da 31, la misura delle icone di IGDB; il
-// glifo occupa i 20 centrali, qualunque sia il quadrato in cui è disegnato.
 const TILE = 31;
 const GLYPH = 20;
 const INSET = (TILE - GLYPH) / 2;
 
-/**
- * Il marchio di un negozio o di una fonte: una tessera col suo colore e il
- * glifo bianco, come nello schizzo della pagina del gioco (12d). Fa eccezione
- * IsThereAnyDeal, che su una tessera nera tiene i colori del logo.
- *
- * Il bordo chiaro e sottile serve alle tessere nere — Steam, EA, Metacritic —
- * che sul tema scuro altrimenti sparirebbero nel fondo; sul chiaro non si vede.
- */
+// Il bordo chiaro distingue le tessere nere dallo sfondo del tema scuro.
 export function BrandIcon({ brand, size = 20, label }: BrandIconProps) {
   const entry: {
     color: string;
@@ -232,7 +205,6 @@ export function BrandIcon({ brand, size = 20, label }: BrandIconProps) {
   );
 }
 
-/** Il nome del marchio, per chi deve scriverlo accanto all'icona. */
 export function brandTitle(brand: Brand) {
   return BRANDS[brand].title;
 }
