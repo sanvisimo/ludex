@@ -1,4 +1,9 @@
-import type { AdminUser } from '@repo/contracts';
+import {
+  adminUsersDefaultSort,
+  AdminUsersSortSchema,
+  type AdminUser,
+  type AdminUsersSort,
+} from '@repo/contracts';
 import {
   Badge,
   Button,
@@ -22,7 +27,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Skeleton,
   Text,
   toast,
   XStack,
@@ -57,13 +61,14 @@ import { useSession } from '@/src/use-session';
 const PAGE_SIZE = 25;
 const BAN_DAYS = [1, 7, 30, 365] as const;
 
-type Search = { q?: string; page?: number };
+type Search = { q?: string; page?: number } & Partial<AdminUsersSort>;
 type ConfirmAction = 'makeAdmin' | 'removeAdmin' | 'revoke';
 type Confirmation = { action: ConfirmAction; user: AdminUser; open: boolean };
 type CloseAutoFocus = ComponentProps<typeof DialogContent>['onCloseAutoFocus'];
 
 export const Route = createFileRoute('/_app/admin/users')({
   validateSearch: (search: Record<string, unknown>): Search => ({
+    ...AdminUsersSortSchema.safeParse(search).data,
     q:
       typeof search.q === 'string'
         ? search.q.trim().slice(0, 100) || undefined
@@ -84,7 +89,13 @@ function UsersSection() {
   const tSearch = useTranslations('search');
   const tBacklog = useTranslations('backlog');
   const format = useFormatter();
-  const { q, page = 1 } = Route.useSearch();
+  const {
+    q,
+    page = 1,
+    sort = adminUsersDefaultSort.sort,
+    direction = adminUsersDefaultSort.direction,
+  } = Route.useSearch();
+  const sorting = { sort, direction };
   const router = useRouter();
   const navigate = useNavigate({ from: Route.fullPath });
   const errorMessage = useApiErrorMessage();
@@ -121,7 +132,11 @@ function UsersSection() {
     const value = text.trim() || undefined;
     if (value === q) return;
     const timer = setTimeout(
-      () => void navigate({ search: { q: value }, replace: true }),
+      () =>
+        void navigate({
+          search: (prev) => ({ ...prev, q: value, page: undefined }),
+          replace: true,
+        }),
       300,
     );
     return () => clearTimeout(timer);
@@ -129,7 +144,7 @@ function UsersSection() {
 
   const users = useQuery(
     api.admin.users.list.queryOptions({
-      input: { q, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE },
+      input: { q, sorting, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE },
     }),
   );
 
@@ -138,14 +153,19 @@ function UsersSection() {
   useEffect(() => {
     if (users.isSuccess && page > pageCount) {
       void navigate({
-        search: { q, page: pageCount > 1 ? pageCount : undefined },
+        search: (prev) => ({
+          ...prev,
+          page: pageCount > 1 ? pageCount : undefined,
+        }),
         replace: true,
       });
     }
-  }, [navigate, page, pageCount, q, users.isSuccess]);
+  }, [navigate, page, pageCount, users.isSuccess]);
 
   const goToPage = (target: number) =>
-    void navigate({ search: { q, page: target > 1 ? target : undefined } });
+    void navigate({
+      search: (prev) => ({ ...prev, page: target > 1 ? target : undefined }),
+    });
 
   const act = useMutation({
     mutationFn: async ({
@@ -379,18 +399,24 @@ function UsersSection() {
         ) : null}
       </XStack>
 
-      {users.isPending || (users.isSuccess && page > pageCount) ? (
-        <Skeleton height={200} width="100%" rounded={12} />
-      ) : users.isError ? (
+      {users.isError ? (
         <EmptyState title={t('loadFailed')} />
-      ) : users.data.rows.length === 0 ? (
+      ) : page <= pageCount && users.data?.rows.length === 0 ? (
         <EmptyState title={t(q ? 'emptyFiltered' : 'empty')} />
       ) : (
         <AdminTable
           label={t('title')}
           columns={columns}
-          rows={users.data.rows}
+          rows={page <= pageCount ? users.data?.rows : undefined}
           rowKey={(user) => user.id}
+          serverSort={{
+            value: sorting,
+            keys: AdminUsersSortSchema.shape.sort.options,
+            onChange: (next) =>
+              void navigate({
+                search: (prev) => ({ ...prev, ...next, page: undefined }),
+              }),
+          }}
         />
       )}
 
@@ -400,8 +426,12 @@ function UsersSection() {
           pageCount={pageCount}
           href={(target) =>
             router.buildLocation({
+              from: Route.fullPath,
               to: Route.fullPath,
-              search: { q, page: target > 1 ? target : undefined },
+              search: (prev) => ({
+                ...prev,
+                page: target > 1 ? target : undefined,
+              }),
             }).href
           }
           onNavigate={(target, event) => {

@@ -1,32 +1,27 @@
+import {
+  adminUnresolvedDefaultSort,
+  type AdminUnresolvedSort,
+} from '@repo/contracts';
 import type { HiddenKind, Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, asc, count, desc, eq, ilike, isNull, sql } from '@repo/db/orm';
 
+import { adminOrderBy } from './admin-sort';
 import { reopenSourcesForNewExternalIds } from './enrichment';
 import { resolveGameFromIgdb } from './games';
 import { resolveUnresolvedImport } from './unresolved-imports';
-
-// La sezione «Scarti» dell'admin (11a, passo 5): gli scarti d'import di tutti
-// gli utenti, una riga per negozio e id esterno, e i due gesti che valgono per
-// tutti — collegare e nascondere.
 
 const ui = schema.unresolvedImports;
 
 /** I tipi che si nascondono per tutti: `unwanted` è una preferenza, non un fatto. */
 export type GlobalHiddenKind = Exclude<HiddenKind, 'unwanted'>;
 
-/**
- * Gli scarti di tutti, raggruppati per chiave: lo stesso Netflix su PSN è una
- * riga per ogni utente, e all'admin interessa una volta sola.
- *
- * Solo le chiavi con almeno uno scarto ancora visibile: quelle che qualcuno ha
- * davanti come «da sistemare». Prima le chiavi con più librerie.
- */
 export async function listUnresolvedGroups(input: {
   store?: Store;
   q?: string;
   limit: number;
   offset: number;
+  sorting?: AdminUnresolvedSort;
 }) {
   const where = and(
     input.store ? eq(ui.store, input.store) : undefined,
@@ -47,7 +42,6 @@ export async function listUnresolvedGroups(input: {
         'platform_slug',
       ),
       imageUrl: sql<string | null>`max(${ui.imageUrl})`.as('image_url'),
-      // Dove sta la voce sul negozio: il link del dialogo di dettaglio.
       storePage: sql<string | null>`max(${ui.storePage})`.as('store_page'),
       libraries: sql<number>`count(*)::int`.as('libraries'),
       visible: visibili.as('visible'),
@@ -62,12 +56,23 @@ export async function listUnresolvedGroups(input: {
     .groupBy(ui.store, ui.externalId)
     .having(sql`count(*) filter (where ${ui.hiddenAt} is null) > 0`)
     .as('groups');
+  const { sort, direction } = input.sorting ?? adminUnresolvedDefaultSort;
+  const columns = {
+    name: sql`lower(${groups.name})`,
+    libraries: groups.libraries,
+    hidden: sql`${groups.libraries} - ${groups.visible}`,
+  };
 
   const [rows, [total]] = await Promise.all([
     db
       .select()
       .from(groups)
-      .orderBy(desc(groups.libraries), asc(groups.name))
+      .orderBy(
+        adminOrderBy(columns[sort], direction),
+        asc(groups.name),
+        asc(groups.store),
+        asc(groups.externalId),
+      )
       .limit(input.limit)
       .offset(input.offset),
     db.select({ n: count() }).from(groups),
@@ -95,7 +100,6 @@ export async function listUnresolvedGroups(input: {
   };
 }
 
-/** La vista «Nascosti per tutti»: le regole, con quante librerie hanno ancora la voce. */
 export async function listGlobalHidden() {
   const ghi = schema.globalHiddenImports;
   const rows = await db

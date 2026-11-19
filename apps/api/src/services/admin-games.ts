@@ -1,4 +1,9 @@
-import { storeAccountName, storeGameUrl } from '@repo/contracts';
+import {
+  adminUnlinkedDefaultSort,
+  storeAccountName,
+  storeGameUrl,
+  type AdminUnlinkedSort,
+} from '@repo/contracts';
 import type { Medium, Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import {
@@ -15,6 +20,7 @@ import {
 
 import { findIgdbGameById } from '../external/igdb';
 import { enqueueEnrichment } from '../queue/enrichment';
+import { adminOrderBy } from './admin-sort';
 import {
   advanceAddedAt,
   ensureBacklogEntries,
@@ -26,13 +32,7 @@ import { isDemoLikeName } from './library-import';
 import { igdbPlatformNamer } from './platform-names';
 import { closeReports, listOpenReports } from './reports';
 
-// La sezione Giochi dell'admin (11a, passo 6): i giochi senza id IGDB, la
-// scheda admin di un gioco, e «Non è questo gioco» — ripuntare un collegamento
-// sbagliato, il caso Toki.
-
 /**
- * Quanti utenti hanno il gioco in backlog: dice quanto pesa sistemarlo.
- *
  * `games.id` scritto a mano e non `${schema.games.id}`: in una select su una
  * tabella sola Drizzle scrive la colonna senza tabella, `"id"`, e dentro la
  * sottoquery Postgres la legge come `b.id`. Contava sempre zero.
@@ -41,16 +41,22 @@ const users = sql<number>`(
   select count(*)::int from backlog b where b.game_id = games.id
 )`;
 
-/** I giochi senza id IGDB: inseriti a mano e mai collegati. */
 export async function listUnlinkedGames(input: {
   q?: string;
   limit: number;
   offset: number;
+  sorting?: AdminUnlinkedSort;
 }) {
   const where = and(
     isNull(schema.games.igdbId),
     input.q ? ilike(schema.games.name, `%${input.q}%`) : undefined,
   );
+  const { sort, direction } = input.sorting ?? adminUnlinkedDefaultSort;
+  const columns = {
+    game: sql`lower(${schema.games.name})`,
+    users,
+    added: schema.games.createdAt,
+  };
   const [rows, [total]] = await Promise.all([
     db
       .select({
@@ -62,7 +68,11 @@ export async function listUnlinkedGames(input: {
       })
       .from(schema.games)
       .where(where)
-      .orderBy(sql`${users} desc`, asc(schema.games.name))
+      .orderBy(
+        adminOrderBy(columns[sort], direction),
+        asc(schema.games.name),
+        asc(schema.games.id),
+      )
       .limit(input.limit)
       .offset(input.offset),
     db.select({ n: count() }).from(schema.games).where(where),
@@ -102,8 +112,6 @@ export async function linkGameToIgdb(gameId: string, igdbId: number) {
     .update(schema.games)
     .set({ igdbId, updatedAt: new Date() })
     .where(eq(schema.games.id, gameId));
-  // Da qui è un gioco come gli altri: l'enrichment IGDB porta nome, copertina
-  // e il resto, e dietro di lui le altre fonti.
   await db
     .insert(schema.gameSources)
     .values({ gameId, source: 'igdb', status: 'pending' })
@@ -115,11 +123,6 @@ export async function linkGameToIgdb(gameId: string, igdbId: number) {
   return { status: 'ok' as const };
 }
 
-/**
- * La scheda admin di un gioco (frame 5 del wireframe): i collegamenti dai
- * negozi, le fonti e le segnalazioni aperte, cioè tutto ciò che l'admin può
- * correggere su un gioco solo.
- */
 export async function gameAdminDetail(slug: string) {
   const game = await db
     .select({
@@ -149,8 +152,6 @@ export async function gameAdminDetail(slug: string) {
       // La pagina che l'import ha salvato su una delle copie: è il link più
       // sicuro, quello che il negozio stesso ha dato.
       storePage: sql<string | null>`max(${schema.ownerships.storePage})`,
-      // Su che console stanno le copie: per scegliere il gioco giusto in «Non
-      // è questo gioco», fra l'originale e i suoi port.
       platforms: sql<
         string[]
       >`array_agg(distinct ${schema.platforms.name} order by ${schema.platforms.name})`,
@@ -208,8 +209,6 @@ export async function gameAdminDetail(slug: string) {
     offset: 0,
   });
 
-  // I link delle fonti, gli stessi della pagina pubblica: l'admin apre la
-  // scheda e vede se è quella giusta.
   const idOf = (source: string) =>
     sources.find((row) => row.source === source)?.externalId ?? null;
   const sourceUrl = sourceLinks({
@@ -237,10 +236,7 @@ export async function gameAdminDetail(slug: string) {
     })),
     sources: sources.map((row) => {
       const source = row.source as
-        | 'igdb'
-        | 'hltb'
-        | 'opencritic'
-        | 'metacritic';
+        'igdb' | 'hltb' | 'opencritic' | 'metacritic';
       return { ...row, source, url: sourceUrl[source] };
     }),
     reports,
@@ -552,7 +548,6 @@ export async function repointLink(
     copies += voce.copies.length;
   }
 
-  // Per ultima, la riga: vedi sopra.
   await db
     .update(schema.externalIds)
     .set({ gameId: target.id, updatedAt: new Date() })
@@ -568,7 +563,6 @@ export async function repointLink(
   return { status: 'ok' as const, wholeRows, copies };
 }
 
-/** Un altro id dello stesso negozio sullo stesso gioco, se c'è. */
 async function otherIdSameStore(link: {
   id: string;
   gameId: string;

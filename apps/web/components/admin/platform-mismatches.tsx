@@ -1,8 +1,11 @@
-import type { PlatformMismatch } from '@repo/contracts';
+import {
+  adminMismatchesDefaultSort,
+  AdminMismatchesSortSchema,
+  type PlatformMismatch,
+} from '@repo/contracts';
 import {
   Button,
   EmptyState,
-  Skeleton,
   Tabs,
   TabsTab,
   Text,
@@ -12,6 +15,7 @@ import {
 } from '@repo/ui';
 import { ArrowUpRight, Check, Undo2 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
 import {
@@ -67,9 +71,10 @@ function MismatchTable({ dismissed }: { dismissed: boolean }) {
   const tStore = useTranslations('store');
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
+  const [sorting, setSorting] = useState(adminMismatchesDefaultSort);
   const query = useQuery(
     api.admin.platformMismatches.list.queryOptions({
-      input: { dismissed, limit: 100 },
+      input: { dismissed, sorting, limit: 100 },
     }),
   );
 
@@ -195,11 +200,9 @@ function MismatchTable({ dismissed }: { dismissed: boolean }) {
     },
   ];
 
-  if (query.isPending)
-    return <Skeleton height={160} width="100%" rounded={12} />;
   if (query.isError) return <EmptyState title={t('loadFailed')} />;
 
-  if (query.data.rows.length === 0)
+  if (query.data?.rows.length === 0)
     return <EmptyState title={dismissed ? t('emptyDismissed') : t('empty')} />;
 
   return (
@@ -210,15 +213,22 @@ function MismatchTable({ dismissed }: { dismissed: boolean }) {
             {t('hint')}
           </Text>
         ) : null}
-        <Text fontSize={12} color="color11" role="status" ml="auto">
-          {t('count', { count: query.data.total })}
-        </Text>
+        {query.data ? (
+          <Text fontSize={12} color="color11" role="status" ml="auto">
+            {t('count', { count: query.data.total })}
+          </Text>
+        ) : null}
       </XStack>
       <AdminTable
         label={dismissed ? t('dismissed') : t('open')}
         columns={columns}
-        rows={query.data.rows}
+        rows={query.data?.rows}
         rowKey={(row) => row.gameId}
+        serverSort={{
+          value: sorting,
+          keys: AdminMismatchesSortSchema.shape.sort.options,
+          onChange: setSorting,
+        }}
       />
     </YStack>
   );

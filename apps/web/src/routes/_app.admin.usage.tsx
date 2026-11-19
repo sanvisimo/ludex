@@ -185,12 +185,14 @@ function UsersBlock({ usage }: { usage: AdminUsage }) {
     {
       key: 'store',
       header: t('store'),
+      sortValue: (row) => tStore(row.store),
       flex: 1,
       minWidth: 120,
       render: (row) => <CellText>{tStore(row.store)}</CellText>,
     },
     {
       key: 'accounts',
+      sortValue: (row) => row.accounts,
       header: t('accounts'),
       width: 80,
       align: 'end',
@@ -198,6 +200,7 @@ function UsersBlock({ usage }: { usage: AdminUsage }) {
     },
     {
       key: 'imported',
+      sortValue: (row) => row.imported,
       header: t('imported'),
       width: 170,
       align: 'end',
@@ -205,6 +208,7 @@ function UsersBlock({ usage }: { usage: AdminUsage }) {
     },
     {
       key: 'synced7',
+      sortValue: (row) => row.synced7,
       header: t('synced7'),
       width: 150,
       align: 'end',
@@ -212,6 +216,7 @@ function UsersBlock({ usage }: { usage: AdminUsage }) {
     },
     {
       key: 'needsReauth',
+      sortValue: (row) => row.needsReauth,
       header: t('needsReauth'),
       width: 120,
       align: 'end',
@@ -267,12 +272,14 @@ function GamesBlock({ usage }: { usage: AdminUsage }) {
     {
       key: 'rank',
       header: '#',
+      sortValue: (row) => games.top.indexOf(row),
       width: 32,
       render: (row) => <CellText muted>{games.top.indexOf(row) + 1}</CellText>,
     },
     {
       key: 'name',
       header: t('game'),
+      sortValue: (row) => row.name,
       flex: 1,
       minWidth: 200,
       render: (row) => (
@@ -283,6 +290,7 @@ function GamesBlock({ usage }: { usage: AdminUsage }) {
     },
     {
       key: 'users',
+      sortValue: (row) => row.users,
       header: t('gameUsers'),
       width: 80,
       align: 'end',
@@ -343,6 +351,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
     {
       key: 'name',
       header: t('queue'),
+      sortValue: (row) => row.name,
       flex: 1,
       minWidth: 120,
       render: (row) => <CellText>{row.name}</CellText>,
@@ -351,6 +360,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
       (key): AdminColumn<QueueRow> => ({
         key,
         header: t(key),
+        sortValue: (row) => row[key],
         width: 96,
         align: 'end',
         render: (row) => <CellText>{n(row[key])}</CellText>,
@@ -362,11 +372,13 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
     {
       key: 'source',
       header: t('source'),
+      sortValue: (row) => t(`apiName.${row.source}`),
       width: 130,
       render: (row) => <CellText>{t(`apiName.${row.source}`)}</CellText>,
     },
     {
       key: 'limit',
+      sortValue: (row) => t(`limits.${row.source}`),
       header: t('limit'),
       flex: 1,
       minWidth: 200,
@@ -374,6 +386,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
     },
     {
       key: 'today',
+      sortValue: (row) => row.today,
       header: t('today'),
       width: 72,
       align: 'end',
@@ -381,6 +394,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
     },
     {
       key: 'calls7',
+      sortValue: (row) => row.calls7,
       header: t('calls7'),
       width: 96,
       align: 'end',
@@ -388,6 +402,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
     },
     {
       key: 'rejected7',
+      sortValue: (row) => row.rejected7,
       header: t('rejected7'),
       width: 72,
       align: 'end',
@@ -399,12 +414,14 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
     {
       key: 'source',
       header: t('source'),
+      sortValue: (row) => tSource(row.source),
       flex: 1,
       minWidth: 130,
       render: (row) => <CellText>{tSource(row.source)}</CellText>,
     },
     {
       key: 'ok',
+      sortValue: (row) => row.ok,
       header: t('ok'),
       width: 96,
       align: 'end',
@@ -412,6 +429,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
     },
     {
       key: 'failed',
+      sortValue: (row) => row.failed,
       header: t('failed'),
       width: 96,
       align: 'end',
@@ -419,6 +437,7 @@ function ApisBlock({ usage }: { usage: AdminUsage }) {
     },
     {
       key: 'notFound',
+      sortValue: (row) => row.notFound,
       header: t('notFound'),
       width: 96,
       align: 'end',

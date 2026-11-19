@@ -1,5 +1,10 @@
-import type { IgdbSearchHit, MergeGame } from '@repo/contracts';
-import { Button, EmptyState, Skeleton, toast, YStack } from '@repo/ui';
+import {
+  adminUnlinkedDefaultSort,
+  AdminUnlinkedSortSchema,
+  type IgdbSearchHit,
+  type MergeGame,
+} from '@repo/contracts';
+import { Button, EmptyState, toast, YStack } from '@repo/ui';
 import { Link2 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
@@ -24,21 +29,18 @@ type Unlinked = {
   users: number;
 };
 
-/**
- * I giochi senza id IGDB, con «Collega a IGDB» (11a). Stanno nella tab IGDB di
- * «Dati mancanti»: un gioco che IGDB non conosce è un dato mancante come un
- * voto che non arriva.
- */
 export function UnlinkedGames({ q }: { q?: string }) {
+  const [sorting, setSorting] = useState(adminUnlinkedDefaultSort);
   const query = useQuery(
-    api.admin.games.unlinked.queryOptions({ input: { q, limit: 100 } }),
+    api.admin.games.unlinked.queryOptions({
+      input: { q, sorting, limit: 100 },
+    }),
   );
   const t = useTranslations('admin.games');
   const format = useFormatter();
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
   const [linking, setLinking] = useState<Unlinked | null>(null);
-  // L'id scelto è già di un altro gioco: i due si fondono (11b).
   const [merging, setMerging] = useState<{
     game: Unlinked;
     other: MergeGame;
@@ -107,19 +109,22 @@ export function UnlinkedGames({ q }: { q?: string }) {
     },
   ];
 
-  if (query.isPending)
-    return <Skeleton height={160} width="100%" rounded={12} />;
   if (query.isError) return <EmptyState title={t('failed')} />;
   return (
     <>
-      {query.data.rows.length === 0 ? (
+      {query.data?.rows.length === 0 ? (
         <EmptyState title={t('emptyUnlinked')} />
       ) : (
         <AdminTable
           label={t('unlinked')}
           columns={columns}
-          rows={query.data.rows}
+          rows={query.data?.rows}
           rowKey={(game) => game.id}
+          serverSort={{
+            value: sorting,
+            keys: AdminUnlinkedSortSchema.shape.sort.options,
+            onChange: setSorting,
+          }}
         />
       )}
       <IgdbPickDialog

@@ -1,7 +1,12 @@
+import {
+  adminMismatchesDefaultSort,
+  type AdminMismatchesSort,
+} from '@repo/contracts';
 import type { Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import { and, eq, inArray, sql } from '@repo/db/orm';
 
+import { adminOrderBy } from './admin-sort';
 import { igdbPlatformsOfCopy } from './copy-platforms';
 import { igdbPlatformNamer } from './platform-names';
 
@@ -34,6 +39,7 @@ export async function listPlatformMismatches(input: {
   dismissed: boolean;
   limit: number;
   offset: number;
+  sorting?: AdminMismatchesSort;
 }) {
   const piattaforme = await db.select().from(schema.platforms);
   const slugByIgdbId = new Map(
@@ -49,6 +55,13 @@ export async function listPlatformMismatches(input: {
     }),
     sql`, `,
   );
+  const { sort, direction } = input.sorting ?? adminMismatchesDefaultSort;
+  const columns = {
+    game: sql`lower(g.name)`,
+    copies: sql`jsonb_array_length(gr.copies)`,
+    igdb: sql`cardinality(g.platform_igdb_ids)`,
+    users: sql`gr.users`,
+  };
 
   const rows = await db.execute<{
     gameId: string;
@@ -100,7 +113,7 @@ export async function listPlatformMismatches(input: {
       count(*) over ()::int as total
     from gruppi gr
     join games g on g.id = gr.game_id
-    order by gr.users desc, g.name
+    order by ${adminOrderBy(columns[sort], direction)}, g.name, g.id
     limit ${input.limit} offset ${input.offset}
   `);
 
@@ -132,7 +145,6 @@ export async function listPlatformMismatches(input: {
   };
 }
 
-/** «Va bene così»: quel gioco su quelle piattaforme non torna in lista. */
 export async function dismissPlatformMismatch(
   gameId: string,
   platformSlugs: string[],
@@ -151,7 +163,6 @@ export async function dismissPlatformMismatch(
     .onConflictDoNothing();
 }
 
-/** Annulla il «va bene così»: se la copia è ancora lì, torna in lista. */
 export async function restorePlatformMismatch(
   gameId: string,
   platformSlugs: string[],

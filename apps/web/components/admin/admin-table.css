@@ -49,6 +49,30 @@
   text-align: end;
 }
 
+.admin-table-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  text-align: inherit;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.admin-table-sort svg {
+  flex: none;
+}
+
+.admin-table-sort:hover,
+.admin-table th[aria-sort] .admin-table-sort {
+  color: var(--selectionColor);
+}
+
+.admin-table-sort:focus-visible {
+  outline: 2px solid var(--outlineColor);
+  outline-offset: 2px;
+}
+
 .admin-table tbody tr + tr {
   border-top: 1px solid var(--borderColor);
 }

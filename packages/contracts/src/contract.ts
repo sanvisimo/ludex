@@ -2,6 +2,14 @@ import { eventIterator, oc } from '@orpc/contract';
 import { z } from 'zod';
 
 import {
+  AdminMismatchesSortSchema,
+  AdminMissingSortSchema,
+  AdminReportsSortSchema,
+  AdminUnlinkedSortSchema,
+  AdminUnresolvedSortSchema,
+  AdminUsersSortSchema,
+} from './admin-sort';
+import {
   AccountExportSchema,
   AccountListQuerySchema,
   ReviewPageSchema,
@@ -916,10 +924,8 @@ export const contract = {
   // Solo admin (11a): li protegge il middleware `admin`, non il client.
   admin: {
     missing: {
-      // La tabellina di «Dati mancanti».
       summary: oc.output(MissingSummarySchema),
 
-      // Una cella della tabellina, aperta. Prima i giochi con più utenti.
       list: oc
         .input(
           z.object({
@@ -927,6 +933,7 @@ export const contract = {
             bucket: MissingBucketSchema,
             reason: SourceReasonSchema.optional(),
             q: z.string().trim().min(1).max(100).optional(),
+            sorting: AdminMissingSortSchema.optional(),
             limit: z.number().int().min(1).max(100).default(50),
             offset: z.number().int().min(0).default(0),
           }),
@@ -998,10 +1005,10 @@ export const contract = {
     },
 
     reports: {
-      // Le segnalazioni aperte, una riga per gioco e cosa.
       list: oc
         .input(
           z.object({
+            sorting: AdminReportsSortSchema.optional(),
             limit: z.number().int().min(1).max(100).default(50),
             offset: z.number().int().min(0).default(0),
           }),
@@ -1027,6 +1034,7 @@ export const contract = {
         .input(
           z.object({
             dismissed: z.boolean().default(false),
+            sorting: AdminMismatchesSortSchema.optional(),
             limit: z.number().int().min(1).max(100).default(50),
             offset: z.number().int().min(0).default(0),
           }),
@@ -1060,11 +1068,11 @@ export const contract = {
     },
 
     games: {
-      // I giochi senza id IGDB.
       unlinked: oc
         .input(
           z.object({
             q: z.string().trim().min(1).max(100).optional(),
+            sorting: AdminUnlinkedSortSchema.optional(),
             limit: z.number().int().min(1).max(100).default(50),
             offset: z.number().int().min(0).default(0),
           }),
@@ -1135,11 +1143,11 @@ export const contract = {
     },
 
     users: {
-      // Gli utenti, i più recenti prima, con giochi e account.
       list: oc
         .input(
           z.object({
             q: z.string().trim().min(1).max(100).optional(),
+            sorting: AdminUsersSortSchema.optional(),
             limit: z.number().int().min(1).max(100).default(50),
             offset: z.number().int().min(0).default(0),
           }),
@@ -1173,12 +1181,12 @@ export const contract = {
     },
 
     unresolved: {
-      // Gli scarti di tutti, una riga per chiave con almeno uno scarto visibile.
       list: oc
         .input(
           z.object({
             store: StoreSchema.optional(),
             q: z.string().trim().min(1).max(100).optional(),
+            sorting: AdminUnresolvedSortSchema.optional(),
             limit: z.number().int().min(1).max(100).default(50),
             offset: z.number().int().min(0).default(0),
           }),
