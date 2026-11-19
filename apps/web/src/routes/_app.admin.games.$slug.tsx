@@ -157,12 +157,14 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
     {
       key: 'store',
       header: t('game.store'),
+      sortValue: (link) => tStore(link.source),
       width: 160,
       render: (link) => <CellText>{tStore(link.source)}</CellText>,
     },
     {
       key: 'id',
       header: t('game.externalId'),
+      sortValue: (link) => link.externalId,
       flex: 2,
       minWidth: 120,
       render: (link) =>
@@ -177,6 +179,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
     {
       key: 'storeTitle',
       header: t('game.storeTitle'),
+      sortValue: (link) => link.storeTitle,
       flex: 2,
       minWidth: 180,
       // Due id Epic sullo stesso gioco si distinguono solo così: Epic una
@@ -203,6 +206,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
     {
       key: 'copies',
       header: t('game.copies'),
+      sortValue: (link) => link.copies,
       flex: 1,
       minWidth: 130,
       render: (link) => (
@@ -243,18 +247,25 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
     {
       key: 'source',
       header: t('game.source'),
+      sortValue: (row) => t(`source.${row.source}`),
       width: 130,
       render: (row) => <CellText>{t(`source.${row.source}`)}</CellText>,
     },
     {
       key: 'state',
       header: t('game.state'),
+      sortValue: (row) => t(`status.${row.status}`),
       width: 110,
       render: (row) => <StatusBadge status={row.status} />,
     },
     {
       key: 'id',
       header: t('game.id'),
+      sortValue: (row) =>
+        row.externalId ??
+        (row.source === 'igdb' && game.igdbId != null
+          ? String(game.igdbId)
+          : null),
       flex: 1,
       minWidth: 120,
       render: (row) => {
@@ -274,6 +285,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
     {
       key: 'reason',
       header: t('game.reason'),
+      sortValue: (row) => (row.reason ? t(`reason.${row.reason}`) : null),
       flex: 2,
       minWidth: 160,
       render: (row) => (

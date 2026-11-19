@@ -1,3 +1,7 @@
+import {
+  adminReportsDefaultSort,
+  type AdminReportsSort,
+} from '@repo/contracts';
 import type { ManualSource, Store } from '@repo/contracts/vocabulary';
 import { db, schema } from '@repo/db';
 import {
@@ -11,15 +15,11 @@ import {
   sql,
 } from '@repo/db/orm';
 
+import { adminOrderBy } from './admin-sort';
 import { idsOfCopy } from './copy-store-ids';
-
-// Le segnalazioni degli utenti (11a, passo 6): «questo gioco è sbagliato».
-// L'utente segnala dalla pagina del gioco, l'admin le trova nella sezione
-// Giochi, e si chiudono quando corregge quella cosa.
 
 const gr = schema.gameReports;
 
-/** La cosa segnalata: la copia di un negozio, oppure una fonte. */
 export type ReportTarget = { store: Store } | { source: ManualSource };
 
 function targetCondition(target: ReportTarget) {
@@ -103,7 +103,6 @@ export async function myCopies(userId: string, gameId: string) {
   });
 }
 
-/** Le segnalazioni aperte di un utente su un gioco: il «Segnalato il …». */
 export function openReportsForGame(userId: string, gameId: string) {
   return db
     .select({
@@ -219,15 +218,11 @@ export async function closeReports(
   return chiuse.length;
 }
 
-/**
- * Le segnalazioni aperte, una riga per gioco e cosa: tre utenti che dicono che
- * Toki su Nintendo è sbagliato sono una cosa sola da correggere. Con un
- * `gameId` solo quelle di quel gioco: la scheda admin del gioco.
- */
 export async function listOpenReports(input: {
   gameId?: string;
   limit: number;
   offset: number;
+  sorting?: AdminReportsSort;
 }) {
   const where = and(
     isNull(gr.resolvedAt),
@@ -240,7 +235,6 @@ export async function listOpenReports(input: {
       store: gr.store,
       source: gr.source,
       users: sql<number>`count(*)::int`.as('users'),
-      // I suggerimenti di tutti, senza doppioni: è da lì che l'admin parte.
       suggestions: sql<{ igdbId: number | null; name: string | null }[]>`
         coalesce(
           jsonb_agg(distinct jsonb_build_object(
@@ -257,6 +251,12 @@ export async function listOpenReports(input: {
     .where(where)
     .groupBy(gr.gameId, gr.store, gr.source)
     .as('groups');
+  const { sort, direction } = input.sorting ?? adminReportsDefaultSort;
+  const columns = {
+    report: sql`lower(${schema.games.name})`,
+    users: groups.users,
+    suggested: sql`jsonb_array_length(${groups.suggestions})`,
+  };
 
   const [rows, [total]] = await Promise.all([
     db
@@ -273,7 +273,13 @@ export async function listOpenReports(input: {
       })
       .from(groups)
       .innerJoin(schema.games, eq(schema.games.id, groups.gameId))
-      .orderBy(desc(groups.users), desc(groups.lastAt))
+      .orderBy(
+        adminOrderBy(columns[sort], direction),
+        desc(groups.lastAt),
+        asc(groups.gameId),
+        asc(groups.store),
+        asc(groups.source),
+      )
       .limit(input.limit)
       .offset(input.offset),
     db.select({ n: count() }).from(groups),

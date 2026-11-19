@@ -1,4 +1,10 @@
-import type { MissingRow, MissingSummary } from '@repo/contracts';
+import {
+  adminMissingDefaultSort,
+  AdminMissingSortSchema,
+  type AdminMissingSort,
+  type MissingRow,
+  type MissingSummary,
+} from '@repo/contracts';
 import {
   enrichmentSourceValues,
   missingBucketValues,
@@ -66,7 +72,7 @@ type Search = {
   reason?: SourceReason;
   q?: string;
   page?: number;
-};
+} & Partial<AdminMissingSort>;
 
 const oneOf =
   <T extends string>(values: readonly T[]) =>
@@ -75,6 +81,7 @@ const oneOf =
 
 export const Route = createFileRoute('/_app/admin/missing')({
   validateSearch: (search: Record<string, unknown>): Search => ({
+    ...AdminMissingSortSchema.safeParse(search).data,
     source: oneOf(enrichmentSourceValues)(search.source),
     bucket: oneOf(missingBucketValues)(search.bucket),
     reason: oneOf(sourceReasonValues)(search.reason),
@@ -204,6 +211,7 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
   const columns: AdminColumn<Row>[] = [
     {
       key: 'source',
+      sortValue: (row) => t(`source.${row.source}`),
       header: t('missing.source'),
       width: 130,
       render: (row) => <CellText>{t(`source.${row.source}`)}</CellText>,
@@ -212,6 +220,7 @@ function SummaryTable({ summary }: { summary: MissingSummary }) {
       const wide = bucket === 'pending' || bucket === 'empty';
       return {
         key: bucket,
+        sortValue: (row) => countOf(summary, row.source, bucket),
         header: t(`bucket.${bucket}`),
         flex: wide ? 1.4 : 1,
         minWidth: wide ? 120 : 70,
@@ -264,6 +273,11 @@ function MissingList({
   const errorMessage = useApiErrorMessage();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const {
+    sort = adminMissingDefaultSort.sort,
+    direction = adminMissingDefaultSort.direction,
+  } = Route.useSearch();
+  const sorting = { sort, direction };
   const [setting, setSetting] = useState<SourceToSet | null>(null);
 
   const [text, setText] = useState(q ?? '');
@@ -289,6 +303,7 @@ function MissingList({
         bucket,
         reason,
         q,
+        sorting,
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
       },
@@ -553,11 +568,9 @@ function MissingList({
         ) : null}
       </XStack>
 
-      {list.isPending ? (
-        <Skeleton height={200} width="100%" rounded={12} />
-      ) : list.isError ? (
+      {list.isError ? (
         <EmptyState title={t('missing.failed')} />
-      ) : list.data.rows.length === 0 ? (
+      ) : list.data?.rows.length === 0 ? (
         <EmptyState title={t('missing.empty')} />
       ) : (
         <AdminTable
@@ -566,8 +579,16 @@ function MissingList({
             bucket: t(`bucket.${bucket}`),
           })}
           columns={columns}
-          rows={list.data.rows}
+          rows={list.data?.rows}
           rowKey={(row) => `${row.gameId}-${row.source}`}
+          serverSort={{
+            value: sorting,
+            keys: AdminMissingSortSchema.shape.sort.options,
+            onChange: (next) =>
+              void navigate({
+                search: (prev) => ({ ...prev, ...next, page: undefined }),
+              }),
+          }}
         />
       )}
 

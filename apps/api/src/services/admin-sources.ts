@@ -1,3 +1,7 @@
+import {
+  adminMissingDefaultSort,
+  type AdminMissingSort,
+} from '@repo/contracts';
 import type {
   EnrichmentSource,
   ManualSource,
@@ -25,10 +29,8 @@ import {
   searchOpenCriticGames,
 } from '../external/opencritic';
 import { enqueueEnrichment } from '../queue/enrichment';
+import { adminOrderBy } from './admin-sort';
 import { closeReports } from './reports';
-
-// La sezione «Dati mancanti» dell'admin (11a, passo 4): ciò che l'enrichment
-// non ha saputo chiudere da solo, e i due gesti per chiuderlo a mano.
 
 /**
  * I gruppi della tabellina, una colonna ciascuno.
@@ -74,18 +76,15 @@ function bucketCondition(bucket: MissingBucket): SQL {
   }
 }
 
-/** Quanti utenti hanno il gioco in backlog: dice quanto pesa sistemarlo. */
 const users = sql<number>`(
   select count(*)::int from backlog b where b.game_id = ${gs.gameId}
 )`;
 
-/** La tabellina in cima alla sezione: fonte per gruppo, più due righe. */
 export async function missingSummary() {
   const rows = await db
     .select({
       source: gs.source,
       pending: sql<number>`count(*) filter (where ${bucketCondition('pending')})::int`,
-      // La più vecchia in coda: «137 dal 03/10» dice se la coda si muove.
       pendingSince: sql<Date | null>`min(${gs.updatedAt}) filter (where ${bucketCondition('pending')})`,
       fixable: sql<number>`count(*) filter (where ${bucketCondition('fixable')})::int`,
       fine: sql<number>`count(*) filter (where ${bucketCondition('fine')})::int`,
@@ -102,8 +101,6 @@ export async function missingSummary() {
     .from(schema.games)
     .where(isNull(schema.games.igdbId));
 
-  // Gli scarti visibili, di tutti gli utenti. Una riga per utente: il conteggio
-  // per chiave è della sezione Scarti.
   const [unresolved] = await db
     .select({ n: count() })
     .from(schema.unresolvedImports)
@@ -120,7 +117,6 @@ export async function missingSummary() {
   };
 }
 
-/** Una cella della tabellina, aperta: i giochi di quella fonte in quel gruppo. */
 export async function listMissing(input: {
   source: EnrichmentSource;
   bucket: MissingBucket;
@@ -128,6 +124,7 @@ export async function listMissing(input: {
   q?: string;
   limit: number;
   offset: number;
+  sorting?: AdminMissingSort;
 }) {
   const where = and(
     eq(gs.source, input.source),
@@ -135,6 +132,12 @@ export async function listMissing(input: {
     input.reason ? eq(gs.reason, input.reason) : undefined,
     input.q ? ilike(schema.games.name, `%${input.q}%`) : undefined,
   );
+  const { sort, direction } = input.sorting ?? adminMissingDefaultSort;
+  const columns = {
+    game: sql`lower(${schema.games.name})`,
+    reason: sql`coalesce(${gs.reason}::text, ${gs.status}::text)`,
+    users,
+  };
 
   const [rows, [total]] = await Promise.all([
     db
@@ -155,8 +158,11 @@ export async function listMissing(input: {
       .from(gs)
       .innerJoin(schema.games, eq(schema.games.id, gs.gameId))
       .where(where)
-      // Prima i giochi che hanno più utenti: è lì che sistemare rende di più.
-      .orderBy(sql`${users} desc`, asc(schema.games.name))
+      .orderBy(
+        adminOrderBy(columns[sort], direction),
+        asc(schema.games.name),
+        asc(gs.gameId),
+      )
       .limit(input.limit)
       .offset(input.offset),
     db
@@ -175,7 +181,6 @@ export async function listMissing(input: {
   };
 }
 
-/** «Ritenta»: la fonte torna in coda così com'è, col suo id se ce l'ha. */
 export async function retrySource(gameId: string, source: EnrichmentSource) {
   const [row] = await db
     .update(gs)

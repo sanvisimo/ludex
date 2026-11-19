@@ -1,7 +1,10 @@
-import type {
-  GlobalHiddenImport,
-  IgdbSearchHit,
-  UnresolvedGroup,
+import {
+  adminUnresolvedDefaultSort,
+  AdminUnresolvedSortSchema,
+  type AdminUnresolvedSort,
+  type GlobalHiddenImport,
+  type IgdbSearchHit,
+  type UnresolvedGroup,
 } from '@repo/contracts';
 import {
   storeValues,
@@ -63,10 +66,11 @@ type Search = {
   store?: Store;
   q?: string;
   page?: number;
-};
+} & Partial<AdminUnresolvedSort>;
 
 export const Route = createFileRoute('/_app/admin/unresolved')({
   validateSearch: (search: Record<string, unknown>): Search => ({
+    ...AdminUnresolvedSortSchema.safeParse(search).data,
     view: search.view === 'hidden' ? 'hidden' : undefined,
     store: (storeValues as readonly unknown[]).includes(search.store)
       ? (search.store as Store)
@@ -156,6 +160,11 @@ function OpenList({
   const format = useFormatter();
   const navigate = useNavigate({ from: Route.fullPath });
   const router = useRouter();
+  const {
+    sort = adminUnresolvedDefaultSort.sort,
+    direction = adminUnresolvedDefaultSort.direction,
+  } = Route.useSearch();
+  const sorting = { sort, direction };
   const errorMessage = useApiErrorMessage();
   const refresh = useRefreshUnresolved();
   const platforms = useQuery(api.platforms.list.queryOptions());
@@ -188,6 +197,7 @@ function OpenList({
       input: {
         store,
         q,
+        sorting,
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
       },
@@ -404,18 +414,24 @@ function OpenList({
         </Text>
       ) : null}
 
-      {list.isPending ? (
-        <Skeleton height={200} width="100%" rounded={12} />
-      ) : list.isError ? (
+      {list.isError ? (
         <EmptyState title={t('failed')} />
-      ) : list.data.rows.length === 0 ? (
+      ) : list.data?.rows.length === 0 ? (
         <EmptyState title={t(store || q ? 'emptyFiltered' : 'empty')} />
       ) : (
         <AdminTable
           label={t('open')}
           columns={columns}
-          rows={list.data.rows}
+          rows={list.data?.rows}
           rowKey={(row) => `${row.store}-${row.externalId}`}
+          serverSort={{
+            value: sorting,
+            keys: AdminUnresolvedSortSchema.shape.sort.options,
+            onChange: (next) =>
+              void navigate({
+                search: (prev) => ({ ...prev, ...next, page: undefined }),
+              }),
+          }}
         />
       )}
 
@@ -488,6 +504,7 @@ function GlobalHiddenList({
   const columns: AdminColumn<GlobalHiddenImport>[] = [
     {
       key: 'store',
+      sortValue: (rule) => tStore(rule.store),
       header: t('store'),
       width: 100,
       render: (rule) => <CellText>{tStore(rule.store)}</CellText>,
@@ -495,6 +512,7 @@ function GlobalHiddenList({
     {
       key: 'name',
       header: t('name'),
+      sortValue: (rule) => rule.name,
       flex: 2,
       minWidth: 200,
       render: (rule) => (
@@ -511,6 +529,7 @@ function GlobalHiddenList({
     },
     {
       key: 'kind',
+      sortValue: (rule) => tKind(rule.hiddenKind as HiddenKind),
       header: t('kind'),
       width: 120,
       render: (rule) => (
@@ -520,12 +539,14 @@ function GlobalHiddenList({
     {
       key: 'libraries',
       header: t('libraries'),
+      sortValue: (rule) => rule.libraries,
       width: 72,
       align: 'end',
       render: (rule) => <CellText>{format.number(rule.libraries)}</CellText>,
     },
     {
       key: 'decided',
+      sortValue: (rule) => rule.decidedBy,
       header: t('decidedBy'),
       flex: 1,
       minWidth: 160,

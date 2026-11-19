@@ -1,8 +1,13 @@
-import type { ReportGroup } from '@repo/contracts';
-import { Button, EmptyState, Skeleton, Text, toast, YStack } from '@repo/ui';
+import {
+  adminReportsDefaultSort,
+  AdminReportsSortSchema,
+  type ReportGroup,
+} from '@repo/contracts';
+import { Button, EmptyState, Text, toast, YStack } from '@repo/ui';
 import { Archive, ArrowUpRight } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
 import { useFormatter, useTranslations } from 'use-intl';
 
 import {
@@ -19,8 +24,9 @@ export const Route = createFileRoute('/_app/admin/reported')({
 });
 
 function ReportedSection() {
+  const [sorting, setSorting] = useState(adminReportsDefaultSort);
   const query = useQuery(
-    api.admin.reports.list.queryOptions({ input: { limit: 100 } }),
+    api.admin.reports.list.queryOptions({ input: { sorting, limit: 100 } }),
   );
   const t = useTranslations('admin');
   const tReported = useTranslations('admin.reported');
@@ -168,20 +174,23 @@ function ReportedSection() {
       >
         {tReported('title')}
       </Text>
-      {query.isPending ? (
-        <Skeleton height={160} width="100%" rounded={12} />
-      ) : query.isError ? (
+      {query.isError ? (
         <EmptyState title={tReported('failed')} />
-      ) : query.data.rows.length === 0 ? (
+      ) : query.data?.rows.length === 0 ? (
         <EmptyState title={t('games.emptyReports')} />
       ) : (
         <AdminTable
           label={t('games.reports')}
           columns={columns}
-          rows={query.data.rows}
+          rows={query.data?.rows}
           rowKey={(report) =>
             `${report.gameId}-${report.store ?? ''}-${report.source ?? ''}`
           }
+          serverSort={{
+            value: sorting,
+            keys: AdminReportsSortSchema.shape.sort.options,
+            onChange: setSorting,
+          }}
         />
       )}
     </YStack>

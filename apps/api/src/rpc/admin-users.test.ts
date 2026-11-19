@@ -18,7 +18,6 @@ const PASSWORD = 'password-di-prova';
 
 const signUp = (email: string) => signUpVerified(email, PASSWORD);
 
-/** Un admin, e qualcuno su cui agisce. */
 async function adminETarget() {
   const admin = await signUp('admin@esempio.test');
   await db
@@ -57,6 +56,42 @@ describe('la sezione Utenti', () => {
         accounts: 1,
       }),
     ]);
+  });
+
+  it('ordina tutti gli utenti filtrati prima di scegliere la pagina', async () => {
+    const { admin, target } = await adminETarget();
+    await signUp('altro@escluso.test');
+    const game = await createGame();
+    await db
+      .insert(schema.backlog)
+      .values({ userId: target.userId, gameId: game.id });
+
+    const list = (direction: 'asc' | 'desc', offset: number) =>
+      call(
+        router.admin.users.list,
+        {
+          q: '@esempio.test',
+          sorting: { sort: 'games', direction },
+          limit: 1,
+          offset,
+        },
+        asAdmin(admin.headers),
+      );
+    const [ascending, descending, secondPage] = await Promise.all([
+      list('asc', 0),
+      list('desc', 0),
+      list('desc', 1),
+    ]);
+
+    expect(ascending).toMatchObject({ rows: [{ id: admin.userId }], total: 2 });
+    expect(descending).toMatchObject({
+      rows: [{ id: target.userId }],
+      total: 2,
+    });
+    expect(secondPage).toMatchObject({
+      rows: [{ id: admin.userId }],
+      total: 2,
+    });
   });
 
   it('dà e toglie il ruolo, ma il proprio non lo toglie', async () => {
@@ -153,7 +188,6 @@ describe('la sezione Utenti', () => {
     );
 
     expect(await sessionOf(target.headers)).toBeNull();
-    // L'admin resta dentro.
     expect(await sessionOf(admin.headers)).not.toBeNull();
   });
 });
