@@ -1762,6 +1762,9 @@
       "markAbsentHint": "You checked and the source doesn't have it: it moves to fine as is",
       "markedAbsent": "Moved to fine as is",
       "markAbsentFailed": "Couldn't mark it",
+      "acceptEmpty": "Fine as is",
+      "acceptEmptyHint": "The page is right and the source has no data: it moves to fine as is",
+      "undoHint": "Undoes the decision and redoes the match",
       "withoutIgdb": "Without an IGDB id",
       "notFoundIgdb": "IGDB id not found",
       "openUnresolved": "Unresolved imports to fix: {count} →"

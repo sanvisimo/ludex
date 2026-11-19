@@ -61,6 +61,11 @@ describe('le procedure admin.*', () => {
     ],
     ['sources.retry', router.admin.sources.retry, { gameId, source: 'hltb' }],
     [
+      'sources.acceptEmpty',
+      router.admin.sources.acceptEmpty,
+      { gameId, source: 'hltb' },
+    ],
+    [
       'sources.markAbsent',
       router.admin.sources.markAbsent,
       { gameId, source: 'hltb' },

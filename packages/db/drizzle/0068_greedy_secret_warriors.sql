@@ -1,0 +1,1 @@
+ALTER TABLE "game_sources" ADD COLUMN "empty_accepted" boolean DEFAULT false NOT NULL;

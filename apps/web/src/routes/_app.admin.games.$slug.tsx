@@ -17,6 +17,7 @@ import {
   Archive,
   ChevronDown,
   ChevronLeft,
+  CircleCheck,
   Hash,
   Link2Off,
   RotateCw,
@@ -136,6 +137,22 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
   const markAbsent = useMutation({
     mutationFn: (source: Source) =>
       client.admin.sources.markAbsent({
+        gameId: game.id,
+        source: source.source as SourceToSet['source'],
+      }),
+    onSuccess: async () => {
+      await refresh();
+      toast.success(t('missing.markedAbsent'));
+    },
+    onError: (error) =>
+      toast.error(
+        errorMessage(error, { fallback: t('missing.markAbsentFailed') }),
+      ),
+  });
+
+  const acceptEmpty = useMutation({
+    mutationFn: (source: Source) =>
+      client.admin.sources.acceptEmpty({
         gameId: game.id,
         source: source.source as SourceToSet['source'],
       }),
@@ -327,7 +344,13 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
       width: 300,
       render: (row) => (
         <>
-          <Tooltip content={t('missing.retryHint')}>
+          <Tooltip
+            content={
+              row.reason === 'absent' || row.emptyAccepted
+                ? t('missing.undoHint')
+                : t('missing.retryHint')
+            }
+          >
             <Button
               size="sm"
               variant={row.source === 'igdb' ? 'secondary' : 'ghost'}
@@ -351,6 +374,19 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
               >
                 <SearchX size={14} />
                 {t('missing.markAbsent')}
+              </Button>
+            </Tooltip>
+          ) : null}
+          {row.source !== 'igdb' && row.empty && !row.emptyAccepted ? (
+            <Tooltip content={t('missing.acceptEmptyHint')}>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={acceptEmpty.isPending}
+                onPress={() => acceptEmpty.mutate(row)}
+              >
+                <CircleCheck size={14} />
+                {t('missing.acceptEmpty')}
               </Button>
             </Tooltip>
           ) : null}

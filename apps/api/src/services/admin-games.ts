@@ -20,6 +20,7 @@ import {
 
 import { findIgdbGameById } from '../external/igdb';
 import { enqueueEnrichment } from '../queue/enrichment';
+import { isEmpty } from './admin-sources';
 import { adminOrderBy } from './admin-sort';
 import {
   advanceAddedAt,
@@ -192,9 +193,12 @@ export async function gameAdminDetail(slug: string) {
       error: schema.gameSources.error,
       externalId: schema.gameSources.externalId,
       manual: schema.gameSources.manual,
+      empty: sql<boolean>`${schema.gameSources.status} = 'ok' and ${isEmpty}`,
+      emptyAccepted: schema.gameSources.emptyAccepted,
       attemptedAt: schema.gameSources.attemptedAt,
     })
     .from(schema.gameSources)
+    .innerJoin(schema.games, eq(schema.games.id, schema.gameSources.gameId))
     .where(
       and(
         eq(schema.gameSources.gameId, game.id),

@@ -14,6 +14,7 @@ import {
 import { fetchHltbGameDetail, searchHltbGames } from '../external/hltb';
 import { enqueueEnrichment } from '../queue/enrichment';
 import {
+  acceptEmptySource,
   findSourceIdOwner,
   listMissing,
   markSourceAbsent,
@@ -326,6 +327,48 @@ describe('«Dati mancanti»', () => {
       status: 'pending',
       reason: null,
     });
+  });
+
+  it('«Va bene così» sposta un trovato ma vuoto fra i giusti così, e «Riprova» lo annulla', async () => {
+    const gioco = await createGame({ name: 'Elliot' });
+    await setSource({ gameId: gioco.id, source: 'hltb', status: 'ok' });
+
+    expect(await acceptEmptySource(gioco.id, 'hltb')).toBe(true);
+    const [dopo] = (await missingSummary()).sources;
+    expect(dopo).toMatchObject({ source: 'hltb', empty: 0, fine: 1 });
+    const fine = await listMissing({
+      source: 'hltb',
+      bucket: 'fine',
+      limit: 50,
+      offset: 0,
+    });
+    expect(fine.rows).toEqual([
+      expect.objectContaining({ name: 'Elliot', emptyAccepted: true }),
+    ]);
+
+    expect(await retrySource(gioco.id, 'hltb')).toBe(true);
+    expect(await hltbRow(gioco.id)).toMatchObject({ emptyAccepted: false });
+  });
+
+  it('«Va bene così» vale solo su un trovato ma vuoto, e «Inserisci id» lo azzera', async () => {
+    const conDurata = await createGame({ hltbMainMinutes: 600 });
+    await setSource({ gameId: conDurata.id, source: 'hltb', status: 'ok' });
+    expect(await acceptEmptySource(conDurata.id, 'hltb')).toBe(false);
+
+    const nonTrovato = await createGame();
+    await setSource({
+      gameId: nonTrovato.id,
+      source: 'hltb',
+      status: 'not_found',
+      reason: 'ambiguous',
+    });
+    expect(await acceptEmptySource(nonTrovato.id, 'hltb')).toBe(false);
+
+    const vuoto = await createGame();
+    await setSource({ gameId: vuoto.id, source: 'hltb', status: 'ok' });
+    expect(await acceptEmptySource(vuoto.id, 'hltb')).toBe(true);
+    await setSourceExternalId(vuoto.id, 'hltb', '5913');
+    expect(await hltbRow(vuoto.id)).toMatchObject({ emptyAccepted: false });
   });
 
   it('«Non c è» vale solo su un not_found', async () => {

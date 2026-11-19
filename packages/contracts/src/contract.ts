@@ -953,6 +953,12 @@ export const contract = {
         .input(z.object({ gameId: z.uuid(), source: ManualSourceSchema }))
         .output(z.void()),
 
+      // «Va bene così»: la scheda trovata è giusta e il dato non c'è. Il vuoto
+      // passa fra quelli che vanno bene così. Solo su un `ok` vuoto.
+      acceptEmpty: oc
+        .input(z.object({ gameId: z.uuid(), source: ManualSourceSchema }))
+        .output(z.void()),
+
       // Di quale gioco è già un id: l'avviso del dialogo prima di salvare.
       // `externalId` è quello che l'admin ha incollato, id o indirizzo.
       lookup: oc

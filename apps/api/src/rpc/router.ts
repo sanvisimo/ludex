@@ -31,6 +31,7 @@ import {
   searchGames,
 } from '../services/games';
 import {
+  acceptEmptySource,
   findSourceIdOwner,
   listMissing,
   markSourceAbsent,
@@ -1536,6 +1537,22 @@ export const router = os.router({
           )
             throw new ORPCError('NOT_FOUND', {
               message: 'Il gioco non ha questa fonte fra quelle non trovate',
+            });
+        }),
+
+      acceptEmpty: os.admin.sources.acceptEmpty
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => {
+          if (
+            !(await acceptEmptySource(
+              input.gameId,
+              input.source,
+              context.user.id,
+            ))
+          )
+            throw new ORPCError('NOT_FOUND', {
+              message: 'Il gioco non ha questa fonte fra quelle trovate vuote',
             });
         }),
 

@@ -100,6 +100,12 @@ export const gameSources = pgTable(
      * prestito. Lo scrive solo «Inserisci id»; `markSource` non lo tocca.
      */
     manual: boolean('manual').notNull().default(false),
+    /**
+     * Un admin ha visto la scheda trovata senza il dato — HLTB senza durata,
+     * Metacritic o OpenCritic senza voto — e ha detto «Va bene così». Il
+     * motivo no: per un `ok` è nullo. Lo azzerano «Riprova» e «Inserisci id».
+     */
+    emptyAccepted: boolean('empty_accepted').notNull().default(false),
     ...timestamps,
   },
   (table) => [

@@ -1761,6 +1761,9 @@
       "markAbsentHint": "Hai controllato e sulla fonte non c'è: passa fra i giusti così",
       "markedAbsent": "Spostato fra i giusti così",
       "markAbsentFailed": "Non sono riuscito a segnarlo",
+      "acceptEmpty": "Va bene così",
+      "acceptEmptyHint": "La scheda è giusta e il dato sulla fonte non c'è: passa fra i giusti così",
+      "undoHint": "Annulla la decisione e rifà il match",
       "withoutIgdb": "Senza id IGDB",
       "notFoundIgdb": "Id IGDB non trovato",
       "openUnresolved": "Scarti d'import da sistemare: {count} →"

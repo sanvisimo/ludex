@@ -44,10 +44,12 @@ import { closeReports } from './reports';
  *   `too_old` e `absent`. Anche `no_results`: «non ha nulla» può essere un
  *   nome cercato male. E anche un motivo nullo, che vuol dire un testo che la
  *   migration non ha saputo classificare: meglio mostrarlo che perderlo.
- * - `fine`: `too_old`, o `absent` che ha scritto un admin. Va bene così.
+ * - `fine`: `too_old`, o ciò che un admin ha detto che va bene così: un
+ *   `absent`, o un vuoto con `emptyAccepted`.
  * - `empty`: trovato ma senza il dato. HLTB senza durata, OpenCritic e
  *   Metacritic senza voto. Spesso è vero — un gioco che nessuno ha cronometrato
- *   — ma è anche la faccia di un aggancio sbagliato.
+ *   — ma è anche la faccia di un aggancio sbagliato. Finché un admin non dice
+ *   «Va bene così».
  * - `failed`: l'ultimo tentativo è fallito per una ragione che può passare.
  *
  * I valori stanno in `missingBucketValues`, nel vocabolario dei contratti.
@@ -55,8 +57,11 @@ import { closeReports } from './reports';
 
 const gs = schema.gameSources;
 
-/** Il dato che dice «trovato ma vuoto», per fonte. IGDB non ce l'ha. */
-const isEmpty = sql`(
+/**
+ * Il dato che dice «trovato ma vuoto», per fonte. IGDB non ce l'ha. Vuole
+ * `games` nella query.
+ */
+export const isEmpty = sql`(
   (${gs.source} = 'hltb' and ${schema.games.hltbMainMinutes} is null)
   or (${gs.source} in ('opencritic', 'metacritic') and not exists (
     select 1 from game_scores sc
@@ -73,9 +78,9 @@ function bucketCondition(bucket: MissingBucket): SQL {
     case 'failed':
       return eq(gs.status, 'failed');
     case 'fine':
-      return and(
-        eq(gs.status, 'not_found'),
-        inArray(gs.reason, fineReasons),
+      return or(
+        and(eq(gs.status, 'not_found'), inArray(gs.reason, fineReasons)),
+        sql`${gs.status} = 'ok' and ${gs.emptyAccepted} and ${isEmpty}`,
       )!;
     case 'fixable':
       return and(
@@ -83,7 +88,7 @@ function bucketCondition(bucket: MissingBucket): SQL {
         or(isNull(gs.reason), notInArray(gs.reason, fineReasons)),
       )!;
     case 'empty':
-      return sql`${gs.status} = 'ok' and ${isEmpty}`;
+      return sql`${gs.status} = 'ok' and not ${gs.emptyAccepted} and ${isEmpty}`;
   }
 }
 
@@ -163,6 +168,7 @@ export async function listMissing(input: {
         error: gs.error,
         externalId: gs.externalId,
         manual: gs.manual,
+        emptyAccepted: gs.emptyAccepted,
         attemptedAt: gs.attemptedAt,
         users,
       })
@@ -192,6 +198,7 @@ export async function listMissing(input: {
   };
 }
 
+// Annulla anche le decisioni di un admin, «Non c'è» e «Va bene così».
 export async function retrySource(gameId: string, source: EnrichmentSource) {
   const [row] = await db
     .update(gs)
@@ -199,6 +206,7 @@ export async function retrySource(gameId: string, source: EnrichmentSource) {
       status: 'pending',
       error: null,
       reason: null,
+      emptyAccepted: false,
       attemptedAt: null,
       updatedAt: new Date(),
     })
@@ -229,6 +237,35 @@ export async function markSourceAbsent(
         eq(gs.gameId, gameId),
         eq(gs.source, source),
         eq(gs.status, 'not_found'),
+      ),
+    )
+    .returning({ gameId: gs.gameId });
+  if (!row) return false;
+
+  await closeReports(gameId, { source }, resolvedBy);
+  return true;
+}
+
+/**
+ * «Va bene così»: la scheda trovata è giusta, e il dato sulla fonte non c'è.
+ * Solo su una fonte `ok` e vuota.
+ */
+export async function acceptEmptySource(
+  gameId: string,
+  source: ManualSource,
+  resolvedBy: string | null = null,
+) {
+  const [row] = await db
+    .update(gs)
+    .set({ emptyAccepted: true, updatedAt: new Date() })
+    .from(schema.games)
+    .where(
+      and(
+        eq(schema.games.id, gs.gameId),
+        eq(gs.gameId, gameId),
+        eq(gs.source, source),
+        eq(gs.status, 'ok'),
+        isEmpty,
       ),
     )
     .returning({ gameId: gs.gameId });
@@ -322,6 +359,7 @@ export async function setSourceExternalId(
         status: 'pending',
         error: null,
         reason: null,
+        emptyAccepted: false,
         attemptedAt: null,
         updatedAt: now,
       },

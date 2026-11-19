@@ -243,7 +243,8 @@ ancora una libreria collegata.
       **dati mancanti** (fonte per stato, con «Riprova» e «Inserisci id», anche
       su una fonte `ok` agganciata male; l'id scritto a mano è esente
       dall'unicità; «Non c'è» manda un `not_found` fra i giusti così, e un
-      appid nuovo non lo riapre), **scarti** di tutti (collegare e nascondere per tutti),
+      appid nuovo non lo riapre; «Va bene così» fa lo stesso con un trovato
+      ma vuoto; «Riprova» annulla entrambi), **scarti** di tutti (collegare e nascondere per tutti),
       **segnalati** (le segnalazioni degli utenti, con la scheda admin del
       gioco e «Non è questo gioco», che ripunta un collegamento sbagliato) e
       **utenti** (ruolo, ban, sessioni). Sulla pagina del gioco, «Segnala un
