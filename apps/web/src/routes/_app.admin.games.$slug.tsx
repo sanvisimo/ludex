@@ -20,6 +20,7 @@ import {
   Hash,
   Link2Off,
   RotateCw,
+  SearchX,
   Unlink,
 } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -130,6 +131,22 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
     },
     onError: (error) =>
       toast.error(errorMessage(error, { fallback: t('missing.retryFailed') })),
+  });
+
+  const markAbsent = useMutation({
+    mutationFn: (source: Source) =>
+      client.admin.sources.markAbsent({
+        gameId: game.id,
+        source: source.source as SourceToSet['source'],
+      }),
+    onSuccess: async () => {
+      await refresh();
+      toast.success(t('missing.markedAbsent'));
+    },
+    onError: (error) =>
+      toast.error(
+        errorMessage(error, { fallback: t('missing.markAbsentFailed') }),
+      ),
   });
 
   const archive = useMutation({
@@ -307,7 +324,7 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
     {
       key: 'actions',
       header: '',
-      width: 196,
+      width: 300,
       render: (row) => (
         <>
           <Tooltip content={t('missing.retryHint')}>
@@ -321,6 +338,22 @@ function GameAdmin({ detail }: { detail: GameAdminDetail }) {
               {t('missing.retry')}
             </Button>
           </Tooltip>
+          {row.source !== 'igdb' &&
+          row.status === 'not_found' &&
+          row.reason !== 'too_old' &&
+          row.reason !== 'absent' ? (
+            <Tooltip content={t('missing.markAbsentHint')}>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={markAbsent.isPending}
+                onPress={() => markAbsent.mutate(row)}
+              >
+                <SearchX size={14} />
+                {t('missing.markAbsent')}
+              </Button>
+            </Tooltip>
+          ) : null}
           {row.source !== 'igdb' ? (
             <Button
               size="sm"

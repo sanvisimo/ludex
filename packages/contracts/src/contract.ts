@@ -947,6 +947,12 @@ export const contract = {
         .input(z.object({ gameId: z.uuid(), source: EnrichmentSourceSchema }))
         .output(z.void()),
 
+      // «Non c'è»: l'admin ha controllato, il gioco sulla fonte non c'è. Il
+      // `not_found` passa fra quelli che vanno bene così. Solo su `not_found`.
+      markAbsent: oc
+        .input(z.object({ gameId: z.uuid(), source: ManualSourceSchema }))
+        .output(z.void()),
+
       // Di quale gioco è già un id: l'avviso del dialogo prima di salvare.
       // `externalId` è quello che l'admin ha incollato, id o indirizzo.
       lookup: oc

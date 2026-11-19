@@ -37,13 +37,15 @@ export const sourceStatus = pgEnum('source_status', [
  * per ogni fonte servirebbe una regex.
  *
  * - `too_old`: uscito prima che la fonte esistesse (OpenCritic nasce nel 2015).
- *   L'unico che va bene così.
+ *   Va bene così.
  * - `no_results`: la ricerca non ha trovato niente. Può essere vero, ma anche
  *   un nome cercato male: «Kingdom Hearts III + Re Mind».
  * - `ambiguous`: c'erano candidati, nessuno convincente.
  * - `year_mismatch`: la scheda c'è, ma l'anno non torna.
  * - `taken`: la voce scelta è già di un altro gioco.
  * - `gone`: l'id che avevamo non esiste più sulla fonte.
+ * - `absent`: un admin ha controllato, e sulla fonte non c'è («Non c'è»). Va
+ *   bene così, e un appid nuovo non lo riapre: l'ha deciso una persona.
  */
 export const sourceReason = pgEnum('source_reason', sourceReasonValues);
 

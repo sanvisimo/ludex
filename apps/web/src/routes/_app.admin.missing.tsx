@@ -37,7 +37,7 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { Hash, RotateCw } from '@repo/ui/icons';
+import { Hash, RotateCw, SearchX } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createFileRoute,
@@ -324,9 +324,27 @@ function MissingList({
       toast.error(errorMessage(error, { fallback: t('missing.retryFailed') })),
   });
 
+  const markAbsent = useMutation({
+    mutationFn: (row: MissingRow & { source: ManualSource }) =>
+      client.admin.sources.markAbsent({
+        gameId: row.gameId,
+        source: row.source,
+      }),
+    onSuccess: async () => {
+      await refresh();
+      toast.success(t('missing.markedAbsent'));
+    },
+    onError: (error) =>
+      toast.error(
+        errorMessage(error, { fallback: t('missing.markAbsentFailed') }),
+      ),
+  });
+
   const reasons =
     bucket === 'fixable'
-      ? sourceReasonValues.filter((value) => value !== 'too_old')
+      ? sourceReasonValues.filter(
+          (value) => value !== 'too_old' && value !== 'absent',
+        )
       : [];
 
   const columns: AdminColumn<MissingRow>[] = [
@@ -394,7 +412,7 @@ function MissingList({
           {
             key: 'actions',
             header: t('missing.actions'),
-            width: source === 'igdb' ? 100 : 230,
+            width: source === 'igdb' ? 100 : bucket === 'fixable' ? 330 : 230,
             align: 'end',
             render: (row: MissingRow) => (
               <>
@@ -409,6 +427,19 @@ function MissingList({
                     {t('missing.retry')}
                   </Button>
                 </Tooltip>
+                {bucket === 'fixable' && isManualRow(row) ? (
+                  <Tooltip content={t('missing.markAbsentHint')}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={markAbsent.isPending}
+                      onPress={() => markAbsent.mutate(row)}
+                    >
+                      <SearchX size={14} />
+                      {t('missing.markAbsent')}
+                    </Button>
+                  </Tooltip>
+                ) : null}
                 {isManualRow(row) ? (
                   <Button
                     size="sm"

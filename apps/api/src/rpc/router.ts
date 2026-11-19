@@ -33,6 +33,7 @@ import {
 import {
   findSourceIdOwner,
   listMissing,
+  markSourceAbsent,
   missingSummary,
   parseSourceId,
   retrySource,
@@ -1519,6 +1520,22 @@ export const router = os.router({
           if (!(await retrySource(input.gameId, input.source)))
             throw new ORPCError('NOT_FOUND', {
               message: 'Il gioco non ha questa fonte',
+            });
+        }),
+
+      markAbsent: os.admin.sources.markAbsent
+        .use(authed)
+        .use(admin)
+        .handler(async ({ input, context }) => {
+          if (
+            !(await markSourceAbsent(
+              input.gameId,
+              input.source,
+              context.user.id,
+            ))
+          )
+            throw new ORPCError('NOT_FOUND', {
+              message: 'Il gioco non ha questa fonte fra quelle non trovate',
             });
         }),
 

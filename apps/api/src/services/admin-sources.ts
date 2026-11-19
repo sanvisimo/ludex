@@ -15,7 +15,10 @@ import {
   count,
   eq,
   ilike,
+  inArray,
   isNull,
+  notInArray,
+  or,
   sql,
   type SQL,
 } from '@repo/db/orm';
@@ -38,10 +41,10 @@ import { closeReports } from './reports';
  * - `pending`: in coda. Su OpenCritic è normale averne: il budget è di 200
  *   richieste al giorno.
  * - `fixable`: `not_found` che un umano può sistemare, cioè tutti tranne
- *   `too_old`. Anche `no_results`: «non ha nulla» può essere un nome cercato
- *   male. E anche un motivo nullo, che vuol dire un testo che la migration non
- *   ha saputo classificare: meglio mostrarlo che perderlo.
- * - `fine`: `too_old`. Va bene così.
+ *   `too_old` e `absent`. Anche `no_results`: «non ha nulla» può essere un
+ *   nome cercato male. E anche un motivo nullo, che vuol dire un testo che la
+ *   migration non ha saputo classificare: meglio mostrarlo che perderlo.
+ * - `fine`: `too_old`, o `absent` che ha scritto un admin. Va bene così.
  * - `empty`: trovato ma senza il dato. HLTB senza durata, OpenCritic e
  *   Metacritic senza voto. Spesso è vero — un gioco che nessuno ha cronometrato
  *   — ma è anche la faccia di un aggancio sbagliato.
@@ -61,6 +64,8 @@ const isEmpty = sql`(
   ))
 )`;
 
+const fineReasons: SourceReason[] = ['too_old', 'absent'];
+
 function bucketCondition(bucket: MissingBucket): SQL {
   switch (bucket) {
     case 'pending':
@@ -68,9 +73,15 @@ function bucketCondition(bucket: MissingBucket): SQL {
     case 'failed':
       return eq(gs.status, 'failed');
     case 'fine':
-      return and(eq(gs.status, 'not_found'), eq(gs.reason, 'too_old'))!;
+      return and(
+        eq(gs.status, 'not_found'),
+        inArray(gs.reason, fineReasons),
+      )!;
     case 'fixable':
-      return sql`${gs.status} = 'not_found' and ${gs.reason} is distinct from 'too_old'`;
+      return and(
+        eq(gs.status, 'not_found'),
+        or(isNull(gs.reason), notInArray(gs.reason, fineReasons)),
+      )!;
     case 'empty':
       return sql`${gs.status} = 'ok' and ${isEmpty}`;
   }
@@ -196,6 +207,34 @@ export async function retrySource(gameId: string, source: EnrichmentSource) {
   if (!row) return false;
 
   await enqueueEnrichment(source, gameId);
+  return true;
+}
+
+/**
+ * «Non c'è»: l'admin ha controllato, e sulla fonte il gioco non c'è. Solo su
+ * un `not_found`: una fonte `ok` agganciata male ha già scritto i suoi dati
+ * sul gioco, e quella si sistema con «Inserisci id».
+ */
+export async function markSourceAbsent(
+  gameId: string,
+  source: ManualSource,
+  // L'admin che lo decide: chiude a suo nome le segnalazioni su quella fonte.
+  resolvedBy: string | null = null,
+) {
+  const [row] = await db
+    .update(gs)
+    .set({ reason: 'absent', updatedAt: new Date() })
+    .where(
+      and(
+        eq(gs.gameId, gameId),
+        eq(gs.source, source),
+        eq(gs.status, 'not_found'),
+      ),
+    )
+    .returning({ gameId: gs.gameId });
+  if (!row) return false;
+
+  await closeReports(gameId, { source }, resolvedBy);
   return true;
 }
 

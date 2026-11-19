@@ -1723,7 +1723,8 @@
       "ambiguous": "ambiguous",
       "year_mismatch": "year mismatch",
       "taken": "taken by another game",
-      "gone": "no longer exists"
+      "gone": "no longer exists",
+      "absent": "not there, checked"
     },
     "status": {
       "pending": "queued",
@@ -1757,6 +1758,10 @@
       "manual": "set by hand",
       "failed": "Couldn't load the missing data",
       "retryHint": "Queues it again and redoes the match: by id, if there is one",
+      "markAbsent": "Not there",
+      "markAbsentHint": "You checked and the source doesn't have it: it moves to fine as is",
+      "markedAbsent": "Moved to fine as is",
+      "markAbsentFailed": "Couldn't mark it",
       "withoutIgdb": "Without an IGDB id",
       "notFoundIgdb": "IGDB id not found",
       "openUnresolved": "Unresolved imports to fix: {count} →"

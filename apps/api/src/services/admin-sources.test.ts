@@ -16,11 +16,13 @@ import { enqueueEnrichment } from '../queue/enrichment';
 import {
   findSourceIdOwner,
   listMissing,
+  markSourceAbsent,
   missingSummary,
   parseSourceId,
   retrySource,
   setSourceExternalId,
 } from './admin-sources';
+import { reopenSourcesForNewExternalIds } from './enrichment';
 import { enrichGameFromHltb } from './hltb-enrichment';
 
 vi.mock('../external/hltb', () => ({
@@ -293,6 +295,49 @@ describe('«Dati mancanti»', () => {
     });
     expect(mockedEnqueue).toHaveBeenCalledWith('hltb', gioco.id);
     expect(await retrySource(gioco.id, 'opencritic')).toBe(false);
+  });
+
+  it('«Non c è» sposta un not_found fra i giusti così, e un appid nuovo non lo riapre', async () => {
+    const gioco = await createGame({ name: 'Elliot' });
+    await setSource({
+      gameId: gioco.id,
+      source: 'hltb',
+      status: 'not_found',
+      reason: 'ambiguous',
+    });
+
+    expect(await markSourceAbsent(gioco.id, 'hltb')).toBe(true);
+    expect(await hltbRow(gioco.id)).toMatchObject({
+      status: 'not_found',
+      reason: 'absent',
+    });
+    const [hltb] = (await missingSummary()).sources;
+    expect(hltb).toMatchObject({ source: 'hltb', fixable: 0, fine: 1 });
+
+    expect(
+      await reopenSourcesForNewExternalIds([
+        { gameId: gioco.id, source: 'steam' },
+      ]),
+    ).toEqual([]);
+    expect(await hltbRow(gioco.id)).toMatchObject({ reason: 'absent' });
+
+    expect(await retrySource(gioco.id, 'hltb')).toBe(true);
+    expect(await hltbRow(gioco.id)).toMatchObject({
+      status: 'pending',
+      reason: null,
+    });
+  });
+
+  it('«Non c è» vale solo su un not_found', async () => {
+    const gioco = await createGame();
+    await setSource({ gameId: gioco.id, source: 'hltb', status: 'ok' });
+
+    expect(await markSourceAbsent(gioco.id, 'hltb')).toBe(false);
+    expect(await markSourceAbsent(gioco.id, 'metacritic')).toBe(false);
+    expect(await hltbRow(gioco.id)).toMatchObject({
+      status: 'ok',
+      reason: null,
+    });
   });
 });
 
