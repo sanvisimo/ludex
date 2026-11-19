@@ -548,6 +548,9 @@
     "details": "Dettagli",
     "links": "Link",
     "itadFree": "Gratis",
+    "itadLowShort": "Minimo",
+    "itadOffer": "{price} su {shop}",
+    "itadNoOffer": "Nessuna offerta",
     "itadHistoricalLow": "Minimo storico",
     "openOn": "Apri su {name}",
     "officialSite": "Sito ufficiale",
@@ -1507,6 +1510,10 @@
       "nintendo3dsWiiu": {
         "title": "Giochi 3DS e Wii U da Nintendo",
         "text": "L'import Nintendo riconosce i giochi 3DS e Wii U: prima venivano saltati. Nintendo li mostra solo se l'account è collegato al Nintendo Network ID della console, e solo fino a febbraio 2020. Basta aggiornare la libreria."
+      },
+      "itadWishlist": {
+        "title": "I prezzi nella wishlist",
+        "text": "Sulle card delle tue liste il prezzo più basso di adesso da IsThereAnyDeal, con il negozio e il segnale del minimo storico."
       },
       "nintendoSwitch2": {
         "title": "Giochi Switch 2 da Nintendo",
