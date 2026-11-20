@@ -1,8 +1,9 @@
 import type { RandomFilter } from '@repo/contracts';
-import { Button, toast, Tooltip } from '@repo/ui';
+import { Button, toast, Tooltip, YStack } from '@repo/ui';
 import { Dices } from '@repo/ui/icons';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter, useRouterState } from '@tanstack/react-router';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { useApiErrorMessage } from '@/lib/api-error';
@@ -29,6 +30,22 @@ function playlistOf(pathname: string) {
   return /^\/playlist\/(?:curated\/)?([0-9a-f-]{36})$/.exec(pathname)?.[1];
 }
 
+// Se «Scegli per me» si vede: quando no, il dado flottante lo sostituisce.
+// Visibile finché non si sa, così server e browser scrivono la stessa cosa.
+let labelledVisible = true;
+const listeners = new Set<() => void>();
+
+function setLabelledVisible(visible: boolean) {
+  if (visible === labelledVisible) return;
+  labelledVisible = visible;
+  for (const listener of listeners) listener();
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+}
+
 /**
  * Il dado (15c): fisso in basso a destra, nel guscio, e apre la scheda di un
  * gioco a caso. Da dove pesca lo dice la pagina:
@@ -39,6 +56,9 @@ function playlistOf(pathname: string) {
  * - sulla scheda di un gioco pescato (c'è `seed` nell'URL), il successivo
  *   dello stesso giro;
  * - altrove, da tutto il backlog con un mazzo nuovo.
+ *
+ * Dove c'è «Scegli per me» il dado flottante compare solo quando il bottone è
+ * uscito dalla vista, scorrendo.
  *
  * Da anonimi il server pesca dal catalogo e il filtro non conta. Nella vista
  * dei nascosti non c'è: lì il filtro non è quello che il dado userebbe.
@@ -66,6 +86,31 @@ export function RandomGameDice({
       state.location.pathname === '/backlog' &&
       validateBacklogSearch(state.location.search).hidden === true,
   });
+  const ownButtonVisible = useSyncExternalStore(
+    subscribe,
+    () => labelledVisible,
+    () => true,
+  );
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  // Sul web una view di Tamagui è un elemento del DOM.
+  const anchorRef = useCallback(
+    (node: unknown) => setAnchor(node as HTMLElement | null),
+    [],
+  );
+
+  useEffect(() => {
+    if (!anchor) return;
+    // In alto la barra del desktop (72 px): un bottone finito sotto non si vede.
+    const observer = new IntersectionObserver(
+      ([entry]) => setLabelledVisible(entry!.isIntersecting),
+      { rootMargin: '-72px 0px 0px 0px' },
+    );
+    observer.observe(anchor);
+    return () => {
+      observer.disconnect();
+      setLabelledVisible(true);
+    };
+  }, [anchor]);
 
   const pick = useMutation({
     mutationFn: (draw: Draw) =>
@@ -93,9 +138,7 @@ export function RandomGameDice({
   // Finché la sessione non si sa, non si sa nemmeno da dove pescare.
   if (isPending) return null;
   if (inHidden) return null;
-  // Nel backlog e nelle playlist il comando è nell’intestazione, con
-  // un’etichetta esplicita.
-  if (hasOwnButton && !labelled) return null;
+  if (hasOwnButton && !labelled && ownButtonVisible) return null;
 
   const roll = () => {
     const { pathname, search: raw } = router.state.location;
@@ -126,7 +169,7 @@ export function RandomGameDice({
     </Button>
   );
   return labelled ? (
-    button
+    <YStack ref={anchorRef}>{button}</YStack>
   ) : (
     <Tooltip content={t('random')} placement="left">
       {button}

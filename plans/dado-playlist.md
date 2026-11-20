@@ -17,6 +17,10 @@ nell'intestazione delle playlist, come nel backlog.
 - La ricerca testuale della pagina **non** conta: si pesca dalla playlist intera.
 - «Scegli per me» (`RandomGameDice labelled`) nell'intestazione delle due
   pagine, prima del menu ⋯; lì il dado flottante non c'è.
+- Aggiunta in corsa: dove c'è «Scegli per me» (backlog e playlist) il dado
+  flottante compare quando il bottone esce dalla vista scorrendo, e sparisce
+  quando torna. `IntersectionObserver` sul bottone, con 72 px tolti in alto
+  per la barra del desktop; finché non si sa, il bottone conta come visibile.
 - Roadmap non toccata: estensione del dado, già «fatto».
 
 ## Verifiche
@@ -29,3 +33,5 @@ nell'intestazione delle playlist, come nel backlog.
 - A occhio, nell'app: le due pagine in chiaro e scuro, desktop e telefono; il
   giro con Playwright (3 giochi a mano: 3 diversi poi da capo; filtro «in
   corso»: solo i 4 in corso, poi da capo).
+- Scorrimento, con Playwright: backlog e le due playlist, desktop e telefono,
+  chiaro e scuro. In cima nessun dado flottante, scorso c'è, tornati su sparisce.

@@ -183,7 +183,9 @@ prima di aprirlo.
 
 **Il dado** (`RandomGameDice`, 15c e la sua estensione) sta nel guscio, fisso in
 basso a destra; nel backlog e nelle due pagine playlist è invece il bottone
-«Scegli per me» nell’intestazione (`labelled`), senza un secondo dado flottante.
+«Scegli per me» nell’intestazione (`labelled`), e il dado flottante compare
+solo quando quel bottone esce dalla vista scorrendo (un `IntersectionObserver`
+sul bottone, con i 72 px della barra del desktop tolti in alto).
 Apre la scheda di un gioco a caso (`games.random`, pubblica). Su
 `/backlog` pesca dal filtro della pagina, su una playlist (a filtro o scelta a
 mano) dalla playlist intera, senza la ricerca della pagina (`playlistId`: i
