@@ -219,6 +219,26 @@ prima, dove costa poco:
 Il Design canvas, cioè i mockup ad alta fedeltà, solo se l'utente lo chiede:
 costa quanto il codice.
 
+**Sulla grafica la semplicità vale per la struttura, non per la cura.** «La
+soluzione più diretta, niente di non richiesto» riguarda cosa c'è nella
+schermata: sezioni, campi, azioni. Non riguarda com'è fatta. Spaziature,
+gerarchia dei testi, allineamenti, stati (hover, vuoto, caricamento, errore) e
+tema scuro fanno parte del lavoro anche se nessuno li nomina. Una schermata che
+funziona ma è piatta non è finita.
+
+**Una schermata si consegna dopo averla guardata.** Prima di dirla pronta la si
+apre nell'app vera e la si fotografa: tema chiaro e scuro, larghezza desktop e
+telefono. Poi la si corregge su quello che si vede, per qualche giro. Che il
+codice compili non dice niente sul suo aspetto. Con la consegna vanno gli
+screenshot finali.
+
+**Se la direzione visiva è aperta, fino a tre varianti.** Quando l'utente chiede
+un aspetto senza fissarlo («più leggibile», «più curata»), si propongono fino a
+tre varianti diverse davvero, non tre sfumature della stessa idea. Ognuna ha uno
+screenshot e una riga su cosa la distingue. Se l'utente dà un riferimento, per
+esempio lo screenshot di un'altra app, si parte da lì e si dice cosa se ne
+prende.
+
 **Un lotto si chiude quando l'utente dice che è pronto**, non quando sono
 fatti i passi del piano. I commenti che arrivano vedendolo in uso sono ancora
 quel lotto: si aggiungono al suo piano, non ne aprono uno nuovo.
