@@ -117,7 +117,7 @@ perché sta nel loro commento:
   una striscia vuota fra il pannello e il bordo destro.
 - **`ToggleGroup` rimette `aria-pressed`**: a scelta singola Tamagui lo toglie
   (anche la 3.3.3) e non mette niente al suo posto.
-- **`Slider` si spegne con l'opacità** e centra il binario a mano. Calcola le
+- **`Slider` si spegne con l'opacità**. Calcola le
   maniglie misurando il binario, quindi **sul server non c'è**: chi lo monta in
   una pagina renderizzata dal server lo monta dopo l'idratazione (vedi
   `RangeFilter` in `backlog-filters.tsx`).
