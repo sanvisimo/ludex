@@ -72,14 +72,12 @@ function StoreTrigger({
   groups,
   children,
   iconOnly,
-  dense,
 }: {
   label: string;
   tooltip: ReactNode;
   groups: StoreGroup[];
   children: ReactNode;
   iconOnly: boolean;
-  dense?: boolean;
 }) {
   const t = useTranslations('game');
   const [open, setOpen] = useState(false);
@@ -98,12 +96,9 @@ function StoreTrigger({
           height="auto"
           minH={32}
           maxW="100%"
-          // Nel piè della scheda in griglia, sul telefono: a 32 la seconda
-          // icona va a capo sotto i 384 px di finestra.
-          {...(dense && iconOnly
-            ? { width: '32px max-sm:28px', minH: '32px max-sm:28px' }
-            : {})}
           px={iconOnly ? 0 : 4}
+          // Il bordo trasparente toglierebbe 2 px alla tessera alta 32.
+          borderWidth={iconOnly ? 0 : undefined}
           aria-label={label}
           aria-controls={open ? dialogId : undefined}
           // Il dialogo è il tooltip di chi non ha il mouse: dove il tooltip
@@ -220,9 +215,19 @@ function OwnershipStore({
       tooltip={group.details.map((detail) => detail.label).join('\n')}
       groups={groups}
       iconOnly={!!brand}
-      dense={dense}
     >
-      {brand ? (
+      {brand && dense ? (
+        // Sul telefono la tessera è alta quanto il segnalibro accanto. Due
+        // copie e non `useMedia`: il server non conosce la finestra.
+        <>
+          <XStack display="max-sm:none">
+            <BrandIcon brand={brand} size={24} />
+          </XStack>
+          <XStack display="sm:none">
+            <BrandIcon brand={brand} size={32} />
+          </XStack>
+        </>
+      ) : brand ? (
         <BrandIcon brand={brand} size={24} />
       ) : (
         <Text
@@ -242,11 +247,9 @@ function OwnershipStore({
 function MoreStores({
   groups,
   hidden,
-  dense,
 }: {
   groups: StoreGroup[];
   hidden: number;
-  dense?: boolean;
 }) {
   const t = useTranslations('game');
 
@@ -267,7 +270,6 @@ function MoreStores({
       }
       groups={groups}
       iconOnly
-      dense={dense}
     >
       <Text fontSize={13} lineHeight="16px" fontWeight="600" color="color11">
         +{hidden}
@@ -373,11 +375,7 @@ export function OwnershipBadges({
           />
         ))}
         {overflow && (
-          <MoreStores
-            groups={all}
-            hidden={all.length - shown.length}
-            dense={dense}
-          />
+          <MoreStores groups={all} hidden={all.length - shown.length} />
         )}
       </XStack>
     );

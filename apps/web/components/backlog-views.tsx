@@ -155,7 +155,11 @@ function EntryActions({
   onToggleHidden,
   onRemove,
   hidingDisabled,
-}: { entry: BacklogEntry } & Omit<EntryHandlers, 'onStatus'>) {
+  narrow,
+}: { entry: BacklogEntry; narrow?: boolean } & Omit<
+  EntryHandlers,
+  'onStatus'
+>) {
   const t = useTranslations('backlog');
   const tHidden = useTranslations('hidden');
   const tCurated = useTranslations('curated.control');
@@ -168,6 +172,7 @@ function EntryActions({
             <Button
               variant="ghost"
               size="icon"
+              width={narrow ? '32px max-sm:24px' : undefined}
               aria-label={t('actionsFor', { name: entry.game.name })}
             >
               <EllipsisVertical size={16} color="color11" />
@@ -370,7 +375,7 @@ function GridView({
                   />
                 </YStack>
                 <XStack shrink={0}>
-                  <EntryActions entry={entry} {...handlers} />
+                  <EntryActions entry={entry} narrow {...handlers} />
                 </XStack>
               </XStack>
             </YStack>
