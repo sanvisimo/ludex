@@ -43,6 +43,8 @@ export const roadmap: RoadmapEntry[] = [
   { id: 'playtime', status: 'next', areas: ['game'] },
   { id: 'metaquest', status: 'idea', areas: ['import'] },
   { id: 'notifications', status: 'idea', areas: ['account', 'import'] },
+  { id: 'friends', status: 'idea', areas: ['account', 'library'] },
+  { id: 'publicProfile', status: 'idea', areas: ['account', 'library'] },
   {
     id: 'dialogDesign',
     status: 'done',
