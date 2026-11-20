@@ -345,7 +345,7 @@ function GridView({
                 overflow="hidden"
               />
             </YStack>
-            <YStack p={12} gap={8} grow={1}>
+            <YStack p="12px max-sm:8px" gap={8} grow={1}>
               <YStack minH={40}>
                 <GameTitleLink game={entry.game} lines={2} />
               </YStack>
@@ -365,6 +365,7 @@ function GridView({
                   <OwnershipBadges
                     ownerships={entry.ownerships}
                     storesOnly
+                    dense
                     max={2}
                   />
                 </YStack>

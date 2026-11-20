@@ -72,12 +72,14 @@ function StoreTrigger({
   groups,
   children,
   iconOnly,
+  dense,
 }: {
   label: string;
   tooltip: ReactNode;
   groups: StoreGroup[];
   children: ReactNode;
   iconOnly: boolean;
+  dense?: boolean;
 }) {
   const t = useTranslations('game');
   const [open, setOpen] = useState(false);
@@ -96,6 +98,11 @@ function StoreTrigger({
           height="auto"
           minH={32}
           maxW="100%"
+          // Nel piè della scheda in griglia, sul telefono: a 32 la seconda
+          // icona va a capo sotto i 384 px di finestra.
+          {...(dense && iconOnly
+            ? { width: '32px max-sm:28px', minH: '32px max-sm:28px' }
+            : {})}
           px={iconOnly ? 0 : 4}
           aria-label={label}
           aria-controls={open ? dialogId : undefined}
@@ -199,9 +206,11 @@ function StoreTrigger({
 function OwnershipStore({
   group,
   groups,
+  dense,
 }: {
   group: StoreGroup;
   groups: StoreGroup[];
+  dense?: boolean;
 }) {
   const brand = group.store ? STORE_BRAND[group.store] : undefined;
 
@@ -211,6 +220,7 @@ function OwnershipStore({
       tooltip={group.details.map((detail) => detail.label).join('\n')}
       groups={groups}
       iconOnly={!!brand}
+      dense={dense}
     >
       {brand ? (
         <BrandIcon brand={brand} size={24} />
@@ -232,9 +242,11 @@ function OwnershipStore({
 function MoreStores({
   groups,
   hidden,
+  dense,
 }: {
   groups: StoreGroup[];
   hidden: number;
+  dense?: boolean;
 }) {
   const t = useTranslations('game');
 
@@ -255,6 +267,7 @@ function MoreStores({
       }
       groups={groups}
       iconOnly
+      dense={dense}
     >
       <Text fontSize={13} lineHeight="16px" fontWeight="600" color="color11">
         +{hidden}
@@ -268,12 +281,14 @@ export function OwnershipBadges({
   onRemove,
   compact,
   storesOnly,
+  dense,
   max,
 }: {
   ownerships: DisplayedOwnership[];
   onRemove?: (ownership: DisplayedOwnership) => void;
   compact?: boolean;
   storesOnly?: boolean;
+  dense?: boolean;
   max?: number;
 }) {
   const t = useTranslations('editEntry');
@@ -350,10 +365,19 @@ export function OwnershipBadges({
     return (
       <XStack flexWrap="wrap" items="center" gap={4} minW={0} maxW="100%">
         {shown.map((group) => (
-          <OwnershipStore key={group.key} group={group} groups={all} />
+          <OwnershipStore
+            key={group.key}
+            group={group}
+            groups={all}
+            dense={dense}
+          />
         ))}
         {overflow && (
-          <MoreStores groups={all} hidden={all.length - shown.length} />
+          <MoreStores
+            groups={all}
+            hidden={all.length - shown.length}
+            dense={dense}
+          />
         )}
       </XStack>
     );
