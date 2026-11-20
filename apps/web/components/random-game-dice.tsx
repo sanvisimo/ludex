@@ -1,12 +1,13 @@
 import type { RandomFilter } from '@repo/contracts';
-import { Button, toast, Tooltip } from '@repo/ui';
+import { Button, toast, Tooltip, YStack } from '@repo/ui';
 import { Dices } from '@repo/ui/icons';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter, useRouterState } from '@tanstack/react-router';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { useApiErrorMessage } from '@/lib/api-error';
-import type { BacklogSearch } from '@/lib/backlog-filter';
+import type { BacklogSearch, RandomSearch } from '@/lib/backlog-filter';
 import {
   newSeed,
   randomSearch,
@@ -17,22 +18,47 @@ import {
 import { client } from '@/lib/orpc';
 import { useSession } from '@/src/use-session';
 
-/** Un tiro: da dove si pesca, il mazzo, e la scheda su cui si è. */
 type Draw = {
   search: BacklogSearch;
   filter: RandomFilter | undefined;
+  playlistId: string | undefined;
   seed: string;
   after: string | undefined;
 };
+
+function playlistOf(pathname: string) {
+  return /^\/playlist\/(?:curated\/)?([0-9a-f-]{36})$/.exec(pathname)?.[1];
+}
+
+// Se «Scegli per me» si vede: quando no, il dado flottante lo sostituisce.
+// Visibile finché non si sa, così server e browser scrivono la stessa cosa.
+let labelledVisible = true;
+const listeners = new Set<() => void>();
+
+function setLabelledVisible(visible: boolean) {
+  if (visible === labelledVisible) return;
+  labelledVisible = visible;
+  for (const listener of listeners) listener();
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+}
 
 /**
  * Il dado (15c): fisso in basso a destra, nel guscio, e apre la scheda di un
  * gioco a caso. Da dove pesca lo dice la pagina:
  *
  * - su `/backlog`, dal filtro della pagina, con un mazzo nuovo;
+ * - su una playlist, a filtro o scelta a mano, dalla playlist intera (la
+ *   ricerca della pagina non conta), con un mazzo nuovo;
  * - sulla scheda di un gioco pescato (c'è `seed` nell'URL), il successivo
  *   dello stesso giro;
  * - altrove, da tutto il backlog con un mazzo nuovo.
+ *
+ * Dove c'è «Scegli per me» il dado flottante compare solo quando il bottone è
+ * uscito dalla vista, scorrendo.
  *
  * Da anonimi il server pesca dal catalogo e il filtro non conta. Nella vista
  * dei nascosti non c'è: lì il filtro non è quello che il dado userebbe.
@@ -50,19 +76,47 @@ export function RandomGameDice({
   const router = useRouter();
   const errorMessage = useApiErrorMessage();
   const { data: session, isPending } = useSession();
-  const inBacklog = useRouterState({
-    select: (state) => state.location.pathname === '/backlog',
+  const hasOwnButton = useRouterState({
+    select: (state) =>
+      state.location.pathname === '/backlog' ||
+      playlistOf(state.location.pathname) !== undefined,
   });
   const inHidden = useRouterState({
     select: (state) =>
       state.location.pathname === '/backlog' &&
       validateBacklogSearch(state.location.search).hidden === true,
   });
+  const ownButtonVisible = useSyncExternalStore(
+    subscribe,
+    () => labelledVisible,
+    () => true,
+  );
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  // Sul web una view di Tamagui è un elemento del DOM.
+  const anchorRef = useCallback(
+    (node: unknown) => setAnchor(node as HTMLElement | null),
+    [],
+  );
+
+  useEffect(() => {
+    if (!anchor) return;
+    // In alto la barra del desktop (72 px): un bottone finito sotto non si vede.
+    const observer = new IntersectionObserver(
+      ([entry]) => setLabelledVisible(entry!.isIntersecting),
+      { rootMargin: '-72px 0px 0px 0px' },
+    );
+    observer.observe(anchor);
+    return () => {
+      observer.disconnect();
+      setLabelledVisible(true);
+    };
+  }, [anchor]);
 
   const pick = useMutation({
     mutationFn: (draw: Draw) =>
       client.games.random({
         filter: draw.filter,
+        playlistId: draw.playlistId,
         seed: draw.seed,
         after: draw.after,
       }),
@@ -74,7 +128,7 @@ export function RandomGameDice({
       void router.navigate({
         to: '/games/$slug',
         params: { slug: result.slug },
-        search: randomSearch(draw.search, draw.seed),
+        search: randomSearch(draw.search, draw.seed, draw.playlistId),
       });
     },
     onError: (error) =>
@@ -84,19 +138,20 @@ export function RandomGameDice({
   // Finché la sessione non si sa, non si sa nemmeno da dove pescare.
   if (isPending) return null;
   if (inHidden) return null;
-  // Nel backlog il comando è nell’intestazione, con un’etichetta esplicita.
-  if (inBacklog && !labelled) return null;
+  if (hasOwnButton && !labelled && ownButtonVisible) return null;
 
   const roll = () => {
     const { pathname, search: raw } = router.state.location;
     const slug = /^\/games\/([^/]+)$/.exec(pathname)?.[1];
     // Sulla scheda di un gioco pescato, il giro che c'è nell'URL.
-    const giro = slug ? validateRandomSearch(raw) : {};
+    const giro: RandomSearch = slug ? validateRandomSearch(raw) : {};
     const search: BacklogSearch =
       pathname === '/backlog' ? validateBacklogSearch(raw) : giro;
+    const playlistId = playlistOf(pathname) ?? giro.playlist;
     pick.mutate({
       search,
-      filter: session ? toRandomFilter(search) : undefined,
+      filter: session && !playlistId ? toRandomFilter(search) : undefined,
+      playlistId: session ? playlistId : undefined,
       seed: giro.seed ?? newSeed(),
       after: giro.seed && slug ? decodeURIComponent(slug) : undefined,
     });
@@ -114,7 +169,7 @@ export function RandomGameDice({
     </Button>
   );
   return labelled ? (
-    button
+    <YStack ref={anchorRef}>{button}</YStack>
   ) : (
     <Tooltip content={t('random')} placement="left">
       {button}

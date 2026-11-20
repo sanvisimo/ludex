@@ -4,7 +4,13 @@ import { describe, expect, it } from 'vitest';
 
 import { createGame, createUser } from '../../test/factories';
 import { addToBacklog, setBacklogHidden, setBacklogStatus } from './backlog';
+import {
+  addToCuratedPlaylist,
+  createCuratedPlaylist,
+} from './curated-playlists';
+import { createPlaylist } from './playlists';
 import { pickRandomGame } from './random-game';
+import { deleteUserTag, ensureUserTags } from './tags';
 
 // Il dado (15c). Si testa il giro: dentro il filtro, senza ripetizioni, da
 // capo in fondo, e col segnalibro che regge quando il gioco esce dal filtro.
@@ -27,7 +33,7 @@ async function add(
     status,
     ownerships: [{ platformSlug, store: 'steam' }],
   });
-  return { id, slug: game.slug };
+  return { id, gameId: game.id, slug: game.slug };
 }
 
 /** Il giro intero da un seme: il primo tiro, poi `after` fino a `n` passi. */
@@ -165,6 +171,101 @@ describe('da loggati', () => {
         after: 'non-esiste',
       }),
     ).toBe(primo);
+  });
+});
+
+describe('da una playlist', () => {
+  /** Il giro intero dentro una playlist, col filtro di `/backlog` che non conta. */
+  async function giroPlaylist(
+    viewerId: string,
+    playlistId: string,
+    seed: string,
+    n: number,
+  ) {
+    const visti: (string | null)[] = [];
+    let after: string | undefined;
+    for (let i = 0; i < n; i++) {
+      const slug = await pickRandomGame({
+        viewerId,
+        filter: { status: ['dropped'] },
+        playlistId,
+        seed,
+        after,
+      });
+      visti.push(slug);
+      after = slug ?? undefined;
+    }
+    return visti;
+  }
+
+  it('a filtro: pesca dal filtro salvato, tutti prima di ripetere', async () => {
+    const userId = await createUser();
+    const dentro = [
+      await add(userId, 'In corso uno', 'playing'),
+      await add(userId, 'In corso due', 'playing'),
+      await add(userId, 'In corso tre', 'playing'),
+    ];
+    await add(userId, 'Da giocare');
+    await add(userId, 'In corso su Switch', 'playing', 'nintendo_switch');
+    const playlist = await createPlaylist(userId, {
+      name: 'Stasera',
+      query: {
+        status: ['playing'],
+        platforms: ['pc_windows'],
+        sort: 'addedAt',
+        direction: 'desc',
+      },
+    });
+
+    const visti = await giroPlaylist(userId, playlist!.id, 'p1', 4);
+    expect(new Set(visti.slice(0, 3))).toEqual(
+      new Set(dentro.map((g) => g.slug)),
+    );
+    expect(visti[3]).toBe(visti[0]);
+  });
+
+  it('a filtro: un tag cancellato si ignora, come nella pagina', async () => {
+    const userId = await createUser();
+    const gioco = await add(userId, 'Qualunque');
+    const [tag] = await ensureUserTags(userId, [
+      { kind: 'tag', name: 'da rigiocare' },
+    ]);
+    const playlist = await createPlaylist(userId, {
+      name: 'Col tag',
+      query: { tags: [tag!.id], sort: 'addedAt', direction: 'desc' },
+    });
+    await deleteUserTag(userId, tag!.id);
+
+    expect(await giroPlaylist(userId, playlist!.id, 'a', 1)).toEqual([
+      gioco.slug,
+    ]);
+  });
+
+  it('scelta a mano: pesca dai suoi giochi, anche fuori dal backlog', async () => {
+    const userId = await createUser();
+    const nelBacklog = await add(userId, 'Nel backlog');
+    await add(userId, 'Fuori dalla playlist');
+    const nonMio = await createGame({ name: 'Non mio', gameType: 'main_game' });
+    const playlist = await createCuratedPlaylist(userId, 'Scelti');
+    for (const gameId of [nonMio.id, nelBacklog.gameId])
+      await addToCuratedPlaylist(userId, { listId: playlist!.id, gameId });
+
+    const visti = await giroPlaylist(userId, playlist!.id, 'c', 3);
+    expect(new Set(visti.slice(0, 2))).toEqual(
+      new Set([nonMio.slug, nelBacklog.slug]),
+    );
+    expect(visti[2]).toBe(visti[0]);
+  });
+
+  it('una playlist di un altro non ha niente da pescare', async () => {
+    const userId = await createUser();
+    const altro = await createUser();
+    await add(userId, 'Mio');
+    const sua = await createCuratedPlaylist(altro, 'Sua');
+    const game = await createGame({ name: 'Suo', gameType: 'main_game' });
+    await addToCuratedPlaylist(altro, { listId: sua!.id, gameId: game.id });
+
+    expect(await giroPlaylist(userId, sua!.id, 'a', 1)).toEqual([null]);
   });
 });
 

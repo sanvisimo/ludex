@@ -506,10 +506,12 @@ export function validateCuratedSearch(
  * criteri del filtro da cui si pesca, piatti come in `/backlog`
  * (`/games/hades?seed=k3f9&status=backlog`), così dalla scheda il dado passa
  * al successivo dello stesso giro e il refresh lo tiene. Solo i criteri: ordine,
- * pagina e vista a un tiro non servono.
+ * pagina e vista a un tiro non servono. Da una playlist, al posto dei criteri,
+ * l'id della playlist (`?seed=k3f9&playlist=…`): i criteri li sa il server.
  */
 export type RandomSearch = Pick<BacklogSearch, (typeof criteri)[number]> & {
   seed?: string;
+  playlist?: string;
 };
 
 function soloCriteri(search: BacklogSearch) {
@@ -523,20 +525,25 @@ function soloCriteri(search: BacklogSearch) {
 /**
  * Il `validateSearch` della scheda. Senza un seme valido non si arriva dal
  * dado, e l'URL non tiene niente: i criteri da soli non vogliono dire nulla.
+ * Con una playlist i criteri non contano.
  */
 export function validateRandomSearch(
   raw: Record<string, unknown>,
 ): RandomSearch {
   const seed = RandomSeedSchema.safeParse(text(raw.seed));
   if (!seed.success) return {};
-  return { ...soloCriteri(validateBacklogSearch(raw)), seed: seed.data };
+  const search = validateBacklogSearch(raw);
+  if (search.playlist) return { playlist: search.playlist, seed: seed.data };
+  return { ...soloCriteri(search), seed: seed.data };
 }
 
-/** L'URL della scheda pescata: i criteri da cui si pescava, e il seme. */
+/** L'URL della scheda pescata: i criteri da cui si pescava, o la playlist, e il seme. */
 export function randomSearch(
   search: BacklogSearch,
   seed: string,
+  playlistId?: string,
 ): RandomSearch {
+  if (playlistId) return { playlist: playlistId, seed };
   return { ...soloCriteri(search), seed };
 }
 

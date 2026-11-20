@@ -260,6 +260,7 @@ export const router = os.router({
         const slug = await pickRandomGame({
           viewerId: context.user?.id ?? null,
           filter: input.filter ?? {},
+          playlistId: input.playlistId,
           seed: input.seed,
           after: input.after,
         });
