@@ -30,6 +30,7 @@ import {
 import { SearchInput, SortSelect } from '@/components/list-controls';
 import { ListPagination } from '@/components/list-pagination';
 import { PlaylistMenu } from '@/components/playlist-menu';
+import { RandomGameDice } from '@/components/random-game-dice';
 import { hasErrorCode } from '@/lib/api-error';
 import {
   type BacklogView,
@@ -200,6 +201,7 @@ function PlaylistPage() {
             >
               {t('editFilters')}
             </ButtonLink>
+            <RandomGameDice labelled />
             <PlaylistMenu
               playlist={data}
               onDeleted={() => void navigate({ to: '/playlist' })}

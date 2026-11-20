@@ -278,12 +278,28 @@ describe('il dado', () => {
         view: 'rows',
         page: '3',
         hidden: 'true',
-        playlist: PLAYLIST,
       }),
     ).toEqual({
       seed: 'k3f9',
       status: ['backlog', 'playing'],
       platforms: ['pc_windows'],
+    });
+  });
+
+  it('da una playlist tiene la playlist e il seme, non i criteri', () => {
+    expect(
+      validateRandomSearch({
+        seed: 'k3f9',
+        status: 'backlog',
+        playlist: PLAYLIST,
+      }),
+    ).toEqual({ seed: 'k3f9', playlist: PLAYLIST });
+    expect(
+      validateRandomSearch({ seed: 'k3f9', playlist: 'non-un-id' }),
+    ).toEqual({ seed: 'k3f9' });
+    expect(randomSearch({ status: ['backlog'] }, 'abc', PLAYLIST)).toEqual({
+      seed: 'abc',
+      playlist: PLAYLIST,
     });
   });
 

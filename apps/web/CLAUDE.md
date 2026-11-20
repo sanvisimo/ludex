@@ -182,14 +182,17 @@ pannello smonta ciò che ha dentro quando si chiude, e il clic chiude il pannell
 prima di aprirlo.
 
 **Il dado** (`RandomGameDice`, 15c e la sua estensione) sta nel guscio, fisso in
-basso a destra; nel backlog è invece il bottone «Scegli per me» nell’intestazione
-(`labelled`), accanto ad «Aggiungi gioco», senza un secondo dado flottante.
+basso a destra; nel backlog e nelle due pagine playlist è invece il bottone
+«Scegli per me» nell’intestazione (`labelled`), senza un secondo dado flottante.
 Apre la scheda di un gioco a caso (`games.random`, pubblica). Su
-`/backlog` pesca dal filtro della pagina, sulla scheda di un gioco pescato dà il
+`/backlog` pesca dal filtro della pagina, su una playlist (a filtro o scelta a
+mano) dalla playlist intera, senza la ricerca della pagina (`playlistId`: i
+criteri li legge il server), sulla scheda di un gioco pescato dà il
 successivo dello stesso giro, altrove pesca da tutto il backlog; da anonimi dal
 catalogo. Nella vista dei nascosti non c'è. Il giro sta nell'URL della scheda,
-piatto come quello di `/backlog`: un seme e i soli criteri (`validateRandomSearch`,
-`randomSearch` e `toRandomFilter` in `lib/backlog-filter.ts`). Dove si è il dado lo
+piatto come quello di `/backlog`: un seme e i soli criteri, o il seme e
+`playlist` (`validateRandomSearch`, `randomSearch` e `toRandomFilter` in
+`lib/backlog-filter.ts`). Dove si è il dado lo
 legge **al clic** da `router.state.location`, non dalle rotte montate: un secondo
 tiro mentre la scheda di prima carica ancora le troverebbe ferme alla pagina di
 partenza, e ripartirebbe con un seme nuovo. Con nessun candidato il server rende

@@ -165,21 +165,7 @@ export async function openPlaylist(
 
   const playlist = read(row);
   const saved = playlist.query.tags ?? [];
-
-  // Filtrati per utente: l'id di un tag altrui vale come un id cancellato.
-  const existing = saved.length
-    ? await db
-        .select({ id: schema.userTags.id })
-        .from(schema.userTags)
-        .where(
-          and(
-            eq(schema.userTags.userId, userId),
-            inArray(schema.userTags.id, saved),
-          ),
-        )
-    : [];
-  const present = new Set(existing.map((tag) => tag.id));
-  const tags = saved.filter((id) => present.has(id));
+  const tags = await existingTags(userId, saved);
 
   const result = await searchBacklog(
     userId,
@@ -197,6 +183,25 @@ export async function openPlaylist(
   );
 
   return { ...playlist, ...result, missingTags: saved.length - tags.length };
+}
+
+/**
+ * I tag salvati in una playlist che esistono ancora. Filtrati per utente: l'id
+ * di un tag altrui vale come un id cancellato.
+ */
+export async function existingTags(userId: string, saved: string[]) {
+  if (saved.length === 0) return [];
+  const rows = await db
+    .select({ id: schema.userTags.id })
+    .from(schema.userTags)
+    .where(
+      and(
+        eq(schema.userTags.userId, userId),
+        inArray(schema.userTags.id, saved),
+      ),
+    );
+  const present = new Set(rows.map((tag) => tag.id));
+  return saved.filter((id) => present.has(id));
 }
 
 /**

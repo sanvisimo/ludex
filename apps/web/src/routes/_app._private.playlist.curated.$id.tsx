@@ -69,6 +69,7 @@ import {
 import { CARD_WIDTH, HomeCard } from '@/components/home-band';
 import { SearchInput } from '@/components/list-controls';
 import { ListPagination } from '@/components/list-pagination';
+import { RandomGameDice } from '@/components/random-game-dice';
 import { ShareForm } from '@/components/share-playlist-dialog';
 import { hasErrorCode, useApiErrorMessage } from '@/lib/api-error';
 import {
@@ -234,6 +235,7 @@ function CuratedPlaylistPage() {
                 </Text>
               </XStack>
             </Button>
+            <RandomGameDice labelled />
             <CuratedPlaylistMenu
               playlist={data}
               onDeleted={() => void navigate({ to: '/playlist' })}

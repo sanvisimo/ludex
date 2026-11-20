@@ -135,11 +135,14 @@ export const contract = {
     // `filter` non conta. I candidati sono mescolati da `seed`, e `after` è lo
     // slug della scheda su cui si è: si riceve il successivo nel mazzo, e in
     // fondo si ricomincia. Senza `after`, il primo. `null` se non c'è niente
-    // da pescare, o c'è solo `after`: non è un errore.
+    // da pescare, o c'è solo `after`: non è un errore. Con `playlistId`, da
+    // loggati, si pesca dalla playlist (a filtro o scelta a mano) e `filter`
+    // non conta; una playlist che non è tua dà `null`.
     random: oc
       .input(
         z.object({
           filter: RandomFilterSchema.optional(),
+          playlistId: z.uuid().optional(),
           seed: RandomSeedSchema,
           after: z.string().min(1).max(200).optional(),
         }),

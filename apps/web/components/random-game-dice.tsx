@@ -6,7 +6,7 @@ import { useRouter, useRouterState } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
 
 import { useApiErrorMessage } from '@/lib/api-error';
-import type { BacklogSearch } from '@/lib/backlog-filter';
+import type { BacklogSearch, RandomSearch } from '@/lib/backlog-filter';
 import {
   newSeed,
   randomSearch,
@@ -17,19 +17,25 @@ import {
 import { client } from '@/lib/orpc';
 import { useSession } from '@/src/use-session';
 
-/** Un tiro: da dove si pesca, il mazzo, e la scheda su cui si è. */
 type Draw = {
   search: BacklogSearch;
   filter: RandomFilter | undefined;
+  playlistId: string | undefined;
   seed: string;
   after: string | undefined;
 };
+
+function playlistOf(pathname: string) {
+  return /^\/playlist\/(?:curated\/)?([0-9a-f-]{36})$/.exec(pathname)?.[1];
+}
 
 /**
  * Il dado (15c): fisso in basso a destra, nel guscio, e apre la scheda di un
  * gioco a caso. Da dove pesca lo dice la pagina:
  *
  * - su `/backlog`, dal filtro della pagina, con un mazzo nuovo;
+ * - su una playlist, a filtro o scelta a mano, dalla playlist intera (la
+ *   ricerca della pagina non conta), con un mazzo nuovo;
  * - sulla scheda di un gioco pescato (c'è `seed` nell'URL), il successivo
  *   dello stesso giro;
  * - altrove, da tutto il backlog con un mazzo nuovo.
@@ -50,8 +56,10 @@ export function RandomGameDice({
   const router = useRouter();
   const errorMessage = useApiErrorMessage();
   const { data: session, isPending } = useSession();
-  const inBacklog = useRouterState({
-    select: (state) => state.location.pathname === '/backlog',
+  const hasOwnButton = useRouterState({
+    select: (state) =>
+      state.location.pathname === '/backlog' ||
+      playlistOf(state.location.pathname) !== undefined,
   });
   const inHidden = useRouterState({
     select: (state) =>
@@ -63,6 +71,7 @@ export function RandomGameDice({
     mutationFn: (draw: Draw) =>
       client.games.random({
         filter: draw.filter,
+        playlistId: draw.playlistId,
         seed: draw.seed,
         after: draw.after,
       }),
@@ -74,7 +83,7 @@ export function RandomGameDice({
       void router.navigate({
         to: '/games/$slug',
         params: { slug: result.slug },
-        search: randomSearch(draw.search, draw.seed),
+        search: randomSearch(draw.search, draw.seed, draw.playlistId),
       });
     },
     onError: (error) =>
@@ -84,19 +93,22 @@ export function RandomGameDice({
   // Finché la sessione non si sa, non si sa nemmeno da dove pescare.
   if (isPending) return null;
   if (inHidden) return null;
-  // Nel backlog il comando è nell’intestazione, con un’etichetta esplicita.
-  if (inBacklog && !labelled) return null;
+  // Nel backlog e nelle playlist il comando è nell’intestazione, con
+  // un’etichetta esplicita.
+  if (hasOwnButton && !labelled) return null;
 
   const roll = () => {
     const { pathname, search: raw } = router.state.location;
     const slug = /^\/games\/([^/]+)$/.exec(pathname)?.[1];
     // Sulla scheda di un gioco pescato, il giro che c'è nell'URL.
-    const giro = slug ? validateRandomSearch(raw) : {};
+    const giro: RandomSearch = slug ? validateRandomSearch(raw) : {};
     const search: BacklogSearch =
       pathname === '/backlog' ? validateBacklogSearch(raw) : giro;
+    const playlistId = playlistOf(pathname) ?? giro.playlist;
     pick.mutate({
       search,
-      filter: session ? toRandomFilter(search) : undefined,
+      filter: session && !playlistId ? toRandomFilter(search) : undefined,
+      playlistId: session ? playlistId : undefined,
       seed: giro.seed ?? newSeed(),
       after: giro.seed && slug ? decodeURIComponent(slug) : undefined,
     });
