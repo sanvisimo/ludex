@@ -35,11 +35,7 @@ export function Slider({ thumbLabels, ...props }: SliderProps) {
       opacity={props.disabled ? 0.5 : 1}
       {...props}
     >
-      {/* Le maniglie stanno a metà dei 20 di altezza (Tamagui le mette a
-          `top: 50%`), il binario invece nel flusso, in cima a un contenitore
-          interno che non si raggiunge: senza il margine le maniglie gli
-          pendevano sotto. (20 − 4) / 2 = 8. */}
-      <SliderBase.Track height={4} mt={8} bg="color6" rounded={2}>
+      <SliderBase.Track height={4} bg="color6" rounded={2}>
         <SliderBase.TrackActive bg="accent9" rounded={2} />
       </SliderBase.Track>
       {Array.from({ length: thumbs }, (_, index) => (
