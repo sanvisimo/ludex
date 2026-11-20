@@ -97,6 +97,8 @@ function StoreTrigger({
           minH={32}
           maxW="100%"
           px={iconOnly ? 0 : 4}
+          // Il bordo trasparente toglierebbe 2 px alla tessera alta 32.
+          borderWidth={iconOnly ? 0 : undefined}
           aria-label={label}
           aria-controls={open ? dialogId : undefined}
           // Il dialogo è il tooltip di chi non ha il mouse: dove il tooltip
@@ -199,9 +201,11 @@ function StoreTrigger({
 function OwnershipStore({
   group,
   groups,
+  dense,
 }: {
   group: StoreGroup;
   groups: StoreGroup[];
+  dense?: boolean;
 }) {
   const brand = group.store ? STORE_BRAND[group.store] : undefined;
 
@@ -212,7 +216,18 @@ function OwnershipStore({
       groups={groups}
       iconOnly={!!brand}
     >
-      {brand ? (
+      {brand && dense ? (
+        // Sul telefono la tessera è alta quanto il segnalibro accanto. Due
+        // copie e non `useMedia`: il server non conosce la finestra.
+        <>
+          <XStack display="max-sm:none">
+            <BrandIcon brand={brand} size={24} />
+          </XStack>
+          <XStack display="sm:none">
+            <BrandIcon brand={brand} size={32} />
+          </XStack>
+        </>
+      ) : brand ? (
         <BrandIcon brand={brand} size={24} />
       ) : (
         <Text
@@ -268,12 +283,14 @@ export function OwnershipBadges({
   onRemove,
   compact,
   storesOnly,
+  dense,
   max,
 }: {
   ownerships: DisplayedOwnership[];
   onRemove?: (ownership: DisplayedOwnership) => void;
   compact?: boolean;
   storesOnly?: boolean;
+  dense?: boolean;
   max?: number;
 }) {
   const t = useTranslations('editEntry');
@@ -350,7 +367,12 @@ export function OwnershipBadges({
     return (
       <XStack flexWrap="wrap" items="center" gap={4} minW={0} maxW="100%">
         {shown.map((group) => (
-          <OwnershipStore key={group.key} group={group} groups={all} />
+          <OwnershipStore
+            key={group.key}
+            group={group}
+            groups={all}
+            dense={dense}
+          />
         ))}
         {overflow && (
           <MoreStores groups={all} hidden={all.length - shown.length} />
