@@ -1524,6 +1524,14 @@
         "title": "Notifiche in PileCue",
         "text": "Un avviso dentro PileCue quando una correzione ti riguarda: per esempio un import che ora trova giochi che prima mancavano, con l'invito ad aggiornare la libreria."
       },
+      "friends": {
+        "title": "Amici in PileCue",
+        "text": "Aggiungi i tuoi amici e segui i loro giochi: cosa stanno giocando, cosa hanno finito e cosa hanno in backlog."
+      },
+      "publicProfile": {
+        "title": "Una pagina personale pubblica",
+        "text": "Una pagina tua da condividere con un link, con i giochi e le playlist che vuoi mostrare. Cosa ci finisce lo scegli tu, voce per voce."
+      },
       "metaquest": {
         "title": "La libreria Meta Quest",
         "text": "Lo studio di fattibilità è fatto: per andare avanti serve qualcuno con un visore che provi l'import"
