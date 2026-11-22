@@ -59,15 +59,31 @@ export function CuratedPlaylistControl({ game }: { game: { id: string } }) {
   const [creating, setCreating] = useState(false);
   const { lists, toggle } = useCuratedMembership(game.id);
   const inside = lists.data?.filter((list) => list.has).length ?? 0;
+  const label = inside > 0 ? t('inLists', { count: inside }) : t('button');
 
   return (
     <XStack>
       <DropdownMenu align="start">
         <DropdownMenuTrigger
           render={
-            <Button variant="outline" disabled={lists.isPending}>
+            <Button
+              variant="outline"
+              disabled={lists.isPending}
+              aria-label={label}
+            >
               <ListOrdered size={16} color="color12" />
-              {inside > 0 ? t('inLists', { count: inside }) : t('button')}
+              <XStack display="none sm:flex" aria-hidden>
+                <Text fontSize={14} fontWeight="500" color="color12">
+                  {label}
+                </Text>
+              </XStack>
+              {inside > 0 && (
+                <XStack display="none max-sm:flex" aria-hidden>
+                  <Text fontSize={14} fontWeight="500" color="color12">
+                    {inside}
+                  </Text>
+                </XStack>
+              )}
             </Button>
           }
         />

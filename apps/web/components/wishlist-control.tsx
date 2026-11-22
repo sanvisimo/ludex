@@ -5,6 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Text,
   toast,
   XStack,
 } from '@repo/ui';
@@ -52,7 +53,9 @@ export function WishlistControl({
   const lists = useQuery(
     api.wishlists.forGame.queryOptions({ input: { gameId: game.id } }),
   );
-  const inAny = lists.data?.some((list) => list.has) ?? false;
+  const inside = lists.data?.filter((list) => list.has).length ?? 0;
+  const inAny = inside > 0;
+  const label = inAny ? t('inList') : t('button');
 
   const refresh = () =>
     queryClient.invalidateQueries({ queryKey: api.wishlists.key() });
@@ -95,13 +98,29 @@ export function WishlistControl({
         <DropdownMenuTrigger
           render={
             trigger ?? (
-              <Button variant="outline" disabled={lists.isPending}>
+              <Button
+                variant="outline"
+                disabled={lists.isPending}
+                aria-label={label}
+              >
                 <Heart
                   size={16}
                   color="color12"
                   {...(inAny && { fill: 'currentColor' })}
                 />
-                {inAny ? t('inList') : t('button')}
+                <XStack display="none sm:flex" aria-hidden>
+                  <Text fontSize={14} fontWeight="500" color="color12">
+                    {label}
+                  </Text>
+                </XStack>
+                {/* Con una lista sola il cuore pieno dice già tutto. */}
+                {inside > 1 && (
+                  <XStack display="none max-sm:flex" aria-hidden>
+                    <Text fontSize={14} fontWeight="500" color="color12">
+                      {inside}
+                    </Text>
+                  </XStack>
+                )}
               </Button>
             )
           }
