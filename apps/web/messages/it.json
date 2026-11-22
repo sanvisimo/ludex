@@ -1510,15 +1510,18 @@
       },
       "nintendo3dsWiiu": {
         "title": "Giochi 3DS e Wii U da Nintendo",
-        "text": "L'import Nintendo riconosce i giochi 3DS e Wii U: prima venivano saltati. Nintendo li mostra solo se l'account è collegato al Nintendo Network ID della console, e solo fino a febbraio 2020. Basta aggiornare la libreria."
+        "p1": "L'import Nintendo riconosce i giochi 3DS e Wii U, che prima venivano saltati: basta aggiornare la libreria.",
+        "p2": "Nintendo li mostra solo se l'account è collegato al Nintendo Network ID della console, e solo fino a febbraio 2020."
       },
       "itadWishlist": {
         "title": "I prezzi nella wishlist",
-        "text": "Sulle card delle tue liste il prezzo più basso di adesso da IsThereAnyDeal, con il negozio e il segnale del minimo storico."
+        "p1": "Sulle card delle tue liste il prezzo più basso di adesso da IsThereAnyDeal, con il negozio.",
+        "p2": "Il segnale del minimo storico, come nella pagina del gioco."
       },
       "nintendoSwitch2": {
         "title": "Giochi Switch 2 da Nintendo",
-        "text": "L'import Nintendo riconosce i giochi Switch 2, comprese le Nintendo Switch 2 Edition: prima venivano saltati. Basta aggiornare la libreria."
+        "p1": "L'import Nintendo riconosce i giochi Switch 2, che prima venivano saltati.",
+        "p2": "Comprese le Nintendo Switch 2 Edition: basta aggiornare la libreria."
       },
       "notifications": {
         "title": "Notifiche in PileCue",
@@ -1546,6 +1549,10 @@
         "title": "Cosa gioco adesso, con l'AI",
         "text": "Dici quanto tempo hai, su cosa giochi e che voglia hai, e PileCue ti propone cosa giocare dal tuo backlog."
       },
+      "consolePrices": {
+        "title": "I prezzi dei giochi console",
+        "text": "Il prezzo più basso anche per i giochi delle console, non solo per quelli PC."
+      },
       "mobile": {
         "title": "L'app per il telefono",
         "text": "Il backlog sempre in tasca, con la stessa libreria e le stesse playlist del web."
@@ -1566,7 +1573,8 @@
       },
       "addToBacklog": {
         "title": "Aggiungi al backlog dalla pagina del gioco",
-        "text": "Su un gioco che non hai, accanto ad «Aggiungi a playlist» ci sarà anche il pulsante per metterlo nel backlog."
+        "p1": "Su un gioco che non hai, accanto ad «Aggiungi a playlist», il pulsante per metterlo nel backlog.",
+        "p2": "Niente più ricerca da rifare: il gioco è già quello della pagina."
       },
       "playtime": {
         "title": "Tracciamento dei tempi di gioco",

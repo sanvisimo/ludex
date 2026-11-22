@@ -1,6 +1,6 @@
 # Il prezzo di IsThereAnyDeal sulle card della wishlist
 
-**Stato: in corso** (19/11/2026), voce `itadWishlist` della roadmap. Branch
+**Stato: fatto** (22/11/2026, in corso dal 19/11), voce `itadWishlist` della roadmap. Branch
 `feat/itad-wishlist`. Segue [itad-prezzo](itad-prezzo.md), di cui riusa id,
 cache e regole.
 
@@ -49,4 +49,4 @@ Sulle card della wishlist il prezzo di IsThereAnyDeal: nella lista aperta
 | 2   | `games.prices` nel contratto e nel router                            | fatto |
 | 3   | `footer` di `HomeCard`, `CardPrice` nella lista aperta e nelle fasce | fatto |
 | 4   | roadmap a «in corso», [apps/api/CLAUDE.md](../apps/api/CLAUDE.md)    | fatto |
-| 5   | vederla in uso; `itadWishlist` a «fatto» quando dici che è pronto    |       |
+| 5   | vederla in uso; `itadWishlist` a «fatto» quando dici che è pronto    | fatto |

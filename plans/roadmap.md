@@ -31,6 +31,12 @@ segnalazioni spostate dalla mail alle issue di GitHub.
 
 ## Da sapere
 
+- **Il 22/11/2026** passano a «Fatto», con due punti al posto del testo:
+  «Giochi Switch 2 da Nintendo» (`nintendoSwitch2`), «Giochi 3DS e Wii U da
+  Nintendo» (`nintendo3dsWiiu`), «I prezzi nella wishlist» (`itadWishlist`) e
+  «Aggiungi al backlog dalla pagina del gioco» (`addToBacklog`, era «In
+  arrivo»). Entra in «In corso» «I prezzi dei giochi console»
+  (`consolePrices`). L'app per il telefono (`mobile`) resta «In corso».
 - **A sera del 22/10/2026**, chiusi i badge: voce nuova «I badge della pagina
   del gioco» (`badgeLinks`) «fatta», e `categoryPages` torna «in arrivo» col
   solo catalogo, in fondo. «In arrivo» segue l'ordine rivisto lo stesso giorno
