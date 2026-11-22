@@ -16,6 +16,7 @@ import {
   Text,
   XStack,
   YStack,
+  isWeb,
 } from 'tamagui';
 import type { GetProps } from 'tamagui';
 
@@ -26,6 +27,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from './input-group';
+import { dropdownMaxHeight, useDropdown } from './use-dropdown';
 
 /**
  * Il campo che filtra mentre scrivi: oggi la scelta della piattaforma, 96
@@ -52,7 +54,7 @@ import {
  *
  * Su telefono andrà ripensato: con la tastiera aperta una tendina ancorata
  * sotto il campo ha poco spazio, e il 12a stesso dice che lì diventa una
- * schermata di ricerca.
+ * schermata di ricerca. Intanto `useDropdown` la tiene usabile col dito.
  */
 
 type ComboboxContextValue = {
@@ -287,17 +289,23 @@ export function ComboboxInput({
 }
 
 /**
- * La tendina. Non prende mai il fuoco — resta nel campo — e un clic dentro
- * non lo porta via (`onMouseDown`), o il campo perderebbe il fuoco e la
- * chiuderebbe prima che il clic sulla voce arrivi.
+ * La tendina. Non prende mai il fuoco — resta nel campo — e un clic o un
+ * tocco dentro non lo porta via (`useDropdown`), o il campo perderebbe il
+ * fuoco e la chiuderebbe prima che il clic sulla voce arrivi.
  */
 export function ComboboxContent({ children }: { children: ReactNode }) {
   const { open } = useCombobox();
   if (!open) return null;
+  return <ComboboxDropdown>{children}</ComboboxDropdown>;
+}
+
+function ComboboxDropdown({ children }: { children: ReactNode }) {
+  const dropdown = useDropdown();
 
   return (
     <Portal zIndex={200_000}>
       <PopperContent
+        ref={dropdown}
         // Il portale non prende i clic (`pointer-events: none`), la tendina sì.
         pointerEvents="auto"
         width={'var(--tamagui-popper-anchor-width)' as never}
@@ -306,9 +314,11 @@ export function ComboboxContent({ children }: { children: ReactNode }) {
         bg="color2"
         borderWidth={1}
         borderColor="border-color"
-        onMouseDown={(event) => event.preventDefault()}
       >
-        <ScrollView maxH={288} width="100%">
+        <ScrollView
+          maxH={isWeb ? (dropdownMaxHeight(288) as never) : 288}
+          width="100%"
+        >
           {children}
         </ScrollView>
       </PopperContent>
