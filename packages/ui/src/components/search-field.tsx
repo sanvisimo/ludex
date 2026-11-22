@@ -9,6 +9,7 @@ import {
   Text,
   XStack,
   YStack,
+  isWeb,
 } from 'tamagui';
 import type { GetProps } from 'tamagui';
 
@@ -19,6 +20,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from './input-group';
+import { dropdownMaxHeight, useDropdown } from './use-dropdown';
 
 /**
  * Il campo di ricerca con la tendina dei risultati (12f): si scrive, i
@@ -224,38 +226,61 @@ export function SearchField({
         </PopperAnchor>
 
         {open && (
-          <Portal zIndex={200_000}>
-            <PopperContent
-              // Il portale non prende i clic (`pointer-events: none`), la
-              // tendina sì; e un clic dentro non porta via il fuoco al campo,
-              // o lo chiuderebbe prima che il clic sulla voce arrivi.
-              pointerEvents="auto"
-              width={'var(--tamagui-popper-anchor-width)' as never}
-              minW={280}
-              p={4}
-              rounded={8}
-              bg="color2"
-              borderWidth={1}
-              borderColor="border-color"
-              onMouseDown={(event) => event.preventDefault()}
-            >
-              <ScrollView maxH={440} width="100%">
-                <YStack
-                  id={listId}
-                  // `listbox` non è fra i ruoli di React Native, ma sul web
-                  // passa com'è.
-                  role={'listbox' as never}
-                  aria-label={ariaLabel}
-                  width="100%"
-                >
-                  {children}
-                </YStack>
-              </ScrollView>
-            </PopperContent>
-          </Portal>
+          <SearchFieldDropdown listId={listId} aria-label={ariaLabel}>
+            {children}
+          </SearchFieldDropdown>
         )}
       </Popper>
     </SearchFieldContext.Provider>
+  );
+}
+
+/**
+ * La tendina. Un clic o un tocco dentro non porta via il fuoco al campo
+ * (`useDropdown`), o lo chiuderebbe prima che il clic sulla voce arrivi.
+ */
+function SearchFieldDropdown({
+  listId,
+  'aria-label': ariaLabel,
+  children,
+}: {
+  listId: string;
+  'aria-label'?: string;
+  children: ReactNode;
+}) {
+  const dropdown = useDropdown();
+
+  return (
+    <Portal zIndex={200_000}>
+      <PopperContent
+        ref={dropdown}
+        // Il portale non prende i clic (`pointer-events: none`), la tendina sì.
+        pointerEvents="auto"
+        width={'var(--tamagui-popper-anchor-width)' as never}
+        minW={280}
+        p={4}
+        rounded={8}
+        bg="color2"
+        borderWidth={1}
+        borderColor="border-color"
+      >
+        <ScrollView
+          maxH={isWeb ? (dropdownMaxHeight(440) as never) : 440}
+          width="100%"
+        >
+          <YStack
+            id={listId}
+            // `listbox` non è fra i ruoli di React Native, ma sul web passa
+            // com'è.
+            role={'listbox' as never}
+            aria-label={ariaLabel}
+            width="100%"
+          >
+            {children}
+          </YStack>
+        </ScrollView>
+      </PopperContent>
+    </Portal>
   );
 }
 
