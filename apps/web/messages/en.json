@@ -1511,15 +1511,18 @@
       },
       "nintendo3dsWiiu": {
         "title": "3DS and Wii U games from Nintendo",
-        "text": "The Nintendo import recognizes 3DS and Wii U games: they used to be skipped. Nintendo only shows them if your account is linked to the console's Nintendo Network ID, and only up to February 2020. Just refresh your library."
+        "p1": "The Nintendo import recognizes 3DS and Wii U games, which used to be skipped: just refresh your library.",
+        "p2": "Nintendo only shows them if your account is linked to the console's Nintendo Network ID, and only up to February 2020."
       },
       "itadWishlist": {
         "title": "Prices in your wishlist",
-        "text": "On the cards of your lists, today's lowest price from IsThereAnyDeal, with its store and the historical low flag."
+        "p1": "On the cards of your lists, today's lowest price from IsThereAnyDeal, with its store.",
+        "p2": "The historical low flag, as on the game page."
       },
       "nintendoSwitch2": {
         "title": "Switch 2 games from Nintendo",
-        "text": "The Nintendo import recognizes Switch 2 games, Nintendo Switch 2 Editions included: they used to be skipped. Just refresh your library."
+        "p1": "The Nintendo import recognizes Switch 2 games, which used to be skipped.",
+        "p2": "Nintendo Switch 2 Editions included: just refresh your library."
       },
       "notifications": {
         "title": "Notifications in PileCue",
@@ -1547,6 +1550,10 @@
         "title": "What to play now, with AI",
         "text": "Tell PileCue how much time you have, what you play on and what you feel like, and it suggests something from your backlog."
       },
+      "consolePrices": {
+        "title": "Prices for console games",
+        "text": "The lowest price for console games too, not just PC ones."
+      },
       "mobile": {
         "title": "The phone app",
         "text": "Your backlog always in your pocket, with the same library and playlists as the web."
@@ -1567,7 +1574,8 @@
       },
       "addToBacklog": {
         "title": "Add to backlog from the game page",
-        "text": "On a game you don't own, next to “Add to playlist” there will also be a button to put it in your backlog."
+        "p1": "On a game you don't own, next to “Add to playlist”, a button to put it in your backlog.",
+        "p2": "No search to redo: the game is already the one on the page."
       },
       "playtime": {
         "title": "Playtime tracking",

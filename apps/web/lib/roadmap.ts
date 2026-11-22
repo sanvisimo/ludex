@@ -32,19 +32,44 @@ export type RoadmapEntry = {
  * facendo adesso, e una voce passa a «fatto» quando l'utente dice che è pronta.
  */
 export const roadmap: RoadmapEntry[] = [
-  { id: 'nintendo3dsWiiu', status: 'doing', areas: ['import'] },
-  { id: 'nintendoSwitch2', status: 'doing', areas: ['import'] },
   { id: 'mobile', status: 'doing', areas: ['mobile'] },
-  { id: 'itadWishlist', status: 'doing', areas: ['playlists'] },
+  { id: 'consolePrices', status: 'doing', areas: ['game', 'playlists'] },
   { id: 'ai', status: 'next', areas: ['ai'] },
   { id: 'publicPlaylists', status: 'next', areas: ['playlists'] },
   { id: 'categoryPages', status: 'next', areas: ['game', 'library'] },
-  { id: 'addToBacklog', status: 'next', areas: ['game', 'library'] },
   { id: 'playtime', status: 'next', areas: ['game'] },
   { id: 'metaquest', status: 'idea', areas: ['import'] },
   { id: 'notifications', status: 'idea', areas: ['account', 'import'] },
   { id: 'friends', status: 'idea', areas: ['account', 'library'] },
   { id: 'publicProfile', status: 'idea', areas: ['account', 'library'] },
+  {
+    id: 'addToBacklog',
+    status: 'done',
+    areas: ['game', 'library'],
+    month: '2026-11',
+    points: 2,
+  },
+  {
+    id: 'itadWishlist',
+    status: 'done',
+    areas: ['playlists'],
+    month: '2026-11',
+    points: 2,
+  },
+  {
+    id: 'nintendo3dsWiiu',
+    status: 'done',
+    areas: ['import'],
+    month: '2026-11',
+    points: 2,
+  },
+  {
+    id: 'nintendoSwitch2',
+    status: 'done',
+    areas: ['import'],
+    month: '2026-11',
+    points: 2,
+  },
   {
     id: 'dialogDesign',
     status: 'done',
