@@ -321,7 +321,7 @@ progetto, e server e worker lavorano su una coda vuota.
 
 | Comando                          | Cosa fa                                   |
 | -------------------------------- | ----------------------------------------- |
-| `pnpm dev`                       | avvia tutto (turbo)                       |
+| `pnpm dev`                       | avvia tutto (turbo), Metro compreso       |
 | `pnpm lint` / `pnpm check-types` | lint e typecheck sul monorepo             |
 | `pnpm test`                      | vitest sul monorepo (serve Postgres su)   |
 | `pnpm db:up` / `pnpm db:down`    | Postgres, Redis e Mailpit in Docker       |
@@ -332,7 +332,7 @@ progetto, e server e worker lavorano su una coda vuota.
 | `pnpm --filter @repo/ui dev`     | Storybook, il banco del design system     |
 | `pnpm --filter @repo/ui test`    | le storie in Chromium, con axe            |
 | `pnpm --filter web test`         | la logica pura di `apps/web/lib`          |
-| `pnpm --filter mobile start`     | Metro per l'app Expo                      |
+| `pnpm --filter mobile start`     | solo Metro per l'app Expo                 |
 
 Gli arnesi che si lanciano a mano dal workspace `api` (probe, backfill, dashboard
 delle code) sono in [apps/api/CLAUDE.md](apps/api/CLAUDE.md).
