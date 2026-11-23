@@ -453,11 +453,16 @@
     "withoutSubscription": "Senza {label}",
     "categoriesLabel": "Categorie",
     "tagsLabel": "Tag",
-    "durationLabel": "Durata della storia principale (ore)",
     "durationHint": "Restano fuori i giochi senza durata nota e quelli senza una fine: le loro ore non sono una durata. Per trovarli, spunta «Senza durata».",
     "noDuration": "Senza durata",
     "ratingHint": "Restano fuori i giochi che non hai votato.",
     "criticMin": "Voto critica minimo",
+    "criticMaxThumb": "Voto critica massimo",
+    "criticHint": "Restano fuori i giochi senza un voto della fonte scelta.",
+    "criticSourceLabel": "Fonte",
+    "criticSourceShown": "Quella mostrata (Metacritic, se manca IGDB)",
+    "durationBasisLabel": "Quale tempo",
+    "withQualifier": "{label} ({qualifier})",
     "neverPlayed": "Mai giocato",
     "gameTypesLabel": "Tipo",
     "oneOfThem": "Basta uno dei valori spuntati.",
@@ -1548,6 +1553,10 @@
       "ai": {
         "title": "Cosa gioco adesso, con l'AI",
         "text": "Dici quanto tempo hai, su cosa giochi e che voglia hai, e PileCue ti propone cosa giocare dal tuo backlog."
+      },
+      "filterTimesScores": {
+        "title": "Più scelta nei filtri di durata e critica",
+        "text": "La durata secondo la storia principale, con gli extra, da completisti o in tutti gli stili; il voto della critica anche come massimo («sotto 50») e da una fonte scelta."
       },
       "consolePrices": {
         "title": "I prezzi dei giochi console",

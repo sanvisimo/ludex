@@ -1,5 +1,6 @@
 import type { BacklogFilter, BacklogQuery } from '@repo/contracts';
 import type {
+  DurationBasis,
   GameType,
   Medium,
   Store,
@@ -24,6 +25,7 @@ import {
 } from '@repo/db/orm';
 import type { SQL } from '@repo/db/orm';
 
+import { openCriticVisible } from '../external/opencritic';
 import { entryQuery, toEntry } from './backlog';
 
 /**
@@ -59,12 +61,20 @@ export function escapeLike(term: string) {
  */
 export const haUnaFine = sql`(${schema.games.hltbHasSolo} is not false or ${schema.games.hltbHasCoop} is true)`;
 
+const durationColumns = {
+  main: schema.games.hltbMainMinutes,
+  plus: schema.games.hltbPlusMinutes,
+  completionist: schema.games.hltbCompletionistMinutes,
+  allStyles: schema.games.hltbAllStylesMinutes,
+} satisfies Record<DurationBasis, unknown>;
+
 /**
- * La card non mostra nessuna durata: HLTB non l'ha ancora (o non la conosce),
- * oppure il gioco non ha una fine. Il filtro «senza durata» trova esattamente
- * questi, quelli che sulla card hanno la riga vuota.
+ * Nessuna durata da mostrare per quel tempo: HLTB non l'ha ancora (o non la
+ * conosce), oppure il gioco non ha una fine. Sulla storia principale sono
+ * esattamente i giochi che sulla card hanno la riga vuota.
  */
-const senzaDurata = sql`(${schema.games.hltbMainMinutes} is null or not ${haUnaFine})`;
+const senzaDurata = (column: (typeof durationColumns)[DurationBasis]) =>
+  sql`(${column} is null or not ${haUnaFine})`;
 
 /**
  * Un `EXISTS` correlato per ogni valore selezionato, tutti in AND.
@@ -75,6 +85,46 @@ const senzaDurata = sql`(${schema.games.hltbMainMinutes} is null or not ${haUnaF
  */
 function tuttiPresenti<T>(valori: T[], predicato: (valore: T) => SQL): SQL[] {
   return valori.map(predicato);
+}
+
+/**
+ * Il voto della critica fra `criticMin` e `criticMax`.
+ *
+ * Senza fonte è `games.criticScore`, denormalizzato apposta: un confronto su
+ * una colonna, lo stesso numero che mostrano le card. Con una fonte è il suo
+ * voto complessivo in `game_scores` (`platform_slug` nullo), con un `EXISTS`
+ * su quella riga sola: il vincolo unique la rende una lettura d'indice.
+ */
+function criticConditions(input: BacklogFilter): SQL | undefined {
+  const { criticMin: min, criticMax: max } = input;
+  if (min === undefined && max === undefined) return undefined;
+
+  const source =
+    input.criticSource === 'opencritic' && !openCriticVisible()
+      ? undefined
+      : input.criticSource;
+
+  if (!source) {
+    return and(
+      min !== undefined ? gte(schema.games.criticScore, min) : undefined,
+      max !== undefined ? lte(schema.games.criticScore, max) : undefined,
+    );
+  }
+
+  return exists(
+    db
+      .select({ uno: sql`1` })
+      .from(schema.gameScores)
+      .where(
+        and(
+          eq(schema.gameScores.gameId, schema.games.id),
+          eq(schema.gameScores.source, source),
+          isNull(schema.gameScores.platformSlug),
+          min !== undefined ? gte(schema.gameScores.score, min) : undefined,
+          max !== undefined ? lte(schema.gameScores.score, max) : undefined,
+        ),
+      ),
+  );
 }
 
 /**
@@ -204,23 +254,18 @@ export function buildConditions(userId: string, input: BacklogFilter): SQL[] {
   // va bene così: un gioco senza durata non è un gioco corto. Il guard sulla
   // fine invece va aggiunto, o le 143 ore di Counter-Strike 2 entrerebbero fra
   // i giochi lunghi.
+  const durata = durationColumns[input.durationBasis ?? 'main'];
   if (input.noDuration) {
     // Esclusivo, non in AND con l'intervallo: un gioco senza durata non può
     // stare in nessun intervallo, e l'AND darebbe sempre zero risultati. Con la
     // spunta accesa l'intervallo si ignora (la UI lo disattiva).
-    conditions.push(senzaDurata);
+    conditions.push(senzaDurata(durata));
   } else {
     if (input.durationMin !== undefined) {
-      conditions.push(
-        gte(schema.games.hltbMainMinutes, input.durationMin),
-        haUnaFine,
-      );
+      conditions.push(gte(durata, input.durationMin), haUnaFine);
     }
     if (input.durationMax !== undefined) {
-      conditions.push(
-        lte(schema.games.hltbMainMinutes, input.durationMax),
-        haUnaFine,
-      );
+      conditions.push(lte(durata, input.durationMax), haUnaFine);
     }
   }
 
@@ -231,13 +276,8 @@ export function buildConditions(userId: string, input: BacklogFilter): SQL[] {
     conditions.push(lte(schema.backlog.rating, input.ratingMax));
   }
 
-  // Il voto della critica è `games.criticScore`: il migliore che abbiamo per
-  // quel gioco secondo la precedenza fra le fonti, non più il solo IGDB. La
-  // colonna è denormalizzata apposta — qui serviva un confronto su una colonna,
-  // non tre sottoquery correlate dentro la query più complessa del progetto.
-  if (input.criticMin !== undefined) {
-    conditions.push(gte(schema.games.criticScore, input.criticMin));
-  }
+  const critica = criticConditions(input);
+  if (critica) conditions.push(critica);
 
   // L'anno arriva come numero e la colonna è un timestamp: il confronto si fa
   // sugli estremi dell'anno, non estraendo l'anno da ogni riga — così l'indice
@@ -521,5 +561,6 @@ export async function listBacklogFilterOptions(userId: string) {
       .map((row) => row.gameType)
       .filter((type): type is GameType => type !== null),
     attributes,
+    showOpenCritic: openCriticVisible(),
   };
 }

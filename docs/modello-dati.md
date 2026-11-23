@@ -228,7 +228,9 @@ ricalcolati **nella stessa transazione** di ogni scrittura di `game_scores`
 secondo una precedenza scritta in un punto solo — **Metacritic → IGDB**
 (`CRITIC_PRECEDENCE` in `apps/api/src/services/scores.ts`). Serve allo step 7:
 il filtro "sopra 80" resta un confronto su una colonna indicizzabile invece di
-tre sottoquery correlate nella query di ricerca. Ed è lo stesso numero che
+tre sottoquery correlate nella query di ricerca. Quando l'utente sceglie una
+fonte (`criticSource`), il filtro legge invece il voto complessivo di quella
+fonte in `game_scores`, con un `EXISTS` sulla sola riga di `platform_slug` nullo. Ed è lo stesso numero che
 mostrano le card, del backlog e della home: si filtra e si ordina su ciò che
 si vede.
 

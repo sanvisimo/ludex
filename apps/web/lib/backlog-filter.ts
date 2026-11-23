@@ -2,10 +2,12 @@ import type {
   BacklogQueryInput,
   BacklogSort,
   BacklogStatus,
+  DurationBasis,
   GameType,
   Medium,
   PlaylistQuery,
   RandomFilter,
+  ScoreSource,
   SortDirection,
   WishlistSort,
   Store,
@@ -14,11 +16,13 @@ import type {
 import {
   backlogSortValues,
   backlogStatusValues,
+  durationBasisValues,
   gameTypeValues,
   mediumValues,
   PlaylistQuerySchema,
   RandomFilterSchema,
   RandomSeedSchema,
+  scoreSourceValues,
   sortDirectionValues,
   storeValues,
   subscriptionValues,
@@ -173,9 +177,15 @@ const fields = {
   // Solo i giochi senza durata da mostrare. Esclusivo con i due di sopra: con la
   // spunta accesa l'intervallo si azzera e lo slider si disattiva.
   noDuration: field(flag, false),
+  // Quale tempo misurano i tre di sopra, e da quale fonte viene il voto della
+  // critica (nullo: quello delle card). Non sono criteri da soli: qualificano
+  // l'intervallo, e senza intervallo non si contano né si mandano.
+  durationBasis: field(oneOf(durationBasisValues), 'main' as DurationBasis),
   ratingMin: field(decimal, null),
   ratingMax: field(decimal, null),
   criticMin: field(integer, null),
+  criticMax: field(integer, null),
+  criticSource: field(oneOf(scoreSourceValues), null as ScoreSource | null),
   releasedFrom: field(integer, null),
   releasedTo: field(integer, null),
   neverPlayed: field(flag, false),
@@ -269,9 +279,12 @@ const criteri = [
   'durationMin',
   'durationMax',
   'noDuration',
+  'durationBasis',
   'ratingMin',
   'ratingMax',
   'criticMin',
+  'criticMax',
+  'criticSource',
   'releasedFrom',
   'releasedTo',
   'neverPlayed',
@@ -292,6 +305,11 @@ export function toQueryInput(
   size: number = filter.size,
 ): BacklogQueryInput {
   const vuoto = <T>(value: T[]) => (value.length > 0 ? value : undefined);
+  const durata =
+    filter.noDuration ||
+    filter.durationMin !== null ||
+    filter.durationMax !== null;
+  const critica = filter.criticMin !== null || filter.criticMax !== null;
 
   return {
     q: filter.q.trim() || undefined,
@@ -312,9 +330,15 @@ export function toQueryInput(
     durationMin: filter.durationMin ?? undefined,
     durationMax: filter.durationMax ?? undefined,
     noDuration: filter.noDuration || undefined,
+    durationBasis:
+      durata && filter.durationBasis !== 'main'
+        ? filter.durationBasis
+        : undefined,
     ratingMin: filter.ratingMin ?? undefined,
     ratingMax: filter.ratingMax ?? undefined,
     criticMin: filter.criticMin ?? undefined,
+    criticMax: filter.criticMax ?? undefined,
+    criticSource: (critica && filter.criticSource) || undefined,
     releasedFrom: filter.releasedFrom ?? undefined,
     releasedTo: filter.releasedTo ?? undefined,
     neverPlayed: filter.neverPlayed || undefined,
@@ -332,6 +356,7 @@ export function toQueryInput(
  */
 export function countActiveCriteria(filter: BacklogFilterState) {
   return criteri.filter((chiave) => {
+    if (chiave === 'durationBasis' || chiave === 'criticSource') return false;
     const value = filter[chiave];
     if (chiave === 'status') {
       // Il default nasconde già `excluded`: conta come filtro solo se
@@ -384,9 +409,12 @@ export function fromPlaylistQuery(query: PlaylistQuery): BacklogFilterState {
     durationMin: query.durationMin ?? null,
     durationMax: query.durationMax ?? null,
     noDuration: query.noDuration ?? false,
+    durationBasis: query.durationBasis ?? fields.durationBasis.fallback,
     ratingMin: query.ratingMin ?? null,
     ratingMax: query.ratingMax ?? null,
     criticMin: query.criticMin ?? null,
+    criticMax: query.criticMax ?? null,
+    criticSource: query.criticSource ?? null,
     releasedFrom: query.releasedFrom ?? null,
     releasedTo: query.releasedTo ?? null,
     neverPlayed: query.neverPlayed ?? false,

@@ -5,6 +5,7 @@ import {
   attributeKindValues,
   backlogSortValues,
   backlogStatusValues,
+  durationBasisValues,
   enrichmentSourceValues,
   linkableStoreValues,
   gameTypeValues,
@@ -45,6 +46,7 @@ export const PlayedMinMinutesSchema = z
 export const HiddenKindSchema = z.enum(hiddenKindValues);
 export const GameTypeSchema = z.enum(gameTypeValues);
 export const ScoreSourceSchema = z.enum(scoreSourceValues);
+export const DurationBasisSchema = z.enum(durationBasisValues);
 export const UserTagKindSchema = z.enum(userTagKindValues);
 
 // Cinque stelle a mezze stelle: dieci valori da 0.5 a 5. Il `multipleOf` è la
@@ -681,17 +683,27 @@ export const BacklogFilterSchema = z.object({
   // parola e non deve sapere se esiste, qui la spunta da una lista che esiste.
   tags: z.array(z.uuid()).max(20).optional(),
   // Minuti, come la colonna: "stasera ho due ore" senza conversioni. Confronta
-  // la storia principale, ed è vincolato ai giochi che una fine ce l'hanno —
-  // le 143 ore di Counter-Strike 2 sono tempo investito, non una durata.
+  // il tempo di `durationBasis`, ed è vincolato ai giochi che una fine ce
+  // l'hanno — le 143 ore di Counter-Strike 2 sono tempo investito, non una
+  // durata.
   durationMin: z.number().int().min(0).max(600_000).optional(),
   durationMax: z.number().int().min(0).max(600_000).optional(),
   // Solo i giochi che non hanno una durata da mostrare: nessun dato HLTB, o
   // nessuna fine. **Esclusivo**: se c'è, `durationMin` e `durationMax` si
   // ignorano, perché in AND non troverebbero mai niente.
   noDuration: z.boolean().optional(),
+  // Quale tempo di HLTB misurano i tre campi qui sopra. Assente è la storia
+  // principale, quella che mostrano le card.
+  durationBasis: DurationBasisSchema.optional(),
   ratingMin: RatingSchema.optional(),
   ratingMax: RatingSchema.optional(),
   criticMin: z.number().min(0).max(100).optional(),
+  criticMax: z.number().min(0).max(100).optional(),
+  // Assente, il voto è `criticScore`, lo stesso delle card. Con una fonte, il
+  // voto complessivo di quella fonte: per Metacritic il numero di testa, non
+  // quello di una piattaforma. Fonti con scale diverse non si mettono in OR.
+  // OpenCritic con `SHOW_OPENCRITIC` spento vale come assente.
+  criticSource: ScoreSourceSchema.optional(),
   // Anni interi, non date: nessuno filtra la propria libreria per giorno.
   releasedFrom: z.number().int().min(1950).max(2100).optional(),
   releasedTo: z.number().int().min(1950).max(2100).optional(),
@@ -963,6 +975,8 @@ export const BacklogFilterOptionsSchema = z.object({
   media: z.array(MediumSchema),
   gameTypes: z.array(GameTypeSchema),
   attributes: z.array(FilterAttributeSchema),
+  // Se OpenCritic si offre fra le fonti del voto critica (`SHOW_OPENCRITIC`).
+  showOpenCritic: z.boolean(),
 });
 
 // --- La home (12e) ---

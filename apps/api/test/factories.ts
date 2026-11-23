@@ -73,6 +73,9 @@ export async function createGame(
     // default: un gioco appena creato non è arricchito, ed è proprio il caso
     // che i filtri devono trattare bene.
     hltbMainMinutes?: number | null;
+    hltbPlusMinutes?: number | null;
+    hltbCompletionistMinutes?: number | null;
+    hltbAllStylesMinutes?: number | null;
     hltbHasSolo?: boolean | null;
     hltbHasCoop?: boolean | null;
     hltbHasVersus?: boolean | null;
@@ -99,6 +102,9 @@ export async function createGame(
       igdbId: values.igdbId === undefined ? 100_000 + n : values.igdbId,
       firstReleaseDate: values.firstReleaseDate ?? null,
       hltbMainMinutes: values.hltbMainMinutes ?? null,
+      hltbPlusMinutes: values.hltbPlusMinutes ?? null,
+      hltbCompletionistMinutes: values.hltbCompletionistMinutes ?? null,
+      hltbAllStylesMinutes: values.hltbAllStylesMinutes ?? null,
       hltbHasSolo: values.hltbHasSolo ?? null,
       hltbHasCoop: values.hltbHasCoop ?? null,
       hltbHasVersus: values.hltbHasVersus ?? null,

@@ -171,6 +171,69 @@ describe('verso il server', () => {
     expect(toQueryInput(state, 15)).toMatchObject({ limit: 15, offset: 30 });
     expect(toQueryInput(state)).toMatchObject({ limit: 14, offset: 28 });
   });
+
+  it('tempo della durata e fonte della critica vanno solo con un intervallo', () => {
+    const base = {
+      ...fromPlaylistQuery(query()),
+      status: defaultStatus,
+      durationBasis: 'completionist' as const,
+      criticSource: 'igdb' as const,
+    };
+    const spento = toQueryInput(base);
+    expect(spento.durationBasis).toBeUndefined();
+    expect(spento.criticSource).toBeUndefined();
+    expect(countActiveCriteria(base)).toBe(0);
+
+    expect(
+      toQueryInput({ ...base, durationMax: 600, criticMax: 50 }),
+    ).toMatchObject({
+      durationMax: 600,
+      durationBasis: 'completionist',
+      criticMax: 50,
+      criticSource: 'igdb',
+    });
+    expect(toQueryInput({ ...base, noDuration: true }).durationBasis).toBe(
+      'completionist',
+    );
+    // La storia principale è il default: non si manda.
+    expect(
+      toQueryInput({ ...base, durationBasis: 'main', durationMax: 600 })
+        .durationBasis,
+    ).toBeUndefined();
+  });
+
+  it('i due qualificatori stanno nell’URL, e un valore sconosciuto si scarta', () => {
+    expect(
+      validateBacklogSearch({
+        durationBasis: 'completionist',
+        criticSource: 'metacritic',
+        criticMax: '50',
+      }),
+    ).toEqual({
+      durationBasis: 'completionist',
+      criticSource: 'metacritic',
+      criticMax: 50,
+    });
+    expect(
+      validateBacklogSearch({ durationBasis: 'main', criticSource: 'hltb' }),
+    ).toEqual({});
+  });
+
+  it('una playlist li conserva', () => {
+    const state = {
+      ...fromPlaylistQuery(query()),
+      durationMin: 120,
+      durationBasis: 'plus' as const,
+      criticMax: 60,
+      criticSource: 'opencritic' as const,
+    };
+    expect(fromPlaylistQuery(toPlaylistQuery(state))).toMatchObject({
+      durationMin: 120,
+      durationBasis: 'plus',
+      criticMax: 60,
+      criticSource: 'opencritic',
+    });
+  });
 });
 
 describe('l’URL di una playlist aperta', () => {
