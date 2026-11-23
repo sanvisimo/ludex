@@ -70,9 +70,23 @@ quattro tab (tre segnaposto) e Account. Lo scheletro con i componenti
 Il 16/11 l'app è passata all'**SDK 58** (React Native 0.88, React 19.3 in
 tutto il repo) e a Better Auth 1.7, che ha tolto il cast del plugin Expo.
 
+**23/11/2026: il giro su Android funziona**, nell'emulatore e con la chiave
+di prova di Turnstile: registrazione, link di verifica, accesso (la riga in
+`session`, user agent `okhttp`) ed Esci, che la cancella. In sviluppo serve:
+
+- nel `.env` `EXPO_PUBLIC_TURNSTILE_SITE_KEY` (senza, il widget non c'è ma
+  il server chiede il CAPTCHA) ed `EXPO_PUBLIC_WEB_URL=http://localhost:8085`:
+  con l'IP di WSL il `callbackURL` della registrazione non è fra i
+  `trustedOrigins`;
+- `adb reverse tcp:8085`, perché nell'emulatore `localhost` è il telefono:
+  lo fa `pnpm dev`, che ora avvia anche Metro
+  (`apps/mobile/scripts/adb-reverse.mjs`), se l'emulatore è già acceso;
+- `--clear` a Metro dopo aver cambiato una `EXPO_PUBLIC_*`: vengono dal
+  `.env` della radice, che Expo non sorveglia, e la cache tiene il valore
+  vecchio.
+
 Da verificare:
 
-- **il giro completo su Android**: registrazione, link, accesso, Esci;
 - **Turnstile nella WebView** con la chiave vera: la pagina dichiara
   l'origine del sito (`baseUrl`), da vedere se Cloudflare la accetta;
 - **EAS**: `eas init` col tuo account Expo (aggiunge il `projectId` ad
