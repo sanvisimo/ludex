@@ -408,6 +408,15 @@ export const backlogSortValues = [
 
 export const sortDirectionValues = ['asc', 'desc'] as const;
 
+// Quale tempo di HLTB misura il filtro della durata: le quattro colonne di
+// `games`, con la storia principale come default.
+export const durationBasisValues = [
+  'main',
+  'plus',
+  'completionist',
+  'allStyles',
+] as const;
+
 /**
  * Ogni quanti giorni un account si aggiorna da solo, per negozio.
  *
@@ -462,6 +471,7 @@ export const isOneShotStore = (store: Store): store is OneShotStore =>
   (oneShotStoreValues as readonly string[]).includes(store);
 export type StoreAccountStatus = (typeof storeAccountStatusValues)[number];
 export type ScoreSource = (typeof scoreSourceValues)[number];
+export type DurationBasis = (typeof durationBasisValues)[number];
 export type EnrichmentSource = (typeof enrichmentSourceValues)[number];
 export type ApiCallSource = (typeof apiCallSourceValues)[number];
 export type SourceReason = (typeof sourceReasonValues)[number];

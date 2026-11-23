@@ -1,13 +1,19 @@
 import type {
   BacklogStatus,
+  DurationBasis,
   GameType,
   Medium,
   PlaylistQuery,
+  ScoreSource,
   Store,
   Subscription,
   UserTagKind,
 } from '@repo/contracts';
-import { attributeKindValues, backlogStatusValues } from '@repo/contracts';
+import {
+  attributeKindValues,
+  backlogStatusValues,
+  durationBasisValues,
+} from '@repo/contracts';
 import {
   Accordion,
   AccordionContent,
@@ -18,6 +24,11 @@ import {
   Checkbox,
   Label,
   ScrollView,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Slider,
   Text,
   XStack,
@@ -67,6 +78,8 @@ const RATING_MIN = 0.5;
 const RATING_MAX = 5;
 const RELEASED_MIN = 1970;
 const RELEASED_MAX = new Date().getFullYear();
+// Nell'ordine della precedenza delle card, non in quello dell'enum.
+const criticSourceOrder: ScoreSource[] = ['metacritic', 'igdb', 'opencritic'];
 
 /**
  * Gli stati rapidi precedono la barra di ricerca, filtri, ordine e vista.
@@ -153,6 +166,40 @@ export function BacklogToolbar({
   );
 }
 
+/** Una tendina con l'etichetta sopra, come l'ordinamento. */
+function ChoiceSelect({
+  label,
+  items,
+  value,
+  onChange,
+}: {
+  label: string;
+  items: Record<string, string>;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const id = useId();
+  return (
+    <YStack gap={8}>
+      <Label htmlFor={id} color="color11">
+        {label}
+      </Label>
+      <Select items={items} value={value} onValueChange={onChange}>
+        <SelectTrigger id={id} width="100%">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(items).map(([key, text]) => (
+            <SelectItem key={key} value={key}>
+              {text}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </YStack>
+  );
+}
+
 /**
  * L'ordinamento, in cima al pannello: criterio e direzione. Non è un filtro,
  * quindi sta fuori dalle sezioni e non conta fra i filtri accesi.
@@ -233,7 +280,13 @@ function useFilterChips(filter: BacklogFilterState): Chip[] {
   const range = useRangeText();
   const { options, tags } = useFilterOptions();
 
+  const hltb = useTranslations('hltb');
+  const critic = useTranslations('critic');
   const h = (value: string) => t('hoursValue', { value });
+  const durata = (label: string) =>
+    filter.durationBasis === 'main'
+      ? label
+      : t('withQualifier', { label, qualifier: hltb(filter.durationBasis) });
   const chips: Chip[] = [
     ...filter.platforms.map((slug) => ({
       key: `platform-${slug}`,
@@ -286,7 +339,7 @@ function useFilterChips(filter: BacklogFilterState): Chip[] {
   if (filter.durationMin !== null || filter.durationMax !== null)
     chips.push({
       key: 'duration',
-      label: `${t('durationShort')} ${range(hours(filter.durationMin), hours(filter.durationMax), h)}`,
+      label: `${durata(t('durationShort'))} ${range(hours(filter.durationMin), hours(filter.durationMax), h)}`,
       clear: { durationMin: null, durationMax: null },
     });
   if (filter.ratingMin !== null || filter.ratingMax !== null)
@@ -301,16 +354,23 @@ function useFilterChips(filter: BacklogFilterState): Chip[] {
       label: `${t('releasedShort')} ${range(filter.releasedFrom, filter.releasedTo, String)}`,
       clear: { releasedFrom: null, releasedTo: null },
     });
-  if (filter.criticMin !== null)
+  if (filter.criticMin !== null || filter.criticMax !== null)
     chips.push({
       key: 'critic',
-      label: `${t('criticShort')} ${range(filter.criticMin, null)}`,
-      clear: { criticMin: null },
+      label: `${
+        filter.criticSource
+          ? t('withQualifier', {
+              label: t('criticShort'),
+              qualifier: critic(filter.criticSource),
+            })
+          : t('criticShort')
+      } ${range(filter.criticMin, filter.criticMax)}`,
+      clear: { criticMin: null, criticMax: null },
     });
   if (filter.noDuration)
     chips.push({
       key: 'no-duration',
-      label: t('noDuration'),
+      label: durata(t('noDuration')),
       clear: { noDuration: null },
     });
   if (filter.neverPlayed)
@@ -434,7 +494,20 @@ export function FilterPanel({
     defaultStatus.some((status) => !filter.status.includes(status));
 
   const attributi = options?.attributes ?? [];
+  const hltb = useTranslations('hltb');
+  const critic = useTranslations('critic');
   const h = (value: string) => t('hoursValue', { value });
+  const durationBases = Object.fromEntries(
+    durationBasisValues.map((basis) => [basis, hltb(basis)]),
+  );
+  const criticSources = {
+    shown: t('criticSourceShown'),
+    ...Object.fromEntries(
+      criticSourceOrder
+        .filter((source) => source !== 'opencritic' || options?.showOpenCritic)
+        .map((source) => [source, critic(source)]),
+    ),
+  };
   const subscriptionItems = (options?.subscriptions ?? []).map(
     (subscription) => ({
       value: subscription,
@@ -684,6 +757,14 @@ export function FilterPanel({
           : 0,
       body: (
         <YStack gap={12}>
+          <ChoiceSelect
+            label={t('durationBasisLabel')}
+            items={durationBases}
+            value={filter.durationBasis}
+            onChange={(basis) =>
+              setFilter({ durationBasis: basis as DurationBasis })
+            }
+          />
           <RangeFilter
             min={0}
             max={DURATION_MAX_HOURS}
@@ -692,7 +773,6 @@ export function FilterPanel({
             high={hours(filter.durationMax)}
             text={(low, high) => range(low, high, h)}
             thumbLabels={[t('durationMinThumb'), t('durationMaxThumb')]}
-            help={t('durationLabel')}
             // Il filtro esclude chi una durata non ce l'ha, e chi una fine non
             // ce l'ha. Detto qui una volta, invece di lasciar credere che quei
             // giochi siano spariti.
@@ -749,17 +829,40 @@ export function FilterPanel({
     {
       value: 'critic',
       label: t('criticShort'),
-      active: filter.criticMin !== null ? 1 : 0,
+      active: filter.criticMin !== null || filter.criticMax !== null ? 1 : 0,
       body: (
-        <RangeFilter
-          min={0}
-          max={100}
-          step={1}
-          low={filter.criticMin}
-          text={(low) => range(low, null)}
-          thumbLabels={[t('criticMin')]}
-          onCommit={(criticMin) => setFilter({ criticMin })}
-        />
+        <YStack gap={12}>
+          <ChoiceSelect
+            label={t('criticSourceLabel')}
+            items={criticSources}
+            // Una playlist con OpenCritic, aperta con OpenCritic spento: il
+            // server la tratta come nessuna fonte, e così la dice la tendina.
+            value={
+              filter.criticSource && filter.criticSource in criticSources
+                ? filter.criticSource
+                : 'shown'
+            }
+            onChange={(source) =>
+              setFilter({
+                criticSource:
+                  source === 'shown' ? null : (source as ScoreSource),
+              })
+            }
+          />
+          <RangeFilter
+            min={0}
+            max={100}
+            step={1}
+            low={filter.criticMin}
+            high={filter.criticMax}
+            text={(low, high) => range(low, high)}
+            thumbLabels={[t('criticMin'), t('criticMaxThumb')]}
+            hint={t('criticHint')}
+            onCommit={(criticMin, criticMax) =>
+              setFilter({ criticMin, criticMax })
+            }
+          />
+        </YStack>
       ),
     },
     {
@@ -930,7 +1033,6 @@ function RangeFilter({
   high,
   text,
   thumbLabels,
-  help,
   hint,
   disabled = false,
   onCommit,
@@ -942,7 +1044,6 @@ function RangeFilter({
   high?: number | null;
   text: (low: number | null, high: number | null) => string;
   thumbLabels: string[];
-  help?: string;
   hint?: string;
   disabled?: boolean;
   onCommit: (low: number | null, high: number | null) => void;
@@ -997,11 +1098,6 @@ function RangeFilter({
 
   return (
     <YStack gap={8}>
-      {help && (
-        <Text fontSize={13} color="color11">
-          {help}
-        </Text>
-      )}
       <Text fontSize={14} color="color12">
         {text(lowValue, highValue)}
       </Text>

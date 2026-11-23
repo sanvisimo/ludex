@@ -453,11 +453,16 @@
     "storesLabel": "Stores",
     "categoriesLabel": "Categories",
     "tagsLabel": "Tags",
-    "durationLabel": "Main story length (hours)",
     "durationHint": "Games with no known length, and games with no ending, stay out: their hours aren't a length. To find them, tick “No length”.",
     "noDuration": "No length",
     "ratingHint": "Games you haven't rated stay out.",
     "criticMin": "Minimum critic rating",
+    "criticMaxThumb": "Maximum critic rating",
+    "criticHint": "Games without a rating from the chosen source stay out.",
+    "criticSourceLabel": "Source",
+    "criticSourceShown": "The one shown (Metacritic, else IGDB)",
+    "durationBasisLabel": "Which time",
+    "withQualifier": "{label} ({qualifier})",
     "neverPlayed": "Never played",
     "gameTypesLabel": "Type",
     "oneOfThem": "Any one of the ticked values is enough.",
@@ -1549,6 +1554,10 @@
       "ai": {
         "title": "What to play now, with AI",
         "text": "Tell PileCue how much time you have, what you play on and what you feel like, and it suggests something from your backlog."
+      },
+      "filterTimesScores": {
+        "title": "More choice in the length and critic filters",
+        "text": "Length by main story, main plus extras, completionist or all styles; the critic rating as a maximum too (“below 50”) and from a source of your choice."
       },
       "consolePrices": {
         "title": "Prices for console games",

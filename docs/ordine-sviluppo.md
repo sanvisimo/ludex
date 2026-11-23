@@ -21,8 +21,10 @@ il 21/10, il 22/10 e il 16/11), e l'ordine è anche quello della
    l'assistente in sola lettura. Analisi di fornitori e costi, fatta in
    anticipo (18–22/10/2026), in `plans/13-ai.md`.
 4. **I prerequisiti del 13c**, utili anche senza AI: un tag a tutti i giochi
-   di un filtro e `criticMax` nel filtro. Le playlist aperte (15f A) sono
-   **fatte dal 30/10/2026**, `plans/15f-playlist-aperte.md`.
+   di un filtro. Le playlist aperte (15f A) sono **fatte dal 30/10/2026**,
+   `plans/15f-playlist-aperte.md`; `criticMax`, con la fonte del voto e il
+   tempo HLTB della durata, è **anticipato il 23/11/2026** su richiesta
+   dell'utente, `plans/filtri-durata-critica.md`.
 5. **13c — le azioni** dell'assistente, con la scheda di conferma.
 6. **Dopo**, secondari rispetto a «cosa gioco adesso»: la 15f B (playlist
    pubbliche) e il catalogo con i filtri (parte B di

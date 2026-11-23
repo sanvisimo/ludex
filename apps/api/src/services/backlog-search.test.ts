@@ -2,7 +2,7 @@ import type { BacklogQueryInput } from '@repo/contracts';
 import { BacklogQuerySchema, backlogStatusValues } from '@repo/contracts';
 import { db, schema } from '@repo/db';
 import { and, eq } from '@repo/db/orm';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createGame, createUser } from '../../test/factories';
 import { addToBacklog, setBacklogHidden, updateBacklogEntry } from './backlog';
@@ -606,6 +606,38 @@ describe('i NULL non sono zeri', () => {
     ]);
   });
 
+  it('la durata misura il tempo scelto, e «senza durata» lo segue', async () => {
+    await aggiungi(userId, {
+      name: 'Corto da completare',
+      hltbMainMinutes: 300,
+      hltbCompletionistMinutes: 600,
+      hltbHasSolo: true,
+    });
+    await aggiungi(userId, {
+      name: 'Lungo da completare',
+      hltbMainMinutes: 300,
+      hltbCompletionistMinutes: 3_000,
+      hltbHasSolo: true,
+    });
+    await aggiungi(userId, {
+      name: 'Senza completista',
+      hltbMainMinutes: 300,
+      hltbHasSolo: true,
+    });
+
+    expect((await nomi(userId, { durationMax: 600 })).sort()).toEqual([
+      'Corto da completare',
+      'Lungo da completare',
+      'Senza completista',
+    ]);
+    expect(
+      await nomi(userId, { durationMax: 600, durationBasis: 'completionist' }),
+    ).toEqual(['Corto da completare']);
+    expect(
+      await nomi(userId, { noDuration: true, durationBasis: 'completionist' }),
+    ).toEqual(['Senza completista']);
+  });
+
   it('il filtro sul voto lascia fuori i non votati', async () => {
     const votato = await aggiungi(userId, { name: 'Votato' });
     await aggiungi(userId, { name: 'Non votato' });
@@ -649,6 +681,90 @@ describe('voto della critica', () => {
     expect(
       await nomi(userId, { sort: 'criticRating', direction: 'desc' }),
     ).toEqual(['Acclamato', 'Mediocre', 'Senza voto']);
+  });
+
+  it('«sotto 50» con il solo massimo, e i non votati restano fuori', async () => {
+    await aggiungi(userId, { name: 'Acclamato', criticScore: 92 });
+    await aggiungi(userId, { name: 'Stroncato', criticScore: 41 });
+    await aggiungi(userId, { name: 'Senza voto' });
+
+    expect(await nomi(userId, { criticMax: 50 })).toEqual(['Stroncato']);
+    expect(
+      (await nomi(userId, { criticMin: 40, criticMax: 95 })).sort(),
+    ).toEqual(['Acclamato', 'Stroncato']);
+  });
+
+  describe('con una fonte', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    // Lo stesso gioco vale 66 su Metacritic e 85 su IGDB: senza fonte vince
+    // Metacritic, come sulla card.
+    async function mafia() {
+      const game = await createGame({
+        name: 'Mafia',
+        criticScore: 66,
+        criticScoreSource: 'metacritic',
+      });
+      await db.insert(schema.gameScores).values([
+        { gameId: game.id, source: 'metacritic', score: 66 },
+        // Il voto di una piattaforma non è quello del gioco.
+        {
+          gameId: game.id,
+          source: 'metacritic',
+          platformSlug: 'pc_windows',
+          score: 88,
+        },
+        { gameId: game.id, source: 'igdb', score: 85 },
+        { gameId: game.id, source: 'opencritic', score: 70 },
+      ]);
+      await addToBacklog({
+        userId,
+        gameId: game.id,
+        status: 'backlog',
+        ownerships: [{ platformSlug: 'pc_windows' }],
+      });
+    }
+
+    it('confronta il voto complessivo di quella fonte', async () => {
+      await mafia();
+
+      expect(await nomi(userId, { criticMin: 80 })).toEqual([]);
+      expect(
+        await nomi(userId, { criticMin: 80, criticSource: 'igdb' }),
+      ).toEqual(['Mafia']);
+      expect(
+        await nomi(userId, { criticMin: 80, criticSource: 'metacritic' }),
+      ).toEqual([]);
+      expect(
+        await nomi(userId, { criticMax: 70, criticSource: 'metacritic' }),
+      ).toEqual(['Mafia']);
+    });
+
+    it('un gioco senza voto di quella fonte resta fuori', async () => {
+      await aggiungi(userId, {
+        name: 'Solo IGDB',
+        criticScore: 75,
+        criticScoreSource: 'igdb',
+      });
+
+      expect(
+        await nomi(userId, { criticMin: 0, criticSource: 'metacritic' }),
+      ).toEqual([]);
+    });
+
+    it('OpenCritic spento vale come nessuna fonte', async () => {
+      await mafia();
+
+      expect(
+        await nomi(userId, { criticMin: 68, criticSource: 'opencritic' }),
+      ).toEqual(['Mafia']);
+      vi.stubEnv('SHOW_OPENCRITIC', '0');
+      expect(
+        await nomi(userId, { criticMin: 68, criticSource: 'opencritic' }),
+      ).toEqual([]);
+    });
   });
 
   it('la lista porta il voto scelto con la sua fonte, e il nullo resta nullo', async () => {
@@ -889,6 +1005,14 @@ describe('opzioni del pannello', () => {
     const opzioni = await listBacklogFilterOptions(mio);
     expect(opzioni.platforms.map((row) => row.slug)).toEqual(['pc_windows']);
     expect(opzioni.stores).toEqual(['steam']);
+  });
+
+  it('dice se OpenCritic si offre fra le fonti della critica', async () => {
+    const userId = await createUser();
+    expect((await listBacklogFilterOptions(userId)).showOpenCritic).toBe(true);
+    vi.stubEnv('SHOW_OPENCRITIC', '0');
+    expect((await listBacklogFilterOptions(userId)).showOpenCritic).toBe(false);
+    vi.unstubAllEnvs();
   });
 
   it('offre gli abbonamenti che ci sono, e il comprato non è una voce', async () => {

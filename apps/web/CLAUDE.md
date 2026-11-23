@@ -171,7 +171,11 @@ chiude il drawer; durante la richiesta è disabilitato e dice che sta aggiornand
 La ricerca e i filtri si applicano subito: questo bottone chiude, non applica.
 
 **Gli slider hanno anche i campi numerici** (`RangeFilter`, `NumberField`):
-«Da» e «A», o «Minimo» per il voto critica. Il campo si applica **uscendo o con
+«Da» e «A». Sopra lo slider, la durata ha la tendina del tempo HLTB
+(`durationBasis`) e il voto critica quella della fonte (`criticSource`,
+OpenCritic solo se `filterOptions.showOpenCritic`): qualificano l'intervallo,
+non contano fra i filtri accesi e vanno al server solo con l'intervallo
+acceso. Il campo si applica **uscendo o con
 Invio**, non a ogni tasto: scrivere «2000» passa da «2», che un campo con gli
 estremi in testa riscriverebbe a «1970» sotto le dita. Vuoto vuol dire «nessun
 limite», come la maniglia all'estremo (100 ore di massimo comprese); il testo si
