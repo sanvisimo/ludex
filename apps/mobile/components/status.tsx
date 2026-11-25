@@ -6,6 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  XStack,
 } from '@repo/ui';
 import { Ban, Bookmark, Check, CircleStop, Play, Trophy } from '@repo/ui/icons';
 import { useTranslations } from 'use-intl';
@@ -41,14 +42,18 @@ export function StatusSelect({
   labels: Record<BacklogStatus, string>;
   width?: number;
 }) {
+  const Icon = statusIcons[value];
   return (
     <Select
       items={labels}
       value={value}
       onValueChange={(next: string) => onChange(next as BacklogStatus)}
     >
-      <SelectTrigger width={width} height={44} minH={44}>
-        <SelectValue />
+      <SelectTrigger width={width}>
+        <XStack flex={1} items="center" gap={8}>
+          <Icon size={16} color="color12" />
+          <SelectValue />
+        </XStack>
       </SelectTrigger>
       <SelectContent>
         {backlogStatusValues.map((status) => (

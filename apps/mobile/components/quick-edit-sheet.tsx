@@ -1,11 +1,11 @@
 import type { BacklogEntry } from '@repo/contracts';
-import { Sheet, Text, XStack, YStack } from '@repo/ui';
+import { RatingStars, Sheet, Text, XStack, YStack } from '@repo/ui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslations } from 'use-intl';
 
 import { useEntryMutations } from '../lib/entry-mutations';
 import { useBackToClose } from '../lib/use-back-to-close';
-import { RatingStars, useRatingLabels } from './rating-stars';
+import { useRatingLabels } from './rating-stars';
 import { StatusSelect, useStatusLabels } from './status';
 
 /** Stato e voto di una voce, senza entrare nella pagina del gioco. */

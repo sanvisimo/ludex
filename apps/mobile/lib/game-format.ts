@@ -2,9 +2,12 @@
 // in `apps/web/lib/igdb-image.ts`: il mobile non importa il web.
 export function igdbImageUrl(
   imageId: string,
-  size: 'cover_small' | 'cover_big' | 'screenshot_big',
+  size:
+    'cover_small' | 'cover_big' | 'screenshot_med' | 'screenshot_big' | '1080p',
+  retina = true,
 ) {
-  return `https://images.igdb.com/igdb/image/upload/t_${size}_2x/${imageId}.jpg`;
+  const suffix = retina ? '_2x' : '';
+  return `https://images.igdb.com/igdb/image/upload/t_${size}${suffix}/${imageId}.jpg`;
 }
 
 export function formatDuration(minutes: number) {

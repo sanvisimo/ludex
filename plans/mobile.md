@@ -174,14 +174,30 @@ cambio all'API: bastano `backlog.list`, `filterOptions`, `setStatus`,
 2. **Filtri in un foglio dal basso**: stato, piattaforma, durata (cursore),
    negozio e abbonamento; «Azzera» e «Mostra n». Tag, voto, critica, anno,
    tipo e nascosti restano sul web. I filtri durano finché l'app è aperta.
-3. **Pagina del gioco**: immagine, titolo e anno, durata e critica; stato e
-   voto modificabili; copie, note e tag in lettura; «Modifica sul sito →»
-   per il resto.
+3. **Pagina del gioco**, rifatta il 25/11 sui commenti (v2, «com'è il
+   sito»): immagine che sfuma con la copertina sovrapposta, titolo, anno e
+   tipo; fascia personale con stato e voto; HLTB in tre riquadri (storia,
+   extra, 100%); tutti i voti della critica per fonte, col giudizio e il
+   nome che porta alla fonte (OpenCritic lo vuole); le copie per intero
+   (negozio, piattaforma, account, supporto, ore, ultima volta) con
+   **Modifica**, **Nascondi** e **Rimuovi**; generi e temi; immagini;
+   descrizione; altre versioni. **Modifica resta nell'app**: note, tag,
+   categorie, copie (togliere e aggiungere).
 4. **Voto al volo**: la pressione lunga su una scheda apre un piccolo
    foglio con stato e voto.
 
 Fuori da M2: aggiungere un gioco, gioco a caso, salvare una playlist,
 nascosti; wishlist e playlist sono M4.
+
+**25/11/2026, componenti condivisi e tutti i filtri** (sui commenti alla v2:
+«perché riscrivere la pagina quando quella del sito funziona»). I pezzi della
+pagina del gioco stanno in `packages/ui/src/components/game-detail.tsx` e li
+usano web e mobile: `DetailPanel`, `LinkRow`, `DurationTiles`,
+`CriticScoreBadge`, `CriticScoreRow`, `CopyTile`, `RatingStars`. Prendono
+testi e dati semplici; un link è `href` sul web e `onOpen` su native. Il web
+ha perso le sue copie (`critic-score-badge.tsx`, `rating-stars.tsx`) ed è
+rimasto uguale a vederlo. Il foglio dei filtri ha **tutti** i filtri del
+pannello del web, nello stesso ordine, e l'ordinamento le sue nove voci.
 
 **25/11/2026, scritto e guardato nell'emulatore** (tema chiaro e scuro).
 Cose che il codice ha insegnato:

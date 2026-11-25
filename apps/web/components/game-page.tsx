@@ -11,20 +11,27 @@ import {
   BrandIcon,
   brandTitle,
   Button,
+  CopyTile,
   CornerLabel,
+  CriticScoreRow,
+  DetailPanel,
+  DetailPanelTitle,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DurationTiles,
   Gallery,
+  LinkRow,
+  RatingStars,
   Text,
   Theme,
   XStack,
   YStack,
   type GalleryItem,
 } from '@repo/ui';
-import { ArrowDown, ArrowUpRight, Gamepad2, Globe, Info } from '@repo/ui/icons';
+import { ArrowDown, Globe, Info } from '@repo/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
@@ -32,7 +39,6 @@ import { useFormatter, useTranslations } from 'use-intl';
 
 import { BadgeLink } from '@/components/badge-link';
 import { StatusButton } from '@/components/backlog-views';
-import { CriticScoreBadge } from '@/components/critic-score-badge';
 import { CriticScores } from '@/components/critic-scores';
 import { Muted, Strong } from '@/components/detail-text';
 import { EntryTags } from '@/components/entry-tags';
@@ -41,7 +47,7 @@ import { useOpenIgdbHit } from '@/components/game-search';
 import { GameTypeBadge } from '@/components/game-type-badge';
 import { PlayedTime } from '@/components/played-time';
 import { HltbTimes } from '@/components/hltb-times';
-import { RatingStars } from '@/components/rating-stars';
+import { useRatingLabels } from '@/lib/rating-labels';
 import { ScrollRow } from '@/components/scroll-row';
 import { statusIcons } from '@/components/status-icon';
 import { useBacklogHref } from '@/lib/backlog-filter';
@@ -51,57 +57,6 @@ import { STORE_BRAND } from '@/lib/store-brand';
 import { useStatusLabels, useStoreLabels } from '@/lib/labels';
 import { api } from '@/lib/orpc';
 import { useSession } from '@/src/use-session';
-
-function LinkRow({
-  href,
-  title,
-  children,
-  items = 'center',
-  tile = false,
-}: {
-  href: string | null;
-  title: string;
-  children: ReactNode;
-  items?: 'center' | 'flex-start';
-  tile?: boolean;
-}) {
-  return (
-    <XStack
-      render={href ? 'a' : 'div'}
-      {...(href
-        ? ({
-            href,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            title,
-            style: { textDecoration: 'none', color: 'inherit' },
-          } as object)
-        : {})}
-      items={items}
-      gap={tile ? 8 : 10}
-      minW={0}
-      minH={tile ? 48 : undefined}
-      mx={tile || !href ? 0 : -6}
-      px={tile ? 10 : href ? 6 : 0}
-      py={tile ? 10 : href ? 2 : 0}
-      rounded={tile ? 10 : 6}
-      bg={`${tile ? 'color3' : 'transparent'}${href ? ' hover:color4' : ''}`}
-      borderWidth={tile ? 1 : 0}
-      borderColor="border-color"
-      cursor={href ? 'pointer' : undefined}
-      outlineColor="focus-visible:outline-color"
-      outlineStyle="focus-visible:solid"
-      outlineWidth="focus-visible:2px"
-    >
-      {children}
-      {tile && href && (
-        <XStack shrink={0} pt={items === 'flex-start' ? 2 : 0}>
-          <ArrowUpRight size={13} color="color11" aria-hidden />
-        </XStack>
-      )}
-    </XStack>
-  );
-}
 
 export const GAME_PAGE_WIDTH = 1200;
 
@@ -272,53 +227,6 @@ export function GameGallery({ game }: { game: GameDetail }) {
   );
 }
 
-function Panel({
-  children,
-  id,
-  label,
-}: {
-  children: ReactNode;
-  id?: string;
-  label?: string;
-}) {
-  return (
-    <YStack
-      render={label ? 'section' : 'div'}
-      id={id}
-      aria-label={label}
-      tabIndex={id ? -1 : undefined}
-      style={id ? { scrollMarginTop: 96 } : undefined}
-      gap={12}
-      p={16}
-      rounded={12}
-      borderWidth={1}
-      borderColor="border-color"
-      bg="color2"
-      outlineColor={id ? 'focus-visible:outline-color' : undefined}
-      outlineStyle={id ? 'focus-visible:solid' : undefined}
-      outlineWidth={id ? 'focus-visible:2px' : undefined}
-    >
-      {children}
-    </YStack>
-  );
-}
-
-function PanelTitle({ children }: { children: ReactNode }) {
-  return (
-    <Text
-      render="h2"
-      fontFamily="heading"
-      fontSize={16}
-      lineHeight="22px"
-      fontWeight="600"
-      color="color12"
-      m={0}
-    >
-      {children}
-    </Text>
-  );
-}
-
 /**
  * Il voto Metacritic da mostrare: quello della piattaforma su cui ce l'hai, se
  * Metacritic lo dà, altrimenti il complessivo. Su Mafia il complessivo è 66,
@@ -394,14 +302,14 @@ export function DurationAndCritics({
   ].filter((row) => row.score !== undefined || row.link !== null);
 
   return (
-    <Panel>
+    <DetailPanel>
       <YStack gap={12}>
         <LinkRow
           href={game.links.hltb}
           title={t('openOn', { name: 'HowLongToBeat' })}
         >
           <BrandIcon brand="hltb" size={20} />
-          <PanelTitle>{tHltb('title')}</PanelTitle>
+          <DetailPanelTitle>{tHltb('title')}</DetailPanelTitle>
         </LinkRow>
         {times.length === 0 ? (
           <Muted>
@@ -410,40 +318,14 @@ export function DurationAndCritics({
               : tHltb('noTimes')}
           </Muted>
         ) : (
-          <XStack gap={8} flexWrap="wrap">
-            {times.map(([key, minutes]) => {
-              const blue = key === 'main';
-              return (
-                <Theme key={key} name={blue ? 'blue' : undefined}>
-                  <YStack
-                    grow={1}
-                    minW={96}
-                    p={10}
-                    rounded={8}
-                    bg={blue ? 'color3' : 'selectionBackground'}
-                    borderLeftWidth={3}
-                    borderColor={blue ? 'color9' : 'selectionBorder'}
-                    gap={4}
-                  >
-                    <Muted
-                      fontSize={12}
-                      lineHeight="16px"
-                      color={blue ? 'color12' : 'color11'}
-                    >
-                      {tHltb(key)}
-                    </Muted>
-                    <Strong
-                      fontSize={22}
-                      lineHeight="28px"
-                      color={blue ? 'color12' : 'selectionColor'}
-                    >
-                      {duration(minutes!)}
-                    </Strong>
-                  </YStack>
-                </Theme>
-              );
-            })}
-          </XStack>
+          <DurationTiles
+            tiles={times.map(([key, minutes]) => ({
+              key,
+              label: tHltb(key),
+              value: duration(minutes!),
+              main: key === 'main',
+            }))}
+          />
         )}
       </YStack>
 
@@ -454,28 +336,22 @@ export function DurationAndCritics({
         borderTopWidth={1}
         borderColor="border-color"
       >
-        <PanelTitle>{tCritic('title')}</PanelTitle>
+        <DetailPanelTitle>{tCritic('title')}</DetailPanelTitle>
         {scores.length === 0 ? (
           <Muted>{tCritic('none')}</Muted>
         ) : (
           <YStack gap={8}>
             {scores.map(({ source, score, link }) => (
-              <LinkRow
+              <CriticScoreRow
                 key={source}
+                brand={source}
+                name={tCritic(source)}
+                tier={score?.tier}
+                score={score?.score ?? null}
+                noScoreLabel={tCritic('noScore')}
                 href={link}
                 title={t('openOn', { name: tCritic(source) })}
-              >
-                <BrandIcon brand={source} size={20} />
-                <YStack grow={1} shrink={1} minW={0} gap={2}>
-                  <Strong fontWeight="500">{tCritic(source)}</Strong>
-                  {score?.tier && <Muted fontSize={12}>{score.tier}</Muted>}
-                </YStack>
-                {score ? (
-                  <CriticScoreBadge score={score.score} compact />
-                ) : (
-                  <Muted fontSize={13}>{tCritic('noScore')}</Muted>
-                )}
-              </LinkRow>
+              />
             ))}
           </YStack>
         )}
@@ -508,7 +384,7 @@ export function DurationAndCritics({
           </YStack>
         </DialogContent>
       </Dialog>
-    </Panel>
+    </DetailPanel>
   );
 }
 
@@ -524,12 +400,12 @@ export function GamePriceCard({ game }: { game: GameDetail }) {
   const name = brandTitle('itad');
 
   return (
-    <Panel>
+    <DetailPanel>
       <LinkRow href={price.url} title={t('openOn', { name })}>
         <YStack flex={1} gap={8}>
           <XStack items="center" gap={10}>
             <BrandIcon brand="itad" size={20} />
-            <PanelTitle>{name}</PanelTitle>
+            <DetailPanelTitle>{name}</DetailPanelTitle>
           </XStack>
           {current && (
             <XStack items="center" gap={6}>
@@ -549,7 +425,7 @@ export function GamePriceCard({ game }: { game: GameDetail }) {
           )}
         </YStack>
       </LinkRow>
-    </Panel>
+    </DetailPanel>
   );
 }
 
@@ -564,6 +440,7 @@ export function GamePersonalBar({
 }) {
   const t = useTranslations('game');
   const statusLabels = useStatusLabels();
+  const ratingLabels = useRatingLabels();
   return (
     <YStack
       render="section"
@@ -589,12 +466,18 @@ export function GamePersonalBar({
           <XStack minH={32} items="center">
             <RatingStars
               size="sm"
+              labels={ratingLabels}
               value={entry.rating}
               onChange={(rating) => onRating(entry, rating)}
             />
           </XStack>
         </YStack>
-        <YStack className="game-personal-collection" gap={6} minW={0}>
+        <YStack
+          className="game-personal-collection"
+          gap={6}
+          minW={0}
+          display="none sm:flex"
+        >
           <Muted fontSize={12}>{t('yourCollection')}</Muted>
           <XStack flexWrap="wrap" items="center" minH={32} gap={12}>
             <Button
@@ -640,9 +523,9 @@ export function BacklogPanel({
   const nameBySlug = new Map((platforms ?? []).map((p) => [p.slug, p.name]));
 
   return (
-    <Panel id="game-copies" label={t('copies')}>
+    <DetailPanel id="game-copies" label={t('copies')}>
       <XStack items="center" justify="space-between" gap={8}>
-        <PanelTitle>{t('copies')}</PanelTitle>
+        <DetailPanelTitle>{t('copies')}</DetailPanelTitle>
         <Badge variant="secondary">{entry.ownerships.length}</Badge>
       </XStack>
       <YStack gap={8}>
@@ -694,58 +577,23 @@ export function BacklogPanel({
             .filter(Boolean)
             .join(' · ');
           return (
-            <LinkRow
+            <CopyTile
               key={ownership.id}
               href={url}
               title={t('openOn', { name: storeName ?? platformName })}
-              items="flex-start"
-              tile
-            >
-              <XStack shrink={0} pt={2}>
-                {brand ? (
-                  <BrandIcon brand={brand} size={24} />
-                ) : (
-                  <Gamepad2 size={24} color="color11" aria-hidden />
-                )}
-              </XStack>
-              <YStack grow={1} shrink={1} minW={0} gap={4}>
-                <Text
-                  fontSize={13}
-                  lineHeight="18px"
-                  color="color12"
-                  style={{ overflowWrap: 'anywhere' }}
-                >
-                  {storeName && (
-                    <Text fontWeight="600">
-                      {storeName}
-                      {' · '}
-                    </Text>
-                  )}
-                  {platformName}
-                </Text>
-                {label && (
-                  <Muted
-                    fontSize={12}
-                    lineHeight="18px"
-                    style={{ overflowWrap: 'anywhere' }}
-                  >
-                    {label}
-                  </Muted>
-                )}
-                {!!ownership.playtimeMinutes && (
-                  <Strong fontSize={12} lineHeight="18px">
-                    {t('played', {
+              brand={brand}
+              storeName={storeName}
+              platformName={platformName}
+              details={label}
+              played={
+                ownership.playtimeMinutes
+                  ? t('played', {
                       duration: duration(ownership.playtimeMinutes),
-                    })}
-                  </Strong>
-                )}
-                {dates && (
-                  <Muted fontSize={12} lineHeight="18px">
-                    {dates}
-                  </Muted>
-                )}
-              </YStack>
-            </LinkRow>
+                    })
+                  : null
+              }
+              dates={dates}
+            />
           );
         })}
       </YStack>
@@ -778,7 +626,7 @@ export function BacklogPanel({
       >
         {actions}
       </XStack>
-    </Panel>
+    </DetailPanel>
   );
 }
 
@@ -803,8 +651,8 @@ export function StoreLinks({ game }: { game: GameDetail }) {
     return null;
 
   return (
-    <Panel label={t('links')}>
-      <PanelTitle>{t('links')}</PanelTitle>
+    <DetailPanel label={t('links')}>
+      <DetailPanelTitle>{t('links')}</DetailPanelTitle>
       {official && (
         <LinkRow href={official.url} title={t('officialSite')} tile>
           <Globe size={20} color="color11" aria-hidden />
@@ -897,7 +745,7 @@ export function StoreLinks({ game }: { game: GameDetail }) {
           </LinkRow>
         </YStack>
       )}
-    </Panel>
+    </DetailPanel>
   );
 }
 
@@ -925,7 +773,7 @@ export function RelatedRow({
 
   return (
     <ScrollRow
-      title={<PanelTitle>{title}</PanelTitle>}
+      title={<DetailPanelTitle>{title}</DetailPanelTitle>}
       itemCount={games.length}
     >
       {games.map((game) => {

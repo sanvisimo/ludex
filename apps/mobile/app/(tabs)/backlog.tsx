@@ -15,8 +15,8 @@ import {
   YStack,
 } from '@repo/ui';
 import {
-  ArrowDown,
-  ArrowUp,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
   Gamepad2,
   Library,
   SearchX,
@@ -67,6 +67,7 @@ export default function Backlog() {
     }),
   );
   const options = useQuery(api.backlog.filterOptions.queryOptions());
+  const vocabulary = useQuery(api.tags.list.queryOptions());
 
   const platformNames = useMemo(
     () =>
@@ -102,6 +103,7 @@ export default function Backlog() {
         <XStack gap={8}>
           <Button
             flex={1}
+            justify="flex-start"
             variant={activeCount(filter) > 0 ? 'selection' : 'outline'}
             onPress={() => setFiltersOpen(true)}
           >
@@ -137,9 +139,9 @@ export default function Backlog() {
             onPress={() => setSort(sort, direction === 'asc' ? 'desc' : 'asc')}
           >
             {direction === 'asc' ? (
-              <ArrowUp size={16} />
+              <ArrowUpNarrowWide size={16} />
             ) : (
-              <ArrowDown size={16} />
+              <ArrowDownWideNarrow size={16} />
             )}
           </Button>
         </XStack>
@@ -233,6 +235,7 @@ export default function Backlog() {
         filter={filter}
         onChange={setFilter}
         options={options.data}
+        vocabulary={vocabulary.data}
         total={total}
         fetching={list.isFetching && !list.isFetchingNextPage}
       />

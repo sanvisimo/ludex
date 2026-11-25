@@ -1,9 +1,14 @@
 import type { GameDetail, GameScore } from '@repo/contracts';
 import { useQuery } from '@tanstack/react-query';
-import { BrandIcon, PlatformIcon, XStack, YStack } from '@repo/ui';
+import {
+  BrandIcon,
+  CriticScoreBadge,
+  PlatformIcon,
+  XStack,
+  YStack,
+} from '@repo/ui';
 import { useTranslations } from 'use-intl';
 
-import { CriticScoreBadge } from '@/components/critic-score-badge';
 import { DetailTitle, Muted, Strong } from '@/components/detail-text';
 import { api } from '@/lib/orpc';
 import { platformIconUrl } from '@/lib/platform-icons';
