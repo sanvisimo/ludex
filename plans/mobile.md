@@ -154,6 +154,10 @@ Dopo, non in questo lotto: la build nella CI di GitHub (i runner Ubuntu
 hanno già JDK e SDK, ma la chiave andrebbe nei secret: sarebbe la prima
 credenziale di firma su GitHub, da decidere) e l'APK sul sito (M6).
 
+**Info (25/11/2026)**: in Account la riga «Info ›» apre una schermata con
+la versione (`0.1.0 (100)`, da `expo-constants`) e i link a informativa e
+condizioni, che da Account si sono spostati lì.
+
 ### M2 · Backlog e pagina del gioco
 
 Lista a schede, filtri in un bottom sheet, voto al volo e stato.

@@ -10,8 +10,9 @@ import {
   XStack,
   YStack,
 } from '@repo/ui';
-import { ExternalLink } from '@repo/ui/icons';
+import { ChevronRight, ExternalLink } from '@repo/ui/icons';
 import { useQueryClient } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
 
@@ -24,7 +25,6 @@ export default function Account() {
   const t = useTranslations('account');
   const tTheme = useTranslations('theme');
   const tLocale = useTranslations('locale');
-  const tLegal = useTranslations('legal');
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
   const { theme, setTheme, locale, setLocale } = usePreferences();
@@ -80,14 +80,14 @@ export default function Account() {
           <WebRow label={t('deleteAccount')} path="/account/profile" />
         </Section>
 
-        <XStack gap={16}>
-          <Text color="color11" onPress={() => openOnWeb('/privacy')}>
-            {tLegal('privacy')}
-          </Text>
-          <Text color="color11" onPress={() => openOnWeb('/terms')}>
-            {tLegal('terms')}
-          </Text>
-        </XStack>
+        <Button
+          variant="outline"
+          justify="space-between"
+          onPress={() => router.push('/info')}
+        >
+          <Text color="color12">{t('info')}</Text>
+          <ChevronRight size={16} />
+        </Button>
 
         <Button variant="outline" onPress={signOut}>
           {t('signOut')}
