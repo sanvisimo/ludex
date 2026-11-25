@@ -91,8 +91,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-
-      - uses: docker/setup-buildx-action@v4
+        with:
+          fetch-depth: 0
 
       # Il GITHUB_TOKEN del workflow basta: nessun segreto da aggiungere.
       - uses: docker/login-action@v4
@@ -101,6 +101,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Un merge che tocca solo il mobile, i piani o la documentazione non
+      # cambia niente di quello che gira sul server: senza un'immagine nuova il
+      # mini PC non riavvia. Il confronto è col commit dell'immagine `:main`
+      # pubblicata, non col push precedente: una corsa annullata da un push
+      # più nuovo non ha pubblicato niente, e le sue modifiche vanno contate.
+      # Si elenca cosa escludere, così un file dimenticato costa al più un
+      # rilascio in più, mai uno saltato. L'etichetta si cerca ovunque nel
+      # JSON perché con le attestazioni `:main` è un indice, non un'immagine.
+      - id: changes
+        run: |
+          published=$(docker buildx imagetools inspect ghcr.io/sanvisimo/ludex:main \
+            --format '{{json .Image}}' 2>/dev/null \
+            | jq -r '[.. | objects | .Labels? // empty | .["org.opencontainers.image.revision"]? // empty] | first // empty')
+          if [ -z "$published" ] || ! git cat-file -e "$published^{commit}" 2>/dev/null; then
+            echo "server=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$published" "$GITHUB_SHA" \
+            | grep -vE '^(apps/mobile/|plans/|docs/)|\.md$' | grep -q .; then
+            echo "server=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "server=false" >> "$GITHUB_OUTPUT"
+            echo "Da $published cambiano solo mobile, piani o documentazione: nessuna immagine nuova." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: docker/setup-buildx-action@v4
+        if: steps.changes.outputs.server == 'true'
+
       # La chiave pubblica di Turnstile entra nel bundle come l'URL dell'API:
       # non è un segreto, sta nelle variabili del repo (Settings → Secrets and
       # variables → Actions → Variables). Vuota, il widget non compare.
@@ -108,6 +134,7 @@ jobs:
       # indietro. `source` lega il pacchetto al repo su GitHub, `revision` dice
       # al mini PC quale commit sta installando.
       - uses: docker/build-push-action@v7
+        if: steps.changes.outputs.server == 'true'
         with:
           context: .
           push: true
