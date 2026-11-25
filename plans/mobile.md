@@ -162,6 +162,45 @@ condizioni, che da Account si sono spostati lì.
 
 Lista a schede, filtri in un bottom sheet, voto al volo e stato.
 
+**Struttura approvata il 25/11/2026** (wireframe Excalidraw in chat). Nessun
+cambio all'API: bastano `backlog.list`, `filterOptions`, `setStatus`,
+`update` e `games.bySlug`.
+
+1. **Backlog**: conteggio, ricerca per nome, «Filtri (n)» e «Ordina»
+   (aggiunti, nome, durata, voto, uscita, nei due versi). Una scheda per
+   gioco: copertina, titolo, piattaforme e negozio, durata HLTB, stato come
+   etichetta, voto. Scorrendo carica altri 50, niente pagine. Stati vuoto,
+   caricamento ed errore come sul web.
+2. **Filtri in un foglio dal basso**: stato, piattaforma, durata (cursore),
+   negozio e abbonamento; «Azzera» e «Mostra n». Tag, voto, critica, anno,
+   tipo e nascosti restano sul web. I filtri durano finché l'app è aperta.
+3. **Pagina del gioco**: immagine, titolo e anno, durata e critica; stato e
+   voto modificabili; copie, note e tag in lettura; «Modifica sul sito →»
+   per il resto.
+4. **Voto al volo**: la pressione lunga su una scheda apre un piccolo
+   foglio con stato e voto.
+
+Fuori da M2: aggiungere un gioco, gioco a caso, salvare una playlist,
+nascosti; wishlist e playlist sono M4.
+
+**25/11/2026, scritto e guardato nell'emulatore** (tema chiaro e scuro).
+Cose che il codice ha insegnato:
+
+- **dentro un foglio di Tamagui su native non c'è il contesto di
+  use-intl**: il foglio passa da un portale. I testi si calcolano fuori e
+  arrivano come props (`useStatusLabels`, `useRatingLabels`);
+- **Hermes non ha `Intl.PluralRules`**: niente plurali ICU nei messaggi del
+  mobile, due chiavi (`countOne`, `countOther`);
+- **il tasto indietro di Android non chiude un foglio**: lo fa
+  `useBackToClose`, o esce dalla schermata col foglio aperto;
+- **`fill="currentColor"` non riempie un'icona su native**: il colore va
+  letto dal tema;
+- **`SelectTrigger` è alto 32 anche su native**, mentre `Button` e `Input`
+  sono 44: nel mobile gli si passa l'altezza. Da correggere in
+  `packages/ui`, ma quella modifica fa partire un deploy;
+- l'URL delle copertine IGDB è copiato in `apps/mobile/lib/game-format.ts`:
+  il mobile non importa il web.
+
 ### M3 · «Cosa gioco adesso»
 
 La chat dell'assistente del 13, che porta a una vista filtrata del backlog.

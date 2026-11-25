@@ -82,5 +82,95 @@
   "info": {
     "title": "About",
     "version": "Version {version}"
+  },
+  "backlog": {
+    "search": "Search a game",
+    "clearSearch": "Clear search",
+    "filters": "Filters",
+    "filtersCount": "Filters ({count})",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "loadFailed": "Could not load the backlog.",
+    "noResults": "No games match these filters",
+    "resetFilters": "Reset filters",
+    "empty": "Your backlog is empty",
+    "emptyHint": "Link a library on the website and your games arrive on their own.",
+    "linkLibraries": "Link libraries",
+    "saveFailed": "Could not save.",
+    "countOne": "1 game",
+    "countOther": "{count} games"
+  },
+  "sort": {
+    "addedAt": "Added",
+    "name": "Name",
+    "duration": "Length",
+    "rating": "My rating",
+    "released": "Release"
+  },
+  "filters": {
+    "title": "Filters",
+    "status": "Status",
+    "platforms": "Platform",
+    "duration": "Length",
+    "durationFrom": "from {min} h",
+    "durationRange": "{min}–{max} h",
+    "durationMin": "Minimum length",
+    "durationMax": "Maximum length",
+    "stores": "Store",
+    "subscriptions": "Subscription",
+    "reset": "Reset",
+    "updating": "Updating…",
+    "showOne": "Show 1 game",
+    "showOther": "Show {count} games",
+    "durationAny": "Any"
+  },
+  "quickEdit": {
+    "title": "Edit",
+    "status": "Status",
+    "rating": "My rating"
+  },
+  "rating": {
+    "value": "{value} out of 5",
+    "none": "No rating",
+    "clear": "Remove rating"
+  },
+  "game": {
+    "loadFailed": "Could not load the game.",
+    "critic": "critics {score}",
+    "status": "Status",
+    "rating": "My rating",
+    "notInBacklog": "Not in your backlog.",
+    "copies": "Copies",
+    "notes": "Notes",
+    "tags": "Tags",
+    "editOnWeb": "Edit on the website",
+    "openOnWeb": "Open on the website"
+  },
+  "status": {
+    "backlog": "Backlog",
+    "playing": "Playing",
+    "played": "Played",
+    "completed": "Completed",
+    "dropped": "Dropped",
+    "excluded": "Not interested"
+  },
+  "store": {
+    "steam": "Steam",
+    "gog": "GOG",
+    "epic": "Epic",
+    "ea": "EA",
+    "battlenet": "Battle.net",
+    "ubisoft": "Ubisoft Connect",
+    "amazon": "Amazon",
+    "psn": "PlayStation Store",
+    "xbox": "Xbox",
+    "nintendo": "Nintendo eShop"
+  },
+  "subscription": {
+    "ps_plus": "PS Plus",
+    "steam_family": "Steam Family",
+    "ea_play": "EA Play",
+    "game_pass": "Game Pass",
+    "games_with_gold": "Games with Gold"
   }
 }

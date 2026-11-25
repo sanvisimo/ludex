@@ -92,6 +92,16 @@ function Routes() {
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
+          name="games/[slug]"
+          options={{
+            headerShown: true,
+            title: '',
+            headerStyle: { backgroundColor: theme.background?.val },
+            headerTintColor: theme.color12?.val,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
           name="info"
           options={{
             headerShown: true,
