@@ -85,11 +85,9 @@ di prova di Turnstile: registrazione, link di verifica, accesso (la riga in
   `.env` della radice, che Expo non sorveglia, e la cache tiene il valore
   vecchio.
 
-Da verificare:
-
-- **Turnstile nella WebView** con la chiave vera: la pagina dichiara
-  l'origine del sito (`baseUrl`), da vedere se Cloudflare la accetta. Si
-  prova con l'APK della build nostra, qui sotto.
+**Turnstile nella WebView con la chiave vera funziona** (25/11/2026, con
+l'APK della build nostra): Cloudflare accetta l'origine dichiarata con
+`baseUrl`.
 
 **EAS (23/11/2026)**: `eas init` fatto (progetto `pilecue/ludex`), la chiave
 pubblica di Turnstile, ora in `apps/mobile/.env.production`. Il piano gratuito ha una coda lenta (la
@@ -103,8 +101,8 @@ di F-Droid.
 **25/11/2026: la build gira**, in WSL, 14 minuti la prima volta. L'APK
 (`versionCode` 1, `0.1.0`) è firmato con la nostra chiave (`apksigner`: `CN=PileCue`,
 SHA-256 `b0f3300f…5facf4`) e nel bundle ci sono `https://pilecue.com` e la chiave vera
-di Turnstile, nessun valore di sviluppo. Da fare: installarlo sull'emulatore
-e rifare il giro contro `pilecue.com` (punto 7). Visto strada facendo:
+di Turnstile, nessun valore di sviluppo. Installato sull'emulatore, il giro
+contro `pilecue.com` funziona (punto 7). Visto strada facendo:
 
 - l'APK pesa 100 MB perché porta quattro ABI (arm64, armv7, x86, x86_64):
   per il sito (M6) va diviso per ABI o almeno tolte le due x86, che servono
@@ -136,10 +134,14 @@ android --clean` rigenera `apps/mobile/android/`, che va in `.gitignore`.
    legge da solo nella build di release; lo script di build non passa il
    `.env` della radice, i cui valori di sviluppo vincerebbero sul file. Da
    `eas.json` si tolgono gli `env`, così la fonte è una.
-5. **La versione** sta in `app.json` (`version` e `android.versionCode`) e si
-   alza a mano a ogni APK distribuito: un `versionCode` che non cresce non
-   si installa come aggiornamento. In `eas.json` `appVersionSource` passa a
-   `local` e `autoIncrement` si toglie.
+5. **La versione** sta in `app.json`, `MAJOR.MINOR.PATCH`, ed è l'unico
+   numero da alzare: il `versionCode` lo ricava `app.config.ts`
+   (`MAJOR·10000 + MINOR·100 + PATCH`, 0.1.0 → 100), perché un `versionCode`
+   che non cresce non si installa come aggiornamento. Si alza a ogni APK
+   distribuito, non a ogni build: PATCH per le correzioni, MINOR per un lotto
+   (M2 sarà la 0.2.0), la 1.0.0 alla prima pubblicazione su uno store (M6).
+   Ogni APK distribuito ha il suo tag git, `mobile-v<versione>`. In
+   `eas.json` `appVersionSource` è `local`.
 6. **Lo script**: `pnpm build:android` dalla radice, cioè `expo prebuild
 -p android --clean` e poi `./gradlew assembleRelease` in `android/`. L'APK
    esce in `android/app/build/outputs/apk/release/`.

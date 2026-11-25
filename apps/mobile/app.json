@@ -30,8 +30,7 @@
       "bundleIdentifier": "com.pilecue.app"
     },
     "android": {
-      "package": "com.pilecue.app",
-      "versionCode": 1
+      "package": "com.pilecue.app"
     },
     "extra": {
       "router": {
