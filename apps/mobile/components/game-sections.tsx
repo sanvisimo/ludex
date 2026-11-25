@@ -6,6 +6,7 @@ import type {
 } from '@repo/contracts';
 import {
   Badge,
+  Button,
   CopyTile,
   CriticScoreRow,
   DetailPanel,
@@ -18,12 +19,14 @@ import {
 } from '@repo/ui';
 import * as WebBrowser from 'expo-web-browser';
 import type { ReactNode } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Image, ScrollView } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useFormatter, useTranslations } from 'use-intl';
 
 import { formatDuration, igdbImageUrl } from '../lib/game-format';
+import { api, client } from '../lib/orpc';
 import { Cover } from './backlog-card';
 
 export function Panel({
@@ -332,6 +335,52 @@ export function RelatedRow({
           ))}
         </XStack>
       </ScrollView>
+    </Panel>
+  );
+}
+
+/** «Aggiungi a playlist»: le playlist scelte a mano, con la spunta dove c'è. */
+export function CuratedPlaylistsPanel({ gameId }: { gameId: string }) {
+  const t = useTranslations('playlists');
+  const queryClient = useQueryClient();
+  const lists = useQuery(
+    api.curatedPlaylists.forGame.queryOptions({ input: { gameId } }),
+  );
+  const toggle = useMutation({
+    mutationFn: async ({ listId, has }: { listId: string; has: boolean }) => {
+      if (has) await client.curatedPlaylists.removeGame({ listId, gameId });
+      else await client.curatedPlaylists.add({ listId, gameId });
+    },
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: api.curatedPlaylists.forGame.key(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: api.curatedPlaylists.list.key(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: api.curatedPlaylists.get.key(),
+        }),
+      ]),
+  });
+  if (!lists.data || lists.data.length === 0) return null;
+  return (
+    <Panel title={t('addToPlaylist')}>
+      <XStack flexWrap="wrap" gap={8}>
+        {lists.data.map((list) => (
+          <Button
+            key={list.id}
+            size="sm"
+            variant={list.has ? 'selection' : 'outline'}
+            aria-pressed={list.has}
+            disabled={toggle.isPending}
+            onPress={() => toggle.mutate({ listId: list.id, has: list.has })}
+          >
+            {list.name}
+          </Button>
+        ))}
+      </XStack>
     </Panel>
   );
 }

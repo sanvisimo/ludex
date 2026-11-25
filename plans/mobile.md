@@ -225,7 +225,29 @@ Aspetta il 13.
 
 ### M4 · Playlist e wishlist
 
-Le stesse del web.
+Le stesse del web. **Struttura approvata il 25/11/2026** (wireframe in
+chat), in due PR: **M4a Playlist**, poi **M4b Wishlist**. Nessun cambio
+all'API.
+
+1. **Tab Playlist**: «Nuova playlist» (scelta a mano), poi «Scelte a mano»
+   e «Filtri salvati» a fasce: nome, numero, copertine che scorrono con lo
+   stato sopra, come le card del sito.
+2. **Playlist aperta**: ricerca e ordine, le schede del Backlog con la
+   pressione lunga (stato e voto; nelle scelte a mano anche sposta su/giù e
+   togli, col numero davanti). «Aggiungi giochi» nelle scelte a mano. Menu
+   ⋯: rinomina, condividi (il foglio del telefono), elimina; a filtro anche
+   «Modifica filtri», che apre il Backlog con quei filtri.
+3. **Tab Wishlist**: «Nuova lista», «Le mie liste» e «Dai negozi» a fasce.
+4. **Lista aperta**: «Ce l'ho» (chiede la piattaforma) e «Togli»; quelle
+   dai negozi senza «Togli» e con «Aggiorna wishlist», le voci da
+   sistemare sul sito.
+5. **Pagina del gioco**: «Aggiungi a playlist» con le spunte; il cuore
+   della wishlist per i giochi non tuoi. **Backlog**: «Salva come
+   playlist» in fondo ai filtri.
+
+Come in M2, ciò che serve a web e mobile va in `packages/ui`: la card con
+copertina delle fasce e la fascia che scorre. Il trascinamento per
+riordinare resta fuori: sul telefono «sposta su/giù».
 
 ### M5 · Collegare i negozi con la WebView
 

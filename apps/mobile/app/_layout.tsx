@@ -16,6 +16,7 @@ import { IntlProvider } from 'use-intl';
 
 import en from '../messages/en.json';
 import it from '../messages/it.json';
+import { BacklogViewProvider } from '../lib/backlog-filter';
 import { authClient } from '../lib/auth';
 import { PreferencesProvider, usePreferences } from '../lib/preferences';
 
@@ -78,40 +79,58 @@ function Routes() {
   const signedIn = session !== null;
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: theme.background?.val },
-      }}
-    >
-      <Stack.Protected guard={!signedIn}>
-        <Stack.Screen name="login" />
-        <Stack.Screen name="register" />
-        <Stack.Screen name="check-email" />
-      </Stack.Protected>
-      <Stack.Protected guard={signedIn}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="games/[slug]/index" />
-        <Stack.Screen
-          name="games/[slug]/edit"
-          options={{
-            presentation: 'modal',
-            headerShown: true,
-            headerStyle: { backgroundColor: theme.background?.val },
-            headerTintColor: theme.color12?.val,
-            headerShadowVisible: false,
-          }}
-        />
-        <Stack.Screen
-          name="info"
-          options={{
-            headerShown: true,
-            headerStyle: { backgroundColor: theme.background?.val },
-            headerTintColor: theme.color12?.val,
-            headerShadowVisible: false,
-          }}
-        />
-      </Stack.Protected>
-    </Stack>
+    <BacklogViewProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.background?.val },
+        }}
+      >
+        <Stack.Protected guard={!signedIn}>
+          <Stack.Screen name="login" />
+          <Stack.Screen name="register" />
+          <Stack.Screen name="check-email" />
+        </Stack.Protected>
+        <Stack.Protected guard={signedIn}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="games/[slug]/index" />
+          <Stack.Screen
+            name="games/[slug]/edit"
+            options={{
+              presentation: 'modal',
+              headerShown: true,
+              headerStyle: { backgroundColor: theme.background?.val },
+              headerTintColor: theme.color12?.val,
+              headerShadowVisible: false,
+            }}
+          />
+          {[
+            'playlist/[id]',
+            'playlist/curated/[id]/index',
+            'playlist/curated/[id]/add',
+          ].map((name) => (
+            <Stack.Screen
+              key={name}
+              name={name}
+              options={{
+                headerShown: true,
+                headerStyle: { backgroundColor: theme.background?.val },
+                headerTintColor: theme.color12?.val,
+                headerShadowVisible: false,
+              }}
+            />
+          ))}
+          <Stack.Screen
+            name="info"
+            options={{
+              headerShown: true,
+              headerStyle: { backgroundColor: theme.background?.val },
+              headerTintColor: theme.color12?.val,
+              headerShadowVisible: false,
+            }}
+          />
+        </Stack.Protected>
+      </Stack>
+    </BacklogViewProvider>
   );
 }

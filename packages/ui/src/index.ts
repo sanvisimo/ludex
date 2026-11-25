@@ -107,6 +107,12 @@ export {
   type BrandIconProps,
 } from './components/brand-icon';
 export {
+  COVER_CARD_SMALL_WIDTH,
+  COVER_CARD_WIDTH,
+  CoverCard,
+  RankLabel,
+} from './components/cover-card';
+export {
   CopyTile,
   CriticScoreBadge,
   CriticScoreRow,

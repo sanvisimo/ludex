@@ -145,7 +145,8 @@
     "rangeMin": "from {min}",
     "rangeMax": "up to {max}",
     "rangeBoth": "{min}–{max}",
-    "hoursValue": "{value} h"
+    "hoursValue": "{value} h",
+    "saveAsPlaylist": "Save as playlist"
   },
   "quickEdit": {
     "title": "Edit",
@@ -305,5 +306,47 @@
     "theme": "Themes",
     "game_mode": "Modes",
     "player_perspective": "Perspective"
+  },
+  "playlists": {
+    "new": "New playlist",
+    "create": "Create",
+    "save": "Save",
+    "cancel": "Cancel",
+    "namePlaceholder": "Playlist name",
+    "saveFailed": "Could not save. Is the name already taken?",
+    "empty": "No playlists yet",
+    "emptyHint": "Create one here, or save your Backlog filters with “Save as playlist”.",
+    "curated": "Hand-picked",
+    "filters": "Saved filters",
+    "menu": "More actions",
+    "rename": "Rename",
+    "share": "Share",
+    "remove": "Delete",
+    "removeTitle": "Delete “{name}”?",
+    "removeText": "The playlist goes away, the games stay in your backlog. A shared link stops working.",
+    "editFilters": "Edit filters",
+    "countOne": "1 game",
+    "countOther": "{count} games",
+    "search": "Search the playlist",
+    "clearSearch": "Clear search",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "loadFailed": "Could not load the playlist.",
+    "noGames": "No games match these criteria.",
+    "noResults": "No results",
+    "emptyList": "The playlist is empty: add some games.",
+    "addGames": "Add games",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "removeGame": "Remove from playlist",
+    "searchCatalog": "Search a game",
+    "searchHint": "Type at least two letters.",
+    "alreadyAt": "already #{position}",
+    "add": "Add",
+    "saveAs": "Save as playlist",
+    "addToPlaylist": "Add to playlist"
+  },
+  "curated": {
+    "rank": "Position {position}"
   }
 }

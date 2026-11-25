@@ -1,5 +1,13 @@
 import type { HomeBand, HomeGame } from '@repo/contracts';
-import { CornerLabel, Text, XStack, YStack } from '@repo/ui';
+import {
+  COVER_CARD_SMALL_WIDTH,
+  COVER_CARD_WIDTH,
+  CornerLabel,
+  CoverCard,
+  RankLabel,
+  Text,
+  XStack,
+} from '@repo/ui';
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'use-intl';
@@ -19,8 +27,8 @@ import { useStatusLabels } from '@/lib/labels';
  */
 
 /** Le fasce privilegiano la copertina; sotto `$sm` ne restano visibili due. */
-export const CARD_WIDTH = 200;
-export const SMALL_CARD_WIDTH = 160;
+export const CARD_WIDTH = COVER_CARD_WIDTH;
+export const SMALL_CARD_WIDTH = COVER_CARD_SMALL_WIDTH;
 
 /**
  * Una card: la copertina con lo stato in alto a sinistra — solo se il gioco
@@ -52,6 +60,7 @@ export function HomeCard({
   footer?: ReactNode;
 }) {
   const statusLabels = useStatusLabels();
+  const tCurated = useTranslations('curated');
 
   // A blocco: un `<a>` è in riga, e attorno a un'immagine lascia lo spazio
   // della linea di testo sotto la copertina.
@@ -62,18 +71,9 @@ export function HomeCard({
   } as const;
 
   return (
-    <YStack
-      width={
-        fill ? '100%' : `${CARD_WIDTH}px max-sm:${SMALL_CARD_WIDTH}px`
-      }
-      bg="surface"
-      rounded={12}
-      overflow="hidden"
-      grow={1}
-    >
-      {/* La copertina e il titolo sono due link alla stessa scheda: il cuore è un
-          bottone, e un bottone non sta dentro un link. */}
-      <YStack position="relative" overflow="hidden">
+    <CoverCard
+      fill={fill}
+      cover={
         <Link
           to="/games/$slug"
           params={{ slug: game.slug }}
@@ -87,7 +87,7 @@ export function HomeCard({
             imageId={game.coverImageId}
             name={game.name}
             size="cover_big"
-            width={CARD_WIDTH}
+            width={COVER_CARD_WIDTH}
             fill
             rounded={0}
           />
@@ -101,14 +101,21 @@ export function HomeCard({
             </CornerLabel>
           )}
         </Link>
-        {rank !== undefined && <RankLabel rank={rank} />}
-        {showWishlist && <WishlistHeart game={game} />}
-      </YStack>
-      <YStack p={12} gap={8} grow={1}>
-        <YStack minH={40}>
-          <GameTitleLink game={game} lines={2} />
-        </YStack>
-        <XStack items="center" justify="space-between" gap={8} mt="auto">
+      }
+      overlay={
+        <>
+          {rank !== undefined && (
+            <RankLabel
+              rank={rank}
+              label={tCurated('rank', { position: rank })}
+            />
+          )}
+          {showWishlist && <WishlistHeart game={game} />}
+        </>
+      }
+      title={<GameTitleLink game={game} lines={2} />}
+      meta={
+        <>
           <XStack flexWrap="wrap" items="center" gap={8} flex={1} minW={0}>
             {game.firstReleaseDate && (
               <Text fontSize={12} lineHeight="20px" color="color11">
@@ -122,39 +129,10 @@ export function HomeCard({
             source={game.criticScoreSource}
             badge
           />
-        </XStack>
-        {footer}
-      </YStack>
-    </YStack>
-  );
-}
-
-/**
- * Il numero di una card in una playlist aperta. Fuori dal link della copertina,
- * che i lettori di schermo saltano: il posto lo dicono qui, con l'etichetta.
- */
-function RankLabel({ rank }: { rank: number }) {
-  const t = useTranslations('curated');
-  return (
-    <XStack
-      position="absolute"
-      b={6}
-      l={6}
-      minW={28}
-      height={28}
-      px={6}
-      items="center"
-      justify="center"
-      rounded={6}
-      bg="background"
-      pointerEvents="none"
-      role="img"
-      aria-label={t('rank', { position: rank })}
-    >
-      <Text fontSize={14} lineHeight="20px" fontWeight="600" color="color12">
-        {rank}
-      </Text>
-    </XStack>
+        </>
+      }
+      footer={footer}
+    />
   );
 }
 

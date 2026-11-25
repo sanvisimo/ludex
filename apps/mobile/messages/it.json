@@ -145,7 +145,8 @@
     "rangeMin": "da {min}",
     "rangeMax": "fino a {max}",
     "rangeBoth": "{min}–{max}",
-    "hoursValue": "{value} h"
+    "hoursValue": "{value} h",
+    "saveAsPlaylist": "Salva come playlist"
   },
   "quickEdit": {
     "title": "Modifica",
@@ -305,5 +306,47 @@
     "theme": "Temi",
     "game_mode": "Modalità",
     "player_perspective": "Prospettiva"
+  },
+  "playlists": {
+    "new": "Nuova playlist",
+    "create": "Crea",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "namePlaceholder": "Nome della playlist",
+    "saveFailed": "Non sono riuscito a salvare. Il nome è già usato?",
+    "empty": "Ancora nessuna playlist",
+    "emptyHint": "Creane una qui, oppure salva i filtri del Backlog con «Salva come playlist».",
+    "curated": "Scelte a mano",
+    "filters": "Filtri salvati",
+    "menu": "Altre azioni",
+    "rename": "Rinomina",
+    "share": "Condividi",
+    "remove": "Elimina",
+    "removeTitle": "Eliminare «{name}»?",
+    "removeText": "La playlist sparisce, i giochi restano nel backlog. Un link condiviso smette di funzionare.",
+    "editFilters": "Modifica filtri",
+    "countOne": "1 gioco",
+    "countOther": "{count} giochi",
+    "search": "Cerca nella playlist",
+    "clearSearch": "Svuota la ricerca",
+    "ascending": "Crescente",
+    "descending": "Decrescente",
+    "loadFailed": "Non riesco a caricare la playlist.",
+    "noGames": "Nessun gioco con questi criteri.",
+    "noResults": "Nessun risultato",
+    "emptyList": "La playlist è vuota: aggiungi dei giochi.",
+    "addGames": "Aggiungi giochi",
+    "moveUp": "Sposta su",
+    "moveDown": "Sposta giù",
+    "removeGame": "Togli dalla playlist",
+    "searchCatalog": "Cerca un gioco",
+    "searchHint": "Scrivi almeno due lettere.",
+    "alreadyAt": "già al n. {position}",
+    "add": "Aggiungi",
+    "saveAs": "Salva come playlist",
+    "addToPlaylist": "Aggiungi a playlist"
+  },
+  "curated": {
+    "rank": "Posizione {position}"
   }
 }

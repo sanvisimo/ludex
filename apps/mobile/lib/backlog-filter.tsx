@@ -1,5 +1,6 @@
 import type {
   BacklogQuery,
+  PlaylistQuery,
   BacklogSort,
   BacklogStatus,
   DurationBasis,
@@ -145,6 +146,48 @@ export function toQuery(
     releasedTo: f.released[1] < RELEASED_MAX ? f.released[1] : undefined,
     sort,
     direction,
+  };
+}
+
+/** Il contrario di `toQuery`: i criteri di una playlist nel foglio dei filtri. */
+export function fromQuery(query: PlaylistQuery): {
+  filter: MobileFilter;
+  q: string;
+  sort: BacklogSort;
+  direction: SortDirection;
+} {
+  const hours = (minutes: number | undefined, fallback: number) =>
+    minutes === undefined ? fallback : Math.round(minutes / 60);
+  return {
+    filter: {
+      neverPlayed: query.neverPlayed ?? false,
+      // Una playlist senza stato non filtra per stato: tutti spuntati.
+      status: query.status ?? [...backlogStatusValues],
+      platforms: query.platforms ?? [],
+      stores: query.stores ?? [],
+      media: query.media ?? [],
+      subscriptions: query.subscriptions ?? [],
+      excludeSubscriptions: query.excludeSubscriptions ?? [],
+      gameTypes: query.gameTypes ?? [],
+      attributes: query.attributes ?? [],
+      tags: query.tags ?? [],
+      durationHours: [
+        hours(query.durationMin, 0),
+        hours(query.durationMax, DURATION_MAX_HOURS),
+      ],
+      durationBasis: query.durationBasis ?? 'main',
+      noDuration: query.noDuration ?? false,
+      rating: [query.ratingMin ?? RATING_MIN, query.ratingMax ?? RATING_MAX],
+      criticMin: query.criticMin ?? 0,
+      criticSource: query.criticSource ?? null,
+      released: [
+        query.releasedFrom ?? RELEASED_MIN,
+        query.releasedTo ?? RELEASED_MAX,
+      ],
+    },
+    q: query.q ?? '',
+    sort: query.sort,
+    direction: query.direction,
   };
 }
 
