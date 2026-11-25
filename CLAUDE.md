@@ -333,6 +333,7 @@ progetto, e server e worker lavorano su una coda vuota.
 | `pnpm --filter @repo/ui test`    | le storie in Chromium, con axe            |
 | `pnpm --filter web test`         | la logica pura di `apps/web/lib`          |
 | `pnpm --filter mobile start`     | solo Metro per l'app Expo                 |
+| `pnpm build:android`             | l'APK di release, con la nostra chiave    |
 
 Gli arnesi che si lanciano a mano dal workspace `api` (probe, backfill, dashboard
 delle code) sono in [apps/api/CLAUDE.md](apps/api/CLAUDE.md).

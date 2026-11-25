@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "node --env-file-if-exists=../../.env scripts/adb-reverse.mjs && node --env-file-if-exists=../../.env node_modules/expo/bin/cli start",
     "start": "node --env-file-if-exists=../../.env node_modules/expo/bin/cli start",
+    "build:android": "expo prebuild -p android --clean --no-install && cd android && ./gradlew assembleRelease",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit"
   },
