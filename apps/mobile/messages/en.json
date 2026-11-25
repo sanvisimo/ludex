@@ -50,7 +50,8 @@
     "profile": "Profile and security",
     "libraries": "Linked libraries",
     "deleteAccount": "Delete account",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "info": "About"
   },
   "theme": {
     "label": "Theme",
@@ -77,5 +78,9 @@
     "MISSING_RESPONSE": "Complete the bot check before continuing.",
     "VERIFICATION_FAILED": "The bot check didn't pass. Please try again.",
     "TOO_MANY_REQUESTS": "Too many attempts in a short time. Wait a few seconds and try again."
+  },
+  "info": {
+    "title": "About",
+    "version": "Version {version}"
   }
 }

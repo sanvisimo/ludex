@@ -4,6 +4,7 @@
   "license": "AGPL-3.0-only",
   "scripts": {
     "build": "turbo run build",
+    "build:android": "pnpm --filter mobile build:android",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

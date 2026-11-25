@@ -50,7 +50,8 @@
     "profile": "Profilo e sicurezza",
     "libraries": "Librerie collegate",
     "deleteAccount": "Elimina account",
-    "signOut": "Esci"
+    "signOut": "Esci",
+    "info": "Info"
   },
   "theme": {
     "label": "Tema",
@@ -77,5 +78,9 @@
     "MISSING_RESPONSE": "Completa il controllo anti-bot prima di continuare.",
     "VERIFICATION_FAILED": "Il controllo anti-bot non è riuscito. Riprova.",
     "TOO_MANY_REQUESTS": "Troppi tentativi ravvicinati. Attendi qualche secondo e riprova."
+  },
+  "info": {
+    "title": "Info",
+    "version": "Versione {version}"
   }
 }

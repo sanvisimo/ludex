@@ -72,7 +72,9 @@ Note sull'override (Compose ≥ 2.24):
 ## Deploy
 
 1. Push su `main` → GitHub Actions costruisce l'immagine e la pubblica su
-   `ghcr.io/sanvisimo/ludex:main`.
+   `ghcr.io/sanvisimo/ludex:main`. Un merge che tocca solo `apps/mobile/`,
+   `plans/`, `docs/` o file `.md` non produce un'immagine (il job `image` lo
+   confronta col commit di `:main`), quindi non c'è deploy.
 2. `deploy.sh`, ogni 5 minuti: se c'è un'immagine nuova fa il dump del DB, la
    tira e rifà `docker compose up -d`, che **ricrea i container**. Un'immagine
    già installata non viene rilanciata.

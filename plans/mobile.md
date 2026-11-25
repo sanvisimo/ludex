@@ -70,13 +70,93 @@ quattro tab (tre segnaposto) e Account. Lo scheletro con i componenti
 Il 16/11 l'app è passata all'**SDK 58** (React Native 0.88, React 19.3 in
 tutto il repo) e a Better Auth 1.7, che ha tolto il cast del plugin Expo.
 
-Da verificare:
+**23/11/2026: il giro su Android funziona**, nell'emulatore e con la chiave
+di prova di Turnstile: registrazione, link di verifica, accesso (la riga in
+`session`, user agent `okhttp`) ed Esci, che la cancella. In sviluppo serve:
 
-- **il giro completo su Android**: registrazione, link, accesso, Esci;
-- **Turnstile nella WebView** con la chiave vera: la pagina dichiara
-  l'origine del sito (`baseUrl`), da vedere se Cloudflare la accetta;
-- **EAS**: `eas init` col tuo account Expo (aggiunge il `projectId` ad
-  `app.json`) e la chiave di Turnstile fra le variabili del progetto EAS.
+- nel `.env` `EXPO_PUBLIC_TURNSTILE_SITE_KEY` (senza, il widget non c'è ma
+  il server chiede il CAPTCHA) ed `EXPO_PUBLIC_WEB_URL=http://localhost:8085`:
+  con l'IP di WSL il `callbackURL` della registrazione non è fra i
+  `trustedOrigins`;
+- `adb reverse tcp:8085`, perché nell'emulatore `localhost` è il telefono:
+  lo fa `pnpm dev`, che ora avvia anche Metro
+  (`apps/mobile/scripts/adb-reverse.mjs`), se l'emulatore è già acceso;
+- `--clear` a Metro dopo aver cambiato una `EXPO_PUBLIC_*`: vengono dal
+  `.env` della radice, che Expo non sorveglia, e la cache tiene il valore
+  vecchio.
+
+**Turnstile nella WebView con la chiave vera funziona** (25/11/2026, con
+l'APK della build nostra): Cloudflare accetta l'origine dichiarata con
+`baseUrl`.
+
+**EAS (23/11/2026)**: `eas init` fatto (progetto `pilecue/ludex`), la chiave
+pubblica di Turnstile, ora in `apps/mobile/.env.production`. Il piano gratuito ha una coda lenta (la
+prima build è rimasta in coda più di mezz'ora) e la firma la tiene Expo:
+**EAS resta solo per le prove**, e per iOS finché non c'è un Mac (si decide
+a M6). Le build che si distribuiscono le facciamo noi, che è anche la strada
+di F-Droid.
+
+#### Build Android nostra
+
+**25/11/2026: la build gira**, in WSL, 14 minuti la prima volta. L'APK
+(`versionCode` 1, `0.1.0`) è firmato con la nostra chiave (`apksigner`: `CN=PileCue`,
+SHA-256 `b0f3300f…5facf4`) e nel bundle ci sono `https://pilecue.com` e la chiave vera
+di Turnstile, nessun valore di sviluppo. Installato sull'emulatore, il giro
+contro `pilecue.com` funziona (punto 7). Visto strada facendo:
+
+- l'APK pesa 100 MB perché porta quattro ABI (arm64, armv7, x86, x86_64):
+  per il sito (M6) va diviso per ABI o almeno tolte le due x86, che servono
+  solo agli emulatori;
+- `prebuild` avvisa che `userInterfaceStyle: automatic` su Android chiede
+  `expo-system-ui`: senza, il tema scuro di sistema non arriva all'app.
+
+1. **Strumenti in WSL**: il JDK (c'è il 21; React Native indica il 17, si
+   prova col 21 e si scende solo se Gradle protesta) e gli Android
+   command-line tools in `~/Android/Sdk`, con `ANDROID_HOME` nel profilo
+   (`~/.bashrc`). Platform e build-tools li scarica Gradle alla prima build;
+   l'NDK no, perché i command-line tools nuovi (la CLI `android`) non
+   scrivono più le licenze e Gradle lo rifiuta: si installa a mano con
+   `android sdk install "ndk;<versione>"`, quella che chiede l'errore.
+2. **Il progetto nativo si genera, non si versiona**: `expo prebuild -p
+android --clean` rigenera `apps/mobile/android/`, che va in `.gitignore`.
+   Le modifiche native passano da `app.json` e dai config plugin, mai a mano
+   in quella cartella.
+3. **La chiave è nostra**: `keytool -genkeypair` in
+   `~/.pilecue/pilecue-release.jks`, fuori dal repo, con una copia di
+   sicurezza: persa la chiave, un APK nuovo non si installa sopra il vecchio.
+   Percorso, alias e password in `~/.gradle/gradle.properties`. Un config
+   plugin nostro (`apps/mobile/plugins/with-release-signing.js`) aggiunge al
+   `build.gradle` generato la firma di release che legge quelle proprietà:
+   senza, la release esce non firmata, e non si installa. La chiave di EAS
+   non si usa, quindi l'APK di EAS non va distribuito.
+4. **I valori di produzione** in `apps/mobile/.env.production`, versionato:
+   sono URL e la chiave pubblica di Turnstile, niente di segreto. Expo lo
+   legge da solo nella build di release; lo script di build non passa il
+   `.env` della radice, i cui valori di sviluppo vincerebbero sul file. Da
+   `eas.json` si tolgono gli `env`, così la fonte è una.
+5. **La versione** sta in `app.json`, `MAJOR.MINOR.PATCH`, ed è l'unico
+   numero da alzare: il `versionCode` lo ricava `app.config.ts`
+   (`MAJOR·10000 + MINOR·100 + PATCH`, 0.1.0 → 100), perché un `versionCode`
+   che non cresce non si installa come aggiornamento. Si alza a ogni APK
+   distribuito, non a ogni build: PATCH per le correzioni, MINOR per un lotto
+   (M2 sarà la 0.2.0), la 1.0.0 alla prima pubblicazione su uno store (M6).
+   Ogni APK distribuito ha il suo tag git, `mobile-v<versione>`. In
+   `eas.json` `appVersionSource` è `local`.
+6. **Lo script**: `pnpm build:android` dalla radice, cioè `expo prebuild
+-p android --clean` e poi `./gradlew assembleRelease` in `android/`. L'APK
+   esce in `android/app/build/outputs/apk/release/`.
+7. **Verifica**: `apksigner verify --print-certs` mostra la nostra chiave;
+   l'APK si installa sull'emulatore con `adb install` e si rifà il giro
+   (registrazione, link, accesso, Esci) contro `pilecue.com`, con Turnstile
+   vero.
+
+Dopo, non in questo lotto: la build nella CI di GitHub (i runner Ubuntu
+hanno già JDK e SDK, ma la chiave andrebbe nei secret: sarebbe la prima
+credenziale di firma su GitHub, da decidere) e l'APK sul sito (M6).
+
+**Info (25/11/2026)**: in Account la riga «Info ›» apre una schermata con
+la versione (`0.1.0 (100)`, da `expo-constants`) e i link a informativa e
+condizioni, che da Account si sono spostati lì.
 
 ### M2 · Backlog e pagina del gioco
 

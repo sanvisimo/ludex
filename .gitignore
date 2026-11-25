@@ -59,3 +59,5 @@ yarn-error.log*
 
 # Chromatic
 chromatic.log
+# Progetto nativo di Expo, rigenerato da prebuild
+apps/mobile/android/
