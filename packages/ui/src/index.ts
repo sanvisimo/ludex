@@ -107,6 +107,19 @@ export {
   type BrandIconProps,
 } from './components/brand-icon';
 export {
+  CopyTile,
+  CriticScoreBadge,
+  CriticScoreRow,
+  DetailPanel,
+  DetailPanelTitle,
+  DurationTiles,
+  LinkRow,
+  RatingStars,
+  type DurationTile,
+  type ExternalLinkProps,
+  type RatingStarsLabels,
+} from './components/game-detail';
+export {
   Gallery,
   type GalleryItem,
   type GalleryProps,

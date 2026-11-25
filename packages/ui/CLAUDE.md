@@ -97,6 +97,12 @@ sull'acceso, scorrono senza barra dove non stanno. Il `ToggleGroup` è la scelta
 di **come guardarla**, una vista, in una cornice. Messo a fare i tab sembra una
 barra di bottoni.
 
+**I pezzi della pagina del gioco** (`game-detail.tsx`: pannello, durate,
+voti della critica, copia, stelle) li usano web e mobile. Un link esterno è
+`href` sul web, un `<a>` vero, e `onOpen` su React Native, dove le ancore non
+ci sono. Le stelle su native leggono il colore dal tema: lì `currentColor`
+non arriva al riempimento dell'SVG.
+
 Cinque componenti di `@repo/ui` fanno più del Tamagui che avvolgono, e il
 perché sta nel loro commento:
 

@@ -91,6 +91,17 @@ function Routes() {
       </Stack.Protected>
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="games/[slug]/index" />
+        <Stack.Screen
+          name="games/[slug]/edit"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            headerStyle: { backgroundColor: theme.background?.val },
+            headerTintColor: theme.color12?.val,
+            headerShadowVisible: false,
+          }}
+        />
         <Stack.Screen
           name="info"
           options={{

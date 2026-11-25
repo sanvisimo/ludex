@@ -28,6 +28,7 @@ import {
   SelectValue,
   Textarea,
   toast,
+  RatingStars,
 } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'use-intl';
@@ -35,7 +36,7 @@ import { useEffect, useState } from 'react';
 
 import { OwnershipBadges, ownershipKey } from '@/components/ownership-badges';
 import { PlatformCombobox } from '@/components/platform-combobox';
-import { RatingStars } from '@/components/rating-stars';
+import { useRatingLabels } from '@/lib/rating-labels';
 import { TagPicker } from '@/components/tag-picker';
 import { useApiErrorMessage } from '@/lib/api-error';
 import { useMediumLabels, useStatusLabels, useStoreLabels } from '@/lib/labels';
@@ -73,6 +74,7 @@ export function EditEntryDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const t = useTranslations('editEntry');
+  const ratingLabels = useRatingLabels();
   const statusLabels = useStatusLabels();
   const storeLabels = useStoreLabels();
   const mediumLabels = useMediumLabels();
@@ -222,7 +224,11 @@ export function EditEntryDialog({
 
           <div className="grid gap-2">
             <Label>{t('ratingLabel')}</Label>
-            <RatingStars value={rating} onChange={setRating} />
+            <RatingStars
+              value={rating}
+              onChange={setRating}
+              labels={ratingLabels}
+            />
           </div>
 
           <div className="grid gap-2">
