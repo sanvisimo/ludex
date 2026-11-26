@@ -22,7 +22,12 @@ import {
   SearchX,
   SlidersHorizontal,
 } from '@repo/ui/icons';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { FlatList } from 'react-native';
@@ -30,6 +35,7 @@ import { useTranslations } from 'use-intl';
 
 import { BacklogCard } from '../../components/backlog-card';
 import { FilterSheet } from '../../components/filter-sheet';
+import { NameSheet } from '../../components/name-sheet';
 import { QuickEditSheet } from '../../components/quick-edit-sheet';
 import {
   activeCount,
@@ -38,7 +44,8 @@ import {
   toQuery,
   useBacklogView,
 } from '../../lib/backlog-filter';
-import { api } from '../../lib/orpc';
+import { useCloseOnBlur } from '../../lib/use-close-on-blur';
+import { api, client } from '../../lib/orpc';
 import { openOnWeb } from '../../lib/web-links';
 
 const PAGE = 50;
@@ -50,7 +57,28 @@ export default function Backlog() {
     useBacklogView();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [editing, setEditing] = useState<BacklogEntry | null>(null);
+  useCloseOnBlur(() => {
+    setFiltersOpen(false);
+    setEditing(null);
+    setSaving(false);
+  });
   const search = useDeferredValue(q);
+  const tPlaylists = useTranslations('playlists');
+  const queryClient = useQueryClient();
+  const [saving, setSaving] = useState(false);
+  const save = useMutation({
+    mutationFn: (name: string) =>
+      client.playlists.create({
+        name,
+        query: toQuery(filter, q, sort, direction),
+      }),
+    onSuccess: async () => {
+      setSaving(false);
+      await queryClient.invalidateQueries({
+        queryKey: api.playlists.list.key(),
+      });
+    },
+  });
 
   const query = toQuery(filter, search, sort, direction);
   const list = useInfiniteQuery(
@@ -238,6 +266,27 @@ export default function Backlog() {
         vocabulary={vocabulary.data}
         total={total}
         fetching={list.isFetching && !list.isFetchingNextPage}
+        onSave={
+          activeCount(filter) > 0
+            ? () => {
+                setFiltersOpen(false);
+                setSaving(true);
+              }
+            : undefined
+        }
+      />
+      <NameSheet
+        open={saving}
+        labels={{
+          title: tPlaylists('saveAs'),
+          placeholder: tPlaylists('namePlaceholder'),
+          save: tPlaylists('save'),
+          cancel: tPlaylists('cancel'),
+        }}
+        pending={save.isPending}
+        error={save.isError ? tPlaylists('saveFailed') : null}
+        onSave={(name) => save.mutate(name)}
+        onClose={() => setSaving(false)}
       />
       <QuickEditSheet
         entry={

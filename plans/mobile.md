@@ -225,7 +225,65 @@ Aspetta il 13.
 
 ### M4 · Playlist e wishlist
 
-Le stesse del web.
+Le stesse del web. **Struttura approvata il 25/11/2026** (wireframe in
+chat), in due PR: **M4a Playlist**, poi **M4b Wishlist**. Nessun cambio
+all'API.
+
+1. **Tab Playlist**: «Nuova playlist» (scelta a mano), poi «Scelte a mano»
+   e «Filtri salvati» a fasce: nome, numero, copertine che scorrono con lo
+   stato sopra, come le card del sito.
+2. **Playlist aperta**: ricerca e ordine, le schede del Backlog con la
+   pressione lunga (stato e voto; nelle scelte a mano anche sposta su/giù e
+   togli, col numero davanti). «Aggiungi giochi» nelle scelte a mano. Menu
+   ⋯: rinomina, condividi (il foglio del telefono), elimina; a filtro anche
+   «Modifica filtri», che apre il Backlog con quei filtri.
+3. **Tab Wishlist**: «Nuova lista», «Le mie liste» e «Dai negozi» a fasce.
+4. **Lista aperta**: «Ce l'ho» (chiede la piattaforma) e «Togli»; quelle
+   dai negozi senza «Togli» e con «Aggiorna wishlist», le voci da
+   sistemare sul sito.
+5. **Pagina del gioco**: «Aggiungi a playlist» con le spunte; il cuore
+   della wishlist per i giochi non tuoi. **Backlog**: «Salva come
+   playlist» in fondo ai filtri.
+
+Come in M2, ciò che serve a web e mobile va in `packages/ui`: la card con
+copertina delle fasce e la fascia che scorre. Il trascinamento per
+riordinare resta fuori: sul telefono «sposta su/giù».
+
+**M4a Playlist, 26/11/2026: scritto e provato nell'emulatore** (chiaro e
+scuro): fasce, playlist a filtro e scelta a mano, menu ⋯ («Modifica filtri»,
+elimina; rinomina e condividi scritti ma non provati per non toccare le
+playlist vere), sposta e togli, «Aggiungi giochi», «Salva come playlist»,
+«Aggiungi a playlist». La card con copertina è `CoverCard` in `packages/ui`,
+usata anche dalla home del web (rimasta uguale). Cose che l'emulatore ha
+insegnato:
+
+- **un campo di testo dentro uno `Sheet` di Tamagui non regge la tastiera
+  su Android**: il foglio si chiudeva e il testo finiva nel campo sotto. Il
+  nome si scrive in un `Modal` di React Native (`NameSheet`), che mette lui
+  il fuoco al campo (`onShow`): `autoFocus` lì non arriva;
+- **un foglio lasciato aperto restava a galla sopra le altre schermate**:
+  sta in un portale. Ogni schermata chiude i suoi lasciandola
+  (`useCloseOnBlur`);
+- **«Modifica filtri» usa `router.dismissTo('/backlog')`**: con `navigate`
+  la playlist restava aperta sotto, e «indietro» ci tornava;
+- lo stato dei filtri sta alla radice (`BacklogViewProvider` in
+  `app/_layout.tsx`), perché la playlist, fuori dalle tab, ci scrive.
+
+**Dopo M4: la barra in basso sempre visibile** (chiesto il 26/11/2026, da
+fare a M4 chiuso). Oggi sparisce su pagina del gioco, Modifica, playlist
+aperte e Info, che stanno nella pila della radice, sopra le tab. Il piano:
+
+- ogni tab ha la sua pila: i gruppi `(tabs)/(backlog)`, `(playlist)`,
+  `(wishlist)`, `(account)`, ciascuno con un suo `Stack`;
+- pagina del gioco e Modifica condivise fra le tab con i percorsi condivisi
+  di Expo Router (`(backlog,playlist,wishlist)/games/[slug]`): aperto dalle
+  Playlist, il gioco resta nella tab Playlist e «indietro» torna lì;
+- playlist aperte e «Aggiungi giochi» nella tab Playlist, Info in Account;
+- toccare la tab in cui si è torna alla sua prima schermata (da verificare);
+- Modifica da modale a schermata normale, così anche lì la barra resta;
+- «Modifica filtri» resta com'è: porta alla tab Backlog con quei filtri.
+
+Gli indirizzi (`/games/[slug]`, `/playlist/[id]`…) non cambiano.
 
 ### M5 · Collegare i negozi con la WebView
 

@@ -21,6 +21,7 @@ import {
   Attributes,
   CopyCard,
   CriticScores,
+  CuratedPlaylistsPanel,
   Description,
   GameHero,
   HltbTimes,
@@ -267,6 +268,8 @@ export default function GamePage() {
               </XStack>
             </Panel>
           ) : null}
+
+          <CuratedPlaylistsPanel gameId={game.id} />
 
           <Attributes game={game} />
 

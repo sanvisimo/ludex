@@ -137,6 +137,7 @@ export function FilterSheet({
   vocabulary,
   total,
   fetching,
+  onSave,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -146,6 +147,8 @@ export function FilterSheet({
   vocabulary: UserTag[] | undefined;
   total: number | undefined;
   fetching: boolean;
+  /** «Salva come playlist»: c'è solo con almeno un filtro acceso. */
+  onSave?: () => void;
 }) {
   const t = useTranslations('filters');
   const tStatus = useTranslations('status');
@@ -478,6 +481,11 @@ export function FilterSheet({
         </YStack>
       </ScrollView>
 
+      {onSave ? (
+        <Button variant="outline" onPress={onSave}>
+          {t('saveAsPlaylist')}
+        </Button>
+      ) : null}
       <XStack gap={12} pt={8} pb={insets.bottom}>
         <Button variant="outline" onPress={() => onChange(emptyFilter)}>
           {t('reset')}
