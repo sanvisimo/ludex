@@ -108,6 +108,7 @@ function Routes() {
             'playlist/[id]',
             'playlist/curated/[id]/index',
             'playlist/curated/[id]/add',
+            'wishlist/[id]',
           ].map((name) => (
             <Stack.Screen
               key={name}

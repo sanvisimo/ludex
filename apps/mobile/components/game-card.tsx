@@ -10,6 +10,7 @@ import {
 } from '@repo/ui';
 import { Gamepad2 } from '@repo/ui/icons';
 import { router } from 'expo-router';
+import type { ReactNode } from 'react';
 import { Image } from 'react-native';
 import { useTranslations } from 'use-intl';
 
@@ -25,11 +26,13 @@ export function GameCard({
   rank,
   width = GAME_CARD_WIDTH,
   onLongPress,
+  footer,
 }: {
   game: HomeGame;
   rank?: number;
   width?: number;
   onLongPress?: () => void;
+  footer?: ReactNode;
 }) {
   const tStatus = useTranslations('status');
   const tCurated = useTranslations('curated');
@@ -41,6 +44,7 @@ export function GameCard({
   return (
     <CoverCard
       width={width}
+      footer={footer}
       cover={
         <YStack
           role="button"

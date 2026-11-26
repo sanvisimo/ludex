@@ -1,65 +1,17 @@
 import type { CuratedPlaylist, Playlist } from '@repo/contracts';
-import {
-  Button,
-  EmptyState,
-  ScrollView,
-  Skeleton,
-  Text,
-  XStack,
-  YStack,
-} from '@repo/ui';
-import { ChevronRight, ListMusic, Plus } from '@repo/ui/icons';
+import { Button, EmptyState, ScrollView, Skeleton, YStack } from '@repo/ui';
+import { ListMusic, Plus } from '@repo/ui/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { ScrollView as HorizontalScroll } from 'react-native';
 import { useTranslations } from 'use-intl';
 
+import { Band, BandSection as Section } from '../../components/bands';
 import { GameCard } from '../../components/game-card';
 import { NameSheet } from '../../components/name-sheet';
 import { api, client } from '../../lib/orpc';
 
 const BAND_SIZE = 20;
-
-function Band({
-  title,
-  count,
-  onOpen,
-  children,
-}: {
-  title: string;
-  count: number | undefined;
-  onOpen: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <YStack gap={10}>
-      <XStack role="link" onPress={onOpen} items="center" gap={8} px={16}>
-        <Text
-          flex={1}
-          fontFamily="heading"
-          fontSize={18}
-          lineHeight="24px"
-          fontWeight="600"
-          color="color12"
-          numberOfLines={1}
-        >
-          {title}
-        </Text>
-        {count !== undefined ? <Text color="color11">{count}</Text> : null}
-        <ChevronRight size={18} color="color11" />
-      </XStack>
-      <HorizontalScroll
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
-      >
-        {children}
-      </HorizontalScroll>
-    </YStack>
-  );
-}
 
 function CuratedBand({ list }: { list: CuratedPlaylist }) {
   const games = useQuery(
@@ -106,17 +58,6 @@ function FilterBand({ playlist }: { playlist: Playlist }) {
         />
       ))}
     </Band>
-  );
-}
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <YStack gap={20}>
-      <Text px={16} fontSize={12} fontWeight="600" color="color11">
-        {title.toUpperCase()}
-      </Text>
-      {children}
-    </YStack>
   );
 }
 
