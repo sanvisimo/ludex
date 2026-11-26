@@ -27,6 +27,7 @@ import {
   HltbTimes,
   Panel,
   RelatedRow,
+  WishlistPanel,
 } from '../../../components/game-sections';
 import { useRatingLabels } from '../../../components/rating-stars';
 import { StatusSelect, useStatusLabels } from '../../../components/status';
@@ -270,6 +271,7 @@ export default function GamePage() {
           ) : null}
 
           <CuratedPlaylistsPanel gameId={game.id} />
+          {entry ? null : <WishlistPanel gameId={game.id} />}
 
           <Attributes game={game} />
 

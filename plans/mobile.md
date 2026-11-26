@@ -269,6 +269,17 @@ insegnato:
 - lo stato dei filtri sta alla radice (`BacklogViewProvider` in
   `app/_layout.tsx`), perché la playlist, fuori dalle tab, ci scrive.
 
+**M4b Wishlist, 26/11/2026: scritto e provato nell'emulatore** (scuro;
+le card e le fasce sono quelle di M4a, già viste in chiaro): tab a fasce con
+«Le mie liste» e «Dai negozi» (icona del negozio, «N da sistemare»), lista
+aperta con «Ce l'ho» e «Togli» (le liste di negozio senza «Togli»), il
+pannello «Wishlist» nella pagina di un gioco che non hai. «Ce l'ho» è un
+foglio a sole scelte (piattaforme tue prima, le altre a richiesta; negozio e
+supporto facoltativi): niente campi di testo, per la tastiera. Non provati:
+la conferma di «Ce l'ho», «Togli», rinomina ed elimina, per non toccare le
+liste vere, e **«Aggiorna wishlist»**, che su Steam farebbe una richiesta al
+negozio (l'account è fermo dal 05/10, lotto 9f).
+
 **Dopo M4: la barra in basso sempre visibile** (chiesto il 26/11/2026, da
 fare a M4 chiuso). Oggi sparisce su pagina del gioco, Modifica, playlist
 aperte e Info, che stanno nella pila della radice, sopra le tab. Il piano:

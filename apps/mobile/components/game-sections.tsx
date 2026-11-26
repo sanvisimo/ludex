@@ -384,3 +384,60 @@ export function CuratedPlaylistsPanel({ gameId }: { gameId: string }) {
     </Panel>
   );
 }
+
+/**
+ * Il cuore del sito, per un gioco che non hai: le tue liste con la spunta.
+ * Senza liste, il primo «aggiungi» ne crea una che si chiama «Wishlist»,
+ * come sul web (`wishlists.add` senza `listId`).
+ */
+export function WishlistPanel({ gameId }: { gameId: string }) {
+  const t = useTranslations('wishlists');
+  const queryClient = useQueryClient();
+  const lists = useQuery(
+    api.wishlists.forGame.queryOptions({ input: { gameId } }),
+  );
+  const toggle = useMutation({
+    mutationFn: async (target: { listId?: string; has: boolean }) => {
+      if (target.has && target.listId)
+        await client.wishlists.removeGame({ listId: target.listId, gameId });
+      else await client.wishlists.add({ gameId, listId: target.listId });
+    },
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: api.wishlists.forGame.key(),
+        }),
+        queryClient.invalidateQueries({ queryKey: api.wishlists.list.key() }),
+        queryClient.invalidateQueries({ queryKey: api.wishlists.get.key() }),
+      ]),
+  });
+  if (!lists.data) return null;
+  return (
+    <Panel title={t('panelTitle')}>
+      <XStack flexWrap="wrap" gap={8}>
+        {lists.data.length === 0 ? (
+          <Button
+            size="sm"
+            disabled={toggle.isPending}
+            onPress={() => toggle.mutate({ has: false })}
+          >
+            {t('addToWishlist')}
+          </Button>
+        ) : (
+          lists.data.map((list) => (
+            <Button
+              key={list.id}
+              size="sm"
+              variant={list.has ? 'selection' : 'outline'}
+              aria-pressed={list.has}
+              disabled={toggle.isPending}
+              onPress={() => toggle.mutate({ listId: list.id, has: list.has })}
+            >
+              {list.name}
+            </Button>
+          ))
+        )}
+      </XStack>
+    </Panel>
+  );
+}
