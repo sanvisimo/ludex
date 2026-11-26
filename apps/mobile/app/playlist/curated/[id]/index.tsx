@@ -17,6 +17,7 @@ import { useTranslations } from 'use-intl';
 import { ActionsSheet } from '../../../../components/actions-sheet';
 import { GameCard } from '../../../../components/game-card';
 import { NameSheet } from '../../../../components/name-sheet';
+import { useCloseOnBlur } from '../../../../lib/use-close-on-blur';
 import { api, client } from '../../../../lib/orpc';
 import { usePlaylistActions } from '../../../../lib/playlist-actions';
 
@@ -35,6 +36,10 @@ export default function CuratedPlaylist() {
   const [menu, setMenu] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [selected, setSelected] = useState<Positioned | null>(null);
+  useCloseOnBlur(() => {
+    setMenu(false);
+    setSelected(null);
+  });
 
   const playlist = useQuery(
     api.curatedPlaylists.get.queryOptions({

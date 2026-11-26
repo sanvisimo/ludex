@@ -34,6 +34,7 @@ import { BacklogCard } from '../../components/backlog-card';
 import { NameSheet } from '../../components/name-sheet';
 import { QuickEditSheet } from '../../components/quick-edit-sheet';
 import { fromQuery, sortKeys, useBacklogView } from '../../lib/backlog-filter';
+import { useCloseOnBlur } from '../../lib/use-close-on-blur';
 import { api, client } from '../../lib/orpc';
 import { usePlaylistActions } from '../../lib/playlist-actions';
 
@@ -55,6 +56,10 @@ export default function FilterPlaylist() {
   const [menu, setMenu] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [editing, setEditing] = useState<BacklogEntry | null>(null);
+  useCloseOnBlur(() => {
+    setMenu(false);
+    setEditing(null);
+  });
 
   const list = useInfiniteQuery(
     api.playlists.get.infiniteOptions({
@@ -110,7 +115,7 @@ export default function FilterPlaylist() {
     view.setFilter(next.filter);
     view.setQ(next.q);
     view.setSort(next.sort, next.direction);
-    router.navigate('/backlog');
+    router.dismissTo('/backlog');
   };
 
   return (

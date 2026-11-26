@@ -44,6 +44,7 @@ import {
   toQuery,
   useBacklogView,
 } from '../../lib/backlog-filter';
+import { useCloseOnBlur } from '../../lib/use-close-on-blur';
 import { api, client } from '../../lib/orpc';
 import { openOnWeb } from '../../lib/web-links';
 
@@ -56,6 +57,11 @@ export default function Backlog() {
     useBacklogView();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [editing, setEditing] = useState<BacklogEntry | null>(null);
+  useCloseOnBlur(() => {
+    setFiltersOpen(false);
+    setEditing(null);
+    setSaving(false);
+  });
   const search = useDeferredValue(q);
   const tPlaylists = useTranslations('playlists');
   const queryClient = useQueryClient();

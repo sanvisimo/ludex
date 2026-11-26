@@ -249,6 +249,26 @@ Come in M2, ciò che serve a web e mobile va in `packages/ui`: la card con
 copertina delle fasce e la fascia che scorre. Il trascinamento per
 riordinare resta fuori: sul telefono «sposta su/giù».
 
+**M4a Playlist, 26/11/2026: scritto e provato nell'emulatore** (chiaro e
+scuro): fasce, playlist a filtro e scelta a mano, menu ⋯ («Modifica filtri»,
+elimina; rinomina e condividi scritti ma non provati per non toccare le
+playlist vere), sposta e togli, «Aggiungi giochi», «Salva come playlist»,
+«Aggiungi a playlist». La card con copertina è `CoverCard` in `packages/ui`,
+usata anche dalla home del web (rimasta uguale). Cose che l'emulatore ha
+insegnato:
+
+- **un campo di testo dentro uno `Sheet` di Tamagui non regge la tastiera
+  su Android**: il foglio si chiudeva e il testo finiva nel campo sotto. Il
+  nome si scrive in un `Modal` di React Native (`NameSheet`), che mette lui
+  il fuoco al campo (`onShow`): `autoFocus` lì non arriva;
+- **un foglio lasciato aperto restava a galla sopra le altre schermate**:
+  sta in un portale. Ogni schermata chiude i suoi lasciandola
+  (`useCloseOnBlur`);
+- **«Modifica filtri» usa `router.dismissTo('/backlog')`**: con `navigate`
+  la playlist restava aperta sotto, e «indietro» ci tornava;
+- lo stato dei filtri sta alla radice (`BacklogViewProvider` in
+  `app/_layout.tsx`), perché la playlist, fuori dalle tab, ci scrive.
+
 **Dopo M4: la barra in basso sempre visibile** (chiesto il 26/11/2026, da
 fare a M4 chiuso). Oggi sparisce su pagina del gioco, Modifica, playlist
 aperte e Info, che stanno nella pila della radice, sopra le tab. Il piano:
