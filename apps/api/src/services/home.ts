@@ -9,6 +9,7 @@ import {
   gte,
   inArray,
   isNull,
+  isNotNull,
   lte,
   or,
   sql,
@@ -124,6 +125,19 @@ export async function listHomeBands(
     genre: HomeBand['genre'];
     ids: Promise<string[]>;
   }[] = [
+    {
+      kind: 'newest',
+      genre: null,
+      // L'unica fascia dove entra un gioco senza tipo: è appena arrivato, e
+      // l'enrichment non ci è ancora passato.
+      ids: pick(
+        and(
+          isNotNull(schema.games.firstReleaseDate),
+          or(isNull(schema.games.gameType), giocabile),
+        ),
+        [desc(schema.games.firstReleaseDate), desc(schema.games.id)],
+      ),
+    },
     {
       kind: 'latest',
       genre: null,

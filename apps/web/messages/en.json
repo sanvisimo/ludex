@@ -44,6 +44,7 @@
     "empty": "No games yet. The catalogue fills up as games get added."
   },
   "home": {
+    "newest": "Newest",
     "latest": "Recently added",
     "topRated": "Top rated",
     "short": "Short · up to 10 h",
