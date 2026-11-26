@@ -249,6 +249,22 @@ Come in M2, ciò che serve a web e mobile va in `packages/ui`: la card con
 copertina delle fasce e la fascia che scorre. Il trascinamento per
 riordinare resta fuori: sul telefono «sposta su/giù».
 
+**Dopo M4: la barra in basso sempre visibile** (chiesto il 26/11/2026, da
+fare a M4 chiuso). Oggi sparisce su pagina del gioco, Modifica, playlist
+aperte e Info, che stanno nella pila della radice, sopra le tab. Il piano:
+
+- ogni tab ha la sua pila: i gruppi `(tabs)/(backlog)`, `(playlist)`,
+  `(wishlist)`, `(account)`, ciascuno con un suo `Stack`;
+- pagina del gioco e Modifica condivise fra le tab con i percorsi condivisi
+  di Expo Router (`(backlog,playlist,wishlist)/games/[slug]`): aperto dalle
+  Playlist, il gioco resta nella tab Playlist e «indietro» torna lì;
+- playlist aperte e «Aggiungi giochi» nella tab Playlist, Info in Account;
+- toccare la tab in cui si è torna alla sua prima schermata (da verificare);
+- Modifica da modale a schermata normale, così anche lì la barra resta;
+- «Modifica filtri» resta com'è: porta alla tab Backlog con quei filtri.
+
+Gli indirizzi (`/games/[slug]`, `/playlist/[id]`…) non cambiano.
+
 ### M5 · Collegare i negozi con la WebView
 
 Quello che il mobile sblocca ([negozi](../docs/negozi.md), in apertura): la
