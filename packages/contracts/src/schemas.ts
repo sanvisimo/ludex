@@ -985,6 +985,7 @@ export const BacklogFilterOptionsSchema = z.object({
 // per genere IGDB, tre al giorno: quale genere lo dice `genre` sulla fascia.
 export const homeBandKindValues = [
   'latest',
+  'newest',
   'topRated',
   'short',
   'medium',
